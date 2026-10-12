@@ -1,0 +1,1365 @@
+openapi: 3.0.3
+info:
+  title: Rendez API
+  version: 1.0.0
+paths:
+  /api/v1/attributes/:
+    get:
+      operationId: attributes_list
+      tags:
+      - attributes
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VisualAttribute'
+          description: ''
+  /api/v1/auth/csrf/:
+    get:
+      operationId: auth_csrf_retrieve
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/v1/categories/:
+    get:
+      operationId: categories_list
+      tags:
+      - categories
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/favorites/:
+    get:
+      operationId: favorites_list
+      parameters:
+      - in: query
+        name: attributes
+        schema:
+          type: string
+        description: Comma-separated codes. AND on one public photo.
+      - in: query
+        name: category
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: sort
+        schema:
+          type: string
+      tags:
+      - favorites
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVisualPlaceList'
+          description: ''
+  /api/v1/favorites/{id}/:
+    put:
+      operationId: favorites_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - favorites
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+    delete:
+      operationId: favorites_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - favorites
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/feed/:
+    get:
+      operationId: feed_list
+      parameters:
+      - in: query
+        name: attributes
+        schema:
+          type: string
+        description: Comma-separated codes. AND on one public photo.
+      - in: query
+        name: category
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: sort
+        schema:
+          type: string
+      tags:
+      - feed
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFeedItemList'
+          description: ''
+  /api/v1/photo-submissions/:
+    get:
+      operationId: photo_submissions_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - photo-submissions
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPhotoSubmissionList'
+          description: ''
+    post:
+      operationId: photo_submissions_create
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        schema:
+          type: string
+        required: true
+      tags:
+      - photo-submissions
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PhotoUploadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PhotoUploadRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoSubmission'
+          description: ''
+  /api/v1/photo-submissions/{id}/:
+    get:
+      operationId: photo_submissions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photo-submissions
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoSubmission'
+          description: ''
+  /api/v1/photos/{id}/:
+    get:
+      operationId: photos_retrieve
+      parameters:
+      - in: query
+        name: attributes
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photos
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoDetail'
+          description: ''
+  /api/v1/photos/{id}/report/:
+    post:
+      operationId: photos_report_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentReport'
+          description: ''
+  /api/v1/places/:
+    get:
+      operationId: places_list
+      parameters:
+      - in: query
+        name: attributes
+        schema:
+          type: string
+        description: Comma-separated codes. AND on one public photo.
+      - in: query
+        name: category
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: sort
+        schema:
+          type: string
+      tags:
+      - places
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVisualPlaceList'
+          description: ''
+  /api/v1/places/{id}/:
+    get:
+      operationId: places_retrieve
+      parameters:
+      - in: query
+        name: attributes
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - places
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisualDetail'
+          description: ''
+  /api/v1/places/{id}/photos/:
+    get:
+      operationId: places_photos_list
+      parameters:
+      - in: query
+        name: attributes
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - places
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPublicPhotoList'
+          description: ''
+  /api/v1/places/{id}/report/:
+    post:
+      operationId: places_report_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - places
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentReport'
+          description: ''
+  /api/v1/places/map/:
+    get:
+      operationId: places_map_retrieve
+      parameters:
+      - in: query
+        name: attributes
+        schema:
+          type: string
+        description: Comma-separated codes. AND on one public photo.
+      - in: query
+        name: bbox
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: sort
+        schema:
+          type: string
+      tags:
+      - places
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisualMap'
+          description: ''
+  /api/v1/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    AttributeEvidence:
+      type: object
+      properties:
+        attribute:
+          $ref: '#/components/schemas/VisualAttribute'
+        photo_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+      - attribute
+      - photo_ids
+    Category:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - name
+      - slug
+    ConsentVersionEnum:
+      enum:
+      - photo-rights-v2
+      type: string
+      description: '* `photo-rights-v2` - photo-rights-v2'
+    ContentReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reason:
+          $ref: '#/components/schemas/ReasonEnum'
+        note:
+          type: string
+          maxLength: 1000
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ContentReportStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - reason
+      - status
+    ContentReportRequest:
+      type: object
+      properties:
+        reason:
+          $ref: '#/components/schemas/ReasonEnum'
+        note:
+          type: string
+          maxLength: 1000
+      required:
+      - reason
+    ContentReportStatusEnum:
+      enum:
+      - pending
+      - resolved
+      type: string
+      description: |-
+        * `pending` - Chờ xử lý
+        * `resolved` - Đã xử lý
+    FeedItem:
+      type: object
+      properties:
+        photo:
+          $ref: '#/components/schemas/PublicPhoto'
+        place:
+          $ref: '#/components/schemas/VisualPlace'
+      required:
+      - photo
+      - place
+    GalleryPage:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicPhoto'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 4096
+      required:
+      - email
+      - password
+    OpeningHours:
+      type: object
+      properties:
+        text:
+          type: string
+        source:
+          type: string
+        verified_at:
+          type: string
+          format: date-time
+      required:
+      - source
+      - text
+      - verified_at
+    PaginatedFeedItemList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeedItem'
+    PaginatedPhotoSubmissionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhotoSubmission'
+    PaginatedPublicPhotoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicPhoto'
+    PaginatedVisualPlaceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VisualPlace'
+    PhotoDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        place_id:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        width:
+          type: integer
+        height:
+          type: integer
+        alt_text:
+          type: string
+          readOnly: true
+        caption:
+          type: string
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VisualAttribute'
+          readOnly: true
+        matched_attribute_codes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        place:
+          allOf:
+          - $ref: '#/components/schemas/VisualPlace'
+          readOnly: true
+      required:
+      - alt_text
+      - attributes
+      - caption
+      - height
+      - id
+      - matched_attribute_codes
+      - place
+      - place_id
+      - published_at
+      - url
+      - width
+    PhotoPublicationStatusEnum:
+      enum:
+      - pending_review
+      - approved
+      - rejected
+      type: string
+      description: |-
+        * `pending_review` - Chưa đăng
+        * `approved` - Đã đăng
+        * `rejected` - Đã gỡ
+    PhotoSubmission:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        place_id:
+          type: string
+          nullable: true
+          readOnly: true
+        place_name:
+          type: string
+          readOnly: true
+        caption:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PhotoPublicationStatusEnum'
+          readOnly: true
+        submitted_at:
+          type: string
+          format: date-time
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        reason:
+          type: string
+          readOnly: true
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubmissionAsset'
+      required:
+      - assets
+      - caption
+      - id
+      - place_id
+      - place_name
+      - published_at
+      - reason
+      - status
+      - submitted_at
+    PhotoUploadRequest:
+      type: object
+      properties:
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          maxItems: 5
+          minItems: 1
+        place_id:
+          type: string
+          format: uuid
+        proposed_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        proposed_address:
+          type: string
+          minLength: 1
+          maxLength: 500
+        proposed_category:
+          type: string
+          minLength: 1
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        caption:
+          type: string
+          default: ''
+          maxLength: 1000
+        consent:
+          type: boolean
+        consent_version:
+          $ref: '#/components/schemas/ConsentVersionEnum'
+      required:
+      - consent
+      - consent_version
+      - images
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        display_name:
+          type: string
+          maxLength: 100
+        is_staff:
+          type: boolean
+          title: Tình trạng nhân viên
+          description: Chỉ định người dùng nào được phép truy cập vào trang admin.
+      required:
+      - display_name
+      - email
+      - id
+    PublicPhoto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        place_id:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        width:
+          type: integer
+        height:
+          type: integer
+        alt_text:
+          type: string
+          readOnly: true
+        caption:
+          type: string
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VisualAttribute'
+          readOnly: true
+        matched_attribute_codes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - alt_text
+      - attributes
+      - caption
+      - height
+      - id
+      - matched_attribute_codes
+      - place_id
+      - published_at
+      - url
+      - width
+    ReasonEnum:
+      enum:
+      - wrong_place
+      - privacy
+      - copyright
+      - unsafe
+      - other
+      type: string
+      description: |-
+        * `wrong_place` - Sai thông tin
+        * `privacy` - Quyền riêng tư
+        * `copyright` - Quyền ảnh
+        * `unsafe` - Không phù hợp
+        * `other` - Khác
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 4096
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - display_name
+      - email
+      - password
+    SubmissionAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        preview_url:
+          type: string
+          readOnly: true
+        publication_status:
+          type: string
+          readOnly: true
+        public_photo_id:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - id
+      - preview_url
+      - public_photo_id
+      - publication_status
+    VisualAttribute:
+      type: object
+      properties:
+        code:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        display_name_vi:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+      required:
+      - code
+      - description
+      - display_name_vi
+    VisualDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/Category'
+        address:
+          type: string
+          readOnly: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        cover_image_url:
+          type: string
+          nullable: true
+          readOnly: true
+        is_saved:
+          type: boolean
+          readOnly: true
+        supporting_photo:
+          allOf:
+          - $ref: '#/components/schemas/PublicPhoto'
+          nullable: true
+          readOnly: true
+        description:
+          type: string
+        opening_hours:
+          allOf:
+          - $ref: '#/components/schemas/OpeningHours'
+          nullable: true
+        photos:
+          $ref: '#/components/schemas/GalleryPage'
+        attribute_evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttributeEvidence'
+      required:
+      - address
+      - attribute_evidence
+      - category
+      - cover_image_url
+      - description
+      - id
+      - is_saved
+      - latitude
+      - longitude
+      - name
+      - opening_hours
+      - photos
+      - supporting_photo
+    VisualMap:
+      type: object
+      properties:
+        count:
+          type: integer
+        total_places:
+          type: integer
+        truncated:
+          type: boolean
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VisualPlace'
+      required:
+      - count
+      - results
+      - total_places
+      - truncated
+    VisualPlace:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/Category'
+        address:
+          type: string
+          readOnly: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        cover_image_url:
+          type: string
+          nullable: true
+          readOnly: true
+        is_saved:
+          type: boolean
+          readOnly: true
+        supporting_photo:
+          allOf:
+          - $ref: '#/components/schemas/PublicPhoto'
+          nullable: true
+          readOnly: true
+      required:
+      - address
+      - category
+      - cover_image_url
+      - id
+      - is_saved
+      - latitude
+      - longitude
+      - name
+      - supporting_photo
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

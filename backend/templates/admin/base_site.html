@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% load ui_copy %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title|ui_label }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content_title %}{% if title %}<h1>{{ title|ui_label }}</h1>{% endif %}{% endblock %}

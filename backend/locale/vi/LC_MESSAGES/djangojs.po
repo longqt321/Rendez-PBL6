@@ -1,0 +1,22 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: vi\n"
+
+msgid "Choose %s by selecting them and then select the \"Choose\" arrow button."
+msgstr "Chọn %s trong danh sách, rồi bấm mũi tên để thêm."
+
+msgid "Remove %s by selecting them and then select the \"Remove\" arrow button."
+msgstr "Chọn %s trong danh sách, rồi bấm mũi tên để bỏ."
+
+msgid "Choose all %s"
+msgstr "Chọn tất cả %s"
+
+msgid "Choose selected %s"
+msgstr "Thêm %s đã chọn"
+
+msgid "Remove all %s"
+msgstr "Bỏ tất cả %s"
+
+msgid "Remove selected %s"
+msgstr "Bỏ %s đã chọn"

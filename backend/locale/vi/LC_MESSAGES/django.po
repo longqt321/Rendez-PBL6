@@ -1,0 +1,22 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: vi\n"
+
+msgid "Skip to main content"
+msgstr "Đến nội dung chính"
+
+msgid "Show counts"
+msgstr "Hiện số lượng"
+
+msgid "Hide counts"
+msgstr "Ẩn số lượng"
+
+msgid "Toggle theme (current theme: auto)"
+msgstr "Đổi giao diện (hiện tại: tự động)"
+
+msgid "Toggle theme (current theme: light)"
+msgstr "Đổi giao diện (hiện tại: sáng)"
+
+msgid "Toggle theme (current theme: dark)"
+msgstr "Đổi giao diện (hiện tại: tối)"

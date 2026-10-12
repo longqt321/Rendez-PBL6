@@ -1,0 +1,61 @@
+name: Rendez checks
+on: [push, pull_request]
+jobs:
+  mvp:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: rendez
+          POSTGRES_USER: rendez
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["55432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U rendez -d rendez"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      POSTGRES_PASSWORD: ci-only-password
+      POSTGRES_PORT: "55432"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --project backend --frozen
+      - run: bun install --cwd frontend --frozen-lockfile
+      - run: uv run --project backend ruff check backend
+      - run: uv run --project backend ruff format --check backend
+      - run: uv run --project backend python backend/manage.py makemigrations --check --dry-run
+      - run: uv run --project backend python backend/manage.py migrate
+      - run: uv run --project backend pytest backend/tests --junitxml=docs/backend-tests.xml
+      - run: |
+          uv run --project backend python backend/manage.py spectacular --file backend/openapi.yaml --validate --fail-on-warn
+          bun run --cwd frontend schema:generate
+          git diff --exit-code -- backend/openapi.yaml frontend/src/lib/api/generated.d.ts
+      - run: bun run --cwd frontend lint
+      - run: bun run --cwd frontend format:check
+      - run: bun run --cwd frontend test
+      - run: bun run --cwd frontend build
+      - run: uv run --project backend python backend/manage.py seed_visual_demo
+      - run: bun run --cwd frontend playwright install --with-deps chromium
+      - name: Browser journeys
+        run: |
+          export E2E_ADMIN_PASSWORD="$(python -c 'import secrets; print(secrets.token_hex(24))')"
+          uv run --project backend python backend/manage.py prepare_e2e
+          bun run --cwd frontend e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: acceptance-evidence
+          path: |
+            docs/backend-tests.xml
+            docs/screenshots-v3
+            frontend/playwright-report
+            frontend/test-results

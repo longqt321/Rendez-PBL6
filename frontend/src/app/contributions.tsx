@@ -1,0 +1,520 @@
+import { Upload, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { api, date, type Category, type Page } from "../lib/api/client";
+import type { Submission, VisualPlace } from "../lib/api/visual";
+import { Button } from "../components/ui/button";
+import { AuthGate, ErrorText, Pager, State, useMe } from "./shared";
+
+function PhotoPreview({ file }: { file: File }) {
+  const image = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    if (image.current) image.current.src = url;
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+  return <img ref={image} alt={"Ảnh đã chọn: " + file.name} />;
+}
+export function NewContribution() {
+  const [params] = useSearchParams();
+  return (
+    <AuthGate returnTo={"/submissions/new?" + params}>
+      <PhotoForm />
+    </AuthGate>
+  );
+}
+function PhotoForm() {
+  const [params] = useSearchParams(),
+    navigate = useNavigate(),
+    cache = useQueryClient();
+  const [step, setStep] = useState(1),
+    [proposal, setProposal] = useState(false),
+    [placeId, setPlaceId] = useState(params.get("place") || ""),
+    [search, setSearch] = useState("");
+  const [metadata, setMetadata] = useState({
+    name: "",
+    address: "",
+    category: "cafe",
+    caption: "",
+  });
+  const [files, setFiles] = useState<File[]>([]),
+    [error, setError] = useState(""),
+    [consent, setConsent] = useState(false);
+  const key = useRef(crypto.randomUUID());
+  const places = useQuery({
+    queryKey: ["submission-places", search],
+    queryFn: ({ signal }) =>
+      api<Page<VisualPlace>>("places/?q=" + encodeURIComponent(search), {
+        signal,
+      }),
+  });
+  const selected = useQuery({
+    queryKey: ["submission-place", placeId],
+    queryFn: () => api<VisualPlace>("places/" + placeId + "/"),
+    enabled: !!placeId && !proposal,
+  });
+  const categories = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => api<Category[]>("categories/"),
+  });
+  const mutation = useMutation({
+    mutationFn: () => {
+      const data = new FormData();
+      files.forEach((file) => data.append("images", file));
+      data.set("caption", metadata.caption);
+      data.set("consent", "true");
+      data.set("consent_version", "photo-rights-v2");
+      if (proposal) {
+        data.set("proposed_name", metadata.name);
+        data.set("proposed_address", metadata.address);
+        data.set("proposed_category", metadata.category);
+      } else data.set("place_id", placeId);
+      return api<Submission>("photo-submissions/", {
+        method: "POST",
+        body: data,
+        headers: { "Idempotency-Key": key.current },
+      });
+    },
+    onSuccess: async (result) => {
+      await cache.invalidateQueries({ queryKey: ["submissions"] });
+      navigate("/submissions/" + result.id, {
+        replace: true,
+        state: { justSubmitted: true },
+      });
+    },
+  });
+  const changed = () => {
+    key.current = crypto.randomUUID();
+    mutation.reset();
+    setError("");
+  };
+  const addFiles = async (list: FileList | null) => {
+    if (!list) return;
+    const incoming = [...list];
+    if (files.length + incoming.length > 5) {
+      setError("Chọn tối đa 5 ảnh.");
+      return;
+    }
+    for (const file of incoming) {
+      if (
+        !["image/jpeg", "image/png"].includes(file.type) ||
+        file.size > 10 * 1024 * 1024
+      ) {
+        setError("Chọn ảnh JPEG hoặc PNG, tối đa 10 MiB mỗi ảnh.");
+        return;
+      }
+      try {
+        const bitmap = await createImageBitmap(file);
+        const valid =
+          Math.min(bitmap.width, bitmap.height) >= 100 &&
+          bitmap.width * bitmap.height <= 20_000_000;
+        bitmap.close();
+        if (!valid) {
+          setError("Ảnh cần ít nhất 100 × 100 px và tối đa 20 MP.");
+          return;
+        }
+      } catch {
+        setError("Không đọc được ảnh.");
+        return;
+      }
+    }
+    changed();
+    setFiles((previous) => [...previous, ...incoming]);
+  };
+  const next = () => {
+    if (
+      step === 1 &&
+      (!proposal ? !placeId : !metadata.name.trim() || !metadata.address.trim())
+    ) {
+      setError("Chọn quán hoặc nhập tên và địa chỉ đề xuất.");
+      return;
+    }
+    if (step === 2 && !files.length) {
+      setError("Chọn ít nhất 1 ảnh.");
+      return;
+    }
+    setError("");
+    setStep(step + 1);
+  };
+  return (
+    <section className="panel submission-form">
+      <span className="eyebrow">Ảnh cộng đồng</span>
+      <h1>Gửi ảnh quán</h1>
+      <p className="muted">Chọn quán và đăng 1–5 ảnh bạn chụp.</p>
+      <ol className="step-list" aria-label="Các bước gửi ảnh">
+        {["Chọn quán", "Chọn ảnh", "Kiểm tra và gửi"].map((name, i) => (
+          <li key={name} aria-current={step === i + 1 ? "step" : undefined}>
+            {i + 1}. {name}
+          </li>
+        ))}
+      </ol>
+      {step === 1 && (
+        <>
+          <label className="check-label">
+            <input
+              type="checkbox"
+              checked={proposal}
+              onChange={(e) => {
+                changed();
+                setProposal(e.target.checked);
+              }}
+            />
+            Thêm quán mới
+          </label>
+          {proposal ? (
+            <div className="proposal-fields">
+              {(["name", "address"] as const).map((field) => (
+                <label key={field}>
+                  {field === "name" ? "Tên quán" : "Địa chỉ"}
+                  <input
+                    value={metadata[field]}
+                    maxLength={field === "name" ? 200 : 500}
+                    onChange={(e) => {
+                      changed();
+                      setMetadata({ ...metadata, [field]: e.target.value });
+                    }}
+                  />
+                </label>
+              ))}
+              <label>
+                Loại quán
+                <select
+                  value={metadata.category}
+                  onChange={(e) => {
+                    changed();
+                    setMetadata({ ...metadata, category: e.target.value });
+                  }}
+                >
+                  {categories.data?.map((c) => (
+                    <option value={c.slug} key={c.slug}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ) : (
+            <>
+              <label>
+                Tìm quán
+                <input
+                  value={search}
+                  placeholder="Tên quán hoặc địa chỉ"
+                  maxLength={100}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </label>
+              <State
+                pending={places.isPending}
+                error={places.error}
+                onRetry={() => void places.refetch()}
+              />
+              {selected.data && (
+                <p className="selected-place">
+                  Đã chọn: <strong>{selected.data.name}</strong> ·{" "}
+                  {selected.data.address}
+                </p>
+              )}
+              <fieldset className="place-picker">
+                <legend>Chọn quán</legend>
+                {places.data?.results.map((place) => (
+                  <label className="check-label" key={place.id}>
+                    <input
+                      type="radio"
+                      name="place"
+                      checked={placeId === place.id}
+                      onChange={() => {
+                        changed();
+                        setPlaceId(place.id);
+                      }}
+                    />
+                    <span>
+                      {place.name}
+                      <small>{place.address}</small>
+                    </span>
+                  </label>
+                ))}
+                {places.data?.count === 0 && (
+                  <p>
+                    Không tìm thấy quán. Chọn “Thêm quán mới” để gửi thông tin.
+                  </p>
+                )}
+              </fieldset>
+            </>
+          )}
+          <State
+            error={categories.error}
+            onRetry={() => void categories.refetch()}
+          />
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <h2>Chọn ảnh</h2>
+          <p className="muted">JPEG/PNG · tối đa 5 ảnh · 10 MiB/ảnh</p>
+          <label
+            className="upload-dropzone"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => {
+              event.preventDefault();
+              void addFiles(event.dataTransfer.files);
+            }}
+          >
+            <Upload size={30} />
+            <strong>Kéo ảnh vào đây hoặc nhấn để chọn</strong>
+            <small>Chọn ảnh bạn chụp tại quán</small>
+            <input
+              type="file"
+              aria-label="Chọn ảnh JPEG hoặc PNG"
+              accept="image/jpeg,image/png"
+              multiple
+              onChange={(e) => {
+                void addFiles(e.target.files);
+                e.currentTarget.value = "";
+              }}
+            />
+          </label>
+          <p className="muted small">
+            Đã chọn {files.length}/5 ảnh. Có thể xóa ảnh trước khi gửi.
+          </p>
+          <div className="upload-previews">
+            {files.map((file, i) => (
+              <article key={i + file.name}>
+                <PhotoPreview file={file} />
+                <p className="small">{file.name}</p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    changed();
+                    setFiles(files.filter((_, index) => index !== i));
+                  }}
+                >
+                  Xóa ảnh {i + 1}
+                </Button>
+              </article>
+            ))}
+          </div>
+          <label>
+            Mô tả ảnh (tùy chọn)
+            <textarea
+              value={metadata.caption}
+              maxLength={1000}
+              onChange={(e) => {
+                changed();
+                setMetadata({ ...metadata, caption: e.target.value });
+              }}
+            />
+          </label>
+        </>
+      )}
+      {step === 3 && (
+        <>
+          <h2>Kiểm tra trước khi gửi</h2>
+          <p>
+            <strong>{proposal ? metadata.name : selected.data?.name}</strong>
+          </p>
+          <p>{proposal ? metadata.address : selected.data?.address}</p>
+          <p>{metadata.caption}</p>
+          <div className="upload-previews">
+            {files.map((file, i) => (
+              <PhotoPreview key={i} file={file} />
+            ))}
+          </div>
+          <label className="check-label">
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => {
+                changed();
+                setConsent(e.target.checked);
+              }}
+            />
+            Tôi có quyền đăng các ảnh này và đồng ý công khai.
+          </label>
+          <p className="muted small">Ảnh sẽ xuất hiện ngay sau khi đăng.</p>
+        </>
+      )}
+      {error && (
+        <p role="alert" className="error">
+          {error}
+        </p>
+      )}
+      <ErrorText error={mutation.error} />
+      <div className="detail-actions">
+        {step > 1 && (
+          <Button
+            variant="outline"
+            disabled={mutation.isPending}
+            onClick={() => setStep(step - 1)}
+          >
+            Quay lại bước trước
+          </Button>
+        )}
+        {step < 3 ? (
+          <Button onClick={next}>Tiếp tục</Button>
+        ) : (
+          <Button
+            disabled={!consent || mutation.isPending}
+            onClick={() => mutation.mutate()}
+          >
+            {mutation.isPending ? "Đang đăng…" : "Đăng ảnh"}
+          </Button>
+        )}
+      </div>
+    </section>
+  );
+}
+function submissionLabel(s: Submission) {
+  if (s.assets.some((a) => a.publication_status === "published"))
+    return "Đã đăng";
+  if (s.assets.some((a) => a.publication_status === "withdrawn"))
+    return "Đã gỡ";
+  return "Chưa đăng";
+}
+
+export function ContributionHistory() {
+  return (
+    <AuthGate returnTo="/submissions">
+      <History />
+    </AuthGate>
+  );
+}
+function History() {
+  const [params] = useSearchParams(),
+    me = useMe();
+  const result = useQuery({
+    queryKey: ["submissions", me.data?.id, params.get("page")],
+    queryFn: () =>
+      api<Page<Submission>>(
+        "photo-submissions/?page=" + (params.get("page") || "1"),
+      ),
+  });
+  return (
+    <>
+      <header className="page-heading">
+        <div>
+          <h1>Ảnh của tôi</h1>
+          <p className="muted">Xem những ảnh bạn đã đăng.</p>
+        </div>
+        <Button asChild>
+          <Link to="/submissions/new">Đăng ảnh</Link>
+        </Button>
+      </header>
+      <State
+        pending={result.isPending}
+        error={result.error}
+        onRetry={() => void result.refetch()}
+        empty={result.data?.count === 0 ? "Bạn chưa gửi ảnh nào" : undefined}
+      />
+      <div className="submission-list">
+        {result.data?.results.map((s) => (
+          <Link
+            className="panel submission-row"
+            key={s.id}
+            to={"/submissions/" + s.id}
+          >
+            {s.assets[0] && (
+              <img
+                src={s.assets[0].preview_url}
+                alt="Ảnh bạn đã gửi"
+                loading="lazy"
+              />
+            )}
+            <div>
+              <h2>{s.place_name}</h2>
+              <p>
+                {s.assets.length} ảnh · {date(s.submitted_at)}
+              </p>
+              <span
+                className={
+                  "status-badge " +
+                  (submissionLabel(s) === "Đã gỡ" ? "rejected" : s.status)
+                }
+              >
+                {submissionLabel(s)}
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+      {result.data && (
+        <Pager next={result.data.next} previous={result.data.previous} />
+      )}
+    </>
+  );
+}
+export function ContributionDetailPage() {
+  const { id } = useParams();
+  return (
+    <AuthGate returnTo={"/submissions/" + id}>
+      <SubmissionDetail id={id!} />
+    </AuthGate>
+  );
+}
+function SubmissionDetail({ id }: { id: string }) {
+  const me = useMe();
+  const result = useQuery({
+    queryKey: ["submission", id, me.data?.id],
+    queryFn: () => api<Submission>("photo-submissions/" + id + "/"),
+  });
+  if (!result.data)
+    return (
+      <State
+        pending={result.isPending}
+        error={result.error}
+        onRetry={() => void result.refetch()}
+      />
+    );
+  const s = result.data;
+  return (
+    <section className="panel">
+      <Link className="back-link" to="/submissions">
+        <ArrowLeft size={16} /> Ảnh của tôi
+      </Link>
+      <h1>{s.place_name}</h1>
+      <span
+        className={
+          "status-badge " +
+          (submissionLabel(s) === "Đã gỡ" ? "rejected" : s.status)
+        }
+      >
+        {submissionLabel(s)}
+      </span>
+      <div className="submission-timeline">
+        <div>
+          <strong>
+            <CheckCircle2 size={15} /> Đã gửi ảnh
+          </strong>
+          <small>
+            {date(s.submitted_at)} · {s.assets.length} ảnh
+          </small>
+        </div>
+      </div>
+      {s.reason && <p className="submission-notice">Lý do gỡ: {s.reason}</p>}
+      <p>{s.caption}</p>
+      <div className="gallery-grid">
+        {s.assets.map((a) => (
+          <article key={a.id}>
+            <img
+              className="card-image"
+              src={a.preview_url}
+              alt="Ảnh bạn đã gửi"
+            />
+            {a.publication_status === "published" && (
+              <Link to={"/photos/" + a.public_photo_id}>Xem ảnh công khai</Link>
+            )}
+          </article>
+        ))}
+      </div>
+      <div className="detail-actions">
+        <Button variant="outline" onClick={() => void result.refetch()}>
+          Cập nhật trạng thái
+        </Button>
+        <Button asChild>
+          <Link to="/submissions/new">Gửi thêm ảnh</Link>
+        </Button>
+      </div>
+    </section>
+  );
+}

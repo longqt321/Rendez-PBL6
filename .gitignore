@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+node_modules/
+dist/
+.private-media/
+test-results/
+playwright-report/
+*.sqlite3
+staticfiles/
+*.tsbuildinfo
+backups/
+artifacts/
+research/data/
+
+# Generated verification artifacts
+docs/screenshots*/
+docs/*tests.xml
+docs/feedback-fix/

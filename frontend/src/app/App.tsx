@@ -1,0 +1,168 @@
+import { Compass, Map as MapIcon, Bookmark, User, Plus } from "lucide-react";
+import {
+  Link,
+  NavLink,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router";
+import { discoveryQuery } from "../lib/api/client";
+import { SearchBar, State, useMe } from "./shared";
+import { Auth, ProfilePage } from "./auth";
+import { Discover, PlaceDetailPage, PhotoDetailPage } from "./discovery";
+import { lazy, Suspense } from "react";
+const MapPage = lazy(() =>
+  import("./map").then((module) => ({ default: module.MapPage })),
+);
+import {
+  NewContribution,
+  ContributionDetailPage,
+  ContributionHistory,
+} from "./contributions";
+
+export function RequireLogin() {
+  const me = useMe();
+  const location = useLocation();
+  if (me.isPending) return <State pending />;
+  if (me.isError)
+    return <State error={me.error} onRetry={() => void me.refetch()} />;
+  if (!me.data)
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          returnTo: location.pathname + location.search + location.hash,
+        }}
+      />
+    );
+  return <Outlet />;
+}
+
+function Shell() {
+  const location = useLocation();
+  const me = useMe();
+  const shared = discoveryQuery(new URLSearchParams(location.search));
+  shared.delete("page");
+  const params = new URLSearchParams(location.search);
+  for (const key of ["lat", "lng", "zoom", "selected"]) {
+    const value = params.get(key);
+    if (value) shared.set(key, value);
+  }
+  const suffix = shared.toString() ? "?" + shared : "";
+  const nav = [
+    ["/discover" + suffix, "Khám phá", Compass],
+    ["/map" + suffix, "Bản đồ", MapIcon],
+    ["/saved", "Đã lưu", Bookmark],
+    ["/profile", "Cá nhân", User],
+  ] as const;
+  return (
+    <div
+      className={
+        "app-shell pin-shell" +
+        (location.pathname === "/map" ? " map-shell" : "")
+      }
+    >
+      <a href="#main" className="skip-link">
+        Đến nội dung chính
+      </a>
+      <aside className="sidebar">
+        <Link
+          className="brand rail-brand"
+          to="/discover"
+          aria-label="Rendez — Khám phá"
+          title="Rendez"
+        >
+          r<span className="brand-dot">.</span>
+        </Link>
+        <nav aria-label="Điều hướng chính">
+          {nav.map(([to, label, Icon]) => (
+            <NavLink to={to} key={label} title={label} aria-label={label}>
+              <Icon size={23} aria-hidden />
+              <span>{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+        <Link
+          className="rail-upload"
+          to="/submissions/new"
+          aria-label="Đăng ảnh"
+          title="Đăng ảnh"
+        >
+          <Plus size={23} aria-hidden />
+          <span>Đăng ảnh</span>
+        </Link>
+      </aside>
+      <main id="main" className="main-content">
+        <header className="workspace-topbar pin-topbar">
+          <SearchBar />
+          <Link
+            className="topbar-account"
+            to="/profile"
+            aria-label={
+              me.data
+                ? "Tài khoản của " + me.data.display_name
+                : "Đăng nhập hoặc tạo tài khoản"
+            }
+            title={me.data?.display_name || "Tài khoản"}
+          >
+            <span className="avatar">
+              {me.data?.display_name?.slice(0, 1).toUpperCase() || (
+                <User size={21} aria-hidden />
+              )}
+            </span>
+          </Link>
+        </header>
+        <div className="page-content">
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  );
+}
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/discover" replace />} />
+      <Route element={<RequireLogin />}>
+        <Route element={<Shell />}>
+          <Route path="discover" element={<Discover />} />
+          <Route
+            path="map"
+            element={
+              <Suspense fallback={<p role="status">Đang tải bản đồ…</p>}>
+                <MapPage />
+              </Suspense>
+            }
+          />
+          <Route path="saved" element={<Discover saved />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="places/:id" element={<PlaceDetailPage />} />
+          <Route path="photos/:id" element={<PhotoDetailPage />} />
+          <Route path="submissions/new" element={<NewContribution />} />
+          <Route path="submissions" element={<ContributionHistory />} />
+          <Route path="submissions/:id" element={<ContributionDetailPage />} />
+          <Route path="contributions/new" element={<NewContribution />} />
+          <Route path="contributions" element={<ContributionHistory />} />
+          <Route
+            path="contributions/:id"
+            element={<ContributionDetailPage />}
+          />
+          <Route
+            path="*"
+            element={
+              <section className="state">
+                <h1>Không tìm thấy trang</h1>
+                <Link to="/discover">Về Khám phá</Link>
+              </section>
+            }
+          />
+        </Route>
+      </Route>
+      <Route path="login" element={<Auth />} />
+      <Route path="register" element={<Auth register />} />
+    </Routes>
+  );
+}

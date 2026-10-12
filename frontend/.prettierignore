@@ -1,0 +1,6 @@
+bun.lock
+src/lib/api/generated.d.ts
+dist
+node_modules
+test-results
+playwright-report
