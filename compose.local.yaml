@@ -1,0 +1,17 @@
+name: rendez-local
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: rendez_local
+      POSTGRES_USER: rendez
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/setup-local.sh first}
+    ports:
+      - "127.0.0.1:55433:5432"
+    volumes:
+      - ./.local/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rendez -d rendez_local"]
+      interval: 3s
+      timeout: 3s
+      retries: 20

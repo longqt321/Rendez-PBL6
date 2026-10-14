@@ -1,0 +1,795 @@
+{
+  "checked_at": "2026-10-13",
+  "categories": {
+    "cafe": "Cà phê",
+    "market": "Chợ & ẩm thực",
+    "riverside": "Ven sông",
+    "beach": "Biển",
+    "culture": "Văn hóa",
+    "nature": "Thiên nhiên"
+  },
+  "places": [
+    {
+      "slug": "oxy-garden",
+      "name": "Oxy Garden Coffee",
+      "category": "cafe",
+      "address": "Đường Trần Quốc Vượng, khu đô thị FPT, Đà Nẵng",
+      "latitude": null,
+      "longitude": null,
+      "source_url": "https://shopeefood.vn/da-nang/oxy-garden-coffee-tran-quoc-vuong",
+      "description": "Quán cà phê trong khu đô thị FPT, gần FPT Complex.",
+      "photos": [
+        {
+          "file": "baede8fdfbe17c70.jpg",
+          "caption": "Oxy Garden Coffee",
+          "credit": {
+            "author": "Lê Huỳnh Bộ",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Qu%C3%A1n_C%C3%A0_Ph%C3%AA_Oxy_Garden.jpg",
+            "taken_at": "2025-05-14",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants",
+            "water"
+          ]
+        },
+        {
+          "file": "3c2e49459f4828b8.jpg",
+          "caption": "Oxy Garden Coffee",
+          "credit": {
+            "author": "Lê Huỳnh Bộ",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Qu%C3%A1n_C%C3%A0_Ph%C3%AA_Oxy_Garden_(14224).jpg",
+            "taken_at": "2025-05-14",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants",
+            "food"
+          ]
+        },
+        {
+          "file": "9a48a03bd348cab7.jpg",
+          "caption": "Oxy Garden Coffee",
+          "credit": {
+            "author": "Lê Huỳnh Bộ",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Qu%C3%A1n_C%C3%A0_Ph%C3%AA_Oxy_Garden_(43495).jpg",
+            "taken_at": "2025-05-14",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants",
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "truc-lam-vien",
+      "name": "Trúc Lâm Viên",
+      "category": "cafe",
+      "address": "8–10 Trần Quý Cáp, Đà Nẵng",
+      "latitude": 16.081833,
+      "longitude": 108.221833,
+      "source_url": "https://truclamvien.vn/",
+      "description": "Quán cà phê và nhà hàng trên đường Trần Quý Cáp.",
+      "photos": [
+        {
+          "file": "6b3e168504b8a28c.jpg",
+          "caption": "Trúc Lâm Viên",
+          "credit": {
+            "author": "Dragfyre",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Truc_Lam_Vien_Coffeeshop_DN.JPG",
+            "taken_at": "2010-09-12",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants",
+            "architecture",
+            "food"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "highlands-indochina",
+      "name": "Highlands Coffee · Indochina",
+      "category": "cafe",
+      "address": "74 Bạch Đằng, Đà Nẵng",
+      "latitude": 16.069833,
+      "longitude": 108.225167,
+      "source_url": "https://www.highlandscoffee.com.vn/vn/he-thong-cua-hang/10/duong-dai-hoa-tranh-dong-ho-.html",
+      "description": "Cửa hàng Highlands Coffee tại Indochina Riverside, bên sông Hàn.",
+      "photos": [
+        {
+          "file": "1ad5980ea8b7491c.jpg",
+          "caption": "Highlands Coffee · Indochina",
+          "credit": {
+            "author": "Dragfyre",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Highlands_Coffee_storefront_DN.JPG",
+            "taken_at": "2010-09-15",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants",
+            "architecture"
+          ]
+        },
+        {
+          "file": "03fde1e2e7aacecb.jpg",
+          "caption": "Highlands Coffee · Indochina",
+          "credit": {
+            "author": "Dragfyre",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Highlands_Coffee_drip_filter_and_cup.jpg",
+            "taken_at": "2010-02-24",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "food"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "cho-han",
+      "name": "Chợ Hàn",
+      "category": "market",
+      "address": "119 Trần Phú, Đà Nẵng",
+      "latitude": 16.067875,
+      "longitude": 108.224636,
+      "source_url": "https://trademap.danang.gov.vn/",
+      "description": "Chợ ở trung tâm thành phố, gần đường Bạch Đằng và sông Hàn.",
+      "photos": [
+        {
+          "file": "5d3b5464a9212280.jpg",
+          "caption": "Chợ Hàn",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Han_Market_1.jpg",
+            "taken_at": "2018-07-29",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "interior",
+            "food"
+          ]
+        },
+        {
+          "file": "7232958198535907.jpg",
+          "caption": "Chợ Hàn",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Han_Market_2.jpg",
+            "taken_at": "2018-07-29",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "interior",
+            "food"
+          ]
+        },
+        {
+          "file": "7c1a249badfd5e20.jpg",
+          "caption": "Chợ Hàn",
+          "credit": {
+            "author": "Daderot",
+            "license": "CC0",
+            "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Produce_in_Han_Market_-_Da_Nang,_Vietnam_-_DSC02385.JPG",
+            "taken_at": "2014-08-01",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "food"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "cho-con",
+      "name": "Chợ Cồn",
+      "category": "market",
+      "address": "290 Hùng Vương, Đà Nẵng",
+      "latitude": 16.067439,
+      "longitude": 108.213565,
+      "source_url": "https://commons.wikimedia.org/wiki/Category:Con_Market",
+      "description": "Chợ tại góc đường Hùng Vương và Ông Ích Khiêm.",
+      "photos": [
+        {
+          "file": "afe12874306393fa.jpg",
+          "caption": "Chợ Cồn",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Con_Market_1.jpg",
+            "taken_at": "2018-07-29",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "food",
+            "interior"
+          ]
+        },
+        {
+          "file": "615bf2cf4a089663.jpg",
+          "caption": "Chợ Cồn",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Con_Market_2.jpg",
+            "taken_at": "2018-07-29",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "food",
+            "interior"
+          ]
+        },
+        {
+          "file": "cf669011b4ec7139.jpg",
+          "caption": "Chợ Cồn",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Con_Market_at_sunset.jpg",
+            "taken_at": "2018-07-29",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "architecture"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "cau-rong",
+      "name": "Cầu Rồng",
+      "category": "riverside",
+      "address": "Đường Nguyễn Văn Linh – Võ Văn Kiệt, Đà Nẵng",
+      "latitude": 16.061174,
+      "longitude": 108.227292,
+      "source_url": "https://commons.wikimedia.org/wiki/Category:Dragon_Bridge_(Danang)",
+      "description": "Cầu bắc qua sông Hàn, nối đường Nguyễn Văn Linh với Võ Văn Kiệt.",
+      "photos": [
+        {
+          "file": "68820f2ed95eeaba.jpg",
+          "caption": "Cầu Rồng",
+          "credit": {
+            "author": "This Photo was taken by Supanut Arunoprayote.\n\nFeel free to use any of my images, but please mention me as the author and may send me a message.  (สามารถใช้ภาพได้อิสระ แต่กรุณาใส่เครดิตผู้ถ่ายและอาจส่งข้อความบอกกล่าวด้วย) \n\n\n\nPlease do not upload an updated image here without consultation with the Author. The author would like to make corrections only at his own source. This ensures that the changes are preserved.Please if you think that any changes should be required, please inform the author.Otherwise you can upload a new image with a new name. Please use one of the templates derivative or extract.",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Da_Nang_Dragon_Bridge_(I).jpg",
+            "taken_at": "2019-05-29",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "architecture"
+          ]
+        },
+        {
+          "file": "629c8ed46d865bfd.jpg",
+          "caption": "Cầu Rồng",
+          "credit": {
+            "author": "Bùi Thụy Đào Nguyên",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:C%E1%BA%A7u_R%E1%BB%93ng.jpg",
+            "taken_at": "2013-05-14",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "architecture"
+          ]
+        },
+        {
+          "file": "eb6a8316d8b4b21d.jpg",
+          "caption": "Cầu Rồng",
+          "credit": {
+            "author": "tuankiet65",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Dragon_Bridge_01.jpg",
+            "taken_at": "2013-04-28",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "architecture"
+          ]
+        },
+        {
+          "file": "90dc9ec86995fbd8.jpg",
+          "caption": "Cầu Rồng",
+          "credit": {
+            "author": "tuankiet65",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Dragon_Bridge_02.jpg",
+            "taken_at": "2013-04-28",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "architecture"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "cau-song-han",
+      "name": "Cầu Sông Hàn",
+      "category": "riverside",
+      "address": "Đường Lê Duẩn – Phạm Văn Đồng, Đà Nẵng",
+      "latitude": 16.072094,
+      "longitude": 108.226251,
+      "source_url": "https://commons.wikimedia.org/wiki/Category:Han_River_Bridge",
+      "description": "Cầu nối hai bờ sông Hàn, trên trục Lê Duẩn và Phạm Văn Đồng.",
+      "photos": [
+        {
+          "file": "967f9cf0aff234f6.jpg",
+          "caption": "Cầu Sông Hàn",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Han_River_Bridge_1.jpg",
+            "taken_at": "2018-07-30",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "architecture"
+          ]
+        },
+        {
+          "file": "917da54c22615b95.jpg",
+          "caption": "Cầu Sông Hàn",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Han_River_Bridge_2.jpg",
+            "taken_at": "2018-07-30",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "architecture"
+          ]
+        },
+        {
+          "file": "1dcf71bfd7614240.jpg",
+          "caption": "Cầu Sông Hàn",
+          "credit": {
+            "author": "Wikimedia Commons",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Han_River_Bridge,_Da_Nang,_20241209,_Ansicht01.jpeg",
+            "taken_at": "2024-12-09",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "architecture"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "cau-tran-thi-ly",
+      "name": "Cầu Trần Thị Lý",
+      "category": "riverside",
+      "address": "Đường 2 Tháng 9 – Nguyễn Văn Thoại, Đà Nẵng",
+      "latitude": 16.047929,
+      "longitude": 108.230423,
+      "source_url": "https://commons.wikimedia.org/wiki/Category:Tran_Thi_Ly_Bridge",
+      "description": "Cầu dây văng bắc qua sông Hàn, phía nam cầu Rồng.",
+      "photos": [
+        {
+          "file": "04ce4a476025c4ac.jpg",
+          "caption": "Cầu Trần Thị Lý",
+          "credit": {
+            "author": "This Photo was taken by Supanut Arunoprayote.\n\nFeel free to use any of my images, but please mention me as the author and may send me a message.  (สามารถใช้ภาพได้อิสระ แต่กรุณาใส่เครดิตผู้ถ่ายและอาจส่งข้อความบอกกล่าวด้วย) \n\n\n\nPlease do not upload an updated image here without consultation with the Author. The author would like to make corrections only at his own source. This ensures that the changes are preserved.Please if you think that any changes should be required, please inform the author.Otherwise you can upload a new image with a new name. Please use one of the templates derivative or extract.",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Tran_Thi_Ly_Bridge_(I).jpg",
+            "taken_at": "2019-05-28",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "night",
+            "water",
+            "architecture"
+          ]
+        },
+        {
+          "file": "ca865d3c8a4a15dd.jpg",
+          "caption": "Cầu Trần Thị Lý",
+          "credit": {
+            "author": "[Tycho]  talk , http://shansov.net",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Tr%E1%BA%A7n_Th%E1%BB%8B_L%C3%BD_Bridge_at_daytime.jpg",
+            "taken_at": "2017-12-24",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "architecture"
+          ]
+        },
+        {
+          "file": "2d2d0341584cafd6.jpg",
+          "caption": "Cầu Trần Thị Lý",
+          "credit": {
+            "author": "Tu Nguyen wickylancaster",
+            "license": "CC0",
+            "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Red_Night_at_Tran_Thi_Ly_Bridge_(Unsplash).jpg",
+            "taken_at": "2017-04-14",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "night",
+            "water",
+            "architecture"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "nha-tho-con-ga",
+      "name": "Nhà thờ Con Gà",
+      "category": "culture",
+      "address": "156 Trần Phú, Đà Nẵng",
+      "latitude": 16.06609,
+      "longitude": 108.223439,
+      "source_url": "https://visitdanang.org/nha-tho-con-ga-the-gothic-architectural-style-church-in-da-nang/",
+      "description": "Nhà thờ Chính tòa Đà Nẵng trên đường Trần Phú. Tôn trọng không gian hành lễ khi ghé thăm.",
+      "photos": [
+        {
+          "file": "abf99f844ab802d8.jpg",
+          "caption": "Nhà thờ Con Gà",
+          "credit": {
+            "author": "Tsurugaaaa",
+            "license": "CC0",
+            "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Da_Nang_Cathedral_2026_05_05.jpg",
+            "taken_at": "2026-05-05",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "architecture"
+          ]
+        },
+        {
+          "file": "5df90cbfb6917256.jpg",
+          "caption": "Nhà thờ Con Gà",
+          "credit": {
+            "author": "Vuong Tri Binh",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Da_Nang_Cathedral_in_2015_01.jpg",
+            "taken_at": "2015-08-23",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "architecture"
+          ]
+        },
+        {
+          "file": "8466610bc17b97c5.jpg",
+          "caption": "Nhà thờ Con Gà",
+          "credit": {
+            "author": "Bùi Thụy Đào Nguyên",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Nh%C3%A0_th%E1%BB%9D_Con_G%C3%A0_%C4%90%C3%A0_N%E1%BA%B5ng.jpg",
+            "taken_at": "2007-03-13",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "architecture"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "bao-tang-cham",
+      "name": "Bảo tàng Điêu khắc Chăm",
+      "category": "culture",
+      "address": "2 đường 2 Tháng 9, Đà Nẵng",
+      "latitude": 16.06046,
+      "longitude": 108.22322,
+      "source_url": "https://danangfantasticity.com/wp-content/uploads/2026/01/Ho-Chieu-Di-san-Da-Nang.pdf",
+      "description": "Bảo tàng trưng bày điêu khắc và hiện vật văn hóa Chăm, gần đầu phía tây cầu Rồng.",
+      "photos": [
+        {
+          "file": "e275048207c0d001.jpg",
+          "caption": "Bảo tàng Điêu khắc Chăm",
+          "credit": {
+            "author": "CT Snow from Hsinchu, Taiwan",
+            "license": "CC BY 2.0",
+            "license_url": "https://creativecommons.org/licenses/by/2.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:B%E1%BA%A3o_t%C3%A0ng_Ngh%E1%BB%87_thu%E1%BA%ADt_%C4%91i%C3%AAu_kh%E1%BA%AFc_Ch%C3%A0m_%C4%90%C3%A0_N%E1%BA%B5ng.jpg",
+            "taken_at": "2006-02-06",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants",
+            "architecture"
+          ]
+        },
+        {
+          "file": "be02a1daa5e3c034.jpg",
+          "caption": "Bảo tàng Điêu khắc Chăm",
+          "credit": {
+            "author": "Daderot",
+            "license": "CC0",
+            "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Interior_view_-_Museum_of_Cham_Sculpture_-_Danang,_Vietnam_-_DSC01931.JPG",
+            "taken_at": "2014-07-29",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "interior",
+            "architecture"
+          ]
+        },
+        {
+          "file": "f26fdbc1f04b96aa.jpg",
+          "caption": "Bảo tàng Điêu khắc Chăm",
+          "credit": {
+            "author": "Daderot",
+            "license": "CC0",
+            "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Terrace_-_Museum_of_Cham_Sculpture_-_Danang,_Vietnam_-_DSC01987.JPG",
+            "taken_at": "2014-07-29",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants",
+            "architecture"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "bien-my-khe",
+      "name": "Biển Mỹ Khê",
+      "category": "beach",
+      "address": "Đường Võ Nguyên Giáp, Đà Nẵng",
+      "latitude": 16.063935,
+      "longitude": 108.246976,
+      "source_url": "https://commons.wikimedia.org/wiki/Category:My_Khe_Beach",
+      "description": "Bãi biển ven đường Võ Nguyên Giáp, phía đông trung tâm Đà Nẵng.",
+      "photos": [
+        {
+          "file": "7b07f2c3425ce304.jpg",
+          "caption": "Biển Mỹ Khê",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:My_Khe_Beach_1.jpg",
+            "taken_at": "2018-07-30",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water"
+          ]
+        },
+        {
+          "file": "8d25f65084d24dfd.jpg",
+          "caption": "Biển Mỹ Khê",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:My_Khe_Beach_10.jpg",
+            "taken_at": "2018-07-30",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water"
+          ]
+        },
+        {
+          "file": "5cb49cbc4a0ec23f.jpg",
+          "caption": "Biển Mỹ Khê",
+          "credit": {
+            "author": "Christophe95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:My_Khe_Beach_13.jpg",
+            "taken_at": "2018-07-30",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "plants"
+          ]
+        },
+        {
+          "file": "32d17baa5c884537.jpg",
+          "caption": "Biển Mỹ Khê",
+          "credit": {
+            "author": "Viethavvh at Vietnamese Wikipedia",
+            "license": "Public domain",
+            "license_url": "https://commons.wikimedia.org/wiki/File:Bai_bien_My_Khe.jpg#Licensing",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Bai_bien_My_Khe.jpg",
+            "taken_at": "2007-06-09",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "bien-non-nuoc",
+      "name": "Biển Non Nước",
+      "category": "beach",
+      "address": "Đường Trường Sa, khu vực Ngũ Hành Sơn, Đà Nẵng",
+      "latitude": 15.9986,
+      "longitude": 108.2721,
+      "source_url": "https://commons.wikimedia.org/wiki/Category:Non_Nuoc_Beach",
+      "description": "Bãi biển ở khu vực Ngũ Hành Sơn, dọc đường Trường Sa.",
+      "photos": [
+        {
+          "file": "2447bdfb08f76d3a.jpg",
+          "caption": "Biển Non Nước",
+          "credit": {
+            "author": "Vyacheslav Argenberg",
+            "license": "CC BY 2.0",
+            "license_url": "https://creativecommons.org/licenses/by/2.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Non_nuoc_Basket_boats.jpg",
+            "taken_at": "2008-03-03",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "chua-linh-ung",
+      "name": "Chùa Linh Ứng · Sơn Trà",
+      "category": "culture",
+      "address": "Đường Hoàng Sa, bán đảo Sơn Trà, Đà Nẵng",
+      "latitude": 16.100548,
+      "longitude": 108.277572,
+      "source_url": "https://commons.wikimedia.org/wiki/Category:Linh_Ung_Pagoda",
+      "description": "Chùa trên bán đảo Sơn Trà, nhìn về phía biển. Giữ yên lặng và mặc trang phục phù hợp khi vào chùa.",
+      "photos": [
+        {
+          "file": "cc12b29d9a394343.jpg",
+          "caption": "Chùa Linh Ứng · Sơn Trà",
+          "credit": {
+            "author": "Alexkom000",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:2024-12-07_Linh_Ung_Pagoda_1.jpg",
+            "taken_at": "2024-12-07",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants",
+            "architecture"
+          ]
+        },
+        {
+          "file": "ac0ab01c43a89597.jpg",
+          "caption": "Chùa Linh Ứng · Sơn Trà",
+          "credit": {
+            "author": "Alexkom000",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:2024-12-07_Linh_Ung_Pagoda_2.jpg",
+            "taken_at": "2024-12-07",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants",
+            "architecture"
+          ]
+        },
+        {
+          "file": "0907deb6c7f2555f.jpg",
+          "caption": "Chùa Linh Ứng · Sơn Trà",
+          "credit": {
+            "author": "NKSTTSSHNVN",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Ch%C3%B9a_Linh_%E1%BB%A8ng_-_S%C6%A1n_Tr%C3%A0_-_NKS.jpg",
+            "taken_at": "2023-04-25",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "ngu-hanh-son",
+      "name": "Danh thắng Ngũ Hành Sơn",
+      "category": "nature",
+      "address": "81 Huyền Trân Công Chúa, Đà Nẵng",
+      "latitude": 16.003868,
+      "longitude": 108.263351,
+      "source_url": "https://nguhanhson.org/",
+      "description": "Quần thể núi đá với các hang động và chùa. Lối tham quan có nhiều bậc thang.",
+      "photos": [
+        {
+          "file": "9d89d7d35528ddab.jpg",
+          "caption": "Danh thắng Ngũ Hành Sơn",
+          "credit": {
+            "author": "Pauloleong2002",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Hiking_at_Marble_Mountains,_Da_Nang,_Vietnam.jpg",
+            "taken_at": "2015-08-28",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants"
+          ]
+        },
+        {
+          "file": "5d48179085409fb7.jpg",
+          "caption": "Danh thắng Ngũ Hành Sơn",
+          "credit": {
+            "author": "Dominic Nelson",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Da_Nang_-_coastal_view_from_Marble_Mountains_Mar_2024_01.jpg",
+            "taken_at": "2024-03-14",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "water",
+            "plants"
+          ]
+        },
+        {
+          "file": "fea86db8f2fd6c64.jpg",
+          "caption": "Danh thắng Ngũ Hành Sơn",
+          "credit": {
+            "author": "Kuroczynski",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Da_Nang_Marble_Mountains_2020_IMG_4008.jpg",
+            "taken_at": "2020-01-06",
+            "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+          },
+          "tags": [
+            "plants"
+          ]
+        }
+      ]
+    }
+  ]
+}

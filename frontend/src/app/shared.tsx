@@ -145,9 +145,7 @@ export function SaveButton({
         method: place.is_saved ? "DELETE" : "PUT",
       }),
     onSuccess: async () => {
-      await cache.invalidateQueries({
-        predicate: (q) => q.queryKey[0] !== "me",
-      });
+      await cache.invalidateQueries();
     },
   });
   return (
@@ -155,6 +153,7 @@ export function SaveButton({
       <Button
         variant="outline"
         aria-label={(place.is_saved ? "Bỏ lưu " : "Lưu ") + place.name}
+        aria-pressed={place.is_saved}
         disabled={mutation.isPending || me.isPending || me.isError}
         onClick={() => {
           if (!me.data) {
@@ -174,7 +173,7 @@ export function SaveButton({
           fill={place.is_saved ? "currentColor" : "none"}
           aria-hidden
         />
-        {!compact && (place.is_saved ? "Đã lưu" : "Lưu quán")}
+        {!compact && (place.is_saved ? "Đã lưu" : "Lưu địa điểm")}
       </Button>
       <ErrorText error={mutation.error || me.error} />
     </div>
@@ -256,7 +255,7 @@ export function SearchBar() {
         id="global-query"
         name="q"
         type="search"
-        placeholder="Tìm quán hoặc địa chỉ"
+        placeholder="Tìm địa điểm hoặc địa chỉ"
         defaultValue={params.get("q") || ""}
         maxLength={100}
       />
@@ -307,7 +306,7 @@ export function Filters({ compact = false }: { compact?: boolean }) {
       {compact ? (
         <>
           <input type="hidden" name="q" value={params.get("q") || ""} />
-          <nav className="category-tabs" aria-label="Loại quán">
+          <nav className="category-tabs" aria-label="Loại địa điểm">
             {[{ slug: "", name: "Tất cả" }, ...(categories.data || [])].map(
               (category) => (
                 <button
@@ -337,7 +336,7 @@ export function Filters({ compact = false }: { compact?: boolean }) {
           <span className="sr-only">Tìm tên hoặc địa chỉ</span>
           <input
             name="q"
-            placeholder="Tìm tên quán hoặc địa chỉ"
+            placeholder="Tìm tên hoặc địa chỉ"
             maxLength={100}
             defaultValue={params.get("q") ?? ""}
           />
@@ -360,7 +359,7 @@ export function Filters({ compact = false }: { compact?: boolean }) {
               />
             ) : (
               <label>
-                Loại quán
+                Loại địa điểm
                 <select
                   name="category"
                   defaultValue={params.get("category") ?? ""}
@@ -378,9 +377,35 @@ export function Filters({ compact = false }: { compact?: boolean }) {
               Sắp xếp
               <select name="sort" defaultValue={params.get("sort") ?? "recent"}>
                 <option value="recent">Mới đăng</option>
-                <option value="name">Tên quán</option>
+                <option value="name">Tên địa điểm</option>
               </select>
             </label>
+          </div>
+          {attributes.data && attributes.data.length > 0 && (
+            <fieldset className="attribute-filters">
+              <legend>Nhìn thấy trong ảnh</legend>
+              <p className="muted small">
+                Ảnh phải có tất cả đặc điểm đã chọn.
+              </p>
+              <div className="attribute-checkboxes">
+                {attributes.data.map((a) => (
+                  <label className="check-label" key={a.code}>
+                    <input
+                      type="checkbox"
+                      name="attributes"
+                      value={a.code}
+                      defaultChecked={selected.includes(a.code)}
+                    />
+                    <span>{a.display_name_vi}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
+          {attributes.data?.length === 0 && (
+            <p className="muted small">Chưa có bộ lọc đặc điểm trong ảnh.</p>
+          )}
+          <div className="filter-actions">
             <Button type="submit">Áp dụng</Button>
             <Button
               type="button"
@@ -403,43 +428,10 @@ export function Filters({ compact = false }: { compact?: boolean }) {
               Xóa bộ lọc
             </Button>
           </div>
-          {attributes.data && attributes.data.length > 0 && (
-            <details className="attribute-filter-panel">
-              <summary>
-                Lọc đặc điểm trong ảnh{" "}
-                {selected.length > 0 && (
-                  <span className="filter-number">{selected.length}</span>
-                )}
-              </summary>
-              <fieldset className="attribute-filters">
-                <legend>Chọn đặc điểm</legend>
-                <p className="muted small">
-                  Ảnh phải có tất cả đặc điểm bạn chọn.
-                </p>
-                {attributes.data.map((a) => (
-                  <label className="check-label" key={a.code}>
-                    <input
-                      type="checkbox"
-                      name="attributes"
-                      value={a.code}
-                      defaultChecked={selected.includes(a.code)}
-                    />
-                    <span>
-                      {a.display_name_vi}
-                      <small>{a.description}</small>
-                    </span>
-                  </label>
-                ))}
-              </fieldset>
-            </details>
-          )}
-          {attributes.data?.length === 0 && (
-            <p className="muted small">Chưa có bộ lọc đặc điểm trong ảnh.</p>
-          )}
         </div>
       </details>
       {selected.length > 0 && (
-        <div className="attribute-chips" aria-label="Bộ lọc đã áp dụng">
+        <div className="selected-attributes" aria-label="Bộ lọc đã áp dụng">
           {selected.map((code) => (
             <button
               type="button"
@@ -526,7 +518,7 @@ export function AuthGate({
     return (
       <section className="state">
         <h1>Cần đăng nhập</h1>
-        <p>Đăng nhập để lưu quán hoặc gửi ảnh.</p>
+        <p>Đăng nhập để lưu địa điểm hoặc gửi ảnh.</p>
         <Button asChild>
           <Link to="/login" state={{ returnTo }}>
             Đăng nhập

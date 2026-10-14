@@ -1,18 +1,27 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from apps.accounts.views import CSRFView, LoginView, LogoutView, MeView, RegisterView
+from apps.accounts.views import (
+    CSRFView,
+    LoginView,
+    LogoutView,
+    MeView,
+    RegisterView,
+    PasswordChange,
+)
 from apps.favorites.views import FavoriteDetail
 from apps.places.views import CategoryList
 
 from apps.photos import views as visual
+from .local import frontend, static_asset, health
 
 admin.site.site_header = "Quản trị Rendez"
 admin.site.site_title = "Quản trị Rendez"
 admin.site.index_title = "Quản lý nội dung"
 
 urlpatterns = [
+    path("api/v1/health/", health),
     path("api/v1/attributes/", visual.AttributeList.as_view()),
     path("api/v1/feed/", visual.Feed.as_view()),
     path("api/v1/photos/<uuid:pk>/", visual.PhotoDetail.as_view()),
@@ -39,10 +48,19 @@ urlpatterns = [
     path("api/v1/auth/login/", LoginView.as_view()),
     path("api/v1/auth/logout/", LogoutView.as_view()),
     path("api/v1/auth/me/", MeView.as_view()),
+    path("api/v1/auth/password/", PasswordChange.as_view()),
+    path("api/v1/photos/<uuid:pk>/manage/", visual.OwnPhoto.as_view()),
+    path("api/v1/photos/<uuid:pk>/comments/", visual.Comments.as_view()),
+    path("api/v1/comments/<int:pk>/", visual.DeleteComment.as_view()),
     path("api/v1/categories/", CategoryList.as_view()),
     path("api/v1/places/", visual.VisualPlaceList.as_view()),
     path("api/v1/places/map/", visual.VisualMap.as_view()),
     path("api/v1/places/<uuid:pk>/", visual.VisualPlaceDetail.as_view()),
     path("api/v1/favorites/", visual.VisualFavorites.as_view()),
     path("api/v1/favorites/<uuid:pk>/", FavoriteDetail.as_view()),
+    path("static/<path:path>", static_asset),
+    re_path(
+        r"^(?P<path>(?:(?:discover|map|saved|profile|login|register|places|photos|submissions|contributions)(?:/.*)?|assets/.*|icon\.svg|manifest\.webmanifest|))$",
+        frontend,
+    ),
 ]

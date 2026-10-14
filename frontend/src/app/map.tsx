@@ -41,7 +41,7 @@ export function MapPage() {
   const initial = {
     longitude: number(params, "lng", 108.22, -180, 180),
     latitude: number(params, "lat", 16.067, -85, 85),
-    zoom: number(params, "zoom", 14, 2, 20),
+    zoom: number(params, "zoom", 12.5, 2, 20),
   };
   const [bounds, setBounds] = useState<string | null>(null);
   const selected = params.get("selected"),
@@ -123,17 +123,17 @@ export function MapPage() {
   };
   return (
     <>
-      <h1 className="sr-only">Quán trên bản đồ</h1>
+      <h1 className="sr-only">Địa điểm trên bản đồ</h1>
       <Filters compact />
       <div className="map-context">
-        <span>Đà Nẵng · Di chuyển bản đồ để xem quán</span>
+        <span>Đà Nẵng · Di chuyển bản đồ để xem địa điểm</span>
         <Link to={"/discover?" + params.toString()}>
           Xem ảnh <ArrowUpRight size={16} aria-hidden />
         </Link>
       </div>
       {gpsError && (
         <p role="status">
-          Không lấy được vị trí của bạn. Di chuyển bản đồ để tìm quán.
+          Không lấy được vị trí của bạn. Di chuyển bản đồ để tìm địa điểm.
         </p>
       )}
       <div className="map-layout">
@@ -149,12 +149,10 @@ export function MapPage() {
               "GeolocateControl.FindMyLocation": "Vị trí của tôi",
               "GeolocateControl.LocationNotAvailable": "Không lấy được vị trí",
             }}
-            minZoom={2}
-            maxZoom={20}
-            mapStyle={
-              import.meta.env.VITE_MAP_STYLE ||
-              "https://tiles.openfreemap.org/styles/liberty"
-            }
+            minZoom={11}
+            maxBounds={[108.17, 15.955, 108.31, 16.16]}
+            maxZoom={18}
+            mapStyle="/map/style.json"
             onLoad={sync}
             onResize={sync}
             onMoveEnd={move}
@@ -169,6 +167,18 @@ export function MapPage() {
               onError={() => setGpsError(true)}
               onGeolocate={() => setGpsError(false)}
             />
+            <Marker longitude={108.226} latitude={16.08} anchor="center">
+              <span className="map-label">HẢI CHÂU</span>
+            </Marker>
+            <Marker longitude={108.262} latitude={16.082} anchor="center">
+              <span className="map-label">SƠN TRÀ</span>
+            </Marker>
+            <Marker longitude={108.272} latitude={16.041} anchor="center">
+              <span className="map-label sea-label">BIỂN ĐÔNG</span>
+            </Marker>
+            <Marker longitude={108.247} latitude={16.01} anchor="center">
+              <span className="map-label">NGŨ HÀNH SƠN</span>
+            </Marker>
             {results.data?.results.map((p) => (
               <Marker
                 key={p.id}
@@ -184,7 +194,8 @@ export function MapPage() {
                     select(p.id);
                   }}
                 >
-                  <MapPin fill="currentColor" size={34} />
+                  <MapPin fill="currentColor" size={30} />
+                  <span className="marker-name">{p.name}</span>
                 </button>
               </Marker>
             ))}
@@ -198,8 +209,8 @@ export function MapPage() {
               })
             }
           >
-            <List size={16} /> {results.data?.total_places ?? "Xem"} quán trong
-            vùng
+            <List size={16} /> {results.data?.total_places ?? "Xem"} địa điểm
+            trong vùng
           </Button>
           {tileError && (
             <div className="map-error" role="alert">
@@ -219,17 +230,19 @@ export function MapPage() {
         <aside className="map-results" ref={resultPanel}>
           <h2>
             {results.data
-              ? results.data.total_places + " quán trong vùng"
-              : "Quán trong vùng"}
+              ? results.data.total_places + " địa điểm trong vùng"
+              : "Địa điểm trong vùng"}
           </h2>
-          {results.data?.truncated && <p>Phóng to bản đồ để xem thêm quán.</p>}
+          {results.data?.truncated && (
+            <p>Phóng to bản đồ để xem thêm địa điểm.</p>
+          )}
           <State
             pending={results.isFetching}
             error={results.error}
             onRetry={() => void results.refetch()}
           />
           {results.data?.count === 0 && (
-            <p>Không có quán khớp bộ lọc trong vùng này.</p>
+            <p>Không có địa điểm khớp bộ lọc trong vùng này.</p>
           )}
           {place && (
             <article className="marker-preview">
@@ -300,5 +313,60 @@ export function MapPage() {
         </aside>
       </div>
     </>
+  );
+}
+
+export function LocationPicker({
+  value,
+  onChange,
+}: {
+  value: { latitude: number; longitude: number } | null;
+  onChange: (value: { latitude: number; longitude: number } | null) => void;
+}) {
+  return (
+    <div className="place-location">
+      <p className="muted small">
+        Chạm vào bản đồ để chọn vị trí. Bạn có thể bỏ qua nếu chưa chắc.
+      </p>
+      <div className="location-picker">
+        <Map
+          initialViewState={{
+            latitude: value?.latitude || 16.067,
+            longitude: value?.longitude || 108.225,
+            zoom: 13,
+          }}
+          minZoom={11}
+          maxZoom={18}
+          maxBounds={[108.17, 15.955, 108.31, 16.16]}
+          mapStyle="/map/style.json"
+          onClick={(event) =>
+            onChange({
+              latitude: Number(event.lngLat.lat.toFixed(6)),
+              longitude: Number(event.lngLat.lng.toFixed(6)),
+            })
+          }
+          attributionControl={{ compact: true }}
+        >
+          <NavigationControl position="top-right" />
+          {value && (
+            <Marker latitude={value.latitude} longitude={value.longitude}>
+              <MapPin size={32} fill="#285548" color="#285548" />
+            </Marker>
+          )}
+        </Map>
+      </div>
+      {value && (
+        <div className="small">
+          <span className="success">Đã chọn vị trí trên bản đồ.</span>
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => onChange(null)}
+          >
+            Bỏ vị trí đã chọn
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

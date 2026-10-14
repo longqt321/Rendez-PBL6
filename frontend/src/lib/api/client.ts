@@ -38,12 +38,18 @@ export async function api<T>(
   if (options.body && !(options.body instanceof FormData))
     headers.set("Content-Type", "application/json");
   if (csrfToken) headers.set("X-CSRFToken", csrfToken);
+  const timeout = AbortSignal.timeout(20_000);
   const response = await fetch("/api/v1/" + path, {
     ...options,
+    signal: options.signal
+      ? AbortSignal.any([options.signal, timeout])
+      : timeout,
     headers,
     credentials: "same-origin",
   });
   if (!response.ok) {
+    if (response.status === 401 && !path.startsWith("auth/"))
+      window.dispatchEvent(new Event("rendez:session-expired"));
     const error = await response
       .json()
       .catch(() => ({ message: "Không tải được nội dung." }));

@@ -29,6 +29,7 @@ import type {
   VisualDetail,
   VisualPlace,
 } from "../lib/api/visual";
+import { PhotoCredit, ShareButton, OwnPhotoControls, Comments } from "./social";
 import { MasonryFeed } from "./masonry";
 import { Button } from "../components/ui/button";
 import {
@@ -126,7 +127,7 @@ export function Discover({ saved = false }: { saved?: boolean }) {
     return (
       <section className="state">
         <h1>Đã lưu</h1>
-        <p>Đăng nhập để xem quán đã lưu.</p>
+        <p>Đăng nhập để xem địa điểm đã lưu.</p>
         <Button asChild>
           <Link to="/login" state={{ returnTo: "/saved" }}>
             Đăng nhập
@@ -139,13 +140,60 @@ export function Discover({ saved = false }: { saved?: boolean }) {
       {saved ? (
         <header className="page-heading saved-heading">
           <div>
-            <h1>Quán đã lưu</h1>
-            <p className="muted">Xem lại địa chỉ và ảnh của quán đã lưu.</p>
+            <h1>Nơi bạn muốn ghé</h1>
+            <p className="muted">Các địa điểm bạn đã lưu, ở cùng một chỗ.</p>
           </div>
         </header>
       ) : (
         <>
-          <h1 className="sr-only">Khám phá quán ở Đà Nẵng qua ảnh</h1>
+          <header className="discovery-intro">
+            <div>
+              <span className="eyebrow">THÀNH PHỐ BÊN SÔNG HÀN</span>
+              <h1>
+                Khám phá Đà Nẵng<span className="brand-dot">.</span>
+              </h1>
+              <p className="muted">Chọn một góc nhìn. Lưu một nơi muốn ghé.</p>
+            </div>
+            <Link className="intro-map-link" to="/map">
+              <MapPin size={18} aria-hidden />
+              Mở bản đồ
+              <ArrowUpRight size={16} aria-hidden />
+            </Link>
+          </header>
+          {!query && (
+            <div className="discovery-picks" aria-label="Khám phá theo chủ đề">
+              <Link to="/discover?category=cafe">
+                <img
+                  src="/photos/danang-cafe.jpg"
+                  alt="Không gian Oxy Garden Coffee"
+                />
+                <span>
+                  <small>DỪNG LẠI MỘT CHÚT</small>
+                  <strong>Một buổi cà phê</strong>
+                </span>
+                <ArrowUpRight size={20} aria-hidden />
+              </Link>
+              <Link to="/discover?category=riverside">
+                <img
+                  src="/photos/danang-river.jpg"
+                  alt="Cầu Rồng bên sông Hàn"
+                />
+                <span>
+                  <small>DỌC HAI BỜ</small>
+                  <strong>Đi một vòng sông Hàn</strong>
+                </span>
+                <ArrowUpRight size={20} aria-hidden />
+              </Link>
+              <Link to="/discover?category=beach">
+                <img src="/photos/danang-beach.jpg" alt="Bãi biển Mỹ Khê" />
+                <span>
+                  <small>PHÍA CÓ BIỂN</small>
+                  <strong>Ra biển thôi</strong>
+                </span>
+                <ArrowUpRight size={20} aria-hidden />
+              </Link>
+            </div>
+          )}
           {!(
             result.isError &&
             !result.data &&
@@ -160,7 +208,7 @@ export function Discover({ saved = false }: { saved?: boolean }) {
         empty={
           items?.length === 0
             ? saved
-              ? "Bạn chưa lưu quán nào"
+              ? "Bạn chưa lưu địa điểm nào"
               : params.get("attributes")
                 ? "Không có ảnh khớp tất cả đặc điểm đã chọn"
                 : "Không tìm thấy ảnh phù hợp"
@@ -171,9 +219,9 @@ export function Discover({ saved = false }: { saved?: boolean }) {
         <>
           <div className="feed-context">
             <p className="result-count">
-              {count} {saved ? "quán đã lưu" : "ảnh · Đà Nẵng"}
+              {count} {saved ? "địa điểm đã lưu" : "ảnh · Đà Nẵng"}
             </p>
-            {!saved && <span>Ảnh từ cộng đồng</span>}
+            {!saved && <span>Ảnh tư liệu & cộng đồng</span>}
           </div>
           <FeedLayout className={saved ? "place-grid" : "pin-feed"}>
             {saved
@@ -200,6 +248,9 @@ export function Discover({ saved = false }: { saved?: boolean }) {
                         </Link>
                       </div>
                       <div className="card-copy">
+                        <span className="pin-category">
+                          {place.category.name}
+                        </span>
                         <Link
                           to={"/places/" + place.id + location.search}
                           state={{
@@ -209,7 +260,10 @@ export function Discover({ saved = false }: { saved?: boolean }) {
                         >
                           <h2>{place.name}</h2>
                         </Link>
-                        <p className="muted small">{place.address}</p>
+                        <p className="muted small">
+                          <MapPin size={12} aria-hidden />
+                          {place.address}
+                        </p>
                         {photo.matched_attribute_codes.length > 0 && (
                           <p className="small">Đặc điểm khớp bộ lọc:</p>
                         )}
@@ -250,7 +304,7 @@ export function Discover({ saved = false }: { saved?: boolean }) {
               {feed.isFetchNextPageError && <ErrorText error={feed.error} />}
               {!feed.hasNextPage && photos.length > 0 && (
                 <p className="muted">
-                  Đã hết ảnh. Chọn loại quán khác hoặc đổi bộ lọc.
+                  Đã hết ảnh. Chọn loại địa điểm khác hoặc đổi bộ lọc.
                 </p>
               )}
             </div>
@@ -329,7 +383,9 @@ function ReportButton({ kind, id }: { kind: "photos" | "places"; id: string }) {
             <label>
               Lý do
               <select name="reason">
-                <option value="wrong_place">Sai quán hoặc sai thông tin</option>
+                <option value="wrong_place">
+                  Sai địa điểm hoặc sai thông tin
+                </option>
                 <option value="privacy">Xâm phạm quyền riêng tư</option>
                 <option value="copyright">Vi phạm quyền sử dụng ảnh</option>
                 <option value="unsafe">Nội dung không phù hợp</option>
@@ -500,34 +556,42 @@ export function PlaceDetailPage() {
                 </a>
               </Button>
             )}
+            {place.latitude !== null && place.longitude !== null && (
+              <Button asChild variant="outline">
+                <Link to={"/map?" + mapLocationQuery("", place)}>
+                  <MapPin size={16} aria-hidden />
+                  Xem trên bản đồ
+                </Link>
+              </Button>
+            )}
+            <ShareButton />
             <Button asChild>
-              <Link to={"/submissions/new?place=" + place.id}>
-                Đóng góp ảnh
-              </Link>
+              <Link to={"/submissions/new?place=" + place.id}>Đăng ảnh</Link>
             </Button>
           </div>
         </div>
         <Cover place={place} className="detail-cover" />
       </header>
-      <section className="panel">
-        <h2>Đặc điểm xuất hiện trong ảnh</h2>
-        <p className="muted small">
-          Các đặc điểm này xuất hiện trong ảnh, không phải ở mọi khu vực của
-          quán.
-        </p>
-        <div className="attribute-chips">
-          {place.attribute_evidence.map((e) => (
-            <Link
-              className="attribute-chip"
-              key={e.attribute.code}
-              to={"/photos/" + e.photo_ids[0]}
-            >
-              {e.attribute.display_name_vi}
-            </Link>
-          ))}
-        </div>
-        {!place.attribute_evidence.length && <p>Chưa có đặc điểm.</p>}
-      </section>
+      {place.attribute_evidence.length > 0 && (
+        <section className="panel">
+          <h2>Nhìn thấy trong ảnh</h2>
+          <p className="muted small">
+            Các đặc điểm này xuất hiện trong ảnh, không phải ở mọi khu vực của
+            quán.
+          </p>
+          <div className="attribute-chips">
+            {place.attribute_evidence.map((e) => (
+              <Link
+                className="attribute-chip"
+                key={e.attribute.code}
+                to={"/photos/" + e.photo_ids[0]}
+              >
+                {e.attribute.display_name_vi}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
       <section className="panel">
         <div className="page-heading">
           <h2>
@@ -545,7 +609,7 @@ export function PlaceDetailPage() {
         />
       </section>
       <section className="panel">
-        <h2>Thông tin quán</h2>
+        <h2>Thông tin địa điểm</h2>
         {place.description && <p>{place.description}</p>}
         <p>{place.address}</p>
         <p>
@@ -561,6 +625,18 @@ export function PlaceDetailPage() {
         )}
         {place.latitude === null && (
           <p className="muted">Chưa có vị trí chính xác trên bản đồ.</p>
+        )}
+        {place.source_url && (
+          <p className="source-note">
+            <a
+              href={place.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Nguồn thông tin <ArrowUpRight size={14} aria-hidden />
+            </a>
+            {place.verified_at && ` · Đối chiếu ${date(place.verified_at)}`}
+          </p>
         )}
         <ReportButton kind="places" id={place.id} />
       </section>
@@ -646,22 +722,25 @@ export function PhotoDetailPage() {
           <p className="viewer-address">
             <MapPin size={16} /> {photo.place.address}
           </p>
-          <h2 className="viewer-section-title">Đặc điểm trong ảnh</h2>
+          <PhotoCredit photo={photo} />
+          {photo.attributes.length > 0 && (
+            <h2 className="viewer-section-title">Nhìn thấy trong ảnh</h2>
+          )}
           <AttributeChips
             attributes={photo.attributes}
             matched={photo.matched_attribute_codes}
           />
-          {!photo.attributes.length && <p>Chưa có đặc điểm.</p>}
-          <p className="muted small">
-            Các đặc điểm chỉ mô tả ảnh này, không phải toàn bộ quán.
-          </p>
+
           {photo.published_at && (
             <p className="muted small">Ngày đăng: {date(photo.published_at)}</p>
           )}
           <div className="detail-actions">
             <SaveButton place={photo.place} />
+            <ShareButton />
             <ReportButton kind="photos" id={photo.id} />
           </div>
+          <OwnPhotoControls photo={photo} />
+          <Comments key={photo.id} photoId={photo.id} />
         </div>
       </section>
     </>

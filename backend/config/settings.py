@@ -77,8 +77,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_ROOT = Path(os.environ.get("PRIVATE_MEDIA_ROOT", BASE_DIR / ".private-media"))
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = os.environ.get("DJANGO_HTTPS", "0") == "1"
+CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
 SESSION_COOKIE_SAMESITE = "Lax"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 DATA_UPLOAD_MAX_MEMORY_SIZE = 55 * 1024 * 1024
@@ -96,6 +96,8 @@ REST_FRAMEWORK = {
         "register": "10/min",
         "upload": "10/min",
         "report": "10/min",
+        "comment": "30/min",
+        "password": "5/min",
     },
 }
 SPECTACULAR_SETTINGS = {

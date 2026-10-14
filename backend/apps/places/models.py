@@ -32,6 +32,8 @@ class Place(models.Model):
     is_demo = models.BooleanField(default=False)
     description = models.TextField(blank=True, max_length=2000)
     address = models.CharField(max_length=500)
+    source_url = models.URLField(max_length=1000, blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     latitude = models.DecimalField(
         max_digits=9,

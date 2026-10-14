@@ -86,6 +86,52 @@ paths:
               schema:
                 $ref: '#/components/schemas/Profile'
           description: ''
+    patch:
+      operationId: auth_me_partial_update
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileUpdateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/v1/auth/password/:
+    post:
+      operationId: auth_password_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/auth/register/:
     post:
       operationId: auth_register_create
@@ -129,6 +175,22 @@ paths:
                 items:
                   $ref: '#/components/schemas/Category'
           description: ''
+  /api/v1/comments/{id}/:
+    delete:
+      operationId: comments_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - comments
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/favorites/:
     get:
       operationId: favorites_list
@@ -351,6 +413,119 @@ paths:
               schema:
                 $ref: '#/components/schemas/PhotoDetail'
           description: ''
+  /api/v1/photos/{id}/comments/:
+    get:
+      operationId: photos_comments_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - photos
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPhotoCommentList'
+          description: ''
+    post:
+      operationId: photos_comments_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhotoCommentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PhotoCommentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PhotoCommentRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoComment'
+          description: ''
+  /api/v1/photos/{id}/manage/:
+    patch:
+      operationId: photos_manage_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCaptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCaptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCaptionRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicPhoto'
+          description: ''
+    delete:
+      operationId: photos_manage_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photos
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/photos/{id}/report/:
     post:
       operationId: photos_report_create
@@ -863,6 +1038,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FeedItem'
+    PaginatedPhotoCommentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhotoComment'
     PaginatedPhotoSubmissionList:
       type: object
       required:
@@ -932,6 +1130,69 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VisualPlace'
+    PasswordChangeRequest:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 4096
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 4096
+      required:
+      - current_password
+      - new_password
+    PatchedCaptionRequest:
+      type: object
+      properties:
+        caption:
+          type: string
+          maxLength: 1000
+    PatchedProfileUpdateRequest:
+      type: object
+      properties:
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+    PhotoComment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        body:
+          type: string
+          maxLength: 1000
+        author_name:
+          type: string
+          readOnly: true
+        is_owner:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - author_name
+      - body
+      - created_at
+      - id
+      - is_owner
+    PhotoCommentRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 1000
+      required:
+      - body
     PhotoDetail:
       type: object
       properties:
@@ -971,6 +1232,14 @@ components:
           items:
             type: string
           readOnly: true
+        author_name:
+          type: string
+          readOnly: true
+        is_owner:
+          type: boolean
+          readOnly: true
+        attribution:
+          readOnly: true
         place:
           allOf:
           - $ref: '#/components/schemas/VisualPlace'
@@ -978,9 +1247,12 @@ components:
       required:
       - alt_text
       - attributes
+      - attribution
+      - author_name
       - caption
       - height
       - id
+      - is_owner
       - matched_attribute_codes
       - place
       - place_id
@@ -1106,10 +1378,18 @@ components:
           type: boolean
           title: Tình trạng nhân viên
           description: Chỉ định người dùng nào được phép truy cập vào trang admin.
+        saved_count:
+          type: integer
+          readOnly: true
+        photo_count:
+          type: integer
+          readOnly: true
       required:
       - display_name
       - email
       - id
+      - photo_count
+      - saved_count
     PublicPhoto:
       type: object
       properties:
@@ -1149,12 +1429,23 @@ components:
           items:
             type: string
           readOnly: true
+        author_name:
+          type: string
+          readOnly: true
+        is_owner:
+          type: boolean
+          readOnly: true
+        attribution:
+          readOnly: true
       required:
       - alt_text
       - attributes
+      - attribution
+      - author_name
       - caption
       - height
       - id
+      - is_owner
       - matched_attribute_codes
       - place_id
       - published_at
@@ -1281,6 +1572,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AttributeEvidence'
+        source_url:
+          type: string
+          format: uri
+        verified_at:
+          type: string
+          format: date-time
+          nullable: true
       required:
       - address
       - attribute_evidence
@@ -1294,7 +1592,9 @@ components:
       - name
       - opening_hours
       - photos
+      - source_url
       - supporting_photo
+      - verified_at
     VisualMap:
       type: object
       properties:

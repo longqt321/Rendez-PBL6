@@ -20,3 +20,6 @@ research/data/
 docs/screenshots*/
 docs/*tests.xml
 docs/feedback-fix/
+
+# Local services, credentials, backups and verification outputs
+.local/

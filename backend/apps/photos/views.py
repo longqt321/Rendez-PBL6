@@ -1,6 +1,7 @@
 import math
+import unicodedata
 from django.conf import settings
-from django.db.models import BooleanField, Exists, OuterRef, Q, Subquery, Value
+from django.db.models import BooleanField, Exists, OuterRef, Subquery, Value
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -17,11 +18,14 @@ from .models import (
     PhotoAsset,
     PhotoAttribute,
     PhotoSubmission,
+    PhotoComment,
     VisualAttribute,
     public_photos,
 )
 from .serializers import (
     ContentReportSerializer,
+    CaptionSerializer,
+    PhotoCommentSerializer,
     FeedItemSerializer,
     PhotoDetailSerializer,
     PhotoSubmissionSerializer,
@@ -32,7 +36,7 @@ from .serializers import (
     VisualMapSerializer,
     VisualPlaceSerializer,
 )
-from .services import submit
+from .services import submit, owner_edit_photo
 
 FILTERS = [
     OpenApiParameter("q", str),
@@ -83,7 +87,21 @@ def visual_places(request, codes):
     if len(q) > 100:
         raise serializers.ValidationError({"q": ["Từ khóa tìm kiếm tối đa 100 ký tự."]})
     if q:
-        places = places.filter(Q(name__icontains=q) | Q(address__icontains=q))
+
+        def fold(value):
+            return "".join(
+                c
+                for c in unicodedata.normalize("NFD", value.casefold().replace("đ", "d"))
+                if not unicodedata.combining(c)
+            )
+
+        words = fold(q).split()
+        ids = [
+            row[0]
+            for row in places.values_list("id", "name", "address", "description")
+            if all(word in fold(" ".join(row[1:])) for word in words)
+        ]
+        places = places.filter(pk__in=ids)
     category = request.query_params.get("category")
     if category:
         if not Category.objects.filter(slug=category, is_active=True).exists():
@@ -98,7 +116,9 @@ def visual_places(request, codes):
 
 
 def photo_queryset(query):
-    return query.select_related("asset", "place__category").prefetch_related("attributes")
+    return query.select_related(
+        "asset__submission__submitted_by", "place__category"
+    ).prefetch_related("attributes")
 
 
 def place_context(rows, request, codes):
@@ -232,7 +252,7 @@ class Gallery(generics.ListAPIView):
         photos = photo_queryset(matching_photos(codes).filter(place_id=kwargs["pk"]))
         page = self.paginate_queryset(photos)
         return self.get_paginated_response(
-            self.get_serializer(page, many=True, context={"codes": codes}).data
+            self.get_serializer(page, many=True, context={"codes": codes, "request": request}).data
         )
 
 
@@ -284,6 +304,8 @@ class VisualPlaceDetail(APIView):
             {
                 **data,
                 "description": place.description,
+                "source_url": place.source_url,
+                "verified_at": place.verified_at,
                 "opening_hours": hours,
                 "photos": gallery,
                 "attribute_evidence": list(evidence.values()),
@@ -406,3 +428,45 @@ def media(request, pk, private=False, original=False):
         return response
     except FileNotFoundError:
         raise Http404
+
+
+class OwnPhoto(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=CaptionSerializer, responses=PublicPhotoSerializer)
+    def patch(self, request, pk):
+        values = CaptionSerializer(data=request.data)
+        values.is_valid(raise_exception=True)
+        photo = owner_edit_photo(pk, request.user, caption=values.validated_data["caption"])
+        return Response(PublicPhotoSerializer(photo, context={"request": request}).data)
+
+    @extend_schema(responses={204: None})
+    def delete(self, request, pk):
+        owner_edit_photo(pk, request.user, withdraw=True)
+        return Response(status=204)
+
+
+class Comments(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PhotoCommentSerializer
+    throttle_scope = "comment"
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return PhotoComment.objects.none()
+        self.photo = get_object_or_404(public_photos(), pk=self.kwargs["pk"])
+        return self.photo.comments.select_related("user")
+
+    def perform_create(self, serializer):
+        photo = get_object_or_404(public_photos(), pk=self.kwargs["pk"])
+        serializer.save(photo=photo, user=self.request.user)
+
+
+class DeleteComment(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PhotoCommentSerializer
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return PhotoComment.objects.none()
+        return PhotoComment.objects.filter(user=self.request.user)

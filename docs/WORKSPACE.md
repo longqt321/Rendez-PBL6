@@ -1,27 +1,20 @@
 # Workspace
 
-Dự án chạy từ `rendez-web/`. Frontend và backend nằm trong các thư mục cùng cấp. Dịch vụ ML và pipeline nghiên cứu đã được gỡ theo phạm vi phiên bản hiện tại. Hướng dẫn cài đặt và chạy nằm trong [README](../README.md).
+Mọi mã nguồn, dữ liệu nguồn và scripts nằm tại gốc `rendez-web`:
 
-## Cấu hình được giữ
+```text
+frontend/       React, TypeScript, ảnh chủ đề và bản đồ local
+backend/        Django, API, migrations, quản trị và tests
+data/           manifest, JPEG thật và nguồn/giấy phép
+docs/           hướng dẫn, checklist và kết quả kiểm chứng
+scripts/        setup/start/stop/check/backup/restore
+.local/         PostgreSQL, media, secrets, logs, backup; không commit
+```
 
-- `.env` và `.env.example` nằm ở gốc. Vite đọc biến môi trường từ thư mục cha của `frontend`.
-- Frontend dùng cổng 5173, proxy API/Admin/media sang backend ở cổng 8000.
-- Makefile và CI dùng đường dẫn tương đối từ gốc workspace.
-- `compose.yaml` giữ tên project `rendez-v2-specs` để tiếp tục dùng nhận diện container và volume hiện có. Đây là tên hạ tầng, không phải thư mục mã nguồn.
-- Caddy vẫn nhận đường dẫn build/static qua biến môi trường. Nếu cấu hình triển khai bên ngoài trỏ tới thư mục cũ, cập nhật `RENDEZ_FRONTEND_ROOT` thành đường dẫn `frontend/dist` mới và `RENDEZ_STATIC_ROOT` thành `backend/staticfiles` mới.
+`compose.local.yaml` dùng PostgreSQL riêng ở 55433, bind mount trong workspace. `compose.yaml` cũ giữ nguyên để không đổi nhận diện container/volume đang có. Database/media cũ được giữ; cấu hình local mới nằm ở `.local/runtime.env`, được scripts nạp trước khi chạy.
 
-## Dọn dẹp
+`make setup`, `make start` chạy bản build ở 8080. `make backend`, `make frontend` phục vụ phát triển ở 8000/5173. Không triển khai cloud. Caddyfile cũ được giữ nhưng bản local không cần Caddy.
 
-Đã gỡ specs v2/v3, kế hoạch triển khai cũ, bộ mockup, ZIP, ảnh chụp giao diện và báo cáo kiểm thử cũ. Giữ mã nguồn, migration, kiểm thử hiện hành, OpenAPI, lockfiles và cấu hình. Media cục bộ không thuộc bộ ảnh thiết kế cũ và được giữ nguyên.
+`.gitignore` bỏ secrets/runtime/dependencies/artifacts khỏi Git. `.ignore` bỏ thư mục lớn khỏi tìm kiếm bằng rg. Mỗi module được kiểm tra sau khi hoàn thành; kết quả/log nằm trong `.local/logs`, ảnh kiểm chứng ở `.local/screenshots`. Không đưa ảnh kiểm chứng vào dữ liệu sản phẩm.
 
-Ảnh/báo cáo kiểm thử được sinh lại khi chạy kiểm thử; không dùng chúng làm tài liệu nguồn. Các đường dẫn artifact được loại khỏi Git.
-
-## Kiểm tra sau chuyển thư mục
-
-- TypeScript, ESLint, Prettier, 6 kiểm thử frontend và production build: đạt.
-- Ruff lint/format, cú pháp Python, Django system check và 3 kiểm thử nội dung không dùng database: đạt.
-- Playwright: luồng nối trang ảnh, thử lại trang lỗi, đổi danh mục và giữ truy vấn khi chuyển sang bản đồ đạt với API giả lập.
-- Docker Compose: kiểm tra cú pháp cấu hình đạt; không khởi động container.
-- Git nhận `rendez-web` là gốc repo. README không còn liên kết nội bộ bị thiếu.
-
-Không chạy migration, seed, kiểm thử cần PostgreSQL hoặc các luồng E2E ghi dữ liệu trong lần dọn dẹp này. Chưa xác minh triển khai production hay cấu hình đường dẫn bên ngoài repo. Build vẫn có cảnh báo chunk MapLibre lớn và annotation của Zod.
+Xem [README](../README.md) để chạy và [LOCAL-RELEASE](LOCAL-RELEASE.md) để biết phạm vi đã kiểm chứng.

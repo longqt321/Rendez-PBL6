@@ -81,6 +81,22 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
+        patch: operations["auth_me_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/auth/password/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["auth_password_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
         trace?: never;
     };
@@ -111,6 +127,22 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comments/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["comments_destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -210,6 +242,38 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photos/{id}/comments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["photos_comments_list"];
+        put?: never;
+        post: operations["photos_comments_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photos/{id}/manage/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["photos_manage_destroy"];
+        options?: never;
+        head?: never;
+        patch: operations["photos_manage_partial_update"];
         trace?: never;
     };
     "/api/v1/photos/{id}/report/": {
@@ -402,6 +466,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["FeedItem"][];
         };
+        PaginatedPhotoCommentList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["PhotoComment"][];
+        };
         PaginatedPhotoSubmissionList: {
             /** @example 123 */
             count: number;
@@ -447,6 +526,27 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["VisualPlace"][];
         };
+        PasswordChangeRequest: {
+            current_password: string;
+            new_password: string;
+        };
+        PatchedCaptionRequest: {
+            caption?: string;
+        };
+        PatchedProfileUpdateRequest: {
+            display_name?: string;
+        };
+        PhotoComment: {
+            readonly id: number;
+            body: string;
+            readonly author_name: string;
+            readonly is_owner: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        PhotoCommentRequest: {
+            body: string;
+        };
         PhotoDetail: {
             /** Format: uuid */
             readonly id: string;
@@ -461,6 +561,9 @@ export interface components {
             readonly published_at: string | null;
             readonly attributes: components["schemas"]["VisualAttribute"][];
             readonly matched_attribute_codes: string[];
+            readonly author_name: string;
+            readonly is_owner: boolean;
+            readonly attribution: unknown;
             readonly place: components["schemas"]["VisualPlace"];
         };
         /**
@@ -511,6 +614,8 @@ export interface components {
              * @description Chỉ định người dùng nào được phép truy cập vào trang admin.
              */
             is_staff?: boolean;
+            readonly saved_count: number;
+            readonly photo_count: number;
         };
         PublicPhoto: {
             /** Format: uuid */
@@ -526,6 +631,9 @@ export interface components {
             readonly published_at: string | null;
             readonly attributes: components["schemas"]["VisualAttribute"][];
             readonly matched_attribute_codes: string[];
+            readonly author_name: string;
+            readonly is_owner: boolean;
+            readonly attribution: unknown;
         };
         /**
          * @description * `wrong_place` - Sai thông tin
@@ -571,6 +679,10 @@ export interface components {
             opening_hours: components["schemas"]["OpeningHours"] | null;
             photos: components["schemas"]["GalleryPage"];
             attribute_evidence: components["schemas"]["AttributeEvidence"][];
+            /** Format: uri */
+            source_url: string;
+            /** Format: date-time */
+            verified_at: string | null;
         };
         VisualMap: {
             count: number;
@@ -703,6 +815,55 @@ export interface operations {
             };
         };
     };
+    auth_me_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedProfileUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedProfileUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedProfileUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Profile"];
+                };
+            };
+        };
+    };
+    auth_password_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordChangeRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PasswordChangeRequest"];
+                "multipart/form-data": components["schemas"]["PasswordChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     auth_register_create: {
         parameters: {
             query?: never;
@@ -744,6 +905,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Category"][];
                 };
+            };
+        };
+    };
+    comments_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -935,6 +1116,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PhotoDetail"];
+                };
+            };
+        };
+    };
+    photos_comments_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPhotoCommentList"];
+                };
+            };
+        };
+    };
+    photos_comments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoCommentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PhotoCommentRequest"];
+                "multipart/form-data": components["schemas"]["PhotoCommentRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoComment"];
+                };
+            };
+        };
+    };
+    photos_manage_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    photos_manage_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedCaptionRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCaptionRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCaptionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicPhoto"];
                 };
             };
         };

@@ -178,6 +178,7 @@ class PlacePhoto(models.Model):
     is_cover = models.BooleanField(default=False)
     caption = models.TextField(blank=True, max_length=1000)
     alt_text = models.CharField(max_length=200, blank=True)
+    attribution = models.JSONField(default=dict, blank=True)
     published_at = models.DateTimeField(null=True, blank=True)
     withdrawn_at = models.DateTimeField(null=True, blank=True)
     attributes = models.ManyToManyField(VisualAttribute, through="PhotoAttribute")
@@ -264,3 +265,13 @@ def public_photos():
         place__deleted_at__isnull=True,
     )
     return query if settings.DEBUG else query.filter(place__is_demo=False)
+
+
+class PhotoComment(models.Model):
+    photo = models.ForeignKey(PlacePhoto, on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    body = models.TextField(max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at", "-id")

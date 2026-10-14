@@ -2,7 +2,14 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from apps.places.models import Category, Place, public_places
 from apps.places.serializers import CategorySerializer
-from .models import ContentReport, PhotoAsset, PhotoSubmission, PlacePhoto, VisualAttribute
+from .models import (
+    ContentReport,
+    PhotoAsset,
+    PhotoSubmission,
+    PlacePhoto,
+    VisualAttribute,
+    PhotoComment,
+)
 
 
 class VisualAttributeSerializer(serializers.ModelSerializer):
@@ -19,6 +26,10 @@ class PublicPhotoSerializer(serializers.ModelSerializer):
     height = serializers.IntegerField(source="asset.height")
     attributes = serializers.SerializerMethodField()
     matched_attribute_codes = serializers.SerializerMethodField()
+    author_name = serializers.CharField(
+        source="asset.submission.submitted_by.display_name", read_only=True
+    )
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = PlacePhoto
@@ -33,9 +44,16 @@ class PublicPhotoSerializer(serializers.ModelSerializer):
             "published_at",
             "attributes",
             "matched_attribute_codes",
+            "author_name",
+            "is_owner",
+            "attribution",
         )
 
         read_only_fields = fields
+
+    def get_is_owner(self, obj) -> bool:
+        request = self.context.get("request")
+        return bool(request and request.user.pk == obj.asset.submission.submitted_by_id)
 
     def get_url(self, obj) -> str:
         return f"/public-photo-media/{obj.id}/"
@@ -124,6 +142,8 @@ class VisualDetailSerializer(VisualPlaceSerializer):
     opening_hours = OpeningHoursSerializer(allow_null=True)
     photos = GalleryPageSerializer()
     attribute_evidence = AttributeEvidenceSerializer(many=True)
+    source_url = serializers.URLField(allow_blank=True)
+    verified_at = serializers.DateTimeField(allow_null=True)
 
     class Meta(VisualPlaceSerializer.Meta):
         fields = VisualPlaceSerializer.Meta.fields + (
@@ -131,6 +151,8 @@ class VisualDetailSerializer(VisualPlaceSerializer):
             "opening_hours",
             "photos",
             "attribute_evidence",
+            "source_url",
+            "verified_at",
         )
 
 
@@ -242,3 +264,20 @@ class ContentReportSerializer(serializers.ModelSerializer):
         model = ContentReport
         fields = ("id", "reason", "note", "status", "created_at")
         read_only_fields = ("id", "status", "created_at")
+
+
+class CaptionSerializer(serializers.Serializer):
+    caption = serializers.CharField(max_length=1000, allow_blank=True)
+
+
+class PhotoCommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source="user.display_name", read_only=True)
+    is_owner = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PhotoComment
+        fields = ("id", "body", "author_name", "is_owner", "created_at")
+        read_only_fields = ("id", "author_name", "is_owner", "created_at")
+
+    def get_is_owner(self, obj) -> bool:
+        return obj.user_id == self.context["request"].user.pk

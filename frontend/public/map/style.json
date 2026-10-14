@@ -1,0 +1,146 @@
+{
+  "version": 8,
+  "name": "Đà Nẵng · Rendez local",
+  "sources": {
+    "danang": {
+      "type": "geojson",
+      "data": "/map/region.geojson",
+      "attribution": "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap contributors</a> · ODbL"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#f3f0e8"
+      }
+    },
+    {
+      "id": "parks",
+      "type": "fill",
+      "source": "danang",
+      "filter": [
+        "all",
+        ["==", ["get", "kind"], "park"],
+        ["==", ["geometry-type"], "Polygon"]
+      ],
+      "paint": {
+        "fill-color": "#d8e6ce",
+        "fill-opacity": 0.8
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "danang",
+      "filter": [
+        "all",
+        ["==", ["get", "kind"], "water"],
+        ["==", ["geometry-type"], "Polygon"]
+      ],
+      "paint": {
+        "fill-color": "#b9dbe0"
+      }
+    },
+    {
+      "id": "coast",
+      "type": "line",
+      "source": "danang",
+      "filter": ["==", ["get", "kind"], "coast"],
+      "paint": {
+        "line-color": "#91bbc4",
+        "line-width": 1.2
+      }
+    },
+    {
+      "id": "road-outline",
+      "type": "line",
+      "source": "danang",
+      "filter": ["==", ["get", "kind"], "road"],
+      "paint": {
+        "line-color": "#ddd6c8",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          11,
+          0.8,
+          14,
+          3,
+          17,
+          12
+        ]
+      }
+    },
+    {
+      "id": "roads",
+      "type": "line",
+      "source": "danang",
+      "filter": ["==", ["get", "kind"], "road"],
+      "paint": {
+        "line-color": "#fffdf8",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          11,
+          0.4,
+          14,
+          2,
+          17,
+          10
+        ]
+      }
+    },
+    {
+      "id": "major-roads",
+      "type": "line",
+      "source": "danang",
+      "filter": [
+        "in",
+        ["get", "class"],
+        ["literal", ["primary", "secondary", "trunk"]]
+      ],
+      "paint": {
+        "line-color": "#e9cf99",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          11,
+          0.8,
+          14,
+          2,
+          17,
+          7
+        ]
+      }
+    },
+    {
+      "id": "street-names",
+      "type": "symbol",
+      "source": "danang",
+      "minzoom": 13,
+      "filter": [
+        "all",
+        ["==", ["get", "kind"], "road"],
+        ["!=", ["get", "name"], ""]
+      ],
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": 11,
+        "text-max-angle": 30,
+        "symbol-spacing": 350
+      },
+      "paint": {
+        "text-color": "#607565",
+        "text-halo-color": "#fffdf6",
+        "text-halo-width": 1.5
+      }
+    }
+  ],
+  "glyphs": "/map/glyphs/{fontstack}/{range}.pbf"
+}

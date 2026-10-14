@@ -1,4 +1,12 @@
-import { Compass, Map as MapIcon, Bookmark, User, Plus } from "lucide-react";
+import {
+  Compass,
+  Map as MapIcon,
+  Bookmark,
+  User,
+  Plus,
+  MapPin,
+  Camera,
+} from "lucide-react";
 import {
   Link,
   NavLink,
@@ -12,7 +20,7 @@ import { discoveryQuery } from "../lib/api/client";
 import { SearchBar, State, useMe } from "./shared";
 import { Auth, ProfilePage } from "./auth";
 import { Discover, PlaceDetailPage, PhotoDetailPage } from "./discovery";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 const MapPage = lazy(() =>
   import("./map").then((module) => ({ default: module.MapPage })),
 );
@@ -44,6 +52,26 @@ export function RequireLogin() {
 function Shell() {
   const location = useLocation();
   const me = useMe();
+  const previousPath = useRef(location.pathname);
+  useEffect(() => {
+    const title =
+      location.pathname === "/discover"
+        ? "Khám phá Đà Nẵng"
+        : location.pathname === "/map"
+          ? "Bản đồ Đà Nẵng"
+          : location.pathname === "/saved"
+            ? "Địa điểm đã lưu"
+            : location.pathname === "/profile"
+              ? "Tài khoản"
+              : location.pathname.startsWith("/submissions")
+                ? "Ảnh của tôi"
+                : "Địa điểm & ảnh";
+    document.title = title + " · Rendez";
+    if (previousPath.current !== location.pathname) {
+      document.getElementById("main")?.focus({ preventScroll: true });
+      previousPath.current = location.pathname;
+    }
+  }, [location.pathname]);
   const shared = discoveryQuery(new URLSearchParams(location.search));
   shared.delete("page");
   const params = new URLSearchParams(location.search);
@@ -76,6 +104,7 @@ function Shell() {
           title="Rendez"
         >
           r<span className="brand-dot">.</span>
+          <span className="brand-word">rendez</span>
         </Link>
         <nav aria-label="Điều hướng chính">
           {nav.map(([to, label, Icon]) => (
@@ -94,10 +123,17 @@ function Shell() {
           <Plus size={23} aria-hidden />
           <span>Đăng ảnh</span>
         </Link>
+        <div className="rail-footer">
+          <MapPin size={15} aria-hidden /> Đà Nẵng
+        </div>
       </aside>
-      <main id="main" className="main-content">
+      <main id="main" className="main-content" tabIndex={-1}>
         <header className="workspace-topbar pin-topbar">
           <SearchBar />
+          <Link to="/submissions/new" className="topbar-post">
+            <Camera size={18} aria-hidden />
+            Đăng ảnh
+          </Link>
           <Link
             className="topbar-account"
             to="/profile"
@@ -161,8 +197,8 @@ export default function App() {
           />
         </Route>
       </Route>
-      <Route path="login" element={<Auth />} />
-      <Route path="register" element={<Auth register />} />
+      <Route path="login" element={<Auth key="login" />} />
+      <Route path="register" element={<Auth key="register" register />} />
     </Routes>
   );
 }

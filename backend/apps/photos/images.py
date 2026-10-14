@@ -30,6 +30,7 @@ def normalize_image(file):
             file.seek(0)
             with Image.open(file) as source:
                 normalized = ImageOps.exif_transpose(source).convert("RGB")
+                normalized.thumbnail((2000, 2400))
                 output = io.BytesIO()
                 normalized.save(output, format="JPEG", quality=90)
         data = output.getvalue()

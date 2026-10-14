@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Upload, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -5,7 +6,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { api, date, type Category, type Page } from "../lib/api/client";
 import type { Submission, VisualPlace } from "../lib/api/visual";
 import { Button } from "../components/ui/button";
-import { AuthGate, ErrorText, Pager, State, useMe } from "./shared";
+import { AuthGate, Cover, ErrorText, Pager, State, useMe } from "./shared";
 
 function PhotoPreview({ file }: { file: File }) {
   const image = useRef<HTMLImageElement>(null);
@@ -16,6 +17,10 @@ function PhotoPreview({ file }: { file: File }) {
   }, [file]);
   return <img ref={image} alt={"Ảnh đã chọn: " + file.name} />;
 }
+const LocationPicker = lazy(() =>
+  import("./map").then((module) => ({ default: module.LocationPicker })),
+);
+
 export function NewContribution() {
   const [params] = useSearchParams();
   return (
@@ -32,12 +37,18 @@ function PhotoForm() {
     [proposal, setProposal] = useState(false),
     [placeId, setPlaceId] = useState(params.get("place") || ""),
     [search, setSearch] = useState("");
+  const [position, setPosition] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [showMap, setShowMap] = useState(false);
   const [metadata, setMetadata] = useState({
     name: "",
     address: "",
     category: "cafe",
     caption: "",
   });
+  const [placeLimit, setPlaceLimit] = useState(6);
   const [files, setFiles] = useState<File[]>([]),
     [error, setError] = useState(""),
     [consent, setConsent] = useState(false);
@@ -69,6 +80,10 @@ function PhotoForm() {
         data.set("proposed_name", metadata.name);
         data.set("proposed_address", metadata.address);
         data.set("proposed_category", metadata.category);
+        if (position) {
+          data.set("latitude", String(position.latitude));
+          data.set("longitude", String(position.longitude));
+        }
       } else data.set("place_id", placeId);
       return api<Submission>("photo-submissions/", {
         method: "POST",
@@ -77,7 +92,7 @@ function PhotoForm() {
       });
     },
     onSuccess: async (result) => {
-      await cache.invalidateQueries({ queryKey: ["submissions"] });
+      await cache.invalidateQueries();
       navigate("/submissions/" + result.id, {
         replace: true,
         state: { justSubmitted: true },
@@ -127,7 +142,7 @@ function PhotoForm() {
       step === 1 &&
       (!proposal ? !placeId : !metadata.name.trim() || !metadata.address.trim())
     ) {
-      setError("Chọn quán hoặc nhập tên và địa chỉ đề xuất.");
+      setError("Chọn địa điểm hoặc nhập tên và địa chỉ địa điểm mới.");
       return;
     }
     if (step === 2 && !files.length) {
@@ -140,10 +155,10 @@ function PhotoForm() {
   return (
     <section className="panel submission-form">
       <span className="eyebrow">Ảnh cộng đồng</span>
-      <h1>Gửi ảnh quán</h1>
-      <p className="muted">Chọn quán và đăng 1–5 ảnh bạn chụp.</p>
+      <h1>Đăng ảnh địa điểm</h1>
+      <p className="muted">Chọn địa điểm, thêm ảnh bạn chụp và đăng.</p>
       <ol className="step-list" aria-label="Các bước gửi ảnh">
-        {["Chọn quán", "Chọn ảnh", "Kiểm tra và gửi"].map((name, i) => (
+        {["Chọn địa điểm", "Chọn ảnh", "Kiểm tra và gửi"].map((name, i) => (
           <li key={name} aria-current={step === i + 1 ? "step" : undefined}>
             {i + 1}. {name}
           </li>
@@ -160,13 +175,13 @@ function PhotoForm() {
                 setProposal(e.target.checked);
               }}
             />
-            Thêm quán mới
+            Thêm địa điểm mới
           </label>
           {proposal ? (
-            <div className="proposal-fields">
+            <div className="new-place-fields">
               {(["name", "address"] as const).map((field) => (
                 <label key={field}>
-                  {field === "name" ? "Tên quán" : "Địa chỉ"}
+                  {field === "name" ? "Tên địa điểm" : "Địa chỉ"}
                   <input
                     value={metadata[field]}
                     maxLength={field === "name" ? 200 : 500}
@@ -178,8 +193,9 @@ function PhotoForm() {
                 </label>
               ))}
               <label>
-                Loại quán
+                Loại địa điểm
                 <select
+                  aria-label="Loại địa điểm"
                   value={metadata.category}
                   onChange={(e) => {
                     changed();
@@ -193,16 +209,39 @@ function PhotoForm() {
                   ))}
                 </select>
               </label>
+              <div className="location-field">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setShowMap(!showMap)}
+                >
+                  {showMap ? "Ẩn bản đồ" : "Chọn vị trí trên bản đồ (tùy chọn)"}
+                </Button>
+                {showMap && (
+                  <Suspense fallback={<p role="status">Đang tải bản đồ…</p>}>
+                    <LocationPicker
+                      value={position}
+                      onChange={(value) => {
+                        changed();
+                        setPosition(value);
+                      }}
+                    />
+                  </Suspense>
+                )}
+              </div>
             </div>
           ) : (
             <>
               <label>
-                Tìm quán
+                Tìm địa điểm
                 <input
                   value={search}
-                  placeholder="Tên quán hoặc địa chỉ"
+                  placeholder="Tên địa điểm hoặc địa chỉ"
                   maxLength={100}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPlaceLimit(6);
+                  }}
                 />
               </label>
               <State
@@ -216,9 +255,9 @@ function PhotoForm() {
                   {selected.data.address}
                 </p>
               )}
-              <fieldset className="place-picker">
-                <legend>Chọn quán</legend>
-                {places.data?.results.map((place) => (
+              <fieldset className="place-search-results">
+                <legend>Chọn địa điểm</legend>
+                {places.data?.results.slice(0, placeLimit).map((place) => (
                   <label className="check-label" key={place.id}>
                     <input
                       type="radio"
@@ -229,15 +268,25 @@ function PhotoForm() {
                         setPlaceId(place.id);
                       }}
                     />
+                    <Cover place={place} className="picker-cover" />
                     <span>
                       {place.name}
                       <small>{place.address}</small>
                     </span>
                   </label>
                 ))}
+                {places.data && placeLimit < places.data.results.length && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setPlaceLimit(placeLimit + 6)}
+                  >
+                    Xem thêm địa điểm
+                  </Button>
+                )}
                 {places.data?.count === 0 && (
                   <p>
-                    Không tìm thấy quán. Chọn “Thêm quán mới” để gửi thông tin.
+                    Không tìm thấy địa điểm. Chọn “Thêm địa điểm mới” để gửi
+                    thông tin.
                   </p>
                 )}
               </fieldset>
@@ -254,7 +303,7 @@ function PhotoForm() {
           <h2>Chọn ảnh</h2>
           <p className="muted">JPEG/PNG · tối đa 5 ảnh · 10 MiB/ảnh</p>
           <label
-            className="upload-dropzone"
+            className="upload-drop"
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => {
               event.preventDefault();
@@ -263,7 +312,7 @@ function PhotoForm() {
           >
             <Upload size={30} />
             <strong>Kéo ảnh vào đây hoặc nhấn để chọn</strong>
-            <small>Chọn ảnh bạn chụp tại quán</small>
+            <small>Chọn ảnh bạn chụp tại địa điểm</small>
             <input
               type="file"
               aria-label="Chọn ảnh JPEG hoặc PNG"
@@ -405,7 +454,7 @@ function History() {
         pending={result.isPending}
         error={result.error}
         onRetry={() => void result.refetch()}
-        empty={result.data?.count === 0 ? "Bạn chưa gửi ảnh nào" : undefined}
+        empty={result.data?.count === 0 ? "Bạn chưa đăng ảnh nào" : undefined}
       />
       <div className="submission-list">
         {result.data?.results.map((s) => (
@@ -417,7 +466,7 @@ function History() {
             {s.assets[0] && (
               <img
                 src={s.assets[0].preview_url}
-                alt="Ảnh bạn đã gửi"
+                alt="Ảnh bạn đã đăng"
                 loading="lazy"
               />
             )}
@@ -484,7 +533,7 @@ function SubmissionDetail({ id }: { id: string }) {
       <div className="submission-timeline">
         <div>
           <strong>
-            <CheckCircle2 size={15} /> Đã gửi ảnh
+            <CheckCircle2 size={15} /> Đã đăng ảnh
           </strong>
           <small>
             {date(s.submitted_at)} · {s.assets.length} ảnh
@@ -499,10 +548,12 @@ function SubmissionDetail({ id }: { id: string }) {
             <img
               className="card-image"
               src={a.preview_url}
-              alt="Ảnh bạn đã gửi"
+              alt="Ảnh bạn đã đăng"
             />
             {a.publication_status === "published" && (
-              <Link to={"/photos/" + a.public_photo_id}>Xem ảnh công khai</Link>
+              <Link to={"/photos/" + a.public_photo_id}>
+                Xem và quản lý ảnh
+              </Link>
             )}
           </article>
         ))}
@@ -512,7 +563,7 @@ function SubmissionDetail({ id }: { id: string }) {
           Cập nhật trạng thái
         </Button>
         <Button asChild>
-          <Link to="/submissions/new">Gửi thêm ảnh</Link>
+          <Link to="/submissions/new">Đăng thêm ảnh</Link>
         </Button>
       </div>
     </section>

@@ -87,7 +87,6 @@ for (const width of [360, 390, 768, 1440]) {
     await noOverflow(page);
     await capture(page, "discover-" + width);
     await page.locator(".filter-drawer > summary").click();
-    await page.getByText("Lọc đặc điểm trong ảnh", { exact: true }).click();
     await page.getByRole("checkbox", { name: /\[DEMO\] Cây xanh/ }).check();
     await page.getByRole("checkbox", { name: /\[DEMO\] Vật liệu gỗ/ }).check();
     await page.getByRole("button", { name: "Áp dụng", exact: true }).click();
@@ -100,7 +99,7 @@ for (const width of [360, 390, 768, 1440]) {
       .first()
       .click();
     await expect(
-      page.getByRole("heading", { name: "Đặc điểm trong ảnh" }),
+      page.getByRole("heading", { name: "Nhìn thấy trong ảnh" }),
     ).toBeVisible();
     await noOverflow(page);
     await capture(page, "viewer-" + width);
@@ -118,7 +117,7 @@ for (const width of [360, 390, 768, 1440]) {
       .first()
       .click();
     await expect(
-      page.getByRole("heading", { name: "Đặc điểm trong ảnh" }),
+      page.getByRole("heading", { name: "Nhìn thấy trong ảnh" }),
     ).toBeVisible();
   });
 }
@@ -151,7 +150,7 @@ test("guest save continuation, persistence and logout", async ({ page }) => {
     .getByRole("button", { name: "Bỏ lưu " + name, exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Bạn chưa lưu quán nào" }),
+    page.getByRole("heading", { name: "Bạn chưa lưu địa điểm nào" }),
   ).toBeVisible();
   await page.goto("/profile");
   page.once("dialog", (d) => d.accept());
@@ -244,8 +243,8 @@ test("upload, manual review, report and withdrawal", async ({
 test("new place and photos are published immediately", async ({ page }) => {
   await register(page);
   await page.goto("/submissions/new");
-  await page.getByRole("checkbox", { name: "Thêm quán mới" }).check();
-  await page.getByLabel("Tên quán", { exact: true }).fill("Quán E2E DEMO");
+  await page.getByRole("checkbox", { name: "Thêm địa điểm mới" }).check();
+  await page.getByLabel("Tên địa điểm", { exact: true }).fill("Quán E2E DEMO");
   await page.getByLabel("Địa chỉ", { exact: true }).fill("Địa chỉ giả để test");
   await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
   await page.getByLabel("Chọn ảnh JPEG hoặc PNG").setInputFiles(testImage);
@@ -321,17 +320,15 @@ test("empty, API failure, invalid tag and keyboard", async ({ page }) => {
   await expect(page).toHaveURL(/#main$/);
 });
 
-test("real map tiles, GPS opt-in and tile error retry", async ({
+test("local map data, GPS opt-in and data error retry", async ({
   page,
   context,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.route("https://tiles.openfreemap.org/styles/liberty", (route) =>
-    route.abort(),
-  );
+  await page.route("**/map/style.json", (route) => route.abort());
   await page.goto("/map");
   await expect(page.getByText("Không tải được bản đồ.")).toBeVisible();
-  await page.unroute("https://tiles.openfreemap.org/styles/liberty");
+  await page.unroute("**/map/style.json");
   await page
     .getByRole("button", { name: "Thử lại bản đồ", exact: true })
     .click();
@@ -347,7 +344,7 @@ test("real map tiles, GPS opt-in and tile error retry", async ({
   await page.getByLabel("Tìm tên hoặc địa chỉ").fill("missing-venue");
   await page.getByRole("button", { name: "Tìm kiếm", exact: true }).click();
   await expect(
-    page.getByText("Không có quán khớp bộ lọc trong vùng này."),
+    page.getByText("Không có địa điểm khớp bộ lọc trong vùng này."),
   ).toBeVisible();
   await noOverflow(page);
   await capture(page, "map-empty-390");

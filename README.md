@@ -1,94 +1,74 @@
-# Rendez v3
+# Rendez
 
-Khám phá café/nhà hàng qua ảnh cộng đồng và thuộc tính quan sát được. Người dùng phải đăng nhập để xem Feed/Map, ảnh chứng minh và chi tiết quán. Tài khoản dùng để lưu quán, gửi 1–5 ảnh và báo cáo nội dung. Ảnh và quán mới được đăng ngay. Django Admin quản lý nội dung đã đăng, chỉnh nhãn, chọn ảnh bìa và gỡ ảnh.
+Khám phá Đà Nẵng qua ảnh và bản đồ. Lưu địa điểm muốn ghé, đăng ảnh của bạn và trao đổi trong bình luận. React + Django + PostgreSQL; database, ảnh và bản đồ chạy local.
 
-Workspace nằm trực tiếp tại `rendez-web`. Chạy các lệnh bên dưới từ thư mục này.
+## Chạy bản local
 
-```text
-rendez-web/
-├── frontend/       # React, TypeScript, Vite
-├── backend/        # Django, API và quản trị
-├── docs/           # Ghi chú vận hành
-├── compose.yaml
-├── Makefile
-└── Caddyfile
-```
-
-Để mở riêng frontend với dependencies đã cài: `make frontend`. Frontend cần backend ở cổng 8000 để tải dữ liệu; lệnh này không khởi động hoặc thay đổi database.
-
-## Chạy local
-
-Cần PostgreSQL/Docker Compose, uv và Bun 1.3.14. Frontend dùng Bun và `bun.lock`; chạy `bun install --cwd frontend --frozen-lockfile` để cài dependencies.
+Cần Docker Compose, Python 3.12/uv và Bun. Chạy từ thư mục `rendez-web`:
 
 ```bash
-cp .env.example .env  # chỉ khi chưa có .env
 make setup
+make start
 ```
 
-Hai terminal:
+Mở **http://127.0.0.1:8080**. Một server Gunicorn phục vụ frontend build, API, ảnh và Django Admin. Giữ terminal đang chạy; Ctrl+C dừng app. `make stop` dừng từ terminal khác. Database tiếp tục chạy và giữ dữ liệu.
+
+`make setup` tạo PostgreSQL riêng ở cổng **55433**, lưu tại `.local/postgres`. Không dùng hoặc thay đổi database cũ ở cổng 55432. Mật khẩu database và Django secret được tạo ngẫu nhiên tại `.local/runtime.env`, không commit. Setup chỉ import ảnh/địa điểm chưa có, không khôi phục ảnh đã gỡ hoặc ghi đè chỉnh sửa của người dùng.
+
+Tạo tài khoản trên giao diện để sử dụng. Setup tạo sẵn tài khoản quản trị với mật khẩu ngẫu nhiên. Có thể kiểm tra/tạo quản trị bằng lệnh:
+
+```bash
+bash -c 'source scripts/env.sh; backend/.venv/bin/python scripts/create-admin.py'
+```
+
+Email/mật khẩu quản trị lưu trong `.local/admin-credentials.json` (quyền 0600). Quản trị ở **http://127.0.0.1:8080/admin/**. Bản local mặc định `DEBUG=0`, đăng nhập bằng tài khoản thật. Shortcut DEBUG chỉ hoạt động trong môi trường phát triển khi `DJANGO_DEBUG=1`.
+
+## Dữ liệu có sẵn
+
+14 địa điểm Đà Nẵng, 39 ảnh thật: quán cà phê, chợ, cầu, bãi biển, bảo tàng, nhà thờ và danh thắng. Manifest nằm ở [data/danang.json](data/danang.json). Ảnh có tác giả, giấy phép, trang nguồn và ngày chụp; giao diện hiển thị những thông tin này. Đây là ảnh tư liệu từ nhiều năm, không phải cam kết về hiện trạng, giá hoặc giờ mở cửa. Một địa điểm chưa có tọa độ đủ chắc chắn nên không có marker.
+
+Ảnh được lưu trong repo để setup không cần tải ảnh từ dịch vụ bên ngoài. Sau import, media ứng dụng ở `.local/media`. Bản đồ sử dụng dữ liệu OpenStreetMap và glyph Noto Sans lưu tại `frontend/public/map`. Không gọi dịch vụ bản đồ, ảnh, font hoặc AI từ bên ngoài khi sử dụng app. Các liên kết nguồn và chỉ đường chỉ mở khi người dùng bấm. Xem [nguồn và giấy phép](data/README.md).
+
+## Chức năng
+
+- Feed masonry theo tỷ lệ ảnh, chủ đề khám phá, phân trang, lọc loại địa điểm và đặc điểm nhìn thấy trong từng ảnh.
+- Tìm tên/địa chỉ tiếng Việt có dấu hoặc không dấu; nhiều từ khóa cùng khớp.
+- Bản đồ Đà Nẵng, danh sách trong vùng, marker, ảnh xem trước và định vị khi người dùng yêu cầu.
+- Lưu/bỏ lưu địa điểm, xem ảnh, thông tin nguồn và chia sẻ liên kết.
+- Đăng 1–5 ảnh JPEG/PNG, tối đa 10 MiB/ảnh; bỏ EXIF và tạo ảnh hiển thị gọn hơn. Đăng công khai ngay, không duyệt trước.
+- Thêm địa điểm bằng tên/địa chỉ/loại; chọn vị trí bằng thao tác trên bản đồ, không nhập kinh độ/vĩ độ.
+- Bình luận, xóa bình luận của mình, sửa mô tả/gỡ ảnh của mình, báo cáo nội dung.
+- Đổi tên hiển thị và mật khẩu; session/CSRF và quyền truy cập được kiểm tra ở backend.
+- Admin quản lý địa điểm, nhãn ảnh và báo cáo sau khi đăng.
+
+## Phát triển
+
+Hai terminal để frontend tự cập nhật:
 
 ```bash
 make backend
-```
-
-```bash
 make frontend
 ```
 
-Mở http://127.0.0.1:5173. Django ở http://127.0.0.1:8000; API schema `/api/v1/schema/`; Swagger `/api/v1/docs/`; quản trị qua http://127.0.0.1:5173/admin/ để cùng origin session/CSRF.
-
-`make setup` tạo fixture **DEMO**: quán/địa chỉ giả và ảnh minh họa do script tạo. Nhãn `[DEMO]` chỉ kiểm tra chức năng, không phải mapping SUN đã audit. `DEBUG=0` loại quán/ảnh và taxonomy DEMO khỏi API v3 public. Không dùng fixture làm benchmark hoặc nội dung quán thật.
-
-## Luồng sản phẩm
-
-- Feed hiển thị từng ảnh công khai; một quán có thể có nhiều thẻ. Saved và Map hiển thị từng quán.
-- Nhiều thuộc tính là AND trên cùng một ảnh. Preview Map dùng ảnh chứng minh, không tự dùng cover không khớp.
-- Chỉ đặc điểm đang hoạt động và được bật tìm kiếm xuất hiện ở bộ lọc. Người quản lý gắn nhãn theo nội dung nhìn thấy trong ảnh.
-- Upload trả ngay, original riêng tư, derivative bỏ EXIF. Owner xem preview riêng tư; chỉ staff có quyền quản lý ảnh xem original. Không có URL static bỏ qua quyền xuất bản.
-- Người dùng đăng ảnh vào quán có sẵn hoặc thêm quán mới. Ảnh hợp lệ và quán mới được công khai ngay trong cùng giao dịch. Gỡ ảnh hoặc ẩn quán chặn các request mới tới nội dung đó.
-- Không có OCR, giá bắt buộc, rating, semantic search hoặc tuyên bố yên tĩnh/hợp làm việc từ ảnh.
-
-## Quản trị
+Mở http://127.0.0.1:5173. Vite proxy đến Django 8000. Hai lệnh đọc cấu hình `.local/runtime.env`; không dùng database cũ. Sau chỉnh sửa, chạy `make setup` để build lại rồi `make start`.
 
 ```bash
-uv run --env-file .env --project backend python backend/manage.py createsuperuser
+bash scripts/check.sh backend   # lint, format, migration state, tests, Django check
+bash scripts/check.sh frontend  # lint, format, unit tests, type check/build
+make schema                    # cập nhật OpenAPI và kiểu TypeScript
 ```
 
-1. Quán và ảnh của người dùng xuất hiện ngay sau khi đăng.
-2. Trong danh sách ảnh đã đăng, bấm **Quản lý ảnh** để sửa mô tả/nhãn, chọn ảnh bìa hoặc gỡ ảnh.
-3. Xử lý báo cáo nội dung, kiểm tra ảnh/quán liên quan và đánh dấu đã xử lý.
+Backend tests tạo database `test_rendez_local` riêng. Không chạy E2E cũ trên database chứa dữ liệu cần giữ; các fixtures E2E có dữ liệu DEMO. Log kiểm tra nằm trong `.local/logs`; checklist/kết quả ở [docs/LOCAL-RELEASE.md](docs/LOCAL-RELEASE.md).
 
-Quyền `photos.review_photosubmission` được giữ tên để tương thích quyền hiện có; nó chỉ dùng cho quản lý sau đăng và xem ảnh gốc riêng tư. Người dùng thông thường không cần quyền này để đăng.
-
-## Bản đồ
-
-Mặc định dùng OpenFreeMap Liberty qua MapLibre, có dữ liệu đường phố và attribution của nguồn. Có thể thay `VITE_MAP_STYLE` theo hosting. GPS chỉ xin khi bấm “Vị trí của tôi”; từ chối vẫn dùng Map bình thường. Map bbox tối đa 2° mỗi chiều, trả tối đa 200 marker và cờ truncated nếu nhiều hơn.
-
-[OpenFreeMap quick start](https://openfreemap.org/quick_start/) và [điều kiện/attribution](https://openfreemap.org/). Không có cam kết SLA riêng cho public tile instance.
-
-## Kiểm thử
+## Sao lưu
 
 ```bash
-make check
-make schema
-bun run --cwd frontend playwright install chromium
-# E2E_ADMIN_PASSWORD là secret mới do người chạy chọn, không dùng credential mặc định.
-export E2E_ADMIN_PASSWORD='mật-khẩu-kiểm-thử-riêng-của-bạn'
-make e2e
+make backup
+make stop
+bash scripts/restore-local.sh .local/backups/<thư-mục-backup> --yes
+make start
 ```
 
-Tests backend dùng DB `test_rendez` riêng. E2E dùng DB local, tạo tài khoản và submission fixture; chỉ chạy trên môi trường demo. Report/screenshot browser ở `frontend/playwright-report/`, `frontend/test-results/`, `docs/screenshots-v3/`.
+Backup gồm PostgreSQL dump, media và cấu hình local. Restore tạo thêm backup trước khi thay dữ liệu; chỉ nhận thư mục backup trong workspace. Bảo vệ `.local/backups` vì có dữ liệu tài khoản và secrets. Script restore chưa được chạy đè lên database đang sử dụng; kiểm chứng phục hồi được thực hiện trên database tạm riêng.
 
-## Triển khai và dữ liệu lịch sử
-
-Backend chỉ phục vụ luồng ảnh hiện hành. API giá/menu/hóa đơn, đóng góp v2 và media v2 đã được gỡ. Migration mới loại bỏ model, bảng và cột không dùng. Migration lịch sử được giữ để Django theo dõi việc chuyển schema.
-
-Caddyfile phục vụ frontend build, proxy API/Admin và toàn bộ media qua Django ACL. Chưa publish lên hostname ngoài local. Trước public deploy: secret/HTTPS/allowed hosts/CSRF origins, DB và media bền vững, ảnh có phép và taxonomy thực, backup/restore rehearsal. Không phục vụ private media bằng static file server.
-
-Tên project Compose được cố định là `rendez-v2-specs` để giữ nhận diện container và volume đã có sau khi đổi thư mục. Không đổi tên này nếu chưa chuẩn bị chuyển dữ liệu.
-
-## Backend tối giản
-
-Một ứng dụng Django, một database và lưu tệp cục bộ. Không có dịch vụ ML, worker, message broker hay pipeline huấn luyện. API phục vụ đúng các màn hình hiện tại. Xem [backend và vai trò dữ liệu](docs/BACKEND.md).
-
-Các migration tinh giản đã được viết nhưng chưa áp dụng trên PostgreSQL. Chúng xóa bảng/cột cũ, vì vậy không chạy `make setup` trên database hiện có trước khi kiểm tra và sao lưu dữ liệu cần giữ. Backend mới cần schema đã cập nhật để ghi dữ liệu đúng.
+Workspace chỉ có frontend, backend, dữ liệu nguồn, tài liệu và scripts. Không microservices, worker hay hạ tầng cloud. [Vai trò dữ liệu và API](docs/BACKEND.md).

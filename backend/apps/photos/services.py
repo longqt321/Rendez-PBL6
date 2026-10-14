@@ -204,3 +204,31 @@ def change_publication(photo_id, reviewer, action):
         actor=reviewer, photo=photo, submission=photo.asset.submission, action=action
     )
     return photo
+
+
+@transaction.atomic
+def owner_edit_photo(photo_id, user, caption=None, withdraw=False):
+    from django.shortcuts import get_object_or_404
+
+    photo = get_object_or_404(
+        PlacePhoto.objects.select_for_update(of=("self",)).select_related(
+            "asset__submission", "place"
+        ),
+        pk=photo_id,
+        asset__submission__submitted_by=user,
+    )
+    if caption is not None:
+        photo.caption = caption
+        photo.alt_text = caption[:200] or photo.place.name
+    if withdraw:
+        photo.status = "withdrawn"
+        photo.withdrawn_at = photo.withdrawn_at or timezone.now()
+        photo.is_cover = False
+    photo.save()
+    PhotoAudit.objects.create(
+        actor=user,
+        photo=photo,
+        submission=photo.asset.submission,
+        action="owner_withdraw" if withdraw else "owner_caption",
+    )
+    return photo

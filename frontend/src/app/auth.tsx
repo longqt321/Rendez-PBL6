@@ -12,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api, type Profile } from "../lib/api/client";
 import { Button } from "../components/ui/button";
 import { ErrorText, State, useMe } from "./shared";
@@ -65,6 +65,9 @@ export function Auth({ register = false }: { register?: boolean }) {
       );
     },
   });
+  useEffect(() => {
+    document.title = (register ? "Tạo tài khoản" : "Đăng nhập") + " · Rendez";
+  }, [register]);
   return (
     <div className="auth-layout">
       <aside className="auth-story">
@@ -72,16 +75,19 @@ export function Auth({ register = false }: { register?: boolean }) {
           Rendez<span className="brand-dot">●</span>
         </Link>
         <div className="auth-story-copy">
-          <span className="eyebrow">Cà phê & ăn uống ở Đà Nẵng</span>
+          <span className="eyebrow">ĐÀ NẴNG · VIỆT NAM</span>
           <h2>
-            Lưu quán
+            Những nơi
             <br />
-            và gửi ảnh.
+            muốn quay lại.
           </h2>
-          <p>Đăng nhập để xem quán đã lưu và quản lý ảnh đã gửi.</p>
+          <p>
+            Khám phá thành phố qua ảnh. Lưu địa điểm bạn thích, chia sẻ góc nhìn
+            của bạn.
+          </p>
         </div>
         <span className="auth-story-footer">
-          Đăng nhập để khám phá quán và ảnh.
+          Biển Mỹ Khê · Ảnh Christophe95 / CC BY-SA 4.0
         </span>
       </aside>
       <section className="auth-panel">
@@ -91,10 +97,10 @@ export function Auth({ register = false }: { register?: boolean }) {
         <h1>{register ? "Tạo tài khoản" : "Đăng nhập"}</h1>
         <p className="muted">
           {register
-            ? "Tạo tài khoản để lưu quán và gửi ảnh."
+            ? "Tạo tài khoản để lưu địa điểm và đăng ảnh."
             : debugLogin
               ? "DEBUG: bấm Đăng nhập để vào bằng tài khoản demo."
-              : "Đăng nhập để lưu quán và gửi ảnh."}
+              : "Đăng nhập để lưu địa điểm và đăng ảnh."}
         </p>
         <form
           noValidate={debugLogin}
@@ -116,36 +122,44 @@ export function Auth({ register = false }: { register?: boolean }) {
           }}
         >
           {register && (
-            <label>
-              Tên hiển thị
+            <div className="auth-field">
+              <label htmlFor="auth-name">Tên hiển thị</label>
               <input
+                id="auth-name"
                 autoComplete="nickname"
                 maxLength={100}
+                aria-invalid={!!form.formState.errors.display_name}
+                aria-describedby="auth-name-error"
                 {...form.register("display_name")}
               />
-              <span className="error">
+              <span id="auth-name-error" className="error">
                 {form.formState.errors.display_name?.message}
               </span>
-            </label>
+            </div>
           )}
-          <label>
-            Email
+          <div className="auth-field">
+            <label htmlFor="auth-email">Email</label>
             <input
+              id="auth-email"
               type="email"
               autoComplete="email"
+              aria-invalid={!!form.formState.errors.email}
+              aria-describedby="auth-email-error"
               {...form.register("email")}
             />
-            <span className="error">
+            <span id="auth-email-error" className="error">
               {form.formState.errors.email?.message}
             </span>
-          </label>
-          <label>
-            Mật khẩu
+          </div>
+          <div className="auth-field">
+            <label htmlFor="auth-password">Mật khẩu</label>
             <div className="password-field">
               <input
-                aria-label="Mật khẩu"
+                id="auth-password"
                 type={reveal ? "text" : "password"}
                 autoComplete={register ? "new-password" : "current-password"}
+                aria-invalid={!!form.formState.errors.password}
+                aria-describedby="auth-password-error"
                 {...form.register("password")}
               />
               <Button
@@ -162,10 +176,10 @@ export function Auth({ register = false }: { register?: boolean }) {
                 )}
               </Button>
             </div>
-            <span className="error">
+            <span id="auth-password-error" className="error">
               {form.formState.errors.password?.message}
             </span>
-          </label>
+          </div>
           <ErrorText error={mutation.error} />
           <Button disabled={mutation.isPending} type="submit">
             {mutation.isPending
@@ -203,7 +217,7 @@ export function ProfilePage() {
     return (
       <section className="state">
         <h1>Cá nhân</h1>
-        <p>Đăng nhập để lưu quán và gửi ảnh.</p>
+        <p>Đăng nhập để lưu địa điểm và đăng ảnh.</p>
         <Button asChild>
           <Link to="/login" state={{ returnTo: "/profile" }}>
             Đăng nhập
@@ -214,7 +228,9 @@ export function ProfilePage() {
   return (
     <section className="profile-page">
       <h1>Tài khoản</h1>
-      <p className="muted">Quản lý quán đã lưu và ảnh đã gửi.</p>
+      <p className="muted">
+        Địa điểm đã lưu, ảnh đã đăng và thông tin của bạn.
+      </p>
       <div className="profile-card">
         <span className="avatar">
           {me.data.display_name.slice(0, 1).toUpperCase() || <User />}
@@ -222,14 +238,22 @@ export function ProfilePage() {
         <div>
           <h2>{me.data.display_name}</h2>
           <p>{me.data.email}</p>
+          <div className="profile-stats">
+            <span>
+              <strong>{me.data.saved_count ?? 0}</strong> địa điểm đã lưu
+            </span>
+            <span>
+              <strong>{me.data.photo_count ?? 0}</strong> ảnh công khai
+            </span>
+          </div>
         </div>
       </div>
       <div className="profile-links">
         <Link to="/saved">
           <Bookmark size={22} />
           <span>
-            <strong>Quán đã lưu</strong>
-            <small>Xem lại địa chỉ và ảnh quán</small>
+            <strong>Địa điểm đã lưu</strong>
+            <small>Xem lại những nơi bạn muốn ghé</small>
           </span>
           <ArrowUpRight className="arrow" />
         </Link>
@@ -245,12 +269,13 @@ export function ProfilePage() {
           <Camera size={22} />
           <span>
             <strong>Đăng ảnh</strong>
-            <small>Gửi ảnh bạn chụp tại quán</small>
+            <small>Chia sẻ ảnh và thêm địa điểm</small>
           </span>
           <ArrowUpRight className="arrow" />
         </Link>
         {me.data.is_staff && <a href="/admin/">Quản trị</a>}
       </div>
+      <AccountSettings profile={me.data} />
       <Button
         variant="outline"
         disabled={logout.isPending}
@@ -262,5 +287,122 @@ export function ProfilePage() {
       </Button>
       <ErrorText error={logout.error} />
     </section>
+  );
+}
+
+function AccountSettings({ profile }: { profile: Profile }) {
+  const cache = useQueryClient();
+  const [name, setName] = useState(profile.display_name);
+  const [current, setCurrent] = useState("");
+  const [password, setPassword] = useState("");
+  const update = useMutation({
+    mutationFn: () =>
+      api<Profile>("auth/me/", {
+        method: "PATCH",
+        body: JSON.stringify({ display_name: name }),
+      }),
+    onSuccess: (user) => cache.setQueryData(["me"], user),
+  });
+  const change = useMutation({
+    mutationFn: () =>
+      api<void>("auth/password/", {
+        method: "POST",
+        body: JSON.stringify({
+          current_password: current,
+          new_password: password,
+        }),
+      }),
+    onSuccess: () => {
+      setCurrent("");
+      setPassword("");
+    },
+  });
+  return (
+    <div className="account-settings">
+      <section className="panel">
+        <h2>Thông tin cá nhân</h2>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            update.mutate();
+          }}
+        >
+          <label>
+            Tên hiển thị
+            <input
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value);
+                update.reset();
+              }}
+              required
+              maxLength={100}
+              autoComplete="nickname"
+            />
+          </label>
+          <Button disabled={!name.trim() || update.isPending}>
+            {update.isPending ? "Đang lưu…" : "Lưu thay đổi"}
+          </Button>
+          <ErrorText error={update.error} />
+          {update.isSuccess && (
+            <p className="success" role="status">
+              Đã cập nhật tên.
+            </p>
+          )}
+        </form>
+      </section>
+      <section className="panel">
+        <h2>Đổi mật khẩu</h2>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            change.mutate();
+          }}
+        >
+          <label>
+            Mật khẩu hiện tại
+            <input
+              type="password"
+              value={current}
+              onChange={(event) => {
+                setCurrent(event.target.value);
+                change.reset();
+              }}
+              required
+              autoComplete="current-password"
+            />
+          </label>
+          <div className="auth-field">
+            <label htmlFor="profile-new-password">Mật khẩu mới</label>
+            <input
+              id="profile-new-password"
+              aria-describedby="profile-password-hint"
+              type="password"
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                change.reset();
+              }}
+              required
+              minLength={8}
+              maxLength={4096}
+              autoComplete="new-password"
+            />
+            <small id="profile-password-hint" className="muted">
+              Ít nhất 8 ký tự. Tránh mật khẩu phổ biến hoặc chỉ gồm số.
+            </small>
+          </div>
+          <Button disabled={change.isPending}>
+            {change.isPending ? "Đang đổi…" : "Đổi mật khẩu"}
+          </Button>
+          <ErrorText error={change.error} />
+          {change.isSuccess && (
+            <p className="success" role="status">
+              Đã đổi mật khẩu. Phiên đăng nhập hiện tại được giữ.
+            </p>
+          )}
+        </form>
+      </section>
+    </div>
   );
 }
