@@ -26,6 +26,19 @@ export function useMe() {
     retry: false,
   });
 }
+export function useLogout() {
+  const cache = useQueryClient(),
+    navigate = useNavigate();
+  return useMutation({
+    mutationFn: () => api<void>("auth/logout/", { method: "POST" }),
+    onSuccess: () => {
+      cache.clear();
+      cache.setQueryData(["me"], null);
+      navigate("/login", { replace: true });
+    },
+  });
+}
+
 export function State({
   pending,
   error,
@@ -247,10 +260,12 @@ export function SearchBar() {
         );
       }}
     >
-      <Search size={21} aria-hidden />
       <label className="sr-only" htmlFor="global-query">
         Tìm tên hoặc địa chỉ
       </label>
+      <button type="submit" aria-label="Tìm kiếm" title="Tìm kiếm">
+        <Search size={21} aria-hidden />
+      </button>
       <input
         id="global-query"
         name="q"
@@ -259,9 +274,6 @@ export function SearchBar() {
         defaultValue={params.get("q") || ""}
         maxLength={100}
       />
-      <button type="submit" aria-label="Tìm kiếm">
-        Tìm
-      </button>
     </form>
   );
 }

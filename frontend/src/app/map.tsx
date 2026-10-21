@@ -277,7 +277,12 @@ export function MapPage() {
               </a>
               <Button asChild>
                 <Link
-                  to={"/places/" + place.id + "?" + query}
+                  to={
+                    place.supporting_photo || place.cover_photo_id
+                      ? "/photos/" +
+                        (place.supporting_photo?.id || place.cover_photo_id)
+                      : "/places/" + place.id
+                  }
                   state={{ from: "/map?" + params.toString() }}
                 >
                   Xem chi tiết

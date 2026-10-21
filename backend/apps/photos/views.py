@@ -18,14 +18,14 @@ from .models import (
     PhotoAsset,
     PhotoAttribute,
     PhotoSubmission,
-    PhotoComment,
+    PhotoLike,
     VisualAttribute,
     public_photos,
 )
 from .serializers import (
     ContentReportSerializer,
     CaptionSerializer,
-    PhotoCommentSerializer,
+    PhotoLikesSerializer,
     FeedItemSerializer,
     PhotoDetailSerializer,
     PhotoSubmissionSerializer,
@@ -37,6 +37,7 @@ from .serializers import (
     VisualPlaceSerializer,
 )
 from .services import submit, owner_edit_photo
+from .ranking import rank_similar_places
 
 FILTERS = [
     OpenApiParameter("q", str),
@@ -67,7 +68,7 @@ def matching_photos(codes):
     return photos.distinct().order_by("-published_at", "id")
 
 
-def visual_places(request, codes):
+def visual_places(request, codes, filter_results=True):
     photos = public_photos().filter(place_id=OuterRef("pk"))
     supporting = matching_photos(codes).filter(place_id=OuterRef("pk"))
     places = (
@@ -83,6 +84,8 @@ def visual_places(request, codes):
             else Value(False, output_field=BooleanField()),
         )
     )
+    if not filter_results:
+        return places.order_by("-published_at", "id")
     q = request.query_params.get("q", "").strip()
     if len(q) > 100:
         raise serializers.ValidationError({"q": ["Từ khóa tìm kiếm tối đa 100 ký tự."]})
@@ -181,7 +184,10 @@ class VisualFavorites(VisualPlaceList):
         )
 
 
-@extend_schema(parameters=FILTERS)
+@extend_schema(
+    parameters=FILTERS
+    + [OpenApiParameter("mine", bool, description="Only photos posted by the authenticated user.")]
+)
 class Feed(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = FeedItemSerializer
@@ -190,6 +196,8 @@ class Feed(generics.ListAPIView):
         codes = attribute_codes(request)
         places = visual_places(request, codes)
         photos = matching_photos(codes).filter(place_id__in=places.values("id"))
+        if request.query_params.get("mine") == "true":
+            photos = photos.filter(asset__submission__submitted_by=request.user)
         if request.query_params.get("sort") == "name":
             photos = photos.order_by("place__name", "-published_at", "id")
         page = self.paginate_queryset(photo_queryset(photos))
@@ -322,9 +330,14 @@ class PhotoDetail(APIView):
     def get(self, request, pk):
         codes = attribute_codes(request)
         photo = get_object_or_404(photo_queryset(public_photos()), pk=pk)
-        place = get_object_or_404(visual_places(request, []), pk=photo.place_id)
+        place = get_object_or_404(
+            visual_places(request, [], filter_results=False), pk=photo.place_id
+        )
         context = place_context([place], request, codes)
         context["place"] = place
+        context["photo_ids"] = list(
+            public_photos().filter(place_id=place.id).values_list("id", flat=True)
+        )
         return Response(PhotoDetailSerializer(photo, context=context).data)
 
 
@@ -446,27 +459,52 @@ class OwnPhoto(APIView):
         return Response(status=204)
 
 
-class Comments(generics.ListCreateAPIView):
+class PhotoLikes(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = PhotoCommentSerializer
-    throttle_scope = "comment"
 
-    def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            return PhotoComment.objects.none()
-        self.photo = get_object_or_404(public_photos(), pk=self.kwargs["pk"])
-        return self.photo.comments.select_related("user")
+    def response(self, photo, user):
+        return Response(
+            {"liked": photo.likes.filter(user=user).exists(), "count": photo.likes.count()}
+        )
 
-    def perform_create(self, serializer):
-        photo = get_object_or_404(public_photos(), pk=self.kwargs["pk"])
-        serializer.save(photo=photo, user=self.request.user)
+    @extend_schema(responses=PhotoLikesSerializer)
+    def get(self, request, pk):
+        photo = get_object_or_404(public_photos(), pk=pk)
+        return self.response(photo, request.user)
+
+    @extend_schema(request=None, responses=PhotoLikesSerializer)
+    def post(self, request, pk):
+        photo = get_object_or_404(public_photos(), pk=pk)
+        PhotoLike.objects.get_or_create(photo=photo, user=request.user)
+        return self.response(photo, request.user)
+
+    @extend_schema(responses=PhotoLikesSerializer)
+    def delete(self, request, pk):
+        photo = get_object_or_404(public_photos(), pk=pk)
+        PhotoLike.objects.filter(photo=photo, user=request.user).delete()
+        return self.response(photo, request.user)
 
 
-class DeleteComment(generics.DestroyAPIView):
+class SimilarPhotos(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = PhotoCommentSerializer
 
-    def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            return PhotoComment.objects.none()
-        return PhotoComment.objects.filter(user=self.request.user)
+    @extend_schema(responses=FeedItemSerializer(many=True))
+    def get(self, request, pk):
+        source = get_object_or_404(photo_queryset(public_photos()), pk=pk)
+        ranked = rank_similar_places(
+            source, photo_queryset(public_photos().exclude(place_id=source.place_id))
+        )
+        places = list(
+            visual_places(request, [], filter_results=False).filter(
+                pk__in=[p.place_id for p in ranked]
+            )
+        )
+        by_id = {p.id: p for p in places}
+        context = place_context(places, request, [])
+        return Response(
+            FeedItemSerializer(
+                [{"photo": p, "place": by_id[p.place_id]} for p in ranked],
+                many=True,
+                context=context,
+            ).data
+        )

@@ -178,7 +178,6 @@ class PlacePhoto(models.Model):
     is_cover = models.BooleanField(default=False)
     caption = models.TextField(blank=True, max_length=1000)
     alt_text = models.CharField(max_length=200, blank=True)
-    attribution = models.JSONField(default=dict, blank=True)
     published_at = models.DateTimeField(null=True, blank=True)
     withdrawn_at = models.DateTimeField(null=True, blank=True)
     attributes = models.ManyToManyField(VisualAttribute, through="PhotoAttribute")
@@ -275,3 +274,11 @@ class PhotoComment(models.Model):
 
     class Meta:
         ordering = ("-created_at", "-id")
+
+
+class PhotoLike(models.Model):
+    photo = models.ForeignKey(PlacePhoto, on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["photo", "user"], name="unique_photo_like")]

@@ -3,9 +3,10 @@ import {
   Map as MapIcon,
   Bookmark,
   User,
-  Plus,
+  ImagePlus,
   MapPin,
   Camera,
+  LogOut,
 } from "lucide-react";
 import {
   Link,
@@ -17,10 +18,10 @@ import {
   useLocation,
 } from "react-router";
 import { discoveryQuery } from "../lib/api/client";
-import { SearchBar, State, useMe } from "./shared";
+import { SearchBar, State, useMe, useLogout, ErrorText } from "./shared";
 import { Auth, ProfilePage } from "./auth";
 import { Discover, PlaceDetailPage, PhotoDetailPage } from "./discovery";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 const MapPage = lazy(() =>
   import("./map").then((module) => ({ default: module.MapPage })),
 );
@@ -49,9 +50,73 @@ export function RequireLogin() {
   return <Outlet />;
 }
 
+function AccountMenu() {
+  const me = useMe(),
+    logout = useLogout();
+  const [open, setOpen] = useState(false);
+  const container = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const outside = (event: PointerEvent) => {
+      if (!container.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        trigger.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [open]);
+  return (
+    <div
+      className="account-menu"
+      ref={container}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+    >
+      <button
+        type="button"
+        className="topbar-account"
+        ref={trigger}
+        aria-label={"Tài khoản của " + (me.data?.display_name || "bạn")}
+        title="Tài khoản"
+        aria-expanded={open}
+        aria-controls="account-dropdown"
+        onClick={() => setOpen(!open)}
+      >
+        <span className="avatar" aria-hidden>
+          {me.data?.display_name?.slice(0, 1).toUpperCase() || (
+            <User size={21} />
+          )}
+        </span>
+      </button>
+      {open && (
+        <div className="account-dropdown" id="account-dropdown">
+          <button
+            type="button"
+            disabled={logout.isPending}
+            onClick={() => logout.mutate()}
+          >
+            <LogOut size={18} aria-hidden />
+            {logout.isPending ? "Đang đăng xuất…" : "Đăng xuất"}
+          </button>
+          <ErrorText error={logout.error} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Shell() {
   const location = useLocation();
-  const me = useMe();
   const previousPath = useRef(location.pathname);
   useEffect(() => {
     const title =
@@ -83,6 +148,7 @@ function Shell() {
   const nav = [
     ["/discover" + suffix, "Khám phá", Compass],
     ["/map" + suffix, "Bản đồ", MapIcon],
+    ["/submissions/new", "Đăng ảnh", ImagePlus],
     ["/saved", "Đã lưu", Bookmark],
     ["/profile", "Cá nhân", User],
   ] as const;
@@ -108,21 +174,18 @@ function Shell() {
         </Link>
         <nav aria-label="Điều hướng chính">
           {nav.map(([to, label, Icon]) => (
-            <NavLink to={to} key={label} title={label} aria-label={label}>
+            <NavLink
+              to={to}
+              key={label}
+              title={label}
+              aria-label={label}
+              className={label === "Đăng ảnh" ? "rail-upload" : undefined}
+            >
               <Icon size={23} aria-hidden />
               <span>{label}</span>
             </NavLink>
           ))}
         </nav>
-        <Link
-          className="rail-upload"
-          to="/submissions/new"
-          aria-label="Đăng ảnh"
-          title="Đăng ảnh"
-        >
-          <Plus size={23} aria-hidden />
-          <span>Đăng ảnh</span>
-        </Link>
         <div className="rail-footer">
           <MapPin size={15} aria-hidden /> Đà Nẵng
         </div>
@@ -130,26 +193,15 @@ function Shell() {
       <main id="main" className="main-content" tabIndex={-1}>
         <header className="workspace-topbar pin-topbar">
           <SearchBar />
-          <Link to="/submissions/new" className="topbar-post">
-            <Camera size={18} aria-hidden />
-            Đăng ảnh
-          </Link>
           <Link
-            className="topbar-account"
-            to="/profile"
-            aria-label={
-              me.data
-                ? "Tài khoản của " + me.data.display_name
-                : "Đăng nhập hoặc tạo tài khoản"
-            }
-            title={me.data?.display_name || "Tài khoản"}
+            to="/submissions/new"
+            className="topbar-post"
+            aria-label="Đăng ảnh"
+            title="Đăng ảnh"
           >
-            <span className="avatar">
-              {me.data?.display_name?.slice(0, 1).toUpperCase() || (
-                <User size={21} aria-hidden />
-              )}
-            </span>
+            <Camera size={20} aria-hidden />
           </Link>
+          <AccountMenu key={location.pathname + location.search} />
         </header>
         <div className="page-content">
           <Outlet />

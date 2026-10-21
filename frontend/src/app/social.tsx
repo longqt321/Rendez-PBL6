@@ -1,86 +1,41 @@
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import {
-  MessageCircle,
-  Share2,
-  Trash2,
-  Pencil,
-  Check,
-  ExternalLink,
-} from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Heart, Share2, Trash2, Pencil, Check } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useState } from "react";
-import { api, date, type Page } from "../lib/api/client";
+import { api, date } from "../lib/api/client";
 import type { PublicPhoto } from "../lib/api/visual";
 import { Button } from "../components/ui/button";
-import { ErrorText, State } from "./shared";
-
-type Comment = {
-  id: number;
-  body: string;
-  author_name: string;
-  is_owner: boolean;
-  created_at: string;
-};
-type Credit = {
-  author?: string;
-  license?: string;
-  license_url?: string;
-  source_url?: string;
-  taken_at?: string;
-  changes?: string;
-};
+import { ErrorText } from "./shared";
 
 export function PhotoCredit({ photo }: { photo: PublicPhoto }) {
-  const credit = photo.attribution as Credit;
   return (
     <div className="photo-credit">
-      <span className="photo-author-avatar">
-        {(credit.author || photo.author_name).slice(0, 1).toUpperCase()}
+      <span className="photo-author-avatar" aria-hidden>
+        {photo.author_name.slice(0, 1).toUpperCase()}
       </span>
       <div>
-        <strong>{credit.author || photo.author_name}</strong>
-        {credit.source_url ? (
+        <strong>{photo.author_name}</strong>
+        {photo.published_at && (
           <p>
-            <a
-              href={credit.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Ảnh tư liệu · Wikimedia Commons{" "}
-              <ExternalLink size={12} aria-hidden />
-            </a>
-          </p>
-        ) : (
-          <p>Ảnh do người dùng đăng</p>
-        )}
-        {credit.license && (
-          <p>
-            <a
-              href={credit.license_url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {credit.license}
-            </a>
-            {credit.taken_at && ` · Chụp ${date(credit.taken_at)}`}
+            Đăng ngày{" "}
+            <time dateTime={photo.published_at}>
+              {date(photo.published_at)}
+            </time>
           </p>
         )}
-        {credit.changes && <small>{credit.changes}</small>}
       </div>
     </div>
   );
 }
 
-export function ShareButton() {
+export function ShareButton({ compact = false }: { compact?: boolean }) {
   const [message, setMessage] = useState("");
   return (
     <div className="share-control">
       <Button
         variant="outline"
+        aria-label="Chia sẻ"
+        title="Chia sẻ"
         onClick={async () => {
           try {
             const url = window.location.href;
@@ -99,7 +54,7 @@ export function ShareButton() {
         }}
       >
         <Share2 size={17} aria-hidden />
-        Chia sẻ
+        {!compact && "Chia sẻ"}
       </Button>
       <span role="status" className="small">
         {message}
@@ -175,112 +130,34 @@ export function OwnPhotoControls({ photo }: { photo: PublicPhoto }) {
   );
 }
 
-export function Comments({ photoId }: { photoId: string }) {
-  const cache = useQueryClient(),
-    [body, setBody] = useState("");
-  const key = ["comments", photoId];
-  const comments = useInfiniteQuery({
-    queryKey: key,
-    initialPageParam: "1",
-    queryFn: ({ pageParam, signal }) =>
-      api<Page<Comment>>("photos/" + photoId + "/comments/?page=" + pageParam, {
-        signal,
-      }),
-    getNextPageParam: (last) =>
-      last.next
-        ? new URL(last.next, window.location.origin).searchParams.get("page") ||
-          undefined
-        : undefined,
-  });
-  const create = useMutation({
+type Likes = { liked: boolean; count: number };
+
+export function LikeButton({ photoId }: { photoId: string }) {
+  const cache = useQueryClient();
+  const queryKey = ["photo-likes", photoId];
+  const endpoint = "photos/" + photoId + "/likes/";
+  const likes = useQuery({ queryKey, queryFn: () => api<Likes>(endpoint) });
+  const mutation = useMutation({
     mutationFn: () =>
-      api("photos/" + photoId + "/comments/", {
-        method: "POST",
-        body: JSON.stringify({ body }),
-      }),
-    onSuccess: async () => {
-      setBody("");
-      await cache.invalidateQueries({ queryKey: key });
-    },
+      api<Likes>(endpoint, { method: likes.data?.liked ? "DELETE" : "POST" }),
+    onSuccess: (data) => cache.setQueryData(queryKey, data),
   });
-  const remove = useMutation({
-    mutationFn: (id: number) =>
-      api("comments/" + id + "/", { method: "DELETE" }),
-    onSuccess: () => cache.invalidateQueries({ queryKey: key }),
-  });
+  const liked = likes.data?.liked ?? false;
   return (
-    <section className="comments-section">
-      <h2>
-        <MessageCircle size={20} aria-hidden />
-        Bình luận{comments.data && <span>{comments.data.pages[0].count}</span>}
-      </h2>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          create.mutate();
-        }}
+    <div className="like-control">
+      <Button
+        variant="outline"
+        className={liked ? "photo-liked" : ""}
+        aria-label={liked ? "Bỏ thích ảnh" : "Thích ảnh"}
+        aria-pressed={liked}
+        title={liked ? "Bỏ thích ảnh" : "Thích ảnh"}
+        disabled={!likes.data || mutation.isPending}
+        onClick={() => mutation.mutate()}
       >
-        <label className="sr-only" htmlFor="comment-body">
-          Bình luận của bạn
-        </label>
-        <textarea
-          id="comment-body"
-          value={body}
-          onChange={(event) => setBody(event.target.value)}
-          maxLength={1000}
-          placeholder="Hỏi về địa điểm hoặc chia sẻ trải nghiệm của bạn"
-          required
-        />
-        <div className="comment-submit">
-          <small>{body.length}/1000</small>
-          <Button disabled={!body.trim() || create.isPending}>
-            {create.isPending ? "Đang gửi…" : "Gửi bình luận"}
-          </Button>
-        </div>
-        <ErrorText error={create.error} />
-      </form>
-      <State
-        pending={comments.isPending}
-        error={comments.error}
-        onRetry={() => void comments.refetch()}
-      />
-      {comments.data?.pages[0].count === 0 && (
-        <p className="muted small">Chưa có bình luận.</p>
-      )}
-      {comments.data?.pages
-        .flatMap((page) => page.results)
-        .map((comment) => (
-          <article className="comment" key={comment.id}>
-            <div>
-              <strong>{comment.author_name}</strong>
-              <small>{date(comment.created_at)}</small>
-            </div>
-            <p>{comment.body}</p>
-            {comment.is_owner && (
-              <button
-                className="text-button danger-button"
-                aria-label="Xóa bình luận của bạn"
-                disabled={remove.isPending}
-                onClick={() => {
-                  if (window.confirm("Xóa bình luận này?"))
-                    remove.mutate(comment.id);
-                }}
-              >
-                Xóa
-              </button>
-            )}
-          </article>
-        ))}
-      <ErrorText error={remove.error} />
-      {comments.hasNextPage && (
-        <Button
-          variant="outline"
-          disabled={comments.isFetchingNextPage}
-          onClick={() => void comments.fetchNextPage()}
-        >
-          Xem thêm bình luận
-        </Button>
-      )}
-    </section>
+        <Heart size={20} aria-hidden fill={liked ? "currentColor" : "none"} />
+        <span>{likes.data?.count ?? 0}</span>
+      </Button>
+      <ErrorText error={likes.error || mutation.error} />
+    </div>
   );
 }

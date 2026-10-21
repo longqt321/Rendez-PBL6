@@ -103,9 +103,8 @@ class Command(BaseCommand):
                     key,
                 )
                 public = submission.assets.first().public_photo
-                public.attribution = photo["credit"]
                 public.published_at = now - timedelta(minutes=order * len(data["places"]) + index)
-                public.save(update_fields=["attribution", "published_at"])
+                public.save(update_fields=["published_at"])
                 set_tags(public, photo.get("tags", []), editor)
                 added += 1
             self.stdout.write(entry["name"])

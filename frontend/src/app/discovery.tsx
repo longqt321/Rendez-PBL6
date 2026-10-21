@@ -29,11 +29,15 @@ import type {
   VisualDetail,
   VisualPlace,
 } from "../lib/api/visual";
-import { PhotoCredit, ShareButton, OwnPhotoControls, Comments } from "./social";
+import {
+  PhotoCredit,
+  ShareButton,
+  OwnPhotoControls,
+  LikeButton,
+} from "./social";
 import { MasonryFeed } from "./masonry";
 import { Button } from "../components/ui/button";
 import {
-  AttributeChips,
   Cover,
   ErrorText,
   Filters,
@@ -52,12 +56,21 @@ function PhotoImage({
   full?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
-  if (failed) return <div className="placeholder">Không tải được ảnh</div>;
+  if (failed)
+    return (
+      <div
+        className={
+          full ? "placeholder viewer-image" : "placeholder platform-photo"
+        }
+      >
+        Không tải được ảnh
+      </div>
+    );
   return (
     <img
-      className={full ? "viewer-image" : "card-image"}
+      className={full ? "viewer-image" : "card-image platform-photo"}
       src={photo.url}
-      alt={photo.alt_text || "Ảnh cộng đồng"}
+      alt={photo.alt_text || photo.caption || "Ảnh địa điểm"}
       width={photo.width}
       height={photo.height}
       loading={full ? "eager" : "lazy"}
@@ -65,6 +78,74 @@ function PhotoImage({
     />
   );
 }
+export function PhotoCard({
+  photo,
+  place,
+  from,
+}: {
+  photo: PublicPhoto;
+  place: VisualPlace;
+  from: string;
+}) {
+  return (
+    <article className="place-card photo-card">
+      <div className="pin-body">
+        <div className="photo-card-media">
+          <SaveButton place={place} compact />
+          <Link
+            to={"/photos/" + photo.id}
+            state={{ from }}
+            aria-label={"Xem ảnh của " + place.name}
+          >
+            <PhotoImage photo={photo} />
+            <span className="photo-open">
+              Xem ảnh <ArrowUpRight size={17} aria-hidden />
+            </span>
+          </Link>
+        </div>
+        <div className="card-copy">
+          <Link to={"/photos/" + photo.id} state={{ from }}>
+            <h2>{place.name}</h2>
+          </Link>
+          <p className="muted small">
+            <MapPin size={12} aria-hidden />
+            {place.address.replace(/,?\s*Đà Nẵng\s*$/i, "")}
+          </p>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function SimilarPlaces({ photoId }: { photoId: string }) {
+  const location = useLocation(),
+    me = useMe();
+  const result = useQuery({
+    queryKey: ["similar-places", photoId, me.data?.id],
+    queryFn: ({ signal }) =>
+      api<FeedItem[]>("photos/" + photoId + "/similar/", { signal }),
+  });
+  if (result.isPending || result.data?.length === 0) return null;
+  return (
+    <section className="similar-places" aria-labelledby="similar-heading">
+      <h2 id="similar-heading">Địa điểm tương tự</h2>
+      <State error={result.error} onRetry={() => void result.refetch()} />
+      {result.data && (
+        <MasonryFeed className="pin-feed">
+          {result.data.map(({ photo, place }) => (
+            <PhotoCard
+              key={place.id}
+              photo={photo}
+              place={place}
+              from={location.pathname + location.search}
+            />
+          ))}
+        </MasonryFeed>
+      )}
+    </section>
+  );
+}
+
 function mapLocationQuery(query: string, place: VisualPlace) {
   const next = new URLSearchParams(query);
   next.delete("page");
@@ -146,54 +227,7 @@ export function Discover({ saved = false }: { saved?: boolean }) {
         </header>
       ) : (
         <>
-          <header className="discovery-intro">
-            <div>
-              <span className="eyebrow">THÀNH PHỐ BÊN SÔNG HÀN</span>
-              <h1>
-                Khám phá Đà Nẵng<span className="brand-dot">.</span>
-              </h1>
-              <p className="muted">Chọn một góc nhìn. Lưu một nơi muốn ghé.</p>
-            </div>
-            <Link className="intro-map-link" to="/map">
-              <MapPin size={18} aria-hidden />
-              Mở bản đồ
-              <ArrowUpRight size={16} aria-hidden />
-            </Link>
-          </header>
-          {!query && (
-            <div className="discovery-picks" aria-label="Khám phá theo chủ đề">
-              <Link to="/discover?category=cafe">
-                <img
-                  src="/photos/danang-cafe.jpg"
-                  alt="Không gian Oxy Garden Coffee"
-                />
-                <span>
-                  <small>DỪNG LẠI MỘT CHÚT</small>
-                  <strong>Một buổi cà phê</strong>
-                </span>
-                <ArrowUpRight size={20} aria-hidden />
-              </Link>
-              <Link to="/discover?category=riverside">
-                <img
-                  src="/photos/danang-river.jpg"
-                  alt="Cầu Rồng bên sông Hàn"
-                />
-                <span>
-                  <small>DỌC HAI BỜ</small>
-                  <strong>Đi một vòng sông Hàn</strong>
-                </span>
-                <ArrowUpRight size={20} aria-hidden />
-              </Link>
-              <Link to="/discover?category=beach">
-                <img src="/photos/danang-beach.jpg" alt="Bãi biển Mỹ Khê" />
-                <span>
-                  <small>PHÍA CÓ BIỂN</small>
-                  <strong>Ra biển thôi</strong>
-                </span>
-                <ArrowUpRight size={20} aria-hidden />
-              </Link>
-            </div>
-          )}
+          <h1 className="sr-only">Khám phá Đà Nẵng</h1>
           {!(
             result.isError &&
             !result.data &&
@@ -229,60 +263,12 @@ export function Discover({ saved = false }: { saved?: boolean }) {
                   <PlaceCard key={place.id} place={place} />
                 ))
               : photos.map(({ photo, place }) => (
-                  <article className="place-card photo-card" key={photo.id}>
-                    <div className="pin-body">
-                      <div className="photo-card-media">
-                        <SaveButton place={place} compact />
-                        <Link
-                          to={"/photos/" + photo.id + location.search}
-                          state={{
-                            from: location.pathname + location.search,
-                            photoIds: photos.map((item) => item.photo.id),
-                          }}
-                          aria-label={"Xem ảnh của " + place.name}
-                        >
-                          <PhotoImage photo={photo} />
-                          <span className="photo-open">
-                            Xem ảnh <ArrowUpRight size={17} />
-                          </span>
-                        </Link>
-                      </div>
-                      <div className="card-copy">
-                        <span className="pin-category">
-                          {place.category.name}
-                        </span>
-                        <Link
-                          to={"/places/" + place.id + location.search}
-                          state={{
-                            from: location.pathname + location.search,
-                            photoId: photo.id,
-                          }}
-                        >
-                          <h2>{place.name}</h2>
-                        </Link>
-                        <p className="muted small">
-                          <MapPin size={12} aria-hidden />
-                          {place.address}
-                        </p>
-                        {photo.matched_attribute_codes.length > 0 && (
-                          <p className="small">Đặc điểm khớp bộ lọc:</p>
-                        )}
-                        <AttributeChips
-                          attributes={photo.attributes}
-                          matched={photo.matched_attribute_codes}
-                        />
-                      </div>
-                      {place.latitude !== null && place.longitude !== null && (
-                        <Link
-                          className="pin-map-link"
-                          to={"/map?" + mapLocationQuery(query, place)}
-                          aria-label={"Vị trí của " + place.name}
-                        >
-                          <MapPin size={15} aria-hidden /> Xem vị trí
-                        </Link>
-                      )}
-                    </div>
-                  </article>
+                  <PhotoCard
+                    key={photo.id}
+                    photo={photo}
+                    place={place}
+                    from={location.pathname + location.search}
+                  />
                 ))}
           </FeedLayout>
           {saved && favorites.data ? (
@@ -319,7 +305,15 @@ export function Discover({ saved = false }: { saved?: boolean }) {
     </>
   );
 }
-function ReportButton({ kind, id }: { kind: "photos" | "places"; id: string }) {
+function ReportButton({
+  kind,
+  id,
+  compact = false,
+}: {
+  kind: "photos" | "places";
+  id: string;
+  compact?: boolean;
+}) {
   const [open, setOpen] = useState(false),
     dialog = useRef<HTMLDialogElement>(null),
     trigger = useRef<HTMLButtonElement>(null),
@@ -342,6 +336,8 @@ function ReportButton({ kind, id }: { kind: "photos" | "places"; id: string }) {
       <Button
         ref={trigger}
         variant="outline"
+        aria-label="Báo cáo nội dung"
+        title="Báo cáo nội dung"
         disabled={me.isPending || me.isError}
         onClick={() => {
           if (!me.data) {
@@ -354,7 +350,7 @@ function ReportButton({ kind, id }: { kind: "photos" | "places"; id: string }) {
         }}
       >
         <Flag size={16} aria-hidden />
-        Báo cáo nội dung
+        {!compact && "Báo cáo nội dung"}
       </Button>
       <dialog
         ref={dialog}
@@ -443,15 +439,10 @@ function Gallery({
             to={"/photos/" + p.id + "?" + query}
             state={{
               from: "/places/" + placeId + "?" + query,
-              photoIds: photos.data?.results.map((item) => item.id),
             }}
             aria-label={"Xem ảnh " + (p.caption || "cộng đồng")}
           >
             <PhotoImage photo={p} />
-            <AttributeChips
-              attributes={p.attributes}
-              matched={p.matched_attribute_codes}
-            />
           </Link>
         ))}
       </div>
@@ -479,12 +470,9 @@ function Gallery({
 }
 export function PlaceDetailPage() {
   const { id } = useParams(),
-    [params] = useSearchParams(),
     location = useLocation(),
     me = useMe();
-  const query = discoveryQuery(params);
-  query.delete("page");
-  const suffix = query.toString();
+  const suffix = "";
   const result = useQuery({
     queryKey: ["place", id, suffix, me.data?.id],
     queryFn: ({ signal }) =>
@@ -501,36 +489,8 @@ export function PlaceDetailPage() {
       />
     );
   const place = result.data;
-  const selectedPhoto = (location.state as { photoId?: string } | null)
-    ?.photoId;
-  const support =
-    place.photos.results.find((p) => p.id === selectedPhoto) ||
-    place.supporting_photo;
   return (
     <>
-      <Link className="back-link" to={from}>
-        <ArrowLeft size={18} aria-hidden />
-        Quay lại
-      </Link>
-      {params.get("attributes") && support && (
-        <section className="match-evidence panel">
-          <div>
-            <span className="eyebrow">Đặc điểm đã chọn</span>
-            <h2>Ảnh khớp bộ lọc</h2>
-            <AttributeChips
-              attributes={support.attributes}
-              matched={support.matched_attribute_codes}
-            />
-            <p className="muted small">Các đặc điểm nhìn thấy trong ảnh.</p>
-          </div>
-          <Link
-            to={"/photos/" + support.id + "?" + suffix}
-            aria-label="Xem ảnh khớp bộ lọc"
-          >
-            <PhotoImage photo={support} />
-          </Link>
-        </section>
-      )}
       <header className="place-header">
         <div>
           <span className="eyebrow">{place.category.name}</span>
@@ -570,44 +530,18 @@ export function PlaceDetailPage() {
             </Button>
           </div>
         </div>
-        <Cover place={place} className="detail-cover" />
-      </header>
-      {place.attribute_evidence.length > 0 && (
-        <section className="panel">
-          <h2>Nhìn thấy trong ảnh</h2>
-          <p className="muted small">
-            Các đặc điểm này xuất hiện trong ảnh, không phải ở mọi khu vực của
-            quán.
-          </p>
-          <div className="attribute-chips">
-            {place.attribute_evidence.map((e) => (
-              <Link
-                className="attribute-chip"
-                key={e.attribute.code}
-                to={"/photos/" + e.photo_ids[0]}
-              >
-                {e.attribute.display_name_vi}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-      <section className="panel">
-        <div className="page-heading">
-          <h2>
-            {params.get("attributes") ? "Ảnh theo bộ lọc" : "Ảnh cộng đồng"}
-          </h2>
-          {params.get("attributes") && (
-            <Link to={"/places/" + place.id}>Xem tất cả ảnh</Link>
-          )}
+        <div className="place-cover">
+          <Cover place={place} className="detail-cover" />
+          <Link
+            className="viewer-back"
+            to={from}
+            aria-label="Quay lại"
+            title="Quay lại"
+          >
+            <ArrowLeft size={20} aria-hidden />
+          </Link>
         </div>
-        <Gallery
-          key={id + suffix}
-          placeId={id!}
-          query={suffix}
-          initial={place.photos}
-        />
-      </section>
+      </header>
       <section className="panel">
         <h2>Thông tin địa điểm</h2>
         {place.description && <p>{place.description}</p>}
@@ -640,6 +574,17 @@ export function PlaceDetailPage() {
         )}
         <ReportButton kind="places" id={place.id} />
       </section>
+      <section className="panel">
+        <div className="page-heading">
+          <h2>Ảnh tại địa điểm</h2>
+        </div>
+        <Gallery
+          key={id + suffix}
+          placeId={id!}
+          query={suffix}
+          initial={place.photos}
+        />
+      </section>
     </>
   );
 }
@@ -648,6 +593,9 @@ export function PhotoDetailPage() {
     [params] = useSearchParams(),
     location = useLocation(),
     me = useMe();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [id]);
   const result = useQuery({
     queryKey: ["photo", id, params.get("attributes"), me.data?.id],
     queryFn: ({ signal }) =>
@@ -665,9 +613,8 @@ export function PhotoDetailPage() {
     );
   const photoNavigation = location.state as {
     from?: string;
-    photoIds?: string[];
   } | null;
-  const photoIds = photoNavigation?.photoIds || [];
+  const photoIds = result.data.photo_ids;
   const photoIndex = photoIds.indexOf(id!);
   const photo = result.data,
     from =
@@ -675,16 +622,17 @@ export function PhotoDetailPage() {
       "/places/" + photo.place_id;
   return (
     <>
-      <Link className="back-link" to={from}>
-        <ArrowLeft size={18} aria-hidden />
-        Quay lại
-      </Link>
       <section className="photo-viewer">
         <div className="viewer-stage">
           <PhotoImage key={photo.id} photo={photo} full />
-          <span className="viewer-dimensions">
-            {photo.width} × {photo.height} · Ảnh cộng đồng
-          </span>
+          <Link
+            className="viewer-back"
+            to={from}
+            aria-label="Quay lại"
+            title="Quay lại"
+          >
+            <ArrowLeft size={20} aria-hidden />
+          </Link>
           {photoIndex > 0 && (
             <Link
               className="viewer-arrow previous"
@@ -712,37 +660,36 @@ export function PhotoDetailPage() {
           )}
         </div>
         <div className="viewer-copy">
-          <span className="eyebrow">Ảnh cộng đồng</span>
-          <Link to={"/places/" + photo.place_id + location.search}>
+          <Link
+            className="photo-place-link"
+            to={"/places/" + photo.place_id}
+            state={{ from: location.pathname + location.search }}
+            aria-label={"Thông tin địa điểm " + photo.place.name}
+          >
             <h1>{photo.place.name}</h1>
+            <ChevronRight size={21} aria-hidden />
           </Link>
-          <p className="viewer-caption">
-            {photo.caption || "Ảnh do cộng đồng đóng góp."}
-          </p>
-          <p className="viewer-address">
-            <MapPin size={16} /> {photo.place.address}
-          </p>
+          {photo.caption && photo.caption !== photo.place.name && (
+            <p className="viewer-caption">{photo.caption}</p>
+          )}
+          <Link
+            className="viewer-address"
+            to={"/places/" + photo.place_id}
+            state={{ from: location.pathname + location.search }}
+          >
+            <MapPin size={16} aria-hidden /> {photo.place.address}
+          </Link>
           <PhotoCredit photo={photo} />
-          {photo.attributes.length > 0 && (
-            <h2 className="viewer-section-title">Nhìn thấy trong ảnh</h2>
-          )}
-          <AttributeChips
-            attributes={photo.attributes}
-            matched={photo.matched_attribute_codes}
-          />
-
-          {photo.published_at && (
-            <p className="muted small">Ngày đăng: {date(photo.published_at)}</p>
-          )}
-          <div className="detail-actions">
-            <SaveButton place={photo.place} />
-            <ShareButton />
-            <ReportButton kind="photos" id={photo.id} />
+          <div className="detail-actions photo-actions">
+            <LikeButton key={photo.id} photoId={photo.id} />
+            <SaveButton place={photo.place} compact />
+            <ShareButton compact />
+            <ReportButton kind="photos" id={photo.id} compact />
           </div>
           <OwnPhotoControls photo={photo} />
-          <Comments key={photo.id} photoId={photo.id} />
         </div>
       </section>
+      <SimilarPlaces key={photo.id} photoId={photo.id} />
     </>
   );
 }

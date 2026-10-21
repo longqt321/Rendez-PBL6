@@ -1,8 +1,14 @@
 import {
   Bookmark,
   Camera,
-  Images,
-  ArrowUpRight,
+  Settings,
+  Pencil,
+  KeyRound,
+  LogOut,
+  X,
+  ArrowLeft,
+  History,
+  Shield,
   User,
   Eye,
   EyeOff,
@@ -10,12 +16,16 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
-import { api, type Profile } from "../lib/api/client";
+import { useState, useEffect, useRef } from "react";
+import { api, type Profile, type Page } from "../lib/api/client";
 import { Button } from "../components/ui/button";
-import { ErrorText, State, useMe } from "./shared";
+import { ErrorText, State, useMe, useLogout, PlaceCard, Pager } from "./shared";
+
+import type { FeedItem, VisualPlace } from "../lib/api/visual";
+import { PhotoCard } from "./discovery";
+import { MasonryFeed } from "./masonry";
 
 const schema = z.object({
   email: z.email("Email không hợp lệ."),
@@ -199,98 +209,214 @@ export function Auth({ register = false }: { register?: boolean }) {
   );
 }
 export function ProfilePage() {
-  const me = useMe(),
-    cache = useQueryClient(),
-    navigate = useNavigate();
-  const logout = useMutation({
-    mutationFn: () => api<void>("auth/logout/", { method: "POST" }),
-    onSuccess: () => {
-      cache.clear();
-      cache.setQueryData(["me"], null);
-      navigate("/login", { replace: true });
-    },
-  });
+  const me = useMe();
+  const [params] = useSearchParams();
+  const saved = params.get("tab") === "saved";
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [view, setView] = useState<"menu" | "name" | "password">("menu");
+  const dialog = useRef<HTMLDialogElement>(null);
+  const settingsTrigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (settingsOpen) dialog.current?.showModal();
+    else if (dialog.current?.open) dialog.current.close();
+  }, [settingsOpen]);
+  const logout = useLogout();
   if (me.isPending) return <State pending />;
   if (me.isError)
     return <State error={me.error} onRetry={() => void me.refetch()} />;
-  if (!me.data)
-    return (
-      <section className="state">
-        <h1>Cá nhân</h1>
-        <p>Đăng nhập để lưu địa điểm và đăng ảnh.</p>
-        <Button asChild>
-          <Link to="/login" state={{ returnTo: "/profile" }}>
-            Đăng nhập
-          </Link>
-        </Button>
-      </section>
-    );
+  if (!me.data) return null;
+  const openSettings = (next: typeof view) => {
+    setView(next);
+    setSettingsOpen(true);
+  };
   return (
     <section className="profile-page">
-      <h1>Tài khoản</h1>
-      <p className="muted">
-        Địa điểm đã lưu, ảnh đã đăng và thông tin của bạn.
-      </p>
-      <div className="profile-card">
-        <span className="avatar">
+      <header className="profile-header">
+        <span className="avatar profile-avatar" aria-hidden>
           {me.data.display_name.slice(0, 1).toUpperCase() || <User />}
         </span>
-        <div>
-          <h2>{me.data.display_name}</h2>
-          <p>{me.data.email}</p>
-          <div className="profile-stats">
-            <span>
-              <strong>{me.data.saved_count ?? 0}</strong> địa điểm đã lưu
-            </span>
-            <span>
-              <strong>{me.data.photo_count ?? 0}</strong> ảnh công khai
-            </span>
-          </div>
+        <div className="profile-identity">
+          <h1>{me.data.display_name}</h1>
         </div>
-      </div>
-      <div className="profile-links">
-        <Link to="/saved">
-          <Bookmark size={22} />
-          <span>
-            <strong>Địa điểm đã lưu</strong>
-            <small>Xem lại những nơi bạn muốn ghé</small>
-          </span>
-          <ArrowUpRight className="arrow" />
+        <button
+          className="profile-settings-button"
+          ref={settingsTrigger}
+          aria-label="Cài đặt tài khoản"
+          title="Cài đặt tài khoản"
+          onClick={() => openSettings("menu")}
+        >
+          <Settings size={22} aria-hidden />
+        </button>
+      </header>
+      <nav className="profile-tabs" aria-label="Nội dung cá nhân">
+        <Link to="/profile" aria-current={!saved ? "page" : undefined}>
+          <Camera size={18} aria-hidden />
+          Ảnh đã đăng <span>{me.data.photo_count ?? 0}</span>
         </Link>
-        <Link to="/submissions">
-          <Images size={22} />
-          <span>
-            <strong>Ảnh của tôi</strong>
-            <small>Xem ảnh bạn đã đăng</small>
-          </span>
-          <ArrowUpRight className="arrow" />
+        <Link to="/profile?tab=saved" aria-current={saved ? "page" : undefined}>
+          <Bookmark size={18} aria-hidden />
+          Đã lưu <span>{me.data.saved_count ?? 0}</span>
         </Link>
-        <Link to="/submissions/new">
-          <Camera size={22} />
-          <span>
-            <strong>Đăng ảnh</strong>
-            <small>Chia sẻ ảnh và thêm địa điểm</small>
-          </span>
-          <ArrowUpRight className="arrow" />
-        </Link>
-        {me.data.is_staff && <a href="/admin/">Quản trị</a>}
-      </div>
-      <AccountSettings profile={me.data} />
-      <Button
-        variant="outline"
-        disabled={logout.isPending}
-        onClick={() => {
-          if (window.confirm("Đăng xuất khỏi Rendez?")) logout.mutate();
+      </nav>
+      <ProfileCollection key={saved ? "saved" : "photos"} saved={saved} />
+      <dialog
+        ref={dialog}
+        className="profile-settings-dialog"
+        aria-labelledby="profile-settings-title"
+        onCancel={() => setSettingsOpen(false)}
+        onClose={() => {
+          setSettingsOpen(false);
+          settingsTrigger.current?.focus();
         }}
       >
-        Đăng xuất
-      </Button>
-      <ErrorText error={logout.error} />
+        <header className="profile-dialog-header">
+          {view !== "menu" && (
+            <button
+              type="button"
+              className="profile-settings-button"
+              aria-label="Quay lại cài đặt"
+              onClick={() => setView("menu")}
+            >
+              <ArrowLeft size={20} aria-hidden />
+            </button>
+          )}
+          <h2 id="profile-settings-title">
+            {view === "name"
+              ? "Chỉnh sửa hồ sơ"
+              : view === "password"
+                ? "Đổi mật khẩu"
+                : "Cài đặt tài khoản"}
+          </h2>
+          <button
+            type="button"
+            className="profile-settings-button"
+            aria-label="Đóng cài đặt"
+            onClick={() => dialog.current?.close()}
+          >
+            <X size={20} aria-hidden />
+          </button>
+        </header>
+        {settingsOpen &&
+          (view === "menu" ? (
+            <div className="profile-settings-menu">
+              <div className="profile-account-email">
+                <span>Email</span>
+                <strong>{me.data.email}</strong>
+              </div>
+              <button onClick={() => setView("name")}>
+                <Pencil size={18} aria-hidden />
+                Chỉnh sửa hồ sơ
+              </button>
+              <button onClick={() => setView("password")}>
+                <KeyRound size={18} aria-hidden />
+                Đổi mật khẩu
+              </button>
+              <Link to="/submissions" onClick={() => dialog.current?.close()}>
+                <History size={18} aria-hidden />
+                Lịch sử đăng ảnh
+              </Link>
+              {me.data.is_staff && (
+                <a href="/admin/">
+                  <Shield size={18} aria-hidden />
+                  Quản trị
+                </a>
+              )}
+              <button
+                className="danger-button"
+                disabled={logout.isPending}
+                onClick={() => {
+                  if (window.confirm("Đăng xuất khỏi Rendez?")) logout.mutate();
+                }}
+              >
+                <LogOut size={18} aria-hidden />
+                Đăng xuất
+              </button>
+              <ErrorText error={logout.error} />
+            </div>
+          ) : (
+            <AccountSettings key={view} profile={me.data} mode={view} />
+          ))}
+      </dialog>
     </section>
   );
 }
 
-function AccountSettings({ profile }: { profile: Profile }) {
+function ProfileCollection({ saved }: { saved: boolean }) {
+  const [params] = useSearchParams(),
+    me = useMe();
+  const page = params.get("page") || "1";
+  const photos = useQuery({
+    queryKey: ["profile-photos", me.data?.id, page],
+    enabled: !saved,
+    queryFn: ({ signal }) =>
+      api<Page<FeedItem>>("feed/?mine=true&page=" + page, { signal }),
+  });
+  const places = useQuery({
+    queryKey: ["profile-saved", me.data?.id, page],
+    enabled: saved,
+    queryFn: ({ signal }) =>
+      api<Page<VisualPlace>>("favorites/?page=" + page, { signal }),
+  });
+  const result = saved ? places : photos;
+  return (
+    <div className="profile-content">
+      <State
+        pending={result.isPending}
+        error={result.error}
+        onRetry={() => void result.refetch()}
+      />
+      {result.data?.count === 0 && (
+        <section className="profile-empty">
+          {saved ? (
+            <Bookmark size={32} aria-hidden />
+          ) : (
+            <Camera size={32} aria-hidden />
+          )}
+          <h2>{saved ? "Chưa có địa điểm đã lưu" : "Bạn chưa đăng ảnh nào"}</h2>
+          <p>
+            {saved
+              ? "Lưu địa điểm khi khám phá để tìm lại ở đây."
+              : "Ảnh bạn đăng sẽ xuất hiện ở đây."}
+          </p>
+          <Button asChild>
+            <Link to={saved ? "/discover" : "/submissions/new"}>
+              {saved ? "Khám phá địa điểm" : "Đăng ảnh"}
+            </Link>
+          </Button>
+        </section>
+      )}
+      {saved ? (
+        <div className="place-grid">
+          {places.data?.results.map((place) => (
+            <PlaceCard key={place.id} place={place} />
+          ))}
+        </div>
+      ) : (
+        <MasonryFeed className="pin-feed">
+          {photos.data?.results.map(({ photo, place }) => (
+            <PhotoCard
+              key={photo.id}
+              photo={photo}
+              place={place}
+              from="/profile"
+            />
+          ))}
+        </MasonryFeed>
+      )}
+      {result.data && (result.data.next || result.data.previous) && (
+        <Pager next={result.data.next} previous={result.data.previous} />
+      )}
+    </div>
+  );
+}
+
+function AccountSettings({
+  profile,
+  mode,
+}: {
+  profile: Profile;
+  mode: "name" | "password";
+}) {
   const cache = useQueryClient();
   const [name, setName] = useState(profile.display_name);
   const [current, setCurrent] = useState("");
@@ -319,90 +445,92 @@ function AccountSettings({ profile }: { profile: Profile }) {
   });
   return (
     <div className="account-settings">
-      <section className="panel">
-        <h2>Thông tin cá nhân</h2>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            update.mutate();
-          }}
-        >
-          <label>
-            Tên hiển thị
-            <input
-              value={name}
-              onChange={(event) => {
-                setName(event.target.value);
-                update.reset();
-              }}
-              required
-              maxLength={100}
-              autoComplete="nickname"
-            />
-          </label>
-          <Button disabled={!name.trim() || update.isPending}>
-            {update.isPending ? "Đang lưu…" : "Lưu thay đổi"}
-          </Button>
-          <ErrorText error={update.error} />
-          {update.isSuccess && (
-            <p className="success" role="status">
-              Đã cập nhật tên.
-            </p>
-          )}
-        </form>
-      </section>
-      <section className="panel">
-        <h2>Đổi mật khẩu</h2>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            change.mutate();
-          }}
-        >
-          <label>
-            Mật khẩu hiện tại
-            <input
-              type="password"
-              value={current}
-              onChange={(event) => {
-                setCurrent(event.target.value);
-                change.reset();
-              }}
-              required
-              autoComplete="current-password"
-            />
-          </label>
-          <div className="auth-field">
-            <label htmlFor="profile-new-password">Mật khẩu mới</label>
-            <input
-              id="profile-new-password"
-              aria-describedby="profile-password-hint"
-              type="password"
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value);
-                change.reset();
-              }}
-              required
-              minLength={8}
-              maxLength={4096}
-              autoComplete="new-password"
-            />
-            <small id="profile-password-hint" className="muted">
-              Ít nhất 8 ký tự. Tránh mật khẩu phổ biến hoặc chỉ gồm số.
-            </small>
-          </div>
-          <Button disabled={change.isPending}>
-            {change.isPending ? "Đang đổi…" : "Đổi mật khẩu"}
-          </Button>
-          <ErrorText error={change.error} />
-          {change.isSuccess && (
-            <p className="success" role="status">
-              Đã đổi mật khẩu. Phiên đăng nhập hiện tại được giữ.
-            </p>
-          )}
-        </form>
-      </section>
+      {mode === "name" && (
+        <section className="panel">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              update.mutate();
+            }}
+          >
+            <label>
+              Tên hiển thị
+              <input
+                value={name}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  update.reset();
+                }}
+                required
+                maxLength={100}
+                autoComplete="nickname"
+              />
+            </label>
+            <Button disabled={!name.trim() || update.isPending}>
+              {update.isPending ? "Đang lưu…" : "Lưu thay đổi"}
+            </Button>
+            <ErrorText error={update.error} />
+            {update.isSuccess && (
+              <p className="success" role="status">
+                Đã cập nhật tên.
+              </p>
+            )}
+          </form>
+        </section>
+      )}
+      {mode === "password" && (
+        <section className="panel">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              change.mutate();
+            }}
+          >
+            <label>
+              Mật khẩu hiện tại
+              <input
+                type="password"
+                value={current}
+                onChange={(event) => {
+                  setCurrent(event.target.value);
+                  change.reset();
+                }}
+                required
+                autoComplete="current-password"
+              />
+            </label>
+            <div className="auth-field">
+              <label htmlFor="profile-new-password">Mật khẩu mới</label>
+              <input
+                id="profile-new-password"
+                aria-describedby="profile-password-hint"
+                type="password"
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  change.reset();
+                }}
+                required
+                minLength={8}
+                maxLength={4096}
+                autoComplete="new-password"
+              />
+              <small id="profile-password-hint" className="muted">
+                Ít nhất 8 ký tự. Tránh mật khẩu phổ biến hoặc chỉ gồm số.
+              </small>
+            </div>
+            <Button disabled={change.isPending}>
+              {change.isPending ? "Đang đổi…" : "Đổi mật khẩu"}
+            </Button>
+            <ErrorText error={change.error} />
+            {change.isSuccess && (
+              <p className="success" role="status">
+                Đã đổi mật khẩu.
+              </p>
+            )}
+          </form>
+        </section>
+      )}
     </div>
   );
 }

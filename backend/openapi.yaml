@@ -175,22 +175,6 @@ paths:
                 items:
                   $ref: '#/components/schemas/Category'
           description: ''
-  /api/v1/comments/{id}/:
-    delete:
-      operationId: comments_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - comments
-      security:
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/favorites/:
     get:
       operationId: favorites_list
@@ -281,6 +265,11 @@ paths:
         name: category
         schema:
           type: string
+      - in: query
+        name: mine
+        schema:
+          type: boolean
+        description: Only photos posted by the authenticated user.
       - name: page
         required: false
         in: query
@@ -413,9 +402,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PhotoDetail'
           description: ''
-  /api/v1/photos/{id}/comments/:
+  /api/v1/photos/{id}/likes/:
     get:
-      operationId: photos_comments_list
+      operationId: photos_likes_retrieve
       parameters:
       - in: path
         name: id
@@ -423,18 +412,6 @@ paths:
           type: string
           format: uuid
         required: true
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
       tags:
       - photos
       security:
@@ -444,10 +421,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPhotoCommentList'
+                $ref: '#/components/schemas/PhotoLikes'
           description: ''
     post:
-      operationId: photos_comments_create
+      operationId: photos_likes_create
       parameters:
       - in: path
         name: id
@@ -457,27 +434,31 @@ paths:
         required: true
       tags:
       - photos
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PhotoCommentRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PhotoCommentRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PhotoCommentRequest'
-        required: true
       security:
       - cookieAuth: []
       responses:
-        '201':
+        '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PhotoComment'
+                $ref: '#/components/schemas/PhotoLikes'
           description: ''
+    delete:
+      operationId: photos_likes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photos
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/photos/{id}/manage/:
     patch:
       operationId: photos_manage_partial_update
@@ -558,6 +539,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContentReport'
+          description: ''
+  /api/v1/photos/{id}/similar/:
+    get:
+      operationId: photos_similar_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photos
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedItem'
           description: ''
   /api/v1/places/:
     get:
@@ -1038,29 +1042,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FeedItem'
-    PaginatedPhotoCommentList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/PhotoComment'
     PaginatedPhotoSubmissionList:
       type: object
       required:
@@ -1159,40 +1140,6 @@ components:
           type: string
           minLength: 1
           maxLength: 100
-    PhotoComment:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        body:
-          type: string
-          maxLength: 1000
-        author_name:
-          type: string
-          readOnly: true
-        is_owner:
-          type: boolean
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-      required:
-      - author_name
-      - body
-      - created_at
-      - id
-      - is_owner
-    PhotoCommentRequest:
-      type: object
-      properties:
-        body:
-          type: string
-          minLength: 1
-          maxLength: 1000
-      required:
-      - body
     PhotoDetail:
       type: object
       properties:
@@ -1238,27 +1185,42 @@ components:
         is_owner:
           type: boolean
           readOnly: true
-        attribution:
-          readOnly: true
         place:
           allOf:
           - $ref: '#/components/schemas/VisualPlace'
           readOnly: true
+        photo_ids:
+          type: array
+          items:
+            type: string
+          readOnly: true
       required:
       - alt_text
       - attributes
-      - attribution
       - author_name
       - caption
       - height
       - id
       - is_owner
       - matched_attribute_codes
+      - photo_ids
       - place
       - place_id
       - published_at
       - url
       - width
+    PhotoLikes:
+      type: object
+      properties:
+        liked:
+          type: boolean
+          readOnly: true
+        count:
+          type: integer
+          readOnly: true
+      required:
+      - count
+      - liked
     PhotoPublicationStatusEnum:
       enum:
       - pending_review
@@ -1435,12 +1397,9 @@ components:
         is_owner:
           type: boolean
           readOnly: true
-        attribution:
-          readOnly: true
       required:
       - alt_text
       - attributes
-      - attribution
       - author_name
       - caption
       - height
@@ -1552,6 +1511,11 @@ components:
           type: string
           nullable: true
           readOnly: true
+        cover_photo_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
         is_saved:
           type: boolean
           readOnly: true
@@ -1584,6 +1548,7 @@ components:
       - attribute_evidence
       - category
       - cover_image_url
+      - cover_photo_id
       - description
       - id
       - is_saved
@@ -1640,6 +1605,11 @@ components:
           type: string
           nullable: true
           readOnly: true
+        cover_photo_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
         is_saved:
           type: boolean
           readOnly: true
@@ -1652,6 +1622,7 @@ components:
       - address
       - category
       - cover_image_url
+      - cover_photo_id
       - id
       - is_saved
       - latitude

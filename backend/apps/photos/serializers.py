@@ -8,7 +8,6 @@ from .models import (
     PhotoSubmission,
     PlacePhoto,
     VisualAttribute,
-    PhotoComment,
 )
 
 
@@ -46,7 +45,6 @@ class PublicPhotoSerializer(serializers.ModelSerializer):
             "matched_attribute_codes",
             "author_name",
             "is_owner",
-            "attribution",
         )
 
         read_only_fields = fields
@@ -74,6 +72,9 @@ class VisualPlaceSerializer(serializers.ModelSerializer):
     latitude = serializers.FloatField(allow_null=True)
     longitude = serializers.FloatField(allow_null=True)
     cover_image_url = serializers.SerializerMethodField()
+    cover_photo_id = serializers.UUIDField(
+        source="visual_cover_id", read_only=True, allow_null=True
+    )
     is_saved = serializers.BooleanField(read_only=True)
     supporting_photo = serializers.SerializerMethodField()
 
@@ -87,6 +88,7 @@ class VisualPlaceSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
             "cover_image_url",
+            "cover_photo_id",
             "is_saved",
             "supporting_photo",
         )
@@ -110,9 +112,13 @@ class FeedItemSerializer(serializers.Serializer):
 
 class PhotoDetailSerializer(PublicPhotoSerializer):
     place = serializers.SerializerMethodField()
+    photo_ids = serializers.SerializerMethodField()
 
     class Meta(PublicPhotoSerializer.Meta):
-        fields = PublicPhotoSerializer.Meta.fields + ("place",)
+        fields = PublicPhotoSerializer.Meta.fields + ("place", "photo_ids")
+
+    def get_photo_ids(self, obj) -> list[str]:
+        return [str(pk) for pk in self.context["photo_ids"]]
 
     @extend_schema_field(VisualPlaceSerializer())
     def get_place(self, obj):
@@ -270,14 +276,6 @@ class CaptionSerializer(serializers.Serializer):
     caption = serializers.CharField(max_length=1000, allow_blank=True)
 
 
-class PhotoCommentSerializer(serializers.ModelSerializer):
-    author_name = serializers.CharField(source="user.display_name", read_only=True)
-    is_owner = serializers.SerializerMethodField()
-
-    class Meta:
-        model = PhotoComment
-        fields = ("id", "body", "author_name", "is_owner", "created_at")
-        read_only_fields = ("id", "author_name", "is_owner", "created_at")
-
-    def get_is_owner(self, obj) -> bool:
-        return obj.user_id == self.context["request"].user.pk
+class PhotoLikesSerializer(serializers.Serializer):
+    liked = serializers.BooleanField(read_only=True)
+    count = serializers.IntegerField(read_only=True)

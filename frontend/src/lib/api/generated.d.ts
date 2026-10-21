@@ -132,22 +132,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/comments/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["comments_destroy"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/favorites/": {
         parameters: {
             query?: never;
@@ -244,17 +228,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/photos/{id}/comments/": {
+    "/api/v1/photos/{id}/likes/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["photos_comments_list"];
+        get: operations["photos_likes_retrieve"];
         put?: never;
-        post: operations["photos_comments_create"];
-        delete?: never;
+        post: operations["photos_likes_create"];
+        delete: operations["photos_likes_destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -286,6 +270,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["photos_report_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photos/{id}/similar/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["photos_similar_list"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -466,21 +466,6 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["FeedItem"][];
         };
-        PaginatedPhotoCommentList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous?: string | null;
-            results: components["schemas"]["PhotoComment"][];
-        };
         PaginatedPhotoSubmissionList: {
             /** @example 123 */
             count: number;
@@ -536,17 +521,6 @@ export interface components {
         PatchedProfileUpdateRequest: {
             display_name?: string;
         };
-        PhotoComment: {
-            readonly id: number;
-            body: string;
-            readonly author_name: string;
-            readonly is_owner: boolean;
-            /** Format: date-time */
-            readonly created_at: string;
-        };
-        PhotoCommentRequest: {
-            body: string;
-        };
         PhotoDetail: {
             /** Format: uuid */
             readonly id: string;
@@ -563,8 +537,12 @@ export interface components {
             readonly matched_attribute_codes: string[];
             readonly author_name: string;
             readonly is_owner: boolean;
-            readonly attribution: unknown;
             readonly place: components["schemas"]["VisualPlace"];
+            readonly photo_ids: string[];
+        };
+        PhotoLikes: {
+            readonly liked: boolean;
+            readonly count: number;
         };
         /**
          * @description * `pending_review` - Chưa đăng
@@ -633,7 +611,6 @@ export interface components {
             readonly matched_attribute_codes: string[];
             readonly author_name: string;
             readonly is_owner: boolean;
-            readonly attribution: unknown;
         };
         /**
          * @description * `wrong_place` - Sai thông tin
@@ -673,6 +650,8 @@ export interface components {
             /** Format: double */
             longitude: number | null;
             readonly cover_image_url: string | null;
+            /** Format: uuid */
+            readonly cover_photo_id: string | null;
             readonly is_saved: boolean;
             readonly supporting_photo: components["schemas"]["PublicPhoto"] | null;
             description: string;
@@ -701,6 +680,8 @@ export interface components {
             /** Format: double */
             longitude: number | null;
             readonly cover_image_url: string | null;
+            /** Format: uuid */
+            readonly cover_photo_id: string | null;
             readonly is_saved: boolean;
             readonly supporting_photo: components["schemas"]["PublicPhoto"] | null;
         };
@@ -908,26 +889,6 @@ export interface operations {
             };
         };
     };
-    comments_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     favorites_list: {
         parameters: {
             query?: {
@@ -1003,6 +964,8 @@ export interface operations {
                 /** @description Comma-separated codes. AND on one public photo. */
                 attributes?: string;
                 category?: string;
+                /** @description Only photos posted by the authenticated user. */
+                mine?: boolean;
                 /** @description A page number within the paginated result set. */
                 page?: number;
                 /** @description Number of results to return per page. */
@@ -1120,14 +1083,9 @@ export interface operations {
             };
         };
     };
-    photos_comments_list: {
+    photos_likes_retrieve: {
         parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-                /** @description Number of results to return per page. */
-                page_size?: number;
-            };
+            query?: never;
             header?: never;
             path: {
                 id: string;
@@ -1141,12 +1099,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPhotoCommentList"];
+                    "application/json": components["schemas"]["PhotoLikes"];
                 };
             };
         };
     };
-    photos_comments_create: {
+    photos_likes_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -1155,21 +1113,35 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PhotoCommentRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PhotoCommentRequest"];
-                "multipart/form-data": components["schemas"]["PhotoCommentRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PhotoComment"];
+                    "application/json": components["schemas"]["PhotoLikes"];
                 };
+            };
+        };
+    };
+    photos_likes_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -1243,6 +1215,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContentReport"];
+                };
+            };
+        };
+    };
+    photos_similar_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedItem"][];
                 };
             };
         };

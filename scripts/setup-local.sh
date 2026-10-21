@@ -10,8 +10,8 @@ from pathlib import Path
 root = Path.cwd()
 Path('.local/runtime.env').write_text(f'''DJANGO_DEBUG=0
 DJANGO_SECRET_KEY={secrets.token_urlsafe(48)}
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,testserver
-DJANGO_CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8080,http://localhost:8080,http://127.0.0.1:5173,http://localhost:5173
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,testserver,hoangngan.tailc69000.ts.net
+DJANGO_CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8080,http://localhost:8080,http://127.0.0.1:5173,http://localhost:5173,https://hoangngan.tailc69000.ts.net
 DJANGO_HTTPS=0
 POSTGRES_DB=rendez_local
 POSTGRES_USER=rendez
