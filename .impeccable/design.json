@@ -1,0 +1,368 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T14:46:00.000Z",
+  "title": "Design System: Rendez",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Pine Green",
+        "canonical": "oklch(38.5% 0.06 160)",
+        "tonalRamp": [
+          "#10261f",
+          "#1b3d32",
+          "#234e40",
+          "#336e5b",
+          "#488f78",
+          "#68b098",
+          "#9ecebd",
+          "#edf4f0"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Pine Hover",
+        "canonical": "oklch(31.5% 0.05 160)",
+        "tonalRamp": [
+          "#0c1e18",
+          "#142e26",
+          "#1b3d32",
+          "#285848",
+          "#3b7b66",
+          "#5ba189",
+          "#91c5b3",
+          "#e5f0eb"
+        ]
+      },
+      "primary-subtle": {
+        "role": "primary",
+        "displayName": "Pine Subtle",
+        "canonical": "oklch(96% 0.015 160)",
+        "tonalRamp": [
+          "#162a22",
+          "#234135",
+          "#386352",
+          "#568d77",
+          "#7fb8a0",
+          "#b2dcd8",
+          "#dbeef8",
+          "#edf4f0"
+        ]
+      },
+      "accent": {
+        "role": "accent",
+        "displayName": "Clay Terracotta",
+        "canonical": "oklch(55% 0.15 42)",
+        "tonalRamp": [
+          "#521e10",
+          "#7d2f19",
+          "#a74225",
+          "#c45c3d",
+          "#d97759",
+          "#e89a82",
+          "#f3c2b2",
+          "#fbf0ec"
+        ]
+      },
+      "accent-hover": {
+        "role": "accent",
+        "displayName": "Clay Hover",
+        "canonical": "oklch(48% 0.16 40)",
+        "tonalRamp": [
+          "#42170b",
+          "#682512",
+          "#8e351b",
+          "#ab4b2e",
+          "#c56446",
+          "#da856b",
+          "#ebb09f",
+          "#f8e6e0"
+        ]
+      },
+      "accent-subtle": {
+        "role": "accent",
+        "displayName": "Clay Subtle",
+        "canonical": "oklch(96% 0.02 42)",
+        "tonalRamp": [
+          "#361910",
+          "#5b2b1d",
+          "#8c442f",
+          "#bd654b",
+          "#da8c75",
+          "#edb4a3",
+          "#f6d8ce",
+          "#fbf0ec"
+        ]
+      },
+      "neutral-ink": {
+        "role": "neutral",
+        "displayName": "Ink Primary",
+        "canonical": "oklch(25% 0.03 160)",
+        "tonalRamp": [
+          "#0c1713",
+          "#13231d",
+          "#1a2e26",
+          "#284439",
+          "#3b5f51",
+          "#547e6d",
+          "#7aa392",
+          "#a8c5b8"
+        ]
+      },
+      "neutral-ink-secondary": {
+        "role": "neutral",
+        "displayName": "Ink Secondary",
+        "canonical": "oklch(38% 0.03 160)",
+        "tonalRamp": [
+          "#121b18",
+          "#1c2a25",
+          "#293c35",
+          "#3b5047",
+          "#506c60",
+          "#698b7c",
+          "#89aa9d",
+          "#b4cbc0"
+        ]
+      },
+      "neutral-muted": {
+        "role": "neutral",
+        "displayName": "Muted Greenery",
+        "canonical": "oklch(52% 0.025 160)",
+        "tonalRamp": [
+          "#1c2220",
+          "#2b3431",
+          "#3d4945",
+          "#51615b",
+          "#62746c",
+          "#7b8f87",
+          "#9cb0a8",
+          "#c8d4cf"
+        ]
+      },
+      "neutral-line": {
+        "role": "neutral",
+        "displayName": "Line Divider",
+        "canonical": "oklch(92% 0.01 110)",
+        "tonalRamp": [
+          "#2e302b",
+          "#494c45",
+          "#6c7066",
+          "#93988b",
+          "#bdc2b5",
+          "#d6dbce",
+          "#e6e8e1",
+          "#f4f5f1"
+        ]
+      },
+      "neutral-line-strong": {
+        "role": "neutral",
+        "displayName": "Line Strong",
+        "canonical": "oklch(86% 0.015 110)",
+        "tonalRamp": [
+          "#252822",
+          "#3d4239",
+          "#5c6356",
+          "#818b7a",
+          "#aab3a3",
+          "#cfd4c8",
+          "#e3e7de",
+          "#f1f3ed"
+        ]
+      },
+      "neutral-canvas": {
+        "role": "neutral",
+        "displayName": "Canvas Paper",
+        "canonical": "oklch(98% 0.005 85)",
+        "tonalRamp": [
+          "#2a2824",
+          "#4a463e",
+          "#716b5f",
+          "#9d9686",
+          "#c8c1b2",
+          "#e5dfd2",
+          "#faf8f5",
+          "#fdfcfb"
+        ]
+      },
+      "neutral-surface": {
+        "role": "neutral",
+        "displayName": "Surface White",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": [
+          "#222222",
+          "#444444",
+          "#666666",
+          "#888888",
+          "#aaaaaa",
+          "#cccccc",
+          "#eeeeee",
+          "#ffffff"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Khẩu hiệu chính, tiêu đề trang chủ và header thương hiệu."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Tiêu đề các khối danh sách, danh mục lớn và nhóm bộ lọc."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Tên quán trên thẻ ảnh Masonry và tiêu đề xem nhanh bản đồ."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Văn bản mô tả không gian, nội dung tương tác và thông báo."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Nhãn thuộc tính (Wi-Fi, ổ điện), khoảng cách và text điều hướng."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-xs",
+        "value": "0 1px 2px rgba(20, 38, 30, 0.04)",
+        "purpose": "Đổ bóng viền cực nhẹ cho nút phụ và thẻ phẳng."
+      },
+      {
+        "name": "shadow-sm",
+        "value": "0 2px 6px -1px rgba(20, 38, 30, 0.06), 0 1px 4px -1px rgba(20, 38, 30, 0.03)",
+        "purpose": "Trạng thái nghỉ tự nhiên của thẻ ảnh Masonry và chip lựa chọn."
+      },
+      {
+        "name": "shadow-md",
+        "value": "0 6px 16px -2px rgba(20, 38, 30, 0.08), 0 2px 6px -1px rgba(20, 38, 30, 0.04)",
+        "purpose": "Trạng thái hover của thẻ ảnh và các nút công cụ nổi trên bản đồ."
+      },
+      {
+        "name": "shadow-lg",
+        "value": "0 12px 28px -4px rgba(20, 38, 30, 0.12), 0 4px 10px -2px rgba(20, 38, 30, 0.06)",
+        "purpose": "Cửa sổ xem ảnh nhanh Drawer và các panel trượt."
+      },
+      {
+        "name": "shadow-floating",
+        "value": "0 16px 36px -6px rgba(20, 38, 30, 0.16), 0 6px 14px -2px rgba(20, 38, 30, 0.08)",
+        "purpose": "Hộp thoại xác nhận quan trọng (Confirm Dialog) và menu thả."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Mở ngăn kéo, popover và chuyển động di chuột tự nhiên."
+      },
+      {
+        "name": "duration-fast",
+        "value": "150ms",
+        "purpose": "Phản hồi vi mô cho hover nút và nhấn phím."
+      },
+      {
+        "name": "duration-normal",
+        "value": "250ms",
+        "purpose": "Chuyển trạng thái thẻ ảnh, mở accordion và lọc danh sách."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Nút hành động chính viên thuốc màu xanh thông rừng với hiệu ứng nảy xúc giác.",
+      "html": "<button class=\"ds-btn-primary\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"><path d=\"M12 5v14M5 12h14\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg><span>Đóng góp ảnh</span></button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #234e40; color: #ffffff; padding: 10px 20px; border: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; line-height: 1; cursor: pointer; min-height: 44px; transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease; box-shadow: 0 2px 6px -1px rgba(20, 38, 30, 0.08); } .ds-btn-primary:hover { background: #1b3d32; box-shadow: 0 4px 12px -2px rgba(20, 38, 30, 0.16); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid #234e40; outline-offset: 2px; } .ds-icon { width: 16px; height: 16px; flex-shrink: 0; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Nút phụ viền thanh lịch trên nền trắng, phản hồi xúc giác nhẹ nhàng khi tương tác.",
+      "html": "<button class=\"ds-btn-secondary\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg><span>Xem bản đồ</span></button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #ffffff; color: #1a2e26; padding: 10px 18px; border: 1px solid #cfd4c8; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; line-height: 1; cursor: pointer; min-height: 44px; transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease; box-shadow: 0 1px 2px rgba(20, 38, 30, 0.04); } .ds-btn-secondary:hover { background: #faf8f5; border-color: #62746c; } .ds-btn-secondary:active { transform: scale(0.97); } .ds-btn-secondary:focus-visible { outline: 2px solid #234e40; outline-offset: 2px; } .ds-icon { width: 16px; height: 16px; flex-shrink: 0; }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip-filter",
+      "description": "Viên thuốc chọn lọc danh mục hoặc tiện ích không gian, chuyển màu xanh tinh tế khi kích hoạt.",
+      "html": "<button class=\"ds-chip ds-chip-active\"><span class=\"ds-chip-indicator\"></span><span>Có ổ điện</span></button><button class=\"ds-chip\"><span>Yên tĩnh</span></button>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 6px; background: #faf8f5; color: #3b5047; padding: 7px 14px; border: 1px solid #e6e8e1; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; user-select: none; min-height: 36px; margin-right: 8px; } .ds-chip:hover { background: #edf4f0; border-color: #cfd4c8; color: #1a2e26; } .ds-chip-active { background: #edf4f0; border-color: #234e40; color: #234e40; } .ds-chip-indicator { width: 6px; height: 6px; border-radius: 50%; background: #234e40; display: inline-block; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Thanh tìm kiếm địa điểm với viền thông mộc và quầng focus xanh đặc trưng.",
+      "html": "<div class=\"ds-input-group\"><svg class=\"ds-input-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\" stroke-linecap=\"round\"/></svg><input class=\"ds-input-text\" type=\"text\" placeholder=\"Tìm quán cà phê theo tên, quận, tiện ích...\" /></div>",
+      "css": ".ds-input-group { position: relative; display: flex; align-items: center; width: 100%; max-width: 480px; } .ds-input-icon { position: absolute; left: 14px; width: 18px; height: 18px; color: #62746c; pointer-events: none; } .ds-input-text { width: 100%; height: 46px; padding: 10px 16px 10px 42px; background: #ffffff; border: 1.5px solid #cfd4c8; border-radius: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #1a2e26; outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; box-sizing: border-box; } .ds-input-text::placeholder { color: #62746c; } .ds-input-text:focus { border-color: #234e40; box-shadow: 0 0 0 3px rgba(35, 78, 64, 0.12); }"
+    },
+    {
+      "name": "Photo Card Pin",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Thẻ ảnh Masonry tôn vinh tỷ lệ thực của ảnh, có nút bookmark tròn kính mờ và lớp scrim bảo vệ chữ.",
+      "html": "<div class=\"ds-card-photo\"><div class=\"ds-card-media-wrap\"><img class=\"ds-card-img\" src=\"data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22500%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23e6e8e1%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22%2362746c%22%20font-size%3D%2216%22%20font-family%3D%22sans-serif%22%20text-anchor%3D%22middle%22%3EẢnh%20thực%20tế%20quán%3C%2Ftext%3E%3C%2Fsvg%3E\" alt=\"Demo Photo\" /><button class=\"ds-card-bookmark\" aria-label=\"Lưu quán\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"><path d=\"M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"/></svg></button><div class=\"ds-card-gradient\"></div></div><div class=\"ds-card-content\"><h3 class=\"ds-card-title\">43 Factory Coffee Roaster</h3><p class=\"ds-card-meta\">Hải Châu • 1.2 km • Ổ điện, yên tĩnh</p></div></div>",
+      "css": ".ds-card-photo { position: relative; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 6px -1px rgba(20, 38, 30, 0.06); transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; max-width: 320px; } .ds-card-photo:hover { transform: translateY(-3px); box-shadow: 0 8px 20px -2px rgba(20, 38, 30, 0.12); } .ds-card-media-wrap { position: relative; width: 100%; aspect-ratio: 4/5; overflow: hidden; background: #f0f2eb; } .ds-card-img { width: 100%; height: 100%; object-fit: cover; display: block; } .ds-card-bookmark { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); border: none; display: flex; align-items: center; justify-content: center; color: #1a2e26; cursor: pointer; transition: all 0.15s ease; } .ds-card-bookmark svg { width: 18px; height: 18px; } .ds-card-bookmark:hover { background: #ffffff; color: #c45c3d; transform: scale(1.08); } .ds-card-content { padding: 14px 16px; } .ds-card-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 650; color: #1a2e26; margin: 0 0 4px 0; line-height: 1.35; } .ds-card-meta { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; color: #62746c; margin: 0; line-height: 1.4; }"
+    },
+    {
+      "name": "Map Marker Pin",
+      "kind": "custom",
+      "refersTo": "marker-pin",
+      "description": "Điểm ghim giọt nước trên bản đồ vector MapLibre, chuyển đỏ ngói khi được kích hoạt.",
+      "html": "<div class=\"ds-marker-group\"><div class=\"ds-marker\"><div class=\"ds-marker-dot\"></div></div><div class=\"ds-marker ds-marker-active\"><div class=\"ds-marker-dot\"></div></div></div>",
+      "css": ".ds-marker-group { display: flex; gap: 24px; align-items: center; } .ds-marker { width: 32px; height: 32px; border-radius: 50% 50% 50% 0; background: #234e40; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(20, 38, 30, 0.25); cursor: pointer; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s; border: 2px solid #ffffff; } .ds-marker-dot { width: 10px; height: 10px; border-radius: 50%; background: #ffffff; transform: rotate(45deg); } .ds-marker:hover { transform: rotate(-45deg) scale(1.15); background: #1b3d32; } .ds-marker-active { background: #c45c3d; transform: rotate(-45deg) scale(1.2); } .ds-marker-active:hover { background: #ab4b2e; }"
+    },
+    {
+      "name": "Navigation Rail Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Nút mục điều hướng tối giản trên thanh Left Rail hoặc Mobile Bottom Bar.",
+      "html": "<nav class=\"ds-nav-rail\"><a href=\"#\" class=\"ds-nav-item ds-nav-active\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><polyline points=\"9 22 9 12 15 12 15 22\"/></svg><span>Khám phá</span></a><a href=\"#\" class=\"ds-nav-item\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polygon points=\"1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"18\"/><line x1=\"16\" y1=\"6\" x2=\"16\" y2=\"22\"/></svg><span>Bản đồ</span></a></nav>",
+      "css": ".ds-nav-rail { display: inline-flex; flex-direction: column; gap: 8px; background: #ffffff; padding: 12px; border-radius: 16px; border: 1px solid #e6e8e1; } .ds-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 64px; height: 60px; border-radius: 12px; color: #62746c; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; transition: all 0.15s ease; } .ds-nav-item svg { width: 22px; height: 22px; } .ds-nav-item:hover { background: #faf8f5; color: #1a2e26; } .ds-nav-active { background: #edf4f0; color: #234e40; } .ds-nav-active:hover { background: #edf4f0; color: #234e40; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Warm Botanical Pine & Clay",
+    "overview": "Rendez sở hữu phong cách thiết kế Warm Botanical Pine & Clay — sự giao thoa hài hòa giữa sắc xanh thẫm của thông rừng đại ngàn miền Trung, chất giấy thô mộc ấm áp và sắc đỏ đất nung đặc trưng của kiến trúc Đà Nẵng. Hệ thống thiết kế được xây dựng với triết lý Visual-First và Content-First: giao diện đóng vai trò là một khung nền tĩnh lặng, thanh lịch để tôn vinh trọn vẹn vẻ đẹp chân thực của ảnh chụp không gian và bản đồ địa phương.",
+    "keyCharacteristics": [
+      "Bảng màu mộc tự nhiên lấy cảm hứng từ cây thông, đất nung và giấy ngà.",
+      "Triết lý hình ảnh thực tế (Authentic visual-first): tôn trọng 100% tỷ lệ khung hình thật.",
+      "Lưới Masonry thích ứng động triệt tiêu hiện tượng Layout Thrashing.",
+      "Đổ bóng mềm đa tầng kết hợp phân tầng màu sắc tự nhiên (Tonal Layering & Soft Botanical Shadows).",
+      "Tiêu chuẩn công thái học di động: diện tích chạm tối thiểu 44x44px và vùng Thumb Zone thuận tiện."
+    ],
+    "rules": [
+      {
+        "name": "The Botanical Restraint Rule",
+        "body": "Màu điểm nhấn đỏ ngói (#c45c3d) không được chiếm quá 5% diện tích giao diện trên bất kỳ màn hình nào. Sự tinh tế và đắt giá của nó đến từ tính hiếm hoi và chính xác.",
+        "section": "colors"
+      },
+      {
+        "name": "The Grounded Rest Rule",
+        "body": "Ở trạng thái nghỉ, thẻ ảnh phẳng và tiệp nhẹ với nền canvas. Đổ bóng chỉ xuất hiện và nâng cao lên như một phản hồi xúc giác khi người dùng tương tác rê chuột hoặc chạm tay.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do luôn giữ nguyên tỷ lệ khung hình thật của ảnh chụp không gian quán cà phê; tuyệt đối không dùng thuộc tính ép buộc tỷ lệ cố định làm cắt xén mất góc ngồi thực tế.",
+      "Do đảm bảo mọi nút bấm, thẻ chọn và vùng tương tác đạt diện tích chạm tối thiểu 44x44px trên giao diện cảm ứng di động.",
+      "Do sử dụng hiệu ứng skeleton shimmer với dải màu ấm #f0f2eb khi dữ liệu đang tải, duy trì sự ổn định bố cục và tránh hiện tượng giật màn hình (Cumulative Layout Shift).",
+      "Do tuân thủ độ tương phản tối thiểu 4.5:1 giữa màu chữ và nền theo chuẩn WCAG 2.1 AA."
+    ],
+    "donts": [
+      "Don't không bao giờ sử dụng màu đen thuần túy #000000 hoặc màu xám tro công nghiệp #888888 cho văn bản; luôn sử dụng sắc mực xanh thông rừng (#1a2e26) và xám cỏ cây (#62746c).",
+      "Don't không lạm dụng màu đỏ ngói đất nung (#c45c3d) làm màu nền cho các khối lớn; chỉ sử dụng làm điểm nhấn vi mô có chủ đích.",
+      "Don't không chèn banner quảng cáo chớp nháy hoặc các huy hiệu thương mại giả tạo làm phá vỡ trải nghiệm khám phá không gian tĩnh tại của người dùng."
+    ]
+  }
+}
