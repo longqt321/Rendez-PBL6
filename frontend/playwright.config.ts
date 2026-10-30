@@ -4,7 +4,10 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   timeout: 45_000,
-  reporter: [["list"], ["html", { open: "never" }]],
+  reporter: [
+    ["list"],
+    ["html", { outputFolder: "../playwright-report", open: "never" }],
+  ],
   use: {
     baseURL: "http://127.0.0.1:5173",
     trace: "retain-on-failure",
@@ -21,7 +24,7 @@ export default defineConfig({
     {
       command:
         "../backend/.venv/bin/python ../backend/manage.py runserver 127.0.0.1:8000 --noreload",
-      url: "http://127.0.0.1:8000/api/v1/categories/",
+      url: "http://127.0.0.1:8000/api/v1/auth/csrf/",
       reuseExistingServer: !process.env.CI,
     },
     {

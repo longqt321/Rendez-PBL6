@@ -59,3 +59,6 @@ def photo(name="photo.png", size=(120, 120)):
 @pytest.fixture(autouse=True)
 def isolated_media(settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path / "media"
+    from django.core.cache import cache
+
+    cache.clear()

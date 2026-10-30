@@ -94,7 +94,7 @@ def test_unexpected_error_uses_safe_json(client, owner):
     client.force_authenticate(owner)
     from unittest.mock import patch
 
-    with patch("apps.photos.views.visual_places", side_effect=RuntimeError("internal detail")):
+    with patch("apps.places.views.visual_places", side_effect=RuntimeError("internal detail")):
         response = client.get("/api/v1/places/")
     assert response.status_code == 500
     assert response.json() == {
