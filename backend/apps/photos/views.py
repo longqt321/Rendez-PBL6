@@ -1,146 +1,46 @@
-import math
-import unicodedata
+from pathlib import Path
+
 from django.conf import settings
-from django.db.models import BooleanField, Exists, OuterRef, Subquery, Value
-from django.http import FileResponse, Http404
+from django.core.exceptions import SuspiciousOperation
+from django.db import IntegrityError, transaction
+from django.db.models import Count
+from django.http import FileResponse, Http404, HttpResponseNotModified
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, serializers
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from apps.favorites.models import Favorite
-from apps.places.models import Category, public_places
-from config.api import Pagination
+
+from apps.places.models import public_places
+from apps.places.selectors import place_context, visual_places
+from apps.places.views import FILTERS
 from .models import (
     ContentReport,
     PhotoAsset,
-    PhotoAttribute,
-    PhotoSubmission,
+    PhotoComment,
     PhotoLike,
-    VisualAttribute,
+    PhotoSubmission,
     public_photos,
 )
+from .ranking import rank_similar_places
+from .selectors import attribute_codes, matching_photos, photo_queryset, searchable_attributes
 from .serializers import (
-    ContentReportSerializer,
     CaptionSerializer,
-    PhotoLikesSerializer,
+    CommentCreateSerializer,
+    ContentReportSerializer,
     FeedItemSerializer,
+    PhotoCommentSerializer,
     PhotoDetailSerializer,
+    PhotoLikesSerializer,
     PhotoSubmissionSerializer,
     PhotoUploadSerializer,
     PublicPhotoSerializer,
     VisualAttributeSerializer,
-    VisualDetailSerializer,
-    VisualMapSerializer,
-    VisualPlaceSerializer,
 )
-from .services import submit, owner_edit_photo
-from .ranking import rank_similar_places
-
-FILTERS = [
-    OpenApiParameter("q", str),
-    OpenApiParameter("category", str),
-    OpenApiParameter(
-        "attributes", str, description="Comma-separated codes. AND on one public photo."
-    ),
-    OpenApiParameter("sort", str),
-]
-
-
-def attribute_codes(request):
-    codes = sorted(set(filter(None, request.query_params.get("attributes", "").split(","))))
-    if len(codes) > 20 or len(request.query_params.get("attributes", "")) > 2000:
-        raise serializers.ValidationError({"attributes": ["Chọn tối đa 20 đặc điểm."]})
-    valid = set(searchable_attributes().filter(code__in=codes).values_list("code", flat=True))
-    if set(codes) - valid:
-        raise serializers.ValidationError(
-            {"attributes": ["Đặc điểm không được hỗ trợ: " + ", ".join(set(codes) - valid)]}
-        )
-    return codes
-
-
-def matching_photos(codes):
-    photos = public_photos()
-    for code in codes:
-        photos = photos.filter(attributes__code=code, attributes__active=True)
-    return photos.distinct().order_by("-published_at", "id")
-
-
-def visual_places(request, codes, filter_results=True):
-    photos = public_photos().filter(place_id=OuterRef("pk"))
-    supporting = matching_photos(codes).filter(place_id=OuterRef("pk"))
-    places = (
-        public_places()
-        .select_related("category")
-        .annotate(
-            visual_cover_id=Subquery(
-                photos.order_by("-is_cover", "-published_at", "id").values("id")[:1]
-            ),
-            visual_support_id=Subquery(supporting.values("id")[:1]),
-            is_saved=Exists(Favorite.objects.filter(place_id=OuterRef("pk"), user=request.user))
-            if request.user.is_authenticated
-            else Value(False, output_field=BooleanField()),
-        )
-    )
-    if not filter_results:
-        return places.order_by("-published_at", "id")
-    q = request.query_params.get("q", "").strip()
-    if len(q) > 100:
-        raise serializers.ValidationError({"q": ["Từ khóa tìm kiếm tối đa 100 ký tự."]})
-    if q:
-
-        def fold(value):
-            return "".join(
-                c
-                for c in unicodedata.normalize("NFD", value.casefold().replace("đ", "d"))
-                if not unicodedata.combining(c)
-            )
-
-        words = fold(q).split()
-        ids = [
-            row[0]
-            for row in places.values_list("id", "name", "address", "description")
-            if all(word in fold(" ".join(row[1:])) for word in words)
-        ]
-        places = places.filter(pk__in=ids)
-    category = request.query_params.get("category")
-    if category:
-        if not Category.objects.filter(slug=category, is_active=True).exists():
-            raise serializers.ValidationError({"category": ["Loại quán không hợp lệ."]})
-        places = places.filter(category__slug=category)
-    sort = request.query_params.get("sort", "recent")
-    if sort not in ("recent", "name"):
-        raise serializers.ValidationError({"sort": ["Cách sắp xếp không hợp lệ."]})
-    if codes:
-        places = places.filter(Exists(supporting))
-    return places.order_by("name" if sort == "name" else "-published_at", "id")
-
-
-def photo_queryset(query):
-    return query.select_related(
-        "asset__submission__submitted_by", "place__category"
-    ).prefetch_related("attributes")
-
-
-def place_context(rows, request, codes):
-    photo_ids = {
-        photo_id
-        for place in rows
-        for photo_id in [place.visual_cover_id, place.visual_support_id]
-        if photo_id
-    }
-    return {
-        "request": request,
-        "codes": codes,
-        "photos_by_id": {p.id: p for p in photo_queryset(public_photos().filter(id__in=photo_ids))},
-    }
-
-
-def searchable_attributes():
-    query = VisualAttribute.objects.filter(active=True, is_searchable=True)
-    return query if settings.DEBUG else query.exclude(code__startswith="demo-")
+from .services import owner_edit_photo, submit
 
 
 class AttributeList(generics.ListAPIView):
@@ -150,38 +50,6 @@ class AttributeList(generics.ListAPIView):
 
     def get_queryset(self):
         return searchable_attributes()
-
-
-@extend_schema(parameters=FILTERS)
-class VisualPlaceList(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = VisualPlaceSerializer
-
-    def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            return public_places().none()
-        self.codes = attribute_codes(self.request)
-        return visual_places(self.request, self.codes)
-
-    def list(self, request, *args, **kwargs):
-        query = self.get_queryset()
-        rows = self.paginate_queryset(query)
-        data = self.get_serializer(
-            rows, many=True, context=place_context(rows, request, self.codes)
-        ).data
-        return self.get_paginated_response(data)
-
-
-class VisualFavorites(VisualPlaceList):
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(favorite__user=self.request.user)
-            .order_by("-favorite__created_at", "id")
-        )
 
 
 @extend_schema(
@@ -206,46 +74,10 @@ class Feed(generics.ListAPIView):
         by_id = {place.id: place for place in rows}
         return self.get_paginated_response(
             FeedItemSerializer(
-                [{"photo": p, "place": by_id[p.place_id]} for p in page], many=True, context=context
+                [{"photo": p, "place": by_id[p.place_id]} for p in page],
+                many=True,
+                context=context,
             ).data
-        )
-
-
-class VisualMap(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        parameters=FILTERS + [OpenApiParameter("bbox", str, required=True)],
-        responses=VisualMapSerializer,
-    )
-    def get(self, request):
-        codes = attribute_codes(request)
-        try:
-            west, south, east, north = map(float, request.query_params.get("bbox", "").split(","))
-            if not all(math.isfinite(n) for n in (west, south, east, north)) or not (
-                -180 <= west < east <= 180 and -90 <= south < north <= 90
-            ):
-                raise ValueError
-        except ValueError:
-            raise serializers.ValidationError(
-                {"bbox": ["BBox phải có west,south,east,north hợp lệ."]}
-            )
-        if east - west > 2 or north - south > 2:
-            raise serializers.ValidationError({"bbox": ["Phạm vi quá lớn. Phóng to bản đồ."]})
-        query = visual_places(request, codes).filter(
-            longitude__gte=west, longitude__lte=east, latitude__gte=south, latitude__lte=north
-        )
-        total = query.count()
-        rows = list(query[:200])
-        return Response(
-            {
-                "count": len(rows),
-                "total_places": total,
-                "truncated": total > len(rows),
-                "results": VisualPlaceSerializer(
-                    rows, many=True, context=place_context(rows, request, codes)
-                ).data,
-            }
         )
 
 
@@ -264,63 +96,6 @@ class Gallery(generics.ListAPIView):
         )
 
 
-class VisualPlaceDetail(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        parameters=[OpenApiParameter("attributes", str)], responses=VisualDetailSerializer
-    )
-    def get(self, request, pk):
-        codes = attribute_codes(request)
-        # Place existence is independent of the contextual filter.
-        place = get_object_or_404(visual_places(request, []), pk=pk)
-        supporting = matching_photos(codes).filter(place_id=pk).first()
-        place.visual_support_id = supporting.id if supporting else None
-        context = place_context([place], request, codes)
-        photos = photo_queryset(matching_photos(codes).filter(place_id=pk))
-        pagination = Pagination()
-        first = pagination.paginate_queryset(photos, request)
-        gallery = pagination.get_paginated_response(
-            PublicPhotoSerializer(first, many=True, context=context).data
-        ).data
-        if gallery["next"]:
-            gallery["next"] = gallery["next"].replace(f"/places/{pk}/?", f"/places/{pk}/photos/?")
-        data = VisualPlaceSerializer(place, context=context).data
-        evidence = {}
-        for relation in PhotoAttribute.objects.filter(
-            photo__in=public_photos().filter(place_id=pk), attribute__active=True
-        ).select_related("attribute"):
-            item = evidence.setdefault(
-                relation.attribute_id,
-                {"attribute": VisualAttributeSerializer(relation.attribute).data, "photo_ids": []},
-            )
-            # One link suffices for the P0 attribute evidence chip; gallery is paginated.
-            if not item["photo_ids"]:
-                item["photo_ids"].append(str(relation.photo_id))
-        hours = None
-        if (
-            place.opening_hours_text
-            and place.opening_hours_source
-            and place.opening_hours_verified_at
-        ):
-            hours = {
-                "text": place.opening_hours_text,
-                "source": place.opening_hours_source,
-                "verified_at": place.opening_hours_verified_at.isoformat(),
-            }
-        return Response(
-            {
-                **data,
-                "description": place.description,
-                "source_url": place.source_url,
-                "verified_at": place.verified_at,
-                "opening_hours": hours,
-                "photos": gallery,
-                "attribute_evidence": list(evidence.values()),
-            }
-        )
-
-
 class PhotoDetail(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -329,7 +104,10 @@ class PhotoDetail(APIView):
     )
     def get(self, request, pk):
         codes = attribute_codes(request)
-        photo = get_object_or_404(photo_queryset(public_photos()), pk=pk)
+        photo = get_object_or_404(
+            photo_queryset(public_photos()).annotate(annotated_comments_count=Count("comments")),
+            pk=pk,
+        )
         place = get_object_or_404(
             visual_places(request, [], filter_results=False), pk=photo.place_id
         )
@@ -407,15 +185,32 @@ class Report(APIView):
         target = get_object_or_404(public_photos() if kind == "photo" else public_places(), pk=pk)
         serializer = ContentReportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        report = ContentReport.objects.create(
-            reporter=request.user, **{kind: target}, **serializer.validated_data
-        )
+
+        with transaction.atomic():
+            if (
+                ContentReport.objects.select_for_update()
+                .filter(
+                    reporter=request.user,
+                    status="pending",
+                    **{kind: target},
+                )
+                .exists()
+            ):
+                raise serializers.ValidationError(
+                    {"detail": "Bạn đã gửi báo cáo cho nội dung này và đang chờ xử lý."}
+                )
+            try:
+                report = ContentReport.objects.create(
+                    reporter=request.user, **{kind: target}, **serializer.validated_data
+                )
+            except IntegrityError as exc:
+                raise serializers.ValidationError(
+                    {"detail": "Bạn đã gửi báo cáo cho nội dung này và đang chờ xử lý."}
+                ) from exc
         return Response(ContentReportSerializer(report).data, status=201)
 
 
 def media(request, pk, private=False, original=False):
-    if not request.user.is_authenticated:
-        raise Http404
     if private:
         if not request.user.is_authenticated:
             raise Http404
@@ -431,16 +226,50 @@ def media(request, pk, private=False, original=False):
     else:
         photo = get_object_or_404(public_photos().select_related("asset"), pk=pk)
         asset = photo.asset
-    try:
-        response = FileResponse(
-            (asset.original if original else asset.derivative).open("rb"),
-            content_type="application/octet-stream" if original else "image/jpeg",
-        )
-        response["Cache-Control"] = "private, no-store"
-        response["X-Content-Type-Options"] = "nosniff"
-        return response
-    except FileNotFoundError:
+
+    etag = f'"{asset.sha256}"'
+    if request.headers.get("If-None-Match") == etag:
+        return HttpResponseNotModified()
+
+    file_field = asset.original if original else asset.derivative
+    if not file_field or not file_field.name:
         raise Http404
+
+    try:
+        file_obj = file_field.open("rb")
+    except (FileNotFoundError, ValueError, SuspiciousOperation):
+        # Fallback between .local/media and backend/.private-media
+        clean_name = Path(file_field.name).name
+        if not clean_name or clean_name.startswith("."):
+            raise Http404 from None
+        alt_paths = [
+            settings.MEDIA_ROOT / clean_name,
+            settings.BASE_DIR / ".private-media" / clean_name,
+            settings.BASE_DIR.parent / ".local" / "media" / clean_name,
+            settings.BASE_DIR / "media" / clean_name,
+        ]
+        file_obj = None
+        for path in alt_paths:
+            resolved = path.resolve()
+            if resolved.exists() and resolved.is_file():
+                file_obj = open(resolved, "rb")
+                break
+        if file_obj is None:
+            raise Http404 from None
+
+    response = FileResponse(
+        file_obj,
+        content_type="application/octet-stream" if original else "image/jpeg",
+    )
+    response["ETag"] = etag
+    if not private and not original:
+        response["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=604800"
+    else:
+        response["Cache-Control"] = "private, no-store"
+    response["X-Content-Type-Options"] = "nosniff"
+    if original:
+        response["Content-Disposition"] = f'attachment; filename="original-{asset.id}.bin"'
+    return response
 
 
 class OwnPhoto(APIView):
@@ -461,6 +290,7 @@ class OwnPhoto(APIView):
 
 class PhotoLikes(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = "like"
 
     def response(self, photo, user):
         return Response(
@@ -508,3 +338,57 @@ class SimilarPhotos(APIView):
                 context=context,
             ).data
         )
+
+
+class PhotoComments(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PhotoCommentSerializer
+    throttle_scope = "comment"
+    pagination_class = None
+
+    def get_queryset(self):
+        photo = get_object_or_404(public_photos(), pk=self.kwargs["pk"])
+        return photo.comments.select_related("user").order_by("created_at", "id")
+
+    @extend_schema(request=CommentCreateSerializer, responses={201: PhotoCommentSerializer})
+    def post(self, request, pk):
+        photo = get_object_or_404(public_photos(), pk=pk)
+        serializer = CommentCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comment = PhotoComment.objects.create(
+            photo=photo,
+            user=request.user,
+            body=serializer.validated_data["body"],
+        )
+        return Response(
+            PhotoCommentSerializer(comment, context={"request": request}).data, status=201
+        )
+
+
+class CommentDetail(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_scope = "comment"
+
+    @extend_schema(request=CommentCreateSerializer, responses=PhotoCommentSerializer)
+    def patch(self, request, pk):
+        comment = get_object_or_404(PhotoComment.objects.select_related("photo", "user"), pk=pk)
+        if comment.user_id != request.user.pk and not request.user.is_staff:
+            raise PermissionDenied("Bạn chỉ có thể chỉnh sửa bình luận của mình.")
+        if comment.photo.status == "withdrawn":
+            raise serializers.ValidationError("Ảnh này đã bị gỡ và không thể chỉnh sửa bình luận.")
+        serializer = CommentCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comment.body = serializer.validated_data["body"]
+        comment.save(update_fields=["body"])
+        return Response(PhotoCommentSerializer(comment, context={"request": request}).data)
+
+    @extend_schema(responses={204: None})
+    def delete(self, request, pk):
+        try:
+            comment = PhotoComment.objects.select_related("user").get(pk=pk)
+        except PhotoComment.DoesNotExist:
+            return Response(status=204)
+        if comment.user_id != request.user.pk and not request.user.is_staff:
+            raise PermissionDenied("Bạn chỉ có thể xóa bình luận của mình.")
+        comment.delete()
+        return Response(status=204)

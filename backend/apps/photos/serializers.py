@@ -5,6 +5,7 @@ from apps.places.serializers import CategorySerializer
 from .models import (
     ContentReport,
     PhotoAsset,
+    PhotoComment,
     PhotoSubmission,
     PlacePhoto,
     VisualAttribute,
@@ -25,6 +26,8 @@ class PublicPhotoSerializer(serializers.ModelSerializer):
     height = serializers.IntegerField(source="asset.height")
     attributes = serializers.SerializerMethodField()
     matched_attribute_codes = serializers.SerializerMethodField()
+    author_id = serializers.UUIDField(source="asset.submission.submitted_by.id", read_only=True)
+    author_id = serializers.UUIDField(source="asset.submission.submitted_by.id", read_only=True)
     author_name = serializers.CharField(
         source="asset.submission.submitted_by.display_name", read_only=True
     )
@@ -43,6 +46,7 @@ class PublicPhotoSerializer(serializers.ModelSerializer):
             "published_at",
             "attributes",
             "matched_attribute_codes",
+            "author_id",
             "author_name",
             "is_owner",
         )
@@ -113,12 +117,18 @@ class FeedItemSerializer(serializers.Serializer):
 class PhotoDetailSerializer(PublicPhotoSerializer):
     place = serializers.SerializerMethodField()
     photo_ids = serializers.SerializerMethodField()
+    comments_count = serializers.SerializerMethodField()
 
     class Meta(PublicPhotoSerializer.Meta):
-        fields = PublicPhotoSerializer.Meta.fields + ("place", "photo_ids")
+        fields = PublicPhotoSerializer.Meta.fields + ("place", "photo_ids", "comments_count")
 
     def get_photo_ids(self, obj) -> list[str]:
         return [str(pk) for pk in self.context["photo_ids"]]
+
+    def get_comments_count(self, obj) -> int:
+        if hasattr(obj, "annotated_comments_count"):
+            return obj.annotated_comments_count
+        return obj.comments.count()
 
     @extend_schema_field(VisualPlaceSerializer())
     def get_place(self, obj):
@@ -141,6 +151,7 @@ class OpeningHoursSerializer(serializers.Serializer):
     text = serializers.CharField()
     source = serializers.CharField()
     verified_at = serializers.DateTimeField()
+    specification = serializers.DictField(required=False, default=dict)
 
 
 class VisualDetailSerializer(VisualPlaceSerializer):
@@ -252,6 +263,27 @@ class PhotoUploadSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"consent": ["Xác nhận quyền đăng ảnh trước khi gửi."]}
             )
+        images = attrs.get("images", [])
+        if not (1 <= len(images) <= 5):
+            raise serializers.ValidationError({"images": ["Gửi từ 1 đến 5 ảnh."]})
+
+        total_size = sum(getattr(f, "size", 0) for f in images)
+        if total_size > 30 * 1024 * 1024:
+            raise serializers.ValidationError(
+                {"images": ["Tổng dung lượng các ảnh gửi lên không được vượt quá 30 MiB."]}
+            )
+
+        for idx, file in enumerate(images):
+            size = getattr(file, "size", 0)
+            if size <= 0:
+                raise serializers.ValidationError(
+                    {"images": [f"Ảnh {idx + 1} có dung lượng rỗng (0 bytes)."]}
+                )
+            if size > 10 * 1024 * 1024:
+                raise serializers.ValidationError(
+                    {"images": [f"Ảnh {idx + 1} vượt quá dung lượng tối đa 10 MiB."]}
+                )
+
         proposal_keys = {"proposed_name", "proposed_address", "proposed_category"}
         if "place_id" in attrs:
             if proposal_keys.intersection(attrs) or "latitude" in attrs or "longitude" in attrs:
@@ -279,3 +311,31 @@ class CaptionSerializer(serializers.Serializer):
 class PhotoLikesSerializer(serializers.Serializer):
     liked = serializers.BooleanField(read_only=True)
     count = serializers.IntegerField(read_only=True)
+
+
+class PhotoCommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source="user.display_name", read_only=True)
+    is_owner = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PhotoComment
+        fields = ("id", "photo_id", "author_name", "body", "created_at", "is_owner")
+        read_only_fields = ("id", "photo_id", "author_name", "created_at", "is_owner")
+
+    def get_is_owner(self, obj) -> bool:
+        request = self.context.get("request")
+        return bool(request and request.user.pk == obj.user_id)
+
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PhotoComment
+        fields = ("body",)
+
+    def validate_body(self, value):
+        text = value.strip()
+        if not text:
+            raise serializers.ValidationError("Nội dung bình luận không được để trống.")
+        if len(text) > 1000:
+            raise serializers.ValidationError("Bình luận tối đa 1000 ký tự.")
+        return text

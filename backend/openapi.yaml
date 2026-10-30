@@ -51,7 +51,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/LoginRequest'
-        required: true
       security:
       - cookieAuth: []
       - {}
@@ -69,6 +68,7 @@ paths:
       - auth
       security:
       - cookieAuth: []
+      - {}
       responses:
         '204':
           description: No response body
@@ -110,6 +110,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Profile'
           description: ''
+    delete:
+      operationId: auth_me_destroy
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/auth/password/:
     post:
       operationId: auth_password_create
@@ -174,6 +183,106 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/comments/{id}/:
+    patch:
+      operationId: comments_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - comments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCommentCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCommentCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCommentCreateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoComment'
+          description: ''
+    delete:
+      operationId: comments_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - comments
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/creators/{id}/:
+    get:
+      operationId: creators_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - creators
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorProfile'
+          description: ''
+  /api/v1/creators/{id}/photos/:
+    get:
+      operationId: creators_photos_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - creators
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPublicPhotoList'
           description: ''
   /api/v1/favorites/:
     get:
@@ -401,6 +510,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PhotoDetail'
+          description: ''
+  /api/v1/photos/{id}/comments/:
+    get:
+      operationId: photos_comments_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photos
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PhotoComment'
+          description: ''
+    post:
+      operationId: photos_comments_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - photos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CommentCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CommentCreateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoComment'
           description: ''
   /api/v1/photos/{id}/likes/:
     get:
@@ -702,6 +866,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/ContentReport'
           description: ''
+  /api/v1/places/geocode/:
+    get:
+      operationId: places_geocode_retrieve
+      description: |-
+        Tự động giải mã và định vị địa chỉ thực tế (Geocoding) trả về tọa độ kinh độ, vĩ độ.
+        100% sử dụng cơ sở dữ liệu và API thời gian thực từ các bên thứ ba uy tín (OpenStreetMap, Photon, Esri).
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Chuỗi địa chỉ thực tế cần tự động lấy tọa độ
+        required: true
+      tags:
+      - places
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeocodeResponse'
+          description: ''
   /api/v1/places/map/:
     get:
       operationId: places_map_retrieve
@@ -911,6 +1100,15 @@ components:
       required:
       - name
       - slug
+    CommentCreateRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 1000
+      required:
+      - body
     ConsentVersionEnum:
       enum:
       - photo-rights-v2
@@ -959,6 +1157,28 @@ components:
       description: |-
         * `pending` - Chờ xử lý
         * `resolved` - Đã xử lý
+    CreatorProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        display_name:
+          type: string
+          maxLength: 100
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+        photo_count:
+          type: integer
+          readOnly: true
+      required:
+      - display_name
+      - id
+      - joined_at
+      - photo_count
     FeedItem:
       type: object
       properties:
@@ -989,6 +1209,28 @@ components:
       - next
       - previous
       - results
+    GeocodeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        display_name:
+          type: string
+        provider:
+          type: string
+        confidence:
+          type: number
+          format: double
+      required:
+      - success
     LoginRequest:
       type: object
       properties:
@@ -1002,9 +1244,9 @@ components:
           writeOnly: true
           minLength: 1
           maxLength: 4096
-      required:
-      - email
-      - password
+        is_demo:
+          type: boolean
+          default: false
     OpeningHours:
       type: object
       properties:
@@ -1015,6 +1257,9 @@ components:
         verified_at:
           type: string
           format: date-time
+        specification:
+          type: object
+          additionalProperties: {}
       required:
       - source
       - text
@@ -1133,13 +1378,50 @@ components:
         caption:
           type: string
           maxLength: 1000
+    PatchedCommentCreateRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 1000
     PatchedProfileUpdateRequest:
       type: object
       properties:
         display_name:
           type: string
-          minLength: 1
+          minLength: 2
           maxLength: 100
+    PhotoComment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        photo_id:
+          type: string
+          format: uuid
+          readOnly: true
+        author_name:
+          type: string
+          readOnly: true
+        body:
+          type: string
+          maxLength: 1000
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_owner:
+          type: boolean
+          readOnly: true
+      required:
+      - author_name
+      - body
+      - created_at
+      - id
+      - is_owner
+      - photo_id
     PhotoDetail:
       type: object
       properties:
@@ -1179,6 +1461,10 @@ components:
           items:
             type: string
           readOnly: true
+        author_id:
+          type: string
+          format: uuid
+          readOnly: true
         author_name:
           type: string
           readOnly: true
@@ -1194,11 +1480,16 @@ components:
           items:
             type: string
           readOnly: true
+        comments_count:
+          type: integer
+          readOnly: true
       required:
       - alt_text
       - attributes
+      - author_id
       - author_name
       - caption
+      - comments_count
       - height
       - id
       - is_owner
@@ -1391,6 +1682,10 @@ components:
           items:
             type: string
           readOnly: true
+        author_id:
+          type: string
+          format: uuid
+          readOnly: true
         author_name:
           type: string
           readOnly: true
@@ -1400,6 +1695,7 @@ components:
       required:
       - alt_text
       - attributes
+      - author_id
       - author_name
       - caption
       - height
@@ -1439,7 +1735,7 @@ components:
           maxLength: 4096
         display_name:
           type: string
-          minLength: 1
+          minLength: 2
           maxLength: 100
       required:
       - display_name
