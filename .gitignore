@@ -24,3 +24,18 @@ docs/feedback-fix/
 # Local services, credentials, backups and verification outputs
 .local/
 .history/
+
+# Agentic & experimental frameworks (kept locally, excluded from repository)
+erpf/
+.agents/
+.gemini/
+.impeccable/
+.github/agents/
+.github/hooks/
+.github/skills/
+skills-lock.json
+
+# Browser automation & MCP temporary artifacts
+.playwright-mcp/
+frontend/.playwright-mcp/
+
