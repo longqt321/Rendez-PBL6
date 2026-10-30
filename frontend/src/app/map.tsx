@@ -9,7 +9,7 @@ import Map, {
   type ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { MapPin, List, ArrowUpRight } from "lucide-react";
+import { MapPin, List, ArrowUpRight, X, RotateCcw } from "lucide-react";
 import { api, discoveryQuery } from "../lib/api/client";
 import type { VisualMap } from "../lib/api/visual";
 import { Button } from "../components/ui/button";
@@ -20,6 +20,7 @@ import {
   AttributeChips,
   State,
   useMe,
+  googleMapsDirectionsUrl,
 } from "./shared";
 
 function number(
@@ -39,14 +40,17 @@ export function MapPage() {
   const [params, setParams] = useSearchParams(),
     map = useRef<MapRef>(null);
   const initial = {
-    longitude: number(params, "lng", 108.22, -180, 180),
-    latitude: number(params, "lat", 16.067, -85, 85),
-    zoom: number(params, "zoom", 12.5, 2, 20),
+    longitude: number(params, "lng", 108.153, -180, 180),
+    latitude: number(params, "lat", 16.068, -85, 85),
+    zoom: number(params, "zoom", 14, 2, 20),
   };
+  const [currentZoom, setCurrentZoom] = useState(initial.zoom);
   const [bounds, setBounds] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
   const selected = params.get("selected"),
     me = useMe();
-  const [gpsError, setGpsError] = useState(false);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const [accuracyNotice, setAccuracyNotice] = useState<string | null>(null);
   const [tileError, setTileError] = useState(false),
     [generation, setGeneration] = useState(0);
   const resultPanel = useRef<HTMLElement>(null);
@@ -86,6 +90,7 @@ export function MapPage() {
     }
   }, [initial.longitude, initial.latitude, initial.zoom]);
   const move = (event: ViewStateChangeEvent) => {
+    setCurrentZoom(event.viewState.zoom);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       sync();
@@ -110,6 +115,7 @@ export function MapPage() {
     [],
   );
   const place = results.data?.results.find((p) => p.id === selected);
+  const activeQuery = (params.get("q") || "").trim();
   const select = (id: string | null) => {
     setParams(
       (previous) => {
@@ -126,14 +132,51 @@ export function MapPage() {
       <h1 className="sr-only">Địa điểm trên bản đồ</h1>
       <Filters compact />
       <div className="map-context">
-        <span>Đà Nẵng · Di chuyển bản đồ để xem địa điểm</span>
-        <Link to={"/discover?" + params.toString()}>
+        <div className="map-context-left">
+          <span>Đà Nẵng · Di chuyển bản đồ để tìm quán</span>
+          {activeQuery && (
+            <span className="map-active-chip">
+              Tìm: <strong>{activeQuery}</strong>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = new URLSearchParams(params);
+                  next.delete("q");
+                  setParams(next, { replace: true });
+                }}
+                aria-label="Xóa từ khóa tìm kiếm"
+              >
+                <X size={12} aria-hidden />
+              </button>
+            </span>
+          )}
+          <button
+            type="button"
+            className="map-reset-btn"
+            onClick={() => {
+              map.current?.flyTo({
+                center: [108.19, 16.06],
+                zoom: 12.5,
+                duration: 900,
+              });
+            }}
+            title="Xem toàn cảnh thành phố Đà Nẵng"
+          >
+            <RotateCcw size={12} aria-hidden /> Toàn cảnh
+          </button>
+        </div>
+        <Link to={"/discover?" + params.toString()} className="map-switch-view">
           Xem ảnh <ArrowUpRight size={16} aria-hidden />
         </Link>
       </div>
-      {gpsError && (
-        <p role="status">
-          Không lấy được vị trí của bạn. Di chuyển bản đồ để tìm địa điểm.
+      {gpsError && <p role="status">{gpsError}</p>}
+      {accuracyNotice && (
+        <p
+          role="status"
+          className="small"
+          style={{ margin: "4px 0 8px", color: "var(--muted)" }}
+        >
+          {accuracyNotice}
         </p>
       )}
       <div className="map-layout">
@@ -150,13 +193,22 @@ export function MapPage() {
               "GeolocateControl.LocationNotAvailable": "Không lấy được vị trí",
             }}
             minZoom={11}
-            maxBounds={[108.17, 15.955, 108.31, 16.16]}
+            maxBounds={[108.0, 15.8, 108.4, 16.3]}
             maxZoom={18}
             mapStyle="/map/style.json"
             onLoad={sync}
             onResize={sync}
             onMoveEnd={move}
-            onError={() => setTileError(true)}
+            onError={(e) => {
+              const msg = e.error?.message?.toLowerCase() || "";
+              if (
+                msg.includes("style") ||
+                msg.includes("failed to fetch") ||
+                !map.current?.getMap()?.isStyleLoaded()
+              ) {
+                setTileError(true);
+              }
+            }}
             onClick={() => select(null)}
             attributionControl={{ compact: false }}
           >
@@ -164,21 +216,54 @@ export function MapPage() {
             <GeolocateControl
               position="top-right"
               trackUserLocation={false}
-              onError={() => setGpsError(true)}
-              onGeolocate={() => setGpsError(false)}
+              positionOptions={{
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0,
+              }}
+              fitBoundsOptions={{
+                maxZoom: 16,
+              }}
+              onError={() => {
+                setGpsError(
+                  "Không lấy được vị trí từ thiết bị. Kiểm tra quyền truy cập vị trí trên trình duyệt.",
+                );
+                setAccuracyNotice(null);
+              }}
+              onGeolocate={(e) => {
+                setGpsError(null);
+                if (e.coords.accuracy > 500) {
+                  const km = (e.coords.accuracy / 1000).toFixed(1);
+                  setAccuracyNotice(
+                    `Vị trí ước tính từ địa chỉ mạng (sai số ~${km} km). Định vị trên thiết bị di động có GPS sẽ đạt độ chính xác cao nhất.`,
+                  );
+                } else {
+                  setAccuracyNotice(null);
+                }
+              }}
+              onOutOfMaxBounds={() => {
+                setGpsError(
+                  "Vị trí của bạn hiện nằm ngoài phạm vi bản đồ Đà Nẵng.",
+                );
+                setAccuracyNotice(null);
+              }}
             />
-            <Marker longitude={108.226} latitude={16.08} anchor="center">
-              <span className="map-label">HẢI CHÂU</span>
-            </Marker>
-            <Marker longitude={108.262} latitude={16.082} anchor="center">
-              <span className="map-label">SƠN TRÀ</span>
-            </Marker>
-            <Marker longitude={108.272} latitude={16.041} anchor="center">
-              <span className="map-label sea-label">BIỂN ĐÔNG</span>
-            </Marker>
-            <Marker longitude={108.247} latitude={16.01} anchor="center">
-              <span className="map-label">NGŨ HÀNH SƠN</span>
-            </Marker>
+            {currentZoom < 13.8 && (
+              <>
+                <Marker longitude={108.152} latitude={16.074} anchor="center">
+                  <span className="map-label">LIÊN CHIỂU</span>
+                </Marker>
+                <Marker longitude={108.226} latitude={16.08} anchor="center">
+                  <span className="map-label">HẢI CHÂU</span>
+                </Marker>
+                <Marker longitude={108.262} latitude={16.082} anchor="center">
+                  <span className="map-label">SƠN TRÀ</span>
+                </Marker>
+                <Marker longitude={108.247} latitude={16.01} anchor="center">
+                  <span className="map-label">NGŨ HÀNH SƠN</span>
+                </Marker>
+              </>
+            )}
             {results.data?.results.map((p) => (
               <Marker
                 key={p.id}
@@ -187,19 +272,94 @@ export function MapPage() {
                 anchor="bottom"
               >
                 <button
-                  aria-label={"Xem " + p.name}
-                  className={"marker " + (p.id === selected ? "selected" : "")}
+                  type="button"
+                  title={p.name + " · " + p.category.name}
+                  aria-label={"Xem " + p.name + " (" + p.category.name + ")"}
+                  aria-pressed={p.id === selected}
+                  className={
+                    "marker " +
+                    (p.id === selected ? "selected " : "") +
+                    (p.id === hovered ? "hovered " : "")
+                  }
                   onClick={(event) => {
                     event.stopPropagation();
                     select(p.id);
                   }}
+                  onMouseEnter={() => setHovered(p.id)}
+                  onMouseLeave={() => setHovered(null)}
                 >
                   <MapPin fill="currentColor" size={30} />
-                  <span className="marker-name">{p.name}</span>
+                  <span className="marker-name">
+                    <strong>{p.name}</strong>
+                    <small>{p.category.name}</small>
+                  </span>
                 </button>
               </Marker>
             ))}
           </Map>
+          {place && (
+            <div
+              className="map-mobile-peek"
+              role="region"
+              aria-label={"Xem nhanh " + place.name}
+            >
+              <div className="map-mobile-peek-thumb">
+                <Cover
+                  place={{
+                    name: place.name,
+                    cover_image_url:
+                      place.supporting_photo?.url || place.cover_image_url,
+                  }}
+                />
+              </div>
+              <div className="map-mobile-peek-info">
+                <div className="map-mobile-peek-header">
+                  <span className="map-mobile-peek-cat">
+                    {place.category.name}
+                  </span>
+                  <button
+                    type="button"
+                    className="map-mobile-peek-close"
+                    onClick={() => select(null)}
+                    aria-label="Đóng xem trước"
+                  >
+                    <X size={15} aria-hidden />
+                  </button>
+                </div>
+                <h3 className="map-mobile-peek-title">{place.name}</h3>
+                <p className="map-mobile-peek-address">{place.address}</p>
+                <div className="map-mobile-peek-actions">
+                  <Button asChild className="map-mobile-peek-primary">
+                    <Link
+                      to={
+                        place.supporting_photo || place.cover_photo_id
+                          ? "/photos/" +
+                            (place.supporting_photo?.id || place.cover_photo_id)
+                          : "/places/" + place.id
+                      }
+                      state={{ from: "/map?" + params.toString() }}
+                    >
+                      Chi tiết <ArrowUpRight size={13} aria-hidden />
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="map-mobile-peek-sub"
+                  >
+                    <a
+                      href={googleMapsDirectionsUrl(place)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Chỉ đường
+                    </a>
+                  </Button>
+                  <SaveButton place={place} />
+                </div>
+              </div>
+            </div>
+          )}
           <Button
             className="map-mode-switch"
             onClick={() =>
@@ -242,10 +402,46 @@ export function MapPage() {
             onRetry={() => void results.refetch()}
           />
           {results.data?.count === 0 && (
-            <p>Không có địa điểm khớp bộ lọc trong vùng này.</p>
+            <div style={{ padding: "12px 0" }}>
+              <p>Không có địa điểm nào trong vùng hiển thị này.</p>
+              <p
+                className="muted small"
+                style={{ margin: "6px 0 12px", lineHeight: "1.5" }}
+              >
+                Mạng lưới không gian Rendez đang liên tục được cộng đồng cập
+                nhật tại Đà Nẵng.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  map.current?.flyTo({
+                    center: [108.153, 16.068],
+                    zoom: 14,
+                    duration: 1200,
+                  });
+                }}
+              >
+                Khám phá các quán tại khu vực Liên Chiểu
+              </Button>
+            </div>
           )}
           {place && (
             <article className="marker-preview">
+              <div className="marker-preview-header">
+                <div>
+                  <h3 className="marker-preview-title">{place.name}</h3>
+                  <p className="marker-preview-cat">{place.category.name}</p>
+                </div>
+                <button
+                  type="button"
+                  className="marker-preview-close"
+                  onClick={() => select(null)}
+                  aria-label="Đóng xem trước"
+                >
+                  <X size={16} aria-hidden />
+                </button>
+              </div>
               <Cover
                 place={{
                   name: place.name,
@@ -259,46 +455,50 @@ export function MapPage() {
                   matched={place.supporting_photo.matched_attribute_codes}
                 />
               )}
-              <h3>{place.name}</h3>
-              <p>{place.category.name}</p>
               <p className="muted small">{place.address}</p>
-              <SaveButton place={place} />
-              <a
-                href={
-                  "https://www.google.com/maps/dir/?api=1&destination=" +
-                  place.latitude +
-                  "," +
-                  place.longitude
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Chỉ đường
-              </a>
-              <Button asChild>
-                <Link
-                  to={
-                    place.supporting_photo || place.cover_photo_id
-                      ? "/photos/" +
-                        (place.supporting_photo?.id || place.cover_photo_id)
-                      : "/places/" + place.id
-                  }
-                  state={{ from: "/map?" + params.toString() }}
-                >
-                  Xem chi tiết
-                </Link>
-              </Button>
-              <Button variant="outline" onClick={() => select(null)}>
-                Đóng xem trước
-              </Button>
+              <div className="marker-preview-actions">
+                <Button asChild className="marker-preview-primary">
+                  <Link
+                    to={
+                      place.supporting_photo || place.cover_photo_id
+                        ? "/photos/" +
+                          (place.supporting_photo?.id || place.cover_photo_id)
+                        : "/places/" + place.id
+                    }
+                    state={{ from: "/map?" + params.toString() }}
+                  >
+                    Xem chi tiết không gian{" "}
+                    <ArrowUpRight size={16} aria-hidden />
+                  </Link>
+                </Button>
+                <div className="marker-preview-subactions">
+                  <SaveButton place={place} />
+                  <Button asChild variant="outline">
+                    <a
+                      href={googleMapsDirectionsUrl(place)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Chỉ đường
+                    </a>
+                  </Button>
+                </div>
+              </div>
             </article>
           )}
           <div className="marker-list">
             {results.data?.results.map((p) => (
               <button
+                type="button"
                 key={p.id}
-                className={selected === p.id ? "active" : ""}
+                className={
+                  (selected === p.id ? "active " : "") +
+                  (hovered === p.id ? "hovered " : "")
+                }
+                aria-pressed={selected === p.id}
                 onClick={() => select(p.id)}
+                onMouseEnter={() => setHovered(p.id)}
+                onMouseLeave={() => setHovered(null)}
               >
                 <Cover
                   place={{
@@ -328,22 +528,52 @@ export function LocationPicker({
   value: { latitude: number; longitude: number } | null;
   onChange: (value: { latitude: number; longitude: number } | null) => void;
 }) {
+  const mapRef = useRef<MapRef>(null);
+  const [tileError, setTileError] = useState(false);
+  const [generation, setGeneration] = useState(0);
+
+  const targetLat = value?.latitude;
+  const targetLng = value?.longitude;
+
+  useEffect(() => {
+    if (targetLat !== undefined && targetLng !== undefined && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [targetLng, targetLat],
+        zoom: 15,
+        duration: 800,
+      });
+    }
+  }, [targetLat, targetLng]);
+
   return (
     <div className="place-location">
       <p className="muted small">
-        Chạm vào bản đồ để chọn vị trí. Bạn có thể bỏ qua nếu chưa chắc.
+        Bản đồ tự động ghim vị trí khi bạn gõ địa chỉ. Bạn cũng có thể chạm vào
+        bản đồ để tinh chỉnh.
       </p>
       <div className="location-picker">
         <Map
+          key={generation}
+          ref={mapRef}
           initialViewState={{
-            latitude: value?.latitude || 16.067,
-            longitude: value?.longitude || 108.225,
-            zoom: 13,
+            latitude: value?.latitude || 16.068,
+            longitude: value?.longitude || 108.153,
+            zoom: 14,
           }}
           minZoom={11}
           maxZoom={18}
-          maxBounds={[108.17, 15.955, 108.31, 16.16]}
+          maxBounds={[108.0, 15.8, 108.4, 16.3]}
           mapStyle="/map/style.json"
+          onError={(e) => {
+            const msg = e.error?.message?.toLowerCase() || "";
+            if (
+              msg.includes("style") ||
+              msg.includes("failed to fetch") ||
+              !mapRef.current?.getMap()?.isStyleLoaded()
+            ) {
+              setTileError(true);
+            }
+          }}
           onClick={(event) =>
             onChange({
               latitude: Number(event.lngLat.lat.toFixed(6)),
@@ -355,14 +585,35 @@ export function LocationPicker({
           <NavigationControl position="top-right" />
           {value && (
             <Marker latitude={value.latitude} longitude={value.longitude}>
-              <MapPin size={32} fill="#285548" color="#285548" />
+              <MapPin
+                size={32}
+                fill="var(--color-primary, #234e40)"
+                color="var(--color-primary, #234e40)"
+              />
             </Marker>
           )}
         </Map>
+        {tileError && (
+          <div className="map-error" role="alert">
+            <p>Không tải được bản đồ chọn vị trí.</p>
+            <Button
+              type="button"
+              onClick={() => {
+                setTileError(false);
+                setGeneration((g) => g + 1);
+              }}
+            >
+              Thử lại bản đồ
+            </Button>
+          </div>
+        )}
       </div>
       {value && (
         <div className="small">
-          <span className="success">Đã chọn vị trí trên bản đồ.</span>
+          <span className="success">
+            Đã ghim vị trí: ({value.latitude.toFixed(6)},{" "}
+            {value.longitude.toFixed(6)})
+          </span>
           <button
             type="button"
             className="text-button"

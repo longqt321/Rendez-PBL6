@@ -1,6 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
-import { Bookmark, ImageOff, Search, X, WifiOff } from "lucide-react";
+import {
+  Bookmark,
+  ImageOff,
+  Search,
+  X,
+  WifiOff,
+  Coffee,
+  Zap,
+  Wind,
+  Trees,
+  Building,
+  Moon,
+  Sparkles,
+  Layers,
+} from "lucide-react";
 import { useState, type ReactNode } from "react";
 import {
   api,
@@ -31,12 +45,61 @@ export function useLogout() {
     navigate = useNavigate();
   return useMutation({
     mutationFn: () => api<void>("auth/logout/", { method: "POST" }),
-    onSuccess: () => {
+    onSettled: () => {
       cache.clear();
       cache.setQueryData(["me"], null);
       navigate("/login", { replace: true });
     },
   });
+}
+
+export function sanitizeReturnTo(
+  url: string | null | undefined,
+): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.includes("\\")
+  ) {
+    return null;
+  }
+  if (trimmed.startsWith("/login") || trimmed.startsWith("/register")) {
+    return null;
+  }
+  return trimmed;
+}
+
+export function googleMapsDirectionsUrl(place: {
+  name?: string;
+  address?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}) {
+  if (place.name && place.address) {
+    return (
+      "https://www.google.com/maps/dir/?api=1&destination=" +
+      encodeURIComponent(`${place.name}, ${place.address}`)
+    );
+  }
+  if (
+    place.latitude !== null &&
+    place.longitude !== null &&
+    place.latitude !== undefined &&
+    place.longitude !== undefined
+  ) {
+    return (
+      "https://www.google.com/maps/dir/?api=1&destination=" +
+      place.latitude +
+      "," +
+      place.longitude
+    );
+  }
+  return (
+    "https://www.google.com/maps/search/?api=1&query=" +
+    encodeURIComponent(place.name || place.address || "Đà Nẵng")
+  );
 }
 
 export function State({
@@ -53,8 +116,8 @@ export function State({
   if (pending)
     return (
       <div role="status" aria-label="Đang tải" className="skeletons">
-        {[1, 2, 3, 4].map((i) => (
-          <div className="skeleton" key={i} />
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div className={`skeleton skeleton-${i}`} key={i} />
         ))}
       </div>
     );
@@ -65,16 +128,24 @@ export function State({
         <h2>
           {error instanceof ApiError && error.status === 404
             ? "Nội dung không còn khả dụng"
-            : "Không thể tải trang"}
+            : error instanceof ApiError && error.status === 403
+              ? "Không có quyền truy cập"
+              : error instanceof ApiError && error.status === 401
+                ? "Phiên đăng nhập đã hết hạn"
+                : "Không thể tải trang"}
         </h2>
         <p className="state-description">
           {error instanceof ApiError && error.status === 404
             ? "Nội dung này đã bị xóa hoặc đường dẫn không đúng."
-            : error instanceof ApiError && error.status >= 500
-              ? "Máy chủ hiện không phản hồi. Bạn có thể thử lại sau."
-              : error instanceof ApiError
-                ? error.message
-                : "Không kết nối được. Kiểm tra kết nối mạng rồi thử lại."}
+            : error instanceof ApiError && error.status === 403
+              ? "Bạn không có quyền xem hoặc thực hiện thao tác này."
+              : error instanceof ApiError && error.status === 401
+                ? "Vui lòng đăng nhập lại để tiếp tục sử dụng."
+                : error instanceof ApiError && error.status >= 500
+                  ? "Máy chủ hiện không phản hồi. Bạn có thể thử lại sau."
+                  : error instanceof ApiError
+                    ? error.message
+                    : "Không kết nối được. Kiểm tra kết nối mạng rồi thử lại."}
         </p>
         {error instanceof ApiError &&
           error.status < 500 &&
@@ -83,17 +154,73 @@ export function State({
               {errorMessage(value)}
             </p>
           ))}
-        {onRetry && <Button onClick={onRetry}>Thử lại</Button>}
+        {error instanceof ApiError && error.status === 401 ? (
+          <Button asChild>
+            <Link to="/login">Đăng nhập lại</Link>
+          </Button>
+        ) : (
+          onRetry && <Button onClick={onRetry}>Thử lại</Button>
+        )}
       </div>
     );
-  if (empty)
+  if (empty) {
+    const search =
+      typeof window !== "undefined" ? window.location?.search || "" : "";
+    const hasActiveFilters = Boolean(
+      search &&
+      (search.includes("category=") ||
+        search.includes("attributes=") ||
+        search.includes("q=")),
+    );
     return (
-      <div className="state">
-        <ImageOff size={36} aria-hidden />
+      <div className="state empty-state-card">
+        <div className="empty-icon-wrap">
+          {empty.toLowerCase().includes("lưu") ? (
+            <Bookmark size={32} aria-hidden />
+          ) : (
+            <Coffee size={32} aria-hidden />
+          )}
+        </div>
         <h2>{empty}</h2>
-        <Link to="/discover">Về Khám phá</Link>
+        <p className="empty-description">
+          {empty.toLowerCase().includes("lưu")
+            ? "Khám phá các địa điểm tại Đà Nẵng và bấm biểu tượng Lưu để gom vào danh sách yêu thích của bạn."
+            : "Thử chọn các đặc điểm khác hoặc xóa bớt tiêu chí lọc để xem thêm địa điểm."}
+        </p>
+        {empty.toLowerCase().includes("lưu") ? (
+          <Button asChild>
+            <Link to="/discover">Khám phá địa điểm ngay</Link>
+          </Button>
+        ) : hasActiveFilters ? (
+          <Button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                const next = new URLSearchParams(window.location.search);
+                for (const k of [
+                  "q",
+                  "category",
+                  "attributes",
+                  "sort",
+                  "page",
+                  "selected",
+                ]) {
+                  next.delete(k);
+                }
+                window.location.search = next.toString();
+              }
+            }}
+          >
+            Xóa tất cả bộ lọc
+          </Button>
+        ) : (
+          <Button asChild>
+            <Link to="/discover">Khám phá địa điểm ngay</Link>
+          </Button>
+        )}
       </div>
     );
+  }
   return null;
 }
 function errorMessage(value: unknown): string {
@@ -104,14 +231,18 @@ function errorMessage(value: unknown): string {
 }
 export function ErrorText({ error }: { error: Error | null }) {
   if (!error) return null;
+  const isServerInternal = error instanceof ApiError && error.status >= 500;
+  const safeMessage = isServerInternal
+    ? "Máy chủ hiện không phản hồi. Vui lòng thử lại sau."
+    : error instanceof ApiError
+      ? error.message
+      : "Không kết nối được. Kiểm tra kết nối mạng rồi thử lại.";
+
   return (
     <div role="alert" className="error">
-      <p>
-        {error instanceof ApiError
-          ? error.message
-          : "Không tải được nội dung. Thử lại."}
-      </p>
+      <p>{safeMessage}</p>
       {error instanceof ApiError &&
+        error.status < 500 &&
         Object.entries(error.fields).map(([key, value]) => (
           <p key={key}>{errorMessage(value)}</p>
         ))}
@@ -132,6 +263,7 @@ export function Cover({
       src={place.cover_image_url}
       alt={place.name}
       loading="lazy"
+      decoding="async"
       onError={() => setFailedUrl(place.cover_image_url)}
     />
   ) : (
@@ -207,6 +339,33 @@ export function PlaceCard({ place }: { place: VisualPlace }) {
     </article>
   );
 }
+export function AttributeIcon({
+  code,
+  size = 13,
+}: {
+  code: string;
+  size?: number;
+}) {
+  switch (code) {
+    case "study":
+      return <Zap size={size} aria-hidden />;
+    case "interior":
+      return <Wind size={size} aria-hidden />;
+    case "plants":
+      return <Trees size={size} aria-hidden />;
+    case "architecture":
+      return <Building size={size} aria-hidden />;
+    case "night":
+      return <Moon size={size} aria-hidden />;
+    case "food":
+      return <Coffee size={size} aria-hidden />;
+    case "wood":
+      return <Sparkles size={size} aria-hidden />;
+    default:
+      return <Layers size={size} aria-hidden />;
+  }
+}
+
 export function AttributeChips({
   attributes,
   matched = [],
@@ -224,6 +383,7 @@ export function AttributeChips({
           }
           title={a.description}
         >
+          <AttributeIcon code={a.code} size={12} />
           {a.display_name_vi}
         </span>
       ))}
@@ -270,7 +430,7 @@ export function SearchBar() {
         id="global-query"
         name="q"
         type="search"
-        placeholder="Tìm địa điểm hoặc địa chỉ"
+        placeholder="Tìm kiếm địa điểm, quán cà phê, không gian đẹp tại Đà Nẵng..."
         defaultValue={params.get("q") || ""}
         maxLength={100}
       />
@@ -387,7 +547,19 @@ export function Filters({ compact = false }: { compact?: boolean }) {
             )}
             <label>
               Sắp xếp
-              <select name="sort" defaultValue={params.get("sort") ?? "recent"}>
+              <select
+                name="sort"
+                defaultValue={params.get("sort") ?? "recent"}
+                onChange={(e) => {
+                  const next = new URLSearchParams(params);
+                  const val = e.currentTarget.value;
+                  if (val && val !== "recent") next.set("sort", val);
+                  else next.delete("sort");
+                  next.delete("page");
+                  next.delete("selected");
+                  setParams(next);
+                }}
+              >
                 <option value="recent">Mới đăng</option>
                 <option value="name">Tên địa điểm</option>
               </select>
@@ -406,9 +578,30 @@ export function Filters({ compact = false }: { compact?: boolean }) {
                       type="checkbox"
                       name="attributes"
                       value={a.code}
-                      defaultChecked={selected.includes(a.code)}
+                      checked={selected.includes(a.code)}
+                      onChange={(e) => {
+                        const code = a.code;
+                        const isChecked = e.currentTarget.checked;
+                        const next = new URLSearchParams(params);
+                        let codes = [...selected];
+                        if (isChecked) {
+                          if (!codes.includes(code)) codes.push(code);
+                        } else {
+                          codes = codes.filter((c) => c !== code);
+                        }
+                        codes.sort();
+                        if (codes.length)
+                          next.set("attributes", codes.join(","));
+                        else next.delete("attributes");
+                        next.delete("page");
+                        next.delete("selected");
+                        setParams(next);
+                      }}
                     />
-                    <span>{a.display_name_vi}</span>
+                    <span className="check-text">
+                      <AttributeIcon code={a.code} size={14} />
+                      {a.display_name_vi}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -443,28 +636,37 @@ export function Filters({ compact = false }: { compact?: boolean }) {
         </div>
       </details>
       {selected.length > 0 && (
-        <div className="selected-attributes" aria-label="Bộ lọc đã áp dụng">
-          {selected.map((code) => (
-            <button
-              type="button"
-              className="attribute-chip matched"
-              key={code}
-              onClick={() => {
-                const next = new URLSearchParams(params),
-                  codes = selected.filter((c) => c !== code);
-                if (codes.length) next.set("attributes", codes.join(","));
-                else next.delete("attributes");
-                next.delete("page");
-                next.delete("selected");
-                setParams(next);
-              }}
-            >
-              {" "}
-              {attributes.data?.find((a) => a.code === code)?.display_name_vi ??
-                code}{" "}
-              <X size={14} aria-label="Gỡ bộ lọc" />
-            </button>
-          ))}
+        <div
+          className="selected-attributes"
+          role="group"
+          aria-label="Bộ lọc đã áp dụng"
+        >
+          {selected.map((code) => {
+            const label =
+              attributes.data?.find((a) => a.code === code)?.display_name_vi ??
+              code;
+            return (
+              <button
+                type="button"
+                className="attribute-chip matched"
+                key={code}
+                aria-label={"Bỏ lọc: " + label}
+                onClick={() => {
+                  const next = new URLSearchParams(params),
+                    codes = selected.filter((c) => c !== code);
+                  if (codes.length) next.set("attributes", codes.join(","));
+                  else next.delete("attributes");
+                  next.delete("page");
+                  next.delete("selected");
+                  setParams(next);
+                }}
+              >
+                <AttributeIcon code={code} size={12} />
+                <span>{label}</span>
+                <X size={14} aria-hidden />
+              </button>
+            );
+          })}
         </div>
       )}
       {(categories.isError || attributes.isError) && (

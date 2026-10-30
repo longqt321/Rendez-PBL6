@@ -9,13 +9,22 @@ import { Button } from "../components/ui/button";
 import { AuthGate, Cover, ErrorText, Pager, State, useMe } from "./shared";
 
 function PhotoPreview({ file }: { file: File }) {
-  const image = useRef<HTMLImageElement>(null);
+  const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
-    const url = URL.createObjectURL(file);
-    if (image.current) image.current.src = url;
-    return () => URL.revokeObjectURL(url);
+    let active = true;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (active && typeof reader.result === "string") {
+        setUrl(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+    return () => {
+      active = false;
+    };
   }, [file]);
-  return <img ref={image} alt={"Ảnh đã chọn: " + file.name} />;
+  if (!url) return null;
+  return <img src={url} alt={"Ảnh đã chọn: " + file.name} />;
 }
 const LocationPicker = lazy(() =>
   import("./map").then((module) => ({ default: module.LocationPicker })),
@@ -52,7 +61,55 @@ function PhotoForm() {
   const [files, setFiles] = useState<File[]>([]),
     [error, setError] = useState(""),
     [consent, setConsent] = useState(false);
+  const [geocodeState, setGeocodeState] = useState<{
+    loading: boolean;
+    result: {
+      display_name: string;
+      provider: string;
+      latitude: number;
+      longitude: number;
+    } | null;
+  }>({ loading: false, result: null });
   const key = useRef(crypto.randomUUID());
+
+  useEffect(() => {
+    if (!proposal || !metadata.address || metadata.address.trim().length < 3) {
+      const resetTimer = setTimeout(() => {
+        setGeocodeState({ loading: false, result: null });
+      }, 0);
+      return () => clearTimeout(resetTimer);
+    }
+    const timer = setTimeout(async () => {
+      setGeocodeState((prev) => ({ ...prev, loading: true }));
+      try {
+        const res = await api<{
+          success: boolean;
+          latitude: number;
+          longitude: number;
+          display_name: string;
+          provider: string;
+        }>("places/geocode/?q=" + encodeURIComponent(metadata.address));
+        if (res && res.success && res.latitude && res.longitude) {
+          setPosition({ latitude: res.latitude, longitude: res.longitude });
+          setGeocodeState({
+            loading: false,
+            result: {
+              display_name: res.display_name,
+              provider: res.provider,
+              latitude: res.latitude,
+              longitude: res.longitude,
+            },
+          });
+        } else {
+          setGeocodeState({ loading: false, result: null });
+        }
+      } catch {
+        setGeocodeState({ loading: false, result: null });
+      }
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [proposal, metadata.address]);
   const places = useQuery({
     queryKey: ["submission-places", search],
     queryFn: ({ signal }) =>
@@ -179,19 +236,78 @@ function PhotoForm() {
           </label>
           {proposal ? (
             <div className="new-place-fields">
-              {(["name", "address"] as const).map((field) => (
-                <label key={field}>
-                  {field === "name" ? "Tên địa điểm" : "Địa chỉ"}
-                  <input
-                    value={metadata[field]}
-                    maxLength={field === "name" ? 200 : 500}
-                    onChange={(e) => {
-                      changed();
-                      setMetadata({ ...metadata, [field]: e.target.value });
+              <label>
+                Tên địa điểm
+                <input
+                  value={metadata.name}
+                  maxLength={200}
+                  placeholder="Ví dụ: Tiệm Cà Phê Mộc"
+                  onChange={(e) => {
+                    changed();
+                    setMetadata({ ...metadata, name: e.target.value });
+                  }}
+                />
+              </label>
+              <label>
+                Địa chỉ
+                <input
+                  value={metadata.address}
+                  maxLength={500}
+                  placeholder="Ví dụ: 100 Phạm Như Xương, Liên Chiểu, Đà Nẵng"
+                  onChange={(e) => {
+                    changed();
+                    setMetadata({ ...metadata, address: e.target.value });
+                  }}
+                />
+                {geocodeState.loading && (
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "0.85rem",
+                      color: "#6b7280",
+                      marginTop: "4px",
                     }}
-                  />
-                </label>
-              ))}
+                  >
+                    Đang tự động tra cứu tọa độ từ OpenStreetMap…
+                  </span>
+                )}
+                {geocodeState.result && (
+                  <span
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "6px",
+                      fontSize: "0.85rem",
+                      color: "#285548",
+                      backgroundColor: "rgba(40, 85, 72, 0.08)",
+                      border: "1px solid rgba(40, 85, 72, 0.2)",
+                      padding: "8px 10px",
+                      borderRadius: "6px",
+                      marginTop: "6px",
+                    }}
+                  >
+                    <CheckCircle2
+                      size={16}
+                      style={{ marginTop: "2px", flexShrink: 0 }}
+                    />
+                    <span>
+                      <strong>Tự động định vị:</strong>{" "}
+                      {geocodeState.result.display_name} (
+                      {geocodeState.result.latitude.toFixed(6)},{" "}
+                      {geocodeState.result.longitude.toFixed(6)})
+                      <small
+                        style={{
+                          display: "block",
+                          color: "#4b5563",
+                          marginTop: "2px",
+                        }}
+                      >
+                        Nguồn dữ liệu: {geocodeState.result.provider}
+                      </small>
+                    </span>
+                  </span>
+                )}
+              </label>
               <label>
                 Loại địa điểm
                 <select
@@ -215,7 +331,11 @@ function PhotoForm() {
                   type="button"
                   onClick={() => setShowMap(!showMap)}
                 >
-                  {showMap ? "Ẩn bản đồ" : "Chọn vị trí trên bản đồ (tùy chọn)"}
+                  {showMap
+                    ? "Ẩn bản đồ"
+                    : position
+                      ? "Xem vị trí đã ghim trên bản đồ"
+                      : "Chọn vị trí trên bản đồ (tùy chọn)"}
                 </Button>
                 {showMap && (
                   <Suspense fallback={<p role="status">Đang tải bản đồ…</p>}>
@@ -467,7 +587,10 @@ function History() {
               <img
                 src={s.assets[0].preview_url}
                 alt="Ảnh bạn đã đăng"
+                width={110}
+                height={120}
                 loading="lazy"
+                decoding="async"
               />
             )}
             <div>
@@ -549,6 +672,8 @@ function SubmissionDetail({ id }: { id: string }) {
               className="card-image"
               src={a.preview_url}
               alt="Ảnh bạn đã đăng"
+              loading="lazy"
+              decoding="async"
             />
             {a.publication_status === "published" && (
               <Link to={"/photos/" + a.public_photo_id}>

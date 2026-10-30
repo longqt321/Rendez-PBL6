@@ -78,7 +78,7 @@ export interface paths {
         get: operations["auth_me_retrieve"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["auth_me_destroy"];
         options?: never;
         head?: never;
         patch: operations["auth_me_partial_update"];
@@ -124,6 +124,54 @@ export interface paths {
             cookie?: never;
         };
         get: operations["categories_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comments/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["comments_destroy"];
+        options?: never;
+        head?: never;
+        patch: operations["comments_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/creators/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["creators_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/creators/{id}/photos/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["creators_photos_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -222,6 +270,22 @@ export interface paths {
         get: operations["photos_retrieve"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photos/{id}/comments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["photos_comments_list"];
+        put?: never;
+        post: operations["photos_comments_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -356,6 +420,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/places/geocode/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Tự động giải mã và định vị địa chỉ thực tế (Geocoding) trả về tọa độ kinh độ, vĩ độ.
+         *     100% sử dụng cơ sở dữ liệu và API thời gian thực từ các bên thứ ba uy tín (OpenStreetMap, Photon, Esri).
+         */
+        get: operations["places_geocode_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/places/map/": {
         parameters: {
             query?: never;
@@ -406,6 +490,9 @@ export interface components {
             slug: string;
             name: string;
         };
+        CommentCreateRequest: {
+            body: string;
+        };
         /**
          * @description * `photo-rights-v2` - photo-rights-v2
          * @enum {string}
@@ -430,6 +517,14 @@ export interface components {
          * @enum {string}
          */
         ContentReportStatusEnum: "pending" | "resolved";
+        CreatorProfile: {
+            /** Format: uuid */
+            readonly id: string;
+            display_name: string;
+            /** Format: date-time */
+            readonly joined_at: string;
+            readonly photo_count: number;
+        };
         FeedItem: {
             photo: components["schemas"]["PublicPhoto"];
             place: components["schemas"]["VisualPlace"];
@@ -440,16 +535,32 @@ export interface components {
             previous: string | null;
             results: components["schemas"]["PublicPhoto"][];
         };
+        GeocodeResponse: {
+            success: boolean;
+            /** Format: double */
+            latitude?: number | null;
+            /** Format: double */
+            longitude?: number | null;
+            display_name?: string;
+            provider?: string;
+            /** Format: double */
+            confidence?: number;
+        };
         LoginRequest: {
             /** Format: email */
-            email: string;
-            password: string;
+            email?: string;
+            password?: string;
+            /** @default false */
+            is_demo: boolean;
         };
         OpeningHours: {
             text: string;
             source: string;
             /** Format: date-time */
             verified_at: string;
+            specification?: {
+                [key: string]: unknown;
+            };
         };
         PaginatedFeedItemList: {
             /** @example 123 */
@@ -518,8 +629,21 @@ export interface components {
         PatchedCaptionRequest: {
             caption?: string;
         };
+        PatchedCommentCreateRequest: {
+            body?: string;
+        };
         PatchedProfileUpdateRequest: {
             display_name?: string;
+        };
+        PhotoComment: {
+            readonly id: number;
+            /** Format: uuid */
+            readonly photo_id: string;
+            readonly author_name: string;
+            body: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly is_owner: boolean;
         };
         PhotoDetail: {
             /** Format: uuid */
@@ -535,10 +659,13 @@ export interface components {
             readonly published_at: string | null;
             readonly attributes: components["schemas"]["VisualAttribute"][];
             readonly matched_attribute_codes: string[];
+            /** Format: uuid */
+            readonly author_id: string;
             readonly author_name: string;
             readonly is_owner: boolean;
             readonly place: components["schemas"]["VisualPlace"];
             readonly photo_ids: string[];
+            readonly comments_count: number;
         };
         PhotoLikes: {
             readonly liked: boolean;
@@ -609,6 +736,8 @@ export interface components {
             readonly published_at: string | null;
             readonly attributes: components["schemas"]["VisualAttribute"][];
             readonly matched_attribute_codes: string[];
+            /** Format: uuid */
+            readonly author_id: string;
             readonly author_name: string;
             readonly is_owner: boolean;
         };
@@ -741,7 +870,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
                 "application/json": components["schemas"]["LoginRequest"];
                 "application/x-www-form-urlencoded": components["schemas"]["LoginRequest"];
@@ -793,6 +922,24 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Profile"];
                 };
+            };
+        };
+    };
+    auth_me_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -885,6 +1032,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Category"][];
+                };
+            };
+        };
+    };
+    comments_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    comments_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedCommentCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCommentCreateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCommentCreateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoComment"];
+                };
+            };
+        };
+    };
+    creators_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatorProfile"];
+                };
+            };
+        };
+    };
+    creators_photos_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPublicPhotoList"];
                 };
             };
         };
@@ -1079,6 +1320,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PhotoDetail"];
+                };
+            };
+        };
+    };
+    photos_comments_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoComment"][];
+                };
+            };
+        };
+    };
+    photos_comments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CommentCreateRequest"];
+                "multipart/form-data": components["schemas"]["CommentCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoComment"];
                 };
             };
         };
@@ -1342,6 +1631,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContentReport"];
+                };
+            };
+        };
+    };
+    places_geocode_retrieve: {
+        parameters: {
+            query: {
+                /** @description Chuỗi địa chỉ thực tế cần tự động lấy tọa độ */
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeocodeResponse"];
                 };
             };
         };

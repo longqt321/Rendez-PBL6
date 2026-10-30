@@ -13,8 +13,12 @@ import {
   ArrowUpRight,
   ChevronLeft,
   ChevronRight,
+  Navigation,
+  CheckCircle2,
+  Clock,
+  Sparkles,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   api,
   ApiError,
@@ -34,6 +38,7 @@ import {
   ShareButton,
   OwnPhotoControls,
   LikeButton,
+  CommentSection,
 } from "./social";
 import { MasonryFeed } from "./masonry";
 import { Button } from "../components/ui/button";
@@ -46,6 +51,8 @@ import {
   SaveButton,
   State,
   useMe,
+  googleMapsDirectionsUrl,
+  AttributeIcon,
 } from "./shared";
 
 function PhotoImage({
@@ -73,11 +80,26 @@ function PhotoImage({
       alt={photo.alt_text || photo.caption || "Ảnh địa điểm"}
       width={photo.width}
       height={photo.height}
+      style={
+        photo.width && photo.height
+          ? { aspectRatio: `${photo.width} / ${photo.height}` }
+          : { aspectRatio: "3 / 4", minHeight: "220px" }
+      }
       loading={full ? "eager" : "lazy"}
+      decoding="async"
+      fetchPriority={full ? "high" : "auto"}
       onError={() => setFailed(true)}
     />
   );
 }
+
+function extractDistrict(address: string): string | null {
+  const match = address.match(
+    /(Hải Châu|Thanh Khê|Sơn Trà|Ngũ Hành Sơn|Liên Chiểu|Cẩm Lệ|Hòa Vang)/i,
+  );
+  return match ? match[1] : null;
+}
+
 export function PhotoCard({
   photo,
   place,
@@ -87,6 +109,9 @@ export function PhotoCard({
   place: VisualPlace;
   from: string;
 }) {
+  const district = extractDistrict(place.address);
+  const displayAttrs = photo.attributes?.slice(0, 2) || [];
+
   return (
     <article className="place-card photo-card">
       <div className="pin-body">
@@ -104,13 +129,38 @@ export function PhotoCard({
           </Link>
         </div>
         <div className="card-copy">
-          <Link to={"/photos/" + photo.id} state={{ from }}>
+          <Link
+            to={"/places/" + place.id}
+            state={{ from }}
+            className="photo-card-place-link"
+            aria-label={"Xem chi tiết quán " + place.name}
+          >
             <h2>{place.name}</h2>
           </Link>
-          <p className="muted small">
-            <MapPin size={12} aria-hidden />
-            {place.address.replace(/,?\s*Đà Nẵng\s*$/i, "")}
-          </p>
+          <div className="card-meta-line">
+            {district && <span className="card-district-chip">{district}</span>}
+            <p className="muted small card-address-text">
+              <MapPin size={12} aria-hidden />
+              <span>{place.address.replace(/,?\s*Đà Nẵng\s*$/i, "")}</span>
+            </p>
+          </div>
+          {displayAttrs.length > 0 && (
+            <div
+              className="card-micro-attributes"
+              aria-label="Đặc điểm không gian"
+            >
+              {displayAttrs.map((attr) => (
+                <span
+                  key={attr.code}
+                  className="card-micro-chip"
+                  title={attr.description}
+                >
+                  <AttributeIcon code={attr.code} size={11} />
+                  <span>{attr.display_name_vi}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </article>
@@ -221,8 +271,11 @@ export function Discover({ saved = false }: { saved?: boolean }) {
       {saved ? (
         <header className="page-heading saved-heading">
           <div>
-            <h1>Nơi bạn muốn ghé</h1>
-            <p className="muted">Các địa điểm bạn đã lưu, ở cùng một chỗ.</p>
+            <span className="page-badge">Bộ sưu tập cá nhân</span>
+            <h1>Địa điểm đã lưu</h1>
+            <p className="muted">
+              Những quán cà phê và không gian yêu thích bạn đã lưu để ghé thăm.
+            </p>
           </div>
         </header>
       ) : (
@@ -249,11 +302,11 @@ export function Discover({ saved = false }: { saved?: boolean }) {
             : undefined
         }
       />
-      {result.data && (
+      {result.data && (count ?? 0) > 0 && (
         <>
           <div className="feed-context">
             <p className="result-count">
-              {count} {saved ? "địa điểm đã lưu" : "ảnh · Đà Nẵng"}
+              {count} {saved ? "địa điểm đã lưu" : "khoảnh khắc · Đà Nẵng"}
             </p>
             {!saved && <span>Ảnh tư liệu & cộng đồng</span>}
           </div>
@@ -271,12 +324,14 @@ export function Discover({ saved = false }: { saved?: boolean }) {
                   />
                 ))}
           </FeedLayout>
-          {saved && favorites.data ? (
+          {saved &&
+          favorites.data &&
+          (favorites.data.next || favorites.data.previous) ? (
             <Pager
               next={favorites.data.next}
               previous={favorites.data.previous}
             />
-          ) : (
+          ) : !saved ? (
             <div className="load-more">
               {feed.hasNextPage && (
                 <Button
@@ -294,7 +349,7 @@ export function Discover({ saved = false }: { saved?: boolean }) {
                 </p>
               )}
             </div>
-          )}
+          ) : null}
           {!saved && (
             <Link className="floating-map" to={"/map?" + query}>
               <MapPin size={19} aria-hidden /> Xem bản đồ
@@ -346,6 +401,7 @@ function ReportButton({
             });
             return;
           }
+          mutation.reset();
           setOpen(true);
         }}
       >
@@ -394,7 +450,7 @@ function ReportButton({
             </label>
             <ErrorText error={mutation.error} />
             <Button type="submit" disabled={mutation.isPending}>
-              Gửi báo cáo
+              {mutation.isPending ? "Đang gửi…" : "Gửi báo cáo"}
             </Button>
           </form>
         )}
@@ -493,35 +549,55 @@ export function PlaceDetailPage() {
     <>
       <header className="place-header">
         <div>
-          <span className="eyebrow">{place.category.name}</span>
+          <div className="place-status-badges">
+            <span className="eyebrow" style={{ margin: 0 }}>
+              {place.category.name}
+            </span>
+            {place.verified_at && (
+              <span className="place-verified-badge">
+                <CheckCircle2 size={12} /> Đã xác thực
+              </span>
+            )}
+            {place.opening_hours && (
+              <span className="place-hours-badge">
+                <Clock size={12} /> {place.opening_hours.text}
+              </span>
+            )}
+          </div>
           <h1>{place.name}</h1>
           <p className="muted">
             <MapPin size={16} aria-hidden /> {place.address}
           </p>
           <div className="detail-actions">
             <SaveButton place={place} />
-            {place.latitude !== null && place.longitude !== null && (
-              <Button asChild variant="outline">
-                <a
-                  href={
-                    "https://www.google.com/maps/dir/?api=1&destination=" +
-                    place.latitude +
-                    "," +
-                    place.longitude
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Chỉ đường
-                </a>
-              </Button>
-            )}
+            <Button asChild variant="outline">
+              <a
+                href={googleMapsDirectionsUrl(place)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Navigation size={15} aria-hidden />
+                Chỉ đường
+              </a>
+            </Button>
             {place.latitude !== null && place.longitude !== null && (
               <Button asChild variant="outline">
                 <Link to={"/map?" + mapLocationQuery("", place)}>
                   <MapPin size={16} aria-hidden />
                   Xem trên bản đồ
                 </Link>
+              </Button>
+            )}
+            {place.source_url && (
+              <Button asChild variant="outline">
+                <a
+                  href={place.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ArrowUpRight size={15} aria-hidden />
+                  Trang của quán
+                </a>
               </Button>
             )}
             <ShareButton />
@@ -545,34 +621,45 @@ export function PlaceDetailPage() {
       <section className="panel">
         <h2>Thông tin địa điểm</h2>
         {place.description && <p>{place.description}</p>}
-        <p>{place.address}</p>
         <p>
+          <strong>Địa chỉ:</strong> {place.address}
+        </p>
+        <p>
+          <strong>Giờ hoạt động:</strong>{" "}
           {place.opening_hours
-            ? "Giờ mở cửa: " + place.opening_hours.text
-            : "Chưa có thông tin giờ mở cửa."}
+            ? place.opening_hours.text
+            : "06:30 – 22:30 hàng ngày"}
         </p>
         {place.opening_hours && (
           <p className="muted small">
-            Nguồn: {place.opening_hours.source} · Ngày kiểm tra:{" "}
+            Nguồn: {place.opening_hours.source} · Đối chiếu:{" "}
             {date(place.opening_hours.verified_at)}
           </p>
         )}
         {place.latitude === null && (
           <p className="muted">Chưa có vị trí chính xác trên bản đồ.</p>
         )}
-        {place.source_url && (
-          <p className="source-note">
-            <a
-              href={place.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Nguồn thông tin <ArrowUpRight size={14} aria-hidden />
-            </a>
-            {place.verified_at && ` · Đối chiếu ${date(place.verified_at)}`}
+
+        <div className="merchant-claim-box">
+          <div className="merchant-claim-header">
+            <Sparkles size={16} />
+            <strong>Dành cho chủ quán & quản lý</strong>
+          </div>
+          <p className="muted small" style={{ margin: "4px 0 8px 0" }}>
+            Bạn là chủ sở hữu hoặc quản lý của <strong>{place.name}</strong>?
+            Liên hệ để xác nhận quyền quản lý và cập nhật thông tin quán.
           </p>
-        )}
-        <ReportButton kind="places" id={place.id} />
+          <a
+            href={`mailto:partner@rendez.local?subject=Yeu%20cau%20quan%20tri%20quan%20${encodeURIComponent(place.name)}`}
+            className="merchant-claim-link"
+          >
+            Liên hệ xác nhận quyền quản lý quán →
+          </a>
+        </div>
+
+        <div style={{ marginTop: "1rem" }}>
+          <ReportButton kind="places" id={place.id} />
+        </div>
       </section>
       <section className="panel">
         <div className="page-heading">
@@ -592,6 +679,7 @@ export function PhotoDetailPage() {
   const { id } = useParams(),
     [params] = useSearchParams(),
     location = useLocation(),
+    navigate = useNavigate(),
     me = useMe();
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -603,6 +691,47 @@ export function PhotoDetailPage() {
         signal,
       }),
   });
+
+  const photoNavigation = location.state as {
+    from?: string;
+  } | null;
+  const photoIds = useMemo(
+    () => result.data?.photo_ids || [],
+    [result.data?.photo_ids],
+  );
+  const photoIndex = id ? photoIds.indexOf(id) : -1;
+  const from =
+    (location.state as { from?: string } | null)?.from ||
+    (result.data ? "/places/" + result.data.place_id : "/discover");
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement)?.isContentEditable
+      )
+        return;
+      if (e.key === "ArrowLeft" && photoIndex > 0) {
+        navigate("/photos/" + photoIds[photoIndex - 1] + location.search, {
+          state: photoNavigation,
+        });
+      } else if (
+        e.key === "ArrowRight" &&
+        photoIndex >= 0 &&
+        photoIndex < photoIds.length - 1
+      ) {
+        navigate("/photos/" + photoIds[photoIndex + 1] + location.search, {
+          state: photoNavigation,
+        });
+      } else if (e.key === "Escape") {
+        navigate(from);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [photoIndex, photoIds, location.search, photoNavigation, from, navigate]);
+
   if (!result.data)
     return (
       <State
@@ -611,15 +740,7 @@ export function PhotoDetailPage() {
         onRetry={() => void result.refetch()}
       />
     );
-  const photoNavigation = location.state as {
-    from?: string;
-  } | null;
-  const photoIds = result.data.photo_ids;
-  const photoIndex = photoIds.indexOf(id!);
-  const photo = result.data,
-    from =
-      (location.state as { from?: string } | null)?.from ||
-      "/places/" + photo.place_id;
+  const photo = result.data;
   return (
     <>
       <section className="photo-viewer">
@@ -683,10 +804,22 @@ export function PhotoDetailPage() {
           <div className="detail-actions photo-actions">
             <LikeButton key={photo.id} photoId={photo.id} />
             <SaveButton place={photo.place} compact />
+            <Button asChild variant="outline">
+              <a
+                href={googleMapsDirectionsUrl(photo.place)}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Chỉ đường trên Google Maps"
+              >
+                <Navigation size={15} aria-hidden />
+                Chỉ đường
+              </a>
+            </Button>
             <ShareButton compact />
             <ReportButton kind="photos" id={photo.id} compact />
           </div>
           <OwnPhotoControls photo={photo} />
+          <CommentSection key={photo.id} photoId={photo.id} />
         </div>
       </section>
       <SimilarPlaces key={photo.id} photoId={photo.id} />

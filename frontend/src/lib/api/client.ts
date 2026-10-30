@@ -48,7 +48,16 @@ export async function api<T>(
     credentials: "same-origin",
   });
   if (!response.ok) {
-    if (response.status === 401 && !path.startsWith("auth/"))
+    if (
+      response.status === 401 &&
+      ![
+        "auth/login/",
+        "auth/register/",
+        "auth/csrf/",
+        "auth/logout/",
+        "auth/me/",
+      ].includes(path.split("?")[0])
+    )
       window.dispatchEvent(new Event("rendez:session-expired"));
     const error = await response
       .json()

@@ -20,6 +20,7 @@ import {
 import { discoveryQuery } from "../lib/api/client";
 import { SearchBar, State, useMe, useLogout, ErrorText } from "./shared";
 import { Auth, ProfilePage } from "./auth";
+import { CreatorProfilePage } from "./creator";
 import { Discover, PlaceDetailPage, PhotoDetailPage } from "./discovery";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 const MapPage = lazy(() =>
@@ -89,6 +90,7 @@ function AccountMenu() {
         aria-label={"Tài khoản của " + (me.data?.display_name || "bạn")}
         title="Tài khoản"
         aria-expanded={open}
+        aria-haspopup="menu"
         aria-controls="account-dropdown"
         onClick={() => setOpen(!open)}
       >
@@ -99,9 +101,10 @@ function AccountMenu() {
         </span>
       </button>
       {open && (
-        <div className="account-dropdown" id="account-dropdown">
+        <div className="account-dropdown" id="account-dropdown" role="menu">
           <button
             type="button"
+            role="menuitem"
             disabled={logout.isPending}
             onClick={() => logout.mutate()}
           >
@@ -227,17 +230,12 @@ export default function App() {
           />
           <Route path="saved" element={<Discover saved />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="creators/:id" element={<CreatorProfilePage />} />
           <Route path="places/:id" element={<PlaceDetailPage />} />
           <Route path="photos/:id" element={<PhotoDetailPage />} />
           <Route path="submissions/new" element={<NewContribution />} />
           <Route path="submissions" element={<ContributionHistory />} />
           <Route path="submissions/:id" element={<ContributionDetailPage />} />
-          <Route path="contributions/new" element={<NewContribution />} />
-          <Route path="contributions" element={<ContributionHistory />} />
-          <Route
-            path="contributions/:id"
-            element={<ContributionDetailPage />}
-          />
           <Route
             path="*"
             element={

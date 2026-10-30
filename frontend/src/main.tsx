@@ -8,9 +8,10 @@ import "./styles.css";
 const client = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
 });
-window.addEventListener("rendez:session-expired", () =>
-  client.setQueryData(["me"], null),
-);
+window.addEventListener("rendez:session-expired", () => {
+  client.clear();
+  client.setQueryData(["me"], null);
+});
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={client}>

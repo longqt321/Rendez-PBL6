@@ -12,6 +12,8 @@ import {
   User,
   Eye,
   EyeOff,
+  MapPin,
+  Sparkles,
 } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,7 +23,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { api, type Profile, type Page } from "../lib/api/client";
 import { Button } from "../components/ui/button";
-import { ErrorText, State, useMe, useLogout, PlaceCard, Pager } from "./shared";
+import { ConfirmDialog } from "../components/ui/confirm-dialog";
+import {
+  ErrorText,
+  State,
+  useMe,
+  useLogout,
+  PlaceCard,
+  Pager,
+  sanitizeReturnTo,
+} from "./shared";
 
 import type { FeedItem, VisualPlace } from "../lib/api/visual";
 import { PhotoCard } from "./discovery";
@@ -37,6 +48,8 @@ export function Auth({ register = false }: { register?: boolean }) {
   const navigate = useNavigate(),
     location = useLocation(),
     cache = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const me = useMe();
   const mode = useQuery({
     queryKey: ["login-mode"],
     queryFn: () => api<{ debug_login: boolean }>("auth/csrf/"),
@@ -46,6 +59,17 @@ export function Auth({ register = false }: { register?: boolean }) {
   const debugLogin = !register && mode.data?.debug_login === true;
   const [reveal, setReveal] = useState(false);
   const form = useForm<Values>({ resolver: zodResolver(schema) });
+
+  useEffect(() => {
+    if (me.data) {
+      const intent = location.state as { returnTo?: string } | null;
+      const target =
+        sanitizeReturnTo(intent?.returnTo || searchParams.get("returnTo")) ||
+        "/discover";
+      navigate(target, { replace: true });
+    }
+  }, [me.data, location.state, searchParams, navigate]);
+
   const mutation = useMutation({
     mutationFn: (values: Values) =>
       api<Profile>(register ? "auth/register/" : "auth/login/", {
@@ -65,19 +89,27 @@ export function Auth({ register = false }: { register?: boolean }) {
       } | null;
       if (intent?.savePlace)
         await api("favorites/" + intent.savePlace + "/", { method: "PUT" });
-      navigate(
-        intent?.returnTo?.startsWith("/") &&
-          !intent.returnTo.startsWith("//") &&
-          !intent.returnTo.includes("\\")
-          ? intent.returnTo
-          : "/discover",
-        { replace: true },
-      );
+      const target =
+        sanitizeReturnTo(intent?.returnTo || searchParams.get("returnTo")) ||
+        "/discover";
+      navigate(target, { replace: true });
     },
   });
   useEffect(() => {
-    document.title = (register ? "Tạo tài khoản" : "Đăng nhập") + " · Rendez";
-  }, [register]);
+    const path = location.pathname;
+    const title = register ? "Tạo tài khoản" : "Đăng nhập";
+    document.title = title + " · Rendez";
+    let description = "Đăng nhập để lưu địa điểm và đăng ảnh.";
+    if (register) description = "Tạo tài khoản để lưu địa điểm và đăng ảnh.";
+    else if (path === "/login") description = "Đăng nhập để tiếp tục khám phá.";
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", description);
+  }, [register, location.pathname]);
+  if (me.data) {
+    return <State pending />;
+  }
+
   return (
     <div className="auth-layout">
       <aside className="auth-story">
@@ -108,18 +140,10 @@ export function Auth({ register = false }: { register?: boolean }) {
         <p className="muted">
           {register
             ? "Tạo tài khoản để lưu địa điểm và đăng ảnh."
-            : debugLogin
-              ? "DEBUG: bấm Đăng nhập để vào bằng tài khoản demo."
-              : "Đăng nhập để lưu địa điểm và đăng ảnh."}
+            : "Đăng nhập để lưu địa điểm và đăng ảnh của bạn."}
         </p>
         <form
-          noValidate={debugLogin}
           onSubmit={(event) => {
-            if (debugLogin) {
-              event.preventDefault();
-              mutation.mutate({ email: "", password: "" });
-              return;
-            }
             void form.handleSubmit((values) => {
               if (register && !values.display_name?.trim()) {
                 form.setError("display_name", {
@@ -142,7 +166,7 @@ export function Auth({ register = false }: { register?: boolean }) {
                 aria-describedby="auth-name-error"
                 {...form.register("display_name")}
               />
-              <span id="auth-name-error" className="error">
+              <span id="auth-name-error" className="error" role="alert">
                 {form.formState.errors.display_name?.message}
               </span>
             </div>
@@ -157,7 +181,7 @@ export function Auth({ register = false }: { register?: boolean }) {
               aria-describedby="auth-email-error"
               {...form.register("email")}
             />
-            <span id="auth-email-error" className="error">
+            <span id="auth-email-error" className="error" role="alert">
               {form.formState.errors.email?.message}
             </span>
           </div>
@@ -186,7 +210,7 @@ export function Auth({ register = false }: { register?: boolean }) {
                 )}
               </Button>
             </div>
-            <span id="auth-password-error" className="error">
+            <span id="auth-password-error" className="error" role="alert">
               {form.formState.errors.password?.message}
             </span>
           </div>
@@ -200,8 +224,21 @@ export function Auth({ register = false }: { register?: boolean }) {
                 ? "Tạo tài khoản"
                 : "Đăng nhập"}
           </Button>
+          {debugLogin && !register && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={mutation.isPending}
+              onClick={() => mutation.mutate({ email: "", password: "" })}
+            >
+              Đăng nhập trải nghiệm nhanh
+            </Button>
+          )}
         </form>
-        <Link to={register ? "/login" : "/register"} state={location.state}>
+        <Link
+          to={(register ? "/login" : "/register") + location.search}
+          state={location.state}
+        >
           {register ? "Đã có tài khoản? Đăng nhập" : "Tạo tài khoản mới"}
         </Link>
       </section>
@@ -213,6 +250,7 @@ export function ProfilePage() {
   const [params] = useSearchParams();
   const saved = params.get("tab") === "saved";
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const [view, setView] = useState<"menu" | "name" | "password">("menu");
   const dialog = useRef<HTMLDialogElement>(null);
   const settingsTrigger = useRef<HTMLButtonElement>(null);
@@ -231,23 +269,68 @@ export function ProfilePage() {
   };
   return (
     <section className="profile-page">
-      <header className="profile-header">
-        <span className="avatar profile-avatar" aria-hidden>
-          {me.data.display_name.slice(0, 1).toUpperCase() || <User />}
-        </span>
-        <div className="profile-identity">
-          <h1>{me.data.display_name}</h1>
+      <div className="profile-hero-card">
+        <div className="profile-hero-banner" />
+        <div className="profile-hero-body">
+          <div className="profile-avatar-wrap">
+            <span className="avatar profile-avatar" aria-hidden>
+              {me.data.display_name.slice(0, 1).toUpperCase() || <User />}
+            </span>
+            {me.data.is_staff && (
+              <span className="profile-badge-icon" title="Quản trị viên">
+                <Shield size={16} />
+              </span>
+            )}
+          </div>
+          <div className="profile-identity">
+            <div className="profile-name-row">
+              <h1>{me.data.display_name}</h1>
+              {me.data.is_staff ? (
+                <span className="profile-role-badge admin">
+                  <Shield size={13} aria-hidden /> Quản trị viên
+                </span>
+              ) : (
+                <span className="profile-role-badge member">
+                  <Sparkles size={13} aria-hidden /> Thành viên Rendez
+                </span>
+              )}
+            </div>
+            <p className="profile-sub-meta">
+              <span>
+                <MapPin size={14} aria-hidden /> Đà Nẵng, Việt Nam
+              </span>
+              <span>•</span>
+              <span>{me.data.email}</span>
+            </p>
+          </div>
+          <button
+            className="profile-settings-button"
+            ref={settingsTrigger}
+            aria-label="Cài đặt tài khoản"
+            title="Cài đặt tài khoản"
+            onClick={() => openSettings("menu")}
+          >
+            <Settings size={18} aria-hidden />
+            <span>Cài đặt</span>
+          </button>
         </div>
-        <button
-          className="profile-settings-button"
-          ref={settingsTrigger}
-          aria-label="Cài đặt tài khoản"
-          title="Cài đặt tài khoản"
-          onClick={() => openSettings("menu")}
-        >
-          <Settings size={22} aria-hidden />
-        </button>
-      </header>
+
+        <div className="profile-quick-stats">
+          <div className="stat-box">
+            <strong>{me.data.photo_count ?? 0}</strong>
+            <span>Ảnh đã chia sẻ</span>
+          </div>
+          <div className="stat-box">
+            <strong>{me.data.saved_count ?? 0}</strong>
+            <span>Địa điểm đã lưu</span>
+          </div>
+          <div className="stat-box">
+            <strong>Đà Nẵng</strong>
+            <span>Thành phố khám phá</span>
+          </div>
+        </div>
+      </div>
+
       <nav className="profile-tabs" aria-label="Nội dung cá nhân">
         <Link to="/profile" aria-current={!saved ? "page" : undefined}>
           <Camera size={18} aria-hidden />
@@ -324,13 +407,26 @@ export function ProfilePage() {
               <button
                 className="danger-button"
                 disabled={logout.isPending}
-                onClick={() => {
-                  if (window.confirm("Đăng xuất khỏi Rendez?")) logout.mutate();
-                }}
+                onClick={() => setConfirmLogout(true)}
               >
                 <LogOut size={18} aria-hidden />
                 Đăng xuất
               </button>
+              <ConfirmDialog
+                open={confirmLogout}
+                title="Đăng xuất"
+                description="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản Rendez không?"
+                confirmLabel="Đăng xuất"
+                cancelLabel="Ở lại"
+                isDestructive
+                isLoading={logout.isPending}
+                onConfirm={() => {
+                  logout.mutate(undefined, {
+                    onSettled: () => setConfirmLogout(false),
+                  });
+                }}
+                onCancel={() => setConfirmLogout(false)}
+              />
               <ErrorText error={logout.error} />
             </div>
           ) : (
@@ -366,23 +462,36 @@ function ProfileCollection({ saved }: { saved: boolean }) {
         onRetry={() => void result.refetch()}
       />
       {result.data?.count === 0 && (
-        <section className="profile-empty">
-          {saved ? (
-            <Bookmark size={32} aria-hidden />
-          ) : (
-            <Camera size={32} aria-hidden />
-          )}
-          <h2>{saved ? "Chưa có địa điểm đã lưu" : "Bạn chưa đăng ảnh nào"}</h2>
+        <section className="profile-empty-card">
+          <div className="empty-visual-icon">
+            {saved ? (
+              <Bookmark size={36} aria-hidden />
+            ) : (
+              <Camera size={36} aria-hidden />
+            )}
+          </div>
+          <h2>
+            {saved
+              ? "Chưa có địa điểm nào trong danh sách lưu"
+              : "Bạn chưa chia sẻ khoảnh khắc nào"}
+          </h2>
           <p>
             {saved
-              ? "Lưu địa điểm khi khám phá để tìm lại ở đây."
-              : "Ảnh bạn đăng sẽ xuất hiện ở đây."}
+              ? "Hãy dạo quanh trang Khám phá và lưu lại các địa điểm tại Đà Nẵng mà bạn yêu thích."
+              : "Đăng tải góc check-in, không gian hoặc đồ uống yêu thích của bạn để chia sẻ cùng cộng đồng Rendez!"}
           </p>
-          <Button asChild>
-            <Link to={saved ? "/discover" : "/submissions/new"}>
-              {saved ? "Khám phá địa điểm" : "Đăng ảnh"}
-            </Link>
-          </Button>
+          <div className="profile-empty-actions">
+            <Button asChild>
+              <Link to={saved ? "/discover" : "/submissions/new"}>
+                {saved ? "Khám phá địa điểm ngay" : "Đăng ảnh đầu tiên"}
+              </Link>
+            </Button>
+            {!saved && (
+              <Button asChild variant="outline">
+                <Link to="/discover">Xem ảnh cộng đồng</Link>
+              </Button>
+            )}
+          </div>
         </section>
       )}
       {saved ? (
