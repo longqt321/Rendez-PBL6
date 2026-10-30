@@ -9,3 +9,6 @@ class Favorite(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["user", "place"], name="unique_favorite")]
+        indexes = [
+            models.Index(fields=["user", "-created_at", "id"]),
+        ]

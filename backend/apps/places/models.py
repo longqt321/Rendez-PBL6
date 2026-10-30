@@ -1,10 +1,15 @@
+import logging
 import uuid
 from django.conf import settings
+from django.contrib.postgres.indexes import GistIndex
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.text import slugify
+
+
+logger = logging.getLogger(__name__)
 
 
 class Category(models.Model):
@@ -52,6 +57,7 @@ class Place(models.Model):
     opening_hours_text = models.CharField(max_length=500, blank=True)
     opening_hours_source = models.CharField(max_length=500, blank=True)
     opening_hours_verified_at = models.DateTimeField(null=True, blank=True)
+    opening_hours_specification = models.JSONField(default=dict, blank=True)
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.DRAFT)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
@@ -89,6 +95,7 @@ class Place(models.Model):
         indexes = [
             models.Index(fields=["status", "deleted_at", "published_at"]),
             models.Index(fields=["latitude", "longitude"]),
+            GistIndex(fields=["latitude", "longitude"], name="place_coords_gist_idx"),
         ]
 
     def clean(self):
@@ -107,6 +114,18 @@ class Place(models.Model):
     def save(self, *args, **kwargs):
         self.name = self.name.strip()
         self.address = self.address.strip()
+        if (self.latitude is None or self.longitude is None) and self.address:
+            try:
+                from .geocoding import geocode_address
+
+                geo = geocode_address(self.address)
+                if geo.get("success") and geo.get("latitude") and geo.get("longitude"):
+                    self.latitude = geo["latitude"]
+                    self.longitude = geo["longitude"]
+            except Exception as exc:
+                logger.debug(
+                    "Automatic geocoding failed for place address '%s': %s", self.address, exc
+                )
         if not self.slug:
             self.slug = f"{slugify(self.name)[:190] or 'place'}-{str(self.id)[:8]}"
         self.full_clean()

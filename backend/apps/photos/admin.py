@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.html import format_html
-from django.utils import timezone
 from rest_framework.exceptions import APIException
 from apps.places.models import Place
 from .models import (
@@ -19,7 +18,7 @@ from .models import (
     PlacePhoto,
     VisualAttribute,
 )
-from .services import change_publication, check_reviewer, edit_tags
+from .services import change_publication, check_reviewer, edit_tags, moderate_report
 
 
 @admin.register(VisualAttribute)
@@ -147,9 +146,9 @@ class PhotoAuditAdmin(ReadOnlyAdmin):
 
 @admin.register(ContentReport)
 class ContentReportAdmin(ReadOnlyAdmin):
-    list_display = ("id", "reason", "status", "created_at", "review_link")
+    list_display = ("id", "reason", "status", "created_at", "resolved_at", "review_link")
     list_filter = ("reason", "status")
-    actions = ("resolve",)
+    actions = ("take_down", "dismiss")
 
     def review_link(self, obj):
         if obj.photo_id:
@@ -162,10 +161,38 @@ class ContentReportAdmin(ReadOnlyAdmin):
             reverse("admin:places_place_change", args=[obj.place_id]),
         )
 
+    @admin.action(description="Ẩn/gỡ nội dung bị báo cáo (Chấp thuận báo cáo)")
+    def take_down(self, request, queryset):
+        check_reviewer(request.user)
+        count = 0
+        for report in queryset:
+            try:
+                moderate_report(report.id, request.user, action="take_down")
+                self.log_change(request, report, "Ẩn/gỡ nội dung và đánh dấu đã xử lý")
+                count += 1
+            except Exception as e:
+                self.message_user(
+                    request, f"Lỗi khi xử lý báo cáo {report.id}: {e}", messages.ERROR
+                )
+        if count:
+            self.message_user(request, f"Đã gỡ nội dung cho {count} báo cáo.")
+
+    @admin.action(description="Từ chối báo cáo (Nội dung không vi phạm)")
+    def dismiss(self, request, queryset):
+        check_reviewer(request.user)
+        count = 0
+        for report in queryset:
+            try:
+                moderate_report(report.id, request.user, action="dismiss")
+                self.log_change(request, report, "Từ chối báo cáo")
+                count += 1
+            except Exception as e:
+                self.message_user(
+                    request, f"Lỗi khi xử lý báo cáo {report.id}: {e}", messages.ERROR
+                )
+        if count:
+            self.message_user(request, f"Đã từ chối {count} báo cáo.")
+
     @admin.action(description="Đánh dấu đã xử lý báo cáo")
     def resolve(self, request, queryset):
-        for report in queryset:
-            report.status = "resolved"
-            report.resolved_at = timezone.now()
-            report.save(update_fields=["status", "resolved_at"])
-            self.log_change(request, report, "Đã xử lý báo cáo")
+        return self.take_down(request, queryset)

@@ -149,6 +149,7 @@ class PhotoAsset(models.Model):
     width = models.PositiveIntegerField()
     height = models.PositiveIntegerField()
     sort_order = models.PositiveSmallIntegerField()
+    technical_metadata = models.JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ("sort_order", "id")
@@ -157,6 +158,10 @@ class PhotoAsset(models.Model):
                 fields=["submission", "sort_order"], name="photo_asset_order_unique"
             ),
             models.CheckConstraint(condition=Q(sort_order__lte=4), name="photo_asset_max_five"),
+            models.CheckConstraint(
+                condition=Q(width__gt=0, height__gt=0, file_size__gt=0),
+                name="photo_asset_positive_metrics",
+            ),
         ]
 
 
@@ -182,6 +187,20 @@ class PlacePhoto(models.Model):
     withdrawn_at = models.DateTimeField(null=True, blank=True)
     attributes = models.ManyToManyField(VisualAttribute, through="PhotoAttribute")
 
+    def save(self, *args, **kwargs):
+        if self.status == "withdrawn":
+            if not self.withdrawn_at:
+                from django.utils import timezone
+
+                self.withdrawn_at = timezone.now()
+            self.is_cover = False
+            if "update_fields" in kwargs and kwargs["update_fields"] is not None:
+                kwargs["update_fields"] = set(kwargs["update_fields"]) | {
+                    "is_cover",
+                    "withdrawn_at",
+                }
+        super().save(*args, **kwargs)
+
     class Meta:
         ordering = ("-published_at", "id")
         constraints = [
@@ -193,6 +212,23 @@ class PlacePhoto(models.Model):
                 | Q(published_at__isnull=False, withdrawn_at__isnull=True),
                 name="published_photo_fields",
             ),
+            models.CheckConstraint(
+                condition=~Q(is_cover=True) | Q(status="published"),
+                name="place_photo_cover_published",
+            ),
+            models.CheckConstraint(
+                condition=~Q(status="withdrawn") | Q(withdrawn_at__isnull=False),
+                name="place_photo_withdrawn_timestamp",
+            ),
+            models.CheckConstraint(
+                condition=~Q(status="pending_publication")
+                | Q(published_at__isnull=True, withdrawn_at__isnull=True),
+                name="place_photo_pending_timestamps",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["status", "-published_at", "id"]),
+            models.Index(fields=["place", "status", "-published_at", "id"]),
         ]
 
 
@@ -250,7 +286,24 @@ class ContentReport(models.Model):
                 condition=Q(photo__isnull=False, place__isnull=True)
                 | Q(photo__isnull=True, place__isnull=False),
                 name="content_report_one_target",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["reporter", "photo"],
+                condition=Q(status="pending", photo__isnull=False),
+                name="unique_pending_photo_report",
+            ),
+            models.UniqueConstraint(
+                fields=["reporter", "place"],
+                condition=Q(status="pending", place__isnull=False),
+                name="unique_pending_place_report",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(status="pending", resolved_at__isnull=True)
+                    | Q(status="resolved", resolved_at__isnull=False)
+                ),
+                name="content_report_status_lifecycle",
+            ),
         ]
 
 
@@ -274,6 +327,12 @@ class PhotoComment(models.Model):
 
     class Meta:
         ordering = ("-created_at", "-id")
+        constraints = [
+            models.CheckConstraint(
+                condition=~Q(body=""),
+                name="photo_comment_non_empty_body",
+            )
+        ]
 
 
 class PhotoLike(models.Model):
