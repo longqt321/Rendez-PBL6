@@ -6,21 +6,23 @@ Một ứng dụng Django, PostgreSQL local và Django storage trong workspace. 
 
 Tiền tố `/api/v1/`:
 
-| Thao tác | Endpoint |
-| --- | --- |
-| CSRF/đăng ký/đăng nhập/đăng xuất | `auth/csrf/`, `auth/register/`, `auth/login/`, `auth/logout/` |
-| Xem/đổi tên | GET/PATCH `auth/me/` |
-| Đổi mật khẩu | POST `auth/password/` |
-| Loại địa điểm và đặc điểm ảnh | `categories/`, `attributes/` |
-| Khám phá, chọn địa điểm, chi tiết/gallery | `feed/`, `places/`, `places/<id>/`, `places/<id>/photos/` |
-| Bản đồ trong vùng | `places/map/?bbox=west,south,east,north` |
-| Chi tiết ảnh | `photos/<id>/` |
-| Sửa mô tả/gỡ ảnh của mình | PATCH/DELETE `photos/<id>/manage/` |
-| Bình luận | GET/POST `photos/<id>/comments/`, DELETE `comments/<id>/` |
-| Lưu/bỏ lưu | `favorites/`, PUT/DELETE `favorites/<id>/` |
-| Đăng/lịch sử ảnh | `photo-submissions/`, `photo-submissions/<id>/` |
-| Báo cáo | `photos/<id>/report/`, `places/<id>/report/` |
-| Kiểm tra app/DB | `health/` |
+| Thao tác                                  | Endpoint                                                                                |
+| ----------------------------------------- | --------------------------------------------------------------------------------------- |
+| CSRF/đăng ký/đăng nhập/đăng xuất          | `auth/csrf/`, `auth/register/`, `auth/login/`, `auth/logout/`                           |
+| Xem/đổi tên                               | GET/PATCH `auth/me/`                                                                    |
+| Đổi mật khẩu                              | POST `auth/password/`                                                                   |
+| Hồ sơ tác giả & ảnh                       | `creators/<id>/`, `creators/<id>/photos/`                                               |
+| Loại địa điểm và đặc điểm ảnh             | `categories/`, `attributes/`                                                            |
+| Khám phá, chọn địa điểm, chi tiết/gallery | `feed/`, `places/`, `places/<id>/`, `places/<id>/photos/`                               |
+| Bản đồ & Geocoding                        | `places/map/?bbox=west,south,east,north`, `places/geocode/?q=<address>`                 |
+| Chi tiết ảnh & Tương tác thích            | `photos/<id>/`, `photos/<id>/similar/`, `photos/<id>/likes/`                            |
+| Sửa mô tả/gỡ ảnh của mình                 | PATCH/DELETE `photos/<id>/manage/`                                                      |
+| Bình luận ảnh                             | GET/POST `photos/<id>/comments/`, PATCH/DELETE `comments/<id>/`                         |
+| Lưu/bỏ lưu                                | `favorites/`, PUT/DELETE `favorites/<id>/`                                              |
+| Đăng/lịch sử ảnh                          | `photo-submissions/`, `photo-submissions/<id>/`                                         |
+| Phục vụ file phương tiện                  | `public-photo-media/<id>/`, `private-photo-media/<id>/`, `private-photo-original/<id>/` |
+| Báo cáo nội dung                          | `photos/<id>/report/`, `places/<id>/report/`                                            |
+| Kiểm tra app/DB                           | `health/`                                                                               |
 
 Chỉ CSRF, đăng ký, đăng nhập và health cho khách. Toàn bộ nội dung, ảnh, schema và docs yêu cầu session. Các request ghi kiểm tra CSRF. Original chỉ dành cho staff có quyền quản lý ảnh; preview riêng tư chỉ cho chủ ảnh/staff. Owner sửa/gỡ ảnh của mình; comment chỉ người tạo được xóa. Nội dung đã gỡ không hiện trong feed/map/gallery hoặc URL ảnh công khai.
 
@@ -38,7 +40,7 @@ Tìm kiếm chuẩn hóa Unicode/dấu tiếng Việt, không dùng AI. Quy mô 
 - `Favorite`: user/địa điểm lưu; một cặp duy nhất.
 - `ContentReport`, `PhotoAudit`: báo cáo nội dung và lịch sử chỉnh sửa/gỡ.
 
-`VenueProposal` và migration lịch sử được giữ để đọc dữ liệu cũ; không tạo proposal mới. Apps giá/menu/hóa đơn và dịch vụ ML đã ngừng. Không tạo trường cho tính năng tương lai.
+`VenueProposal` được giữ để tương thích dữ liệu cũ; không tạo proposal mới. Các apps cũ giá/menu/hóa đơn (`pricing`, `contributions`) đã được dọn sạch khỏi source code. Hệ thống duy trì các apps cốt lõi: `accounts`, `places`, `photos`, `favorites`. Không tạo trường cho tính năng tương lai.
 
 ## Đăng và gỡ ảnh
 
