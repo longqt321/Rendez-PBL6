@@ -39,12 +39,13 @@ class Command(BaseCommand):
                 slug=slug, defaults={"name": name, "is_active": True, "sort_order": order}
             )
         labels = {
-            "plants": "Cây xanh",
-            "water": "Mặt nước",
-            "architecture": "Kiến trúc",
-            "interior": "Trong nhà",
-            "night": "Ban đêm",
-            "food": "Đồ ăn & thức uống",
+            "plants": "Cây xanh & Vườn",
+            "study": "Bàn học & Ổ cắm",
+            "architecture": "Kiến trúc & Không gian mở",
+            "interior": "Trong nhà & Máy lạnh",
+            "night": "Ban đêm & 24/7",
+            "food": "Cà phê & Đồ uống",
+            "wood": "Gỗ mộc & Hoài niệm",
         }
         for code, name in labels.items():
             VisualAttribute.objects.update_or_create(
@@ -77,6 +78,11 @@ class Command(BaseCommand):
                     else None,
                     "source_url": entry["source_url"],
                     "verified_at": checked,
+                    "opening_hours_text": entry.get(
+                        "opening_hours_text", "06:30 – 22:30 hàng ngày"
+                    ),
+                    "opening_hours_source": "Fanpage & Thực tế",
+                    "opening_hours_verified_at": checked,
                     "created_by": editor,
                     "updated_by": editor,
                     "status": "published",

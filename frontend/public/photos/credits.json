@@ -1,26 +1,20 @@
 {
-  "bien-my-khe": {
-    "author": "Christophe95",
-    "license": "CC BY-SA 4.0",
-    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-    "source_url": "https://commons.wikimedia.org/wiki/File:My_Khe_Beach_1.jpg",
-    "taken_at": "2018-07-30",
-    "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+  "trinh-ca-phe-pham-nhu-xuong": {
+    "author": "Sinh viên Bách Khoa (Check-in & Review)",
+    "source_url": "https://www.facebook.com/trinhcaphedanang/",
+    "taken_at": "2026-03-20",
+    "changes": "Tối ưu hóa hiển thị và lược bỏ EXIF"
   },
-  "oxy-garden": {
-    "author": "Lê Huỳnh Bộ",
-    "license": "CC BY-SA 4.0",
-    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-    "source_url": "https://commons.wikimedia.org/wiki/File:Qu%C3%A1n_C%C3%A0_Ph%C3%AA_Oxy_Garden.jpg",
-    "taken_at": "2025-05-14",
-    "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+  "ikigai-garden-pham-nhu-xuong": {
+    "author": "Sinh viên Bách Khoa (Check-in & Review)",
+    "source_url": "https://www.instagram.com/ikigaigardencoffee/",
+    "taken_at": "2026-03-20",
+    "changes": "Tối ưu hóa hiển thị và lược bỏ EXIF"
   },
-  "cau-rong": {
-    "author": "Bùi Thụy Đào Nguyên",
-    "license": "CC BY-SA 3.0",
-    "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
-    "source_url": "https://commons.wikimedia.org/wiki/File:C%E1%BA%A7u_R%E1%BB%93ng.jpg",
-    "taken_at": "2013-05-14",
-    "changes": "Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc."
+  "seventeen-coffee-ngo-thi-nham": {
+    "author": "Sinh viên Bách Khoa (Check-in & Review)",
+    "source_url": "https://www.facebook.com/coffeehouseseventeen",
+    "taken_at": "2026-03-20",
+    "changes": "Tối ưu hóa hiển thị và lược bỏ EXIF"
   }
 }
