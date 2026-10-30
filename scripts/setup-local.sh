@@ -24,7 +24,19 @@ VITE_MAP_STYLE=/map/style.json
 PY
   source scripts/env.sh
 fi
-docker compose --env-file .local/runtime.env -f compose.local.yaml up -d --wait db
+
+# Verify environment target is strictly local before applying migrations
+target_host="${POSTGRES_HOST:-127.0.0.1}"
+if [[ "$target_host" != "127.0.0.1" && "$target_host" != "localhost" && "$target_host" != "db" ]]; then
+  echo "ERROR: setup-local.sh is restricted to local development environments only."
+  echo "Target database host '$target_host' appears to be an external or remote environment."
+  echo "Automatic migrations and seeding will NOT be executed."
+  exit 1
+fi
+
+if [[ "${DJANGO_DB_ENGINE:-}" != "sqlite" ]] && [[ -f compose.local.yaml ]] && command -v docker >/dev/null 2>&1; then
+  docker compose --env-file .local/runtime.env -f compose.local.yaml up -d --wait db
+fi
 if [[ ! -x backend/.venv/bin/python ]]; then uv sync --project backend --frozen; fi
 if [[ ! -d frontend/node_modules ]]; then bun install --cwd frontend --frozen-lockfile; fi
 backend/.venv/bin/python backend/manage.py migrate --noinput

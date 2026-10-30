@@ -1,4 +1,4 @@
-.PHONY: setup start stop backend frontend check schema backup e2e
+.PHONY: setup start stop backend frontend check schema backup restore e2e
 setup:
 	bash scripts/setup-local.sh
 start:
@@ -12,9 +12,12 @@ frontend:
 check:
 	bash scripts/check.sh all
 schema:
-	bash -c 'source scripts/env.sh; backend/.venv/bin/python backend/manage.py spectacular --file backend/openapi.yaml --validate --fail-on-warn'
+	bash -c 'source scripts/env.sh; backend/.venv/bin/python scripts/generate-schema.py'
 	bun run --cwd frontend schema:generate
 backup:
 	bash scripts/backup-local.sh
+restore:
+	@if [ -z "$(BACKUP)" ]; then echo "Usage: make restore BACKUP=.local/backups/<backup-folder>"; exit 1; fi
+	bash scripts/restore-local.sh $(BACKUP) --yes
 e2e:
 	bun run --cwd frontend e2e
