@@ -1,5 +1,8 @@
 # Rendez — Tài Liệu Mô Tả Dự Án (Project Specification & Architecture)
 
+> [!NOTE]
+> **Phạm vi tài liệu:** bản mô tả tổng quan hướng sản phẩm (tầm nhìn, mô hình kinh doanh, định vị thị trường, lộ trình phát triển). Đặc tả kỹ thuật chi tiết (kiến trúc, mô hình dữ liệu, API, kiểm thử) nằm ở [`docs/SPECIFICATION.md`](SPECIFICATION.md); tài liệu kỹ thuật chuyên sâu theo mô-đun nằm ở [`docs/project/`](project/).
+
 **Rendez** (`rendez.vn`) là nền tảng số thương mại chuyên biệt về khám phá không gian cà phê, làm việc, gặp gỡ và phong cách sống (lifestyle) tại thành phố Đà Nẵng. Ứng dụng kết hợp giữa **mạng lưới chia sẻ ảnh thực tế độ nét cao (Visual-First)** và **bản đồ số tương tác thời gian thực (Interactive Map)**, giúp người dùng tìm kiếm không gian phù hợp với nhu cầu chỉ trong vài giây, đồng thời cung cấp giải pháp tiếp thị và định danh số (B2B Lead Generation & Verified Venue) cho các chủ quán kinh doanh dịch vụ đồ uống.
 
 ---

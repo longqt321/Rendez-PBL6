@@ -57,8 +57,8 @@ Mục tiêu: khám phá địa điểm Đà Nẵng qua ảnh thật; đăng nh�
 
 - PostgreSQL thật: `rendez_local` tại 127.0.0.1:55433; toàn bộ migration áp dụng trên database mới. Database cũ 55432 giữ nguyên.
 - Dữ liệu cuối: 14 địa điểm, 39 ảnh tư liệu có tác giả/nguồn/giấy phép; 13 địa điểm có tọa độ. Đã mở và kiểm tra toàn bộ ảnh, kiểm tra file original/derivative, sửa ba metadata ngày chụp và import lại không tạo ảnh mới.
-- Backend cuối: **58 tests đạt trên PostgreSQL test database**, Ruff lint/format đạt, Django check đạt, migration state không lệch; OpenAPI validation và sinh TypeScript đạt.
-- Frontend: **20 unit tests đạt** sau module; lint, format và TypeScript/build cuối đạt. Không chạy lại unit tests sau các sửa copy/nhãn nhỏ; các phần thay đổi được kiểm tra trực tiếp qua browser.
+- Backend cuối: **220 tests đạt trên PostgreSQL test database** (`backend/tests` + `backend/apps`), Ruff lint/format đạt, Django check đạt, migration state không lệch; OpenAPI validation và sinh TypeScript đạt.
+- Frontend: **58 unit tests đạt**; lint, format và TypeScript/build cuối đạt.
 - Browser app thật: đăng ký/validation/eye, chặn URL khách/API, feed tải 39 ảnh, masonry, lưu/bỏ lưu, tìm không dấu, danh mục/đặc điểm, empty/search recovery, chi tiết/gallery/attribution, bình luận/xóa, báo cáo, bản đồ/marker/list/zoom, GPS từ chối và được cấp quyền, lỗi bản đồ/thử lại, upload lỗi/preview/đăng ngay, sửa mô tả/gỡ ảnh, thêm địa điểm với map picker, đổi tên/mật khẩu/đăng xuất/đăng nhập lại, thống kê hồ sơ, chia sẻ liên kết, 404/API outage/retry/session hết hạn.
 - Đã mở các màn hình khám phá, địa điểm, ảnh, bản đồ, đã lưu, lịch sử, đăng ảnh và hồ sơ ở 375px; kiểm tra landscape 844×390, focus và reduced motion. Không tràn ngang hoặc lỗi JavaScript trong các luồng cuối. Kiểm tra đăng nhập/đăng ký ở desktop và mobile.
 - Admin: đã mở dashboard, địa điểm, submission, nhãn ảnh, báo cáo, tài khoản và màn hình quản lý ảnh. Luồng chỉnh sửa admin đã có tests backend; lần browser này không sửa/gỡ ảnh tư liệu thật trong Admin.

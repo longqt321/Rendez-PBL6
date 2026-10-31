@@ -40,5 +40,9 @@ skills-lock.json
 frontend/.playwright-mcp/
 .auth/
 frontend/.auth/
+frontend/e2e/.artifacts/
+
+# Ad-hoc agent/developer scratch space
+scratch/
 
 

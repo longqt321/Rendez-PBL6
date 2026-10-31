@@ -451,7 +451,7 @@ Sử dụng 100% công cụ và checker có sẵn trong repository/môi trườn
    - Hướng dẫn quy trình khôi phục an toàn `bash scripts/restore-local.sh .local/backups/<backup> --yes` (`make restore BACKUP=...`) kèm cơ chế tự động sao lưu an toàn trạng thái hiện tại trước khi khôi phục (`pre-restore safety backup`).
 4. **Bảng Tra Cứu Biến Môi Trường Cốt Lõi:**
    - Liệt kê chi tiết mục đích và yêu cầu bảo mật của từng biến: `DJANGO_DEBUG`, `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DJANGO_HTTPS`, `POSTGRES_*`, `PRIVATE_MEDIA_ROOT`.
-5. **Cập Nhật Danh Mục API Thực Tế ([`docs/BACKEND.md`](file:///home/longtran/Projects/rendez-web/docs/BACKEND.md)):**
+5. **Cập Nhật Danh Mục API Thực Tế ([`docs/BACKEND.md`](file:///home/longtran/Projects/rendez-web/docs/archive/BACKEND.md)):**
    - Bổ sung đầy đủ các endpoint mới được hoàn thiện: `photos/<id>/likes/` (POST/DELETE), `comments/<id>/` (PATCH/DELETE), `places/geocode/?q=` (GET), `creators/<id>/` và `creators/<id>/photos/` (GET), `public-photo-media/<id>/` và `private-photo-media/<id>/`.
 6. **Bổ Sung Lệnh Makefile:**
    - Thêm target `restore:` vào [`Makefile`](file:///home/longtran/Projects/rendez-web/Makefile) cho phép người dùng khôi phục thuận tiện qua lệnh `make restore BACKUP=.local/backups/<backup-folder>`.

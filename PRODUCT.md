@@ -54,10 +54,10 @@ Khác biệt cốt lõi của Rendez:
 
 ## Evidence on Hand
 
-- **Dữ liệu hạt giống thực tế:** 12 địa điểm quán cà phê đã kiểm chứng thực địa tại Đà Nẵng (`data/danang.json`).
-- **Tư liệu hình ảnh:** 36 tệp ảnh không gian thực tế chụp trực tiếp tại các cơ sở (`data/photos/`).
+- **Dữ liệu hạt giống:** 12 địa điểm quán cà phê quanh khu vực Đại học Bách Khoa Đà Nẵng (`data/danang.json`).
+- **Tư liệu hình ảnh:** 36 tệp **ảnh minh hoạ sinh tự động** (`data/photos/`, tạo bởi `scripts/generate_coffee_photos.py`). Đây là placeholder, **không phải ảnh chụp thực địa** — xem [`data/README.md`](data/README.md) mục 5.
 - **Tài nguyên bản đồ địa phương:** Dữ liệu vector đường bộ quận Liên Chiểu (`frontend/public/map/region.geojson`) và bản quyền phông chữ tiếng Việt Noto Sans Regular (`public/map/FONT-LICENSE.txt`).
-- **Hệ thống kiểm thử xác thực:** 173 bài kiểm thử backend Pytest và 56 bài kiểm thử frontend Vitest đạt tỷ lệ vượt qua 100%.
+- **Hệ thống kiểm thử xác thực:** 220 bài kiểm thử backend Pytest và 58 bài kiểm thử frontend Vitest đạt tỷ lệ vượt qua 100%.
 
 ## Product Principles
 

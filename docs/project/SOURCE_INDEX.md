@@ -42,7 +42,6 @@ Tài liệu này là chỉ mục tra cứu nhanh (Quick Navigation Index), giúp
   - `RegisterView`, `LoginView`, `LogoutView`: Luồng xác thực session.
   - `CurrentUserView`, `ChangePasswordView`: Quản lý thông tin tài khoản cá nhân.
   - `CreatorDetailView`, `CreatorPhotosView`: Tuyến đường hiển thị hồ sơ tác giả ảnh công khai.
-- `backend/apps/accounts/serializers.py`: Serializer xác thực và hồ sơ người dùng.
 
 ### 2.3. Ứng Dụng `apps.places` (Địa Điểm & Bản Đồ)
 - `backend/apps/places/models.py`:
@@ -118,7 +117,7 @@ Tài liệu này là chỉ mục tra cứu nhanh (Quick Navigation Index), giúp
 
 ## 4. Dữ Liệu Hạt Giống & Tài Nguyên Bản Đồ
 
-- `data/danang.json`: Dữ liệu 12 cơ sở quán cà phê thực tế tại Đà Nẵng đã kiểm chứng thực địa.
+- `data/danang.json`: Manifest 12 cơ sở quán cà phê quanh khu vực Đại học Bách Khoa Đà Nẵng. 36 ảnh trong `data/photos/` là **ảnh minh hoạ sinh tự động** (placeholder), không phải ảnh chụp thực địa — xem `data/README.md` mục 5.
 - `data/photos/`: 36 tệp ảnh không gian thực tế chụp trực tiếp tại các cơ sở.
 - `frontend/public/map/region.geojson`: Dữ liệu vector mạng lưới giao thông khu vực Liên Chiểu.
 - `frontend/public/map/style.json`: Cấu hình lớp bản đồ MapLibre, kết nối raster tiles từ Esri.

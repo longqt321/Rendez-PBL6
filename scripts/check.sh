@@ -18,7 +18,7 @@ case "${1:-all}" in backend|all)
   run_check backend-lint backend/.venv/bin/python -m ruff check backend
   run_check backend-format backend/.venv/bin/python -m ruff format --check backend
   run_check migrations backend/.venv/bin/python backend/manage.py makemigrations --check --dry-run
-  run_check backend-tests env DJANGO_DEBUG=1 backend/.venv/bin/python -m pytest -c backend/pyproject.toml backend/tests --basetemp "$TMPDIR/pytest" -q
+  run_check backend-tests env DJANGO_DEBUG=1 backend/.venv/bin/python -m pytest -c backend/pyproject.toml backend/tests backend/apps --basetemp "$TMPDIR/pytest" -q
   run_check django-check backend/.venv/bin/python backend/manage.py check
 esac
 case "${1:-all}" in frontend|all)

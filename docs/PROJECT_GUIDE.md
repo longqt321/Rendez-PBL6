@@ -68,7 +68,7 @@ rendez-web/
 │   │   └── styles/            # CSS tokens, theme, layout, components
 │   └── public/map/            # Dữ liệu vector bản đồ địa phương (region.geojson)
 │
-├── data/                      # Dữ liệu hạt giống (12 cơ sở tại Đà Nẵng, 36 ảnh thực tế)
+├── data/                      # Dữ liệu hạt giống (12 cơ sở tại Đà Nẵng, 36 ảnh minh hoạ sinh tự động)
 ├── docs/                      # Tài liệu kỹ thuật chi tiết
 │   ├── PROJECT_GUIDE.md       # << BẠN ĐANG Ở ĐÂY >>
 │   └── project/               # 11 tài liệu chuyên sâu của Knowledge Base

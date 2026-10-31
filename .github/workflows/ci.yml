@@ -34,7 +34,7 @@ jobs:
       - run: uv run --project backend ruff format --check backend
       - run: uv run --project backend python backend/manage.py makemigrations --check --dry-run
       - run: uv run --project backend python backend/manage.py migrate
-      - run: uv run --project backend pytest backend/tests --junitxml=docs/backend-tests.xml
+      - run: uv run --project backend pytest backend/tests backend/apps --junitxml=docs/backend-tests.xml
       - run: |
           uv run --project backend python backend/manage.py spectacular --file backend/openapi.yaml --validate --fail-on-warn
           bun run --cwd frontend schema:generate

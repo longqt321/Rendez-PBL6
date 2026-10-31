@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Generate authentic, high-quality, matched visual coffee shop photo cards for the 12 Da Nang BK cafes."""
+"""Generate synthetic placeholder cards for the 12 Da Nang BK cafes.
+
+These cards are NOT field photographs. They are procedurally drawn placeholders
+(gradients, frames, tag chips, watermark) used to fill the gallery and hero
+imagery until a licensed set of real photos exists. See data/README.md §5.
+"""
 
 import json
 import math
@@ -182,7 +187,7 @@ def create_card(place, photo, order, filename):
     # Bottom Area: Watermark & Verification
     draw.line([(80, height - 140), (width - 80, height - 140)], fill=(70, 70, 70), width=1)
     draw.text((80, height - 105), "RENDEZ · KHÁM PHÁ CÀ PHÊ QUANH ĐH BÁCH KHOA ĐÀ NẴNG (DUT)", fill=theme["sub"], font=font_meta)
-    draw.text((width - 480, height - 105), "Đã xác thực thực tế & Giới trẻ Đà Nẵng", fill=theme["accent"], font=font_meta)
+    draw.text((width - 480, height - 105), "Ảnh minh hoạ · không phải ảnh thực địa", fill=theme["accent"], font=font_meta)
 
     dest = PHOTOS_DIR / filename
     im.save(dest, format="JPEG", quality=92, optimize=True)

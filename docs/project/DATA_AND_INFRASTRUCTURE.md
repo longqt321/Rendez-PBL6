@@ -78,9 +78,12 @@ Khi thành viên nộp ảnh cho một cơ sở mới và nhập địa chỉ, h
 
 ## 5. Dữ Liệu Hạt Giống & Cơ Chế Nhập Liệu Bền Vững (Seed Data)
 
-Hệ thống được đóng gói sẵn bộ dữ liệu hạt giống thực tế tại thư mục `data/`:
-- **`data/danang.json`:** Danh sách 12 cơ sở quán cà phê đã được đối chiếu thực địa tại Đà Nẵng, bao gồm đầy đủ tên quán, địa chỉ thực tế, tọa độ GPS chính xác, danh mục và giờ mở cửa đã xác minh.
-- **`data/photos/`:** 36 tệp ảnh không gian thực tế chụp trực tiếp tại các cơ sở trên.
+Hệ thống được đóng gói sẵn bộ dữ liệu hạt giống tại thư mục `data/`:
+- **`data/danang.json`:** Danh sách 12 cơ sở quán cà phê quanh khu vực Đại học Bách Khoa Đà Nẵng, bao gồm tên quán, địa chỉ, tọa độ GPS, danh mục và giờ mở cửa.
+- **`data/photos/`:** 36 tệp **ảnh minh hoạ sinh tự động** (placeholder), tạo bởi `scripts/generate_coffee_photos.py` ở kích thước `1600×1067`.
+
+> [!WARNING]
+> **Giới hạn đã biết:** 36 ảnh trong `data/photos/` **không phải ảnh chụp thực địa**. Chúng được vẽ bằng PIL (gradient, khung, chip nhãn) và có watermark `RENDEZ · KHÁM PHÁ CÀ PHÊ QUANH ĐH BÁCH KHOA ĐÀ NẴNG (DUT)`. Trường `credit` trong `danang.json` ghi `license: "Synthetic placeholder (không phải ảnh thực địa)"`. Các tệp JPEG hiện có vẫn mang dòng chữ cũ `Đã xác thực thực tế & Giới trẻ Đà Nẵng` vẽ trực tiếp vào bitmap; script sinh ảnh đã được sửa sang watermark trung tính nhưng ảnh **chưa được sinh lại** (thao tác đó ghi đè 36 tệp đang được git theo dõi). Chi tiết: [`data/README.md`](../../data/README.md) mục 5.
 
 ### Lệnh Nhập Liệu Bền Vững: `import_danang`
 Lệnh quản trị Django `python manage.py import_danang` được thiết kế với cơ chế bảo vệ trạng thái tuyệt đối:
@@ -118,3 +121,23 @@ Hệ thống sử dụng tệp `.local/runtime.env` (tạo tự động bởi sc
 | **Môi Trường Cục Bộ (Local Development)** | **Đã Kiểm Chứng (Verified):** Chạy hoàn hảo trên Docker + Gunicorn + WhiteNoise + PostgreSQL 17 cục bộ. |
 | **Môi Trường Kiểm Thử (Automated Test)** | **Đã Kiểm Chứng (Verified):** Cơ sở dữ liệu test PostgreSQL độc lập được khởi tạo tự động khi chạy Pytest. |
 | **Môi Trường Sản Xuất (Production Deployment)** | **Chưa Xác Minh (Not Verified / Unknown):** Chưa có kịch bản triển khai Kubernetes, Docker Swarm hoặc cấu hình máy chủ đám mây production trong repository. |
+
+---
+
+## 8. Bố Cục Workspace & Quy Ước Vận Hành
+
+Mọi mã nguồn, dữ liệu nguồn và scripts nằm tại gốc `rendez-web`:
+
+```text
+frontend/       React, TypeScript, ảnh chủ đề và bản đồ local
+backend/        Django, API, migrations, quản trị và tests
+data/           manifest, ảnh minh hoạ và nguồn/giấy phép
+docs/           hướng dẫn, checklist và kết quả kiểm chứng
+scripts/        setup/start/stop/check/backup/restore
+.local/         PostgreSQL, media, secrets, logs, backup; không commit
+```
+
+* `compose.local.yaml` dùng PostgreSQL riêng ở 55433, bind mount trong workspace. `compose.yaml` cũ giữ nguyên để không đổi nhận diện container/volume đang có. Cấu hình local nằm ở `.local/runtime.env`, được `scripts/env.sh` nạp trước khi chạy.
+* `make setup`, `make start` chạy bản build ở 8080. `make backend`, `make frontend` phục vụ phát triển ở 8000/5173. Ứng dụng chạy trực tiếp local/container, không triển khai cloud.
+* `.gitignore` bỏ secrets/runtime/dependencies/artifacts khỏi Git; `.ignore` bỏ thư mục lớn khỏi tìm kiếm bằng `rg`.
+* Mỗi module được kiểm tra sau khi hoàn thành; kết quả/log nằm trong `.local/logs`, ảnh kiểm chứng ở `.local/screenshots`. Không đưa ảnh kiểm chứng vào dữ liệu sản phẩm.

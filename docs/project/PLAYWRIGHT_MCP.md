@@ -230,7 +230,7 @@ Trong khuôn khổ Phase 1, hệ thống đã thiết lập nền tảng môi tr
 - **Moderator (`e2e-moderator@rendez.test`):** `is_staff=True`, `is_superuser=False`, được cấp thẩm quyền kiểm duyệt cụ thể `photos.review_photosubmission` (không dùng superuser để kiểm thử quyền moderator).
 - **Unprivileged Staff (`e2e-staff-unprivileged@rendez.test`):** `is_staff=True`, `is_superuser=False` không có quyền kiểm duyệt ảnh để kiểm thử ranh giới 404/403.
 - **Quản lý mật khẩu động:** Toàn bộ mật khẩu được sinh ngẫu nhiên an toàn qua `secrets.token_urlsafe(24)` và lưu vào `.local/e2e_credentials.json` (chế độ phân quyền POSIX `0600`, được gitignore bảo vệ), không in mật khẩu ra console và không lưu trữ plaintext trong mã nguồn.
-- **Dữ liệu quán cà phê:** 12 địa điểm và 36 tệp ảnh thực tế khu vực Bách Khoa — Đà Nẵng từ `data/danang.json`.
+- **Dữ liệu quán cà phê:** 12 địa điểm và 36 tệp ảnh **minh hoạ sinh tự động** (placeholder) khu vực Bách Khoa — Đà Nẵng từ `data/danang.json`.
 
 ### 8.3. Tập Lệnh Vận Hành
 Quản lý môi trường E2E thông qua công cụ trung tâm `scripts/e2e_manager.py`:

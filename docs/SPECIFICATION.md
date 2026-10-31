@@ -1,5 +1,8 @@
 # Rendez — Tài liệu Kiến trúc Hệ thống & Đặc tả Kỹ thuật (Technical Specification)
 
+> [!NOTE]
+> **Phạm vi tài liệu:** đặc tả kỹ thuật (kiến trúc, mô hình dữ liệu, thiết kế giao diện, chiến lược kiểm thử, vận hành). Tầm nhìn sản phẩm và mô hình kinh doanh nằm ở [`docs/PROJECT_DESCRIPTION.md`](PROJECT_DESCRIPTION.md); tài liệu chuyên sâu theo mô-đun nằm ở [`docs/project/`](project/).
+
 Tài liệu này đặc tả toàn bộ kiến trúc, mô hình dữ liệu, thiết kế giao diện, chiến lược kiểm thử và hướng dẫn vận hành cho nền tảng **Rendez** — ứng dụng khám phá địa điểm tại Đà Nẵng qua ảnh tư liệu và bản đồ số.
 
 ---
@@ -52,7 +55,7 @@ graph TD
     end
 
     subgraph Storage_Layer [Tầng Lưu trữ Dữ liệu]
-        Postgres[(PostgreSQL 16 Engine)]
+        Postgres[(PostgreSQL 17 Engine)]
         LocalStorage["Local File Storage (.local/media)"]
         MapAssets["Local Vector Tiles & Glyphs (OSM + Noto Sans)"]
     end
@@ -70,7 +73,7 @@ graph TD
 ### 2.1. Ngăn xếp Công nghệ (Tech Stack)
 * **Backend:** Python 3.12, Django 5.2, Django REST Framework 3.16, Pillow 11 (xử lý & chuẩn hóa ảnh), `drf-spectacular` (OpenAPI v3 schema), psycopg 3 (PostgreSQL binary driver).
 * **Frontend:** React 19, TypeScript 5.9, Bun 1.3, Vite 7, TanStack Query v5, React Router v7, MapLibre GL 5 + `react-map-gl`, Tailwind CSS v4, Lucide React icons.
-* **Cơ sở dữ liệu:** PostgreSQL 16 (chạy Docker local cổng 55433, volume ánh xạ tại `.local/postgres`).
+* **Cơ sở dữ liệu:** PostgreSQL 17 (chạy Docker local cổng 55433, volume ánh xạ tại `.local/postgres`).
 * **Bảo mật phiên:** Session Authentication + `CsrfViewMiddleware` + HttpOnly Cookie (`SameSite=Lax`). Rate limiting qua `ScopedRateThrottle`.
 
 ---

@@ -75,8 +75,8 @@ Cần phân biệt rõ ràng giữa **Tầm nhìn sản phẩm (Product Scope)**
 | Khía cạnh | Phạm vi sản phẩm (Product Scope) | Dữ liệu hạt giống thực tế (Verified Seed Data) |
 |---|---|---|
 | **Khu vực địa lý** | Toàn bộ thành phố Đà Nẵng | Khu vực hẹp thuộc quận Liên Chiểu cũ (quanh các trục đường Tôn Đức Thắng, Nguyễn Lương Bằng, Ngô Văn Sở...) |
-| **Số lượng cơ sở** | Hàng trăm quán trên toàn thành phố | **Đúng 12 cơ sở** đã được kiểm chứng thực địa trong tệp `data/danang.json` |
-| **Số lượng ảnh** | Đóng góp cộng đồng liên tục | **Đúng 36 tệp ảnh** thực tế lưu trong thư mục `data/photos/` |
+| **Số lượng cơ sở** | Hàng trăm quán trên toàn thành phố | **Đúng 12 cơ sở** trong tệp `data/danang.json` (ảnh kèm theo là minh hoạ sinh tự động, không phải ảnh thực địa) |
+| **Số lượng ảnh** | Đóng góp cộng đồng liên tục | **Đúng 36 tệp ảnh minh hoạ sinh tự động** (placeholder) lưu trong thư mục `data/photos/` |
 | **Dữ liệu bản đồ vector** | Toàn thành phố | Tệp vector đường bộ cục bộ `frontend/public/map/region.geojson` (tập trung tại Liên Chiểu) |
 | **Lớp gạch raster nền** | Tự chủ hoàn toàn (Local-First) | Tạm thời tải trực tiếp từ dịch vụ gạch ngoài Esri (`server.arcgisonline.com`) |
 

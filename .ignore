@@ -1,11 +1,63 @@
+# Agent / ripgrep search exclusions.
+# Keeps heavy, generated, vendored or local-only trees out of agent searches
+# and file reads. Nothing here is tracked by Git; nothing here is required to
+# build or run the project.
+#
+# EXCEPTION: when a bug genuinely needs tracing back, read .history/ or the
+# relevant .local/logs/ file explicitly. Do not bulk-scan them.
+
+# --- Version control & dependencies ---
 .git/
 node_modules/
 .venv/
-.private-media/
-.local/
+venv/
+vendor/
+
+# --- Build output & caches ---
 dist/
+build/
 staticfiles/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+*.tsbuildinfo
+*.lock
+
+# --- Test / browser automation output ---
 playwright-report/
 test-results/
-*.lock
-*.tsbuildinfo
+.playwright-mcp/
+.artifacts/
+coverage/
+
+# --- Local runtime state (credentials, DB, media, backups, logs) ---
+.local/
+.private-media/
+uploads/
+media/
+backups/
+
+# --- Editor local history (large; read only to trace a regression) ---
+.history/
+
+# --- Agentic / experimental frameworks kept locally, excluded from repo ---
+erpf/
+.agents/
+.gemini/
+.impeccable/
+.github/agents/
+.github/hooks/
+.github/skills/
+skills-lock.json
+
+# --- Generated verification artifacts ---
+artifacts/
+docs/screenshots*/
+docs/*tests.xml
+docs/feedback-fix/
+
+# --- Large data & generated assets ---
+data/photos/
+frontend/public/map/glyphs/
+frontend/public/map/region.geojson
