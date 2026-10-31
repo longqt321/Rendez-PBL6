@@ -54,4 +54,4 @@ Bản local dùng `rendez_local` ở 127.0.0.1:55433, bind mount `.local/postgre
 
 `import_danang` dùng UUID/idempotency key cố định. Import lại không tạo ảnh trùng, không xuất bản lại ảnh đã gỡ hoặc ghi đè chỉnh sửa hiện có. Ảnh/manifest nguồn được đóng gói trong repo; không cần API bên ngoài khi import.
 
-Backend tests dùng PostgreSQL test database riêng; browser kiểm tra app thật với tài khoản kiểm tra được dọn sau đó. Kết quả cụ thể ở [checklist bản local](LOCAL-RELEASE.md).
+Backend tests dùng PostgreSQL test database riêng; browser kiểm tra app thật với tài khoản kiểm tra được dọn sau đó. Kết quả cụ thể ở [checklist bản local](../LOCAL-RELEASE.md).
