@@ -38,4 +38,7 @@ skills-lock.json
 # Browser automation & MCP temporary artifacts
 .playwright-mcp/
 frontend/.playwright-mcp/
+.auth/
+frontend/.auth/
+
 

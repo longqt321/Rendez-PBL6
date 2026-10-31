@@ -1,4 +1,5 @@
 import { defineConfig } from "@playwright/test";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -9,7 +10,7 @@ export default defineConfig({
     ["html", { outputFolder: "../playwright-report", open: "never" }],
   ],
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL: process.env.E2E_BASE_URL || "http://127.0.0.1:5174",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     launchOptions: {
@@ -23,14 +24,18 @@ export default defineConfig({
   webServer: [
     {
       command:
-        "../backend/.venv/bin/python ../backend/manage.py runserver 127.0.0.1:8000 --noreload",
-      url: "http://127.0.0.1:8000/api/v1/auth/csrf/",
-      reuseExistingServer: !process.env.CI,
+        "uv run --project ../backend python ../scripts/e2e_manager.py run-backend --port 8001",
+      url: "http://127.0.0.1:8001/api/v1/auth/csrf/",
+      reuseExistingServer: false,
+      timeout: 30_000,
     },
     {
-      command: "node node_modules/vite/bin/vite.js --host 127.0.0.1",
-      url: "http://127.0.0.1:5173",
-      reuseExistingServer: !process.env.CI,
+      command:
+        "BACKEND_PROXY_URL=http://127.0.0.1:8001 node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5174",
+      url: "http://127.0.0.1:5174",
+      reuseExistingServer: false,
+      timeout: 30_000,
     },
   ],
 });
+

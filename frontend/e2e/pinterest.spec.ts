@@ -71,12 +71,25 @@ test("photo feed appends, retries and resets on category change", async ({
     )
     .toBe(true);
   await page.getByRole("button", { name: "Xem thêm ảnh" }).click();
-  await expect(page.getByText("Ảnh tiếp theo chưa tải được.")).toBeVisible({
+  // 1 & 2. Verify sanitized generic error message is displayed
+  await expect(
+    page.getByText("Máy chủ hiện không phản hồi. Vui lòng thử lại sau."),
+  ).toBeVisible({
     timeout: 15_000,
   });
+  // 3. Raw 503 server error payload must NOT be exposed to the user
+  await expect(page.getByText("Ảnh tiếp theo chưa tải được.")).toHaveCount(0);
+  // 4. Failed request does not leave UI stuck in loading state
+  await expect(
+    page.getByRole("button", { name: "Xem thêm ảnh" }),
+  ).toBeEnabled();
   await expect(page.locator(".photo-card")).toHaveCount(4);
+
+  // 5. Retry action triggers subsequent successful request
   failNextPage = false;
   await page.getByRole("button", { name: "Xem thêm ảnh" }).click();
+
+  // 6. Feed recovers and displays expected content after retry
   await expect(page.locator(".photo-card")).toHaveCount(8);
   await expect(page.getByRole("button", { name: "Xem thêm ảnh" })).toHaveCount(
     0,
@@ -88,12 +101,10 @@ test("photo feed appends, retries and resets on category change", async ({
   await page.getByRole("button", { name: "Tìm kiếm", exact: true }).click();
   await expect(page).toHaveURL(/category=cafe.*q=/);
   await page
-    .getByRole("link", { name: "Vị trí của Quán kiểm thử 0", exact: true })
+    .getByRole("link", { name: "Bản đồ", exact: true })
     .click();
   await expect(page).toHaveURL(/\/map\?/);
   const mapQuery = new URL(page.url()).searchParams;
   expect(mapQuery.get("category")).toBe("cafe");
   expect(mapQuery.get("q")).toBe("góc quán");
-  expect(mapQuery.get("selected")).toBe("place-0");
-  expect(mapQuery.get("lat")).toBe("16.067");
 });

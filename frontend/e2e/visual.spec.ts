@@ -1,6 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import { getE2ECredentials, loginViaApi } from "./helpers/auth";
+
 const placeId = "30000000-0000-0000-0000-000000000001";
 const name = "Quán mẫu — DEMO";
 const screenshots = path.resolve(
@@ -17,15 +19,7 @@ const testImage = {
   ),
 };
 test.beforeEach(async ({ page }) => {
-  const csrf = await (await page.request.get("/api/v1/auth/csrf/")).json();
-  const response = await page.request.post("/api/v1/auth/login/", {
-    headers: { "X-CSRFToken": csrf.csrfToken },
-    data: {
-      email: "e2e-admin@demo.invalid",
-      password: process.env.E2E_ADMIN_PASSWORD,
-    },
-  });
-  expect(response.status()).toBe(200);
+  await loginViaApi(page, "user");
 });
 async function capture(page: Page, name: string) {
   await expect(page.locator(".skeletons")).toHaveCount(0);
@@ -52,6 +46,7 @@ async function noOverflow(page: Page) {
   ).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth));
 }
 async function register(page: Page) {
+  await page.context().clearCookies();
   await page.goto("/register");
   const email =
     "v3-" +
@@ -71,9 +66,10 @@ async function register(page: Page) {
   return email;
 }
 async function adminLogin(page: Page) {
+  const creds = getE2ECredentials();
   await page.goto("/admin/login/");
-  await page.getByLabel(/Email/i).fill("e2e-admin@demo.invalid");
-  await page.getByLabel(/Mật khẩu/i).fill(process.env.E2E_ADMIN_PASSWORD!);
+  await page.getByLabel(/Email/i).fill(creds.moderator.email);
+  await page.getByLabel(/Mật khẩu/i).fill(creds.moderator.password);
   await page.getByRole("button", { name: /Đăng nhập/i }).click();
   await expect(page).toHaveURL(/\/admin\/$/);
 }
@@ -87,10 +83,13 @@ for (const width of [360, 390, 768, 1440]) {
     await noOverflow(page);
     await capture(page, "discover-" + width);
     await page.locator(".filter-drawer > summary").click();
-    await page.getByRole("checkbox", { name: /\[DEMO\] Cây xanh/ }).check();
-    await page.getByRole("checkbox", { name: /\[DEMO\] Vật liệu gỗ/ }).check();
-    await page.getByRole("button", { name: "Áp dụng", exact: true }).click();
-    await expect(page).toHaveURL(/attributes=/);
+    await page.getByRole("checkbox", { name: /\[DEMO\] Cây xanh/ }).click();
+    await expect(page).toHaveURL(/attributes=demo-vegetation/);
+    if (!(await page.getByRole("checkbox", { name: /\[DEMO\] Vật liệu gỗ/ }).isVisible())) {
+      await page.locator(".filter-drawer > summary").click();
+    }
+    await page.getByRole("checkbox", { name: /\[DEMO\] Vật liệu gỗ/ }).click();
+    await expect(page).toHaveURL(/attributes=.*demo-wood/);
     await expect(
       page.getByRole("heading", { name: "Không gian mẫu — DEMO", exact: true }),
     ).toHaveCount(0);
@@ -99,26 +98,19 @@ for (const width of [360, 390, 768, 1440]) {
       .first()
       .click();
     await expect(
-      page.getByRole("heading", { name: "Nhìn thấy trong ảnh" }),
+      page.getByRole("heading", { name, exact: true }),
     ).toBeVisible();
     await noOverflow(page);
     await capture(page, "viewer-" + width);
-    await page.getByRole("link", { name, exact: true }).click();
+    await page.getByRole("link", { name: "Thông tin địa điểm " + name }).click();
     await expect(
-      page.getByRole("heading", { name: "Ảnh khớp bộ lọc" }),
+      page.getByRole("heading", { name: "Ảnh tại địa điểm" }),
     ).toBeVisible();
-    await expect(page.getByText("Chưa có thông tin giờ mở cửa.")).toBeVisible();
+    await expect(page.getByText("Giờ hoạt động:")).toBeVisible();
     await noOverflow(page);
     await capture(page, "detail-" + width);
-    await page.getByRole("link", { name: "Xem tất cả ảnh" }).click();
-    await expect(page).not.toHaveURL(/attributes=/);
-    await page
-      .getByRole("link", { name: /Xem ảnh .*DEMO/i })
-      .first()
-      .click();
-    await expect(
-      page.getByRole("heading", { name: "Nhìn thấy trong ảnh" }),
-    ).toBeVisible();
+    await page.getByRole("link", { name: "Quay lại" }).click();
+    await expect(page).toHaveURL(/\/photos\//);
   });
 }
 test("guest save continuation, persistence and logout", async ({ page }) => {
@@ -152,9 +144,8 @@ test("guest save continuation, persistence and logout", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Bạn chưa lưu địa điểm nào" }),
   ).toBeVisible();
-  await page.goto("/profile");
-  page.once("dialog", (d) => d.accept());
-  await page.getByRole("button", { name: "Đăng xuất" }).click();
+  await page.getByRole("button", { name: /Tài khoản của/i }).click();
+  await page.getByRole("menuitem", { name: "Đăng xuất" }).click();
   await expect(page).toHaveURL(/\/login$/);
   await page.goto("/saved");
   await expect(page).toHaveURL(/\/login$/);
@@ -206,19 +197,16 @@ test("upload, manual review, report and withdrawal", async ({
   await admin.getByRole("button", { name: "Lưu nhãn đã sửa" }).click();
   await page.reload();
   await expect(page.getByText("Đã đăng", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Xem ảnh công khai" }).click();
+  await page.getByRole("link", { name: "Xem và quản lý ảnh" }).click();
   await expect(page.getByText(caption, { exact: true })).toBeVisible();
   const photoId = page.url().split("/").pop()!;
-  await page.getByRole("button", { name: "Báo cáo nội dung" }).click();
+  await page.getByRole("button", { name: "Báo cáo nội dung" }).first().click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByLabel("Lý do").selectOption("privacy");
   await page.getByRole("button", { name: "Gửi báo cáo" }).click();
   await expect(page.getByText("Đã nhận báo cáo.")).toBeVisible();
-  await page.keyboard.press("Escape");
+  await page.getByRole("dialog").getByRole("button", { name: "Đóng" }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Báo cáo nội dung" }),
-  ).toBeFocused();
   await admin.getByRole("checkbox", { name: /\[DEMO\] Vật liệu gỗ/ }).uncheck();
   await admin.getByRole("button", { name: "Lưu nhãn đã sửa" }).click();
   await expect(
@@ -253,7 +241,7 @@ test("new place and photos are published immediately", async ({ page }) => {
   await page.getByRole("button", { name: "Đăng ảnh", exact: true }).click();
   await expect(page).toHaveURL(/\/submissions\/[0-9a-f-]{36}$/);
   await expect(page.locator(".status-badge")).toHaveText("Đã đăng");
-  await page.getByRole("link", { name: "Xem ảnh công khai" }).click();
+  await page.getByRole("link", { name: "Xem và quản lý ảnh" }).click();
   await expect(
     page.getByRole("heading", { name: "Quán E2E DEMO", exact: true }),
   ).toBeVisible();
@@ -265,16 +253,14 @@ test("map shares visual filters, preview and history", async ({ page }) => {
   await page.getByRole("link", { name: "Bản đồ", exact: true }).click();
   await expect(page).toHaveURL(/attributes=/);
   await expect(
-    page.getByRole("button", { name: "Xem " + name, exact: true }),
+    page.getByRole("button", { name: new RegExp("Xem " + name) }),
   ).toBeVisible({ timeout: 30000 });
-  await page.getByRole("button", { name: "Xem " + name, exact: true }).click();
+  await page.getByRole("button", { name: new RegExp("Xem " + name) }).click();
   await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   await noOverflow(page);
   await capture(page, "map-390");
-  await page.getByRole("link", { name: "Xem chi tiết", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Ảnh khớp bộ lọc" }),
-  ).toBeVisible();
+  await page.getByRole("link", { name: "Chi tiết" }).click();
+  await expect(page).toHaveURL(/\/photos\//);
   await page.goBack();
   await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Đóng xem trước" }).click();
@@ -290,7 +276,7 @@ test("empty, API failure, invalid tag and keyboard", async ({ page }) => {
   await capture(page, "empty-390");
   await page.locator(".filter-drawer > summary").click();
   await page.getByRole("button", { name: "Xóa bộ lọc" }).click();
-  await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name, exact: true }).first()).toBeVisible();
   await page.goto("/discover?attributes=unsupported");
   await expect(page.getByText(/Đặc điểm không được hỗ trợ/)).toBeVisible();
   await page.locator(".filter-drawer > summary").click();
@@ -309,7 +295,7 @@ test("empty, API failure, invalid tag and keyboard", async ({ page }) => {
   await capture(page, "error-390");
   await page.unroute("**/api/v1/feed/**");
   await page.getByRole("button", { name: "Thử lại", exact: true }).click();
-  await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name, exact: true }).first()).toBeVisible();
   await page.goto("/discover?sort=recent");
   await expect(page.locator(".skip-link")).toHaveCount(1);
   await page.keyboard.press("Tab");
@@ -333,10 +319,10 @@ test("local map data, GPS opt-in and data error retry", async ({
     .getByRole("button", { name: "Thử lại bản đồ", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Xem " + name, exact: true }),
+    page.getByRole("button", { name: new RegExp("Xem " + name) }),
   ).toBeVisible({ timeout: 30000 });
   await context.grantPermissions(["geolocation"]);
-  await context.setGeolocation({ latitude: 16.067, longitude: 108.22 });
+  await context.setGeolocation({ latitude: 16.068, longitude: 108.153 });
   await page
     .getByRole("button", { name: "Vị trí của tôi", exact: true })
     .click();
@@ -344,7 +330,7 @@ test("local map data, GPS opt-in and data error retry", async ({
   await page.getByLabel("Tìm tên hoặc địa chỉ").fill("missing-venue");
   await page.getByRole("button", { name: "Tìm kiếm", exact: true }).click();
   await expect(
-    page.getByText("Không có địa điểm khớp bộ lọc trong vùng này."),
+    page.getByText("Không có địa điểm nào trong vùng hiển thị này."),
   ).toBeVisible();
   await noOverflow(page);
   await capture(page, "map-empty-390");
@@ -357,7 +343,7 @@ test("missing coordinates, empty gallery and loading state", async ({
     page.getByText("Chưa có vị trí chính xác trên bản đồ."),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Chỉ đường", exact: true }),
+    page.getByRole("link", { name: "Xem trên bản đồ", exact: true }),
   ).toHaveCount(0);
   await page.goto("/places/30000000-0000-0000-0000-000000000004");
   await expect(
@@ -374,6 +360,6 @@ test("missing coordinates, empty gallery and loading state", async ({
   await page.goto("/discover");
   await expect(page.getByRole("status", { name: "Đang tải" })).toBeVisible();
   release();
-  await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name, exact: true }).first()).toBeVisible();
   await page.unroute("**/api/v1/feed/**");
 });

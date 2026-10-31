@@ -114,7 +114,7 @@ class Place(models.Model):
     def save(self, *args, **kwargs):
         self.name = self.name.strip()
         self.address = self.address.strip()
-        if (self.latitude is None or self.longitude is None) and self.address:
+        if not self.is_demo and (self.latitude is None or self.longitude is None) and self.address:
             try:
                 from .geocoding import geocode_address
 

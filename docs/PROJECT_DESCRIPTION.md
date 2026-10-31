@@ -201,7 +201,7 @@ bun run dev --port 5173
 ```
 *Truy cập ứng dụng tại:* `http://localhost:5173`
 *Truy cập Swagger API Docs:* `http://localhost:8000/api/v1/docs/`
-*Truy cập Trang Quản trị:* `http://localhost:8000/admin/` (Đăng nhập: `admin@rendez.local` / `RendezAdmin2026!`)
+*Truy cập Trang Quản trị:* `http://localhost:8000/admin/` (Khởi tạo tài khoản quản trị qua lệnh `scripts/create-admin.py` hoặc cấu hình biến môi trường `DJANGO_SUPERUSER_PASSWORD`)
 
 ---
 

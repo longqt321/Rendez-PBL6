@@ -206,3 +206,38 @@ Playwright MCP là một bước tiến vượt bậc trong kỹ thuật tự đ
 1. Kích hoạt Playwright MCP ngay lập tức mà **không cần cài thêm dependency mới** hay kết nối Internet.
 2. Tận dụng sức mạnh của các AI Coding Agent để thực hiện **Visual QA**, kiểm tra tính năng bản đồ và **tự động bảo trì bộ test E2E**.
 3. Nâng cao tiêu chuẩn chất lượng kỹ thuật của dự án Rendez lên chuẩn mực cao nhất của công nghiệp phần mềm hiện đại.
+
+---
+
+## 8. Giai Đoạn 1 — Nền Tảng Môi Trường E2E Chuyên Biệt (Phase 1 Dedicated Foundation)
+
+Trong khuôn khổ Phase 1, hệ thống đã thiết lập nền tảng môi trường kiểm thử E2E độc lập, tự vận hành hoàn chỉnh và bảo vệ tuyệt đối cơ sở dữ liệu phát triển:
+
+### 8.1. Cơ Chế Cô Lập Tài Nguyên & Rào Chắn An Toàn (Resource Isolation & Hardening)
+- **Cơ sở dữ liệu độc lập (`rendez_e2e`):** Toàn bộ migration và seed data thực thi riêng biệt trên `rendez_e2e`. Cơ sở dữ liệu phát triển `rendez_local` được bảo vệ 100% (kiểm chứng bằng chữ ký mật mã SHA-256 trên toàn bộ 23 bảng).
+- **Phân tách quyền hạn PostgreSQL (Role Privilege Separation):**
+  - Quản trị DDL (`rendez`): Phục vụ tác vụ tạo/drop database và nạp schema trong `e2e_manager.py`.
+  - Ứng dụng E2E Runtime (`rendez_e2e_app`): Phục vụ máy chủ Django backend khi chạy test E2E với đặc quyền tối thiểu (`NOSUPERUSER NOCREATEDB NOCREATEROLE`), triệt tiêu rủi ro leo thang đặc quyền từ ứng dụng.
+- **Ánh xạ cổng PostgreSQL & Không phụ thuộc PostGIS:**
+  - Container PostgreSQL lắng nghe tại host port `55433` (ánh xạ từ container port `5432`).
+  - Container `postgres:17-alpine` không cài PostGIS; Rendez sử dụng `DecimalField` với thuật toán BBox số học độc lập.
+- **Thư mục Media chuyên biệt (`.local/e2e_media/`):** Tách biệt hoàn toàn tệp ảnh tải lên và phái sinh giữa test và development. Quá trình dọn dẹp chỉ xóa trong phạm vi thư mục con E2E được kiểm chứng an toàn (bảo vệ `.local/media` với 150 file nguyên vẹn 100%).
+- **Phân tách Port mạng:** Backend E2E vận hành tại `127.0.0.1:8001`, Frontend E2E tại `127.0.0.1:5174`, tránh xung đột hoặc tái sử dụng nhầm máy chủ phát triển (port 8000/5173).
+- **Rào chắn an toàn (Safety Guards):** Hàm bảo vệ kiểm tra kết nối thực tế `validate_safe_database_for_drop` từ chối tuyệt đối `rendez_local`, `postgres`, `template*` và chỉ chấp nhận định danh chính xác `rendez_e2e`. Hàm `validate_safe_media_path` chặn symlink và path traversal.
+
+### 8.2. Phân Quyền Tài Khoản Kiểm Thử & Quản Lý Thông Tin Xác Thực (Zero Plaintext Credentials)
+- **Normal User (`e2e-user@rendez.test`):** `is_staff=False`, `is_superuser=False` (phục vụ duyệt feed, tương tác ảnh, kiểm tra quyền truy cập).
+- **Moderator (`e2e-moderator@rendez.test`):** `is_staff=True`, `is_superuser=False`, được cấp thẩm quyền kiểm duyệt cụ thể `photos.review_photosubmission` (không dùng superuser để kiểm thử quyền moderator).
+- **Unprivileged Staff (`e2e-staff-unprivileged@rendez.test`):** `is_staff=True`, `is_superuser=False` không có quyền kiểm duyệt ảnh để kiểm thử ranh giới 404/403.
+- **Quản lý mật khẩu động:** Toàn bộ mật khẩu được sinh ngẫu nhiên an toàn qua `secrets.token_urlsafe(24)` và lưu vào `.local/e2e_credentials.json` (chế độ phân quyền POSIX `0600`, được gitignore bảo vệ), không in mật khẩu ra console và không lưu trữ plaintext trong mã nguồn.
+- **Dữ liệu quán cà phê:** 12 địa điểm và 36 tệp ảnh thực tế khu vực Bách Khoa — Đà Nẵng từ `data/danang.json`.
+
+### 8.3. Tập Lệnh Vận Hành
+Quản lý môi trường E2E thông qua công cụ trung tâm `scripts/e2e_manager.py`:
+- `uv run --project backend python scripts/e2e_manager.py preflight`: Kiểm tra quyền PostgreSQL, role attributes và phần mở rộng.
+- `uv run --project backend python scripts/e2e_manager.py snapshot`: Tạo chữ ký mật mã SHA-256 cho dev DB và dev media.
+- `uv run --project backend python scripts/e2e_manager.py setup`: Khởi tạo DB `rendez_e2e`, role `rendez_e2e_app`, chạy migration, nạp dataset và tạo test accounts.
+- `uv run --project backend python scripts/e2e_manager.py reset`: Phá hủy và tái tạo môi trường E2E an toàn.
+- `uv run --project backend python scripts/e2e_manager.py verify`: So sánh SHA-256 bảng dữ liệu và thư mục media phát triển trước và sau test.
+- `bun run --cwd frontend playwright test e2e/smoke_e2e_foundation.spec.ts`: Chạy bộ kiểm thử smoke E2E nền tảng.
+

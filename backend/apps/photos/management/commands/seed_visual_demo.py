@@ -48,26 +48,31 @@ class Command(BaseCommand):
             attributes.append(attribute)
         category, _ = Category.objects.get_or_create(slug="cafe", defaults={"name": "Cà phê"})
         for index in range(4):
-            place, _ = Place.objects.get_or_create(
+            place_data = {
+                "name": [
+                    "Quán mẫu — DEMO",
+                    "Không gian mẫu — DEMO",
+                    "Quán chưa có vị trí — DEMO",
+                    "Quán chưa có ảnh — DEMO",
+                ][index],
+                "address": "Địa chỉ hư cấu, Đà Nẵng · Fixture phát triển",
+                "category": category,
+                "latitude": None if index == 2 else str(16.068 + index * 0.002),
+                "longitude": None if index == 2 else str(108.153 + index * 0.002),
+                "status": "published",
+                "description": "Dữ liệu và ảnh minh họa DEMO, không phải địa điểm kinh doanh thật.",
+                "is_demo": True,
+                "created_by": user,
+                "updated_by": user,
+            }
+            place, _ = Place.objects.update_or_create(
                 id=f"30000000-0000-0000-0000-{index + 1:012d}",
-                defaults={
-                    "name": [
-                        "Quán mẫu — DEMO",
-                        "Không gian mẫu — DEMO",
-                        "Quán chưa có vị trí — DEMO",
-                        "Quán chưa có ảnh — DEMO",
-                    ][index],
-                    "address": "Địa chỉ hư cấu, Đà Nẵng · Fixture phát triển",
-                    "category": category,
-                    "latitude": None if index == 2 else str(16.067 + index * 0.002),
-                    "longitude": None if index == 2 else str(108.22 + index * 0.002),
-                    "status": "published",
-                    "description": "Dữ liệu và ảnh minh họa DEMO, không phải địa điểm kinh doanh thật.",
-                    "is_demo": True,
-                    "created_by": user,
-                    "updated_by": user,
-                },
+                defaults=place_data,
             )
+            if index == 2:
+                Place.objects.filter(id="30000000-0000-0000-0000-000000000003").update(
+                    latitude=None, longitude=None
+                )
             if index == 3:
                 continue
             if PhotoSubmission.objects.filter(

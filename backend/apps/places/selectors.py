@@ -48,7 +48,7 @@ def visual_places(request, codes, filter_results=True):
             for word in words:
                 places = places.extra(
                     where=[
-                        "f_unaccent(lower(name || ' ' || address || ' ' || coalesce(description, ''))) LIKE %s"
+                        "f_unaccent(lower(places_place.name || ' ' || places_place.address || ' ' || coalesce(places_place.description, ''))) LIKE %s"
                     ],
                     params=[f"%{word}%"],
                 )

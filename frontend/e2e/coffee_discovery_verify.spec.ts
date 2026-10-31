@@ -1,21 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { loginViaApi } from "./helpers/auth";
 
 test.describe("Khám phá Quán Cà phê Bách Khoa Đà Nẵng & Kiểm thử Toàn vẹn Hình ảnh", () => {
   test.beforeEach(async ({ page }) => {
-    // 1. Get CSRF Token
-    const csrfResp = await page.request.get("/api/v1/auth/csrf/");
-    expect(csrfResp.status()).toBe(200);
-    const csrf = await csrfResp.json();
-
-    // 2. Login with Admin credentials or Demo
-    const loginResp = await page.request.post("/api/v1/auth/login/", {
-      headers: { "X-CSRFToken": csrf.csrfToken },
-      data: {
-        email: "admin@rendez.local",
-        password: "123456789",
-      },
-    });
-    expect(loginResp.status()).toBe(200);
+    await loginViaApi(page, "user");
   });
 
   test("Kiểm tra toàn bộ hình ảnh và địa điểm khớp nhau, không bị lỗi truy cập", async ({
@@ -71,20 +59,27 @@ test.describe("Khám phá Quán Cà phê Bách Khoa Đà Nẵng & Kiểm thử T
     await page.goto("/discover");
     await page.waitForLoadState("networkidle");
 
-    // Click the first photo card link to navigate to /photos/:id
-    const firstPhotoLink = page.locator("a[href^='/photos/']").first();
-    const href = await firstPhotoLink.getAttribute("href");
+    // 1. Deterministic selection: locate the card for Trình Cà Phê
+    const targetCard = page
+      .locator(".place-card, article")
+      .filter({ hasText: "Trình Cà Phê" })
+      .first();
+    await expect(targetCard).toBeVisible({ timeout: 10000 });
+    const expectedPlaceName = (await targetCard.locator("h2").innerText()).trim();
+
+    // 2. Read its associated photo link and navigate to Photo Detail
+    const photoLink = targetCard.locator("a[href^='/photos/']").first();
+    const href = await photoLink.getAttribute("href");
     expect(href).toBeTruthy();
 
-    // Navigate directly or click
     await page.goto(href!);
     await page.waitForLoadState("networkidle");
 
-    // Wait for content to render (wait for skeletons to disappear)
+    // 3. Verify Photo Detail references the exact same Place name and address
     await expect(page.locator(".skeletons")).toHaveCount(0, { timeout: 10000 });
-    await expect(page.locator("body")).toContainText("Trình Cà Phê", {
-      timeout: 10000,
-    });
+    const viewerPlaceTitle = page.locator(".photo-place-link h1");
+    await expect(viewerPlaceTitle).toBeVisible({ timeout: 10000 });
+    await expect(viewerPlaceTitle).toHaveText(expectedPlaceName);
     await expect(page.locator("body")).toContainText("Phạm Như Xương");
 
     // Verify viewer image is visible
