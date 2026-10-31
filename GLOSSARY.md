@@ -261,3 +261,17 @@ Tài liệu thiết lập hệ thống ngôn ngữ nghiệp vụ chuẩn mực (
    - *Bối cảnh:* Khái niệm ảnh tư liệu lịch sử (không còn phản ánh không gian hiện tại nhưng có giá trị ký ức) đã được thống nhất về mặt nghiệp vụ.
    - *Vấn đề:* Chưa có Product Spec về giao diện hiển thị (Timeline/Lịch sử) và chưa có schema trong DB.
    - *Hệ quả nếu chưa quyết định:* Trong implementation hiện tại chưa có trạng thái riêng để biểu diễn ảnh hợp lệ nhưng không còn phản ánh không gian hiện tại. Nếu ảnh vẫn ở trạng thái `published` và Place tiếp tục được hiển thị công khai, ảnh có thể tiếp tục xuất hiện trong các khu vực sử dụng truy vấn ảnh công khai. Cơ chế xử lý riêng cho trường hợp này chưa được triển khai.
+
+---
+
+## C. Redesign To-Be Vocabulary (Prompt 02)
+
+### `Place` (To-Be)
+- Địa điểm vật lý có thật, không mặc định là cơ sở kinh doanh. Phân biệt: Business, Public Space, Other Place. Không giới hạn Đà Nẵng hay cà phê.
+- Trạng thái: As-Is giữ nguyên; To-Be mở rộng loại hình qua taxonomy Category.
+
+### `Category` (To-Be)
+- Taxonomy đa cấp phục vụ khám phá đa loại hình (ăn uống, cà phê, giải trí, tham quan, công cộng, mua sắm, trải nghiệm...). Proposed.
+
+### Decision Pending (bảo toàn)
+- Place Identity Continuity, VenueProposal, Archived Photo hiển thị: vẫn Decision Pending, không tự duyệt.
