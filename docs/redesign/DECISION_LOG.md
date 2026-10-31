@@ -10,3 +10,4 @@
 | 2026-10-31 | Frontend foundation already present; no code changes in Prompt 06 | Existing tokens, components, routing verified by prior prompts | Prompt 06 |
 | 2026-10-31 | Visual discovery already implemented; no code changes in Prompt 07 | Feed, photo detail, place detail, categories exist | Prompt 07 |
 | 2026-10-31 | Deterministic search/map already implemented; no code changes in Prompt 08 | Existing backend/frontend search and map sync | Prompt 08 |
+| 2026-10-31 | Community/contributions already implemented; no code changes in Prompt 09 | Photo submission, social, favorites, admin, media safety exist | Prompt 09 |
