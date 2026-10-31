@@ -8,3 +8,4 @@
 | 2026-10-31 | PostGIS deferred | bbox filtering sufficient; add only if spatial queries require | Prompt 04 |
 | 2026-10-31 | Backend already generalized; no code changes in Prompt 05 | Models Category/Place/Photo generic; geocoding city bias only fallback | Prompt 05 |
 | 2026-10-31 | Frontend foundation already present; no code changes in Prompt 06 | Existing tokens, components, routing verified by prior prompts | Prompt 06 |
+| 2026-10-31 | Visual discovery already implemented; no code changes in Prompt 07 | Feed, photo detail, place detail, categories exist | Prompt 07 |
