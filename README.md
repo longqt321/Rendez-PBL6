@@ -4,7 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-React%2019-blue)](frontend)
 [![Django](https://img.shields.io/badge/Django-5.2%20REST-green)](backend)
 
-**Rendez** là ứng dụng khám phá không gian cà phê, học tập và làm việc tại Đà Nẵng qua hình ảnh thực tế và bản đồ tương tác. Ứng dụng kết hợp lưới ảnh theo tỷ lệ tự nhiên với bản đồ địa phương, hỗ trợ tìm kiếm và định vị địa chỉ dựa trên dữ liệu OpenStreetMap, Photon và Esri ArcGIS.
+**Rendez** là nền tảng khám phá địa điểm (visual-first place discovery) qua hình ảnh thực tế do cộng đồng đóng góp và bản đồ tương tác. Phạm vi hiện tại là dữ liệu thử nghiệm tại Đà Nẵng; kiến trúc không giới hạn loại hình địa điểm hay địa lý. Ứng dụng kết hợp lưới ảnh theo tỷ lệ tự nhiên với bản đồ địa phương, hỗ trợ tìm kiếm và định vị địa chỉ dựa trên dữ liệu OpenStreetMap, Photon và Esri ArcGIS.
 
 ---
 
