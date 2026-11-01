@@ -234,6 +234,13 @@ class PlacePhoto(models.Model):
 
 class PhotoAttribute(models.Model):
     source = models.CharField(max_length=30, choices=[("manual", "Thủ công")], default="manual")
+    post_media = models.ForeignKey(
+        "posts.PostMedia",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attributes",
+    )
     photo = models.ForeignKey(PlacePhoto, on_delete=models.PROTECT)
     attribute = models.ForeignKey(VisualAttribute, on_delete=models.PROTECT)
     reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
@@ -243,7 +250,12 @@ class PhotoAttribute(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["photo", "attribute"], name="unique_reviewed_photo_attribute"
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["post_media", "attribute"],
+                condition=Q(post_media__isnull=False),
+                name="unique_reviewed_postmedia_attribute",
+            ),
         ]
 
 

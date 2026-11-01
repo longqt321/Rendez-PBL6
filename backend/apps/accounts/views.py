@@ -4,6 +4,8 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
+from django.db.models import F
+from django.db.models.functions import Greatest
 from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -168,8 +170,10 @@ class MeView(APIView):
 
         user = request.user
         with transaction.atomic():
-            from apps.favorites.models import Favorite
+            from apps.favorites.models import Favorite, SavedPlace
             from apps.photos.models import PhotoAudit, PhotoLike, PhotoSubmission, PlacePhoto
+            from apps.photos.services import sync_post_media_from_photo
+            from apps.posts.models import Comment, Like, Post, PostMedia, SavedPost
             from django.utils import timezone
 
             now = timezone.now()
@@ -180,9 +184,35 @@ class MeView(APIView):
                 photo.withdrawn_at = photo.withdrawn_at or now
                 photo.is_cover = False
                 photo.save(update_fields=["status", "withdrawn_at", "is_cover"])
+                sync_post_media_from_photo(photo)
+            for post in Post.objects.filter(author=user, status="published"):
+                post.status = "withdrawn"
+                post.save(update_fields=["status"])
+            for media in PostMedia.objects.filter(post__author=user, status="published"):
+                media.status = "withdrawn"
+                media.withdrawn_at = media.withdrawn_at or now
+                media.save(update_fields=["status", "withdrawn_at"])
 
             Favorite.objects.filter(user=user).delete()
             PhotoLike.objects.filter(user=user).delete()
+            SavedPlace.objects.filter(user=user).delete()
+            SavedPost.objects.filter(user=user).delete()
+            # Keep denormalised counters in sync with the bulk deletions
+            # (Greatest floors each counter at zero).
+            affected = list(
+                Like.objects.filter(user=user).values_list("post_id", flat=True).distinct()
+            )
+            Like.objects.filter(user=user).delete()
+            for post_id in affected:
+                Post.objects.filter(pk=post_id).update(like_count=Greatest(F("like_count") - 1, 0))
+            commented = list(
+                Comment.objects.filter(author=user).values_list("post_id", flat=True).distinct()
+            )
+            Comment.objects.filter(author=user).delete()
+            for post_id in commented:
+                Post.objects.filter(pk=post_id).update(
+                    comment_count=Greatest(F("comment_count") - 1, 0)
+                )
 
             user.is_active = False
             user.display_name = "Tài khoản đã đóng"
