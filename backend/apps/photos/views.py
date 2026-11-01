@@ -17,6 +17,8 @@ from rest_framework.views import APIView
 from apps.places.models import public_places
 from apps.places.selectors import place_context, visual_places
 from apps.places.views import FILTERS
+from apps.posts.models import PostMedia
+from apps.posts.selectors import public_posts
 from .models import (
     ContentReport,
     PhotoAsset,
@@ -227,8 +229,30 @@ def media(request, pk, private=False, original=False):
         photo = get_object_or_404(public_photos().select_related("asset"), pk=pk)
         asset = photo.asset
 
+    return serve_asset(request, asset, private=private, original=original)
+
+
+def post_media(request, pk):
+    """Serve a published Post's media derivative (post-centric media route).
+
+    Mirrors the legacy public photo route's caching semantics; the gate reuses
+    public_posts() so the same visibility rules as the feed apply (post and
+    place published, place not deleted, demo data hidden outside DEBUG).
+    """
+    media_row = get_object_or_404(
+        PostMedia.objects.select_related("media_asset", "post"),
+        pk=pk,
+        status=PostMedia.Status.PUBLISHED,
+        post__in=public_posts(),
+    )
+    return serve_asset(request, media_row.media_asset)
+
+
+def serve_asset(request, asset, *, private=False, original=False):
     etag = f'"{asset.sha256}"'
-    if request.headers.get("If-None-Match") == etag:
+    if_none_match = request.headers.get("If-None-Match", "")
+    # Weak comparison: strip weak prefix and compare.
+    if if_none_match.lstrip("W/").strip() == etag:
         return HttpResponseNotModified()
 
     file_field = asset.original if original else asset.derivative
@@ -251,6 +275,15 @@ def media(request, pk, private=False, original=False):
         file_obj = None
         for path in alt_paths:
             resolved = path.resolve()
+            # Containment: resolved path must stay within one of the allowed roots.
+            allowed_roots = [
+                Path(settings.MEDIA_ROOT).resolve(),
+                (settings.BASE_DIR / ".private-media").resolve(),
+                (settings.BASE_DIR.parent / ".local" / "media").resolve(),
+                (settings.BASE_DIR / "media").resolve(),
+            ]
+            if not any(resolved == root or resolved.is_relative_to(root) for root in allowed_roots):
+                continue
             if resolved.exists() and resolved.is_file():
                 file_obj = open(resolved, "rb")
                 break

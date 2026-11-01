@@ -9,6 +9,7 @@ from PIL import Image
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from apps.accounts.models import User
+from apps.posts.models import LegacyPhotoMapping, Post, PostMedia
 from .images import Conflict, normalize_image
 from apps.places.models import Place
 from .models import (
@@ -23,6 +24,37 @@ from .models import (
 
 
 logger = logging.getLogger(__name__)
+
+
+def sync_post_media_from_photo(photo):
+    """Mirror a legacy PlacePhoto lifecycle state onto its PostMedia counterpart.
+
+    Keeps the legacy API surface and the Post domain consistent: when a photo
+    is withdrawn or re-published through the legacy flows, the linked PostMedia
+    (resolved via LegacyPhotoMapping) follows the same state.
+    """
+    mapping = (
+        LegacyPhotoMapping.objects.filter(legacy_place_photo_id=photo.id)
+        .select_related("post_media")
+        .first()
+    )
+    if not mapping:
+        return
+    media = mapping.post_media
+    now = timezone.now()
+    if photo.status == "withdrawn":
+        if media.status != "withdrawn":
+            media.status = "withdrawn"
+            media.withdrawn_at = photo.withdrawn_at or now
+            media.save(update_fields=["status", "withdrawn_at"])
+            Post.objects.filter(pk=media.post_id).exclude(status="withdrawn").update(
+                status="withdrawn"
+            )
+    elif photo.status == "published" and media.status != "published":
+        media.status = "published"
+        media.published_at = photo.published_at or now
+        media.withdrawn_at = None
+        media.save(update_fields=["status", "published_at", "withdrawn_at"])
 
 
 def check_reviewer(user):
@@ -87,7 +119,10 @@ def submit(user, values, files, key):
                 place = Place.objects.select_for_update(of=("self",)).get(pk=values["place_id"].pk)
                 if place.status != "published" or place.deleted_at:
                     raise serializers.ValidationError("Quán không còn khả dụng.")
-            has_cover = PlacePhoto.objects.filter(place=place, is_cover=True).exists()
+            has_cover = (
+                PostMedia.objects.filter(post__place=place, status="published").exists()
+                or Place.objects.filter(pk=place.pk, cover_media__isnull=False).exists()
+            )
             submission = PhotoSubmission.objects.create(
                 submitted_by=user,
                 place=place,
@@ -116,7 +151,10 @@ def submit(user, values, files, key):
                     field.save(f"{asset.id}.jpg", content, save=False)
                     written.append((field.storage, field.name))
                 asset.save()
-                PlacePhoto.objects.create(
+                # Dual-write: legacy PlacePhoto row keeps the legacy API surface
+                # (feed, gallery, media serving, moderation) fully functional,
+                # while the Post/PostMedia domain is the new source of truth.
+                place_photo = PlacePhoto.objects.create(
                     place=place,
                     asset=asset,
                     status="published",
@@ -124,6 +162,31 @@ def submit(user, values, files, key):
                     caption=submission.caption,
                     alt_text=submission.caption[:200] or place.name,
                     is_cover=not has_cover and order == 0,
+                )
+                if order == 0:
+                    post = Post.objects.create(
+                        author=user,
+                        place=place,
+                        caption=submission.caption,
+                        status="published",
+                        origin="ugc",
+                        legacy_submission=submission,
+                        published_at=now,
+                    )
+                media = PostMedia.objects.create(
+                    post=post,
+                    media_asset=asset,
+                    position=order,
+                    alt_text=submission.caption[:200] or place.name,
+                    status="published",
+                    published_at=now,
+                )
+                if not has_cover and order == 0:
+                    place.cover_media = media
+                    place.save(update_fields=["cover_media"])
+                LegacyPhotoMapping.objects.get_or_create(
+                    legacy_place_photo_id=place_photo.id,
+                    defaults={"post_media": media},
                 )
             return submission
     except Exception:
@@ -217,6 +280,7 @@ def change_publication(photo_id, reviewer, action):
     else:
         raise serializers.ValidationError("Hành động không hợp lệ.")
     photo.save()
+    sync_post_media_from_photo(photo)
     PhotoAudit.objects.create(
         actor=reviewer, photo=photo, submission=photo.asset.submission, action=action
     )
@@ -247,6 +311,7 @@ def owner_edit_photo(photo_id, user, caption=None, withdraw=False):
             status="resolved", resolved_at=photo.withdrawn_at
         )
     photo.save()
+    sync_post_media_from_photo(photo)
     PhotoAudit.objects.create(
         actor=user,
         photo=photo,
@@ -301,6 +366,7 @@ def moderate_report(report_id, reviewer, action, note=""):
             photo.withdrawn_at = photo.withdrawn_at or now
             photo.is_cover = False
             photo.save(update_fields=["status", "withdrawn_at", "is_cover"])
+            sync_post_media_from_photo(photo)
             PhotoAudit.objects.create(
                 actor=reviewer,
                 photo=photo,

@@ -2,6 +2,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from apps.places.models import Category, Place, public_places
 from apps.places.serializers import CategorySerializer
+from apps.posts.serializers import PostSerializer
 from .models import (
     ContentReport,
     PhotoAsset,
@@ -26,7 +27,6 @@ class PublicPhotoSerializer(serializers.ModelSerializer):
     height = serializers.IntegerField(source="asset.height")
     attributes = serializers.SerializerMethodField()
     matched_attribute_codes = serializers.SerializerMethodField()
-    author_id = serializers.UUIDField(source="asset.submission.submitted_by.id", read_only=True)
     author_id = serializers.UUIDField(source="asset.submission.submitted_by.id", read_only=True)
     author_name = serializers.CharField(
         source="asset.submission.submitted_by.display_name", read_only=True
@@ -76,6 +76,7 @@ class VisualPlaceSerializer(serializers.ModelSerializer):
     latitude = serializers.FloatField(allow_null=True)
     longitude = serializers.FloatField(allow_null=True)
     cover_image_url = serializers.SerializerMethodField()
+    cover_media_url = serializers.SerializerMethodField()
     cover_photo_id = serializers.UUIDField(
         source="visual_cover_id", read_only=True, allow_null=True
     )
@@ -92,6 +93,7 @@ class VisualPlaceSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
             "cover_image_url",
+            "cover_media_url",
             "cover_photo_id",
             "is_saved",
             "supporting_photo",
@@ -102,6 +104,10 @@ class VisualPlaceSerializer(serializers.ModelSerializer):
     def get_cover_image_url(self, obj) -> str | None:
         photo_id = getattr(obj, "visual_cover_id", None)
         return f"/public-photo-media/{photo_id}/" if photo_id else None
+
+    def get_cover_media_url(self, obj) -> str | None:
+        media_id = getattr(obj, "post_cover_id", None)
+        return f"/public-post-media/{media_id}/" if media_id else None
 
     @extend_schema_field(PublicPhotoSerializer(allow_null=True))
     def get_supporting_photo(self, obj):
@@ -161,6 +167,8 @@ class VisualDetailSerializer(VisualPlaceSerializer):
     attribute_evidence = AttributeEvidenceSerializer(many=True)
     source_url = serializers.URLField(allow_blank=True)
     verified_at = serializers.DateTimeField(allow_null=True)
+    # Aggregated community posts (first page, feed visibility rules).
+    posts = PostSerializer(many=True)
 
     class Meta(VisualPlaceSerializer.Meta):
         fields = VisualPlaceSerializer.Meta.fields + (
@@ -168,6 +176,7 @@ class VisualDetailSerializer(VisualPlaceSerializer):
             "opening_hours",
             "photos",
             "attribute_evidence",
+            "posts",
             "source_url",
             "verified_at",
         )
