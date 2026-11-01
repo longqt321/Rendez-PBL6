@@ -489,11 +489,18 @@ paths:
   /api/v1/photos/{id}/:
     get:
       operationId: photos_retrieve
+      description: |-
+        Route adapter for GET /api/v1/photos/<uuid:pk>/.
+
+        The legacy PlacePhoto surface stays the source of truth while both rows
+        coexist: whenever the legacy photo row still exists, the request is
+        delegated to the legacy PhotoDetail view so its semantics (payload shape,
+        visibility rules, 404 on withdrawn) are fully preserved. The post-centric
+        payload is only served for orphaned legacy IDs whose PlacePhoto row no
+        longer exists but which still map to a publicly visible Post — this keeps
+        pre-migration photo URLs resolvable. Authentication is required to match
+        the legacy security boundary.
       parameters:
-      - in: query
-        name: attributes
-        schema:
-          type: string
       - in: path
         name: id
         schema:
@@ -866,12 +873,53 @@ paths:
               schema:
                 $ref: '#/components/schemas/ContentReport'
           description: ''
+  /api/v1/places/{id}/saved/:
+    post:
+      operationId: places_saved_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - places
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
+    delete:
+      operationId: places_saved_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - places
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
   /api/v1/places/geocode/:
     get:
       operationId: places_geocode_retrieve
       description: |-
         Tự động giải mã và định vị địa chỉ thực tế (Geocoding) trả về tọa độ kinh độ, vĩ độ.
-        100% sử dụng cơ sở dữ liệu và API thời gian thực từ các bên thứ ba uy tín (OpenStreetMap, Photon, Esri).
+        Sử dụng cơ sở dữ liệu và API thời gian thực từ OpenStreetMap (Nominatim, Photon).
       parameters:
       - in: query
         name: q
@@ -927,6 +975,272 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VisualMap'
+          description: ''
+  /api/v1/posts/:
+    get:
+      operationId: posts_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPostList'
+          description: ''
+  /api/v1/posts/{id}/:
+    get:
+      operationId: posts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+          description: ''
+  /api/v1/posts/{id}/comments/:
+    get:
+      operationId: posts_comments_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+          description: ''
+    post:
+      operationId: posts_comments_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - posts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCommentCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostCommentCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostCommentCreateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+          description: ''
+  /api/v1/posts/{id}/likes/:
+    post:
+      operationId: posts_likes_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
+    delete:
+      operationId: posts_likes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
+  /api/v1/posts/{id}/saved/:
+    post:
+      operationId: posts_saved_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
+    delete:
+      operationId: posts_saved_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
+  /api/v1/posts/{id}/shares/:
+    post:
+      operationId: posts_shares_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
+  /api/v1/posts/{id}/views/:
+    post:
+      operationId: posts_views_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ''
+  /api/v1/posts/saved/:
+    get:
+      operationId: posts_saved_list
+      description: |-
+        GET /api/v1/posts/saved/ — posts the current user has saved.
+
+        Visibility follows the same rules as the feed: a saved post whose content
+        has since been hidden/withdrawn stops appearing here instead of leaking it.
+        Ordered by most recently saved first.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPostList'
           description: ''
   /api/v1/schema/:
     get:
@@ -1100,6 +1414,38 @@ components:
       required:
       - name
       - slug
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        post:
+          type: string
+          format: uuid
+        post_media:
+          type: string
+          format: uuid
+          nullable: true
+        author:
+          type: string
+          format: uuid
+        author_name:
+          type: string
+          readOnly: true
+        body:
+          type: string
+          maxLength: 1000
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - author
+      - author_name
+      - body
+      - created_at
+      - id
+      - post
     CommentCreateRequest:
       type: object
       properties:
@@ -1264,6 +1610,14 @@ components:
       - source
       - text
       - verified_at
+    OriginEnum:
+      enum:
+      - ugc
+      - seed
+      type: string
+      description: |-
+        * `ugc` - Người dùng
+        * `seed` - Dữ liệu import/seed
     PaginatedFeedItemList:
       type: object
       required:
@@ -1310,6 +1664,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PhotoSubmission'
+    PaginatedPostList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
     PaginatedPublicPhotoList:
       type: object
       required:
@@ -1613,6 +1990,135 @@ components:
       - consent
       - consent_version
       - images
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        author:
+          type: string
+          format: uuid
+        author_name:
+          type: string
+          readOnly: true
+        place:
+          type: string
+          format: uuid
+          nullable: true
+        place_name:
+          type: string
+          readOnly: true
+        caption:
+          type: string
+          maxLength: 1000
+        status:
+          $ref: '#/components/schemas/PostStatusEnum'
+        origin:
+          $ref: '#/components/schemas/OriginEnum'
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        like_count:
+          type: integer
+          readOnly: true
+        comment_count:
+          type: integer
+          readOnly: true
+        share_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        view_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        liked:
+          type: boolean
+          nullable: true
+          readOnly: true
+        saved:
+          type: boolean
+          nullable: true
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostMedia'
+          readOnly: true
+      required:
+      - author
+      - author_name
+      - comment_count
+      - id
+      - like_count
+      - liked
+      - media
+      - place_name
+      - saved
+    PostCommentCreateRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        post_media:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - body
+    PostMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        media_url:
+          type: string
+          readOnly: true
+        position:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        alt_text:
+          type: string
+          maxLength: 200
+        status:
+          $ref: '#/components/schemas/PostMediaStatusEnum'
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - id
+      - media_url
+    PostMediaStatusEnum:
+      enum:
+      - pending_publication
+      - published
+      - withdrawn
+      type: string
+      description: |-
+        * `pending_publication` - Chờ công khai
+        * `published` - Công khai
+        * `withdrawn` - Đã rút
+    PostStatusEnum:
+      enum:
+      - published
+      - hidden
+      - withdrawn
+      type: string
+      description: |-
+        * `published` - Công khai
+        * `hidden` - Ẩn
+        * `withdrawn` - Đã rút
     Profile:
       type: object
       properties:
@@ -1807,6 +2313,10 @@ components:
           type: string
           nullable: true
           readOnly: true
+        cover_media_url:
+          type: string
+          nullable: true
+          readOnly: true
         cover_photo_id:
           type: string
           format: uuid
@@ -1832,6 +2342,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AttributeEvidence'
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
         source_url:
           type: string
           format: uri
@@ -1844,6 +2358,7 @@ components:
       - attribute_evidence
       - category
       - cover_image_url
+      - cover_media_url
       - cover_photo_id
       - description
       - id
@@ -1853,6 +2368,7 @@ components:
       - name
       - opening_hours
       - photos
+      - posts
       - source_url
       - supporting_photo
       - verified_at
@@ -1901,6 +2417,10 @@ components:
           type: string
           nullable: true
           readOnly: true
+        cover_media_url:
+          type: string
+          nullable: true
+          readOnly: true
         cover_photo_id:
           type: string
           format: uuid
@@ -1918,6 +2438,7 @@ components:
       - address
       - category
       - cover_image_url
+      - cover_media_url
       - cover_photo_id
       - id
       - is_saved

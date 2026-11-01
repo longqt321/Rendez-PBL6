@@ -23,6 +23,7 @@ def frontend(request, path=""):
                     "fonts/",
                     "static/",
                     "public-photo-media/",
+                    "public-post-media/",
                     "private-photo-media/",
                     "private-photo-original/",
                 )

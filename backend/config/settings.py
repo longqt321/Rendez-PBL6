@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "apps.places",
     "apps.favorites",
     "apps.photos",
+    "apps.posts",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -174,6 +175,9 @@ REST_FRAMEWORK = {
         "password": "5/min",
         "like": "60/min",
         "favorite": "60/min",
+        "share": "30/min",
+        "view": "120/min",
+        "geocode": "30/min",
     },
 }
 SPECTACULAR_SETTINGS = {

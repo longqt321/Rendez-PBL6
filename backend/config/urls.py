@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import include, path, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.permissions import IsAuthenticated
 
@@ -30,6 +30,7 @@ admin.site.index_title = "Quản lý nội dung"
 
 urlpatterns = [
     path("api/v1/health/", health),
+    path("", include("apps.posts.urls")),
     # Attributes & Feed
     path("api/v1/attributes/", visual.AttributeList.as_view()),
     path("api/v1/feed/", visual.Feed.as_view()),
@@ -56,6 +57,7 @@ urlpatterns = [
     path("api/v1/photo-submissions/", visual.SubmissionList.as_view()),
     path("api/v1/photo-submissions/<uuid:pk>/", visual.SubmissionDetail.as_view()),
     path("public-photo-media/<uuid:pk>/", visual.media),
+    path("public-post-media/<uuid:pk>/", visual.post_media),
     path("private-photo-original/<uuid:pk>/", visual.media, {"private": True, "original": True}),
     path("private-photo-media/<uuid:pk>/", visual.media, {"private": True}),
     # Auth
