@@ -17,7 +17,10 @@ import { test, expect } from "@playwright/test";
  */
 
 function getE2ECredentials() {
-  const credPath = path.resolve(process.cwd(), "../.local/e2e_credentials.json");
+  const credPath = path.resolve(
+    process.cwd(),
+    "../.local/e2e_credentials.json",
+  );
   if (fs.existsSync(credPath)) {
     try {
       return JSON.parse(fs.readFileSync(credPath, "utf-8"));
@@ -32,10 +35,14 @@ function getE2ECredentials() {
     },
     moderator: {
       email: process.env.E2E_MODERATOR_EMAIL || "e2e-moderator@rendez.test",
-      password: process.env.E2E_MODERATOR_PASSWORD || process.env.E2E_ADMIN_PASSWORD || "",
+      password:
+        process.env.E2E_MODERATOR_PASSWORD ||
+        process.env.E2E_ADMIN_PASSWORD ||
+        "",
     },
     staff_unprivileged: {
-      email: process.env.E2E_STAFF_UNPRIV_EMAIL || "e2e-staff-unpriv@rendez.test",
+      email:
+        process.env.E2E_STAFF_UNPRIV_EMAIL || "e2e-staff-unpriv@rendez.test",
       password: process.env.E2E_STAFF_UNPRIVILEGED_PASSWORD || "",
     },
   };
@@ -123,32 +130,50 @@ test.describe("Phase 1: Hardened Dedicated E2E Environment Suite", () => {
     const modCsrf = await (await modContext.get("/api/v1/auth/csrf/")).json();
     const modLogin = await modContext.post("/api/v1/auth/login/", {
       headers: { "X-CSRFToken": modCsrf.csrfToken },
-      data: { email: creds.moderator.email, password: creds.moderator.password },
+      data: {
+        email: creds.moderator.email,
+        password: creds.moderator.password,
+      },
     });
     expect(modLogin.status()).toBe(200);
 
-    const modAccess = await modContext.get(`/private-photo-original/${assetId}/`);
+    const modAccess = await modContext.get(
+      `/private-photo-original/${assetId}/`,
+    );
     expect(modAccess.status()).toBe(200);
-    expect(modAccess.headers()["content-type"]).toContain("application/octet-stream");
+    expect(modAccess.headers()["content-type"]).toContain(
+      "application/octet-stream",
+    );
 
     // 3. Unprivileged Staff context: Access protected original -> must be denied (404/hidden)
     const staffContext = await playwright.request.newContext();
-    const staffCsrf = await (await staffContext.get("/api/v1/auth/csrf/")).json();
+    const staffCsrf = await (
+      await staffContext.get("/api/v1/auth/csrf/")
+    ).json();
     const staffLogin = await staffContext.post("/api/v1/auth/login/", {
       headers: { "X-CSRFToken": staffCsrf.csrfToken },
-      data: { email: creds.staff_unprivileged.email, password: creds.staff_unprivileged.password },
+      data: {
+        email: creds.staff_unprivileged.email,
+        password: creds.staff_unprivileged.password,
+      },
     });
     expect(staffLogin.status()).toBe(200);
 
-    const staffAccess = await staffContext.get(`/private-photo-original/${assetId}/`);
+    const staffAccess = await staffContext.get(
+      `/private-photo-original/${assetId}/`,
+    );
     expect(staffAccess.status()).toBe(404);
 
     // 4. Normal user attempts to access original -> must also be denied (404)
-    const userAccess = await userContext.get(`/private-photo-original/${assetId}/`);
+    const userAccess = await userContext.get(
+      `/private-photo-original/${assetId}/`,
+    );
     expect(userAccess.status()).toBe(404);
   });
 
-  test("4. Deterministic Feed & Dedicated Media Serving", async ({ request }) => {
+  test("4. Deterministic Feed & Dedicated Media Serving", async ({
+    request,
+  }) => {
     // 1. Authenticate as normal user
     const csrf = await (await request.get("/api/v1/auth/csrf/")).json();
     const loginRes = await request.post("/api/v1/auth/login/", {
@@ -201,7 +226,7 @@ test.describe("Phase 1: Hardened Dedicated E2E Environment Suite", () => {
     // 3. Valid JPEG binary for upload (120x120 px to meet dimension validation)
     const jpegBuffer = Buffer.from(
       "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAB4AHgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDWooor5c8wKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA/9k=",
-      "base64"
+      "base64",
     );
 
     const idempotencyKey = `e2e-upload-${Date.now()}`;
@@ -231,11 +256,16 @@ test.describe("Phase 1: Hardened Dedicated E2E Environment Suite", () => {
     const e2eMediaRoot = path.resolve(process.cwd(), "../.local/e2e_media");
     const devMediaRoot = path.resolve(process.cwd(), "../.local/media");
 
-    const e2eFiles = fs.readdirSync(path.join(e2eMediaRoot, "visual", "derivatives"));
+    const e2eFiles = fs.readdirSync(
+      path.join(e2eMediaRoot, "visual", "derivatives"),
+    );
     expect(e2eFiles.length).toBeGreaterThan(0);
 
     // Verify dev media was NOT touched
-    const devBaselinePath = path.resolve(process.cwd(), "../.local/e2e_dev_snapshot.json");
+    const devBaselinePath = path.resolve(
+      process.cwd(),
+      "../.local/e2e_dev_snapshot.json",
+    );
     if (fs.existsSync(devBaselinePath)) {
       const baseline = JSON.parse(fs.readFileSync(devBaselinePath, "utf-8"));
       let currentDevCount = 0;
@@ -262,7 +292,9 @@ test.describe("Phase 1: Hardened Dedicated E2E Environment Suite", () => {
 
     // 2. Perform UI login with normal user credentials from store
     await page.getByLabel("Email", { exact: true }).fill(creds.user.email);
-    await page.getByLabel("Mật khẩu", { exact: true }).fill(creds.user.password);
+    await page
+      .getByLabel("Mật khẩu", { exact: true })
+      .fill(creds.user.password);
     await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
 
     // 3. Confirm transition to /discover
@@ -270,19 +302,28 @@ test.describe("Phase 1: Hardened Dedicated E2E Environment Suite", () => {
     await expect(page).toHaveURL(/\/discover$/);
 
     // 4. Verify cards and images appear
-    const cardLocator = page.locator("[data-place-card], .masonry-card, article");
+    const cardLocator = page.locator(
+      "[data-place-card], .masonry-card, article",
+    );
     await expect(cardLocator.first()).toBeVisible({ timeout: 15_000 });
 
     const images = page.locator("img[src*='/public-photo-media/']");
     await expect(images.first()).toBeVisible({ timeout: 15_000 });
 
-    const isFirstImageLoaded = await images.first().evaluate((img: HTMLImageElement) => {
-      return img.complete && img.naturalWidth > 0 && img.naturalHeight > 0;
-    });
+    const isFirstImageLoaded = await images
+      .first()
+      .evaluate((img: HTMLImageElement) => {
+        return img.complete && img.naturalWidth > 0 && img.naturalHeight > 0;
+      });
     expect(isFirstImageLoaded).toBe(true);
 
-    // 5. Verify deterministic Da Nang place names exist
-    const bodyContent = await page.textContent("body");
-    expect(bodyContent).toContain("Trình Cà Phê");
+    // 5. Verify the deterministic Da Nang dataset is reachable through the UI.
+    //    Asserting it on /discover would be order-dependent: that page shows
+    //    only the 8 most recent places, and other specs create places as they
+    //    run. Search is the stable way to prove the dataset was imported.
+    await page.goto("/search?q=" + encodeURIComponent("Trình Cà Phê"));
+    await expect(
+      page.getByText("Trình Cà Phê · Phạm Như Xương").first(),
+    ).toBeVisible({ timeout: 15_000 });
   });
 });

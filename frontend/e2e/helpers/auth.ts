@@ -1,6 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import { type APIRequestContext, type Browser, type Page, expect } from "@playwright/test";
+import {
+  type APIRequestContext,
+  type Browser,
+  type Page,
+  expect,
+} from "@playwright/test";
 
 export interface E2ECredentials {
   user: { email: string; password: string };
@@ -9,7 +14,10 @@ export interface E2ECredentials {
 }
 
 export function getE2ECredentials(): E2ECredentials {
-  const credPath = path.resolve(process.cwd(), "../.local/e2e_credentials.json");
+  const credPath = path.resolve(
+    process.cwd(),
+    "../.local/e2e_credentials.json",
+  );
   if (fs.existsSync(credPath)) {
     try {
       const parsed = JSON.parse(fs.readFileSync(credPath, "utf-8"));
@@ -23,7 +31,9 @@ export function getE2ECredentials(): E2ECredentials {
           password: process.env.E2E_MODERATOR_PASSWORD || "",
         },
         staff_unprivileged: parsed.staff_unprivileged || {
-          email: process.env.E2E_STAFF_UNPRIVILEGED_EMAIL || "e2e-staff-unpriv@rendez.test",
+          email:
+            process.env.E2E_STAFF_UNPRIVILEGED_EMAIL ||
+            "e2e-staff-unpriv@rendez.test",
           password: process.env.E2E_STAFF_UNPRIVILEGED_PASSWORD || "",
         },
       };
@@ -42,19 +52,21 @@ export function getE2ECredentials(): E2ECredentials {
       password: process.env.E2E_MODERATOR_PASSWORD || "",
     },
     staff_unprivileged: {
-      email: process.env.E2E_STAFF_UNPRIVILEGED_EMAIL || "e2e-staff-unpriv@rendez.test",
+      email:
+        process.env.E2E_STAFF_UNPRIVILEGED_EMAIL ||
+        "e2e-staff-unpriv@rendez.test",
       password: process.env.E2E_STAFF_UNPRIVILEGED_PASSWORD || "",
     },
   };
 }
 
-const cookieCache: Record<string, any[]> = {};
+const cookieCache: Record<string, { name: string; value: string }[]> = {};
 const csrfCache: Record<string, string> = {};
 
 export async function loginViaApi(
   target: Page | APIRequestContext,
   role: keyof E2ECredentials = "user",
-  options?: { forceFresh?: boolean }
+  options?: { forceFresh?: boolean },
 ) {
   const isPage = "context" in target;
   const creds = getE2ECredentials()[role];
@@ -90,7 +102,7 @@ export async function loginViaApi(
 
 export async function getOrCreateStorageState(
   browser: Browser,
-  role: keyof E2ECredentials = "user"
+  role: keyof E2ECredentials = "user",
 ): Promise<string> {
   const authDir = path.resolve(process.cwd(), ".auth");
   fs.mkdirSync(authDir, { recursive: true });
@@ -103,4 +115,3 @@ export async function getOrCreateStorageState(
 
   return statePath;
 }
-

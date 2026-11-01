@@ -1,7 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-// Synthetic, intercepted responses exercise pagination without changing the DB.
-test("photo feed appends, retries and resets on category change", async ({
+/**
+ * Search pagination, failure recovery and filter round-trip.
+ *
+ * Synthetic, intercepted responses exercise the states without touching the DB.
+ * The page is place-first: results are `.place-card` elements, the query string
+ * is the single source of truth, and paging lives in `?page=`.
+ */
+test("search appends pages, recovers from failure and keeps filters in the URL", async ({
   page,
 }) => {
   await page.route("**/api/v1/auth/me/", (route) =>
@@ -20,89 +26,94 @@ test("photo feed appends, retries and resets on category change", async ({
   await page.route("**/api/v1/attributes/", (route) =>
     route.fulfill({ json: [] }),
   );
+
   let failNextPage = true;
-  const item = (index: number) => ({
-    photo: {
-      id: `photo-${index}`,
-      url: `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="${index % 2 ? 450 : 200}"><rect width="100%" height="100%" fill="#e1e6dc"/></svg>`)}`,
-      width: 300,
-      height: index % 2 ? 450 : 200,
-      alt_text: `Ảnh kiểm thử ${index}`,
-      attributes: [],
-      matched_attribute_codes: [],
-    },
-    place: {
-      id: `place-${index}`,
-      name: `Quán kiểm thử ${index}`,
-      address: "Dữ liệu kiểm thử",
-      category: { slug: "cafe", name: "Cà phê" },
-      latitude: 16.067,
-      longitude: 108.22,
-      is_saved: false,
-    },
+  const place = (index: number) => ({
+    id: `30000000-0000-0000-0000-00000000000${index}`,
+    name: `Quán kiểm thử ${index}`,
+    category: { slug: "cafe", name: "Cà phê" },
+    address: "Dữ liệu kiểm thử, Đà Nẵng",
+    latitude: 16.067,
+    longitude: 108.22,
+    cover_image_url: null,
+    cover_media_url: null,
+    cover_photo_id: null,
+    is_saved: false,
+    supporting_photo: null,
   });
-  await page.route("**/api/v1/feed/?*", (route) => {
+
+  // Playwright globs treat `?` as a single-character wildcard, and the request
+  // URL has no query string on the first page, so match the path broadly.
+  await page.route("**/api/v1/places/**", (route) => {
     const query = new URL(route.request().url()).searchParams;
-    if (query.get("page") === "2" && failNextPage)
+    if (query.get("page") === "2" && failNextPage) {
       return route.fulfill({
         status: 503,
         json: { message: "Ảnh tiếp theo chưa tải được." },
       });
+    }
     const first = query.get("page") !== "2";
     return route.fulfill({
       json: {
         count: 8,
-        next: first ? "/api/v1/feed/?page=2" : null,
-        previous: null,
-        results: Array.from({ length: 4 }, (_, n) => item(n + (first ? 0 : 4))),
+        next: first ? "/api/v1/places/?page=2" : null,
+        previous: first ? null : "/api/v1/places/",
+        results: Array.from({ length: 4 }, (_, n) =>
+          place(n + (first ? 1 : 5)),
+        ),
       },
     });
   });
+
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/discover");
-  await expect(page.locator(".photo-card")).toHaveCount(4);
-  await expect
-    .poll(() =>
-      page
-        .locator(".photo-card")
-        .evaluateAll((cards) =>
-          cards.every((card) => card.style.gridRowEnd.startsWith("span")),
-        ),
-    )
-    .toBe(true);
-  await page.getByRole("button", { name: "Xem thêm ảnh" }).click();
-  // 1 & 2. Verify sanitized generic error message is displayed
-  await expect(
-    page.getByText("Máy chủ hiện không phản hồi. Vui lòng thử lại sau."),
-  ).toBeVisible({
-    timeout: 15_000,
-  });
-  // 3. Raw 503 server error payload must NOT be exposed to the user
-  await expect(page.getByText("Ảnh tiếp theo chưa tải được.")).toHaveCount(0);
-  // 4. Failed request does not leave UI stuck in loading state
-  await expect(
-    page.getByRole("button", { name: "Xem thêm ảnh" }),
-  ).toBeEnabled();
-  await expect(page.locator(".photo-card")).toHaveCount(4);
+  await page.goto("/search");
 
-  // 5. Retry action triggers subsequent successful request
-  failNextPage = false;
-  await page.getByRole("button", { name: "Xem thêm ảnh" }).click();
+  // 1. First page renders four place cards, and paging is offered.
+  await expect(page.locator(".place-card")).toHaveCount(4);
+  const nextPage = page.getByRole("button", { name: "Trang sau" });
+  await expect(nextPage).toBeEnabled();
 
-  // 6. Feed recovers and displays expected content after retry
-  await expect(page.locator(".photo-card")).toHaveCount(8);
-  await expect(page.getByRole("button", { name: "Xem thêm ảnh" })).toHaveCount(
-    0,
+  // 2. A failing page 2 shows the sanitized message, not the raw payload.
+  await nextPage.click();
+  await expect(page).toHaveURL(/page=2/);
+  await expect(page.getByRole("alert")).toContainText(
+    "Máy chủ hiện không phản hồi",
+    { timeout: 15_000 },
   );
+  await expect(page.getByText("Ảnh tiếp theo chưa tải được.")).toHaveCount(0);
+  // A failed page must not be described as "no results".
+  await expect(page.getByRole("alert")).not.toContainText(
+    "Không có địa điểm khớp bộ lọc",
+  );
+
+  // 3. Retrying succeeds and renders page 2.
+  failNextPage = false;
+  await page.getByRole("button", { name: "Thử lại" }).click();
+  await expect(page.locator(".place-card").first()).toContainText(
+    "Quán kiểm thử 5",
+    { timeout: 15_000 },
+  );
+
+  // 4. Going back to page 1 removes the page parameter.
+  await page.getByRole("button", { name: "Trang trước" }).click();
+  await expect(page).not.toHaveURL(/page=/);
+  await expect(page.locator(".place-card").first()).toContainText(
+    "Quán kiểm thử 1",
+  );
+
+  // 5. Choosing a category resets paging and is reflected in the URL.
   await page.getByRole("button", { name: "Cà phê", exact: true }).click();
   await expect(page).toHaveURL(/category=cafe/);
-  await expect(page.locator(".photo-card")).toHaveCount(4);
-  await page.locator(".global-search input").fill("góc quán");
-  await page.getByRole("button", { name: "Tìm kiếm", exact: true }).click();
-  await expect(page).toHaveURL(/category=cafe.*q=/);
+  await expect(page).not.toHaveURL(/page=/);
+
+  // 6. Typing debounces into the URL, and the map link carries both filters.
   await page
-    .getByRole("link", { name: "Bản đồ", exact: true })
-    .click();
+    .getByPlaceholder(
+      "Tìm kiếm địa điểm, quán cà phê, không gian đẹp tại Đà Nẵng...",
+    )
+    .fill("góc quán");
+  await expect(page).toHaveURL(/q=g%C3%B3c\+qu%C3%A1n/);
+  await page.getByRole("link", { name: /trên bản đồ/ }).click();
   await expect(page).toHaveURL(/\/map\?/);
   const mapQuery = new URL(page.url()).searchParams;
   expect(mapQuery.get("category")).toBe("cafe");

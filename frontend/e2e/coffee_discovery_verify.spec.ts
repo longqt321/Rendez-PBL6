@@ -1,29 +1,87 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginViaApi } from "./helpers/auth";
 
-test.describe("Khám phá Quán Cà phê Bách Khoa Đà Nẵng & Kiểm thử Toàn vẹn Hình ảnh", () => {
+/**
+ * Image integrity and place → photo → comment journey.
+ *
+ * The hardened E2E environment seeds `seed_visual_demo`, not `data/danang.json`,
+ * so this spec must not assume any particular real-world place name. It derives
+ * its target from the API the page itself consumes, then drives the UI. That
+ * keeps the intent (every rendered image decodes, a place leads to its photos,
+ * and a comment round-trips) without coupling the test to a dataset the E2E
+ * database deliberately does not load.
+ */
+
+type PlacePage = {
+  results: {
+    id: string;
+    name: string;
+    address: string;
+    cover_photo_id: string | null;
+  }[];
+};
+
+type PhotoPage = {
+  results: { id: string; url: string; place_id: string }[];
+};
+
+/** First place in the catalogue that actually has a gallery photo. */
+async function findPlaceWithPhoto(
+  page: Page,
+): Promise<{ id: string; name: string; address: string; photoId: string }> {
+  const placesResp = await page.request.get("/api/v1/places/?page_size=50");
+  expect(placesResp.status()).toBe(200);
+  const places = (await placesResp.json()) as PlacePage;
+
+  for (const place of places.results) {
+    const photosResp = await page.request.get(
+      `/api/v1/places/${place.id}/photos/`,
+    );
+    if (photosResp.status() !== 200) continue;
+    const photos = (await photosResp.json()) as PhotoPage;
+    if (photos.results.length === 0) continue;
+    return {
+      id: place.id,
+      name: place.name,
+      address: place.address,
+      photoId: photos.results[0].id,
+    };
+  }
+  throw new Error("Không có địa điểm nào kèm ảnh trong môi trường E2E.");
+}
+
+test.describe("Toàn vẹn hình ảnh và hành trình địa điểm → ảnh → bình luận", () => {
   test.beforeEach(async ({ page }) => {
     await loginViaApi(page, "user");
   });
 
-  test("Kiểm tra toàn bộ hình ảnh và địa điểm khớp nhau, không bị lỗi truy cập", async ({
+  test("Mọi ảnh trên trang khám phá đều tải được và mỗi thẻ địa điểm dẫn tới một địa điểm", async ({
     page,
   }) => {
-    // Navigate to discover feed
     await page.goto("/discover");
     await page.waitForLoadState("networkidle");
 
     // Skeletons should be gone
     await expect(page.locator(".skeletons")).toHaveCount(0);
 
-    // Verify coffee place cards are rendered
-    const placeCards = page.locator(
-      "[data-place-card], .masonry-card, article",
-    );
-    const count = await placeCards.count();
-    expect(count).toBeGreaterThan(0);
+    // Place cards render, and each one is a real place-first card.
+    const cards = page.locator(".place-card");
+    const cardCount = await cards.count();
+    expect(cardCount).toBeGreaterThan(0);
 
-    // Verify all images on page load with valid status and naturalWidth > 0
+    for (let i = 0; i < Math.min(cardCount, 8); i++) {
+      const card = cards.nth(i);
+      const title = (
+        await card.locator(".place-card__title").innerText()
+      ).trim();
+      expect(title.length).toBeGreaterThan(0);
+      const href = await card
+        .locator(".place-card__title a")
+        .getAttribute("href");
+      expect(href).toMatch(/^\/places\/[0-9a-f-]+$/);
+    }
+
+    // Every rendered photo decodes and is served with an image content type.
     const images = page.locator("img[src*='/public-photo-media/']");
     const imgCount = await images.count();
     expect(imgCount).toBeGreaterThan(0);
@@ -32,93 +90,78 @@ test.describe("Khám phá Quán Cà phê Bách Khoa Đà Nẵng & Kiểm thử T
       const img = images.nth(i);
       await expect(img).toBeVisible();
 
-      // Check image is actually decoded and has physical dimensions
       const isLoaded = await img.evaluate((el: HTMLImageElement) => {
         return el.complete && el.naturalWidth > 0 && el.naturalHeight > 0;
       });
       expect(isLoaded).toBe(true);
 
-      // Verify the image URL returns HTTP 200 via direct fetch
       const src = await img.getAttribute("src");
       expect(src).toBeTruthy();
       const imgResp = await page.request.get(src!);
       expect(imgResp.status()).toBe(200);
-      expect(imgResp.headers()["content-type"]).toContain("image/jpeg");
+      expect(imgResp.headers()["content-type"]).toContain("image/");
     }
-
-    // Verify coffee place names appear in the document
-    const pageContent = await page.textContent("body");
-    expect(pageContent).toContain("Trình Cà Phê");
-    expect(pageContent).toContain("Phạm Như Xương");
-    expect(pageContent).toContain("Ikigai Garden");
   });
 
-  test("Kiểm tra mở trang chi tiết ảnh, hiển thị đúng thông tin quán và tương tác bình luận", async ({
+  test("Mở địa điểm, đi tiếp sang ảnh, thấy đúng tên quán và gửi được bình luận", async ({
     page,
   }) => {
-    await page.goto("/discover");
+    // 1. Pick a target from the same API the UI reads.
+    const target = await findPlaceWithPhoto(page);
+
+    // 2. Open the place page and confirm the heading is the place itself.
+    await page.goto(`/places/${target.id}`);
     await page.waitForLoadState("networkidle");
+    const placeTitle = page.locator("h1.place-detail__title");
+    await expect(placeTitle).toBeVisible({ timeout: 15000 });
+    await expect(placeTitle).toHaveText(target.name);
+    await expect(page.locator("body")).toContainText(target.address);
 
-    // 1. Deterministic selection: locate the card for Trình Cà Phê
-    const targetCard = page
-      .locator(".place-card, article")
-      .filter({ hasText: "Trình Cà Phê" })
-      .first();
-    await expect(targetCard).toBeVisible({ timeout: 10000 });
-    const expectedPlaceName = (await targetCard.locator("h2").innerText()).trim();
-
-    // 2. Read its associated photo link and navigate to Photo Detail
-    const photoLink = targetCard.locator("a[href^='/photos/']").first();
+    // 3. Follow a gallery photo into Photo Detail.
+    const photoLink = page.locator('a[href^="/photos/"]').first();
+    await expect(photoLink).toBeVisible({ timeout: 15000 });
     const href = await photoLink.getAttribute("href");
     expect(href).toBeTruthy();
 
     await page.goto(href!);
     await page.waitForLoadState("networkidle");
 
-    // 3. Verify Photo Detail references the exact same Place name and address
-    await expect(page.locator(".skeletons")).toHaveCount(0, { timeout: 10000 });
-    const viewerPlaceTitle = page.locator(".photo-place-link h1");
-    await expect(viewerPlaceTitle).toBeVisible({ timeout: 10000 });
-    await expect(viewerPlaceTitle).toHaveText(expectedPlaceName);
-    await expect(page.locator("body")).toContainText("Phạm Như Xương");
+    // 4. Photo Detail must name the same place.
+    const viewerPlaceLink = page.locator(".experience-detail__place");
+    await expect(viewerPlaceLink).toBeVisible({ timeout: 15000 });
+    await expect(viewerPlaceLink).toHaveText(target.name);
 
-    // Verify viewer image is visible
+    // The hero image is visible and actually decoded.
     const img = page.locator("img[src*='/public-photo-media/']").first();
-    await expect(img).toBeVisible({ timeout: 10000 });
+    await expect(img).toBeVisible({ timeout: 15000 });
+    const decoded = await img.evaluate(
+      (el: HTMLImageElement) => el.complete && el.naturalWidth > 0,
+    );
+    expect(decoded).toBe(true);
 
-    // Test like button
+    // 5. Like toggles and is reversible.
     const likeButton = page
-      .locator("button:has-text('Thích'), button:has-text('Đã thích')")
+      .getByRole("button", { name: /^Thích ảnh$/ })
       .first();
-    if (await likeButton.isVisible()) {
-      await likeButton.click();
-      await page.waitForTimeout(500);
-    }
+    await expect(likeButton).toBeVisible({ timeout: 15000 });
+    await likeButton.click();
+    const unlike = page.getByRole("button", { name: /^Bỏ thích ảnh$/ }).first();
+    await expect(unlike).toBeVisible({ timeout: 10000 });
+    await unlike.click();
+    await expect(likeButton).toBeVisible({ timeout: 10000 });
 
-    // Test adding a comment
+    // 6. A comment round-trips through the API and appears in the panel.
+    const text = `Kiểm chứng tự động ${Date.now()}: không gian yên tĩnh, hợp học bài.`;
     const commentInput = page
-      .locator(
-        "input[placeholder*='bình luận'], textarea[placeholder*='bình luận']",
-      )
+      .locator("textarea[placeholder*='cảm nhận']")
       .first();
-    if (await commentInput.isVisible()) {
-      await commentInput.fill(
-        "Quán cà phê bơ ngon tuyệt, không gian rất hợp học bài!",
-      );
-      const sendBtn = page
-        .locator("button:has-text('Gửi'), button[type='submit']")
-        .first();
-      await sendBtn.click();
-      await page.waitForTimeout(1000);
-
-      // Expect comment to appear
-      await expect(page.locator("body")).toContainText(
-        "Quán cà phê bơ ngon tuyệt, không gian rất hợp học bài!",
-      );
-    }
+    await expect(commentInput).toBeVisible({ timeout: 15000 });
+    await commentInput.fill(text);
+    await page.getByRole("button", { name: "Gửi" }).first().click();
+    await expect(page.locator("body")).toContainText(text, { timeout: 15000 });
   });
 
-  test("Kiểm tra trang bản đồ tương tác hiển thị đúng khu vực Bách Khoa", async ({
+  test("Trang bản đồ tương tác hiển thị đúng khu vực Bách Khoa", async ({
     page,
   }) => {
     await page.goto("/map");
@@ -128,7 +171,7 @@ test.describe("Khám phá Quán Cà phê Bách Khoa Đà Nẵng & Kiểm thử T
     const mapContainer = page
       .locator(".maplibregl-map, [data-testid='map-container']")
       .first();
-    await expect(mapContainer).toBeVisible({ timeout: 10000 });
+    await expect(mapContainer).toBeVisible({ timeout: 15000 });
 
     // Verify place chips or markers exist
     const bodyText = await page.textContent("body");
