@@ -99,15 +99,13 @@ def test_place_gist_index_declared():
 
 
 def test_database_config_explicit_postgres_failure(monkeypatch):
+    import sys
+
     monkeypatch.setenv("DJANGO_DB_ENGINE", "postgresql")
-    # Simulate missing psycopg
-    monkeypatch.setattr("sys.modules", {**sys_modules_without_psycopg()})
+    # Setting sys.modules["psycopg"] = None makes `import psycopg` raise
+    # ImportError (Python treats a None entry as "module not importable"),
+    # simulating a missing driver without deleting real package files.
+    monkeypatch.setitem(sys.modules, "psycopg", None)
 
     with pytest.raises(ImproperlyConfigured, match="PostgreSQL driver"):
         _get_database_config()
-
-
-def sys_modules_without_psycopg():
-    import sys
-
-    return {k: v for k, v in sys.modules.items() if not k.startswith("psycopg")}

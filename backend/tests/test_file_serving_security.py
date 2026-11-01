@@ -4,6 +4,8 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from apps.photos.models import PhotoSubmission, PlacePhoto
 from apps.photos.services import submit
+from apps.posts.models import Post, PostMedia
+from apps.places.models import Place
 from .conftest import photo
 
 
@@ -21,6 +23,62 @@ def create_submission_and_photo(owner, place, key="file-serving-test"):
     asset = submission.assets.get()
     place_photo = PlacePhoto.objects.get(asset=asset)
     return submission, asset, place_photo
+
+
+def create_published_post_media(owner, place, key="post-media-serving-test"):
+    """Submit through the post-centric sync and return the published PostMedia."""
+    submission, asset, place_photo = create_submission_and_photo(owner, place, key)
+    post = Post.objects.get(legacy_submission_id=submission.id)
+    media_row = PostMedia.objects.get(post=post)
+    return submission, asset, media_row
+
+
+@pytest.mark.django_db
+def test_public_post_media_headers_and_caching(owner, place):
+    _, asset, media_row = create_published_post_media(owner, place, key="post-media-headers")
+    client = APIClient()
+
+    response = client.get(f"/public-post-media/{media_row.id}/")
+    assert response.status_code == 200
+    assert response["Content-Type"] == "image/jpeg"
+    assert "public" in response["Cache-Control"]
+    assert "max-age=86400" in response["Cache-Control"]
+    assert response["X-Content-Type-Options"] == "nosniff"
+    assert response["ETag"] == f'"{asset.sha256}"'
+
+    etag = response["ETag"]
+    cached_resp = client.get(f"/public-post-media/{media_row.id}/", HTTP_IF_NONE_MATCH=etag)
+    assert cached_resp.status_code == 304
+
+
+@pytest.mark.django_db
+def test_unpublished_post_media_is_not_served(owner, place):
+    _, _, media_row = create_published_post_media(owner, place, key="post-media-pending")
+    client = APIClient()
+
+    media_row.status = PostMedia.Status.PENDING
+    media_row.save(update_fields=["status"])
+    assert client.get(f"/public-post-media/{media_row.id}/").status_code == 404
+
+
+@pytest.mark.django_db
+def test_media_of_withdrawn_post_is_not_served(owner, place):
+    _, _, media_row = create_published_post_media(owner, place, key="post-media-withdrawn")
+    client = APIClient()
+
+    media_row.post.status = Post.Status.WITHDRAWN
+    media_row.post.save(update_fields=["status"])
+    assert client.get(f"/public-post-media/{media_row.id}/").status_code == 404
+
+
+@pytest.mark.django_db
+def test_media_of_hidden_place_post_is_not_served(owner, place):
+    _, _, media_row = create_published_post_media(owner, place, key="post-media-hidden-place")
+    client = APIClient()
+
+    place.status = Place.Status.HIDDEN
+    place.save(update_fields=["status"])
+    assert client.get(f"/public-post-media/{media_row.id}/").status_code == 404
 
 
 @pytest.mark.django_db

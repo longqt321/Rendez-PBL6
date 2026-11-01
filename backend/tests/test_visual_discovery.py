@@ -1,9 +1,13 @@
 import io
 import json
+import uuid
+
 import pytest
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 from PIL import Image
 from apps.photos.models import (
     ContentReport,
@@ -12,6 +16,7 @@ from apps.photos.models import (
     PlacePhoto,
     VisualAttribute,
 )
+from apps.posts.models import Post, PostMedia
 from apps.photos.services import (
     change_publication,
     set_tags,
@@ -245,3 +250,72 @@ def test_errors_have_request_id(client):
     assert response.status_code == 400
     assert len(response.json()["request_id"]) == 32
     assert response.headers["X-Request-ID"] == response.json()["request_id"]
+
+
+def _published_post_media(place, owner, caption="Bài kiểm thử"):
+    """Create an approved submission + published Post/PostMedia chain."""
+    submission = PhotoSubmission.objects.create(
+        submitted_by=owner,
+        place=place,
+        caption=caption,
+        consent_version="photo-rights-v2",
+        consent_at=timezone.now(),
+        idempotency_key=uuid.uuid4().hex,
+        payload_hash="x" * 64,
+        status="approved",
+        published_by=owner,
+        published_at=timezone.now(),
+    )
+    asset = PhotoAsset(
+        submission=submission,
+        sha256=uuid.uuid4().hex * 2,
+        file_size=1,
+        width=1,
+        height=1,
+        sort_order=0,
+    )
+    asset.original.save("o.jpg", ContentFile(b"x"), save=False)
+    asset.derivative.save("d.jpg", ContentFile(b"x"), save=False)
+    asset.save()
+    post = Post.objects.create(
+        author=owner,
+        place=place,
+        caption=caption,
+        status="published",
+        published_at=timezone.now(),
+    )
+    media = PostMedia.objects.create(
+        post=post,
+        media_asset=asset,
+        position=0,
+        status="published",
+        published_at=timezone.now(),
+    )
+    return post, media
+
+
+def test_place_detail_aggregates_posts_and_postmedia_cover(client, owner, place):
+    post, media = _published_post_media(place, owner)
+    place.cover_media = media
+    place.save(update_fields=["cover_media"])
+    response = client.get(f"/api/v1/places/{place.id}/")
+    assert response.status_code == 200
+    body = response.json()
+    assert [p["id"] for p in body["posts"]] == [str(post.id)]
+    assert body["posts"][0]["caption"] == post.caption
+    assert body["cover_media_url"] == f"/public-post-media/{media.id}/"
+
+
+def test_place_detail_hides_hidden_posts_and_withdrawn_cover(client, owner, place):
+    _published_post_media(place, owner)
+    Post.objects.create(author=owner, place=place, caption="ẩn", status="hidden")
+    _, media = PostMedia.objects.first(), PostMedia.objects.get()
+    place.cover_media = media
+    place.save(update_fields=["cover_media"])
+    media.status = "withdrawn"
+    media.withdrawn_at = timezone.now()
+    media.save(update_fields=["status", "withdrawn_at"])
+    body = client.get(f"/api/v1/places/{place.id}/").json()
+    assert body["posts"] == []
+    assert body["cover_media_url"] is None
+    assert body["cover_image_url"] is None

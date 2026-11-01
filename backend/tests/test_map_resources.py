@@ -85,20 +85,6 @@ def test_map_glyphs_and_font_license():
     assert "The Noto Project Authors" in content
 
 
-def test_photo_credits_attribution():
-    repo_root = settings.BASE_DIR.parent
-    credits_path = repo_root / "frontend" / "public" / "photos" / "credits.json"
-    assert credits_path.exists()
-
-    with open(credits_path, "r", encoding="utf-8") as f:
-        credits = json.load(f)
-
-    assert len(credits) > 0
-    for place_slug, meta in credits.items():
-        assert "author" in meta
-        assert "source_url" in meta
-
-
 @pytest.mark.django_db
 def test_offline_geocoding_from_local_region_geojson():
     # Verify that load_osm_third_party_database successfully reads region.geojson

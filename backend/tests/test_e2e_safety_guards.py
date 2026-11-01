@@ -6,7 +6,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from e2e_manager import (
+from e2e_manager import (  # noqa: E402 -- import must follow sys.path setup above
     SafetyViolationError,
     validate_safe_database_for_drop,
     validate_safe_media_path,
