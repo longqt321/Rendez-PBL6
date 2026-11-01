@@ -68,6 +68,13 @@ class Place(models.Model):
     published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    cover_media = models.ForeignKey(
+        "posts.PostMedia",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -123,7 +130,7 @@ class Place(models.Model):
                     self.latitude = geo["latitude"]
                     self.longitude = geo["longitude"]
             except Exception as exc:
-                logger.debug(
+                logger.warning(
                     "Automatic geocoding failed for place address '%s': %s", self.address, exc
                 )
         if not self.slug:

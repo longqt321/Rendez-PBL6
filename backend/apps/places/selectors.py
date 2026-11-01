@@ -6,6 +6,7 @@ from rest_framework import serializers
 from apps.favorites.models import Favorite
 from apps.photos.models import public_photos
 from apps.photos.selectors import matching_photos, photo_queryset
+from apps.posts.models import PostMedia
 from .models import Category, public_places
 
 
@@ -27,6 +28,15 @@ def visual_places(request, codes, filter_results=True):
         .annotate(
             visual_cover_id=Subquery(
                 photos.order_by("-is_cover", "-published_at", "id").values("id")[:1]
+            ),
+            # PostMedia cover chosen by the legacy-photo backfill; NULL when
+            # the media (or its post) is no longer published.
+            post_cover_id=Subquery(
+                PostMedia.objects.filter(
+                    pk=OuterRef("cover_media_id"),
+                    status="published",
+                    post__status="published",
+                ).values("pk")[:1]
             ),
             visual_support_id=Subquery(supporting.values("id")[:1]),
             is_saved=Exists(Favorite.objects.filter(place_id=OuterRef("pk"), user=request.user))

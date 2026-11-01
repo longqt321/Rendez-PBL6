@@ -1,18 +1,21 @@
+import hashlib
 import http.client
 import json
 import logging
 import math
 import re
 import ssl
+import threading
 import urllib.parse
 from decimal import Decimal
-from pathlib import Path
 from django.conf import settings
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
 # Cache nạp dữ liệu đường phố từ cơ sở dữ liệu OpenStreetMap bên thứ ba (region.geojson)
 _OSM_STREET_DATABASE = None
+_OSM_STREET_DATABASE_LOCK = threading.Lock()
 
 
 def unaccent(text: str) -> str:
@@ -161,94 +164,59 @@ def query_photon_realtime(address: str) -> dict | None:
     return None
 
 
-def query_esri_realtime(address: str) -> dict | None:
-    """
-    Tra cứu thời gian thực từ Esri World Geocoding Service (nhà cung cấp GIS hàng đầu thế giới).
-    """
-    try:
-        query = address.strip()
-        if "da nang" not in unaccent(query):
-            query += ", Da Nang"
-
-        params = urllib.parse.urlencode(
-            {
-                "f": "json",
-                "singleLine": query,
-                "location": "108.153,16.068",
-                "distance": 50000,
-                "maxLocations": 1,
-            }
-        )
-        data = _safe_https_get_json(
-            "geocode.arcgis.com",
-            f"/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?{params}",
-        )
-        if isinstance(data, dict):
-            candidates = data.get("candidates", [])
-            if candidates:
-                cand = candidates[0]
-                loc = cand.get("location", {})
-                lat = Decimal(str(round(float(loc["y"]), 6)))
-                lng = Decimal(str(round(float(loc["x"]), 6)))
-                return {
-                    "latitude": lat,
-                    "longitude": lng,
-                    "display_name": cand.get("address", address),
-                    "provider": "Esri ArcGIS World Geocoding (Real-time)",
-                }
-    except Exception as e:
-        logger.debug("Esri lookup failed: %s", e)
-    return None
-
-
 def load_osm_third_party_database():
     """
     Nạp dữ liệu đường xá từ cơ sở dữ liệu OpenStreetMap (region.geojson - Nextzen/OSM dump).
     Tuyệt đối không sử dụng danh sách thủ công, toàn bộ được phân tích từ hình học OSM.
     """
     global _OSM_STREET_DATABASE
-    if _OSM_STREET_DATABASE is not None:
+    with _OSM_STREET_DATABASE_LOCK:
+        if _OSM_STREET_DATABASE is not None:
+            return _OSM_STREET_DATABASE
+
+        database = {}
+        geojson_path = settings.BASE_DIR.parent / "frontend" / "public" / "map" / "region.geojson"
+
+        if geojson_path.exists():
+            try:
+                with open(geojson_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                for feat in data.get("features", []):
+                    props = feat.get("properties", {})
+                    name = props.get("name")
+                    if name and props.get("kind") == "road":
+                        geom = feat.get("geometry", {})
+                        if geom.get("type") == "LineString":
+                            norm = normalize_street_name(name)
+                            coords = geom.get("coordinates", [])
+                            if len(coords) >= 2:
+                                if norm not in database or len(coords) > len(
+                                    database[norm]["coords"]
+                                ):
+                                    database[norm] = {
+                                        "raw_name": name,
+                                        "coords": coords,
+                                    }
+            except Exception as e:
+                logger.warning("Không thể đọc cơ sở dữ liệu OpenStreetMap region.geojson: %s", e)
+
+        _OSM_STREET_DATABASE = database
         return _OSM_STREET_DATABASE
-
-    database = {}
-    geojson_path = settings.BASE_DIR.parent / "frontend" / "public" / "map" / "region.geojson"
-    if not geojson_path.exists():
-        geojson_path = Path("/home/longtran/Projects/rendez-web/frontend/public/map/region.geojson")
-
-    if geojson_path.exists():
-        try:
-            with open(geojson_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            for feat in data.get("features", []):
-                props = feat.get("properties", {})
-                name = props.get("name")
-                if name and props.get("kind") == "road":
-                    geom = feat.get("geometry", {})
-                    if geom.get("type") == "LineString":
-                        norm = normalize_street_name(name)
-                        coords = geom.get("coordinates", [])
-                        if len(coords) >= 2:
-                            if norm not in database or len(coords) > len(database[norm]["coords"]):
-                                database[norm] = {
-                                    "raw_name": name,
-                                    "coords": coords,
-                                }
-        except Exception as e:
-            logger.warning(f"Không thể đọc cơ sở dữ liệu OpenStreetMap region.geojson: {e}")
-
-    _OSM_STREET_DATABASE = database
-    return _OSM_STREET_DATABASE
 
 
 def interpolate_along_osm_polyline(
     coords: list[list[float]], ratio: float
-) -> tuple[Decimal, Decimal]:
+) -> tuple[Decimal, Decimal] | None:
     """
     Thuật toán nội suy tuyến tính (Linear Referencing) dọc theo Polyline OpenStreetMap
     để tính toán vị trí số nhà chính xác dựa trên độ dài hình học của con đường.
+
+    Trả về ``None`` khi polyline không có đủ điểm để nội suy: tuyệt đối không
+    tự suy ra một tọa độ mặc định (ví dụ trung tâm Đà Nẵng) vì như vậy sẽ gán
+    sai vị trí cho địa chỉ mà người dùng nhập.
     """
     if not coords:
-        return Decimal("16.068000"), Decimal("108.153000")
+        return None
     if len(coords) == 1:
         return Decimal(str(round(coords[0][1], 6))), Decimal(str(round(coords[0][0], 6)))
 
@@ -311,7 +279,10 @@ def query_osm_local_database(address: str) -> dict | None:
                 best_street = street_data
 
     if best_street:
-        lat, lng = interpolate_along_osm_polyline(best_street["coords"], ratio)
+        interpolated = interpolate_along_osm_polyline(best_street["coords"], ratio)
+        if interpolated is None:
+            return None
+        lat, lng = interpolated
         house_desc = f" (gần số {house_num})" if house_num else ""
         return {
             "latitude": lat,
@@ -326,10 +297,13 @@ def query_osm_local_database(address: str) -> dict | None:
 def geocode_address(address: str) -> dict:
     """
     Hàm định vị địa chỉ thực tế (Geocoding):
-    - 100% sử dụng dữ liệu từ các bên thứ ba uy tín (OpenStreetMap, Photon/Komoot, Esri ArcGIS).
-    - Ưu tiên gọi API thời gian thực từ các nhà cung cấp uy tín.
+    - Sử dụng dữ liệu mở từ OpenStreetMap (Nominatim, Photon/Komoot).
+    - Ưu tiên gọi API thời gian thực, các nguồn tự động dự phòng cho nhau.
     - Tự động fallback sang cơ sở dữ liệu OpenStreetMap vector offline khi không có kết nối.
-    - Hoàn toàn tự động, người dùng chỉ cần gõ địa chỉ thực tế là có ngay kinh độ, vĩ độ.
+    - Kết quả thành công được cache 24 giờ, kết quả thất bại được cache 1 giờ
+      (negative caching) theo địa chỉ đã chuẩn hóa để giảm số lần gọi dịch vụ ngoài.
+    - Khi mọi nguồn thất bại, trả về success=False để caller tự quyết định;
+      không suy diễn tọa độ thay cho người dùng.
     """
     if not address or not address.strip():
         return {
@@ -338,56 +312,38 @@ def geocode_address(address: str) -> dict:
         }
 
     clean_addr = address.strip()
+    cache_key = f"geocode:v1:{hashlib.sha256(unaccent(clean_addr).encode()).hexdigest()}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
 
-    # 1. Thử OpenStreetMap Nominatim thời gian thực
-    res = query_nominatim_realtime(clean_addr)
-    if res:
-        return {
-            "success": True,
-            "latitude": res["latitude"],
-            "longitude": res["longitude"],
-            "display_name": res["display_name"],
-            "provider": res["provider"],
+    result = None
+    for lookup in (
+        query_nominatim_realtime,
+        query_photon_realtime,
+        query_osm_local_database,
+    ):
+        res = lookup(clean_addr)
+        if res:
+            result = {
+                "success": True,
+                "latitude": res["latitude"],
+                "longitude": res["longitude"],
+                "display_name": res["display_name"],
+                "provider": res["provider"],
+            }
+            break
+
+    if result is None:
+        failure = {
+            "success": False,
+            "message": "Không thể xác định vị trí từ địa chỉ đã cho.",
         }
+        # Negative caching: địa chỉ không tra cứu được cũng được ghi nhớ ngắn hạn
+        # để tránh việc người dùng (hoặc bot) gửi lặp đi lặp lại cùng một địa
+        # chỉ sai và mỗi lần lại gọi toàn bộ chuỗi dịch vụ ngoài.
+        cache.set(cache_key, failure, 60 * 60)
+        return failure
 
-    # 2. Thử Photon (OpenStreetMap real-time search engine by Komoot)
-    res = query_photon_realtime(clean_addr)
-    if res:
-        return {
-            "success": True,
-            "latitude": res["latitude"],
-            "longitude": res["longitude"],
-            "display_name": res["display_name"],
-            "provider": res["provider"],
-        }
-
-    # 3. Thử Esri ArcGIS World Geocoder thời gian thực
-    res = query_esri_realtime(clean_addr)
-    if res:
-        return {
-            "success": True,
-            "latitude": res["latitude"],
-            "longitude": res["longitude"],
-            "display_name": res["display_name"],
-            "provider": res["provider"],
-        }
-
-    # 4. Fallback thuật toán nội suy cơ sở dữ liệu OpenStreetMap (region.geojson của Nextzen/OSM)
-    res = query_osm_local_database(clean_addr)
-    if res:
-        return {
-            "success": True,
-            "latitude": res["latitude"],
-            "longitude": res["longitude"],
-            "display_name": res["display_name"],
-            "provider": res["provider"],
-        }
-
-    # 5. Fallback vị trí trung tâm thành phố Đà Nẵng theo OpenStreetMap
-    return {
-        "success": True,
-        "latitude": Decimal("16.068000"),
-        "longitude": Decimal("108.153000"),
-        "display_name": "Đà Nẵng, Việt Nam",
-        "provider": "OpenStreetMap City Center",
-    }
+    cache.set(cache_key, result, 60 * 60 * 24)
+    return result

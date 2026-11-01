@@ -2,6 +2,7 @@ import math
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, serializers
+from rest_framework.settings import api_settings
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,6 +16,8 @@ from apps.photos.serializers import (
     VisualMapSerializer,
     VisualPlaceSerializer,
 )
+from apps.posts.selectors import visible_posts
+from apps.posts.serializers import PostSerializer
 from config.api import Pagination
 from .geocoding import geocode_address
 from .models import Category, public_places
@@ -37,13 +40,7 @@ class CategoryList(generics.ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        from django.core.cache import cache
-
-        cached = cache.get("active_categories_list")
-        if cached is None:
-            cached = list(Category.objects.filter(is_active=True))
-            cache.set("active_categories_list", cached, timeout=300)
-        return cached
+        return Category.objects.filter(is_active=True).order_by("sort_order", "name")
 
 
 @extend_schema(parameters=FILTERS)
@@ -117,6 +114,13 @@ class VisualPlaceDetail(APIView):
                 "opening_hours": hours,
                 "photos": gallery,
                 "attribute_evidence": list(evidence.values()),
+                # Aggregated community posts for this place (first page,
+                # same visibility rules as the feed).
+                "posts": PostSerializer(
+                    visible_posts(request.user).filter(place_id=pk)[: api_settings.PAGE_SIZE],
+                    many=True,
+                    context={"request": request},
+                ).data,
             }
         )
 
@@ -171,10 +175,11 @@ class GeocodeResponseSerializer(serializers.Serializer):
 class GeocodeView(APIView):
     """
     Tự động giải mã và định vị địa chỉ thực tế (Geocoding) trả về tọa độ kinh độ, vĩ độ.
-    100% sử dụng cơ sở dữ liệu và API thời gian thực từ các bên thứ ba uy tín (OpenStreetMap, Photon, Esri).
+    Sử dụng cơ sở dữ liệu và API thời gian thực từ OpenStreetMap (Nominatim, Photon).
     """
 
     permission_classes = [AllowAny]
+    throttle_scope = "geocode"
 
     @extend_schema(
         parameters=[
