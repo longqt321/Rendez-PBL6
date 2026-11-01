@@ -456,7 +456,16 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from apps.photos.services import submit
 from apps.places.models import Place
 
-place = Place.objects.first()
+# Seed onto a real (non-demo) venue, deterministically. Pinning this to a
+# demo fixture adds a second published photo to that place, which duplicates
+# its Discover card and breaks strict-mode locators in the visual specs.
+place = (
+    Place.objects.filter(slug__startswith="danang-", is_demo=False)
+    .order_by("id")
+    .first()
+    or Place.objects.filter(is_demo=False).order_by("id").first()
+    or Place.objects.first()
+)
 if place and not PhotoSubmission.objects.filter(submitted_by=u_norm, idempotency_key="e2e-seed-sub-1").exists():
     buf = io.BytesIO()
     Image.new("RGB", (120, 120), (180, 120, 70)).save(buf, format="JPEG")
@@ -585,7 +594,6 @@ def setup_e2e_environment():
     save_dev_snapshot()
 
     ensure_e2e_database_and_roles()
-    safe_clean_e2e_media()
 
     print("Applying migrations on rendez_e2e (privileged setup)...")
     run_django_command("migrate", as_unprivileged_app=False)
@@ -637,6 +645,9 @@ def reset_e2e_environment():
     """Safely reset and rebuild E2E environment."""
     print(">>> Resetting Hardened E2E Environment...")
     safe_drop_e2e_database()
+    # Media clean must pair with the DB drop: wiping files while keeping rows
+    # would leave every seeded photo pointing at a missing derivative.
+    safe_clean_e2e_media()
     setup_e2e_environment()
     print(">>> Hardened E2E Environment Reset Completed.")
 

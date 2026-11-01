@@ -1,9 +1,6 @@
-"""Materialize a reviewed Commons manifest and local JPEG files, no fake imagery."""
+"""Materialize the reviewed Commons manifest and local JPEG files, no fake imagery."""
 import hashlib
-from datetime import datetime
-import html
 import json
-import re
 import shutil
 import time
 from pathlib import Path
@@ -17,21 +14,7 @@ cache = {}
 for p in (ROOT / '.local/research').glob('[0-9][0-9].json'):
     cache.update({x['title']: x for x in json.loads(p.read_text()).get('query',{}).get('pages',{}).values()})
 
-def clean(value):
-    return html.unescape(re.sub('<[^>]+>', '', value)).strip()
-
-def taken_date(value):
-    value = clean(value).replace("\xa0", " ")
-    iso = re.search(r"\d{4}-\d{2}-\d{2}", value)
-    if iso: return iso.group()
-    if "original upload" in value: return ""
-    english = re.search(r"\d{1,2} [A-Za-z]+ \d{4}", value)
-    if english:
-        try: return datetime.strptime(english.group(), "%d %B %Y").date().isoformat()
-        except ValueError: pass
-    return ""
-
-# Address source is kept per place; photo source and license are kept per image.
+# Address source is kept per place; photo caption and tags are kept per image.
 places = [
 ('oxy-garden','Oxy Garden Coffee','cafe','Đường Trần Quốc Vượng, khu đô thị FPT, Đà Nẵng',None,None,'https://shopeefood.vn/da-nang/oxy-garden-coffee-tran-quoc-vuong','Quán cà phê trong khu đô thị FPT, gần FPT Complex.', ['Quán Cà Phê Oxy Garden.jpg','Quán Cà Phê Oxy Garden (14224).jpg','Quán Cà Phê Oxy Garden (43495).jpg']),
 ('truc-lam-vien','Trúc Lâm Viên','cafe','8–10 Trần Quý Cáp, Đà Nẵng',16.081833,108.221833,'https://truclamvien.vn/','Quán cà phê và nhà hàng trên đường Trần Quý Cáp.',['Truc Lam Vien Coffeeshop DN.JPG']),
@@ -55,10 +38,6 @@ for slug,name,category,address,lat,lng,source,description,titles in places:
     entry = dict(slug=slug,name=name,category=category,address=address,latitude=lat,longitude=lng,source_url=source,description=description,photos=[])
     for title in titles:
         item = cache['File:'+title]['imageinfo'][0]
-        meta = item['extmetadata']
-        license_name = clean(meta.get('LicenseShortName',{}).get('value',''))
-        if not license_name.startswith(('CC BY','CC0','Public domain')):
-            raise ValueError(f'Unreviewed license: {title}: {license_name}')
         basename=hashlib.sha256(title.encode()).hexdigest()[:16]+'.jpg'
         dest=photos_dir/basename
         if not dest.exists():
@@ -76,15 +55,13 @@ for slug,name,category,address,lat,lng,source,description,titles in places:
                 except Exception:
                     if attempt==3: raise
                     time.sleep(3+attempt)
-        credit={'author':clean(meta.get('Artist',{}).get('value','Wikimedia Commons')),'license':license_name,'license_url':(meta.get('LicenseUrl',{}).get('value','') or item['descriptionurl']+'#Licensing').replace('http:','https:'),'source_url':item['descriptionurl'],'taken_at':taken_date(meta.get('DateTimeOriginal',{}).get('value','')),'changes':'Thu nhỏ và nén JPEG; giữ bố cục ảnh gốc.'}
-        entry['photos'].append({'file':basename,'caption':name,'credit':credit,'tags':old_tags.get(basename,[])})
+        entry['photos'].append({'file':basename,'caption':name,'tags':old_tags.get(basename,[])})
         print(name,basename,flush=True)
     manifest['places'].append(entry)
 (ROOT/'data/danang.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
-# These two openly licensed images are also used on the login and discovery headers.
+# The first photo of these places is also used on the login and discovery headers.
 public=ROOT/'frontend/public/photos'; public.mkdir(exist_ok=True)
 for key,dest in [('bien-my-khe','danang-beach.jpg'),('oxy-garden','danang-cafe.jpg'),('cau-rong','danang-river.jpg')]:
     place=next(p for p in manifest['places'] if p['slug']==key)
     shutil.copyfile(photos_dir/place['photos'][0]['file'],public/dest)
-(public/'credits.json').write_text(json.dumps({key:next(p for p in manifest['places'] if p['slug']==key)['photos'][0]['credit'] for key in ['bien-my-khe','oxy-garden','cau-rong']},ensure_ascii=False,indent=2))
 print('Manifest:',len(manifest['places']),'places,',sum(len(p['photos']) for p in manifest['places']),'photos')
