@@ -1,0 +1,322 @@
+/*
+ * Discover — the editorial home.
+ *
+ * Deliberately not a masonry feed. The page is a publication: a masthead, a
+ * set of entry points, then curated rows. Density is lower than a social feed
+ * because the goal is orientation, not endless scroll.
+ */
+
+.discover {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+/* ------------------------------------------------------------------ Hero */
+
+.discover-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 760px;
+  padding-top: var(--space-6);
+}
+
+.discover-hero__title {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-size: clamp(2.25rem, 4.6vw, 3.75rem);
+  font-weight: 400;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.discover-hero__lede {
+  max-width: 56ch;
+  font-size: clamp(0.9375rem, 1.15vw, 1.0625rem);
+  line-height: 1.65;
+}
+
+.discover-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+/* --------------------------------------------------------- Prompt strip */
+
+.prompt-strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.prompt-strip__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prompt-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  height: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.prompt-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  transform: translateY(-1px);
+}
+
+.prompt-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+
+.prompt-card:hover .prompt-card__icon {
+  background: var(--color-surface);
+}
+
+.prompt-card__label {
+  font-size: var(--text-body);
+  font-weight: 650;
+  color: var(--color-foreground);
+}
+
+.prompt-card__hint {
+  font-size: var(--text-support);
+  color: var(--color-foreground-muted);
+}
+
+/* -------------------------------------------------------------- Sections */
+
+.discover-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.section-head__title {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-editorial);
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.section-head__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-bottom: 2px;
+  color: var(--color-primary);
+  font-size: var(--text-support);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.section-head__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ------------------------------------------------------------ Lead place */
+
+.discover-lead {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.discover-lead__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5) var(--space-4);
+}
+
+.feature-place {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.feature-place__media {
+  display: block;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface-muted);
+}
+
+.feature-place__media .media-frame {
+  border-radius: inherit;
+}
+
+.feature-place__media img {
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.feature-place:hover .feature-place__media img {
+  transform: scale(1.015);
+}
+
+.feature-place__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.feature-place__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.4vw, 2.125rem);
+  font-weight: 400;
+  line-height: 1.12;
+}
+
+.feature-place__title a:hover {
+  color: var(--color-primary);
+}
+
+.feature-place__address {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-foreground-muted);
+  font-size: var(--text-support);
+}
+
+/* -------------------------------------------------------- Category list */
+
+.category-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  font-size: var(--text-body);
+  font-weight: 600;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.category-link svg {
+  color: var(--color-foreground-subtle);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.category-link:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.category-link:hover svg {
+  color: var(--color-primary);
+  transform: translateX(2px);
+}
+
+/* ------------------------------------------------------------ Responsive */
+
+@media (max-width: 1100px) {
+  .discover-lead {
+    grid-template-columns: 1fr;
+  }
+
+  .discover-lead__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .discover-lead__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .discover {
+    gap: var(--space-12);
+  }
+
+  .discover-hero {
+    padding-top: 0;
+  }
+
+  .prompt-strip__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .prompt-card {
+    padding: var(--space-3);
+  }
+
+  .prompt-card__icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .prompt-card__label {
+    font-size: var(--text-support);
+  }
+
+  .prompt-card__hint {
+    font-size: var(--text-micro);
+  }
+
+  .discover-lead__grid {
+    gap: var(--space-4) var(--space-3);
+  }
+
+  .category-list {
+    grid-template-columns: 1fr;
+  }
+}

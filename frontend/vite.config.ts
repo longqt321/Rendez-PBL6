@@ -13,10 +13,27 @@ export default defineConfig({
         "/admin",
         "/static",
         "/public-photo-media",
+        "/public-post-media",
         "/private-photo-media",
         "/private-photo-original",
       ].map((path) => [path, backendTarget]),
     ),
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // Split stable vendor libs so the entry chunk stays small and the
+        // vendor chunk keeps its hash across app-only updates.
+        manualChunks: {
+          vendor: [
+            "react",
+            "react-dom",
+            "react-router",
+            "@tanstack/react-query",
+          ],
+        },
+      },
+    },
   },
   test: {
     environment: "jsdom",

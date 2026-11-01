@@ -1,0 +1,334 @@
+/*
+ * Cards — places and community experiences.
+ */
+
+/* ------------------------------------------------------------- Place card */
+
+.place-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.place-card__media {
+  display: block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-muted);
+}
+
+.place-card__media .media-frame {
+  border-radius: inherit;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.place-card:hover .place-card__media .media-frame {
+  transform: scale(1.02);
+}
+
+.place-card__save {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+}
+
+.place-card__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* Children of a flex-start column size to max-content; cap them so a long
+   place name or address truncates instead of widening the page. */
+.place-card__body > * {
+  max-width: 100%;
+}
+
+.place-card__title {
+  margin: 0;
+  font-size: var(--text-place);
+  font-weight: 650;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+.place-card__title a:hover {
+  color: var(--color-primary);
+}
+
+.place-card__meta,
+.place-row__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  /* The card body aligns children to flex-start, which makes them size to
+     max-content; without this cap a long address widens the whole page. */
+  max-width: 100%;
+  min-width: 0;
+  color: var(--color-foreground-muted);
+  font-size: var(--text-support);
+}
+
+.place-card__meta span,
+.place-row__meta span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* -------------------------------------------------------------- Place row */
+
+.place-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.place-row:hover {
+  background: var(--color-surface-muted);
+}
+
+.place-row__media {
+  display: block;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.place-row__media .media-frame {
+  border-radius: inherit;
+}
+
+.place-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.place-row__title {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: 650;
+}
+
+.place-row__title a:hover {
+  color: var(--color-primary);
+}
+
+/* -------------------------------------------------------- Experience card */
+
+.experience-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.experience-card__media {
+  display: block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-muted);
+}
+
+.experience-card__media .media-frame {
+  border-radius: inherit;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.experience-card:hover .experience-card__media .media-frame {
+  transform: scale(1.02);
+}
+
+.experience-card__save {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+}
+
+.experience-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.experience-card__place {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: 650;
+  line-height: var(--leading-snug);
+}
+
+.experience-card__place a:hover {
+  color: var(--color-primary);
+}
+
+.experience-card__caption {
+  color: var(--color-foreground-muted);
+  font-size: var(--text-support);
+  line-height: 1.5;
+}
+
+.experience-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.experience-card__tags .chip {
+  min-height: 24px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-micro);
+}
+
+.experience-card__address {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  color: var(--color-foreground-subtle);
+  font-size: var(--text-micro);
+}
+
+/* -------------------------------------------------------- Experience tile */
+
+.experience-tile {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-surface-muted);
+}
+
+.experience-tile .media-frame {
+  border-radius: inherit;
+}
+
+.experience-tile__hint {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: rgb(0 0 0 / 45%);
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.experience-tile:hover .experience-tile__hint,
+.experience-tile:focus-visible .experience-tile__hint {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------ Save toggle */
+
+.save-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--color-foreground);
+  box-shadow: var(--shadow-xs);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.save-toggle:hover:not(:disabled) {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.save-toggle.is-saved {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.save-toggle:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.save-control {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.save-control .btn.is-saved {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+/* ------------------------------------------------------------ Card grids */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: var(--space-6) var(--space-5);
+}
+
+.card-grid--wide {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.card-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, 1fr);
+  gap: var(--space-5);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+}
+
+.card-rail > * {
+  scroll-snap-align: start;
+}
+
+@media (max-width: 680px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+    gap: var(--space-5) var(--space-3);
+  }
+
+  .card-grid--wide {
+    grid-template-columns: 1fr;
+  }
+
+  .card-rail {
+    grid-auto-columns: minmax(160px, 1fr);
+    gap: var(--space-3);
+  }
+
+  .place-row {
+    grid-template-columns: 60px minmax(0, 1fr) auto;
+    gap: var(--space-3);
+  }
+}

@@ -267,6 +267,18 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * @description Route adapter for GET /api/v1/photos/<uuid:pk>/.
+         *
+         *     The legacy PlacePhoto surface stays the source of truth while both rows
+         *     coexist: whenever the legacy photo row still exists, the request is
+         *     delegated to the legacy PhotoDetail view so its semantics (payload shape,
+         *     visibility rules, 404 on withdrawn) are fully preserved. The post-centric
+         *     payload is only served for orphaned legacy IDs whose PlacePhoto row no
+         *     longer exists but which still map to a publicly visible Post — this keeps
+         *     pre-migration photo URLs resolvable. Authentication is required to match
+         *     the legacy security boundary.
+         */
         get: operations["photos_retrieve"];
         put?: never;
         post?: never;
@@ -420,6 +432,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/places/{id}/saved/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["places_saved_create"];
+        delete: operations["places_saved_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/places/geocode/": {
         parameters: {
             query?: never;
@@ -429,7 +457,7 @@ export interface paths {
         };
         /**
          * @description Tự động giải mã và định vị địa chỉ thực tế (Geocoding) trả về tọa độ kinh độ, vĩ độ.
-         *     100% sử dụng cơ sở dữ liệu và API thời gian thực từ các bên thứ ba uy tín (OpenStreetMap, Photon, Esri).
+         *     Sử dụng cơ sở dữ liệu và API thời gian thực từ OpenStreetMap (Nominatim, Photon).
          */
         get: operations["places_geocode_retrieve"];
         put?: never;
@@ -448,6 +476,141 @@ export interface paths {
             cookie?: never;
         };
         get: operations["places_map_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["posts_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["posts_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{id}/comments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["posts_comments_list"];
+        put?: never;
+        post: operations["posts_comments_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{id}/likes/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["posts_likes_create"];
+        delete: operations["posts_likes_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{id}/saved/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["posts_saved_create"];
+        delete: operations["posts_saved_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{id}/shares/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["posts_shares_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{id}/views/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["posts_views_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/saved/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description GET /api/v1/posts/saved/ — posts the current user has saved.
+         *
+         *     Visibility follows the same rules as the feed: a saved post whose content
+         *     has since been hidden/withdrawn stops appearing here instead of leaking it.
+         *     Ordered by most recently saved first.
+         */
+        get: operations["posts_saved_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -489,6 +652,19 @@ export interface components {
         Category: {
             slug: string;
             name: string;
+        };
+        Comment: {
+            readonly id: number;
+            /** Format: uuid */
+            post: string;
+            /** Format: uuid */
+            post_media?: string | null;
+            /** Format: uuid */
+            author: string;
+            readonly author_name: string;
+            body: string;
+            /** Format: date-time */
+            created_at: string;
         };
         CommentCreateRequest: {
             body: string;
@@ -562,6 +738,12 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /**
+         * @description * `ugc` - Người dùng
+         *     * `seed` - Dữ liệu import/seed
+         * @enum {string}
+         */
+        OriginEnum: "ugc" | "seed";
         PaginatedFeedItemList: {
             /** @example 123 */
             count: number;
@@ -591,6 +773,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["PhotoSubmission"][];
+        };
+        PaginatedPostList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Post"][];
         };
         PaginatedPublicPhotoList: {
             /** @example 123 */
@@ -708,6 +905,59 @@ export interface components {
             consent: boolean;
             consent_version: components["schemas"]["ConsentVersionEnum"];
         };
+        Post: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            author: string;
+            readonly author_name: string;
+            /** Format: uuid */
+            place?: string | null;
+            readonly place_name: string;
+            caption?: string;
+            status?: components["schemas"]["PostStatusEnum"];
+            origin?: components["schemas"]["OriginEnum"];
+            /** Format: date-time */
+            published_at?: string | null;
+            readonly like_count: number;
+            readonly comment_count: number;
+            /** Format: int64 */
+            share_count?: number;
+            /** Format: int64 */
+            view_count?: number;
+            readonly liked: boolean | null;
+            readonly saved: boolean | null;
+            readonly media: components["schemas"]["PostMedia"][];
+        };
+        PostCommentCreateRequest: {
+            body: string;
+            /** Format: uuid */
+            post_media?: string | null;
+        };
+        PostMedia: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly media_url: string;
+            position?: number;
+            alt_text?: string;
+            status?: components["schemas"]["PostMediaStatusEnum"];
+            /** Format: date-time */
+            published_at?: string | null;
+        };
+        /**
+         * @description * `pending_publication` - Chờ công khai
+         *     * `published` - Công khai
+         *     * `withdrawn` - Đã rút
+         * @enum {string}
+         */
+        PostMediaStatusEnum: "pending_publication" | "published" | "withdrawn";
+        /**
+         * @description * `published` - Công khai
+         *     * `hidden` - Ẩn
+         *     * `withdrawn` - Đã rút
+         * @enum {string}
+         */
+        PostStatusEnum: "published" | "hidden" | "withdrawn";
         Profile: {
             /** Format: uuid */
             readonly id: string;
@@ -779,6 +1029,7 @@ export interface components {
             /** Format: double */
             longitude: number | null;
             readonly cover_image_url: string | null;
+            readonly cover_media_url: string | null;
             /** Format: uuid */
             readonly cover_photo_id: string | null;
             readonly is_saved: boolean;
@@ -787,6 +1038,7 @@ export interface components {
             opening_hours: components["schemas"]["OpeningHours"] | null;
             photos: components["schemas"]["GalleryPage"];
             attribute_evidence: components["schemas"]["AttributeEvidence"][];
+            posts: components["schemas"]["Post"][];
             /** Format: uri */
             source_url: string;
             /** Format: date-time */
@@ -809,6 +1061,7 @@ export interface components {
             /** Format: double */
             longitude: number | null;
             readonly cover_image_url: string | null;
+            readonly cover_media_url: string | null;
             /** Format: uuid */
             readonly cover_photo_id: string | null;
             readonly is_saved: boolean;
@@ -1303,9 +1556,7 @@ export interface operations {
     };
     photos_retrieve: {
         parameters: {
-            query?: {
-                attributes?: string;
-            };
+            query?: never;
             header?: never;
             path: {
                 id: string;
@@ -1635,6 +1886,48 @@ export interface operations {
             };
         };
     };
+    places_saved_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    places_saved_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
     places_geocode_retrieve: {
         parameters: {
             query: {
@@ -1679,6 +1972,249 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VisualMap"];
+                };
+            };
+        };
+    };
+    posts_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPostList"];
+                };
+            };
+        };
+    };
+    posts_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Post"];
+                };
+            };
+        };
+    };
+    posts_comments_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Comment"][];
+                };
+            };
+        };
+    };
+    posts_comments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostCommentCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PostCommentCreateRequest"];
+                "multipart/form-data": components["schemas"]["PostCommentCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Comment"];
+                };
+            };
+        };
+    };
+    posts_likes_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    posts_likes_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    posts_saved_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    posts_saved_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    posts_shares_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    posts_views_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    posts_saved_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPostList"];
                 };
             };
         };

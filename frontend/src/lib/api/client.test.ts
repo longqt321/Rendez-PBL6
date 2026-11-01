@@ -91,4 +91,65 @@ describe("API contracts", () => {
     expect(eventFired).toBe(false);
     window.removeEventListener("rendez:session-expired", listener);
   });
+
+  it("replays a mutation once with a refreshed CSRF token after a 403 rejection", async () => {
+    // Module state carries the token bootstrapped by the login test above, so
+    // the first call here is the mutation itself, then refresh, then replay.
+    const seenTokens: (string | null)[] = [];
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "CSRF failed" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ csrfToken: "fresh-token" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockImplementationOnce(async (_url, init) => {
+        seenTokens.push(new Headers(init?.headers).get("X-CSRFToken"));
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      });
+
+    await expect(
+      api("favorites/", { method: "POST", body: "{}" }),
+    ).resolves.toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(seenTokens).toEqual(["fresh-token"]);
+  });
+
+  it("does not retry indefinitely when the replayed mutation is rejected again", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "CSRF failed" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ csrfToken: "fresh-token-2" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "CSRF failed" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+
+    await expect(
+      api("favorites/", { method: "POST", body: "{}" }),
+    ).rejects.toThrow("CSRF failed");
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
 });

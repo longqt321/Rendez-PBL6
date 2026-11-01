@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { Cover } from "./shared";
 import { MasonryFeed } from "./masonry";
 import { MemoryRouter, Route, Routes } from "react-router";
-import { PhotoDetailPage } from "./discovery";
+import { PhotoDetailPage } from "../features/experiences/PhotoDetailPage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 afterEach(() => {
@@ -26,20 +26,22 @@ describe("Image display performance and layout stability", () => {
     expect(img).toHaveAttribute("decoding", "async");
   });
 
-  it("renders PhotoViewer hero image with eager loading, async decoding, and high fetchPriority", async () => {
+  it("renders the live photo hero image with eager loading, async decoding, and high fetchPriority", async () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
 
-    queryClient.setQueryData(["photo", "photo-123", null, undefined], {
+    // Khách (chưa đăng nhập): useMe trả về null qua cache, không gọi mạng.
+    queryClient.setQueryData(["me"], null);
+    queryClient.setQueryData(["photo", "photo-123", undefined], {
       id: "photo-123",
       url: "/public-photo-media/photo-123.jpg",
       width: 1200,
       height: 1600,
+      alt_text: null,
       caption: "Ảnh thử nghiệm",
       author_name: "Long Tran",
-      author_id: "user-1",
-      place_id: "place-1",
+      published_at: "2026-01-01T00:00:00Z",
       place: {
         id: "place-1",
         name: "Quán A",
@@ -49,7 +51,6 @@ describe("Image display performance and layout stability", () => {
         verified_at: null,
         status: "published",
       },
-      photo_ids: ["photo-123"],
       attributes: [],
       likes_count: 5,
       is_liked: false,
@@ -72,9 +73,9 @@ describe("Image display performance and layout stability", () => {
     expect(heroImage).toHaveAttribute("loading", "eager");
     expect(heroImage).toHaveAttribute("decoding", "async");
     expect(heroImage).toHaveAttribute("fetchpriority", "high");
-    expect(heroImage).toHaveAttribute("width", "1200");
-    expect(heroImage).toHaveAttribute("height", "1600");
-    expect(heroImage).toHaveStyle({ aspectRatio: "1200 / 1600" });
+    // Tỷ lệ thật nằm trên khung bọc ảnh để giữ bố cục ổn định trước khi tải.
+    const heroFrame = heroImage.closest(".media-frame") as HTMLElement;
+    expect(heroFrame.style.aspectRatio).toBe("1200 / 1600");
   });
 
   it("mounts MasonryFeed without synchronous layout thrashing", () => {

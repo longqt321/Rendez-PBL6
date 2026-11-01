@@ -95,7 +95,7 @@ function PhotoForm() {
             loading: false,
             result: {
               display_name: res.display_name,
-              provider: res.provider,
+              provider: res.provider ?? "OpenStreetMap",
               latitude: res.latitude,
               longitude: res.longitude,
             },
@@ -501,7 +501,10 @@ function PhotoForm() {
             />
             Tôi có quyền đăng các ảnh này và đồng ý công khai.
           </label>
-          <p className="muted small">Ảnh sẽ xuất hiện ngay sau khi đăng.</p>
+          <p className="muted small">
+            Ảnh sẽ xuất hiện ngay sau khi đăng. Việc gửi ảnh tuân theo{" "}
+            <Link to="/terms">Điều khoản sử dụng</Link>.
+          </p>
         </>
       )}
       {error && (

@@ -1,0 +1,186 @@
+/*
+ * Auth — sign in / create account.
+ *
+ * The screen is a split cover: a dark editorial panel carrying the product's
+ * voice on the left, the form on the right. It is the one place in the app
+ * where a full-bleed dark surface is used, because it is the first impression
+ * and has no navigation to compete with.
+ *
+ * Below 900px the cover collapses and the form becomes the whole page.
+ */
+
+.auth-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  min-height: 100svh;
+  background: var(--color-background);
+}
+
+/* ------------------------------------------------------------------ Story */
+
+.auth-page__story {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding: var(--space-10) var(--space-12);
+  background: var(--color-story-bg);
+  color: var(--color-story-fg);
+}
+
+.auth-page__story .shell-brand {
+  color: var(--color-story-fg);
+  padding: 0;
+}
+
+.auth-page__pitch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 30ch;
+}
+
+.auth-page__pitch .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-story-muted);
+}
+
+.auth-page__quote {
+  font-family: var(--font-editorial);
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: 400;
+  line-height: 1.06;
+  letter-spacing: var(--tracking-tight);
+}
+
+.auth-page__lede {
+  color: var(--color-story-muted);
+  font-size: var(--text-body);
+  line-height: var(--leading-normal);
+}
+
+.auth-page__credit {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-story-line);
+  color: var(--color-story-muted);
+  font-size: var(--text-support);
+}
+
+/* ------------------------------------------------------------------ Panel */
+
+.auth-page__panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10) var(--space-6);
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 404px;
+}
+
+.auth-card__title {
+  font-size: var(--text-display);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.auth-card__lede {
+  margin-top: calc(-1 * var(--space-3));
+  color: var(--color-foreground-muted);
+  font-size: var(--text-body);
+  line-height: var(--leading-normal);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Password field plus its reveal toggle share one row. */
+.auth-form__password {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.auth-form__password .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.auth-card__terms {
+  font-size: var(--text-support);
+  color: var(--color-foreground-muted);
+  line-height: 1.5;
+}
+
+.auth-card__terms a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-card__switch {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-support);
+}
+
+.auth-card__switch a {
+  color: var(--color-primary);
+  font-weight: 650;
+}
+
+.auth-card__switch a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* -------------------------------------------------------------- Responsive */
+
+@media (max-width: 900px) {
+  .auth-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .auth-page__story {
+    gap: var(--space-6);
+    padding: var(--space-6);
+  }
+
+  /* The pitch is the point of the cover; the credit line is not. */
+  .auth-page__credit {
+    display: none;
+  }
+
+  .auth-page__pitch {
+    max-width: 46ch;
+  }
+
+  .auth-page__quote {
+    font-size: clamp(1.75rem, 6vw, 2.25rem);
+  }
+
+  .auth-page__panel {
+    padding: var(--space-8) var(--space-5) var(--space-16);
+  }
+}
+
+@media (max-width: 420px) {
+  .auth-page__story {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .auth-page__panel {
+    padding: var(--space-6) var(--space-4) var(--space-12);
+  }
+}

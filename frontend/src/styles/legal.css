@@ -1,0 +1,43 @@
+/*
+ * Terms of use.
+ *
+ * One long document, so the only layout decisions that matter are reading
+ * measure and the gap between the heading block and the prose. Everything else
+ * comes from the shared `.prose` scale.
+ */
+
+.legal-page {
+  padding-block: var(--space-10) var(--space-16);
+}
+
+.legal-page .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--space-3);
+}
+
+.legal-page h1 {
+  font-size: var(--text-display);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  margin-bottom: var(--space-3);
+}
+
+.legal-page .lede {
+  margin-bottom: var(--space-8);
+  color: var(--color-foreground-muted);
+}
+
+.legal-page__back {
+  margin-top: var(--space-10);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 680px) {
+  .legal-page {
+    padding-block: var(--space-8) var(--space-12);
+  }
+}

@@ -1,0 +1,223 @@
+/*
+ * Profile, settings and the 404 dead end.
+ *
+ * These three screens share one job: they are the "quiet" surfaces of the app.
+ * No media, no discovery — just identity, controls and a way back. They are
+ * therefore built from flat blocks separated by rules rather than cards, which
+ * keeps the hierarchy readable without stacking shadows.
+ */
+
+/* --------------------------------------------------------------- Profile */
+
+.profile-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+.profile-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-banner__copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-banner__copy h1 {
+  font-size: var(--text-editorial);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  overflow-wrap: anywhere;
+}
+
+.profile-banner__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-foreground-muted);
+  font-size: var(--text-support);
+  overflow-wrap: anywhere;
+}
+
+.profile-banner__meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.profile-banner__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* Two counts, not a dashboard: label above, number below, hairline between. */
+.profile-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin: 0;
+}
+
+.profile-metrics > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-1);
+}
+
+.profile-metrics dt {
+  color: var(--color-foreground-muted);
+  font-size: var(--text-support);
+}
+
+.profile-metrics dd {
+  margin: 0;
+  font-size: var(--text-section);
+  font-weight: 650;
+  line-height: 1;
+}
+
+.profile-switch {
+  align-self: flex-start;
+}
+
+.profile-collection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* -------------------------------------------------------------- Settings */
+
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.settings-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.settings-block:last-of-type {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.settings-block__title {
+  font-size: var(--text-section);
+  font-weight: 650;
+  line-height: var(--leading-snug);
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 420px;
+}
+
+.settings-form .field {
+  width: 100%;
+}
+
+/* Rows, not cards: each link is a full-width tap target with a chevron. */
+.settings-links {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  list-style: none;
+  overflow: hidden;
+}
+
+.settings-links > li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.settings-links a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-foreground);
+  font-size: var(--text-body);
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.settings-links a:hover {
+  background: var(--color-surface-muted);
+}
+
+.settings-links a > svg {
+  flex: none;
+  color: var(--color-foreground-muted);
+}
+
+/* ------------------------------------------------------------------- 404 */
+
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding-block: var(--space-16);
+}
+
+.not-found h1 {
+  font-size: var(--text-display);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+/* -------------------------------------------------------------- Responsive */
+
+@media (max-width: 680px) {
+  .profile-banner {
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  /* The settings button drops under the identity block at full width. */
+  .profile-banner > .btn {
+    order: 3;
+    width: 100%;
+  }
+
+  .profile-metrics {
+    gap: var(--space-6);
+  }
+
+  .not-found {
+    padding-block: var(--space-10);
+  }
+}

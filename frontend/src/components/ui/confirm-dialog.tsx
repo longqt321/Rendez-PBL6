@@ -60,18 +60,15 @@ export function ConfirmDialog({
         e.preventDefault();
         if (!isLoading) onCancel();
       }}
-      className="profile-settings-dialog rounded-xl p-6 shadow-xl border border-line bg-white max-w-md w-full"
+      className="dialog"
     >
-      <h2 id="confirm-dialog-title" className="text-lg font-bold mb-2">
+      <h2 id="confirm-dialog-title" className="dialog__title">
         {title}
       </h2>
-      <p
-        id="confirm-dialog-desc"
-        className="text-sm text-muted mb-6 leading-relaxed"
-      >
+      <p id="confirm-dialog-desc" className="dialog__description">
         {description}
       </p>
-      <div className="flex justify-end gap-3">
+      <div className="dialog__actions">
         <Button
           variant="outline"
           type="button"
@@ -82,8 +79,8 @@ export function ConfirmDialog({
         </Button>
         <Button
           type="button"
+          variant={isDestructive ? "destructive" : "primary"}
           disabled={isLoading}
-          className={isDestructive ? "danger-button" : ""}
           onClick={() => {
             if (isLoading) return;
             onConfirm();

@@ -5,12 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Khám phá Đà Nẵng qua ảnh và bản đồ. Lưu địa điểm yêu thích và chia sẻ khoảnh khắc của bạn."
+      content="Rendez — khám phá Đà Nẵng qua trải nghiệm của cộng đồng: địa điểm thật, ảnh thật, gợi ý thật."
     />
-    <meta name="theme-color" content="#205b48" />
+    <meta name="theme-color" content="#f7f6f1" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" />
     <title>Rendez · Khám phá Đà Nẵng</title>
+    <script>
+      // Resolve the theme before the first paint so the page never flashes the
+      // wrong palette. Keep in sync with src/lib/theme.tsx.
+      (function () {
+        try {
+          var stored = localStorage.getItem("rendez-theme");
+          var dark =
+            stored === "dark" ||
+            ((!stored || stored === "system") &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+        } catch (error) {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

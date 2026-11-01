@@ -60,6 +60,7 @@ export function MapPage() {
   const results = useQuery({
     queryKey: ["markers", bounds, query.toString(), me.data?.id],
     enabled: !!bounds,
+    staleTime: 60_000,
     queryFn: ({ signal }) =>
       api<VisualMap>("places/map/?" + query + "&bbox=" + bounds, { signal }),
   });

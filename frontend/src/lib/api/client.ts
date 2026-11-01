@@ -17,23 +17,41 @@ export class ApiError extends Error {
   }
 }
 let csrfToken = "";
+let csrfBootstrap: Promise<string> | null = null;
+
+async function loadCsrfToken(): Promise<string> {
+  // Django CSRF tokens are stable for the lifetime of the session cookie, so
+  // bootstrap once and reuse; a 403 CSRF rejection triggers a single refresh
+  // below instead of paying an extra round trip before every mutation.
+  if (!csrfBootstrap) {
+    csrfBootstrap = (async () => {
+      const bootstrap = await fetch("/api/v1/auth/csrf/", {
+        credentials: "same-origin",
+      });
+      if (!bootstrap.ok)
+        throw new ApiError(
+          bootstrap.status,
+          {},
+          "Không xác nhận được phiên truy cập. Tải lại trang rồi thử lại.",
+        );
+      const data = (await bootstrap.json()) as { csrfToken: string };
+      csrfToken = data.csrfToken;
+      return csrfToken;
+    })().catch((error) => {
+      csrfBootstrap = null; // allow retrying the bootstrap on next call
+      throw error;
+    });
+  }
+  return csrfBootstrap;
+}
+
 export async function api<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
   const method = options.method ?? "GET";
-  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
-    const bootstrap = await fetch("/api/v1/auth/csrf/", {
-      credentials: "same-origin",
-    });
-    if (!bootstrap.ok)
-      throw new ApiError(
-        bootstrap.status,
-        {},
-        "Không xác nhận được phiên truy cập. Tải lại trang rồi thử lại.",
-      );
-    csrfToken = (await bootstrap.json()).csrfToken;
-  }
+  const needsCsrf = !["GET", "HEAD", "OPTIONS"].includes(method);
+  if (needsCsrf && !csrfToken) await loadCsrfToken();
   const headers = new Headers(options.headers);
   if (options.body && !(options.body instanceof FormData))
     headers.set("Content-Type", "application/json");
@@ -47,6 +65,23 @@ export async function api<T>(
     headers,
     credentials: "same-origin",
   });
+  if (
+    needsCsrf &&
+    response.status === 403 &&
+    csrfToken &&
+    !new Headers(options.headers).get("X-CSRFToken-Retry")
+  ) {
+    // Stale or missing CSRF token (e.g. session cookie rotated): refresh once
+    // and replay the mutation instead of surfacing an error to the user.
+    csrfBootstrap = null;
+    csrfToken = "";
+    const retryHeaders = new Headers(options.headers);
+    retryHeaders.set("X-CSRFToken-Retry", "1");
+    return api<T>(path, {
+      ...options,
+      headers: retryHeaders,
+    });
+  }
   if (!response.ok) {
     if (
       response.status === 401 &&

@@ -1,0 +1,179 @@
+/*
+ * Typography — "The City Field Guide".
+ *
+ * Two voices only:
+ *   --font-sans       interface, body copy, metadata, controls
+ *   --font-editorial  page titles and editorial section headings
+ *
+ * The editorial face is a deliberate accent. Using it on every heading would
+ * flatten the hierarchy, so it is scoped to `h1` and `.editorial`.
+ */
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading-normal);
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-weight: 650;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+}
+
+h1 {
+  font-family: var(--font-editorial);
+  font-size: var(--text-display);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.015em;
+}
+
+h2 {
+  font-size: var(--text-section);
+  font-weight: 650;
+}
+
+h3 {
+  font-size: var(--text-place);
+  font-weight: 620;
+}
+
+h4 {
+  font-size: var(--text-body);
+  font-weight: 650;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+/* Editorial heading used outside of an <h1> — e.g. a discovery section title. */
+.editorial {
+  font-family: var(--font-editorial);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: var(--leading-tight);
+}
+
+/* Small uppercase label that introduces a block of content. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-foreground-muted);
+}
+
+.lede {
+  font-size: clamp(0.9375rem, 1.1vw, 1.0625rem);
+  line-height: 1.6;
+  color: var(--color-foreground-muted);
+  max-width: var(--reading-max);
+}
+
+.muted {
+  color: var(--color-foreground-muted);
+}
+
+.small {
+  font-size: var(--text-support);
+}
+
+.micro {
+  font-size: var(--text-micro);
+}
+
+/* Numbers in stats and counters must not jitter while they change. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Long-form copy: place descriptions, experience captions, policy text. */
+.prose {
+  max-width: var(--reading-max);
+  color: var(--color-foreground);
+  line-height: 1.65;
+}
+
+.prose > * + * {
+  margin-top: var(--space-4);
+}
+
+.prose h2 {
+  margin-top: var(--space-8);
+  font-size: var(--text-section);
+}
+
+.prose h3 {
+  margin-top: var(--space-6);
+}
+
+.prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.25em;
+  margin: 0;
+}
+
+.prose li + li {
+  margin-top: var(--space-2);
+}
+
+/* Truncation helpers. */
+.line-clamp-2,
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+/* Legacy utility names still referenced by a few screens. */
+.text-muted {
+  color: var(--color-foreground-muted);
+}
+
+.text-sm {
+  font-size: var(--text-support);
+}
+
+.text-xl {
+  font-size: var(--text-section);
+}
+
+.font-semibold {
+  font-weight: 650;
+}

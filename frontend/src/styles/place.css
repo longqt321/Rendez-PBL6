@@ -1,0 +1,334 @@
+/*
+ * Place detail.
+ */
+
+.place-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  min-height: 36px;
+  color: var(--color-foreground-muted);
+  font-size: var(--text-support);
+  font-weight: 600;
+}
+
+.back-link:hover {
+  color: var(--color-foreground);
+}
+
+/* ------------------------------------------------------------------- Head */
+
+.place-detail__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.place-detail__identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.place-detail__title {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.place-detail__address {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  color: var(--color-foreground-muted);
+  font-size: var(--text-body);
+}
+
+.place-detail__address svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.place-detail__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.place-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.place-detail__cover {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.place-detail__cover .media-frame {
+  border-radius: inherit;
+}
+
+/* --------------------------------------------------------------- Sections */
+
+.place-detail__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.section-title {
+  margin: 0;
+  font-size: var(--text-section);
+  font-weight: 650;
+  letter-spacing: var(--tracking-tight);
+}
+
+.place-detail__meta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  padding-top: var(--space-2);
+}
+
+.inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-primary);
+  font-size: var(--text-support);
+  font-weight: 600;
+}
+
+.inline-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.inline-link--muted {
+  color: var(--color-foreground-muted);
+  font-weight: 500;
+}
+
+.inline-link--muted:hover {
+  color: var(--color-danger);
+}
+
+/* ------------------------------------------------------------- Info list */
+
+.info-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-5);
+  margin: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.info-list > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.info-list dt {
+  color: var(--color-foreground-muted);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.info-list dd {
+  margin: 0;
+  color: var(--color-foreground);
+  font-size: var(--text-body);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.info-list__note {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-foreground-subtle);
+  font-size: var(--text-micro);
+}
+
+.info-list__unknown {
+  color: var(--color-foreground-subtle);
+  font-style: italic;
+}
+
+/* -------------------------------------------------------------- Gallery */
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gallery-grid__item {
+  display: block;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.gallery-grid__item .media-frame {
+  border-radius: inherit;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.gallery-grid__item:hover .media-frame {
+  transform: scale(1.03);
+}
+
+/* ----------------------------------------------------------- Post cards */
+
+.post-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.post-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.post-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.post-card__media {
+  border-radius: 0;
+}
+
+.post-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.post-card__author {
+  font-size: var(--text-support);
+  font-weight: 650;
+}
+
+.post-card__caption {
+  color: var(--color-foreground-muted);
+  font-size: var(--text-support);
+  line-height: 1.5;
+}
+
+/* -------------------------------------------------------- Related places */
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.related-grid > li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.related-grid__label {
+  font-size: var(--text-support);
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.related-grid__label:hover {
+  color: var(--color-primary);
+}
+
+/* ------------------------------------------------------------ Responsive */
+
+@media (max-width: 900px) {
+  .place-detail__head {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  /* Image first on narrow screens: it is what identifies the place. */
+  .place-detail__cover {
+    order: -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .place-detail {
+    gap: var(--space-8);
+  }
+
+  .place-detail__actions {
+    width: 100%;
+  }
+
+  .place-detail__actions .btn,
+  .place-detail__actions .save-control {
+    flex: 1 1 auto;
+  }
+
+  .info-list {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--space-2);
+  }
+
+  .post-list {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}

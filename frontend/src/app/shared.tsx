@@ -21,55 +21,18 @@ import {
   ApiError,
   discoveryQuery,
   type Category,
-  type Profile,
 } from "../lib/api/client";
 import type { Attribute, VisualPlace } from "../lib/api/visual";
 import { Button } from "../components/ui/button";
 
-export function useMe() {
-  return useQuery({
-    queryKey: ["me"],
-    queryFn: async () => {
-      try {
-        return await api<Profile>("auth/me/");
-      } catch (error) {
-        if (error instanceof ApiError && error.status === 401) return null;
-        throw error;
-      }
-    },
-    retry: false,
-  });
-}
-export function useLogout() {
-  const cache = useQueryClient(),
-    navigate = useNavigate();
-  return useMutation({
-    mutationFn: () => api<void>("auth/logout/", { method: "POST" }),
-    onSettled: () => {
-      cache.clear();
-      cache.setQueryData(["me"], null);
-      navigate("/login", { replace: true });
-    },
-  });
-}
-
-export function sanitizeReturnTo(
-  url: string | null | undefined,
-): string | null {
-  if (!url) return null;
-  const trimmed = url.trim();
-  if (
-    !trimmed.startsWith("/") ||
-    trimmed.startsWith("//") ||
-    trimmed.includes("\\")
-  ) {
-    return null;
-  }
-  if (trimmed.startsWith("/login") || trimmed.startsWith("/register")) {
-    return null;
-  }
-  return trimmed;
-}
+/*
+ * Session helpers live in `lib/session` so the new feature modules and these
+ * legacy screens share one implementation. They are re-exported here because
+ * this module is still the import site for the screens that predate the
+ * `lib/` layer.
+ */
+import { useMe, useLogout, sanitizeReturnTo } from "../lib/session";
+export { useMe, useLogout, sanitizeReturnTo };
 
 export function googleMapsDirectionsUrl(place: {
   name?: string;
@@ -253,18 +216,28 @@ export function Cover({
   place,
   className = "",
 }: {
-  place: { cover_image_url: string | null; name: string };
+  place: {
+    cover_media_url?: string | null;
+    cover_image_url: string | null;
+    name: string;
+  };
   className?: string;
 }) {
-  const [failedUrl, setFailedUrl] = useState<string | null>(null);
-  return place.cover_image_url && failedUrl !== place.cover_image_url ? (
+  const [failedUrls, setFailedUrls] = useState<string[]>([]);
+  // PostMedia cover (unified protected media endpoint) wins; the legacy
+  // photo cover is the fallback when the PostMedia one is missing or fails.
+  const candidates = [place.cover_media_url, place.cover_image_url].filter(
+    (url): url is string => Boolean(url),
+  );
+  const url = candidates.find((candidate) => !failedUrls.includes(candidate));
+  return url ? (
     <img
       className={className}
-      src={place.cover_image_url}
+      src={url}
       alt={place.name}
       loading="lazy"
       decoding="async"
-      onError={() => setFailedUrl(place.cover_image_url)}
+      onError={() => setFailedUrls((failed) => [...failed, url])}
     />
   ) : (
     <div className={"placeholder " + className}>

@@ -1,0 +1,110 @@
+/*
+ * Saved — the member's own collection.
+ *
+ * Two groups with different shapes on purpose: saved places are destinations
+ * (shown as cards, because you compare them visually), saved experiences are
+ * things you want to re-read (shown as compact rows, because you scan them).
+ */
+
+.saved-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.saved-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ---------------------------------------------------------- Saved posts */
+
+.saved-post-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.saved-post {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.saved-post:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-muted);
+}
+
+.saved-post__media {
+  flex: none;
+  width: 72px;
+  border-radius: var(--radius-sm);
+}
+
+.saved-post__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.saved-post__place {
+  font-size: var(--text-support);
+  font-weight: 650;
+  color: var(--color-primary);
+  overflow-wrap: anywhere;
+}
+
+.saved-post__caption {
+  color: var(--color-foreground);
+  font-size: var(--text-support);
+  line-height: var(--leading-normal);
+}
+
+.saved-post__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-1);
+  color: var(--color-foreground-muted);
+  font-size: var(--text-micro);
+}
+
+/* --------------------------------------------------------------- Closing */
+
+.saved-cta {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 680px) {
+  .saved-page {
+    gap: var(--space-10);
+  }
+
+  .saved-post-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .saved-cta .btn {
+    width: 100%;
+  }
+}
