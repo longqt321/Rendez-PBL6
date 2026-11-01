@@ -33,7 +33,9 @@ backend/
 
 ## 2. Danh Mục API Toàn Diện (`/api/v1/`)
 
-Tất cả các API được đặt dưới tiền tố `/api/v1/`. Trừ các endpoint công khai (Đăng ký, Đăng nhập, CSRF, Health check), toàn bộ các endpoint dữ liệu đều yêu cầu phiên đăng nhập hợp lệ (`IsAuthenticated`).
+Tất cả các API được đặt dưới tiền tố `/api/v1/`. Trừ các endpoint công khai (Đăng ký, Đăng nhập, CSRF, Health check, feed/chi tiết Post, bình luận Post, media công khai), toàn bộ các endpoint dữ liệu đều yêu cầu phiên đăng nhập hợp lệ (`IsAuthenticated`).
+
+Các endpoint tương tác (like, save, comment, share, view-log) được giới hạn tần suất qua `ScopedRateThrottle` với các scope cấu hình trong `settings.py`: `like: 60/min`, `favorite: 60/min`, `comment: 30/min`, `share: 30/min`, `view: 120/min`.
 
 | Tuyến Đường (Route) | Phương Thức | Lớp View (View Class) | Phân Quyền | Chức Năng Nghiệp Vụ |
 |---|---|---|---|---|
@@ -51,7 +53,7 @@ Tất cả các API được đặt dưới tiền tố `/api/v1/`. Trừ các e
 | `places/<id>/photos/` | GET | `PlacePhotosView` | IsAuthenticated | Thư viện toàn bộ ảnh công khai của một cơ sở |
 | `places/<id>/report/` | POST | `PlaceReportView` | IsAuthenticated | Báo cáo vi phạm liên quan đến địa điểm |
 | `places/map/` | GET | `PlaceMapView` | IsAuthenticated | Lấy danh sách điểm ghim trong khung nhìn `?bbox=` |
-| `places/geocode/` | GET | `GeocodeView` | IsAuthenticated | Gợi ý tọa độ từ địa chỉ (Photon/Nominatim/Esri) |
+| `places/geocode/` | GET | `GeocodeView` | AllowAny | Gợi ý tọa độ từ địa chỉ (Nominatim/Photon/OSM cục bộ), 30 yêu cầu/phút |
 | `feed/` | GET | `FeedView` | IsAuthenticated | Lưới ảnh Masonry trang chủ (hỗ trợ lọc tags/search) |
 | `photos/<id>/` | GET | `PhotoDetailView` | IsAuthenticated | Chi tiết ảnh, thông số kỹ thuật và tác giả |
 | `photos/<id>/similar/` | GET | `SimilarPhotosView` | IsAuthenticated | Danh sách ảnh cùng quán hoặc cùng đặc tính |
@@ -60,13 +62,23 @@ Tất cả các API được đặt dưới tiền tố `/api/v1/`. Trừ các e
 | `comments/<id>/` | PATCH, DELETE | `PhotoCommentDetailView` | IsOwnerOrStaff | Sửa nội dung hoặc xóa bình luận của mình |
 | `photos/<id>/manage/` | PATCH, DELETE | `PhotoManageView` | IsOwnerOrStaff | Sửa mô tả hoặc rút ảnh do mình đăng tải |
 | `photos/<id>/report/` | POST | `PhotoReportView` | IsAuthenticated | Gửi báo cáo vi phạm nội dung đối với ảnh |
+| `posts/` | GET | `PostFeed` | AllowAny | Feed bài đăng công khai (lọc `place`, `author`, phân trang) |
+| `posts/<id>/` | GET | `PostDetail` | AllowAny | Chi tiết bài đăng và media của nó |
+| `posts/<id>/likes/` | POST, DELETE | `PostLike` | IsAuthenticated | Thích hoặc bỏ thích bài đăng (throttle `like`) |
+| `posts/<id>/saved/` | POST, DELETE | `PostSave` | IsAuthenticated | Lưu hoặc bỏ lưu bài đăng (throttle `favorite`) |
+| `posts/<id>/shares/` | POST | `PostShare` | AllowAny | Ghi nhận chia sẻ bài đăng, tăng `share_count` (throttle `share`) |
+| `posts/<id>/comments/` | GET, POST | `PostCommentListCreate` | AllowAny | Xem và gửi bình luận dưới bài đăng (throttle `comment`) |
+| `posts/<id>/views/` | POST | `PostViewLog` | AllowAny | Ghi nhận lượt xem, tăng `view_count` (throttle `view`) |
+| `places/<id>/saved/` | POST, DELETE | `PlaceSave` | IsAuthenticated | Lưu hoặc bỏ lưu địa điểm trong ngữ cảnh Post (throttle `favorite`) |
+| `photos/<id>/` | GET | `LegacyPhotoAdapter` | IsAuthenticated | Adapter: UUID legacy `PlacePhoto` ủy quyền cho `PhotoDetail` cũ, hoặc trả payload Post cho ID mồ côi còn ánh xạ |
 | `photo-submissions/` | GET, POST | `PhotoSubmissionView` | IsAuthenticated | Nộp chùm 1–5 ảnh mới / Xem lịch sử gửi ảnh |
 | `photo-submissions/<id>/` | GET | `PhotoSubmissionDetailView` | IsOwnerOrStaff | Xem chi tiết lần gửi ảnh cụ thể |
 | `favorites/` | GET | `FavoriteListView` | IsAuthenticated | Danh sách các cơ sở thành viên đã đánh dấu lưu |
 | `favorites/<id>/` | PUT, DELETE | `FavoriteDetailView` | IsAuthenticated | Đánh dấu lưu hoặc gỡ lưu một địa điểm |
 | `creators/<id>/` | GET | `CreatorDetailView` | IsAuthenticated | Thông tin hồ sơ công khai của tác giả ảnh |
 | `creators/<id>/photos/` | GET | `CreatorPhotosView` | IsAuthenticated | Danh sách toàn bộ ảnh do tác giả đóng góp |
-| `public-photo-media/<id>/` | GET | `PublicPhotoMediaView` | IsAuthenticated | Tải tệp ảnh phái sinh công khai (`derivative`) |
+| `public-photo-media/<id>/` | GET | `PublicPhotoMediaView` | AllowAny | Tải tệp ảnh phái sinh công khai (`derivative`); trả về ETag + `Cache-Control` |
+| `public-post-media/<id>/` | GET | `post_media` | AllowAny | Tải ảnh phái sinh của PostMedia đã xuất bản (Post và PostMedia cùng ở trạng thái `published`); trả về ETag + `Cache-Control` |
 | `private-photo-media/<id>/` | GET | `PrivatePhotoMediaView` | IsOwnerOrStaff | Tải tệp ảnh xem trước riêng tư cho tác giả |
 | `private-photo-original/<id>/` | GET | `PrivatePhotoOriginalView` | ModeratorOnly | Tải tệp ảnh gốc sạch (chỉ cho kiểm duyệt viên) |
 
@@ -80,30 +92,30 @@ Tệp `backend/apps/photos/services.py` đóng gói toàn bộ logic nghiệp v�
 - **Chữ ký hàm:**
   ```python
   def submit(
-      *,
       user: User,
-      place_id: UUID | None = None,
-      new_place_data: dict | None = None,
+      values: dict,
       files: list[UploadedFile],
-      captions: list[str] | None = None,
-      idempotency_key: str | None = None,
-      rights_confirmed: bool = False,
+      key: str,
   ) -> PhotoSubmission:
   ```
+  `values` chứa `place_id` hoặc bộ ba `proposed_name`/`proposed_address`/`proposed_category`, kèm `caption`, `latitude`, `longitude` và `consent_version`.
 - **Quy trình thực thi:**
-  1. *Kiểm tra bản quyền:* Bắt buộc `rights_confirmed = True`.
+  1. *Kiểm tra đầu vào:* `idempotency_key` phải có và không quá 100 ký tự; số ảnh từ 1 đến 5.
   2. *Chống gửi trùng (Idempotency):* Nếu gửi lại cùng `idempotency_key` và cùng nội dung hash, trả về bản ghi cũ; nếu gửi cùng key nhưng khác nội dung, ném lỗi xung đột `409 Conflict`.
-  3. *Khóa dòng cơ sở dữ liệu (`select_for_update`):* Khi nộp cho một cơ sở có sẵn, hàm thực hiện `Place.objects.select_for_update().get(id=place_id)` bên trong `transaction.atomic()`. Điều này triệt tiêu hoàn toàn race condition khi nhiều người cùng nộp ảnh đồng thời và cạnh tranh gán cờ ảnh bìa (`is_cover`).
-  4. *Tự động tạo Place mới (Auto-Publication):* Nếu nộp cho cơ sở mới, tạo ngay một bản ghi `Place(status="published")`. Model `VenueProposal` bị bỏ qua.
+  3. *Khóa dòng người dùng (`select_for_update`):* Toàn bộ thao tác nằm trong `transaction.atomic()` và khóa hàng người dùng, nên hai lần gửi song song của cùng một tài khoản được xử lý tuần tự.
+  4. *Tự động tạo Place mới (Auto-Publication):* Nếu `values` có `proposed_name`, tạo ngay một bản ghi `Place(status="published")`. Model `VenueProposal` không được dùng trong luồng này.
   5. *Pipeline xử lý ảnh:* Gọi `normalize_image()` để bóc tách EXIF, tạo tệp `original` sạch và tệp `derivative` WebP/JPEG, tính toán SHA-256.
-  6. *Ghi nhận cơ sở dữ liệu:* Tạo bản ghi `PhotoAsset`, tạo `PlacePhoto(status="published")`, tự động gán `is_cover=True` cho ảnh đầu tiên nếu quán chưa có ảnh bìa.
+  6. *Ghi nhận cơ sở dữ liệu:* Tạo `PhotoSubmission(status="approved", published_by, published_at)`, `PhotoAsset`, `PlacePhoto(status="published")` với `is_cover=True` cho ảnh đầu tiên nếu quán chưa có ảnh bìa, cùng `Post` và `PostMedia` cho ảnh đầu.
   7. *Rollback an toàn:* Nếu có bất kỳ ngoại lệ nào phát sinh trong giao dịch, khối `except` sẽ tự động dọn dẹp và xóa sạch tất cả các tệp nhị phân vừa tạo trên đĩa, tránh rác storage.
 
 ### 3.2. Dịch Vụ Quản Trị Trạng Thái Công Khai: `change_publication()`
-- **Chức năng:** Hỗ trợ kiểm duyệt viên hoặc tác giả rút ảnh (`status="withdrawn"`).
+- **Chức năng:** Cho phép kiểm duyệt viên đổi trạng thái công khai của một ảnh đã tồn tại, qua bốn hành động `publish`, `withdraw`, `cover` và `edit_tags`.
 - **Quy tắc:**
-  - Nếu chuyển sang `withdrawn`: Bắt buộc thiết lập `withdrawn_at = timezone.now()` và hủy cờ ảnh bìa (`is_cover = False`).
-  - Ghi nhận nhật ký kiểm toán vào model `PhotoAudit` với hành động `withdraw` hoặc `publish`.
+  - `withdraw`: Bắt buộc thiết lập `withdrawn_at = timezone.now()`, hủy cờ ảnh bìa (`is_cover = False`) và chuyển các `ContentReport` đang chờ của ảnh sang `resolved`.
+  - `publish`: Chỉ áp dụng cho ảnh `pending_publication`; ảnh đã `withdrawn` không công khai lại qua thao tác này. Quán phải đang công khai.
+  - `cover`: Chỉ ảnh `published` của quán đang công khai mới được chọn làm bìa; bìa cũ bị bỏ cờ trước.
+  - Sau mỗi hành động, `sync_post_media_from_photo()` đồng bộ trạng thái sang `PostMedia` và `Post` tương ứng.
+  - Ghi nhận nhật ký kiểm toán vào model `PhotoAudit` với hành động tương ứng.
 
 ### 3.3. Dịch Vụ Gán Nhãn Đặc Tính: `set_tags()`
 - **Chức năng:** Gán hoặc gỡ bỏ các đặc tính thị giác (`VisualAttribute`) cho một ảnh.

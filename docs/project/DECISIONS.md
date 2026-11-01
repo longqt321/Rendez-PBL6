@@ -35,8 +35,8 @@ Tài liệu này ghi nhận toàn bộ các quyết định kiến trúc đã đ
 ### ADR-005: Cơ Chế Geocoding Đa Nguồn Dự Phòng (Multi-Provider Fallback)
 - **Trạng thái:** **Accepted & Verified**
 - **Bối cảnh:** Tính năng gợi ý tọa độ khi nộp địa chỉ mới cần hoạt động tin cậy mà không phải trả phí API thương mại đắt đỏ.
-- **Quyết định:** Xây dựng module `apps.places.geocoding.py` với chuỗi fallback tự động: Photon $\rightarrow$ Nominatim (OpenStreetMap) $\rightarrow$ Esri.
-- **Hệ quả:** Hoạt động ổn định, có khả năng tự phục hồi khi một nhà cung cấp gặp sự cố hoặc giới hạn tần suất (rate limit).
+- **Quyết định:** Xây dựng module `apps.places.geocoding.py` với chuỗi fallback tự động: Nominatim (OpenStreetMap) $\rightarrow$ Photon $\rightarrow$ cơ sở dữ liệu OSM cục bộ, có bộ nhớ đệm 24 giờ và giới hạn 30 yêu cầu/phút. Khi mọi nguồn thất bại, hàm trả `success: false` thay vì gán tọa độ trung tâm thành phố.
+- **Hệ quả:** Hoạt động ổn định, tự phục hồi khi một nhà cung cấp gặp sự cố, và không tạo ra địa điểm có tọa độ sai mà không ai phát hiện.
 
 ### ADR-006: Phục Vụ Tệp Phương Tiện Có Bảo Vệ Phân Quyền Qua DRF Views
 - **Trạng thái:** **Accepted & Verified**

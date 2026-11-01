@@ -57,7 +57,7 @@ Theo tài liệu sản phẩm chuẩn mực (`PRODUCT.md` § Users), Rendez ph�
 1. Thành viên đã đăng nhập bấm nút `Đóng góp ảnh` (nút `+` trên thanh điều hướng).
 2. Người dùng chọn một địa điểm có sẵn hoặc nhập tên địa điểm mới (kèm địa chỉ, tọa độ được tự động gợi ý qua Geocoding).
 3. Người dùng tải lên từ 1 đến 5 ảnh thực tế (JPEG/PNG).
-4. Người dùng bắt buộc phải tích chọn cam kết bản quyền ảnh tư liệu (`photo-rights-v2`).
+4. Người dùng bắt buộc phải tích chọn đồng ý điều khoản sử dụng (`photo-rights-v2`).
 5. Khi nộp thành công, hệ thống xử lý ảnh (bóc tách EXIF, nén phái sinh) và xuất bản ảnh ngay lập tức lên feed công khai (`status="published"`).
 
 ### Hành trình 4: Tương tác Xã hội & Lưu trữ Cá nhân (Social & Bookmarks)
@@ -78,7 +78,7 @@ Cần phân biệt rõ ràng giữa **Tầm nhìn sản phẩm (Product Scope)**
 | **Số lượng cơ sở** | Hàng trăm quán trên toàn thành phố | **Đúng 12 cơ sở** trong tệp `data/danang.json` (ảnh kèm theo là minh hoạ sinh tự động, không phải ảnh thực địa) |
 | **Số lượng ảnh** | Đóng góp cộng đồng liên tục | **Đúng 36 tệp ảnh minh hoạ sinh tự động** (placeholder) lưu trong thư mục `data/photos/` |
 | **Dữ liệu bản đồ vector** | Toàn thành phố | Tệp vector đường bộ cục bộ `frontend/public/map/region.geojson` (tập trung tại Liên Chiểu) |
-| **Lớp gạch raster nền** | Tự chủ hoàn toàn (Local-First) | Tạm thời tải trực tiếp từ dịch vụ gạch ngoài Esri (`server.arcgisonline.com`) |
+| **Lớp gạch raster nền** | Bản đồ nền hiển thị đầy đủ | Tải trực tiếp từ dịch vụ gạch bản đồ công cộng (`server.arcgisonline.com`); kiểu bản đồ, bộ ký tự và vector đường bộ phục vụ cục bộ |
 
 > [!WARNING]
 > Không mặc định rằng hệ thống đã có dữ liệu toàn diện về các quận Hải Châu, Sơn Trà, Ngũ Hành Sơn. Tên các quận xuất hiện trong bộ lọc giao diện là các **Legacy District-name Tokens** được trích xuất từ chuỗi địa chỉ để phục vụ tìm kiếm nhanh, chưa phải là cơ sở dữ liệu địa giới hoàn chỉnh.
@@ -93,7 +93,7 @@ Cần phân biệt rõ ràng giữa **Tầm nhìn sản phẩm (Product Scope)**
 - Lưới ảnh Masonry tự động thích ứng chiều cao theo `aspect-ratio` tự nhiên (`frontend/src/app/masonry.tsx`).
 - Bản đồ tương tác MapLibre GL đồng bộ hai chiều với tham số URL và khung nhìn địa lý `bbox` (`frontend/src/app/map.tsx`).
 - Bộ lọc kết hợp: Danh mục (`category`) + Thuộc tính thị giác (`attributes`) + Tìm kiếm văn bản tiếng Việt có dấu.
-- Dịch vụ Geocoding đa nguồn (Photon, Nominatim, Esri) phục vụ gợi ý tọa độ khi nhập địa chỉ mới (`apps.places.geocoding.py`).
+- Dịch vụ Geocoding đa nguồn (Nominatim, Photon, dữ liệu OSM cục bộ) phục vụ gợi ý tọa độ khi nhập địa chỉ mới (`apps.places.geocoding.py`).
 - Đóng góp ảnh cộng đồng (1–5 ảnh/lần) với pipeline chuẩn hóa ảnh, bóc tách EXIF, nén WebP/JPEG (`apps.photos.services.submit`).
 - Tương tác xã hội: Thích ảnh (`PhotoLike`), Bình luận (`PhotoComment`), Lưu quán yêu thích (`Favorite` / `/saved`).
 - Hồ sơ tác giả ảnh công khai (`/creators/:id`).

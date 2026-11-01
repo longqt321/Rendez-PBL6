@@ -44,7 +44,7 @@ graph TD
     end
 
     subgraph External_Network_Layer [Phụ Thuộc Mạng Bên Ngoài (Tối Thiểu)]
-        EsriTiles["Esri ArcGIS Online<br/>(Lớp gạch raster nền vệ tinh/bản đồ)"]
+        RasterTiles["Dịch vụ gạch bản đồ công cộng<br/>(Lớp nền raster)"]
         Geocoders["Photon / Nominatim OSM<br/>(Dịch vụ Geocoding gợi ý địa chỉ)"]
     end
 
@@ -58,7 +58,7 @@ graph TD
     ImagePipeline <-->|Ghi tệp có bảo vệ phân quyền| LocalMedia
     AppPhotos <-->|Phục vụ ảnh qua DRF Views| LocalMedia
     MapLibre <-->|Tải GeoJSON nội bộ| MapAssets
-    MapLibre -.->|Tải raster tiles trực tiếp| EsriTiles
+    MapLibre -.->|Tải raster tiles trực tiếp| RasterTiles
     AppPlaces -.->|Truy vấn gợi ý tọa độ khi nộp quán| Geocoders
 ```
 
@@ -99,7 +99,7 @@ sequenceDiagram
     participant DB as PostgreSQL 17
 
     Contributor->>API: POST multipart form (1-5 ảnh, metadata, photo-rights-v2)
-    API->>Serializer: Kiểm tra hợp lệ (1-5 ảnh, định dạng JPEG/PNG, cam kết bản quyền)
+    API->>Serializer: Kiểm tra hợp lệ (1-5 ảnh, định dạng JPEG/PNG, xác nhận điều khoản sử dụng)
     Serializer->>Service: Gọi submit(user, place_id, new_place_data, files, ...)
 
     rect rgb(240, 248, 255)
@@ -131,7 +131,7 @@ sequenceDiagram
 
 ### 3.2. Luồng Phục Vụ Tệp Phương Tiện Có Bảo Vệ (Protected Media Serving)
 
-Khác với các ứng dụng web thông thường lưu ảnh công khai trên thư mục static hoặc S3 bucket mở, Rendez áp dụng cơ chế phục vụ media thông qua các DRF Streaming Views chuyên biệt để bảo đảm tính toàn vẹn bản quyền và quyền riêng tư:
+Khác với các ứng dụng web thông thường lưu ảnh công khai trên thư mục static hoặc S3 bucket mở, Rendez áp dụng cơ chế phục vụ media thông qua các DRF Streaming Views chuyên biệt để bảo đảm quyền riêng tư và kiểm soát trạng thái công khai:
 
 ```mermaid
 flowchart TD
@@ -186,8 +186,8 @@ Hệ thống sử dụng cơ chế **Session-based Authentication** kết hợp 
 
 Hệ thống hướng tới tối đa hóa tính tự chủ dữ liệu cục bộ (Local-First), tuy nhiên trong triển khai thực tế As-Is có các phụ thuộc ngoại vi sau:
 
-1. **Lớp gạch Raster Bản đồ (Esri ArcGIS Online):**
-   - *Thực trạng:* Lớp nền bản đồ đường phố/vệ tinh hiện được tải trực tiếp từ endpoint công khai của Esri (`https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/...`) được cấu hình trong `frontend/public/map/style.json`.
+1. **Lớp gạch Raster Bản đồ:**
+   - *Thực trạng:* Lớp nền bản đồ đường phố hiện được tải trực tiếp từ dịch vụ gạch bản đồ công cộng (`https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/...`) được cấu hình trong `frontend/public/map/style.json`.
    - *Phần tự chủ nội bộ:* Lớp vector đường bộ chi tiết tại Đà Nẵng được phục vụ nội bộ từ tệp GeoJSON `frontend/public/map/region.geojson`; bộ phông chữ tiếng Việt Noto Sans được lưu trữ cục bộ tại `frontend/public/map/glyphs/`.
 2. **Dịch vụ Geocoding Gợi ý Tọa độ (Photon / Nominatim):**
    - *Thực trạng:* Tệp `backend/apps/places/geocoding.py` hỗ trợ truy vấn các dịch vụ mã nguồn mở Photon và OpenStreetMap Nominatim khi người dùng nhập địa chỉ mới để tự động điền kinh độ/vĩ độ. Hệ thống có cơ chế fallback sang nhà cung cấp kế tiếp nếu có lỗi mạng.

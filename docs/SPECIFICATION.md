@@ -17,7 +17,7 @@ Rendez là nền tảng số hóa dữ liệu địa điểm du lịch, văn hó
 * **Tương tác xã hội:** Lưu địa điểm vào bộ sưu tập cá nhân, thích ảnh, trao đổi trong khu vực bình luận, xem trang hồ sơ tác giả.
 
 ### 1.2. Phân quyền Người dùng (Role-Based Access Control)
-1. **Khách (Anonymous):** Chỉ được truy cập màn hình Đăng ký, Đăng nhập, kiểm tra trạng thái dịch vụ (`/health/`). Mọi dữ liệu địa điểm, ảnh, bản đồ yêu cầu phiên đăng nhập để bảo vệ bản quyền ảnh tư liệu.
+1. **Khách (Anonymous):** Chỉ được truy cập màn hình Đăng ký, Đăng nhập, kiểm tra trạng thái dịch vụ (`/health/`). Mọi dữ liệu địa điểm, ảnh, bản đồ yêu cầu phiên đăng nhập để kiểm soát nội dung chưa công khai.
 2. **Thành viên (Authenticated Member):**
    * Tìm kiếm, duyệt feed ảnh, tương tác bản đồ, lưu quán yêu thích.
    * Đăng tải ảnh tư liệu, sửa mô tả ảnh do mình tải lên, gỡ ảnh của mình.
@@ -26,7 +26,7 @@ Rendez là nền tảng số hóa dữ liệu địa điểm du lịch, văn hó
    * Gửi báo cáo vi phạm nội dung (Content Report) kèm cơ chế chống spam.
 3. **Quản trị viên (Staff / Moderator):**
    * Sử dụng Django Admin (`/admin/`) để quản lý địa điểm, duyệt gắn nhãn đặc điểm thị giác (`edit_tags`).
-   * Xử lý báo cáo vi phạm, rút ảnh vi phạm bản quyền hoặc sai vị trí.
+   * Xử lý báo cáo vi phạm, rút ảnh sai vị trí hoặc không phù hợp.
 
 ---
 
@@ -294,7 +294,9 @@ frontend/src/
 1. **Frontend Unit & Component Testing (Vitest + React Testing Library):**
    * Kiểm thử link semantics và trạng thái vô hiệu hóa của nút bấm (`button.test.tsx`).
    * Kiểm thử xử lý lỗi mạng lồng nhau và cơ chế fallback khi ảnh lỗi (`shared.test.tsx`).
-   * Kiểm thử render khu vực bình luận và trạng thái nút gửi (`social.test.tsx`).
+   * Kiểm thử render khu vực bình luận và trạng thái nút gửi (`shared.test.tsx`).
+   * Kiểm thử trang điều khoản sử dụng đọc được khi chưa có phiên (`TermsPage.test.tsx`).
+   * Kiểm thử hai trạng thái định vị địa chỉ trong biểu mẫu đóng góp (`CreateExperiencePage.test.tsx`).
    * Kiểm thử phân quyền truy cập và chuyển hướng bảo vệ route (`access.test.tsx`).
    * Kiểm thử API client và chuẩn hóa query param (`client.test.ts`).
 2. **Backend Unit & Scope Testing (Pytest-Django):**

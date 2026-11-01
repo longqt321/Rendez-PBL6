@@ -45,7 +45,7 @@ Toàn bộ hình ảnh tải lên được quản lý bởi hệ thống tệp c
 - **Thư mục lưu trữ tệp:** `.local/media/` (được cấu hình qua biến môi trường `PRIVATE_MEDIA_ROOT`).
 - **Phân tách hai cấp độ tệp:**
   1. **Tệp Gốc Đã Chuẩn Hóa (`original`):** Tệp ảnh chất lượng cao đã qua hàm `normalize_image()` để tháo gỡ hoàn toàn siêu dữ liệu EXIF và định chuẩn hệ màu sRGB. Được lưu trữ an toàn và chỉ cho phép kiểm duyệt viên/Staff tải về qua endpoint `/api/v1/private-photo-original/<id>/`.
-  2. **Tệp Phái Sinh Hiển Thị (`derivative`):** Tệp ảnh đã được nén tối ưu (WebP hoặc JPEG chất lượng 85, kích thước cạnh dài tối đa 1600px). Phục vụ công khai cho người dùng đã đăng nhập qua endpoint `/api/v1/public-photo-media/<id>/`.
+  2. **Tệp Phái Sinh Hiển Thị (`derivative`):** Tệp ảnh đã được nén tối ưu (WebP hoặc JPEG chất lượng 85, kích thước cạnh dài tối đa 1600px). Phục vụ công khai qua `/public-photo-media/<id>/` (ảnh gắn với legacy Photo) hoặc `/public-post-media/<id>/` (ảnh gắn với PostMedia của Post, cả hai đều ở trạng thái `published`); cả hai endpoint trả về ETag và `Cache-Control: public, max-age=86400`.
 - **Định danh tệp chống trùng lặp:** Tên tệp được đặt theo mã băm nội dung SHA-256 (64 ký tự hex) kết hợp phần mở rộng chuẩn hóa, bảo đảm không bao giờ bị trùng tên hoặc ghi đè file cũ.
 
 ---
@@ -57,22 +57,23 @@ Toàn bộ hình ảnh tải lên được quản lý bởi hệ thống tệp c
 ### 3.1. Dữ Liệu Vector Nội Bộ
 - **Đường phố địa phương:** Tệp `frontend/public/map/region.geojson` chứa dữ liệu hình học vector chi tiết của mạng lưới giao thông khu vực Liên Chiểu, Đà Nẵng.
 - **Bộ ký tự phông chữ tiếng Việt (Glyphs):** Lưu trữ tại `frontend/public/map/glyphs/Noto Sans Regular/{range}.pbf`. Bộ glyphs này được tạo sẵn để hiển thị trọn vẹn dấu tiếng Việt mà không cần gọi ra Internet.
-- **Bản quyền phông chữ:** Giấy phép mã nguồn mở công khai tại `frontend/public/map/FONT-LICENSE.txt`.
 
-### 3.2. Nguồn Gạch Nền Raster (Esri ArcGIS Online)
-- Lớp ảnh nền bản đồ địa hình (Terrain / Topographic base tiles) hiện được tải trực tiếp từ máy chủ công khai của Esri:
-  `https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}`
-- Được cấu hình trong tệp `frontend/public/map/style.json`. Đây là **phụ thuộc mạng ngoài bán phần duy nhất** của hệ thống bản đồ hiện tại.
+### 3.2. Nguồn Gạch Nền Raster
+- Lớp ảnh nền bản đồ đường phố được tải trực tiếp từ dịch vụ gạch bản đồ công cộng:
+  `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}`
+- Được cấu hình trong tệp `frontend/public/map/style.json` với hai máy chủ dự phòng. Đây là **phụ thuộc mạng ngoài bán phần duy nhất** của hệ thống bản đồ hiện tại: kiểu bản đồ, bộ ký tự và dữ liệu vector đều phục vụ cục bộ, chỉ lớp ảnh nền cần mạng.
 
 ---
 
 ## 4. Dịch Vụ Geocoding Gợi Ý Tọa Độ (`geocoding.py`)
 
 Khi thành viên nộp ảnh cho một cơ sở mới và nhập địa chỉ, hệ thống kích hoạt module geocoding đa nguồn tại `backend/apps/places/geocoding.py`:
-1. **Photon Geocoder:** Truy vấn dịch vụ Photon mã nguồn mở (`photon.komoot.io`).
-2. **Nominatim OSM:** Truy vấn dịch vụ bản đồ cộng đồng OpenStreetMap Nominatim làm cơ chế dự phòng thứ nhất.
-3. **Esri Geocoder:** Cơ chế dự phòng thứ hai.
-4. **Cơ Chế Khả Năng Chống Chịu Lỗi (Resilience):** Nếu dịch vụ thứ nhất gặp sự cố mạng hoặc quá tải, hệ thống tự động chuyển sang nhà cung cấp tiếp theo mà không làm gián đoạn trải nghiệm của người dùng.
+1. **Nominatim OSM:** Truy vấn dịch vụ bản đồ cộng đồng OpenStreetMap Nominatim (`nominatim.openstreetmap.org`), giới hạn trong lãnh thổ Việt Nam.
+2. **Photon Geocoder:** Truy vấn dịch vụ Photon mã nguồn mở (`photon.komoot.io`) làm cơ chế dự phòng thứ nhất, ưu tiên trọng tâm tọa độ Đà Nẵng.
+3. **Cơ sở dữ liệu OSM cục bộ:** Đối sánh tên đường và nội suy tuyến tính dọc polyline trong `frontend/public/map/region.geojson`, dùng được khi không có kết nối mạng.
+4. **Bộ nhớ đệm:** Kết quả thành công được lưu 24 giờ theo địa chỉ đã chuẩn hóa, giảm số lần gọi dịch vụ ngoài.
+5. **Không suy diễn tọa độ:** Khi cả ba nguồn thất bại, hàm trả `success: false` để người dùng tự chọn vị trí trên bản đồ; hệ thống không gán một tọa độ mặc định.
+6. **Giới hạn tần suất:** Điểm cuối `/places/geocode/` áp dụng phạm vi `geocode` 30 yêu cầu/phút.
 
 ---
 
@@ -83,7 +84,7 @@ Hệ thống được đóng gói sẵn bộ dữ liệu hạt giống tại th�
 - **`data/photos/`:** 36 tệp **ảnh minh hoạ sinh tự động** (placeholder), tạo bởi `scripts/generate_coffee_photos.py` ở kích thước `1600×1067`.
 
 > [!WARNING]
-> **Giới hạn đã biết:** 36 ảnh trong `data/photos/` **không phải ảnh chụp thực địa**. Chúng được vẽ bằng PIL (gradient, khung, chip nhãn) và có watermark `RENDEZ · KHÁM PHÁ CÀ PHÊ QUANH ĐH BÁCH KHOA ĐÀ NẴNG (DUT)`. Trường `credit` trong `danang.json` ghi `license: "Synthetic placeholder (không phải ảnh thực địa)"`. Các tệp JPEG hiện có vẫn mang dòng chữ cũ `Đã xác thực thực tế & Giới trẻ Đà Nẵng` vẽ trực tiếp vào bitmap; script sinh ảnh đã được sửa sang watermark trung tính nhưng ảnh **chưa được sinh lại** (thao tác đó ghi đè 36 tệp đang được git theo dõi). Chi tiết: [`data/README.md`](../../data/README.md) mục 5.
+> **Giới hạn đã biết:** 36 ảnh trong `data/photos/` **không phải ảnh chụp thực địa**. Chúng được vẽ bằng PIL (gradient, khung, chip nhãn) và có watermark `RENDEZ · KHÁM PHÁ CÀ PHÊ QUANH ĐH BÁCH KHOA ĐÀ NẴNG (DUT)`. Các tệp JPEG hiện có vẫn mang dòng chữ cũ `Đã xác thực thực tế & Giới trẻ Đà Nẵng` vẽ trực tiếp vào bitmap; script sinh ảnh đã được sửa sang watermark trung tính nhưng ảnh **chưa được sinh lại** (thao tác đó ghi đè 36 tệp đang được git theo dõi). Chi tiết: [`data/README.md`](../../data/README.md) mục 5.
 
 ### Lệnh Nhập Liệu Bền Vững: `import_danang`
 Lệnh quản trị Django `python manage.py import_danang` được thiết kế với cơ chế bảo vệ trạng thái tuyệt đối:
@@ -131,7 +132,7 @@ Mọi mã nguồn, dữ liệu nguồn và scripts nằm tại gốc `rendez-web
 ```text
 frontend/       React, TypeScript, ảnh chủ đề và bản đồ local
 backend/        Django, API, migrations, quản trị và tests
-data/           manifest, ảnh minh hoạ và nguồn/giấy phép
+data/           manifest và ảnh minh hoạ
 docs/           hướng dẫn, checklist và kết quả kiểm chứng
 scripts/        setup/start/stop/check/backup/restore
 .local/         PostgreSQL, media, secrets, logs, backup; không commit

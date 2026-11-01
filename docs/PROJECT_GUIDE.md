@@ -20,7 +20,7 @@ Rendez giải quyết vấn đề này bằng cách:
 - Duyệt không gian qua **lưới ảnh thực địa (Masonry Feed)** giữ nguyên 100% tỷ lệ khung hình thật (`aspect-ratio`).
 - Tra cứu trực quan trên **bản đồ số tương tác (MapLibre GL)** đồng bộ hai chiều với bộ lọc và khung nhìn (`bbox`).
 - Lọc không gian theo **đặc điểm thị giác (Visual Attributes)** nhìn thấy trực tiếp bằng mắt (ổ cắm, làm việc yên tĩnh, điều hòa, view sông Hàn...).
-- Cộng đồng đóng góp ảnh thực tế (1–5 ảnh/lần) với cam kết bản quyền, tự động loại bỏ EXIF và nén hiển thị an toàn.
+- Cộng đồng đóng góp ảnh thực tế (1–5 ảnh/lần) kèm xác nhận điều khoản sử dụng, tự động loại bỏ EXIF và nén hiển thị an toàn.
 
 ---
 

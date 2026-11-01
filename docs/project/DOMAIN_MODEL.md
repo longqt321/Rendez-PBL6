@@ -129,7 +129,7 @@ flowchart TD
 
 #### `VisualAttribute` & `PhotoAttribute` (Đặc tính thị giác)
 - **`VisualAttribute`:** Danh mục các đặc điểm tiện ích nhìn thấy trực tiếp (Bàn học & Ổ cắm, Trong nhà & Máy lạnh, Cây xanh & Vườn, View thoáng đãng, Mở cửa muộn). Model `apps.photos.models.VisualAttribute`.
-- **`PhotoAttribute`:** Bản ghi liên kết gán giữa `Photo` và `VisualAttribute`. Mang metadata kiểm duyệt thủ công: `reviewed_by` (Staff thực hiện), `reviewed_at` và `source = "manual"`. Model `apps.photos.models.PhotoAttribute` ([backend/apps/photos/models.py:235](file:///home/longtran/Projects/rendez-web/backend/apps/photos/models.py#L235)).
+- **`PhotoAttribute`:** Bản ghi liên kết gán giữa `PlacePhoto` và `VisualAttribute`, có thể gắn thêm với `PostMedia`. Mang metadata hậu kiểm thủ công: `reviewed_by` (Staff thực hiện), `reviewed_at` và `source = "manual"`. Model `apps.photos.models.PhotoAttribute` ([backend/apps/photos/models.py:235](file:///home/longtran/Projects/rendez-web/backend/apps/photos/models.py#L235)).
 
 #### `PhotoAudit` (Nhật ký kiểm toán ảnh)
 - **Bản chất nghiệp vụ:** Audit Trail Entity.
@@ -145,7 +145,7 @@ flowchart TD
 - **Mã nguồn triển khai:** Model `apps.photos.models.PhotoSubmission` ([backend/apps/photos/models.py:53](file:///home/longtran/Projects/rendez-web/backend/apps/photos/models.py#L53)).
 - **Bất biến nghiệp vụ:**
   - Giới hạn từ 1 đến 5 ảnh cho mỗi lần nộp. **Lưu ý triển khai:** Giới hạn này được kiểm tra chặt chẽ ở tầng API Serializer (`PhotoUploadSerializer`); tầng Database chỉ chặn cận trên qua ràng buộc kiểm tra `sort_order <= 4`, không tự chặn cận dưới tối thiểu 1 ảnh.
-  - Bắt buộc phải có cam kết bản quyền người nộp (`rights_confirmed = True`, phiên bản cam kết `photo-rights-v2`).
+  - Bắt buộc phải có xác nhận điều khoản sử dụng của người nộp: `PhotoUploadSerializer` yêu cầu `consent = True` và `consent_version = "photo-rights-v2"`; thời điểm xác nhận lưu ở `consent_at`.
 - **Thực tế mã nguồn As-Is:** Luồng nộp ảnh hiện tại thực hiện **Auto-Publication** — tự động gán `status = "approved"`, `published_at = now()` và xuất bản ngay lập tức ảnh sang `PlacePhoto(status="published")`.
 
 #### `VenueProposal` (Đề xuất cơ sở mới)
@@ -161,7 +161,7 @@ flowchart TD
 - **Mã nguồn triển khai:** Model `apps.favorites.models.Favorite` ([backend/apps/favorites/models.py:5](file:///home/longtran/Projects/rendez-web/backend/apps/favorites/models.py#L5)). Giao diện người dùng hiển thị nhãn `Lưu` (`SaveButton`, trang `/saved`).
 
 #### `ContentReport` (Báo cáo vi phạm)
-- **Bản chất nghiệp vụ:** Entity tiếp nhận phản ánh vi phạm về bản quyền, sai lệch vị trí, riêng tư hoặc nội dung không an toàn. Model `apps.photos.models.ContentReport`.
+- **Bản chất nghiệp vụ:** Entity tiếp nhận phản ánh về sai lệch vị trí, quyền riêng tư hoặc nội dung không an toàn. Model `apps.photos.models.ContentReport`.
 
 ---
 
@@ -216,7 +216,7 @@ classDiagram
 |---|---|---|---|
 | **`User`** | Identity Entity | Model `apps.accounts.models.User` | Đăng nhập session, nộp ảnh, like, bình luận, lưu quán |
 | **`Staff`** | System Privilege | `User.is_staff = True` | Đăng nhập giao diện Django Admin (`/admin/`) |
-| **`Moderator`** | Business Capability | `user.is_staff and user.has_perm("photos.review_photosubmission")` | Duyệt/gỡ ảnh, gắn nhãn đặc tính thị giác tại view kiểm duyệt |
+| **`Moderator`** | Business Capability | `user.is_staff and user.has_perm("photos.review_photosubmission")` | Hậu kiểm ảnh công khai: rút ảnh, chọn ảnh bìa, sửa nhãn và mô tả tại view `admin:photos_review` |
 | **`Creator Profile`** | Technical Route | Tuyến đường `/creators/:id` | Hiển thị hồ sơ công khai của bất kỳ User nào (`photo_count >= 0`) |
 | **`Creator`** | Intended Persona | Ý định sản phẩm | Chưa có quy tắc chặn tài khoản có 0 ảnh truy cập profile |
 | **`Photo Contributor`** | Attribution Metadata | `PhotoSubmission.submitted_by` | Ghi nhận tài khoản đã nộp chùm ảnh |
@@ -246,3 +246,10 @@ Bảng phân loại mức độ chắc chắn của các khái niệm nghiệp v
 | **VenueProposal Re-activation** | **Decision Pending** | Đang chờ quyết định khôi phục hàng duyệt hay xóa bỏ model (#2) |
 | **Place Owner Claim System** | **Unimplemented** | Chưa có mô hình hóa hoặc luồng xác minh chủ quán |
 | **District as Administrative Entity** | **Deprecated / Out of Scope** | Thay bằng chuỗi token lọc địa chỉ phía client |
+
+
+---
+
+## Implementation Status — Post Domain Model (2026-10-31)
+
+Target Post/PostMedia schema and data migration have been implemented. New apps: `apps.posts`. Legacy tables retained for compatibility; `LegacyPhotoMapping` resolves legacy `PlacePhoto` IDs. Backend tests (22) and frontend typecheck/build/tests pass. Frontend UI remains PlacePhoto-centric pending full migration; API adapters preserve legacy URLs.

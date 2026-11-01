@@ -23,7 +23,7 @@ Tài liệu thiết lập hệ thống ngôn ngữ nghiệp vụ chuẩn mực (
   - *Development Environment:* Sử dụng PostgreSQL/PostGIS local (Docker port 55433), media lưu tại `.local/media/`. (Verified)
   - *Production Infrastructure:* Chưa được cấu hình hoặc kiểm chứng trong repository. (Not Verified / Unknown)
   - *Map Rendering Engine:* Sử dụng MapLibre GL JS mã nguồn mở trên client. (Verified)
-  - *Tile Source & Hosting:* Lớp dữ liệu đường phố là GeoJSON nội bộ (`/map/region.geojson`), nhưng lớp gạch raster nền hiện vẫn lấy trực tiếp từ dịch vụ ngoài của Esri (`server.arcgisonline.com`). (Verified - Partial Dependency)
+  - *Tile Source & Hosting:* Lớp dữ liệu đường phố, kiểu bản đồ và bộ ký tự là tài nguyên nội bộ (`/map/region.geojson`, `/map/style.json`, `/map/glyphs/`), nhưng lớp gạch raster nền hiện vẫn lấy trực tiếp từ dịch vụ gạch bản đồ công cộng (`server.arcgisonline.com`). (Verified - Partial Dependency)
 - **Source References:** `PRODUCT.md` § Product Principles (Dòng 65); `frontend/public/map/style.json`
 - **Trạng thái:** **Architecture Goal / Partially Implemented**
 
@@ -67,8 +67,8 @@ Tài liệu thiết lập hệ thống ngôn ngữ nghiệp vụ chuẩn mực (
 #### `District` (Địa bàn tìm kiếm)
 - **Loại khái niệm:** Legacy District-name Tokens / Address Search Filter
 - **Định nghĩa nghiệp vụ:** Các chuỗi định danh địa bàn quen thuộc (như Hải Châu, Sơn Trà, Ngũ Hành Sơn, Thanh Khê, Cẩm Lệ, Liên Chiểu, Hòa Vang) được lưu giữ trong dữ liệu địa chỉ và logic tìm kiếm để hỗ trợ người dùng lọc nhanh theo khu vực. Không định nghĩa các token này là các đơn vị hành chính cấp quận/huyện hiện hành.
-- **As-Is Implementation Mapping:** Không phải Entity hay trường riêng trong DB. Được bóc tách từ chuỗi `Place.address` qua regex phía client (`extractDistrict` trong `discovery.tsx`) để tạo nhãn giao diện và hỗ trợ tham số lọc trên URL.
-- **Source References:** `frontend/src/app/discovery.tsx:96`
+- **As-Is Implementation Mapping:** Không phải Entity hay trường riêng trong DB. Được bóc tách từ chuỗi `Place.address` qua hàm `extractDistrict` phía máy khách để tạo nhãn giao diện và hỗ trợ tham số lọc trên URL.
+- **Source References:** `frontend/src/lib/format.ts:62`
 - **Trạng thái:** **Verified** (Legacy Search Token Pattern)
 
 ---
@@ -86,9 +86,9 @@ Tài liệu thiết lập hệ thống ngôn ngữ nghiệp vụ chuẩn mực (
 
 #### `Withdrawn Photo` (Ảnh bị rút)
 - **Loại khái niệm:** Lifecycle State của Photo
-- **Định nghĩa nghiệp vụ:** Trạng thái của một ảnh bị gỡ khỏi toàn bộ các hiển thị công khai do phát hiện sai lệch thông tin, vi phạm bản quyền, vi phạm quyền riêng tư hoặc theo yêu cầu kiểm duyệt. Khi bị rút, cờ ảnh đại diện bắt buộc bị hủy (`is_cover = False`).
+- **Định nghĩa nghiệp vụ:** Trạng thái của một ảnh bị gỡ khỏi toàn bộ các hiển thị công khai do phát hiện sai lệch thông tin, xâm phạm quyền riêng tư hoặc theo quyết định hậu kiểm. Khi bị rút, cờ ảnh đại diện bắt buộc bị hủy (`is_cover = False`).
 - **As-Is Implementation Mapping:** `PlacePhoto.status == "withdrawn"` và `PlacePhoto.withdrawn_at IS NOT NULL`.
-- **Source References:** `backend/apps/photos/models.py:179, 196`
+- **Source References:** `backend/apps/photos/models.py:176-187`
 - **Trạng thái:** **Verified**
 
 #### `Archived Photo` (Ảnh tư liệu lịch sử)
@@ -106,7 +106,7 @@ Tài liệu thiết lập hệ thống ngôn ngữ nghiệp vụ chuẩn mực (
 
 #### `PhotoAttribute` (Liên kết gán đặc tính)
 - **Loại khái niệm:** Associative Entity
-- **Định nghĩa nghiệp vụ:** Bản ghi liên kết gán giữa một `Photo` và một `VisualAttribute`. Mang metadata kiểm duyệt gồm: người duyệt (`reviewed_by`), thời điểm duyệt (`reviewed_at`) và nguồn thẩm định (`source = "manual"`).
+- **Định nghĩa nghiệp vụ:** Bản ghi liên kết gán giữa một `PlacePhoto` và một `VisualAttribute`, có thể gắn thêm với `PostMedia` tương ứng. Mang metadata hậu kiểm gồm: người gán (`reviewed_by`), thời điểm gán (`reviewed_at`) và nguồn (`source = "manual"`).
 - **As-Is Implementation Mapping:** Model `apps.photos.models.PhotoAttribute`
 - **Source References:** `backend/apps/photos/models.py:235`
 - **Trạng thái:** **Verified**
@@ -131,7 +131,7 @@ Tài liệu thiết lập hệ thống ngôn ngữ nghiệp vụ chuẩn mực (
 
 #### `PhotoSubmission` (Lượt đóng góp ảnh)
 - **Loại khái niệm:** Entity (Aggregate Root candidate trong Contribution context)
-- **Định nghĩa nghiệp vụ:** Lượt gửi từ 1 đến 5 ảnh thực tế của thành viên kèm cam kết bản quyền, hướng tới một địa điểm có sẵn hoặc đề xuất địa điểm mới. Giới hạn 1 đến 5 ảnh được kiểm tra ở tầng API Serializer (`PhotoUploadSerializer`); tầng Database chỉ chặn cận trên qua `sort_order <= 4`, không tự bảo đảm cận dưới tối thiểu 1 ảnh.
+- **Định nghĩa nghiệp vụ:** Lượt gửi từ 1 đến 5 ảnh thực tế của thành viên kèm xác nhận quyền đăng ảnh, hướng tới một địa điểm có sẵn hoặc đề xuất địa điểm mới. Giới hạn 1 đến 5 ảnh được kiểm tra ở tầng API Serializer (`PhotoUploadSerializer`); tầng Database chỉ chặn cận trên qua `sort_order <= 4`, không tự bảo đảm cận dưới tối thiểu 1 ảnh.
 - **As-Is Implementation Mapping:** Model `apps.photos.models.PhotoSubmission`
 - **Hành vi thực tế mã nguồn:** Luồng API nộp ảnh hiện tại tự động gán `status = "approved"`, `published_at = now`, và gán `published_by = user` (submitting user) nhằm tạo ngay `PlacePhoto(status="published")`.
 - **Source References:** `backend/apps/photos/models.py:53`; `backend/apps/photos/services.py:65`; `backend/apps/photos/serializers.py:239`
@@ -161,8 +161,8 @@ Tài liệu thiết lập hệ thống ngôn ngữ nghiệp vụ chuẩn mực (
 #### `SavedPlace` (Địa điểm đã lưu)
 - **Loại khái niệm:** Associative Entity
 - **Định nghĩa nghiệp vụ:** Hành vi thành viên lưu một địa điểm vào danh sách cá nhân để theo dõi và lên kế hoạch ghé thăm.
-- **As-Is Implementation Mapping:** Model `apps.favorites.models.Favorite` (Backend) / UI hiển thị nhãn `Lưu` (`SaveButton`, trang `/saved`).
-- **Source References:** `backend/apps/favorites/models.py:5`; `frontend/src/app/discovery.tsx:275`
+- **As-Is Implementation Mapping:** Model `apps.favorites.models.Favorite`; giao diện hiển thị nhãn `Lưu` (`SaveButton`, trang `/saved`).
+- **Source References:** `backend/apps/favorites/models.py:6`; `frontend/src/features/saved/SavedPage.tsx`
 - **Trạng thái:** **Verified** (Mapping giữa `Favorite` $\leftrightarrow$ `SavedPlace`)
 
 #### `ContentReport` (Báo cáo vi phạm)
@@ -192,9 +192,9 @@ Tài liệu thiết lập hệ thống ngôn ngữ nghiệp vụ chuẩn mực (
 
 #### `Moderator` (Kiểm duyệt viên)
 - **Loại khái niệm:** Business Capability / Role
-- **Định nghĩa nghiệp vụ:** Tài khoản Staff được cấp quyền hạn nghiệp vụ cụ thể `photos.review_photosubmission`. Quyền này cho phép duyệt, gỡ ảnh và gán nhãn đặc tính thị giác qua view kiểm duyệt `admin:photos_review`. Quyền này không tự động bao gồm các quyền quản trị Place hay xử lý ContentReport.
+- **Định nghĩa nghiệp vụ:** Tài khoản Staff được cấp quyền hạn nghiệp vụ cụ thể `photos.review_photosubmission`. Quyền này cho phép hậu kiểm ảnh đã công khai: rút ảnh, chọn ảnh bìa, sửa nhãn và mô tả qua view `admin:photos_review`. Quyền này không tự động bao gồm các quyền quản trị Place hay xử lý ContentReport.
 - **As-Is Implementation Mapping:** Kiểm tra qua hàm `check_reviewer(user)`: `user.is_staff and user.has_perm("photos.review_photosubmission")`.
-- **Source References:** `backend/apps/photos/services.py:28`
+- **Source References:** `backend/apps/photos/services.py:60`
 - **Trạng thái:** **Verified**
 
 #### `Creator Profile` (Trang hồ sơ tác giả)
@@ -211,7 +211,7 @@ Tài liệu thiết lập hệ thống ngôn ngữ nghiệp vụ chuẩn mực (
 
 #### `Photo Contributor` (Người nộp ảnh)
 - **Loại khái niệm:** Attribution Metadata
-- **Định nghĩa nghiệp vụ:** Thuộc tính ghi nhận tài khoản đã thực hiện gửi chùm ảnh đóng góp (`PhotoSubmission.submitted_by`), không mặc định đây là người trực tiếp bấm máy chụp hay người nắm giữ bản quyền tối hậu.
+- **Định nghĩa nghiệp vụ:** Thuộc tính ghi nhận tài khoản đã thực hiện gửi chùm ảnh đóng góp (`PhotoSubmission.submitted_by`), không mặc định đây là người trực tiếp bấm máy chụp.
 - **As-Is Implementation Mapping:** `PhotoSubmission.submitted_by` (ForeignKey tới `User`).
 - **Source References:** `backend/apps/photos/models.py:54`
 - **Trạng thái:** **Verified**

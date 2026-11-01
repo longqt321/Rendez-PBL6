@@ -14,11 +14,11 @@ Tài liệu này cung cấp bức tranh trung thực về hiện trạng triển
 | **Trạng thái Đóng cửa** | Trạng thái cơ sở đóng cửa kinh doanh (`closed`) | **Chưa Triển Khai (Unimplemented)** | Hệ thống chỉ có soft-delete `deleted_at` |
 | **Lưới ảnh Masonry** | Bố cục đa cột thích ứng, giữ 100% tỷ lệ khung hình thật | **Đã Triển Khai (Implemented)** | `frontend/src/app/masonry.tsx` |
 | **Bản đồ Tương tác** | MapLibre GL đồng bộ URL `bbox`, marker tương tác | **Đã Triển Khai (Implemented)** | `frontend/src/app/map.tsx`, `PlaceMapView` |
-| **Gạch Bản đồ Nền** | Tự chủ hoàn toàn gạch raster bản đồ nền (Local-first) | **Bán Phần (Partially Implemented)** | Đang tải từ Esri (`server.arcgisonline.com`) |
+| **Gạch Bản đồ Nền** | Tự chủ hoàn toàn gạch raster bản đồ nền (Local-first) | **Bán Phần (Partially Implemented)** | Đang tải từ dịch vụ gạch bản đồ công cộng (`server.arcgisonline.com`) |
 | **Vector Bản đồ Nội bộ**| Dữ liệu đường phố vector nội bộ Đà Nẵng | **Đã Triển Khai (Implemented)** | `frontend/public/map/region.geojson` |
 | **Bộ lọc Đặc tính** | Lọc theo đặc tính thị giác (ổ cắm, máy lạnh, yên tĩnh) | **Đã Triển Khai (Implemented)** | `apps.photos.models.VisualAttribute`, `FeedView` |
-| **Geocoding Gợi ý** | Tự động gợi ý tọa độ từ địa chỉ (Photon/Nominatim/Esri)| **Đã Triển Khai (Implemented)** | `apps.places.geocoding.py` |
-| **Nộp Ảnh Tư Liệu** | Nộp 1–5 ảnh, bóc tách EXIF, cam kết `photo-rights-v2` | **Đã Triển Khai (Implemented)** | `apps.photos.services.submit()`, `test_upload_safety.py` |
+| **Geocoding Gợi ý** | Tự động gợi ý tọa độ từ địa chỉ (Nominatim/Photon/OSM cục bộ)| **Đã Triển Khai (Implemented)** | `apps.places.geocoding.py` |
+| **Nộp Ảnh Tư Liệu** | Nộp 1–5 ảnh, bóc tách EXIF, xác nhận `photo-rights-v2` | **Đã Triển Khai (Implemented)** | `apps.photos.services.submit()`, `test_upload_safety.py` |
 | **Duyệt Đề Xuất Quán** | Kiểm duyệt hàng chờ `VenueProposal` trước khi đăng | **Chờ Quyết Định (Decision Pending)** | Model có trong DB nhưng code bỏ qua, đăng thẳng |
 | **Tự Động Xuất Bản** | Tự động tạo Place và xuất bản ảnh ngay khi nộp | **Đã Triển Khai (Implemented)** | `test_auto_publication.py` |
 | **Ảnh Bị Rút (Withdrawn)**| Rút ảnh vi phạm, ghi log `PhotoAudit`, hủy cờ ảnh bìa | **Đã Triển Khai (Implemented)** | `services.change_publication()` |
@@ -74,4 +74,4 @@ Trong quá trình tiến hóa của dự án, các thành phần sau đã đư�
 2. **Mở rộng độ phủ dữ liệu hạt giống:**
    - Thu thập và kiểm chứng thực địa thêm các quán cà phê đặc trưng tại quận Hải Châu (view sông Hàn, Bạch Đằng), Sơn Trà (bán đảo, cà phê ngắm biển), Ngũ Hành Sơn.
 3. **Tiến tới tự chủ hoàn toàn tài nguyên gạch bản đồ (Data Sovereignty):**
-   - Nghiên cứu giải pháp tự host tile server nội bộ (sử dụng OpenMapTiles / Martin / PMTiles) để thay thế hoàn toàn lớp gạch nền phụ thuộc ngoài của Esri.
+   - Nghiên cứu giải pháp tự host tile server nội bộ (sử dụng OpenMapTiles / Martin / PMTiles) để thay thế hoàn toàn lớp gạch nền phụ thuộc dịch vụ ngoài.

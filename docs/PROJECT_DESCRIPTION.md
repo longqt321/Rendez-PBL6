@@ -59,18 +59,19 @@ flowchart LR
 * **Huy hiệu thông tin nhanh:** Trực tiếp trên thẻ ảnh hiển thị tên quán, khu vực đường phố và nút lưu nhanh vào bộ sưu tập cá nhân.
 
 ### 3.2. Bản Đồ Số Tương Tác Cao Cấp (Interactive Map Engine)
-* **Nền bản đồ ESRI World Street Cartography:** Sử dụng bản đồ số toàn cầu của Esri với độ phân giải cao, hỗ trợ màn hình Retina, không watermark, không giới hạn request, độ trễ CDN toàn cầu cực thấp.
+* **Nền bản đồ raster:** Lớp gạch nền tải từ dịch vụ bản đồ công cộng, hiển thị ở độ phân giải cao trên màn hình Retina. Kiểu bản đồ, bộ ký tự tiếng Việt và dữ liệu vector đường bộ được phục vụ cục bộ từ `frontend/public/map/`.
 * **Đồng bộ hai chiều Bản đồ ↔ Danh sách:**
   - Di chuyển hoặc phóng to bản đồ tự động lọc danh sách quán trong khung nhìn (Viewport Bounding Box).
   - Chọn một điểm ghim trên bản đồ ngay lập tức hiển thị thẻ xem trước (Preview Card) với ảnh đại diện, thuộc tính nổi bật, giờ mở cửa và nút dẫn đường.
   - Ngược lại, bấm chọn quán từ danh sách sẽ kích hoạt hoạt họa máy quay bản đồ mượt mà (`flyTo`) đến vị trí quán.
 
 ### 3.3. Động Cơ Định Vị Địa Chỉ Thời Gian Thực (Zero-Click Real-time Geocoding)
-* **100% dữ liệu uy tín bên thứ ba:** Không sử dụng danh sách thủ công tự tạo. Hệ thống tích hợp song song các dịch vụ GIS chuẩn quốc tế:
+* **Chuỗi dự phòng ba bước:** Hệ thống tra cứu tọa độ qua các dịch vụ GIS công khai theo thứ tự:
   1. **OpenStreetMap Nominatim (Real-time API):** Ưu tiên phạm vi địa giới hành chính Việt Nam và Đà Nẵng.
   2. **Photon by Komoot (Real-time API):** Tìm kiếm mờ thông minh với trọng tâm tọa độ Đà Nẵng.
-  3. **Esri ArcGIS World Geocoding (Real-time API):** Nền tảng định danh địa chỉ doanh nghiệp chuẩn GIS.
-  4. **Cơ sở dữ liệu Vector OpenStreetMap nội bộ (`region.geojson`):** Hơn 2.940 tuyến đường thực tế tại Đà Nẵng, áp dụng **Thuật toán Nội suy Tuyến tính (Polyline Linear Referencing)** ước lượng tọa độ theo số nhà/kiệt khi ngoại tuyến.
+  3. **Cơ sở dữ liệu Vector OpenStreetMap nội bộ (`region.geojson`):** Áp dụng **Thuật toán Nội suy Tuyến tính (Polyline Linear Referencing)** ước lượng tọa độ theo số nhà/kiệt khi ngoại tuyến.
+* **Bộ nhớ đệm 24 giờ:** Kết quả tra cứu thành công được lưu theo khóa băm SHA-256 của chuỗi địa chỉ đã chuẩn hóa, tránh gọi lại dịch vụ ngoài cho cùng một địa chỉ.
+* **Không bịa tọa độ:** Khi cả ba nguồn đều thất bại, hệ thống trả về `success: false` thay vì gán một tọa độ mặc định; địa điểm được lưu với tọa độ rỗng và giao diện hiển thị trạng thái thiếu vị trí thay vì ghim sai chỗ.
 * **Trải nghiệm người dùng không nỗ lực:** Người dùng chỉ cần gõ địa chỉ thực tế (ví dụ: `100 Phạm Như Xương, Liên Chiểu, Đà Nẵng` hay `Cầu Rồng`), hệ thống sau 450ms debounce tự động tính toán kinh độ, vĩ độ, hiển thị nhãn xác thực và tự động đưa điểm ghim bản đồ về đúng vị trí.
 * **Backend Auto-fill Hook:** Trong `Place.save()`, bất kỳ địa điểm nào chưa có tọa độ sẽ được hệ thống tự động giải mã địa chỉ và điền kinh độ/vĩ độ trước khi lưu vào cơ sở dữ liệu.
 
@@ -101,7 +102,7 @@ flowchart LR
 * **Quy trình 3 bước khoa học:**
   1. *Bước 1:* Chọn địa điểm có sẵn hoặc bật "Thêm địa điểm mới" (hỗ trợ tự động định vị địa chỉ).
   2. *Bước 2:* Tải lên tối đa 5 ảnh chụp thực tế (tối đa 10 MiB/ảnh, định dạng JPEG/PNG, kiểm tra kích thước tối thiểu 100x100 px).
-  3. *Bước 3:* Nhập chú thích không gian và ký cam kết bản quyền ảnh (`consent`).
+  3. *Bước 3:* Nhập chú thích không gian và xác nhận điều khoản sử dụng (`consent`).
 * **An toàn & Chống trùng lặp:** Sinh mã băm bảo mật (`sha256`) và khóa `Idempotency-Key` ngăn chặn gửi trùng lặp khi mạng chậm. Hệ thống tự động xử lý ảnh bằng Pillow, tước bỏ siêu dữ liệu nhạy cảm (EXIF GPS camera cá nhân) và xuất ảnh phái sinh tối ưu băng thông.
 
 ---
@@ -121,7 +122,7 @@ flowchart TD
         Vite["Vite Build Tooling"]
         Router["React Router v7"]
         QueryCache["TanStack Query v5 (Server State Caching)"]
-        MapLibreGL["MapLibre GL v5 (Esri Raster Tiles)"]
+        MapLibreGL["MapLibre GL v5 (Raster Tiles)"]
         Components["Radix UI & Tailwind CSS Tokens"]
     end
 
@@ -138,7 +139,7 @@ flowchart TD
         end
 
         Selectors["Layer Selectors (Tối ưu hóa Truy vấn ORM)"]
-        Geocoding["Geocoding Engine (Nominatim, Photon, Esri, OSM Local)"]
+        Geocoding["Geocoding Engine (Nominatim, Photon, OSM Local)"]
     end
 
     subgraph DatabaseStorage [Lưu trữ Dữ liệu]
@@ -161,7 +162,7 @@ flowchart TD
 | **Routing** | React Router | 7.18.4 | Hỗ trợ client-side routing mượt mà, quản lý query state linh hoạt |
 | **State & Caching** | TanStack React Query | 5.104.1 | Đồng bộ dữ liệu máy chủ, tự động revalidate, cache tối ưu |
 | **Map Rendering** | MapLibre GL JS | 5.24.0 | Hiển thị bản đồ vector/raster 60fps mượt mà, không phụ thuộc Google Maps SDK trả phí |
-| **Bản đồ nền** | ESRI World Street Map | Global CDN | Dữ liệu GIS sắc nét, miễn phí thương mại, không watermark, không giới hạn |
+| **Bản đồ nền** | Lớp gạch raster công cộng | CDN công cộng | Ảnh nền bản đồ đường phố; kiểu bản đồ, bộ ký tự và vector đường bộ phục vụ cục bộ |
 | **Kiểu dáng & Token** | CSS Modules + Tailwind | 4.x | Thiết kế tối giản, bảng màu HSL hiện đại, tải tức thì |
 | **Backend Core** | Django + DRF | 5.2.18 / 3.16 | Xử lý nghiệp vụ mạnh mẽ, ORM an toàn, phân quyền chặt chẽ |
 | **Xử lý Ảnh** | Pillow (PIL) | 12.1.1 | Tước bỏ EXIF, nén JPEG progressive, chống mã độc tải lên |
@@ -211,7 +212,7 @@ bun run dev --port 5173
 ## 7. Lộ Trình Phát Triển Thương Mại (Commercial Roadmap)
 
 1. **Giai đoạn 1 (Hiện tại):**
-   - Hoàn thiện trải nghiệm khám phá cà phê Đà Nẵng, hệ thống định vị tự động Zero-Click và bản đồ ESRI tương tác cao cấp.
+   - Hoàn thiện trải nghiệm khám phá cà phê Đà Nẵng, hệ thống định vị tự động Zero-Click và bản đồ tương tác cao cấp.
 2. **Giai đoạn 2 (Tăng trưởng người dùng & UGC):**
    - Ra mắt tính năng xếp hạng Top Quán Nổi Bật tuần/tháng theo lượng thả tim thực tế; triển khai chiến dịch Check-in nhận voucher cùng 20 quán đối tác tại Đà Nẵng.
 3. **Giai đoạn 3 (B2B SaaS Portal):**

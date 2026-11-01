@@ -48,7 +48,7 @@ Tài liệu này là chỉ mục tra cứu nhanh (Quick Navigation Index), giúp
   - `Category`: Danh mục loại hình quán (Cà phê, Trà, Làm việc).
   - `Place`: Thực thể địa điểm cơ sở (tên, slug, tọa độ, địa chỉ, status, `deleted_at`, `verified_at`).
   - `PlaceOpeningHoursSpecification`: Đặc tả giờ mở cửa theo ngày.
-- `backend/apps/places/geocoding.py`: Module geocoding đa nguồn (Photon, Nominatim, Esri fallback).
+- `backend/apps/places/geocoding.py`: Module geocoding đa nguồn (Nominatim, Photon, OSM cục bộ).
 - `backend/apps/places/selectors.py`: Hàm truy vấn tối ưu cho địa điểm và bản đồ không gian.
 - `backend/apps/places/views.py`:
   - `PlaceListView`, `PlaceDetailView`: Danh sách và chi tiết địa điểm.
@@ -61,7 +61,7 @@ Tài liệu này là chỉ mục tra cứu nhanh (Quick Navigation Index), giúp
   - `PhotoAsset`: Quản lý tệp nhị phân (`original` đã chuẩn hóa, `derivative` nén, sha256).
   - `VisualAttribute`: Danh mục đặc tính thị giác (Bàn học & Ổ cắm, Yên tĩnh, Điều hòa...).
   - `PhotoAttribute`: Bản ghi liên kết gán đặc tính (kèm `reviewed_by`, `source="manual"`).
-  - `PhotoSubmission`: Lượt gửi chùm 1–5 ảnh với cam kết bản quyền `photo-rights-v2`.
+  - `PhotoSubmission`: Lượt gửi chùm 1–5 ảnh kèm xác nhận điều khoản sử dụng `photo-rights-v2`.
   - `VenueProposal`: Model đề xuất quán mới (hiện bị luồng `submit()` bỏ qua).
   - `PhotoComment`, `PhotoLike`: Tương tác bình luận và thích ảnh.
   - `ContentReport`: Tiếp nhận báo cáo vi phạm nội dung.
@@ -95,7 +95,6 @@ Tài liệu này là chỉ mục tra cứu nhanh (Quick Navigation Index), giúp
 - `frontend/src/app/creator.tsx`: Màn hình Hồ sơ tác giả ảnh (`/creators/:id`).
 - `frontend/src/app/auth.tsx`: Form đăng nhập, đăng ký và đổi mật khẩu.
 - `frontend/src/app/contributions.tsx`: Modal tải lên 1–5 ảnh, tích hợp geocoding gợi ý địa chỉ.
-- `frontend/src/app/social.tsx`: Thành phần tương tác thích ảnh, danh sách bình luận và báo cáo vi phạm.
 - `frontend/src/app/shared.tsx`: Các tiện ích giao diện dùng chung (Empty states, Skeleton loader).
 
 ### 3.2. Thành Phần UI Nguyên Tử (`frontend/src/components/ui/`)
@@ -118,9 +117,9 @@ Tài liệu này là chỉ mục tra cứu nhanh (Quick Navigation Index), giúp
 ## 4. Dữ Liệu Hạt Giống & Tài Nguyên Bản Đồ
 
 - `data/danang.json`: Manifest 12 cơ sở quán cà phê quanh khu vực Đại học Bách Khoa Đà Nẵng. 36 ảnh trong `data/photos/` là **ảnh minh hoạ sinh tự động** (placeholder), không phải ảnh chụp thực địa — xem `data/README.md` mục 5.
-- `data/photos/`: 36 tệp ảnh không gian thực tế chụp trực tiếp tại các cơ sở.
+- `data/photos/`: 36 tệp ảnh minh hoạ sinh tự động, không phải ảnh chụp thực địa (xem `data/README.md` mục 5).
 - `frontend/public/map/region.geojson`: Dữ liệu vector mạng lưới giao thông khu vực Liên Chiểu.
-- `frontend/public/map/style.json`: Cấu hình lớp bản đồ MapLibre, kết nối raster tiles từ Esri.
+- `frontend/public/map/style.json`: Cấu hình lớp bản đồ MapLibre, nạp lớp gạch nền raster từ dịch vụ gạch công cộng.
 - `frontend/public/map/glyphs/`: Bộ ký tự phông chữ tiếng Việt Noto Sans Regular phục vụ bản đồ nội bộ.
 
 ---
@@ -155,5 +154,7 @@ Tài liệu này là chỉ mục tra cứu nhanh (Quick Navigation Index), giúp
 - `frontend/src/app/image_perf.test.tsx`: Hiệu năng hiển thị ảnh và độ ổn định layout.
 - `frontend/src/app/forms_and_navigation.test.tsx`: Tính hợp lệ của form nộp ảnh.
 - `frontend/src/app/map.test.tsx`: Khởi tạo MapLibre và đồng bộ URL `bbox`.
-- `frontend/src/app/social.test.tsx`: Cập nhật lạc quan tương tác thích và bình luận.
+- `frontend/src/app/shared.test.tsx`: Cập nhật lạc quan tương tác thích và bình luận.
+- `frontend/src/features/shell/TermsPage.test.tsx`: Trang điều khoản sử dụng đọc được khi chưa có phiên.
+- `frontend/src/features/contribute/CreateExperiencePage.test.tsx`: Hai trạng thái định vị địa chỉ.
 - `frontend/src/lib/api/client.test.ts`: Header CSRF Token trong API client.

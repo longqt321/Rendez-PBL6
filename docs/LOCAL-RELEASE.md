@@ -7,7 +7,7 @@ Mục tiêu: khám phá địa điểm Đà Nẵng qua ảnh thật; đăng nh�
 - [x] Bỏ dependencies, artifacts và runtime khỏi tìm kiếm repo.
 - [x] Chọn địa điểm Đà Nẵng có nguồn và ảnh đúng địa điểm.
 - [x] Ghi địa chỉ, tọa độ, nguồn kiểm tra từng địa điểm.
-- [x] Ghi tác giả, giấy phép và trang nguồn từng ảnh.
+- [x] Ghi trang nguồn thông tin từng ảnh.
 - [x] Tải ảnh thật về workspace; không hotlink ảnh.
 - [x] Chuẩn hóa kích thước ảnh, giữ tỷ lệ tự nhiên.
 - [x] Chuẩn bị bản đồ đường phố Đà Nẵng lưu local.
@@ -17,7 +17,7 @@ Mục tiêu: khám phá địa điểm Đà Nẵng qua ảnh thật; đăng nh�
 - [x] Kiểm tra nguồn, số địa điểm, số ảnh và vị trí.
 
 ## 2. Backend
-- [x] Nguồn ảnh/giấy phép được trả về và hiển thị.
+- [x] Trang nguồn thông tin ảnh được trả về và hiển thị.
 - [x] Tìm tên/địa chỉ tiếng Việt không dấu.
 - [x] Bộ lọc loại địa điểm và đặc điểm phù hợp dữ liệu thật.
 - [x] Tài khoản cập nhật tên và đổi mật khẩu.
@@ -32,7 +32,7 @@ Mục tiêu: khám phá địa điểm Đà Nẵng qua ảnh thật; đăng nh�
 - [x] Khám phá có tiêu đề, bộ lọc, số kết quả và masonry ổn định.
 - [x] Chọn ảnh mở chi tiết, lưu địa điểm và xem vị trí thuận tiện.
 - [x] Trang địa điểm có ảnh, địa chỉ, mô tả, bản đồ và nguồn thông tin.
-- [x] Trang ảnh có thông tin tác giả/giấy phép, chia sẻ và báo cáo.
+- [x] Trang ảnh có thông tin nguồn, chia sẻ và báo cáo.
 - [x] Bản đồ có danh sách đồng bộ, chọn marker, GPS và trạng thái lỗi.
 - [x] Đã lưu: danh sách, trạng thái trống và bỏ lưu.
 - [x] Đăng ảnh: chọn địa điểm bằng ảnh bìa, xem thêm theo nhóm 6, preview, chỉnh mô tả, gửi và xác nhận.
@@ -56,9 +56,9 @@ Mục tiêu: khám phá địa điểm Đà Nẵng qua ảnh thật; đăng nh�
 ## Kết quả kiểm chứng
 
 - PostgreSQL thật: `rendez_local` tại 127.0.0.1:55433; toàn bộ migration áp dụng trên database mới. Database cũ 55432 giữ nguyên.
-- Dữ liệu cuối: 14 địa điểm, 39 ảnh tư liệu có tác giả/nguồn/giấy phép; 13 địa điểm có tọa độ. Đã mở và kiểm tra toàn bộ ảnh, kiểm tra file original/derivative, sửa ba metadata ngày chụp và import lại không tạo ảnh mới.
-- Backend cuối: **220 tests đạt trên PostgreSQL test database** (`backend/tests` + `backend/apps`), Ruff lint/format đạt, Django check đạt, migration state không lệch; OpenAPI validation và sinh TypeScript đạt.
-- Frontend: **58 unit tests đạt**; lint, format và TypeScript/build cuối đạt.
+- Dữ liệu cuối: 14 địa điểm, 39 ảnh tư liệu có trang nguồn; 13 địa điểm có tọa độ. Đã mở và kiểm tra toàn bộ ảnh, kiểm tra file original/derivative, sửa ba metadata ngày chụp và import lại không tạo ảnh mới.
+- Backend cuối: **222 tests đạt trên PostgreSQL test database** (`backend/tests` + `backend/apps`), Ruff lint/format đạt, Django check đạt, migration state không lệch; OpenAPI validation và sinh TypeScript đạt.
+- Frontend: **61 unit tests đạt**; lint, format và TypeScript/build cuối đạt.
 - Browser app thật: đăng ký/validation/eye, chặn URL khách/API, feed tải 39 ảnh, masonry, lưu/bỏ lưu, tìm không dấu, danh mục/đặc điểm, empty/search recovery, chi tiết/gallery/attribution, bình luận/xóa, báo cáo, bản đồ/marker/list/zoom, GPS từ chối và được cấp quyền, lỗi bản đồ/thử lại, upload lỗi/preview/đăng ngay, sửa mô tả/gỡ ảnh, thêm địa điểm với map picker, đổi tên/mật khẩu/đăng xuất/đăng nhập lại, thống kê hồ sơ, chia sẻ liên kết, 404/API outage/retry/session hết hạn.
 - Đã mở các màn hình khám phá, địa điểm, ảnh, bản đồ, đã lưu, lịch sử, đăng ảnh và hồ sơ ở 375px; kiểm tra landscape 844×390, focus và reduced motion. Không tràn ngang hoặc lỗi JavaScript trong các luồng cuối. Kiểm tra đăng nhập/đăng ký ở desktop và mobile.
 - Admin: đã mở dashboard, địa điểm, submission, nhãn ảnh, báo cáo, tài khoản và màn hình quản lý ảnh. Luồng chỉnh sửa admin đã có tests backend; lần browser này không sửa/gỡ ảnh tư liệu thật trong Admin.

@@ -4,7 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-React%2019-blue)](frontend)
 [![Django](https://img.shields.io/badge/Django-5.2%20REST-green)](backend)
 
-**Rendez** là nền tảng khám phá địa điểm (visual-first place discovery) qua hình ảnh thực tế do cộng đồng đóng góp và bản đồ tương tác. Phạm vi hiện tại là dữ liệu thử nghiệm tại Đà Nẵng; kiến trúc không giới hạn loại hình địa điểm hay địa lý. Ứng dụng kết hợp lưới ảnh theo tỷ lệ tự nhiên với bản đồ địa phương, hỗ trợ tìm kiếm và định vị địa chỉ dựa trên dữ liệu OpenStreetMap, Photon và Esri ArcGIS.
+**Rendez** là nền tảng khám phá địa điểm (visual-first place discovery) qua hình ảnh thực tế do cộng đồng đóng góp và bản đồ tương tác. Phạm vi hiện tại là dữ liệu thử nghiệm tại Đà Nẵng; kiến trúc không giới hạn loại hình địa điểm hay địa lý. Ứng dụng kết hợp lưới ảnh theo tỷ lệ tự nhiên với bản đồ địa phương, hỗ trợ tìm kiếm và định vị địa chỉ dựa trên dữ liệu OpenStreetMap.
 
 ---
 
@@ -151,33 +151,22 @@ Mẫu cấu hình chuẩn được cung cấp tại `.env.example`. Trong môi t
 
 - **Frontend:** React 19, TypeScript, React Router v7, TanStack Query v5, MapLibre GL v5, Tailwind CSS v4, Lucide Icons.
 - **Backend:** Python 3.14 / Django 5.2, Django REST Framework, Clean Architecture (Selectors / Services pattern), Scoped Throttles.
-- **GIS & Dữ liệu:** OpenStreetMap Nominatim, Photon by Komoot, Esri World Geocoding, Nextzen OSM Vector Dataset (`region.geojson`).
+- **GIS & Dữ liệu:** OpenStreetMap Nominatim, Photon by Komoot, dữ liệu vector đường bộ cục bộ (`region.geojson`).
 - **Kiểm thử tự động:** Tích hợp kiểm thử đa tầng (Pytest backend, Vitest frontend, Playwright E2E).
 
 ---
 
-## Giấy phép & Nguồn dữ liệu Bản đồ (Map Licensing & Attribution)
+## Nguồn Tài Nguyên Bản Đồ
 
-Mọi tài nguyên bản đồ trong Rendez đều tuân thủ các điều khoản cấp phép công khai, nguồn mở và không phát sinh chi phí:
+1. **Lớp gạch raster nền:** `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}`. Nguồn được ghi nhận trên giao diện qua Attribution Control của MapLibre.
 
-1. **Lớp nền Raster Tiles (Esri ArcGIS World Street Map):**
-   - **Nguồn:** `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}` và máy chủ `services.arcgisonline.com`.
-   - **Chi phí & Ràng buộc:** Dịch vụ basemap công cộng, không yêu cầu billing hay API key trả phí.
-   - **Ghi nhận bản quyền:** Hiển thị trực tiếp trên giao diện bản đồ qua Attribution Control: `Tiles © Esri — Sources: Esri, OpenStreetMap contributors`.
+2. **Dữ liệu đường xá & ranh giới cục bộ (`region.geojson`):** vector đường bộ khu vực Liên Chiểu, phục vụ cục bộ từ `frontend/public/map/region.geojson`.
 
-2. **Dữ liệu đường xá & ranh giới cục bộ (`region.geojson`):**
-   - **Nguồn:** Nextzen / OpenStreetMap vector extracts tại Đà Nẵng.
-   - **Bản quyền & Giấy phép:** © OpenStreetMap contributors (Open Database License - ODbL). Phục vụ hoàn toàn cục bộ từ `frontend/public/map/region.geojson`.
+3. **Phông chữ nhãn bản đồ (Map Glyphs):** `Noto Sans Regular` PBF vector glyphs (`0-255.pbf`, `256-511.pbf`, `7680-7935.pbf` hỗ trợ tiếng Việt có dấu), phục vụ cục bộ từ `frontend/public/map/`, không phụ thuộc Google Fonts CDN.
 
-3. **Phông chữ nhãn bản đồ (Map Glyphs):**
-   - **Phông chữ:** `Noto Sans Regular` PBF vector glyphs (`0-255.pbf`, `256-511.pbf`, `7680-7935.pbf` hỗ trợ tiếng Việt có dấu).
-   - **Giấy phép:** SIL Open Font License, Version 1.1 (văn bản đầy đủ tại `frontend/public/map/FONT-LICENSE.txt`). Phục vụ 100% cục bộ từ máy chủ tĩnh Rendez, không phụ thuộc Google Fonts CDN.
+4. **Biểu tượng ghim (Markers & Icons):** Bộ biểu tượng Lucide SVG (`MapPin`, `NavigationControl`) render trực tiếp trong DOM nội bộ, không tải sprite ngoài.
 
-4. **Biểu tượng ghim (Markers & Icons):**
-   - Bộ biểu tượng Lucide SVG (`MapPin`, `NavigationControl`) render trực tiếp trong DOM nội bộ, không tải sprite ngoài.
-
-5. **Xử lý ngoại tuyến & Lỗi mạng:**
-   - Khi không có kết nối tới máy chủ ngoài, lớp màu nền ấm (`#f3f0e8`), các nhãn đường cục bộ từ `region.geojson` và danh sách địa điểm nội bộ vẫn được duy trì; khi style hoặc tài nguyên bản đồ cốt lõi gặp sự cố, giao diện hiển thị thông báo lỗi thân thiện kèm nút thử lại.
+5. **Xử lý ngoại tuyến & Lỗi mạng:** Khi không có kết nối tới máy chủ ngoài, lớp màu nền ấm (`#f3f0e8`), các nhãn đường cục bộ từ `region.geojson` và danh sách địa điểm nội bộ vẫn được duy trì; khi style hoặc tài nguyên bản đồ cốt lõi gặp sự cố, giao diện hiển thị thông báo lỗi thân thiện kèm nút thử lại.
 
 ---
 

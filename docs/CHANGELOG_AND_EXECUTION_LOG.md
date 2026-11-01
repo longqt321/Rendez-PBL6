@@ -101,7 +101,7 @@ Khi bắt đầu tiếp nhận dự án:
   * Cập nhật [`data/danang.json`](file:///home/longtran/Projects/rendez-web/data/danang.json) với 12 địa điểm thực tế và 36 tác phẩm ảnh thực địa.
   * Thiết lập 6 danh mục mới chuẩn theo thói quen sinh viên: `study` (Học bài & Deadline), `night` (Mở 24/7 & Cày đêm), `vintage` (Mộc & Hoài niệm), `garden` (Sân vườn & Chill), `checkin` (Sống ảo & Trẻ trung), `classic` (Cà phê Cóc & Vỉa hè).
   * Bổ sung nhãn đặc điểm thị giác mới: `study` (Bàn học & Ổ cắm), `wood` (Gỗ mộc & Hoài niệm) trong [`import_danang.py`](file:///home/longtran/Projects/rendez-web/backend/apps/photos/management/commands/import_danang.py).
-  * Cập nhật nguồn và bản quyền minh bạch tại [`data/README.md`](file:///home/longtran/Projects/rendez-web/data/README.md) và [`frontend/public/photos/credits.json`](file:///home/longtran/Projects/rendez-web/frontend/public/photos/credits.json).
+  * Cập nhật nguồn dữ liệu tại [`data/README.md`](file:///home/longtran/Projects/rendez-web/data/README.md).
 
 1. **Xóa Zombie Apps:**
    * Xóa toàn bộ thư mục `backend/apps/contributions/` (gồm 6 tệp: models, migrations, __init__).
@@ -239,13 +239,13 @@ Khi bắt đầu tiếp nhận dự án:
 
 ---
 
-## 6. Tổng quát Hóa Ứng dụng Thành Nền Tảng Khám Phá Chung & Khắc Phục Bản Đồ Miễn Phí 100%
+## 6. Tổng quát Hóa Ứng dụng Thành Nền Tảng Khám Phá Chung & Khắc Phục Lớp Gạch Nền Bản Đồ
 
 ### 6.1. Khắc Phục Lỗi "403 Access Blocked" & Watermark Bản Đồ
-- **Vấn đề:** Máy chủ tình nguyện `tile.openstreetmap.org` áp dụng chính sách chặn nghiêm ngặt (Tile Usage Policy) đối với các request trực tiếp từ trình duyệt trên `localhost`, trả về gạch lỗi *"403 Access blocked: App is not following the tile usage policy"*. Trước đó nguồn CartoDB cũng chèn watermark bản quyền.
-- **Giải pháp:** Chuyển sang nguồn bản đồ chất lượng cao toàn cầu của **ESRI World Street Map (`server.arcgisonline.com`)** trong [`frontend/public/map/style.json`](file:///home/longtran/Projects/rendez-web/frontend/public/map/style.json).
-  * CDN hạ tầng toàn cầu chuyên dụng cho web/mobile maps, hoàn toàn không chặn `localhost`, không trả về 403.
-  * Không yêu cầu API key, không có watermark, không giới hạn phiền toái.
+- **Vấn đề:** Máy chủ tình nguyện `tile.openstreetmap.org` áp dụng chính sách chặn nghiêm ngặt (Tile Usage Policy) đối với các request trực tiếp từ trình duyệt trên `localhost`, trả về gạch lỗi *"403 Access blocked: App is not following the tile usage policy"*. Trước đó nguồn CartoDB cũng chèn watermark.
+- **Giải pháp:** Chuyển sang lớp gạch nền raster của dịch vụ gạch bản đồ công cộng (`server.arcgisonline.com`) trong [`frontend/public/map/style.json`](file:///home/longtran/Projects/rendez-web/frontend/public/map/style.json).
+  * CDN hạ tầng toàn cầu chuyên dụng cho web/mobile maps, không chặn `localhost`, không trả về 403.
+  * Không yêu cầu API key, không có watermark.
   * Bản đồ sắc nét, chi tiết toàn bộ Đà Nẵng với tên đường tiếng Việt, sông biển, công viên và địa danh rõ ràng.
 
 ### 6.2. Sửa Lỗi Nút Bị Mất Chữ Trong Khối Trạng Thái Trống (Ảnh 4 Mới)
@@ -330,11 +330,10 @@ Toàn bộ hệ thống kiểm thử tự động, build và phân tích tĩnh �
 2. **Tầng 2 - Photon by Komoot (OpenStreetMap Real-time Search Engine):**
    - Công cụ tìm kiếm địa chỉ thời gian thực xây dựng trên nền tảng Elasticsearch và OSM của Komoot.
    - Hỗ trợ tìm kiếm mờ (fuzzy search) và trọng tâm địa lý Đà Nẵng (`16.068, 108.153`).
-3. **Tầng 3 - Esri ArcGIS World Geocoding (Real-time):**
-   - Dịch vụ định vị hàng đầu thế giới từ Viện Nghiên cứu Hệ thống Môi trường (Esri).
-4. **Tầng 4 - Cơ sở Dữ liệu OpenStreetMap Vector Offline (Nextzen/OSM dump `region.geojson`):**
-   - Cơ sở dữ liệu bên thứ ba với hơn 2.940 tuyến đường thực tế tại Đà Nẵng.
+3. **Tầng 3 - Cơ sở Dữ liệu OpenStreetMap Vector Offline (Nextzen/OSM dump `region.geojson`):**
+   - Cơ sở dữ liệu bên thứ ba với hơn 2.940 tuyến đường thực tế tại Đà Nẵng, dùng được khi không có kết nối mạng.
    - Sử dụng **Thuật toán Nội suy Tuyến tính Hình học (Polyline Linear Referencing)**: Trích xuất số nhà/kiệt từ chuỗi địa chỉ người dùng nhập, ước tính tỉ lệ khoảng cách tương đối dọc theo đường gấp khúc LineString để nội suy ra tọa độ chính xác.
+4. **Không suy diễn tọa độ:** Khi cả ba nguồn đều thất bại, hàm trả `success: false` để người dùng tự chọn vị trí trên bản đồ; hệ thống không gán một tọa độ mặc định.
 
 ### 9.3. Tích Hợp Frontend Trực Quan & Backend Hook
 - **Backend API:** `GET /api/v1/places/geocode/?q=<địa_chỉ>` trả về kết quả JSON gồm tọa độ `latitude`, `longitude`, `display_name` và tên nhà cung cấp `provider`.
@@ -582,10 +581,10 @@ Vòng kiểm toán bảo mật cuối cùng được thực hiện theo nguyên 
 - Endpoint giám sát sức khỏe: `/api/v1/health/` truy vấn `SELECT 1`, trả về 200 OK khi database sẵn sàng và 503 Service Unavailable khi kết nối cơ sở dữ liệu gặp sự cố.
 
 ### 17.3. Phụ Thuộc Dịch Vụ Ngoài & Bản Đồ
-- **Dependency & Licensing:** 100% thư viện Backend (Django, DRF, Pillow, Gunicorn, Psycopg) và Frontend (React, Vite, MapLibre, TanStack Query, Tailwind) đều là mã nguồn mở (BSD, MIT, Apache). Không có dependency thương mại hoặc yêu cầu thẻ thanh toán.
+- **Dependency:** 100% thư viện Backend (Django, DRF, Pillow, Gunicorn, Psycopg) và Frontend (React, Vite, MapLibre, TanStack Query, Tailwind) đều là mã nguồn mở (BSD, MIT, Apache). Không có dependency thương mại hoặc yêu cầu thẻ thanh toán.
 - **Tài nguyên Bản đồ & Giới hạn Offline:**
-  - Nhãn đường (`region.geojson`) và glyphs phông chữ (`Noto Sans Regular`) được lưu trữ và phục vụ 100% cục bộ.
-  - Lớp nền raster tiles sử dụng Esri ArcGIS World Street Map công khai (`server.arcgisonline.com`). Khi ngắt kết nối mạng, bản đồ vẫn hiển thị nền ấm và thông báo lỗi thân thiện kèm nút thử lại (`onError` trong React component), nhưng **không thể hoạt động ngoại tuyến trọn vẹn lớp ảnh nền (raster base tiles)** nếu không có máy chủ tile hoặc file mbtiles cục bộ.
+  - Nhãn đường (`region.geojson`), kiểu bản đồ và glyphs phông chữ (`Noto Sans Regular`) được lưu trữ và phục vụ 100% cục bộ.
+  - Lớp nền raster tiles lấy từ dịch vụ gạch bản đồ công cộng (`server.arcgisonline.com`). Khi ngắt kết nối mạng, bản đồ vẫn hiển thị nền ấm và thông báo lỗi thân thiện kèm nút thử lại (`onError` trong React component), nhưng **không thể hoạt động ngoại tuyến trọn vẹn lớp ảnh nền (raster base tiles)** nếu không có máy chủ tile hoặc file mbtiles cục bộ.
 
 ### 17.4. Kiểm Chứng Sao Lưu & Khôi Phục (Backup & Restore Simulation)
 - Đã bổ sung bộ kiểm thử tự động độc lập [`backend/tests/test_backup_restore_lifecycle.py`](file:///home/longtran/Projects/rendez-web/backend/tests/test_backup_restore_lifecycle.py):

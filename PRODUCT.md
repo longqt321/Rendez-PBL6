@@ -23,7 +23,7 @@ Mục đích của Rendez là trở thành nền tảng số hóa không gian c�
 
 Khác biệt cốt lõi của Rendez:
 - **Trải nghiệm thị giác thực tế (Visual-First):** Lưới ảnh Masonry tự động thích ứng với tỉ lệ khung hình gốc của ảnh chụp, tái hiện chân thực không gian quán mà không bị cắt cúp (crop) hay làm méo ảnh.
-- **Không gian số Local-First:** Tích hợp sâu dữ liệu bản đồ địa phương OpenStreetMap và dịch vụ gạch Esri, hoạt động mượt mà, định vị chính xác và tra cứu trực quan.
+- **Không gian số ưu tiên cục bộ:** Dữ liệu địa điểm, ảnh và bản đồ vector phục vụ từ hạ tầng nội bộ; chỉ lớp gạch nền bản đồ và dịch vụ định vị địa chỉ gọi ra ngoài.
 - **Trung thực, phi thương mại:** Không có banner quảng cáo gây phiền toái, không đẩy quán trả tiền lên đầu danh sách, tập trung hoàn toàn vào tiện ích thực tế và ảnh chụp chân thực từ cộng đồng.
 
 ## Operating Context
@@ -38,7 +38,7 @@ Khác biệt cốt lõi của Rendez:
   - Lưới ảnh Masonry giữ tỷ lệ khung hình thật (`aspect-ratio`).
   - Bản đồ tương tác MapLibre GL đồng bộ hai chiều với tham số URL và khung nhìn (`bbox`).
   - Bộ lọc không gian theo danh mục và thuộc tính trực quan (ổ điện, yên tĩnh, điều hòa, view thoáng, mở cửa 24/7).
-  - Tự động định vị Geocoding đa nguồn (Photon, Nominatim, Esri) khi nhập địa chỉ mới.
+  - Tự động định vị Geocoding đa nguồn (Nominatim, Photon, dữ liệu OSM cục bộ) khi nhập địa chỉ mới.
   - Tương tác cộng đồng: Thích ảnh, bình luận, lưu quán yêu thích (`/saved`), xem hồ sơ tác giả ảnh (`/creators/:id`).
   - Trang quản trị Django Admin cho người kiểm duyệt (`/admin/`).
 - **Ranh giới và Hướng phát triển:**
@@ -56,8 +56,8 @@ Khác biệt cốt lõi của Rendez:
 
 - **Dữ liệu hạt giống:** 12 địa điểm quán cà phê quanh khu vực Đại học Bách Khoa Đà Nẵng (`data/danang.json`).
 - **Tư liệu hình ảnh:** 36 tệp **ảnh minh hoạ sinh tự động** (`data/photos/`, tạo bởi `scripts/generate_coffee_photos.py`). Đây là placeholder, **không phải ảnh chụp thực địa** — xem [`data/README.md`](data/README.md) mục 5.
-- **Tài nguyên bản đồ địa phương:** Dữ liệu vector đường bộ quận Liên Chiểu (`frontend/public/map/region.geojson`) và bản quyền phông chữ tiếng Việt Noto Sans Regular (`public/map/FONT-LICENSE.txt`).
-- **Hệ thống kiểm thử xác thực:** 220 bài kiểm thử backend Pytest và 58 bài kiểm thử frontend Vitest đạt tỷ lệ vượt qua 100%.
+- **Tài nguyên bản đồ địa phương:** Dữ liệu vector đường bộ quận Liên Chiểu (`frontend/public/map/region.geojson`) và bộ ký tự phông chữ tiếng Việt Noto Sans Regular (`frontend/public/map/glyphs/`).
+- **Hệ thống kiểm thử xác thực:** 221 bài kiểm thử backend Pytest và 61 bài kiểm thử frontend Vitest đạt tỷ lệ vượt qua 100%.
 
 ## Product Principles
 
