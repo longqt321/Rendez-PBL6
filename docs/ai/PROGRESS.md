@@ -10,7 +10,7 @@
 - Confirmed data/README.md describes 12 seed POIs and 36 generated placeholder images; excluded those images from new POI/image evidence.
 - Reviewed official licensing references for Geofabrik/OSM, Overture Places, direct Foursquare HF access, Wikidata structured data and Commons file metadata.
 - Ran all eight required raw endpoint probes from the execution container; all failed during DNS resolution before HTTP response.
-- Added AI architecture, licensing, category, decision and status documentation. Source manifests are empty because no external source file was downloaded.
+- Added AI architecture, licensing, category, decision and status documentation; initialized empty manifests; added CONTACT_EMAIL and MAPILLARY_ACCESS_TOKEN names to .env.example without values. No external source file was downloaded.
 
 ## Not completed
 
