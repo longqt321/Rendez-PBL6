@@ -7,6 +7,8 @@ from django.urls import Resolver404, resolve
 from django.apps import apps
 from django.utils.translation import override
 
+pytestmark = pytest.mark.postgres
+
 
 @pytest.mark.parametrize(
     "path",

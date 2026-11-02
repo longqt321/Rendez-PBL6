@@ -18,6 +18,8 @@ from apps.photos.services import (
 from apps.places.models import Category, Place
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 def create_test_submission_and_photo(user, place, key="unit-biz-test"):
     submission = submit(

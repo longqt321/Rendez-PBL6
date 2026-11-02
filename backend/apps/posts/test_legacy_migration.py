@@ -28,6 +28,9 @@ from apps.posts.models import (
     PostMedia,
 )
 
+import pytest
+pytestmark = pytest.mark.postgres
+
 User = get_user_model()
 
 

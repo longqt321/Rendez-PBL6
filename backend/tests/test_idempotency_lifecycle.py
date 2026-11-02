@@ -5,6 +5,8 @@ from apps.favorites.models import Favorite
 from apps.photos.models import PhotoAsset, PhotoLike, PhotoSubmission, PlacePhoto
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 def _submission_payload(place, **overrides):
     payload = {

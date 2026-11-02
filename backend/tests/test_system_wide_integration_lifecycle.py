@@ -17,6 +17,8 @@ from apps.photos.models import (
 from apps.photos.services import moderate_report
 from apps.places.models import Place
 
+pytestmark = pytest.mark.postgres
+
 
 def create_jpeg(name="danang.jpg", size=(250, 250), color=(100, 150, 200)):
     buf = io.BytesIO()

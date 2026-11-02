@@ -3,6 +3,8 @@ from django.conf import settings
 import pytest
 from apps.places.geocoding import load_osm_third_party_database, query_osm_local_database
 
+pytestmark = pytest.mark.postgres
+
 
 def test_map_style_json_validity():
     repo_root = settings.BASE_DIR.parent

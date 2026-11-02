@@ -4,7 +4,7 @@ from apps.photos.services import submit
 from apps.places.models import Place
 from .conftest import photo
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.postgres]
 
 
 def test_regular_user_posts_photos_immediately(client, owner, other, place):

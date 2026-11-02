@@ -3,6 +3,8 @@ from apps.favorites.models import Favorite
 from apps.photos.models import PhotoComment, PhotoLike
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 def _create_public_photo(owner, place):
     from apps.photos.services import submit

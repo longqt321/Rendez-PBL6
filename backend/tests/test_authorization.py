@@ -6,6 +6,8 @@ from apps.photos.models import PhotoComment, PlacePhoto
 from apps.photos.services import submit
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 def upload_photo(owner, place, key="auth-test-key", caption="Original Caption by Owner"):
     submission = submit(

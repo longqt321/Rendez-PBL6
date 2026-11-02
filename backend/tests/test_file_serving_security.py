@@ -8,6 +8,8 @@ from apps.posts.models import Post, PostMedia
 from apps.places.models import Place
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 def create_submission_and_photo(owner, place, key="file-serving-test"):
     submission = submit(

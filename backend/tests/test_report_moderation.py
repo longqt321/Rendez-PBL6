@@ -9,6 +9,8 @@ from apps.photos.models import ContentReport, PhotoAudit, PhotoSubmission, Place
 from apps.photos.services import moderate_report, submit
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 def create_photo(owner, place, key="report-mod-test"):
     submission = submit(

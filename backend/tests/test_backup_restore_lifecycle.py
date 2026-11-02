@@ -8,6 +8,8 @@ import pytest
 from django.db import OperationalError
 from rest_framework.test import APIClient
 
+pytestmark = pytest.mark.postgres
+
 
 @pytest.mark.django_db
 def test_health_check_endpoint():

@@ -6,6 +6,8 @@ from apps.photos.models import PlacePhoto
 from apps.photos.services import submit
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 def create_sample_photo(owner, place, key="input-val-photo"):
     submission = submit(

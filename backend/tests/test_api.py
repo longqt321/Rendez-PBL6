@@ -3,7 +3,7 @@ from rest_framework.test import APIClient
 from apps.accounts.models import User
 from apps.favorites.models import Favorite
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.postgres]
 
 
 def test_auth_csrf_registration_conflict_and_logout():

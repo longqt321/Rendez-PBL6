@@ -6,6 +6,8 @@ from apps.photos.models import PhotoComment
 
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 @pytest.mark.django_db
 def test_pagination_limits_and_structure(client, staff, place):

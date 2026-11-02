@@ -12,6 +12,8 @@ from apps.photos.serializers import PhotoUploadSerializer
 from apps.photos.services import submit
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 @pytest.mark.parametrize("kind", ["gif", "oversized", "bomb", "truncated"])
 def test_upload_resource_limits(kind):

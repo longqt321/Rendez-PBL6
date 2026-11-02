@@ -6,7 +6,7 @@ from apps.photos.services import submit
 from apps.places.models import Category, Place
 from tests.conftest import photo
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.postgres]
 
 
 def publish(owner, place, key):

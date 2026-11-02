@@ -25,7 +25,7 @@ from apps.photos.services import (
 from apps.photos.images import Conflict
 from .conftest import photo
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.postgres]
 
 
 @pytest.fixture(autouse=True)

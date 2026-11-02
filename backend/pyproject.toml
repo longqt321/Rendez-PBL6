@@ -13,5 +13,8 @@ dev = ["pytest>=8.4,<9", "pytest-django>=4.11,<5", "ruff>=0.12,<0.13"]
 DJANGO_SETTINGS_MODULE = "config.settings"
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = [
+  "postgres: tests requiring a running PostgreSQL database service",
+]
 [tool.ruff]
 line-length = 100

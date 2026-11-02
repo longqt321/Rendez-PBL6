@@ -10,6 +10,9 @@ from apps.photos.models import PhotoAsset, PhotoSubmission
 from apps.places.models import Category, Place
 from apps.posts.models import Comment, Like, Post, PostMedia, SavedPost, ShareEvent, PostView
 
+import pytest
+pytestmark = pytest.mark.postgres
+
 User = get_user_model()
 
 

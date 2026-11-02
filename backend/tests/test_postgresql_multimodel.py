@@ -4,6 +4,8 @@ from apps.photos.models import PhotoAsset, PhotoSubmission
 from apps.places.models import Place
 from config.settings import _get_database_config
 
+pytestmark = pytest.mark.postgres
+
 
 @pytest.mark.django_db
 def test_place_opening_hours_specification_jsonb(place, client):

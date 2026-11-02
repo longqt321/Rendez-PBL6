@@ -5,7 +5,7 @@ from apps.photos.models import PhotoLike, PhotoSubmission
 from apps.photos.services import submit
 from tests.conftest import photo
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.postgres]
 
 
 def published(owner, place):

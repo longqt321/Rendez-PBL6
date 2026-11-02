@@ -2,6 +2,8 @@ import pytest
 from rest_framework.test import APIClient
 from apps.accounts.models import User
 
+pytestmark = pytest.mark.postgres
+
 
 @pytest.mark.django_db
 def test_csrf_token_endpoint_and_cookie():

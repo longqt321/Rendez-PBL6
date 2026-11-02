@@ -5,6 +5,8 @@ from django.core.cache import cache
 
 from apps.places.models import Category, Place
 
+pytestmark = pytest.mark.postgres
+
 
 @pytest.mark.django_db
 def test_geocode_api_endpoint(client):

@@ -11,6 +11,8 @@ from apps.photos.models import (
 )
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 @pytest.mark.django_db
 def test_prevent_duplicate_pending_content_reports_at_db_level(owner, place):

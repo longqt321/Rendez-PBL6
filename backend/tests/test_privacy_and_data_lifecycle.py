@@ -6,6 +6,8 @@ from apps.photos.models import PhotoAudit, PhotoLike, PhotoSubmission, PlacePhot
 from apps.photos.services import submit
 from .conftest import photo
 
+pytestmark = pytest.mark.postgres
+
 
 def create_user_photo(user, place, key="privacy-test-photo"):
     submission = submit(

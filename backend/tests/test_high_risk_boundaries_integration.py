@@ -13,6 +13,8 @@ from apps.photos.models import (
     PlacePhoto,
 )
 
+pytestmark = pytest.mark.postgres
+
 
 def create_test_image_file(name="sample.jpg", size=(200, 200), color=(180, 100, 50)):
     buf = io.BytesIO()
