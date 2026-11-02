@@ -70,7 +70,7 @@ Tám endpoint trong mục preflight đã được probe từ execution container
 - Migration hiện có định nghĩa unaccent, pg_trgm và btree_gist. Live DB extensions chưa được xác minh.
 - Giờ mở cửa hiện là text + JSON, chưa có phút trong tuần.
 - VisualAttribute/PhotoAttribute hiện hữu không đồng nghĩa với bộ nhãn CLIP/agent mới.
-- Không xóa hoặc sửa dữ liệu, model, migration hay file người dùng; không thay .env.example; không đọc/ghi token.
+- Không xóa hoặc sửa dữ liệu, model, migration hay file người dùng. .env.example chỉ được bổ sung tên CONTACT_EMAIL và MAPILLARY_ACCESS_TOKEN, không chứa giá trị/token. Không đọc hoặc ghi token.
 - Không có commit nào trên main/master.
 
 ## Test và kết quả đo
