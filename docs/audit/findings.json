@@ -1,0 +1,62 @@
+[
+  {
+    "id": "F-01",
+    "severity": "medium",
+    "confidence": "verified",
+    "aspect": "F",
+    "location": "backend/apps/photos/models.py:84",
+    "title": "Thiếu ràng buộc unique=True trên PhotoSubmission.idempotency_key",
+    "evidence": "idempotency_key = models.CharField(max_length=64, blank=True, db_index=True)",
+    "impact": "Hai request đóng góp ảnh cùng key được gửi đồng thời có thể vượt qua kiểm tra application-level và tạo trùng submission trong cơ sở dữ liệu.",
+    "recommendation": "Thêm unique=True hoặc UniqueConstraint(fields=['idempotency_key']) với điều kiện idempotency_key không rỗng.",
+    "verify_steps": "Kiểm tra model PhotoSubmission và chạy makemigrations."
+  },
+  {
+    "id": "F-02",
+    "severity": "medium",
+    "confidence": "verified",
+    "aspect": "H",
+    "location": "frontend/dist/assets/maplibre-gl-D7FnjY5K.js",
+    "title": "Kích thước bundle MapLibre vượt 1MB sau khi minified",
+    "evidence": "dist/assets/maplibre-gl-D7FnjY5K.js: 1,053.37 kB (gzip: 286.79 kB) khi chạy bun run build",
+    "impact": "Tăng đáng kể thời gian tải trang khi người dùng truy cập route bản đồ trên thiết bị di động có kết nối mạng yếu.",
+    "recommendation": "Tối ưu rollupOptions manualChunks và đảm bảo lazy loading cho MapLibre.",
+    "verify_steps": "Chạy cd frontend && bun run build và xem output chunks."
+  },
+  {
+    "id": "F-03",
+    "severity": "medium",
+    "confidence": "verified",
+    "aspect": "D",
+    "location": "backend/tests/test_local_product.py",
+    "title": "Bộ test backend phụ thuộc hoàn toàn vào dịch vụ PostgreSQL ngoại vi",
+    "evidence": "Chạy pytest khi không có Docker Compose: psycopg.OperationalError: connection to server at '127.0.0.1', port 55432 failed: Connection refused",
+    "impact": "Lập trình viên không thể chạy bộ kiểm thử backend trong môi trường cô lập hoặc khi thiếu dịch vụ container.",
+    "recommendation": "Cấu hình marker pytest postgres để phân tách unit tests độc lập với integration tests.",
+    "verify_steps": "Chạy uv run --project backend pytest backend/tests backend/apps -m \"not postgres\"."
+  },
+  {
+    "id": "F-04",
+    "severity": "low",
+    "confidence": "verified",
+    "aspect": "J",
+    "location": "frontend/src/app/contributions.tsx:231",
+    "title": "Thẻ input trong biểu mẫu thiếu nhãn hỗ trợ tiếp cận (a11y)",
+    "evidence": "Phát hiện a11y từ quality.mjs: 25 phần tử (19 input, 6 img) ban đầu không có nhãn hoặc alt theo chuẩn WCAG 2.2 AA",
+    "impact": "Trình đọc màn hình (Screen Reader) không thể diễn giải mục đích của ô nhập liệu cho người khiếm thị theo chuẩn WCAG 2.2 AA.",
+    "recommendation": "Thêm aria-label hoặc thuộc tính id liên kết với thẻ <label htmlFor='...'>.",
+    "verify_steps": "Chạy node scripts/agent/quality.mjs và quan sát nhóm a11y."
+  },
+  {
+    "id": "F-05",
+    "severity": "low",
+    "confidence": "verified",
+    "aspect": "C",
+    "location": "frontend/src/app/contributions.tsx:717",
+    "title": "Kích thước component lớn (717 dòng) vượt khuyến nghị 500 dòng",
+    "evidence": "File frontend/src/app/contributions.tsx ban đầu có 717 dòng code.",
+    "impact": "Độ phức tạp cao, tăng rủi ro khi bảo trì hoặc phát triển thêm tính năng đóng góp ảnh.",
+    "recommendation": "Tách thành các component con phụ trách từng bước trong wizard đóng góp.",
+    "verify_steps": "Đo số dòng bằng wc -l frontend/src/app/contributions.tsx."
+  }
+]

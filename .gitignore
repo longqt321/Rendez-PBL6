@@ -45,4 +45,17 @@ frontend/e2e/.artifacts/
 # Ad-hoc agent/developer scratch space
 scratch/
 
+# Temporary archives, recordings, and extracted tools
+files.zip
+files/
+agent-kit
+*.mp4
+.claude/
 
+
+.agent/
+
+# Local agent harness & hooks
+.agent/
+.githooks/
+scripts/agent/

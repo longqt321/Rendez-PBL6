@@ -26,3 +26,37 @@
 6. **Tôn trọng các điểm chờ quyết định (Decision Pending):** Tuyệt đối không tự ý chuyển các mục `Decision Pending` (như danh tính Place khi chuyển địa điểm, luồng VenueProposal, hiển thị Archived Photo) thành quyết định đã được duyệt (`Accepted`).
 7. **Cập nhật tài liệu khi thay đổi:** Khi thực hiện các thay đổi mã nguồn đáng kể, luôn cập nhật các tài liệu kỹ thuật liên quan trong `docs/project/` để duy trì tính đồng bộ.
 8. **Bảo mật & Quyền riêng tư:** Tuyệt đối không để lộ mật khẩu, khóa bí mật (secret keys), tokens, hay dữ liệu cá nhân nhạy cảm trong tài liệu hoặc nhật ký.
+
+---
+
+## Bộ quy tắc UI và chữ (bổ sung cho hợp đồng vận hành ở trên)
+
+Trước khi sửa bất kỳ màn hình, component, chuỗi chữ hoặc layout nào, đọc theo thứ tự:
+
+1. [CLAUDE.md](file:///home/longtran/Projects/rendez-web/CLAUDE.md) — mô tả dự án, quy tắc không thương lượng, quy trình, cách báo cáo.
+2. [docs/VOICE.md](file:///home/longtran/Projects/rendez-web/docs/VOICE.md) — quy tắc chữ, thuật ngữ cố định, bảng trước/sau.
+3. [docs/UX_RULES.md](file:///home/longtran/Projects/rendez-web/docs/UX_RULES.md) — bố cục, form, trạng thái, tìm kiếm, điều hướng, truy cập.
+4. [docs/LESSONS.md](file:///home/longtran/Projects/rendez-web/docs/LESSONS.md) — các lỗi đã mắc, không được lặp lại.
+5. [docs/BACKLOG.md](file:///home/longtran/Projects/rendez-web/docs/BACKLOG.md) — việc tồn đọng, chỉ làm phần được giao.
+
+Sau khi sửa, chạy `node scripts/check-copy.mjs --changed` và chỉ báo xong khi không còn lỗi.
+Khi người dùng chỉ ra lỗi, ghi ngay một mục vào `docs/LESSONS.md` trong cùng lượt.
+Cụm cấm tự động nằm ở `docs/banned-phrases.json`.
+
+---
+
+## Agent-kit
+
+Quy tắc và workflow bổ sung cho Antigravity / Agents:
+- Quy tắc cốt lõi: `.agents/rules/01-core.md`, `.agents/rules/02-ui-copy.md`, `.agents/rules/03-memory.md`
+- Workflows (gọi bằng `/tên-lệnh` trong chat):
+  - `/task-start`: Khởi động task mới, đọc ngữ cảnh và bộ nhớ
+  - `/verify`: Chạy bộ kiểm thử và kiểm tra chất lượng
+  - `/finish-task`: Hoàn thành task, cập nhật PROGRESS/LESSONS
+  - `/review`: Rà soát thay đổi trước khi bàn giao
+  - `/review-ui`: Kiểm tra giao diện và tính nhất quán
+  - `/fix-issue`: Tiếp nhận và xử lý issue theo quy trình chuẩn
+  - `/fix-backlog`: Xử lý việc tồn đọng từ BACKLOG.md
+  - `/audit-copy`: Rà soát từ ngữ giao diện
+  - `/audit-design`: Rà soát thiết kế và token
+
