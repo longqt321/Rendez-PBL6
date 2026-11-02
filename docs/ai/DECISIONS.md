@@ -52,7 +52,7 @@ The inspected code uses scalar latitude/longitude, bounding-box filtering, unacc
 
 ## D-009 — Documentation-only implementation in this environment
 
-Only AI research status, license, category and handoff documents plus empty manifests are being added. No runtime behavior is claimed.
+Only AI research/status documents, empty manifests and variable names in .env.example are being added. No runtime behavior is claimed.
 
 **Reason:** Documentation is the only safely verifiable change while code execution and source downloads are blocked.
 
