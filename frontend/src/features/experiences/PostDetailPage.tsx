@@ -94,7 +94,7 @@ export function PostDetailPage() {
           body="Ảnh có thể đã bị gỡ hoặc đang chờ duyệt."
           actions={
             <Button asChild variant="outline">
-              <Link to="/posts">Xem trải nghiệm khác</Link>
+              <Link to="/posts">Xem ảnh khác</Link>
             </Button>
           }
         />
@@ -153,7 +153,7 @@ export function PostDetailPage() {
             <div
               className="post-detail__thumbs"
               role="group"
-              aria-label="Ảnh trong trải nghiệm"
+              aria-label="Ảnh trong bài"
             >
               {media.map((item, index) => (
                 <button
@@ -212,7 +212,7 @@ export function PostDetailPage() {
               className={clsx("action-button", data.liked && "is-active")}
               aria-pressed={data.liked ?? false}
               aria-label={
-                data.liked ? "Bỏ thích trải nghiệm" : "Thích trải nghiệm"
+                data.liked ? "Bỏ thích ảnh" : "Thích ảnh"
               }
               disabled={like.isPending}
               onClick={() =>
@@ -231,7 +231,7 @@ export function PostDetailPage() {
               type="button"
               className={clsx("action-button", data.saved && "is-active")}
               aria-pressed={data.saved ?? false}
-              aria-label={data.saved ? "Bỏ lưu trải nghiệm" : "Lưu trải nghiệm"}
+              aria-label={data.saved ? "Bỏ lưu ảnh" : "Lưu ảnh"}
               disabled={save.isPending}
               onClick={() =>
                 requireLogin(() => save.mutate(data.saved ?? false))
@@ -248,7 +248,7 @@ export function PostDetailPage() {
             <button
               type="button"
               className="action-button"
-              aria-label="Chia sẻ trải nghiệm"
+              aria-label="Chia sẻ ảnh"
               onClick={() => void doShare()}
             >
               <Share2 size={18} aria-hidden />

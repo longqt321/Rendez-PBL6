@@ -82,12 +82,6 @@ export function PlaceDetailPage() {
                 {data.opening_hours.text}
               </Badge>
             )}
-            {data.verified_at && (
-              <Badge tone="success">
-                <CheckCircle2 size={12} aria-hidden />
-                Thông tin đã đối chiếu {formatDate(data.verified_at)}
-              </Badge>
-            )}
           </div>
 
           <div className="place-detail__actions">
@@ -115,7 +109,7 @@ export function PlaceDetailPage() {
             <Button asChild>
               <Link to={"/create?place=" + data.id}>
                 <Plus size={16} aria-hidden />
-                Thêm trải nghiệm
+                Đăng ảnh
               </Link>
             </Button>
           </div>
@@ -159,15 +153,7 @@ export function PlaceDetailPage() {
             <dt>Giờ hoạt động</dt>
             <dd>
               {data.opening_hours ? (
-                <>
-                  {data.opening_hours.text}
-                  <span className="info-list__note">
-                    Nguồn: {data.opening_hours.source}
-                    {data.opening_hours.verified_at
-                      ? ` · Đối chiếu ${formatDate(data.opening_hours.verified_at)}`
-                      : ""}
-                  </span>
-                </>
+                data.opening_hours.text
               ) : (
                 <span className="info-list__unknown">
                   Chưa có giờ hoạt động được xác minh
@@ -175,32 +161,9 @@ export function PlaceDetailPage() {
               )}
             </dd>
           </div>
-          <div>
-            <dt>Vị trí</dt>
-            <dd>
-              {hasCoordinates ? (
-                `${data.latitude}, ${data.longitude}`
-              ) : (
-                <span className="info-list__unknown">
-                  Chưa có toạ độ chính xác
-                </span>
-              )}
-            </dd>
-          </div>
         </dl>
 
         <div className="place-detail__meta-actions">
-          {data.source_url && (
-            <a
-              className="inline-link"
-              href={data.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <ArrowUpRight size={14} aria-hidden />
-              Nguồn thông tin
-            </a>
-          )}
           <ReportDialog kind="places" id={data.id} />
         </div>
       </section>
@@ -230,12 +193,12 @@ function CommunityExperiences({
         aria-labelledby="experiences-heading"
       >
         <h2 id="experiences-heading" className="section-title">
-          Trải nghiệm của cộng đồng
+          Ảnh của cộng đồng
         </h2>
         <p className="muted">
-          Chưa có ai chia sẻ trải nghiệm tại đây.{" "}
+          Chưa có ảnh nào ở đây.{" "}
           <Link className="inline-link" to={"/create?place=" + placeId}>
-            Bạn có thể là người đầu tiên
+            Đăng ảnh đầu tiên
           </Link>
           .
         </p>
@@ -250,12 +213,11 @@ function CommunityExperiences({
     >
       <div className="section-head">
         <div>
-          <p className="eyebrow">Cộng đồng</p>
           <h2
             id="experiences-heading"
             className="editorial section-head__title"
           >
-            Trải nghiệm tại đây
+            Ảnh mới nhất
           </h2>
         </div>
       </div>
@@ -308,9 +270,8 @@ function PlaceGallery({
     >
       <div className="section-head">
         <div>
-          <p className="eyebrow">Thư viện</p>
           <h2 id="gallery-heading" className="editorial section-head__title">
-            Ảnh từ cộng đồng
+            Tất cả ảnh
           </h2>
         </div>
         <span className="muted small tabular">{initialCount} ảnh</span>
@@ -403,9 +364,8 @@ function RelatedPlaces({
     >
       <div className="section-head">
         <div>
-          <p className="eyebrow">Gần đây</p>
           <h2 id="related-heading" className="editorial section-head__title">
-            Có thể bạn cũng thích
+            Địa điểm gần đây
           </h2>
         </div>
       </div>

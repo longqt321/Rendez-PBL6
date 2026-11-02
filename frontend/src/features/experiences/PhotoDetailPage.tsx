@@ -73,7 +73,7 @@ export function PhotoDetailPage() {
         <figure className="experience-detail__figure">
           <SafeImage
             sources={[data.url]}
-            alt={data.alt_text || data.caption || "Ảnh trải nghiệm"}
+            alt={data.alt_text || data.caption || "Ảnh địa điểm"}
             ratio={
               data.width && data.height
                 ? `${data.width} / ${data.height}`
@@ -487,7 +487,7 @@ function RelatedExperiences({
     return (
       <EmptyState
         compact
-        title="Chưa có trải nghiệm tương tự"
+        title="Chưa có ảnh tương tự"
         body="Khi cộng đồng chia sẻ thêm ảnh ở khu vực này, chúng sẽ xuất hiện tại đây."
       />
     );
@@ -500,9 +500,8 @@ function RelatedExperiences({
     >
       <div className="section-head">
         <div>
-          <p className="eyebrow">Cùng khu vực</p>
           <h2 id="related-heading" className="editorial section-head__title">
-            Trải nghiệm tương tự
+            Ảnh cùng khu vực
           </h2>
         </div>
         <Link className="section-head__link" to={"/places/" + placeId}>

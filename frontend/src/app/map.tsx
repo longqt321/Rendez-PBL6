@@ -15,7 +15,6 @@ import type { VisualMap } from "../lib/api/visual";
 import { Button } from "../components/ui/button";
 import {
   Cover,
-  Filters,
   SaveButton,
   AttributeChips,
   State,
@@ -131,10 +130,9 @@ export function MapPage() {
   return (
     <>
       <h1 className="sr-only">Địa điểm trên bản đồ</h1>
-      <Filters compact />
       <div className="map-context">
         <div className="map-context-left">
-          <span>Đà Nẵng · Di chuyển bản đồ để tìm quán</span>
+          <span>Đà Nẵng · Di chuyển bản đồ để xem địa điểm</span>
           {activeQuery && (
             <span className="map-active-chip">
               Tìm: <strong>{activeQuery}</strong>
@@ -167,7 +165,7 @@ export function MapPage() {
           </button>
         </div>
         <Link to={"/discover?" + params.toString()} className="map-switch-view">
-          Xem ảnh <ArrowUpRight size={16} aria-hidden />
+          Xem danh sách <ArrowUpRight size={16} aria-hidden />
         </Link>
       </div>
       {gpsError && <p role="status">{gpsError}</p>}
@@ -468,7 +466,7 @@ export function MapPage() {
                     }
                     state={{ from: "/map?" + params.toString() }}
                   >
-                    Xem chi tiết không gian{" "}
+                    Xem chi tiết{" "}
                     <ArrowUpRight size={16} aria-hidden />
                   </Link>
                 </Button>

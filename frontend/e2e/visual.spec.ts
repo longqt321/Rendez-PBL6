@@ -13,8 +13,9 @@ import { getE2ECredentials, loginViaApi } from "./helpers/auth";
  * current UI.
  */
 
-const placeId = "30000000-0000-0000-0000-000000000001";
-const placeWithoutCoords = "30000000-0000-0000-0000-000000000003";
+// Deterministic ids from `data/danang.json` (uuid5 of "rendez:danang:<slug>").
+const placeId = "f370f700-5c94-5993-bfa4-f93d2978f919"; // Trình Cà Phê
+const secondPlaceId = "22d9a6be-bdd0-52da-a8ce-3c1b8ec6bc37"; // TABTEA
 
 const screenshots = path.resolve(
   import.meta.dirname,
@@ -94,10 +95,10 @@ for (const width of [360, 390, 768, 1440]) {
   test("discover, place and photo responsive " + width, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
 
-    // 1. Discover: masthead, curated places, no overflow.
+    // 1. Discover: page head and place list, no overflow.
     await page.goto("/discover");
     await expect(
-      page.getByRole("heading", { name: /Tìm nơi đáng để/ }),
+      page.getByRole("heading", { name: /Địa điểm ở Đà Nẵng/ }),
     ).toBeVisible();
     await noOverflow(page);
     await capture(page, "discover-" + width);
@@ -182,7 +183,13 @@ test("upload, manual review, report and withdrawal", async ({
 }) => {
   await register(page);
   await page.goto("/submissions/new?place=" + placeId);
-  await expect(page.getByText("Đã chọn:", { exact: false })).toBeVisible();
+  // The selection is shown once: by the checked row, or by the banner when the
+  // chosen place is outside the visible list.
+  await expect(
+    page
+      .locator(".selected-place, .place-search-results__row input:checked")
+      .first(),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
   await page.getByLabel("Chọn ảnh JPEG hoặc PNG").setInputFiles(testImage);
   await expect(page.getByText("1/5 ảnh")).toBeVisible();
@@ -265,8 +272,12 @@ test("new place and photos are published immediately", async ({ page }) => {
   await register(page);
   await page.goto("/submissions/new");
   await page.getByRole("checkbox", { name: "Thêm địa điểm mới" }).check();
-  await page.getByLabel("Tên địa điểm", { exact: true }).fill("Quán E2E DEMO");
-  await page.getByLabel("Địa chỉ", { exact: true }).fill("Địa chỉ giả để test");
+  await page
+    .getByLabel("Tên địa điểm", { exact: true })
+    .fill("Bách Khoa Coffee · Ngô Sỹ Liên");
+  await page
+    .getByLabel("Địa chỉ", { exact: true })
+    .fill("60 Ngô Sỹ Liên, Phường Hòa Khánh Bắc, Liên Chiểu, Đà Nẵng");
   await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
   await page.getByLabel("Chọn ảnh JPEG hoặc PNG").setInputFiles(testImage);
   await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
@@ -276,7 +287,10 @@ test("new place and photos are published immediately", async ({ page }) => {
   await expect(page.locator(".status-badge")).toHaveText("Đã đăng");
   await page.getByRole("link", { name: "Xem và quản lý ảnh" }).click();
   await expect(
-    page.getByRole("heading", { name: "Quán E2E DEMO", exact: true }),
+    page.getByRole("heading", {
+      name: "Bách Khoa Coffee · Ngô Sỹ Liên",
+      exact: true,
+    }),
   ).toBeVisible();
   await capture(page, "new-place-published");
 });
@@ -285,7 +299,9 @@ test("map shares filters, preview and history", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   // Navigate directly: the primary nav is a plain NavLink that intentionally
   // drops the query string, so filters only survive an explicit URL.
-  await page.goto("/map?attributes=demo-vegetation,demo-wood");
+  // Real taxonomy codes from `import_danang.py`; demo-* codes are no longer
+  // searchable for members (B1).
+  await page.goto("/map?attributes=plants,wood");
   await expect(page).toHaveURL(/attributes=/);
 
   const marker = page.locator(".marker-list button").first();
@@ -309,7 +325,7 @@ test("map shares filters, preview and history", async ({ page }) => {
   ).toBeVisible();
   await expect(page).toHaveURL(/attributes=/);
 
-  await page.getByRole("link", { name: "Xem ảnh" }).click();
+  await page.getByRole("link", { name: "Xem danh sách" }).click();
   await expect(page).toHaveURL(/attributes=/);
   await expect(page).toHaveURL(/\/discover/);
 });
@@ -386,19 +402,49 @@ test("map tile failure retry and empty viewport message", async ({ page }) => {
 test("missing coordinates, empty gallery and loading state", async ({
   page,
 }) => {
-  await page.goto("/places/" + placeWithoutCoords);
+  // Both states are served by rewriting a real place, so the suite no longer
+  // depends on demo fixture rows (B1).
+  const detail = await (
+    await page.request.get("/api/v1/places/" + placeId + "/")
+  ).json();
+  const placeName = detail.name as string;
+
+  await page.route("**/api/v1/places/" + placeId + "/", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...detail, latitude: null, longitude: null }),
+    }),
+  );
+  await page.goto("/places/" + placeId);
   await expect(page.getByText("Chưa có toạ độ chính xác")).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Xem trên bản đồ", exact: true }),
   ).toHaveCount(0);
+  await page.unroute("**/api/v1/places/" + placeId + "/");
 
-  await page.goto("/places/30000000-0000-0000-0000-000000000004");
-  // The seeded fixture for this place intentionally has no photo. Assert the
-  // identity only: other specs may attach posts to it, so "no experiences" is
-  // not a stable expectation.
-  await expect(page.locator("h1.place-detail__title")).toHaveText(
-    "Quán chưa có ảnh — DEMO",
+  const secondDetail = await (
+    await page.request.get("/api/v1/places/" + secondPlaceId + "/")
+  ).json();
+  await page.route("**/api/v1/places/" + secondPlaceId + "/", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...secondDetail,
+        photos: { count: 0, next: null, previous: null, results: [] },
+      }),
+    }),
   );
+  await page.goto("/places/" + secondPlaceId);
+  await expect(page.locator("h1.place-detail__title")).toHaveText(
+    secondDetail.name,
+  );
+  // No photos means no gallery section, not an empty heading.
+  await expect(page.locator("#gallery-heading")).toHaveCount(0);
+  await page.unroute("**/api/v1/places/" + secondPlaceId + "/");
+
+  expect(placeName.length).toBeGreaterThan(0);
 
   let release!: () => void;
   const gate = new Promise<void>((resolve) => {

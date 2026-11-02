@@ -11,14 +11,12 @@
 
 :root {
   /* ---------- Type families ---------- */
-  /* No font files are bundled: the app must work fully offline and must not
-     depend on a font CDN. These stacks degrade to high-quality system faces. */
   --font-sans:
-    "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+    "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, system-ui, sans-serif;
   --font-editorial:
-    "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Palatino,
-    "Liberation Serif", Georgia, "Times New Roman", serif;
+    "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, system-ui, sans-serif;
   --font-numeric: var(--font-sans);
 
   /* ---------- Type scale ---------- */
@@ -28,7 +26,7 @@
   --text-place: clamp(1.0625rem, 1.3vw, 1.375rem); /* 17 → 22 */
   --text-body: 0.9375rem; /* 15 */
   --text-support: 0.8125rem; /* 13 */
-  --text-micro: 0.6875rem; /* 11 */
+  --text-micro: 0.75rem; /* 12 */
 
   --leading-tight: 1.12;
   --leading-snug: 1.3;
@@ -65,11 +63,11 @@
   --dur-slow: 320ms;
 
   /* ---------- Layout ---------- */
-  --shell-sidebar: 248px;
-  --shell-sidebar-compact: 76px;
-  --shell-topbar: 68px;
-  --shell-mobile-nav: 64px;
-  --content-max: 1240px;
+  --shell-sidebar: 200px;
+  --shell-sidebar-compact: 72px;
+  --shell-topbar: 56px;
+  --shell-mobile-nav: 60px;
+  --content-max: 680px;
   --reading-max: 68ch;
 }
 
@@ -78,112 +76,104 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --color-background: #f7f6f1;
-  --color-surface: #ffffff;
-  --color-surface-muted: #efeee7;
-  --color-surface-sunken: #e9e8e0;
-  --color-foreground: #202923;
-  --color-foreground-muted: #5f665f;
-  --color-foreground-subtle: #666d66;
-  --color-border: #e5e4dc;
-  --color-border-strong: #d3d2c8;
-  --color-primary: #23483d;
-  --color-primary-hover: #19392f;
-  --color-primary-soft: #e7efe9;
+  /* Off-white and Zinc neutrals based on Tailwind/Radix UI standards */
+  --color-background: #f8fafc;        /* slate-50: dịu mắt, tránh chói lóa của pure white */
+  --color-surface: #ffffff;           /* card/container surface */
+  --color-surface-muted: #f1f5f9;     /* slate-100 */
+  --color-surface-sunken: #e2e8f0;    /* slate-200 */
+  --color-foreground: #0f172a;        /* slate-900: độ tương phản cao (~16:1) không gây mỏi mắt */
+  --color-foreground-muted: #64748b;  /* slate-500 */
+  --color-foreground-subtle: #94a3b8; /* slate-400 */
+  --color-border: #e2e8f0;            /* slate-200 */
+  --color-border-strong: #cbd5e1;     /* slate-300 */
+  --color-primary: #0f172a;           /* slate-900 */
+  --color-primary-hover: #1e293b;     /* slate-800 */
+  --color-primary-soft: #f1f5f9;      /* slate-100 */
   --color-on-primary: #ffffff;
-  --color-accent: #f0784b;
-  --color-accent-hover: #e56e42;
-  --color-accent-soft: #fdeee7;
-  /* Accent as *text* needs a darker step: #f0784b on its own soft tint is
-     only 2.5:1. This is the readable variant, not a new brand colour. */
-  --color-accent-ink: #b34c25;
-  /* Text placed *on* an accent fill. White on #f0784b is 2.8:1; ink is 5.3:1. */
-  --color-on-accent: #202923;
-  --color-success: #35704f;
-  --color-success-soft: #e8f0ea;
-  --color-warning: #8a5b1c;
-  --color-warning-soft: #f6efe5;
-  --color-danger: #b3453e;
-  --color-danger-soft: #fbeceb;
+  /* Rose-500 / Coral: năng động, tươi tắn chuẩn Gen Z */
+  --color-accent: #f43f5e;            /* rose-500 */
+  --color-accent-hover: #e11d48;      /* rose-600 */
+  --color-accent-soft: #ffe4e6;       /* rose-100 */
+  --color-accent-ink: #e11d48;
+  --color-on-accent: #ffffff;
+  --color-success: #10b981;           /* emerald-500 */
+  --color-success-soft: #d1fae5;
+  --color-warning: #f59e0b;           /* amber-500 */
+  --color-warning-soft: #fef3c7;
+  --color-danger: #ef4444;            /* red-500 */
+  --color-danger-soft: #fee2e2;
   --color-on-danger: #ffffff;
-  --color-overlay: rgb(24 33 28 / 55%);
+  --color-overlay: rgb(15 23 42 / 50%);
 
-  /* Editorial "cover" panel used by the auth screen. Deliberately dark in both
-     themes so the sign-in page keeps one strong, book-cover-like surface. */
-  --color-story-bg: #23483d;
-  --color-story-fg: #f7f6f1;
-  --color-story-muted: rgb(247 246 241 / 72%);
-  --color-story-line: rgb(247 246 241 / 22%);
+  --color-story-bg: #0f172a;
+  --color-story-fg: #f8fafc;
+  --color-story-muted: rgb(248 250 252 / 72%);
+  --color-story-line: rgb(248 250 252 / 16%);
 
-  --shadow-xs: 0 1px 2px rgb(24 33 28 / 5%);
-  --shadow-sm: 0 2px 6px -1px rgb(24 33 28 / 7%);
-  --shadow-md: 0 8px 20px -6px rgb(24 33 28 / 12%);
-  --shadow-lg: 0 20px 44px -18px rgb(24 33 28 / 22%);
+  --shadow-xs: 0 1px 2px rgb(15 23 42 / 4%);
+  --shadow-sm: 0 2px 6px -1px rgb(15 23 42 / 6%);
+  --shadow-md: 0 8px 18px -4px rgb(15 23 42 / 8%);
+  --shadow-lg: 0 16px 32px -8px rgb(15 23 42 / 10%);
 
-  --focus-ring: 0 0 0 3px rgb(35 72 61 / 22%);
-  --focus-ring-accent: 0 0 0 3px rgb(240 120 75 / 30%);
-  /* Base colour for filter: drop-shadow() — map markers sit on the basemap,
-     not on a themed surface, so they need an explicit shadow colour. */
-  --shadow-color: rgb(26 46 38 / 28%);
-  /* The basemap raster is always light, so marker outlines must stay light in
-     both themes or they disappear into the tiles. */
+  --focus-ring: 0 0 0 3px rgb(15 23 42 / 12%);
+  --focus-ring-accent: 0 0 0 3px rgb(244 63 94 / 22%);
+  --shadow-color: rgb(15 23 42 / 12%);
   --color-map-halo: #ffffff;
 
-  --skeleton-base: #eceae2;
-  --skeleton-shine: #f6f5ef;
+  --skeleton-base: #f1f5f9;
+  --skeleton-shine: #e2e8f0;
 }
 
 /* ----------------------------------------------------------------- Dark */
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --color-background: #121b18;
-  --color-surface: #1b2722;
-  --color-surface-muted: #24322c;
-  --color-surface-sunken: #17211d;
-  --color-foreground: #f1f1e9;
-  --color-foreground-muted: #a4aea5;
-  --color-foreground-subtle: #909c92;
-  --color-border: #344239;
-  --color-border-strong: #44544a;
-  --color-primary: #8ab5a0;
-  --color-primary-hover: #a0c7b0;
-  --color-primary-soft: #22332b;
-  --color-on-primary: #10201a;
-  --color-accent: #ff916b;
-  --color-accent-hover: #ffa886;
-  --color-accent-soft: #35241d;
-  --color-accent-ink: #ffa886;
-  --color-on-accent: #10201a;
-  --color-success: #79b98f;
-  --color-success-soft: #22332b;
-  --color-warning: #e0ae64;
-  --color-warning-soft: #3a2e1e;
-  --color-danger: #e67c72;
-  --color-danger-soft: #35211f;
-  --color-on-danger: #10201a;
-  --color-overlay: rgb(6 12 9 / 68%);
+  /* Dark mode neutrals based on Material Design 3 / Apple Human Interface Guidelines */
+  --color-background: #121316;        /* Tối dịu, khử halation/blooming so với #000000 */
+  --color-surface: #1a1c20;           /* Elevated surface */
+  --color-surface-muted: #22252a;     /* Muted/chip surface */
+  --color-surface-sunken: #0d0e11;    /* Sunken/input surface */
+  --color-foreground: #eceff4;        /* Soft off-white chống lóa mắt */
+  --color-foreground-muted: #9aa2b1;  /* Balanced gray */
+  --color-foreground-subtle: #6b7382; /* Subtle secondary */
+  --color-border: #282c34;            /* Soft structural border */
+  --color-border-strong: #383e4a;
+  --color-primary: #eceff4;
+  --color-primary-hover: #ffffff;
+  --color-primary-soft: #22252a;
+  --color-on-primary: #121316;
+  /* Rose-400 / Vibrant Coral: rõ nét trên nền tối */
+  --color-accent: #fb7185;            /* rose-400 */
+  --color-accent-hover: #f43f5e;      /* rose-500 */
+  --color-accent-soft: rgba(251, 113, 133, 0.16);
+  --color-accent-ink: #fb7185;
+  --color-on-accent: #121316;
+  --color-success: #34d399;           /* emerald-400 */
+  --color-success-soft: rgba(52, 211, 153, 0.16);
+  --color-warning: #fbbf24;           /* amber-400 */
+  --color-warning-soft: rgba(251, 191, 36, 0.16);
+  --color-danger: #f87171;            /* red-400 */
+  --color-danger-soft: rgba(248, 113, 113, 0.16);
+  --color-on-danger: #121316;
+  --color-overlay: rgb(0 0 0 / 65%);
 
-  /* In dark mode the cover panel lifts slightly above the page instead of
-     dropping below it, so the split layout still reads as two surfaces. */
-  --color-story-bg: #1b2722;
-  --color-story-fg: #f1f1e9;
-  --color-story-muted: rgb(241 241 233 / 68%);
-  --color-story-line: rgb(241 241 233 / 18%);
+  --color-story-bg: #1a1c20;
+  --color-story-fg: #eceff4;
+  --color-story-muted: rgb(236 239 244 / 72%);
+  --color-story-line: rgb(236 239 244 / 16%);
 
-  --shadow-xs: 0 1px 2px rgb(0 0 0 / 30%);
-  --shadow-sm: 0 2px 8px -1px rgb(0 0 0 / 38%);
-  --shadow-md: 0 10px 24px -8px rgb(0 0 0 / 48%);
-  --shadow-lg: 0 24px 48px -20px rgb(0 0 0 / 62%);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 25%);
+  --shadow-sm: 0 2px 8px -1px rgb(0 0 0 / 35%);
+  --shadow-md: 0 10px 24px -8px rgb(0 0 0 / 45%);
+  --shadow-lg: 0 20px 40px -16px rgb(0 0 0 / 55%);
 
-  --focus-ring: 0 0 0 3px rgb(138 181 160 / 34%);
-  --focus-ring-accent: 0 0 0 3px rgb(255 145 107 / 34%);
-  /* Stronger on a dark basemap so markers keep their edge. */
-  --shadow-color: rgb(0 0 0 / 52%);
+  --focus-ring: 0 0 0 3px rgb(236 239 244 / 22%);
+  --focus-ring-accent: 0 0 0 3px rgb(251 113 133 / 28%);
+  --shadow-color: rgb(0 0 0 / 50%);
   --color-map-halo: #ffffff;
 
-  --skeleton-base: #24322c;
-  --skeleton-shine: #2e3d36;
+  --skeleton-base: #1e2126;
+  --skeleton-shine: #292d35;
 }
 
 /* ------------------------------------------------- Legacy token aliases */

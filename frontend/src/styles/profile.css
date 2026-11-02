@@ -7,22 +7,22 @@
  * keeps the hierarchy readable without stacking shadows.
  */
 
-/* --------------------------------------------------------------- Profile */
+/* --------------------------------------------------------------- Profile (Threads Style) */
 
 .profile-view {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
-  max-width: 1000px;
+  gap: var(--space-5);
+  max-width: 680px;
   margin-inline: auto;
 }
 
 .profile-banner {
   display: flex;
   align-items: flex-start;
+  justify-content: space-between;
   gap: var(--space-5);
-  padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-4);
 }
 
 .profile-banner__copy {
@@ -33,12 +33,30 @@
   min-width: 0;
 }
 
-.profile-banner__copy h1 {
-  font-size: var(--text-editorial);
-  font-weight: 600;
+.profile-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.profile-title-row h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
   line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+.profile-banner__username {
+  margin: 0;
+  font-size: var(--text-support);
+  color: var(--color-foreground-muted);
+}
+
+.profile-banner__bio {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-body);
+  color: var(--color-foreground);
+  line-height: var(--leading-snug);
 }
 
 .profile-banner__meta {
@@ -48,13 +66,58 @@
   gap: var(--space-2);
   color: var(--color-foreground-muted);
   font-size: var(--text-support);
-  overflow-wrap: anywhere;
+  margin-top: var(--space-1);
 }
 
-.profile-banner__meta > span {
-  display: inline-flex;
+.profile-banner__avatar-wrap {
+  flex-shrink: 0;
+}
+
+.profile-banner__avatar-wrap .avatar {
+  width: 72px;
+  height: 72px;
+  font-size: 1.5rem;
+}
+
+.profile-actions-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-action-btn {
+  justify-content: center;
+  font-size: var(--text-support);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.profile-switch {
+  width: 100%;
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-switch a {
+  flex: 1;
+  display: flex;
   align-items: center;
-  gap: var(--space-1);
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  font-size: var(--text-support);
+  font-weight: 600;
+  color: var(--color-foreground-muted);
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+
+.profile-switch a[aria-current="page"] {
+  color: var(--color-foreground);
+  border-bottom-color: var(--color-foreground);
 }
 
 .profile-banner__badges {

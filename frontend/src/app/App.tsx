@@ -19,6 +19,8 @@ import { ExperiencesPage } from "../features/experiences/ExperiencesPage";
 import { CreateExperiencePage } from "../features/contribute/CreateExperiencePage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { SettingsPage } from "../features/profile/SettingsPage";
+import { ActivityPage } from "../features/activity/ActivityPage";
+import { InsightsPage } from "../features/insights/InsightsPage";
 import { NotFoundPage } from "../features/shell/NotFoundPage";
 import { TermsPage } from "../features/shell/TermsPage";
 
@@ -90,6 +92,8 @@ export default function App() {
           <Route path="places/:id" element={<PlaceDetailPage />} />
           <Route path="photos/:id" element={<PhotoDetailPage />} />
           <Route path="creators/:id" element={<CreatorProfilePage />} />
+          <Route path="activity" element={<ActivityPage />} />
+          <Route path="insights" element={<InsightsPage />} />
           <Route path="saved" element={<SavedPage />} />
           <Route path="create" element={<CreateExperiencePage />} />
           <Route path="profile" element={<ProfilePage />} />

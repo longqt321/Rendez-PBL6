@@ -4,50 +4,42 @@ import { Coffee, Moon, Sparkles, Trees, Users, Wind } from "lucide-react";
 /**
  * Contextual discovery prompts.
  *
- * Open-ended discovery fails when the user has no intention yet. These prompts
- * turn a mood into a concrete search.
- *
- * Every destination here uses a filter value that exists in the seeded
- * taxonomy — attribute codes come from `import_danang.py`
- * (plants, study, architecture, interior, night, food, wood) and category
- * slugs from `data/danang.json` (study, night, vintage, garden, checkin,
- * classic). A prompt must never point at a filter that cannot match.
+ * A short row of entry points that turn a need into a concrete filter. Every
+ * destination uses a filter value that exists in the seeded taxonomy —
+ * attribute codes come from `import_danang.py` (plants, study, architecture,
+ * interior, night, food, wood) and category slugs from `data/danang.json`
+ * (study, night, vintage, garden, checkin, classic). A prompt must never point
+ * at a filter that cannot match.
  */
 const PROMPTS = [
   {
-    to: "/search?attributes=study",
-    label: "Yên tĩnh để làm việc",
-    hint: "Bàn học, ổ cắm",
+    to: "/map?attributes=study",
+    label: "Làm việc",
     icon: Wind,
   },
   {
-    to: "/search?category=garden",
-    label: "Sân vườn & chill",
-    hint: "Ngồi ngoài trời",
+    to: "/map?category=garden",
+    label: "Sân vườn",
     icon: Trees,
   },
   {
-    to: "/search?category=night",
-    label: "Mở muộn",
-    hint: "Cho buổi tối dài",
+    to: "/map?category=night",
+    label: "Mở 24/7",
     icon: Moon,
   },
   {
-    to: "/search?attributes=food",
-    label: "Cà phê & đồ uống",
-    hint: "Đồ uống được chú ý",
+    to: "/map?attributes=food",
+    label: "Có đồ uống",
     icon: Coffee,
   },
   {
-    to: "/search?category=checkin",
-    label: "Không gian đẹp",
-    hint: "Đáng chụp lại",
+    to: "/map?category=checkin",
+    label: "Chỗ chụp ảnh",
     icon: Sparkles,
   },
   {
     to: "/posts",
-    label: "Xem cộng đồng",
-    hint: "Trải nghiệm mới nhất",
+    label: "Ảnh mới nhất",
     icon: Users,
   },
 ] as const;
@@ -59,14 +51,11 @@ export function DiscoveryPrompt() {
         Gợi ý khám phá
       </h2>
       <ul className="prompt-strip__list" role="list">
-        {PROMPTS.map(({ to, label, hint, icon: Icon }) => (
+        {PROMPTS.map(({ to, label, icon: Icon }) => (
           <li key={to}>
             <Link className="prompt-card" to={to}>
-              <span className="prompt-card__icon">
-                <Icon size={18} aria-hidden />
-              </span>
+              <Icon size={16} aria-hidden />
               <span className="prompt-card__label">{label}</span>
-              <span className="prompt-card__hint">{hint}</span>
             </Link>
           </li>
         ))}

@@ -48,11 +48,7 @@ export function SettingsPage() {
 
       <header className="page-head">
         <div className="page-head__copy">
-          <p className="eyebrow">Tài khoản</p>
           <h1>Cài đặt</h1>
-          <p className="lede">
-            Giao diện, thông tin cá nhân và bảo mật của tài khoản Rendez.
-          </p>
         </div>
       </header>
 
@@ -68,13 +64,13 @@ export function SettingsPage() {
           <li>
             <Link to="/submissions">
               <History size={17} aria-hidden />
-              <span>Lịch sử đăng ảnh</span>
+              <span>Ảnh của tôi</span>
             </Link>
           </li>
           <li>
             <Link to="/saved">
               <User size={17} aria-hidden />
-              <span>Địa điểm và trải nghiệm đã lưu</span>
+              <span>Địa điểm đã lưu</span>
             </Link>
           </li>
           {me.data.is_staff && (
@@ -95,7 +91,7 @@ export function SettingsPage() {
         </h2>
         <p className="muted small">
           Đăng xuất khỏi thiết bị này. Bạn sẽ cần đăng nhập lại để lưu địa điểm
-          hoặc đăng trải nghiệm.
+          hoặc đăng ảnh.
         </p>
         <Button
           variant="destructive"
@@ -109,7 +105,7 @@ export function SettingsPage() {
         <ConfirmDialog
           open={confirmLogout}
           title="Đăng xuất"
-          description="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản Rendez không?"
+          description="Bạn sẽ cần đăng nhập lại."
           confirmLabel="Đăng xuất"
           cancelLabel="Ở lại"
           isDestructive
@@ -183,7 +179,7 @@ function DisplayNameSection({ profile }: { profile: Profile }) {
   return (
     <section className="settings-block" aria-labelledby="name-heading">
       <h2 id="name-heading" className="settings-block__title">
-        Tên hiển thị
+        Thông tin cá nhân
       </h2>
       <form
         className="settings-form"
@@ -209,11 +205,9 @@ function DisplayNameSection({ profile }: { profile: Profile }) {
           {update.isPending ? "Đang lưu…" : "Lưu thay đổi"}
         </Button>
         <ErrorText error={update.error} />
-        {update.isSuccess && (
-          <p className="success" role="status">
-            Đã cập nhật tên.
-          </p>
-        )}
+        <p className="success form-status" role="status">
+          {update.isSuccess ? "Đã lưu tên." : ""}
+        </p>
       </form>
     </section>
   );
@@ -287,11 +281,9 @@ function PasswordSection() {
           {change.isPending ? "Đang đổi…" : "Đổi mật khẩu"}
         </Button>
         <ErrorText error={change.error} />
-        {change.isSuccess && (
-          <p className="success" role="status">
-            Đã đổi mật khẩu.
-          </p>
-        )}
+        <p className="success form-status" role="status">
+          {change.isSuccess ? "Đã đổi mật khẩu." : ""}
+        </p>
       </form>
     </section>
   );

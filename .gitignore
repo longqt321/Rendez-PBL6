@@ -51,6 +51,8 @@ files/
 agent-kit
 *.mp4
 .claude/
+frontend/playwright.video.config.ts
+frontend/e2e/demo_walkthrough.spec.ts
 
 
 .agent/

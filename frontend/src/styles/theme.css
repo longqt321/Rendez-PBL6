@@ -143,11 +143,11 @@ textarea {
   width: 100%;
   min-width: 0;
   min-height: 46px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  border: 1px solid var(--color-border-strong, var(--line-strong));
+  background: var(--color-surface, var(--surface));
   border-radius: var(--radius-md);
   padding: 10px 14px;
-  color: var(--ink);
+  color: var(--color-foreground, var(--ink));
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);
@@ -184,7 +184,12 @@ input[type="radio"] {
 }
 
 .shimmer {
-  background: linear-gradient(90deg, #f0f2eb 25%, #f7f9f4 37%, #f0f2eb 63%);
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base) 25%,
+    var(--skeleton-shine) 37%,
+    var(--skeleton-base) 63%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.8s infinite;
 }
@@ -213,7 +218,7 @@ small,
 }
 
 .error {
-  color: #aa392b;
+  color: var(--color-danger);
   font-size: 14px;
   overflow-wrap: anywhere;
 }
@@ -223,13 +228,13 @@ small,
 }
 
 .success {
-  color: #285548;
+  color: var(--color-success);
   font-size: 14px;
 }
 
 .eyebrow {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   font-weight: 650;
   color: var(--muted);

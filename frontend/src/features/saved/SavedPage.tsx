@@ -38,18 +38,14 @@ export function SavedPage() {
     <div className="saved-page">
       <header className="page-head">
         <div className="page-head__copy">
-          <p className="eyebrow">Bộ sưu tập của bạn</p>
           <h1>Đã lưu</h1>
-          <p className="lede">
-            Những nơi bạn muốn ghé, và những trải nghiệm bạn muốn xem lại.
-          </p>
         </div>
       </header>
 
       {bothEmpty ? (
         <EmptyState
           title="Bạn chưa lưu gì"
-          body="Khi bạn lưu một địa điểm hoặc một trải nghiệm, nó sẽ xuất hiện ở đây để bạn tìm lại dễ dàng."
+          body="Khi bạn lưu một địa điểm hoặc một ảnh, nó sẽ xuất hiện ở đây."
           icon={<Bookmark size={24} aria-hidden />}
           actions={
             <Button asChild>
@@ -65,12 +61,11 @@ export function SavedPage() {
           >
             <div className="section-head">
               <div>
-                <p className="eyebrow">Địa điểm</p>
                 <h2
                   id="saved-places-heading"
                   className="editorial section-head__title"
                 >
-                  Nơi bạn muốn ghé
+                  Địa điểm
                 </h2>
               </div>
               {places.data && (
@@ -94,7 +89,7 @@ export function SavedPage() {
                 body="Bấm biểu tượng dấu trang trên một địa điểm để lưu lại."
                 actions={
                   <Button asChild variant="outline" size="sm">
-                    <Link to="/search">Tìm địa điểm</Link>
+                    <Link to="/map">Tìm địa điểm</Link>
                   </Button>
                 }
               />
@@ -115,17 +110,16 @@ export function SavedPage() {
           >
             <div className="section-head">
               <div>
-                <p className="eyebrow">Trải nghiệm</p>
                 <h2
                   id="saved-posts-heading"
                   className="editorial section-head__title"
                 >
-                  Trải nghiệm bạn giữ lại
+                  Ảnh đã lưu
                 </h2>
               </div>
               {posts.data && (
                 <span className="muted small tabular">
-                  {posts.data.count} trải nghiệm
+                  {posts.data.count} ảnh
                 </span>
               )}
             </div>
@@ -140,11 +134,11 @@ export function SavedPage() {
             {posts.data && savedPosts.length === 0 && (
               <EmptyState
                 compact
-                title="Chưa lưu trải nghiệm nào"
-                body="Mở một trải nghiệm từ cộng đồng và bấm Lưu để giữ lại."
+                title="Chưa lưu ảnh nào"
+                body="Mở một ảnh từ cộng đồng và bấm Lưu để giữ lại."
                 actions={
                   <Button asChild variant="outline" size="sm">
-                    <Link to="/posts">Xem trải nghiệm</Link>
+                    <Link to="/posts">Xem ảnh</Link>
                   </Button>
                 }
               />
@@ -195,7 +189,7 @@ export function SavedPage() {
             <Button asChild variant="outline">
               <Link to="/create">
                 <Plus size={16} aria-hidden />
-                Đăng trải nghiệm của bạn
+                Đăng ảnh
               </Link>
             </Button>
           </div>

@@ -7,13 +7,13 @@
 .shell-brand {
   display: inline-flex;
   align-items: baseline;
-  gap: 1px;
+  gap: 2px;
   padding: 0 var(--space-2);
   color: var(--color-foreground);
-  font-family: var(--font-editorial);
-  font-size: 1.65rem;
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 850;
+  letter-spacing: -0.04em;
   line-height: 1;
   user-select: none;
 }
@@ -27,7 +27,7 @@
   transform: translateY(-2px);
 }
 
-/* --------------------------------------------------------------- Sidebar */
+/* --------------------------------------------------------------- Sidebar (Threads Style) */
 
 .shell-nav {
   flex: 1;
@@ -38,10 +38,16 @@
 .shell-nav__list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.shell-nav__section-divider {
+  height: 1px;
+  margin: var(--space-3) 0;
+  background: var(--color-border);
 }
 
 .shell-nav__link {
@@ -49,40 +55,55 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  min-height: 42px;
+  min-height: 40px;
   padding: 0 var(--space-3);
   border-radius: var(--radius-sm);
   color: var(--color-foreground-muted);
-  font-size: var(--text-body);
-  font-weight: 550;
+  font-size: var(--text-support);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
   transition:
     background-color var(--dur-fast) var(--ease-out),
     color var(--dur-fast) var(--ease-out);
 }
 
+.shell-nav__link svg {
+  flex: none;
+  color: var(--color-foreground-muted);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
 .shell-nav__link:hover {
-  background: var(--color-surface-muted);
+  background-color: var(--color-surface-muted);
+  color: var(--color-foreground);
+}
+
+.shell-nav__link:hover svg {
   color: var(--color-foreground);
 }
 
 .shell-nav__link.is-active {
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
-  font-weight: 650;
+  background-color: var(--color-surface-muted);
+  color: var(--color-foreground);
+  font-weight: 600;
 }
 
-.shell-nav__link.is-active::before {
-  content: "";
-  position: absolute;
-  inset: 30% auto 30% -9px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--color-primary);
+.shell-nav__link.is-active svg {
+  color: var(--color-foreground);
 }
 
-.shell-sidebar__foot {
-  margin-top: auto;
-  width: 100%;
+.shell-nav__label {
+  opacity: 1;
+  transform: none;
+  white-space: nowrap;
+}
+
+.shell-brand__word {
+  opacity: 1;
+  max-width: 120px;
+  display: inline-block;
+  font-size: 1.25rem;
 }
 
 .shell-create {
@@ -91,19 +112,27 @@
   justify-content: center;
   gap: var(--space-2);
   min-height: 44px;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-sm);
-  background: var(--color-accent);
-  color: var(--color-on-accent);
+  width: 100%;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-foreground);
+  color: var(--color-background);
   font-size: var(--text-support);
   font-weight: 650;
+  white-space: nowrap;
   transition:
-    background-color var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out),
     transform var(--dur-fast) var(--ease-out);
 }
 
+.shell-create__plus {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
 .shell-create:hover {
-  background: var(--color-accent-hover);
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .shell-create:active {
@@ -116,16 +145,16 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  flex: 1;
-  min-width: 0;
-  max-width: 520px;
-  min-height: 42px;
-  padding: 0 var(--space-4);
+  width: 100%;
+  max-width: 480px;
+  min-height: 38px;
+  margin: 0 auto;
+  padding: 0 var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
   color: var(--color-foreground-muted);
-  font-size: var(--text-body);
+  font-size: var(--text-support);
   transition:
     border-color var(--dur-fast) var(--ease-out),
     box-shadow var(--dur-fast) var(--ease-out);
@@ -136,10 +165,46 @@
   box-shadow: var(--shadow-xs);
 }
 
-.shell-search span {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.shell-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-foreground);
+  font: inherit;
+}
+
+.shell-search input::placeholder {
+  color: var(--color-foreground-muted);
+}
+
+.shell-search input:focus-visible {
+  outline: none;
+}
+
+.shell-search__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-foreground-muted);
+  cursor: pointer;
+}
+
+.shell-search__submit:hover {
+  color: var(--color-foreground);
+}
+
+.shell-search:focus-within {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-xs);
 }
 
 .shell-topbar__actions {
@@ -253,9 +318,14 @@
 /* ------------------------------------------------------------- Responsive */
 
 @media (max-width: 1100px) {
-  .shell-brand__word,
+  .app-shell__sidebar {
+    width: var(--shell-sidebar-compact);
+    padding: var(--space-4) var(--space-2);
+  }
+
   .shell-nav__label,
-  .shell-create span {
+  .shell-brand__word,
+  .shell-create__text {
     display: none;
   }
 
@@ -263,10 +333,6 @@
   .shell-create {
     justify-content: center;
     padding: 0;
-  }
-
-  .shell-nav__link.is-active::before {
-    display: none;
   }
 
   .shell-brand {
@@ -310,10 +376,10 @@
     gap: 3px;
     min-width: 0;
     border-radius: var(--radius-sm);
-    color: var(--color-foreground-subtle);
-    font-size: 10px;
+    color: var(--color-foreground-muted);
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
   }
 
   .shell-mobile__link span {
@@ -329,15 +395,5 @@
 
   .shell-search {
     max-width: none;
-  }
-
-  .shell-search span {
-    font-size: var(--text-support);
-  }
-}
-
-@media (max-width: 380px) {
-  .shell-mobile__link span {
-    font-size: 9px;
   }
 }

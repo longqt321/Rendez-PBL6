@@ -10,28 +10,41 @@
   flex-direction: column;
   gap: var(--space-3);
   min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.place-card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
 }
 
 .place-card__media {
   display: block;
-  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--color-surface-muted);
 }
 
 .place-card__media .media-frame {
-  border-radius: inherit;
+  border-radius: 0;
   transition: transform var(--dur-slow) var(--ease-out);
 }
 
 .place-card:hover .place-card__media .media-frame {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 .place-card__save {
   position: absolute;
   top: var(--space-2);
   right: var(--space-2);
+  z-index: 2;
 }
 
 .place-card__body {
@@ -39,6 +52,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-1);
+  padding: 0 var(--space-4) var(--space-4);
   min-width: 0;
 }
 
@@ -132,35 +146,69 @@
   flex-direction: column;
   gap: var(--space-3);
   min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.experience-card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
 }
 
 .experience-card__media {
   display: block;
-  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--color-surface-muted);
 }
 
 .experience-card__media .media-frame {
-  border-radius: inherit;
+  border-radius: 0;
   transition: transform var(--dur-slow) var(--ease-out);
 }
 
 .experience-card:hover .experience-card__media .media-frame {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 .experience-card__save {
   position: absolute;
   top: var(--space-2);
   right: var(--space-2);
+  z-index: 2;
 }
 
 .experience-card__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-4);
   min-width: 0;
+}
+
+.experience-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.experience-card__header .eyebrow {
+  margin: 0;
+}
+
+.experience-card__time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-foreground-subtle);
+  font-size: var(--text-micro);
+  white-space: nowrap;
 }
 
 .experience-card__place {
@@ -171,37 +219,44 @@
 }
 
 .experience-card__place a:hover {
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .experience-card__caption {
+  margin: 0;
   color: var(--color-foreground-muted);
   font-size: var(--text-support);
   line-height: 1.5;
 }
 
-.experience-card__tags {
+.experience-card__footer {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  margin: var(--space-1) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.experience-card__tags .chip {
-  min-height: 24px;
-  padding: 0 var(--space-2);
-  font-size: var(--text-micro);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
 }
 
 .experience-card__address {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  margin-top: var(--space-1);
+  color: var(--color-foreground-muted);
+  font-size: var(--text-support);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.experience-card__author {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   color: var(--color-foreground-subtle);
   font-size: var(--text-micro);
+  font-weight: 550;
+  white-space: nowrap;
 }
 
 /* -------------------------------------------------------- Experience tile */
@@ -245,27 +300,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: var(--color-foreground);
-  box-shadow: var(--shadow-xs);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-sm);
   transition:
     background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
     color var(--dur-fast) var(--ease-out);
 }
 
 .save-toggle:hover:not(:disabled) {
-  background: var(--color-surface);
-  color: var(--color-primary);
+  background: rgba(0, 0, 0, 0.85);
+  color: var(--color-accent);
+  transform: scale(1.08);
 }
 
 .save-toggle.is-saved {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--color-accent);
+  color: #ffffff;
+  border-color: transparent;
 }
 
 .save-toggle:disabled {

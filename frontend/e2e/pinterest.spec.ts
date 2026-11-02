@@ -106,13 +106,11 @@ test("search appends pages, recovers from failure and keeps filters in the URL",
   await expect(page).toHaveURL(/category=cafe/);
   await expect(page).not.toHaveURL(/page=/);
 
-  // 6. Typing debounces into the URL, and the map link carries both filters.
-  await page
-    .getByPlaceholder(
-      "Tìm kiếm địa điểm, quán cà phê, không gian đẹp tại Đà Nẵng...",
-    )
-    .fill("góc quán");
-  await expect(page).toHaveURL(/q=g%C3%B3c\+qu%C3%A1n/);
+  // 6. Submitting the top search navigates to /search, and the map link
+  // carries both filters.
+  await page.locator("#global-query").fill("góc quán");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/search\?.*q=g%C3%B3c\+qu%C3%A1n/);
   await page.getByRole("link", { name: /trên bản đồ/ }).click();
   await expect(page).toHaveURL(/\/map\?/);
   const mapQuery = new URL(page.url()).searchParams;

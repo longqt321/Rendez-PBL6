@@ -49,8 +49,10 @@ export function ConfirmDialog({
     }
   }, [open]);
 
-  if (!open) return null;
-
+  // The <dialog> stays mounted so the platform can close it with close();
+  // that is what returns focus to the button that opened it (UX_RULES 7).
+  // Unmounting it while open would drop the element from the top layer and
+  // send focus to the document body instead.
   return (
     <dialog
       ref={dialogRef}

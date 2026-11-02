@@ -1,7 +1,7 @@
 import { Link } from "react-router";
-import { ArrowUpRight, MapPin } from "lucide-react";
+import { ArrowUpRight, Clock, MapPin, User } from "lucide-react";
 import type { FeedItem } from "../../lib/api/types";
-import { extractDistrict, shortAddress } from "../../lib/format";
+import { extractDistrict, formatRelative, shortAddress } from "../../lib/format";
 import { SafeImage } from "../../components/ui/safe-image";
 import { SavePlaceButton } from "../places/PlaceCard";
 
@@ -23,14 +23,14 @@ export function ExperienceCard({
 }) {
   const { photo, place } = item;
   const district = extractDistrict(place.address);
-  const attributes = photo.attributes?.slice(0, 2) ?? [];
+  const timeFormatted = photo.published_at ? formatRelative(photo.published_at) : null;
 
   return (
     <article className="experience-card">
       <Link
         className="experience-card__media"
         to={"/photos/" + photo.id}
-        aria-label={"Xem trải nghiệm tại " + place.name}
+        aria-label={"Xem ảnh tại " + place.name}
       >
         <SafeImage
           sources={[photo.url]}
@@ -49,31 +49,41 @@ export function ExperienceCard({
       </div>
 
       <div className="experience-card__body">
-        <p className="eyebrow">
-          {photo.author_name}
-          {district ? ` · ${district}` : ""}
-        </p>
+        <div className="experience-card__header">
+          <p className="eyebrow">
+            {place.category?.name || "Địa điểm"}
+            {district ? ` · ${district}` : ""}
+          </p>
+          {timeFormatted && (
+            <span className="experience-card__time">
+              <Clock size={11} aria-hidden />
+              {timeFormatted}
+            </span>
+          )}
+        </div>
+
         <h3 className="experience-card__place">
           <Link to={"/places/" + place.id}>{place.name}</Link>
         </h3>
+
         {photo.caption && (
           <p className="experience-card__caption line-clamp-2">
             {photo.caption}
           </p>
         )}
-        {attributes.length > 0 && (
-          <ul className="experience-card__tags" role="list">
-            {attributes.map((attribute) => (
-              <li key={attribute.code} className="chip">
-                {attribute.display_name_vi}
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="experience-card__address">
-          <MapPin size={12} aria-hidden />
-          <span>{shortAddress(place.address)}</span>
-        </p>
+
+        <div className="experience-card__footer">
+          <p className="experience-card__address">
+            <MapPin size={13} aria-hidden />
+            <span>{shortAddress(place.address)}</span>
+          </p>
+          {photo.author_name && (
+            <span className="experience-card__author">
+              <User size={12} aria-hidden />
+              {photo.author_name}
+            </span>
+          )}
+        </div>
       </div>
     </article>
   );

@@ -51,7 +51,7 @@
   gap: 5px;
   border: 1px solid var(--line);
   color: var(--ink-secondary);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   padding: 4px 10px;
   border-radius: var(--radius-sm);
@@ -244,7 +244,7 @@
 }
 
 .marker-name small {
-  font-size: 10.5px;
+  font-size: 12px;
   color: var(--muted);
   font-weight: 500;
 }
@@ -311,7 +311,8 @@
   border-color: var(--line-strong);
 }
 
-.marker-preview img {
+.marker-preview img,
+.marker-preview .placeholder {
   width: 100%;
   aspect-ratio: 16/10;
   max-height: 220px;
@@ -348,6 +349,7 @@
 
 .marker-preview-subactions > * {
   width: 100%;
+  white-space: nowrap;
 }
 
 .marker-list {
@@ -397,7 +399,7 @@
 }
 
 .marker-list small {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -412,7 +414,7 @@
 }
 
 .map-label {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   letter-spacing: 0.16em;
   pointer-events: none;
@@ -550,7 +552,7 @@
     gap: 3px;
     flex-direction: column;
     border-radius: 10px;
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .sidebar nav a span,
@@ -682,7 +684,7 @@
 
   .pin-filters {
     gap: 8px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     position: relative;
   }
 
@@ -729,7 +731,7 @@
 
   .feed-context {
     margin-bottom: 16px;
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .feed-context > span {
@@ -750,7 +752,7 @@
   }
 
   .card-copy p {
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.5;
     margin-bottom: 7px;
   }
@@ -780,7 +782,7 @@
   }
 
   .pin-map-link {
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .pin-category {
@@ -970,7 +972,7 @@
   }
 
   .map-mobile-peek-cat {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--accent);
     text-transform: uppercase;
@@ -1006,7 +1008,7 @@
 
   .map-mobile-peek-address {
     margin: 0 0 6px;
-    font-size: 11.5px;
+    font-size: 12px;
     color: var(--muted);
     white-space: nowrap;
     overflow: hidden;
@@ -1021,7 +1023,7 @@
   }
 
   .map-mobile-peek-primary {
-    font-size: 11.5px;
+    font-size: 12px;
     padding: 6px 10px;
     height: 32px;
     min-height: 32px;
@@ -1029,7 +1031,7 @@
   }
 
   .map-mobile-peek-sub {
-    font-size: 11.5px;
+    font-size: 12px;
     padding: 6px 10px;
     height: 32px;
     min-height: 32px;
@@ -1054,7 +1056,7 @@
   }
 
   .map-context {
-    font-size: 11px;
+    font-size: 12px;
     align-items: flex-start;
   }
 
@@ -1164,7 +1166,7 @@
   }
 
   .step-list li {
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .submission-form > h1 {
@@ -1214,4 +1216,37 @@
   .state h2 {
     font-size: 22px;
   }
+}
+
+/* ---------------------------------------------------- MapLibre chrome */
+/*
+ * MapLibre ships a white attribution chip (`.maplibregl-ctrl-attrib`), and in
+ * dark mode the inherited light text lands on it (1.14:1). Both the plain and
+ * the compact variant are overridden with the themed surface. Two classes are
+ * enough for the plain variant; the compact one needs three because the
+ * vendored rule also uses two. The element is a <details>, so a type
+ * selector is enough to outrank the vendored two-class rule and avoids
+ * !important.
+ */
+details.maplibregl-ctrl-attrib.maplibregl-ctrl,
+.maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-ctrl {
+  background-color: var(--color-surface);
+  color: var(--color-foreground-muted);
+}
+
+.maplibregl-ctrl-attrib.maplibregl-ctrl a,
+.maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-ctrl a {
+  color: var(--color-foreground-muted);
+}
+
+.maplibregl-ctrl-attrib.maplibregl-ctrl a:hover,
+.maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-ctrl a:hover {
+  color: var(--color-foreground);
+}
+
+/* The collapsed/expanded toggle is a white chip of its own. */
+.maplibregl-ctrl-attrib.maplibregl-ctrl .maplibregl-ctrl-attrib-button,
+.maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-ctrl
+  .maplibregl-ctrl-attrib-button {
+  background-color: var(--color-surface-muted);
 }

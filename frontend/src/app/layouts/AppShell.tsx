@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
-import { LogIn, LogOut, Moon, Search, Settings, Sun, User } from "lucide-react";
-import { useMe, useLogout } from "../shared";
+import { LogIn, LogOut, Moon, Sun } from "lucide-react";
+import { useMe, useLogout, SearchBar } from "../shared";
 import { useOptionalTheme } from "../../lib/theme";
 import { Avatar, IconButton } from "../../components/ui/primitives";
 import { ErrorText } from "../shared";
@@ -15,13 +15,15 @@ import { CreateAction, MobileNav, SidebarNav } from "./nav";
  * name because the entity name arrives asynchronously.
  */
 const TITLES: [matcher: (path: string) => boolean, title: string][] = [
-  [(path) => path === "/discover", "Khám phá"],
+  [(path) => path === "/discover", "Dành cho bạn"],
   [(path) => path === "/search", "Tìm kiếm"],
   [(path) => path === "/map", "Bản đồ"],
+  [(path) => path === "/activity", "Hoạt động"],
   [(path) => path === "/saved", "Đã lưu"],
   [(path) => path === "/settings", "Cài đặt"],
-  [(path) => path === "/profile", "Hồ sơ"],
-  [(path) => path === "/create", "Đăng trải nghiệm"],
+  [(path) => path === "/profile", "Trang cá nhân"],
+  [(path) => path === "/insights", "Thông tin chi tiết"],
+  [(path) => path === "/create", "Đăng ảnh"],
   [(path) => path.startsWith("/places/"), "Địa điểm"],
   [(path) => path === "/posts", "Trải nghiệm cộng đồng"],
   [(path) => path.startsWith("/posts/"), "Trải nghiệm"],
@@ -90,14 +92,7 @@ export function AppShell() {
 
       <div className="app-shell__main">
         <header className="app-shell__topbar">
-          <Link
-            to="/search"
-            className="shell-search"
-            aria-label="Tìm kiếm địa điểm"
-          >
-            <Search size={18} aria-hidden />
-            <span>Tìm địa điểm, quán cà phê, không gian…</span>
-          </Link>
+          <SearchBar />
           <div className="shell-topbar__actions">
             <ThemeToggle />
             <AccountMenu />
@@ -114,24 +109,22 @@ export function AppShell() {
   );
 }
 
-/** Light/dark switch. Cycles light → dark → system. */
+/**
+ * Light/dark shortcut.
+ *
+ * Settings owns the full choice (light, dark, follow the system). The topbar
+ * is a shortcut for the common case and only toggles the two explicit themes.
+ */
 function ThemeToggle() {
   const theme = useOptionalTheme();
   // Tests mount the shell without a ThemeProvider; there is nothing to toggle.
   if (!theme) return null;
-  const { preference, resolved, setPreference } = theme;
-  const next =
-    preference === "light"
-      ? "dark"
-      : preference === "dark"
-        ? "system"
-        : "light";
+  const { resolved, setPreference } = theme;
+  const next = resolved === "dark" ? "light" : "dark";
   const label =
-    preference === "system"
-      ? `Giao diện theo hệ thống (đang ${resolved === "dark" ? "tối" : "sáng"}). Chuyển sang sáng.`
-      : preference === "light"
-        ? "Giao diện sáng. Chuyển sang tối."
-        : "Giao diện tối. Chuyển sang theo hệ thống.";
+    resolved === "dark"
+      ? "Chuyển sang giao diện sáng."
+      : "Chuyển sang giao diện tối.";
   return (
     <IconButton label={label} onClick={() => setPreference(next)}>
       {resolved === "dark" ? (
@@ -211,15 +204,6 @@ function AccountMenuAuthenticated({ displayName }: { displayName: string }) {
       </button>
       {open && (
         <div className="shell-account__menu" id="account-dropdown" role="menu">
-          <Link to="/profile" role="menuitem" onClick={() => setOpen(false)}>
-            <User size={17} aria-hidden />
-            Hồ sơ của tôi
-          </Link>
-          <Link to="/settings" role="menuitem" onClick={() => setOpen(false)}>
-            <Settings size={17} aria-hidden />
-            Cài đặt
-          </Link>
-          <hr className="rule" />
           <button
             type="button"
             role="menuitem"

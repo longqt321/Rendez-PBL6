@@ -63,18 +63,13 @@ export function ExperiencesPage() {
     <div className="feed-page">
       <header className="page-head">
         <div className="page-head__copy">
-          <p className="eyebrow">Cộng đồng</p>
-          <h1>Trải nghiệm</h1>
-          <p className="lede">
-            Những gì người khác đã thấy, đã ngồi và đã chụp lại. Mở một trải
-            nghiệm để biết nó thuộc về địa điểm nào.
-          </p>
+          <h1>Ảnh cộng đồng</h1>
         </div>
         <div className="page-head__actions">
           <Button asChild>
             <Link to="/create">
               <Plus size={16} aria-hidden />
-              Đăng trải nghiệm
+              Đăng ảnh
             </Link>
           </Button>
         </div>
@@ -89,12 +84,12 @@ export function ExperiencesPage() {
 
       {feed.data && posts.length === 0 && (
         <EmptyState
-          title="Chưa có trải nghiệm nào"
-          body="Hãy là người đầu tiên chia sẻ một địa điểm bạn vừa ghé."
+          title="Chưa có ảnh nào."
+          body="Đăng ảnh đầu tiên từ một địa điểm bạn vừa ghé."
           icon={<Images size={24} aria-hidden />}
           actions={
             <Button asChild>
-              <Link to="/create">Đăng trải nghiệm</Link>
+              <Link to="/create">Đăng ảnh</Link>
             </Button>
           }
         />
@@ -119,7 +114,7 @@ export function ExperiencesPage() {
       )}
 
       {feed.data && !hasNextPage && posts.length > 0 && (
-        <p className="feed-end muted small">Bạn đã xem hết trải nghiệm.</p>
+        <p className="feed-end muted small">Bạn đã xem hết ảnh.</p>
       )}
     </div>
   );
@@ -156,7 +151,7 @@ function ExperiencePost({ post, eager }: { post: Post; eager: boolean }) {
         <Link
           className="feed-post__media"
           to={"/posts/" + post.id}
-          aria-label={"Mở trải nghiệm của " + post.author_name}
+          aria-label={"Mở ảnh của " + post.author_name}
         >
           <SafeImage
             sources={[current.media_url]}

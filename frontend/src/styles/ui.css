@@ -457,9 +457,17 @@ button.chip:hover {
   font-size: var(--text-support);
 }
 
+/* Reserve the line so a success message does not shift the layout (UX_RULES 4). */
+.form-status {
+  min-height: calc(var(--text-support) * 1.55);
+}
+
 /* ---------------------------------------------------------------- Dialog */
 
 .dialog {
+  /* Tailwind preflight resets margin on every element, including <dialog>, so
+     the UA `margin: auto` that centers a modal is lost. Put it back here. */
+  margin: auto;
   width: min(520px, calc(100vw - 2 * var(--space-4)));
   max-height: min(85dvh, 720px);
   padding: var(--space-6);

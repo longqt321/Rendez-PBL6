@@ -1,80 +1,35 @@
 /*
  * Auth — sign in / create account.
  *
- * The screen is a split cover: a dark editorial panel carrying the product's
- * voice on the left, the form on the right. It is the one place in the app
- * where a full-bleed dark surface is used, because it is the first impression
- * and has no navigation to compete with.
- *
- * Below 900px the cover collapses and the form becomes the whole page.
+ * A single centred column: the wordmark, then the form. The screen has no
+ * navigation, so the form is the whole page; there is no promotional panel
+ * beside it (VOICE.md: tool screens do not carry slogans).
  */
 
 .auth-page {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  display: flex;
+  justify-content: center;
   min-height: 100svh;
+  padding: var(--space-10) var(--space-6);
   background: var(--color-background);
 }
 
-/* ------------------------------------------------------------------ Story */
-
-.auth-page__story {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--space-12);
-  padding: var(--space-10) var(--space-12);
-  background: var(--color-story-bg);
-  color: var(--color-story-fg);
-}
-
-.auth-page__story .shell-brand {
-  color: var(--color-story-fg);
-  padding: 0;
-}
-
-.auth-page__pitch {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  max-width: 30ch;
-}
-
-.auth-page__pitch .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  color: var(--color-story-muted);
-}
-
-.auth-page__quote {
-  font-family: var(--font-editorial);
-  font-size: clamp(2rem, 3.6vw, 3rem);
-  font-weight: 400;
-  line-height: 1.06;
-  letter-spacing: var(--tracking-tight);
-}
-
-.auth-page__lede {
-  color: var(--color-story-muted);
-  font-size: var(--text-body);
-  line-height: var(--leading-normal);
-}
-
-.auth-page__credit {
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-story-line);
-  color: var(--color-story-muted);
-  font-size: var(--text-support);
-}
-
-/* ------------------------------------------------------------------ Panel */
-
 .auth-page__panel {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: var(--space-10) var(--space-6);
+  width: 100%;
+  max-width: 404px;
+}
+
+.auth-page__brand {
+  margin-bottom: var(--space-10);
+}
+
+/* The shell hides the wordmark on narrow screens; on this screen it is the
+ * only branding, so keep it visible. */
+.auth-page__brand .shell-brand__word {
+  display: inline;
 }
 
 .auth-card {
@@ -82,7 +37,6 @@
   flex-direction: column;
   gap: var(--space-5);
   width: 100%;
-  max-width: 404px;
 }
 
 .auth-card__title {
@@ -92,17 +46,23 @@
   letter-spacing: var(--tracking-tight);
 }
 
-.auth-card__lede {
-  margin-top: calc(-1 * var(--space-3));
-  color: var(--color-foreground-muted);
-  font-size: var(--text-body);
-  line-height: var(--leading-normal);
-}
-
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+.auth-form .input,
+.auth-form input {
+  color: var(--color-foreground) !important;
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border-strong);
+}
+
+.auth-form .input:focus,
+.auth-form input:focus {
+  color: var(--color-foreground) !important;
+  border-color: var(--color-primary);
 }
 
 /* Password field plus its reveal toggle share one row. */
@@ -129,10 +89,121 @@
   text-underline-offset: 3px;
 }
 
+.auth-card__terms-agreement {
+  margin-top: var(--space-2);
+}
+
+.auth-terms-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--text-support);
+  color: var(--color-foreground-muted);
+  line-height: 1.5;
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-terms-radio input[type="radio"] {
+  margin-top: 3px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.auth-terms-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.auth-terms-link:hover {
+  color: var(--color-foreground);
+}
+
+/* ----------------------------------------------------------- Terms Modal */
+
+.auth-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.auth-modal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.auth-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.auth-modal__title {
+  margin: 0;
+  font-size: var(--text-heading);
+  font-weight: 600;
+}
+
+.auth-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+.auth-modal__body .prose h2 {
+  font-size: var(--text-body);
+  font-weight: 600;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.auth-modal__body .prose p,
+.auth-modal__body .prose ul {
+  font-size: var(--text-support);
+  line-height: 1.6;
+  color: var(--color-foreground-muted);
+  margin-bottom: var(--space-3);
+}
+
+.auth-modal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+}
+
 .auth-card__switch {
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border);
   font-size: var(--text-support);
+  text-align: left;
 }
 
 .auth-card__switch a {
@@ -147,40 +218,43 @@
 
 /* -------------------------------------------------------------- Responsive */
 
-@media (max-width: 900px) {
-  .auth-page {
-    grid-template-columns: minmax(0, 1fr);
+@media (max-width: 640px) {
+  .auth-modal-backdrop {
+    padding: var(--space-2);
+    align-items: flex-end;
   }
 
-  .auth-page__story {
-    gap: var(--space-6);
-    padding: var(--space-6);
+  .auth-modal {
+    max-height: 90vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
-  /* The pitch is the point of the cover; the credit line is not. */
-  .auth-page__credit {
-    display: none;
+  .auth-modal__head {
+    padding: var(--space-3) var(--space-4);
   }
 
-  .auth-page__pitch {
-    max-width: 46ch;
+  .auth-modal__body {
+    padding: var(--space-4);
   }
 
-  .auth-page__quote {
-    font-size: clamp(1.75rem, 6vw, 2.25rem);
+  .auth-modal__foot {
+    flex-direction: column-reverse;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
   }
 
-  .auth-page__panel {
-    padding: var(--space-8) var(--space-5) var(--space-16);
+  .auth-modal__foot .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
 @media (max-width: 420px) {
-  .auth-page__story {
-    padding: var(--space-5) var(--space-4);
+  .auth-page {
+    padding: var(--space-6) var(--space-4) var(--space-12);
   }
 
-  .auth-page__panel {
-    padding: var(--space-6) var(--space-4) var(--space-12);
+  .auth-page__brand {
+    margin-bottom: var(--space-6);
   }
 }

@@ -27,28 +27,30 @@ h3,
 h4 {
   margin: 0;
   color: var(--color-foreground);
-  font-weight: 650;
+  font-weight: 700;
   line-height: var(--leading-snug);
   letter-spacing: var(--tracking-tight);
   text-wrap: balance;
 }
 
 h1 {
-  font-family: var(--font-editorial);
+  font-family: var(--font-sans);
   font-size: var(--text-display);
-  font-weight: 400;
+  font-weight: 800;
   line-height: var(--leading-tight);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.03em;
 }
 
 h2 {
   font-size: var(--text-section);
-  font-weight: 650;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 h3 {
   font-size: var(--text-place);
-  font-weight: 620;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 h4 {
@@ -63,9 +65,9 @@ p {
 
 /* Editorial heading used outside of an <h1> — e.g. a discovery section title. */
 .editorial {
-  font-family: var(--font-editorial);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: var(--leading-tight);
 }
 

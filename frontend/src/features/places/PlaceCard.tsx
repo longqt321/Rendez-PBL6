@@ -77,7 +77,7 @@ export function SavePlaceButton({
           fill={saved ? "currentColor" : "none"}
           aria-hidden
         />
-        {saved ? "Đã lưu" : "Lưu địa điểm"}
+        {saved ? "Đã lưu" : "Lưu"}
       </button>
       <ErrorText error={mutation.error} />
     </div>
