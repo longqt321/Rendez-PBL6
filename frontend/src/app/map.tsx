@@ -13,14 +13,11 @@ import { MapPin, List, ArrowUpRight, X, RotateCcw } from "lucide-react";
 import { api, discoveryQuery } from "../lib/api/client";
 import type { VisualMap } from "../lib/api/visual";
 import { Button } from "../components/ui/button";
-import {
-  Cover,
-  SaveButton,
-  AttributeChips,
-  State,
-  useMe,
-  googleMapsDirectionsUrl,
-} from "./shared";
+import { directionsUrl } from "../lib/format";
+import { useMe } from "../lib/session";
+import { SafeImage } from "../components/ui/safe-image";
+import { AsyncState } from "../components/ui/states";
+import { SavePlaceButton } from "../features/places/PlaceCard";
 
 function number(
   params: URLSearchParams,
@@ -303,12 +300,14 @@ export function MapPage() {
               aria-label={"Xem nhanh " + place.name}
             >
               <div className="map-mobile-peek-thumb">
-                <Cover
-                  place={{
-                    name: place.name,
-                    cover_image_url:
-                      place.supporting_photo?.url || place.cover_image_url,
-                  }}
+                <SafeImage
+                  sources={[
+                    place.supporting_photo?.url,
+                    place.cover_media_url,
+                    place.cover_image_url,
+                  ]}
+                  alt={place.name}
+                  ratio="1 / 1"
                 />
               </div>
               <div className="map-mobile-peek-info">
@@ -347,14 +346,14 @@ export function MapPage() {
                     className="map-mobile-peek-sub"
                   >
                     <a
-                      href={googleMapsDirectionsUrl(place)}
+                      href={directionsUrl(place)}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       Chỉ đường
                     </a>
                   </Button>
-                  <SaveButton place={place} />
+                  <SavePlaceButton place={place} />
                 </div>
               </div>
             </div>
@@ -395,10 +394,11 @@ export function MapPage() {
           {results.data?.truncated && (
             <p>Phóng to bản đồ để xem thêm địa điểm.</p>
           )}
-          <State
+          <AsyncState
             pending={results.isFetching}
             error={results.error}
             onRetry={() => void results.refetch()}
+            loadingVariant="inline"
           />
           {results.data?.count === 0 && (
             <div style={{ padding: "12px 0" }}>
@@ -441,19 +441,36 @@ export function MapPage() {
                   <X size={16} aria-hidden />
                 </button>
               </div>
-              <Cover
-                place={{
-                  name: place.name,
-                  cover_image_url:
-                    place.supporting_photo?.url || place.cover_image_url,
-                }}
+              <SafeImage
+                sources={[
+                  place.supporting_photo?.url,
+                  place.cover_media_url,
+                  place.cover_image_url,
+                ]}
+                alt={place.name}
+                ratio="16 / 10"
+                className="marker-preview__media"
               />
-              {place.supporting_photo && (
-                <AttributeChips
-                  attributes={place.supporting_photo.attributes}
-                  matched={place.supporting_photo.matched_attribute_codes}
-                />
-              )}
+              {place.supporting_photo &&
+                place.supporting_photo.attributes.length > 0 && (
+                  <ul className="marker-preview__tags" role="list">
+                    {place.supporting_photo.attributes.map((attribute) => (
+                      <li
+                        key={attribute.code}
+                        className={
+                          "chip" +
+                          (place.supporting_photo?.matched_attribute_codes.includes(
+                            attribute.code,
+                          )
+                            ? " is-matched"
+                            : "")
+                        }
+                      >
+                        {attribute.display_name_vi}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               <p className="muted small">{place.address}</p>
               <div className="marker-preview-actions">
                 <Button asChild className="marker-preview-primary">
@@ -470,10 +487,10 @@ export function MapPage() {
                   </Link>
                 </Button>
                 <div className="marker-preview-subactions">
-                  <SaveButton place={place} />
+                  <SavePlaceButton place={place} />
                   <Button asChild variant="outline">
                     <a
-                      href={googleMapsDirectionsUrl(place)}
+                      href={directionsUrl(place)}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -498,12 +515,15 @@ export function MapPage() {
                 onMouseEnter={() => setHovered(p.id)}
                 onMouseLeave={() => setHovered(null)}
               >
-                <Cover
-                  place={{
-                    name: p.name,
-                    cover_image_url:
-                      p.supporting_photo?.url || p.cover_image_url,
-                  }}
+                <SafeImage
+                  sources={[
+                    p.supporting_photo?.url,
+                    p.cover_media_url,
+                    p.cover_image_url,
+                  ]}
+                  alt={p.name}
+                  ratio="68 / 76"
+                  className="marker-list__media"
                 />
                 <span>
                   <strong>{p.name}</strong>

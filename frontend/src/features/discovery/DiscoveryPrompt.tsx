@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Coffee, Moon, Sparkles, Trees, Users, Wind } from "lucide-react";
+import { Coffee, Moon, Sparkles, Trees, Wind } from "lucide-react";
 
 /**
  * Contextual discovery prompts.
@@ -36,11 +36,6 @@ const PROMPTS = [
     to: "/map?category=checkin",
     label: "Chỗ chụp ảnh",
     icon: Sparkles,
-  },
-  {
-    to: "/posts",
-    label: "Ảnh mới nhất",
-    icon: Users,
   },
 ] as const;
 

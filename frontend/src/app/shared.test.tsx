@@ -1,18 +1,18 @@
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { ApiError } from "../lib/api/client";
-import { Cover, ErrorText, State } from "./shared";
+import { ErrorText } from "../components/ui/error-text";
+import { SafeImage } from "../components/ui/safe-image";
+import { AsyncState } from "../components/ui/states";
 import { ConfirmDialog } from "../components/ui/confirm-dialog";
 
 afterEach(cleanup);
 
 it("shows a neutral fallback when a real media request fails", () => {
   render(
-    <Cover
-      place={{
-        name: "Quán mẫu",
-        cover_image_url: "/public-photo-media/missing/",
-      }}
+    <SafeImage
+      sources={["/public-photo-media/missing/"]}
+      alt="Quán mẫu"
     />,
   );
   fireEvent.error(screen.getByRole("img", { name: "Quán mẫu" }));
@@ -55,7 +55,7 @@ it("sanitizes 500 internal server errors without leaking stack traces or databas
 it("shows one actionable server error without repeating the message", async () => {
   let retries = 0;
   render(
-    <State
+    <AsyncState
       error={new ApiError(502, {}, "Không tải được nội dung.")}
       onRetry={() => {
         retries += 1;
@@ -64,7 +64,7 @@ it("shows one actionable server error without repeating the message", async () =
   );
   expect(screen.getAllByRole("alert")).toHaveLength(1);
   expect(
-    screen.getByText("Máy chủ hiện không phản hồi. Bạn có thể thử lại sau."),
+    screen.getByText("Máy chủ hiện không phản hồi"),
   ).toBeVisible();
   expect(screen.queryByText("Không tải được nội dung.")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Thử lại" }));

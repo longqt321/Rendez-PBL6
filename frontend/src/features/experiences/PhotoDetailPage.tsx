@@ -29,7 +29,7 @@ import { SavePlaceButton } from "../places/PlaceCard";
 import { ExperienceTile } from "../experiences/ExperienceCard";
 import { ReportDialog } from "../moderation/ReportDialog";
 import { ConfirmDialog } from "../../components/ui/confirm-dialog";
-import { ErrorText } from "../../app/shared";
+import { ErrorText } from "../../components/ui/error-text";
 
 /**
  * Experience (photo) detail.

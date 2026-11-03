@@ -1,38 +1,33 @@
 import { Link, useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Bookmark,
-  Camera,
-  MapPin,
-  Settings,
-  Shield,
-  Sparkles,
-} from "lucide-react";
+import { Bookmark, Camera, Settings, Shield } from "lucide-react";
 import { api } from "../../lib/api/client";
-import type { FeedItem, Page, VisualPlace } from "../../lib/api/types";
-import { useMe } from "../../app/shared";
+import type { FeedItem, Page, Post, VisualPlace } from "../../lib/api/types";
+import { useMe } from "../../lib/session";
+import { useSavedPosts } from "../../lib/api/queries";
+import { formatRelative } from "../../lib/format";
 import { Avatar, Badge } from "../../components/ui/primitives";
 import { Button } from "../../components/ui/button";
 import { AsyncState, EmptyState } from "../../components/ui/states";
+import { SafeImage } from "../../components/ui/safe-image";
 import { ExperienceCard } from "../experiences/ExperienceCard";
 import { PlaceCard } from "../places/PlaceCard";
 
 /**
  * Profile.
  *
- * The member's own record of the city: what they have contributed and what they
- * intend to visit. Those are two different collections, so they are two tabs
- * rather than one merged list — the same distinction the Saved page makes.
+ * The member's own record of the city. Three tabs, one screen:
+ *   Ảnh đã đăng   — what they contributed
+ *   Đã lưu        — places they intend to visit
+ *   Ảnh đã lưu    — community posts they want to re-read
  *
- * `useMe` is imported from the legacy `app/shared` module on purpose: that
- * module re-exports the single session implementation from `lib/session`, and
- * keeping the import path stable lets the existing access-control tests keep
- * asserting the real guard behaviour.
+ * Saved places and saved posts are different objects, so they stay separate
+ * tabs rather than one merged list.
  */
 export function ProfilePage() {
   const me = useMe();
   const [params] = useSearchParams();
-  const saved = params.get("tab") === "saved";
+  const tab = params.get("tab") ?? "photos";
 
   if (me.isPending) return <AsyncState pending loadingVariant="grid" />;
   if (me.isError)
@@ -48,24 +43,15 @@ export function ProfilePage() {
         <div className="profile-banner__copy">
           <h1>{profile.display_name}</h1>
           <p className="profile-banner__meta">
-            <span>
-              <MapPin size={14} aria-hidden />
-              Đà Nẵng, Việt Nam
-            </span>
-            <span aria-hidden>·</span>
             <span>{profile.email}</span>
           </p>
-          <div className="profile-banner__badges">
-            {profile.is_staff ? (
+          {profile.is_staff && (
+            <div className="profile-banner__badges">
               <Badge tone="accent">
                 <Shield size={12} aria-hidden /> Quản trị viên
               </Badge>
-            ) : (
-              <Badge>
-                <Sparkles size={12} aria-hidden /> Thành viên Rendez
-              </Badge>
-            )}
-          </div>
+            </div>
+          )}
         </div>
         <Button asChild variant="outline">
           <Link to="/settings">
@@ -87,110 +73,193 @@ export function ProfilePage() {
       </dl>
 
       <nav className="segmented profile-switch" aria-label="Nội dung cá nhân">
-        <Link to="/profile" aria-current={saved ? undefined : "page"}>
+        <Link
+          to="/profile"
+          aria-current={tab === "photos" ? "page" : undefined}
+        >
           <Camera size={16} aria-hidden />
           Ảnh đã đăng
         </Link>
-        <Link to="/profile?tab=saved" aria-current={saved ? "page" : undefined}>
+        <Link
+          to="/profile?tab=saved"
+          aria-current={tab === "saved" ? "page" : undefined}
+        >
           <Bookmark size={16} aria-hidden />
-          Đã lưu
+          Địa điểm đã lưu
+        </Link>
+        <Link
+          to="/profile?tab=posts"
+          aria-current={tab === "posts" ? "page" : undefined}
+        >
+          <Bookmark size={16} aria-hidden />
+          Ảnh đã lưu
         </Link>
       </nav>
 
-      <ProfileCollection key={saved ? "saved" : "photos"} saved={saved} />
+      {tab === "photos" && <ProfilePhotos key="photos" />}
+      {tab === "saved" && <ProfileSavedPlaces key="saved" />}
+      {tab === "posts" && <ProfileSavedPosts key="posts" />}
     </div>
   );
 }
 
-/**
- * One tab's content.
- *
- * Both queries are keyed by the member id so a different session can never read
- * the previous member's cached collection.
- */
-function ProfileCollection({ saved }: { saved: boolean }) {
+/** One tab's content. Queries are keyed by the member id so a different
+ * session can never read the previous member's cached collection. */
+function ProfilePhotos() {
   const me = useMe();
   const userId = me.data?.id;
 
   const photos = useQuery({
     queryKey: ["user-submissions", userId, 1],
-    enabled: !saved && Boolean(userId),
+    enabled: Boolean(userId),
     queryFn: ({ signal }) =>
       api<Page<FeedItem>>("feed/?mine=true&page=1", { signal }),
   });
 
-  const places = useQuery({
-    queryKey: ["user-favorites", userId, 1],
-    enabled: saved && Boolean(userId),
-    queryFn: ({ signal }) =>
-      api<Page<VisualPlace>>("favorites/?page=1", { signal }),
-  });
-
-  const result = saved ? places : photos;
-  const items = result.data?.results ?? [];
+  const items = photos.data?.results ?? [];
 
   return (
-    <section
-      className="profile-collection"
-      aria-label={saved ? "Địa điểm đã lưu" : "Ảnh đã đăng"}
-    >
+    <section className="profile-collection" aria-label="Ảnh đã đăng">
       <AsyncState
-        pending={result.isPending}
-        error={result.data ? null : result.error}
-        onRetry={() => void result.refetch()}
+        pending={photos.isPending}
+        error={photos.data ? null : photos.error}
+        onRetry={() => void photos.refetch()}
         loadingVariant="grid"
       />
 
-      {result.data && items.length === 0 && (
+      {photos.data && items.length === 0 && (
         <EmptyState
-          title={
-            saved
-              ? "Chưa có địa điểm nào trong danh sách lưu"
-              : "Bạn chưa chia sẻ khoảnh khắc nào"
-          }
-          body={
-            saved
-              ? "Hãy dạo quanh trang Khám phá và lưu lại các địa điểm tại Đà Nẵng mà bạn yêu thích."
-              : "Đăng tải góc check-in, không gian hoặc đồ uống yêu thích của bạn để chia sẻ cùng cộng đồng Rendez."
-          }
-          icon={
-            saved ? (
-              <Bookmark size={24} aria-hidden />
-            ) : (
-              <Camera size={24} aria-hidden />
-            )
-          }
+          title="Bạn chưa chia sẻ khoảnh khắc nào"
+          body="Đăng ảnh từ một địa điểm bạn vừa ghé để bắt đầu bộ sưu tập."
+          icon={<Camera size={24} aria-hidden />}
           actions={
-            <>
-              <Button asChild>
-                <Link to={saved ? "/discover" : "/create"}>
-                  {saved ? "Khám phá địa điểm" : "Đăng ảnh đầu tiên"}
-                </Link>
-              </Button>
-              {!saved && (
-                <Button asChild variant="outline">
-                  <Link to="/discover">Xem ảnh cộng đồng</Link>
-                </Button>
-              )}
-            </>
+            <Button asChild>
+              <Link to="/create">Đăng ảnh đầu tiên</Link>
+            </Button>
           }
         />
       )}
 
-      {items.length > 0 && saved && (
+      {items.length > 0 && (
+        <div className="card-grid">
+          {(items as FeedItem[]).map((item) => (
+            <ExperienceCard key={item.photo.id} item={item} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ProfileSavedPlaces() {
+  const me = useMe();
+  const userId = me.data?.id;
+
+  const places = useQuery({
+    queryKey: ["user-favorites", userId, 1],
+    enabled: Boolean(userId),
+    queryFn: ({ signal }) =>
+      api<Page<VisualPlace>>("favorites/?page=1", { signal }),
+  });
+
+  const items = places.data?.results ?? [];
+
+  return (
+    <section className="profile-collection" aria-label="Địa điểm đã lưu">
+      <AsyncState
+        pending={places.isPending}
+        error={places.data ? null : places.error}
+        onRetry={() => void places.refetch()}
+        loadingVariant="grid"
+      />
+
+      {places.data && items.length === 0 && (
+        <EmptyState
+          title="Chưa có địa điểm nào trong danh sách lưu"
+          body="Bấm biểu tượng dấu trang trên một địa điểm để lưu lại."
+          icon={<Bookmark size={24} aria-hidden />}
+          actions={
+            <Button asChild variant="outline">
+              <Link to="/map">Tìm địa điểm</Link>
+            </Button>
+          }
+        />
+      )}
+
+      {items.length > 0 && (
         <div className="card-grid">
           {(items as VisualPlace[]).map((place) => (
             <PlaceCard key={place.id} place={place} />
           ))}
         </div>
       )}
+    </section>
+  );
+}
 
-      {items.length > 0 && !saved && (
-        <div className="card-grid">
-          {(items as FeedItem[]).map((item) => (
-            <ExperienceCard key={item.photo.id} item={item} />
-          ))}
-        </div>
+function ProfileSavedPosts() {
+  const me = useMe();
+  const posts = useSavedPosts(me.data?.id);
+
+  const items = posts.data?.results ?? [];
+
+  return (
+    <section className="profile-collection" aria-label="Ảnh đã lưu">
+      <AsyncState
+        pending={posts.isPending}
+        error={posts.data ? null : posts.error}
+        onRetry={() => void posts.refetch()}
+        loadingVariant="grid"
+      />
+
+      {posts.data && items.length === 0 && (
+        <EmptyState
+          title="Chưa lưu ảnh nào"
+          body="Mở một ảnh từ cộng đồng và bấm Lưu để giữ lại."
+          icon={<Bookmark size={24} aria-hidden />}
+          actions={
+            <Button asChild variant="outline">
+              <Link to="/discover">Xem ảnh</Link>
+            </Button>
+          }
+        />
+      )}
+
+      {items.length > 0 && (
+        <ul className="saved-post-list" role="list">
+          {items.map((post: Post) => {
+            const cover = post.media.find(
+              (item) => item.status === "published" || !item.status,
+            );
+            return (
+              <li key={post.id}>
+                <Link className="saved-post" to={"/posts/" + post.id}>
+                  {cover && (
+                    <SafeImage
+                      sources={[cover.media_url]}
+                      alt={
+                        cover.alt_text || post.caption || post.place_name
+                      }
+                      ratio="1 / 1"
+                      className="saved-post__media"
+                    />
+                  )}
+                  <div className="saved-post__body">
+                    <p className="saved-post__place">{post.place_name}</p>
+                    {post.caption && (
+                      <p className="saved-post__caption line-clamp-2">
+                        {post.caption}
+                      </p>
+                    )}
+                    <p className="saved-post__meta">
+                      <span>{formatRelative(post.published_at)}</span>
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </section>
   );

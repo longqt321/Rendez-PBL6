@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { ArrowRight, MapPin, Sparkles } from "lucide-react";
+import { MapPin, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { useFeed, usePlaces } from "../../lib/api/queries";
 import { useMe } from "../../lib/session";
@@ -56,7 +56,7 @@ export function DiscoverPage() {
     <div className="discover">
       <header className="page-head discover-head">
         <div className="page-head__copy">
-          <h1>Khám phá Đà Nẵng</h1>
+          <h1>Khám phá</h1>
           {placeCount != null && (
             <p className="muted small">{placeCount} địa điểm</p>
           )}
@@ -86,20 +86,9 @@ export function DiscoverPage() {
           className="discover-section"
           aria-labelledby="experiences-heading"
         >
-          <header className="section-head">
-            <div>
-              <h2
-                id="experiences-heading"
-                className="editorial section-head__title"
-              >
-                Bảng tin
-              </h2>
-            </div>
-            <Link className="section-head__link" to="/posts">
-              Xem bài viết
-              <ArrowRight size={15} aria-hidden />
-            </Link>
-          </header>
+          <h2 id="experiences-heading" className="sr-only">
+            Ảnh mới nhất
+          </h2>
 
           <AsyncState
             pending={feed.isPending}

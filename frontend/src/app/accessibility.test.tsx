@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConfirmDialog } from "../components/ui/confirm-dialog";
 import { Auth } from "./auth";
 import App from "./App";
-import { Filters } from "./shared";
 
 const session = vi.hoisted(() => ({
   data: {
@@ -19,8 +18,8 @@ const session = vi.hoisted(() => ({
   refetch: vi.fn(),
 }));
 
-vi.mock("./shared", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./shared")>();
+vi.mock("../lib/session", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/session")>();
   return {
     ...actual,
     useMe: () => session,
@@ -189,34 +188,6 @@ describe("Accessibility and Keyboard Interactions", () => {
       expect(passwordInput).toHaveAttribute("type", "text");
       expect(toggleButton).toHaveAttribute("aria-label", "Ẩn mật khẩu");
       expect(toggleButton).toHaveAttribute("aria-pressed", "true");
-    });
-  });
-
-  describe("Filters accessibility", () => {
-    it("renders filter group with role='group' and descriptive aria-label on chips", () => {
-      const queryClient = new QueryClient({
-        defaultOptions: { queries: { retry: false } },
-      });
-
-      render(
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter initialEntries={["/discover?attributes=wifi,outdoor"]}>
-            <Filters />
-          </MemoryRouter>
-        </QueryClientProvider>,
-      );
-
-      const group = screen.getByRole("group", {
-        name: "Bộ lọc đã áp dụng",
-      });
-      expect(group).toBeInTheDocument();
-
-      const chipWifi = screen.getByRole("button", { name: "Bỏ lọc: wifi" });
-      const chipOutdoor = screen.getByRole("button", {
-        name: "Bỏ lọc: outdoor",
-      });
-      expect(chipWifi).toBeVisible();
-      expect(chipOutdoor).toBeVisible();
     });
   });
 });

@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Bookmark,
   History,
   KeyRound,
   LogOut,
@@ -10,17 +11,16 @@ import {
   Moon,
   Shield,
   Sun,
-  User,
 } from "lucide-react";
 import { api } from "../../lib/api/client";
 import type { Profile } from "../../lib/api/types";
 import { useTheme, type ThemePreference } from "../../lib/theme";
-import { useMe, useLogout } from "../../app/shared";
+import { useMe, useLogout } from "../../lib/session";
 import { Button } from "../../components/ui/button";
 import { Field, Input } from "../../components/ui/primitives";
 import { AsyncState } from "../../components/ui/states";
 import { ConfirmDialog } from "../../components/ui/confirm-dialog";
-import { ErrorText } from "../../app/shared";
+import { ErrorText } from "../../components/ui/error-text";
 
 /**
  * Settings.
@@ -62,14 +62,14 @@ export function SettingsPage() {
         </h2>
         <ul className="settings-links" role="list">
           <li>
-            <Link to="/submissions">
+            <Link to="/profile">
               <History size={17} aria-hidden />
-              <span>Ảnh của tôi</span>
+              <span>Ảnh đã gửi</span>
             </Link>
           </li>
           <li>
-            <Link to="/saved">
-              <User size={17} aria-hidden />
+            <Link to="/profile?tab=saved">
+              <Bookmark size={17} aria-hidden />
               <span>Địa điểm đã lưu</span>
             </Link>
           </li>

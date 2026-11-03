@@ -1,26 +1,18 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
-import { State, useMe } from "./shared";
+import { AsyncState } from "../components/ui/states";
+import { useMe } from "../lib/session";
 import { Auth } from "./auth";
-import { CreatorProfilePage } from "./creator";
-import {
-  ContributionDetailPage,
-  ContributionHistory,
-  NewContribution,
-} from "./contributions";
 import { AppShell } from "./layouts/AppShell";
 import { DiscoverPage } from "../features/discovery/DiscoverPage";
 import { SearchPage } from "../features/search/SearchPage";
-import { SavedPage } from "../features/saved/SavedPage";
 import { PlaceDetailPage } from "../features/places/PlaceDetailPage";
 import { PhotoDetailPage } from "../features/experiences/PhotoDetailPage";
 import { PostDetailPage } from "../features/experiences/PostDetailPage";
-import { ExperiencesPage } from "../features/experiences/ExperiencesPage";
 import { CreateExperiencePage } from "../features/contribute/CreateExperiencePage";
+import { SubmissionDetailPage } from "../features/contribute/SubmissionDetailPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { SettingsPage } from "../features/profile/SettingsPage";
-import { ActivityPage } from "../features/activity/ActivityPage";
-import { InsightsPage } from "../features/insights/InsightsPage";
 import { NotFoundPage } from "../features/shell/NotFoundPage";
 import { TermsPage } from "../features/shell/TermsPage";
 
@@ -40,9 +32,9 @@ const MapPage = lazy(() =>
 export function RequireLogin() {
   const me = useMe();
   const location = useLocation();
-  if (me.isPending) return <State pending />;
+  if (me.isPending) return <AsyncState pending loadingVariant="inline" />;
   if (me.isError)
-    return <State error={me.error} onRetry={() => void me.refetch()} />;
+    return <AsyncState error={me.error} onRetry={() => void me.refetch()} />;
   if (!me.data)
     return (
       <Navigate
@@ -66,8 +58,7 @@ export default function App() {
       <Route path="register" element={<Auth key="register" register />} />
 
       <Route element={<AppShell />}>
-        {/* Public: the community feed and a single experience. */}
-        <Route path="posts" element={<ExperiencesPage />} />
+        {/* Public: a single community post. */}
         <Route path="posts/:id" element={<PostDetailPage />} />
         {/* Public: the terms must be readable before an account exists. */}
         <Route path="terms" element={<TermsPage />} />
@@ -91,16 +82,10 @@ export default function App() {
           />
           <Route path="places/:id" element={<PlaceDetailPage />} />
           <Route path="photos/:id" element={<PhotoDetailPage />} />
-          <Route path="creators/:id" element={<CreatorProfilePage />} />
-          <Route path="activity" element={<ActivityPage />} />
-          <Route path="insights" element={<InsightsPage />} />
-          <Route path="saved" element={<SavedPage />} />
           <Route path="create" element={<CreateExperiencePage />} />
+          <Route path="submissions/:id" element={<SubmissionDetailPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="settings" element={<SettingsPage />} />
-          <Route path="submissions" element={<ContributionHistory />} />
-          <Route path="submissions/new" element={<NewContribution />} />
-          <Route path="submissions/:id" element={<ContributionDetailPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>

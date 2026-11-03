@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { RequireLogin } from "./App";
 import { Auth } from "./auth";
-import { sanitizeReturnTo, State } from "./shared";
+import { sanitizeReturnTo } from "../lib/session";
+import { AsyncState } from "../components/ui/states";
 import { ApiError } from "../lib/api/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -15,8 +16,8 @@ const session = vi.hoisted(() => ({
   refetch: vi.fn(),
 }));
 
-vi.mock("./shared", async (original) => ({
-  ...(await original<typeof import("./shared")>()),
+vi.mock("../lib/session", async (original) => ({
+  ...(await original<typeof import("../lib/session")>()),
   useMe: () => session,
 }));
 
@@ -35,15 +36,20 @@ function Login() {
 }
 
 function renderPage(path: string) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route element={<RequireLogin />}>
-          <Route path="*" element={<p>Nội dung riêng tư</p>} />
-        </Route>
-        <Route path="login" element={<Login />} />
-      </Routes>
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route element={<RequireLogin />}>
+            <Route path="*" element={<p>Nội dung riêng tư</p>} />
+          </Route>
+          <Route path="login" element={<Login />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -72,14 +78,12 @@ describe("Route guards and access boundaries", () => {
   it.each([
     "/discover",
     "/map?category=cafe",
-    "/saved",
+    "/profile?tab=saved",
     "/profile",
     "/places/test",
     "/photos/test",
-    "/submissions",
-    "/submissions/new",
     "/submissions/test",
-    "/creators/test",
+    "/posts/test",
     "/unknown",
   ])("blocks direct guest URL %s and preserves its destination", (path) => {
     renderPage(path);
@@ -100,7 +104,7 @@ describe("Route guards and access boundaries", () => {
     renderPage("/discover");
     expect(screen.queryByText("Nội dung riêng tư")).toBeNull();
     expect(
-      screen.getByText("Máy chủ hiện không phản hồi. Bạn có thể thử lại sau."),
+      screen.getByText("Máy chủ hiện không phản hồi"),
     ).toBeVisible();
     expect(screen.getByRole("button", { name: "Thử lại" })).toBeVisible();
   });
@@ -119,14 +123,18 @@ describe("Route guards and access boundaries", () => {
     // Session expired event resets session data
     session.data = null;
     rerender(
-      <MemoryRouter initialEntries={["/discover"]}>
-        <Routes>
-          <Route element={<RequireLogin />}>
-            <Route path="*" element={<p>Nội dung riêng tư</p>} />
-          </Route>
-          <Route path="login" element={<Login />} />
-        </Routes>
-      </MemoryRouter>,
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      >
+        <MemoryRouter initialEntries={["/discover"]}>
+          <Routes>
+            <Route element={<RequireLogin />}>
+              <Route path="*" element={<p>Nội dung riêng tư</p>} />
+            </Route>
+            <Route path="login" element={<Login />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
     expect(screen.getByText("Đăng nhập /discover")).toBeVisible();
     expect(screen.queryByText("Nội dung riêng tư")).toBeNull();
@@ -205,7 +213,7 @@ describe("State component error boundary handling", () => {
   it("renders 401 session expired notice and login link", () => {
     render(
       <MemoryRouter>
-        <State
+        <AsyncState
           error={
             new ApiError(401, {}, "Vui lòng đăng nhập lại để tiếp tục sử dụng.")
           }
@@ -222,7 +230,7 @@ describe("State component error boundary handling", () => {
   it("renders 403 forbidden notice when unauthorized", () => {
     render(
       <MemoryRouter>
-        <State
+        <AsyncState
           error={
             new ApiError(
               403,

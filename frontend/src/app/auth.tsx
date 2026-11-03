@@ -7,10 +7,10 @@ import { z } from "zod";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { api } from "../lib/api/client";
 import type { Profile } from "../lib/api/types";
-import { sanitizeReturnTo, useMe } from "./shared";
+import { sanitizeReturnTo, useMe } from "../lib/session";
 import { Button } from "../components/ui/button";
 import { Field, Input } from "../components/ui/primitives";
-import { ErrorText } from "./shared";
+import { ErrorText } from "../components/ui/error-text";
 
 const schema = z.object({
   email: z.email("Email không hợp lệ."),

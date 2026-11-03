@@ -56,7 +56,7 @@ export function ExperienceCard({
 
       <div className="experience-card__body">
         <div className="experience-card__header">
-          <p className="eyebrow">
+          <p className="experience-card__category">
             {place.category?.name || "Địa điểm"}
             {district ? ` · ${district}` : ""}
           </p>

@@ -4,7 +4,7 @@ import { Flag } from "lucide-react";
 import { api, ApiError } from "../../lib/api/client";
 import { useMe } from "../../lib/session";
 import { Button } from "../../components/ui/button";
-import { ErrorText } from "../../app/shared";
+import { ErrorText } from "../../components/ui/error-text";
 
 /**
  * Report dialog.

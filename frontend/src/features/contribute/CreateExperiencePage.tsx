@@ -17,7 +17,7 @@ import { AsyncState } from "../../components/ui/states";
 import { Button } from "../../components/ui/button";
 import { Field, Input, Select, Textarea } from "../../components/ui/primitives";
 import { SafeImage } from "../../components/ui/safe-image";
-import { ErrorText } from "../../app/shared";
+import { ErrorText } from "../../components/ui/error-text";
 
 const LocationPicker = lazy(() =>
   import("../../app/map").then((module) => ({

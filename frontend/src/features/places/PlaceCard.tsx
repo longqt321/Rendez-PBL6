@@ -6,7 +6,7 @@ import { useSavePlace } from "../../lib/api/queries";
 import { useMe } from "../../lib/session";
 import { extractDistrict, shortAddress } from "../../lib/format";
 import { SafeImage } from "../../components/ui/safe-image";
-import { ErrorText } from "../../app/shared";
+import { ErrorText } from "../../components/ui/error-text";
 
 /**
  * Save control.
@@ -117,7 +117,6 @@ export function PlaceCard({
         <SavePlaceButton place={place} variant="icon" />
       </div>
       <div className="place-card__body">
-        <p className="eyebrow">{place.category.name}</p>
         <h3 className="place-card__title">
           <Link to={"/places/" + place.id}>{place.name}</Link>
         </h3>

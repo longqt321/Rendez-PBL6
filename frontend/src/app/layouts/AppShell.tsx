@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 import { LogIn, LogOut, Moon, Sun } from "lucide-react";
-import { useMe, useLogout, SearchBar } from "../shared";
+import { ErrorText } from "../../components/ui/error-text";
+import { useMe, useLogout } from "../../lib/session";
+import { SearchBar } from "./search-bar";
 import { useOptionalTheme } from "../../lib/theme";
 import { Avatar, IconButton } from "../../components/ui/primitives";
-import { ErrorText } from "../shared";
 import { CreateAction, MobileNav, SidebarNav } from "./nav";
 
 /**
@@ -15,21 +16,16 @@ import { CreateAction, MobileNav, SidebarNav } from "./nav";
  * name because the entity name arrives asynchronously.
  */
 const TITLES: [matcher: (path: string) => boolean, title: string][] = [
-  [(path) => path === "/discover", "Dành cho bạn"],
+  [(path) => path === "/discover", "Khám phá"],
   [(path) => path === "/search", "Tìm kiếm"],
   [(path) => path === "/map", "Bản đồ"],
-  [(path) => path === "/activity", "Hoạt động"],
-  [(path) => path === "/saved", "Đã lưu"],
   [(path) => path === "/settings", "Cài đặt"],
   [(path) => path === "/profile", "Trang cá nhân"],
-  [(path) => path === "/insights", "Thông tin chi tiết"],
   [(path) => path === "/create", "Đăng ảnh"],
   [(path) => path.startsWith("/places/"), "Địa điểm"],
-  [(path) => path === "/posts", "Trải nghiệm cộng đồng"],
-  [(path) => path.startsWith("/posts/"), "Trải nghiệm"],
+  [(path) => path.startsWith("/posts/"), "Ảnh cộng đồng"],
   [(path) => path.startsWith("/photos/"), "Ảnh cộng đồng"],
-  [(path) => path.startsWith("/creators/"), "Người đóng góp"],
-  [(path) => path.startsWith("/submissions"), "Ảnh của tôi"],
+  [(path) => path.startsWith("/submissions/"), "Ảnh đã gửi"],
   [(path) => path === "/terms", "Điều khoản sử dụng"],
 ];
 

@@ -1,7 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { Cover } from "./shared";
-import { MasonryFeed } from "./masonry";
+import { SafeImage } from "../components/ui/safe-image";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { PhotoDetailPage } from "../features/experiences/PhotoDetailPage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,13 +10,12 @@ afterEach(() => {
 });
 
 describe("Image display performance and layout stability", () => {
-  it("renders Cover with loading='lazy' and decoding='async'", () => {
+  it("renders SafeImage with loading='lazy' and decoding='async'", () => {
     render(
-      <Cover
-        place={{
-          name: "Quán cà phê X",
-          cover_image_url: "/public-photo-media/test-photo.jpg",
-        }}
+      <SafeImage
+        sources={["/public-photo-media/test-photo.jpg"]}
+        alt="Quán cà phê X"
+        ratio="4 / 5"
       />,
     );
 
@@ -76,22 +74,5 @@ describe("Image display performance and layout stability", () => {
     // Tỷ lệ thật nằm trên khung bọc ảnh để giữ bố cục ổn định trước khi tải.
     const heroFrame = heroImage.closest(".media-frame") as HTMLElement;
     expect(heroFrame.style.aspectRatio).toBe("1200 / 1600");
-  });
-
-  it("mounts MasonryFeed without synchronous layout thrashing", () => {
-    const { container } = render(
-      <MasonryFeed className="pin-feed">
-        <div className="place-card">
-          <div className="pin-body">Thẻ 1</div>
-        </div>
-        <div className="place-card">
-          <div className="pin-body">Thẻ 2</div>
-        </div>
-      </MasonryFeed>,
-    );
-
-    const feed = container.querySelector(".pin-feed");
-    expect(feed).toBeInTheDocument();
-    expect(container.querySelectorAll(".pin-body")).toHaveLength(2);
   });
 });

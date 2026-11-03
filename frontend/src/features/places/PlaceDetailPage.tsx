@@ -60,7 +60,6 @@ export function PlaceDetailPage() {
 
       <header className="place-detail__head">
         <div className="place-detail__identity">
-          <p className="eyebrow">{data.category.name}</p>
           <h1 className="place-detail__title">{data.name}</h1>
           <p className="place-detail__address">
             <MapPin size={15} aria-hidden />
