@@ -1,21 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation, useParams } from "react-router";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  CheckCircle2,
-  Clock,
-  MapPin,
-  Navigation,
-  Plus,
-} from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Navigation, Plus } from "lucide-react";
 import {
   usePlace,
   usePlaceGallery,
   useSimilarPhotos,
 } from "../../lib/api/queries";
 import { useMe } from "../../lib/session";
-import { directionsUrl, formatDate, shortAddress } from "../../lib/format";
+import { directionsUrl, shortAddress } from "../../lib/format";
 import { AsyncState } from "../../components/ui/states";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/primitives";

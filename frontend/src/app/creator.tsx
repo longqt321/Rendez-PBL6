@@ -1,23 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 import { ArrowLeft, Camera, Calendar } from "lucide-react";
-import { api, date, type Page } from "../lib/api/client";
-import type { Creator, PublicPhoto } from "../lib/api/visual";
+import { date } from "../lib/api/client";
+import { useCreator, useCreatorPhotos } from "../lib/api/queries";
 import { State } from "./shared";
 import { MasonryFeed } from "./masonry";
 
 export function CreatorProfilePage() {
   const { id } = useParams();
 
-  const creator = useQuery({
-    queryKey: ["creator", id],
-    queryFn: () => api<Creator>("creators/" + id + "/"),
-  });
-
-  const photos = useQuery({
-    queryKey: ["creator-photos", id],
-    queryFn: () => api<Page<PublicPhoto>>("creators/" + id + "/photos/"),
-  });
+  const creator = useCreator(id);
+  const photos = useCreatorPhotos(id, 1);
 
   if (!creator.data) {
     return (

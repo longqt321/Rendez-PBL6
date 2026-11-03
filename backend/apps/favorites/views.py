@@ -10,7 +10,7 @@ from apps.photos.serializers import VisualPlaceSerializer
 from apps.places.models import public_places
 from apps.places.selectors import place_context, visual_places
 from apps.places.views import FILTERS
-from .models import Favorite
+from .models import Favorite, SavedPlace
 
 
 @extend_schema(parameters=FILTERS)
@@ -45,9 +45,11 @@ class FavoriteDetail(APIView):
     def put(self, request, pk):
         place = get_object_or_404(public_places(), pk=pk)
         Favorite.objects.get_or_create(user=request.user, place=place)
+        SavedPlace.objects.get_or_create(user=request.user, place=place)
         return Response(status=204)
 
     @extend_schema(responses={204: None})
     def delete(self, request, pk):
         Favorite.objects.filter(user=request.user, place_id=pk).delete()
+        SavedPlace.objects.filter(user=request.user, place_id=pk).delete()
         return Response(status=204)

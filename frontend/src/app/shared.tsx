@@ -32,38 +32,11 @@ import { Button } from "../components/ui/button";
  * `lib/` layer.
  */
 import { useMe, useLogout, sanitizeReturnTo } from "../lib/session";
+import { directionsUrl } from "../lib/format";
+
 export { useMe, useLogout, sanitizeReturnTo };
 
-export function googleMapsDirectionsUrl(place: {
-  name?: string;
-  address?: string;
-  latitude?: number | null;
-  longitude?: number | null;
-}) {
-  if (place.name && place.address) {
-    return (
-      "https://www.google.com/maps/dir/?api=1&destination=" +
-      encodeURIComponent(`${place.name}, ${place.address}`)
-    );
-  }
-  if (
-    place.latitude !== null &&
-    place.longitude !== null &&
-    place.latitude !== undefined &&
-    place.longitude !== undefined
-  ) {
-    return (
-      "https://www.google.com/maps/dir/?api=1&destination=" +
-      place.latitude +
-      "," +
-      place.longitude
-    );
-  }
-  return (
-    "https://www.google.com/maps/search/?api=1&query=" +
-    encodeURIComponent(place.name || place.address || "Đà Nẵng")
-  );
-}
+export const googleMapsDirectionsUrl = directionsUrl;
 
 export function State({
   pending,
@@ -297,28 +270,7 @@ export function SaveButton({
     </div>
   );
 }
-export function PlaceCard({ place }: { place: VisualPlace }) {
-  return (
-    <article className="place-card saved-card">
-      <Link to={"/places/" + place.id}>
-        <Cover place={place} className="card-image" />
-        <div className="card-copy">
-          <span className="eyebrow">{place.category.name}</span>
-          <h2>{place.name}</h2>
-          <p className="muted">{place.address}</p>
-        </div>
-      </Link>
-      <SaveButton place={place} compact />
-    </article>
-  );
-}
-export function AttributeIcon({
-  code,
-  size = 13,
-}: {
-  code: string;
-  size?: number;
-}) {
+function AttributeIcon({ code, size = 13 }: { code: string; size?: number }) {
   switch (code) {
     case "study":
       return <Zap size={size} aria-hidden />;

@@ -4,7 +4,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { api, ApiError } from "./client";
+import { api } from "./client";
 import type {
   Category,
   CreatorProfile,
@@ -17,7 +17,6 @@ import type {
   PublicPhoto,
   VisualAttribute,
   VisualDetail,
-  VisualMap,
   VisualPlace,
 } from "./types";
 
@@ -166,14 +165,6 @@ export function useSimilarPhotos(photoId: string | undefined, userId?: string) {
 
 /* ------------------------------------------------------------- Experiences */
 
-export function usePosts(params: string, enabled = true) {
-  return useQuery({
-    queryKey: queryKeys.posts(params),
-    queryFn: ({ signal }) => api<Page<Post>>("posts/?" + params, { signal }),
-    enabled,
-  });
-}
-
 export function usePost(id: string | undefined, userId?: string) {
   return useQuery({
     queryKey: queryKeys.post(id ?? "", userId),
@@ -196,20 +187,6 @@ export function usePostComments(id: string | undefined) {
     queryFn: ({ signal }) =>
       api<PostComment[]>("posts/" + id + "/comments/", { signal }),
     enabled: Boolean(id),
-  });
-}
-
-/* -------------------------------------------------------------------- Map */
-
-export function useMapPlaces(params: string, bbox: string, enabled = true) {
-  return useQuery({
-    queryKey: queryKeys.map(params, bbox),
-    queryFn: ({ signal }) =>
-      api<VisualMap>(
-        "places/map/?" + (params ? params + "&" : "") + "bbox=" + bbox,
-        { signal },
-      ),
-    enabled,
   });
 }
 
@@ -353,9 +330,4 @@ export function useAddPostComment(postId: string) {
       void cache.invalidateQueries({ queryKey: ["post", postId] });
     },
   });
-}
-
-/** A 404 means "no longer available"; callers render that distinctly. */
-export function isNotFound(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 404;
 }

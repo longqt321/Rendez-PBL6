@@ -8,7 +8,7 @@ const VN = "vi-VN";
 const TZ = "Asia/Ho_Chi_Minh";
 
 /** Absolute calendar date, e.g. "12/03/2025". */
-export function formatDate(value: string | null | undefined): string {
+function formatDate(value: string | null | undefined): string {
   if (!value) return "";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "";
@@ -32,17 +32,6 @@ export function formatRelative(value: string | null | undefined): string {
   const days = Math.round(hours / 24);
   if (days < 30) return `${days} ngày trước`;
   return formatDate(value);
-}
-
-/** Vietnamese count formatting with thousands separators. */
-export function formatCount(value: number | null | undefined): string {
-  if (value == null) return "0";
-  return new Intl.NumberFormat(VN).format(value);
-}
-
-/** "3 ảnh", "1 ảnh" — used in gallery and experience summaries. */
-export function countLabel(count: number, singular: string, plural: string) {
-  return `${formatCount(count)} ${count === 1 ? singular : plural}`;
 }
 
 /**

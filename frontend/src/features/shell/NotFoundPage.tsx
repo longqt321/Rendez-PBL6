@@ -29,7 +29,8 @@ export function NotFoundPage() {
     <div className="not-found container container--narrow">
       <h1>Không tìm thấy trang</h1>
       <p className="lede">
-        Đường dẫn này không tồn tại hoặc đã thay đổi. Tự động chuyển về trang Khám phá sau {secondsLeft} giây…
+        Đường dẫn này không tồn tại hoặc đã thay đổi. Tự động chuyển về trang
+        Khám phá sau {secondsLeft} giây…
       </p>
       <div className="cluster">
         <Button asChild>

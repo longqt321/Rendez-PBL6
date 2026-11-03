@@ -466,8 +466,7 @@ export function MapPage() {
                     }
                     state={{ from: "/map?" + params.toString() }}
                   >
-                    Xem chi tiết{" "}
-                    <ArrowUpRight size={16} aria-hidden />
+                    Xem chi tiết <ArrowUpRight size={16} aria-hidden />
                   </Link>
                 </Button>
                 <div className="marker-preview-subactions">

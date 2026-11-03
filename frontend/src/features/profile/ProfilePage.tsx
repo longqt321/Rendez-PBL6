@@ -164,7 +164,7 @@ function ProfileCollection({ saved }: { saved: boolean }) {
             <>
               <Button asChild>
                 <Link to={saved ? "/discover" : "/create"}>
-                  {saved ? "Khám phá địa điểm" : "Đăng trải nghiệm đầu tiên"}
+                  {saved ? "Khám phá địa điểm" : "Đăng ảnh đầu tiên"}
                 </Link>
               </Button>
               {!saved && (

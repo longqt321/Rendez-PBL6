@@ -65,13 +65,3 @@ export function SafeImage({
     </div>
   );
 }
-
-/** Ratio string from real pixel dimensions, with a stable fallback. */
-export function ratioOf(
-  width: number | null | undefined,
-  height: number | null | undefined,
-  fallback = "4 / 5",
-): string {
-  if (!width || !height) return fallback;
-  return `${width} / ${height}`;
-}

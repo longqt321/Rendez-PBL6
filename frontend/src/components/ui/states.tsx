@@ -13,7 +13,7 @@ import { Button } from "./button";
  * an empty result.
  */
 
-export function LoadingState({
+function LoadingState({
   label = "Đang tải",
   variant = "grid",
 }: {
@@ -103,7 +103,7 @@ function describe(error: unknown): {
   };
 }
 
-export function ErrorState({ error, onRetry, returnTo }: ErrorStateProps) {
+function ErrorState({ error, onRetry, returnTo }: ErrorStateProps) {
   const { title, body, icon, needsLogin } = describe(error);
   const Icon = icon === "offline" ? WifiOff : AlertTriangle;
   const fields =

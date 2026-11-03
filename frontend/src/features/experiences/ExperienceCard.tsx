@@ -1,7 +1,11 @@
 import { Link } from "react-router";
 import { ArrowUpRight, Clock, MapPin, User } from "lucide-react";
 import type { FeedItem } from "../../lib/api/types";
-import { extractDistrict, formatRelative, shortAddress } from "../../lib/format";
+import {
+  extractDistrict,
+  formatRelative,
+  shortAddress,
+} from "../../lib/format";
 import { SafeImage } from "../../components/ui/safe-image";
 import { SavePlaceButton } from "../places/PlaceCard";
 
@@ -23,7 +27,9 @@ export function ExperienceCard({
 }) {
   const { photo, place } = item;
   const district = extractDistrict(place.address);
-  const timeFormatted = photo.published_at ? formatRelative(photo.published_at) : null;
+  const timeFormatted = photo.published_at
+    ? formatRelative(photo.published_at)
+    : null;
 
   return (
     <article className="experience-card">

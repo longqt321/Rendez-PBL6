@@ -77,30 +77,30 @@
   color-scheme: light;
 
   /* Off-white and Zinc neutrals based on Tailwind/Radix UI standards */
-  --color-background: #f8fafc;        /* slate-50: dịu mắt, tránh chói lóa của pure white */
-  --color-surface: #ffffff;           /* card/container surface */
-  --color-surface-muted: #f1f5f9;     /* slate-100 */
-  --color-surface-sunken: #e2e8f0;    /* slate-200 */
-  --color-foreground: #0f172a;        /* slate-900: độ tương phản cao (~16:1) không gây mỏi mắt */
-  --color-foreground-muted: #64748b;  /* slate-500 */
+  --color-background: #f8fafc; /* slate-50: dịu mắt, tránh chói lóa của pure white */
+  --color-surface: #ffffff; /* card/container surface */
+  --color-surface-muted: #f1f5f9; /* slate-100 */
+  --color-surface-sunken: #e2e8f0; /* slate-200 */
+  --color-foreground: #0f172a; /* slate-900: độ tương phản cao (~16:1) không gây mỏi mắt */
+  --color-foreground-muted: #64748b; /* slate-500 */
   --color-foreground-subtle: #94a3b8; /* slate-400 */
-  --color-border: #e2e8f0;            /* slate-200 */
-  --color-border-strong: #cbd5e1;     /* slate-300 */
-  --color-primary: #0f172a;           /* slate-900 */
-  --color-primary-hover: #1e293b;     /* slate-800 */
-  --color-primary-soft: #f1f5f9;      /* slate-100 */
+  --color-border: #e2e8f0; /* slate-200 */
+  --color-border-strong: #cbd5e1; /* slate-300 */
+  --color-primary: #0f172a; /* slate-900 */
+  --color-primary-hover: #1e293b; /* slate-800 */
+  --color-primary-soft: #f1f5f9; /* slate-100 */
   --color-on-primary: #ffffff;
   /* Rose-500 / Coral: năng động, tươi tắn chuẩn Gen Z */
-  --color-accent: #f43f5e;            /* rose-500 */
-  --color-accent-hover: #e11d48;      /* rose-600 */
-  --color-accent-soft: #ffe4e6;       /* rose-100 */
+  --color-accent: #f43f5e; /* rose-500 */
+  --color-accent-hover: #e11d48; /* rose-600 */
+  --color-accent-soft: #ffe4e6; /* rose-100 */
   --color-accent-ink: #e11d48;
   --color-on-accent: #ffffff;
-  --color-success: #10b981;           /* emerald-500 */
+  --color-success: #10b981; /* emerald-500 */
   --color-success-soft: #d1fae5;
-  --color-warning: #f59e0b;           /* amber-500 */
+  --color-warning: #f59e0b; /* amber-500 */
   --color-warning-soft: #fef3c7;
-  --color-danger: #ef4444;            /* red-500 */
+  --color-danger: #ef4444; /* red-500 */
   --color-danger-soft: #fee2e2;
   --color-on-danger: #ffffff;
   --color-overlay: rgb(15 23 42 / 50%);
@@ -129,30 +129,30 @@
   color-scheme: dark;
 
   /* Dark mode neutrals based on Material Design 3 / Apple Human Interface Guidelines */
-  --color-background: #121316;        /* Tối dịu, khử halation/blooming so với #000000 */
-  --color-surface: #1a1c20;           /* Elevated surface */
-  --color-surface-muted: #22252a;     /* Muted/chip surface */
-  --color-surface-sunken: #0d0e11;    /* Sunken/input surface */
-  --color-foreground: #eceff4;        /* Soft off-white chống lóa mắt */
-  --color-foreground-muted: #9aa2b1;  /* Balanced gray */
+  --color-background: #121316; /* Tối dịu, khử halation/blooming so với #000000 */
+  --color-surface: #1a1c20; /* Elevated surface */
+  --color-surface-muted: #22252a; /* Muted/chip surface */
+  --color-surface-sunken: #0d0e11; /* Sunken/input surface */
+  --color-foreground: #eceff4; /* Soft off-white chống lóa mắt */
+  --color-foreground-muted: #9aa2b1; /* Balanced gray */
   --color-foreground-subtle: #6b7382; /* Subtle secondary */
-  --color-border: #282c34;            /* Soft structural border */
+  --color-border: #282c34; /* Soft structural border */
   --color-border-strong: #383e4a;
   --color-primary: #eceff4;
   --color-primary-hover: #ffffff;
   --color-primary-soft: #22252a;
   --color-on-primary: #121316;
   /* Rose-400 / Vibrant Coral: rõ nét trên nền tối */
-  --color-accent: #fb7185;            /* rose-400 */
-  --color-accent-hover: #f43f5e;      /* rose-500 */
+  --color-accent: #fb7185; /* rose-400 */
+  --color-accent-hover: #f43f5e; /* rose-500 */
   --color-accent-soft: rgba(251, 113, 133, 0.16);
   --color-accent-ink: #fb7185;
   --color-on-accent: #121316;
-  --color-success: #34d399;           /* emerald-400 */
+  --color-success: #34d399; /* emerald-400 */
   --color-success-soft: rgba(52, 211, 153, 0.16);
-  --color-warning: #fbbf24;           /* amber-400 */
+  --color-warning: #fbbf24; /* amber-400 */
   --color-warning-soft: rgba(251, 191, 36, 0.16);
-  --color-danger: #f87171;            /* red-400 */
+  --color-danger: #f87171; /* red-400 */
   --color-danger-soft: rgba(248, 113, 113, 0.16);
   --color-on-danger: #121316;
   --color-overlay: rgb(0 0 0 / 65%);

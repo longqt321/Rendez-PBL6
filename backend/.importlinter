@@ -1,0 +1,23 @@
+[importlinter]
+root_packages =
+    apps
+
+[importlinter:contract:three-tier-architecture]
+name = Three tier architecture for Rendez apps
+type = layers
+layers =
+    apps.photos.views | apps.places.views | apps.posts.views | apps.accounts.views | apps.favorites.views
+    apps.photos.services | apps.places.geocoding
+    apps.photos.selectors | apps.places.selectors | apps.posts.selectors
+    apps.photos.models | apps.places.models | apps.posts.models | apps.accounts.models | apps.favorites.models
+ignore_imports =
+    apps.places.models -> apps.places.geocoding
+    apps.places.selectors -> apps.photos.selectors
+    apps.favorites.views -> apps.places.views
+    apps.photos.views -> apps.places.views
+    apps.posts.views -> apps.photos.views
+    apps.photos.views -> apps.photos.models
+    apps.places.views -> apps.places.models
+    apps.posts.views -> apps.posts.models
+    apps.accounts.views -> apps.accounts.models
+    apps.favorites.views -> apps.favorites.models

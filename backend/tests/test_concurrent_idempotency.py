@@ -1,4 +1,3 @@
-
 import concurrent.futures
 import pytest
 from django.db import connection
@@ -7,7 +6,6 @@ from apps.photos.services import submit
 from .conftest import photo
 
 pytestmark = pytest.mark.postgres
-
 
 
 @pytest.mark.django_db(transaction=True)

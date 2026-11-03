@@ -132,6 +132,8 @@ export function Badge({
   );
 }
 
+import { initials } from "../../lib/format";
+
 /* ------------------------------------------------------------------ Avatar */
 
 export function Avatar({
@@ -143,14 +145,7 @@ export function Avatar({
   size?: "sm" | "md" | "lg";
   className?: string;
 }) {
-  const trimmed = (name ?? "").trim();
-  const label = trimmed
-    ? trimmed
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase() ?? "")
-        .join("")
-    : "?";
+  const label = initials(name);
   return (
     <span
       className={clsx(

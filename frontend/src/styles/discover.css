@@ -134,7 +134,9 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 
 .feature-place:hover {

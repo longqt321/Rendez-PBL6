@@ -13,7 +13,7 @@ import { useMe } from "../../lib/session";
 import { AsyncState, EmptyState } from "../../components/ui/states";
 import { Button } from "../../components/ui/button";
 import { Input, Select } from "../../components/ui/primitives";
-import { PlaceCard, PlaceRow } from "../places/PlaceCard";
+import { PlaceCard } from "../places/PlaceCard";
 
 /**
  * Search.
@@ -380,22 +380,5 @@ export function SearchPage() {
         </section>
       </div>
     </div>
-  );
-}
-
-/** Compact list rendering, kept for the map sidebar and future reuse. */
-export function SearchResultList({
-  places,
-}: {
-  places: Parameters<typeof PlaceRow>[0]["place"][];
-}) {
-  return (
-    <ul className="result-list" role="list">
-      {places.map((place) => (
-        <li key={place.id}>
-          <PlaceRow place={place} />
-        </li>
-      ))}
-    </ul>
   );
 }

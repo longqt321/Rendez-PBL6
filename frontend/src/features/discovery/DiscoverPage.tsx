@@ -48,9 +48,7 @@ export function DiscoverPage() {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const hasNothing =
-    !feed.isPending &&
-    experiences.length === 0;
+  const hasNothing = !feed.isPending && experiences.length === 0;
 
   const placeCount = recentPlaces.data?.count;
 
@@ -60,9 +58,7 @@ export function DiscoverPage() {
         <div className="page-head__copy">
           <h1>Khám phá Đà Nẵng</h1>
           {placeCount != null && (
-            <p className="muted small">
-              {placeCount} địa điểm
-            </p>
+            <p className="muted small">{placeCount} địa điểm</p>
           )}
         </div>
         <Button asChild variant="outline">

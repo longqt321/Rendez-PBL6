@@ -211,7 +211,6 @@ function PhotoForm() {
   };
   return (
     <section className="panel submission-form">
-      <span className="eyebrow">Ảnh cộng đồng</span>
       <h1>Đăng ảnh địa điểm</h1>
       <p className="muted">Chọn địa điểm, thêm ảnh bạn chụp và đăng.</p>
       <ol className="step-list" aria-label="Các bước gửi ảnh">

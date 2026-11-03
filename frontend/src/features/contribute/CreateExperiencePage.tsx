@@ -268,7 +268,7 @@ export function CreateExperiencePage() {
     return (
       <div className="create-page">
         <AsyncState
-          empty="Cần đăng nhập để đăng trải nghiệm"
+          empty="Cần đăng nhập để đăng ảnh"
           emptyBody="Ảnh và địa điểm bạn gửi gắn với tài khoản của bạn."
           emptyActions={
             <Button asChild>
@@ -286,7 +286,6 @@ export function CreateExperiencePage() {
     <div className="create-page">
       <header className="page-head">
         <div className="page-head__copy">
-          <p className="eyebrow">Đóng góp</p>
           <h1>Đăng ảnh địa điểm</h1>
           <p className="lede">
             Chọn địa điểm, thêm ảnh bạn tự chụp và kể lại điều bạn thấy. Ảnh sẽ

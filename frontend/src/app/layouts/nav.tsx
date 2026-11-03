@@ -3,11 +3,9 @@ import {
   Bookmark,
   Compass,
   Heart,
-  ImagePlus,
   Map as MapIcon,
   Search,
   Settings,
-  Sparkles,
   User,
 } from "lucide-react";
 import { NavLink } from "react-router";
@@ -24,7 +22,7 @@ import { clsx } from "clsx";
  *   Trang cá nhân       profile
  *   Thông tin chi tiết  insights/analytics
  */
-export const PRIMARY_NAV = [
+const PRIMARY_NAV = [
   { to: "/discover", label: "Dành cho bạn", icon: Compass },
   { to: "/search", label: "Tìm kiếm", icon: Search },
   { to: "/map", label: "Bản đồ", icon: MapIcon },
@@ -33,14 +31,13 @@ export const PRIMARY_NAV = [
   { to: "/insights", label: "Thông tin chi tiết", icon: BarChart2 },
 ] as const;
 
-export const SECONDARY_NAV = [
+const SECONDARY_NAV = [
   { to: "/saved", label: "Đã lưu", icon: Bookmark },
   { to: "/settings", label: "Cài đặt", icon: Settings },
 ] as const;
 
 export function SidebarNav({
   onNavigate,
-  showSettings = false,
 }: {
   onNavigate?: () => void;
   showSettings?: boolean;
@@ -90,18 +87,16 @@ export function SidebarNav({
 export function CreateAction({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <NavLink to="/create" onClick={onNavigate} className="shell-create">
-      <span className="shell-create__plus" aria-hidden>+</span>
+      <span className="shell-create__plus" aria-hidden>
+        +
+      </span>
       <span className="shell-create__text">Đăng ảnh</span>
     </NavLink>
   );
 }
 
 /** Mobile bottom bar: same destinations, icon-first. */
-export function MobileNav({
-  showSettings = false,
-}: {
-  showSettings?: boolean;
-}) {
+export function MobileNav() {
   return (
     <nav className="shell-mobile" aria-label="Điều hướng chính">
       {PRIMARY_NAV.slice(0, 5).map(({ to, label, icon: Icon }) => (

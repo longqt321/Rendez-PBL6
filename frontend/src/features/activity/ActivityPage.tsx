@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Heart, MessageCircle, Sparkles, UserPlus } from "lucide-react";
+import { Heart, MessageCircle, Sparkles } from "lucide-react";
 import { useFeed } from "../../lib/api/queries";
 import { useMe } from "../../lib/session";
 import { AsyncState } from "../../components/ui/states";

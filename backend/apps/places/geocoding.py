@@ -318,11 +318,13 @@ def geocode_address(address: str) -> dict:
         return cached
 
     result = None
-    for lookup in (
-        query_nominatim_realtime,
-        query_photon_realtime,
-        query_osm_local_database,
-    ):
+    allow_external = getattr(settings, "GEOCODING_ENABLE_EXTERNAL", True)
+    lookups = (
+        (query_nominatim_realtime, query_photon_realtime, query_osm_local_database)
+        if allow_external
+        else (query_osm_local_database,)
+    )
+    for lookup in lookups:
         res = lookup(clean_addr)
         if res:
             result = {

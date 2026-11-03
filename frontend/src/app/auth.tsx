@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowRight, Eye, EyeOff, MapPin } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { api } from "../lib/api/client";
 import type { Profile } from "../lib/api/types";
 import { sanitizeReturnTo, useMe } from "./shared";
@@ -91,8 +91,8 @@ export function Auth({ register = false }: { register?: boolean }) {
   useEffect(() => {
     document.title = (register ? "Tạo tài khoản" : "Đăng nhập") + " · Rendez";
     const description = register
-      ? "Tạo tài khoản để lưu địa điểm và chia sẻ trải nghiệm tại Đà Nẵng."
-      : "Đăng nhập để lưu địa điểm và chia sẻ trải nghiệm tại Đà Nẵng.";
+      ? "Tạo tài khoản để lưu địa điểm và đăng ảnh tại Đà Nẵng."
+      : "Đăng nhập để lưu địa điểm và đăng ảnh tại Đà Nẵng.";
     document
       .querySelector('meta[name="description"]')
       ?.setAttribute("content", description);
@@ -104,8 +104,12 @@ export function Auth({ register = false }: { register?: boolean }) {
 
   return (
     <div className="auth-page">
-      <aside className="auth-page__story">
-        <Link className="shell-brand" to="/discover" aria-label="Rendez">
+      <main className="auth-page__panel">
+        <Link
+          className="shell-brand auth-page__brand"
+          to="/discover"
+          aria-label="Rendez"
+        >
           <span aria-hidden>r</span>
           <span className="shell-brand__dot" aria-hidden>
             .
@@ -113,37 +117,10 @@ export function Auth({ register = false }: { register?: boolean }) {
           <span className="shell-brand__word">rendez</span>
         </Link>
 
-        <div className="auth-page__pitch">
-          <p className="eyebrow">
-            <MapPin size={13} aria-hidden />
-            Đà Nẵng · Việt Nam
-          </p>
-          <p className="auth-page__quote">
-            Những nơi
-            <br />
-            muốn quay lại.
-          </p>
-          <p className="auth-page__lede">
-            Khám phá thành phố qua những gì người khác đã thật sự nhìn thấy. Lưu
-            lại nơi bạn muốn ghé, và kể lại nơi bạn vừa đến.
-          </p>
-        </div>
-
-        <p className="auth-page__credit">
-          Rendez là sổ tay thành phố do cộng đồng viết.
-        </p>
-      </aside>
-
-      <main className="auth-page__panel">
         <div className="auth-card">
           <h1 className="auth-card__title">
             {register ? "Tạo tài khoản" : "Đăng nhập"}
           </h1>
-          <p className="auth-card__lede">
-            {register
-              ? "Một tài khoản để lưu địa điểm và đăng trải nghiệm của bạn."
-              : "Tiếp tục nơi bạn đã dừng lại."}
-          </p>
 
           <form
             className="auth-form"
@@ -254,7 +231,7 @@ export function Auth({ register = false }: { register?: boolean }) {
                 disabled={mutation.isPending}
                 onClick={() => mutation.mutate({ email: "", password: "" })}
               >
-                Đăng nhập trải nghiệm nhanh
+                Đăng nhập nhanh
               </Button>
             )}
           </form>

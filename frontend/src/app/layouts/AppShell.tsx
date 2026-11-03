@@ -104,7 +104,7 @@ export function AppShell() {
         </main>
       </div>
 
-      <MobileNav showSettings={Boolean(me.data)} />
+      <MobileNav />
     </div>
   );
 }

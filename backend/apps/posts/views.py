@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.favorites.models import SavedPlace
+from apps.favorites.models import Favorite, SavedPlace
 from apps.photos.serializers import PhotoDetailSerializer
 from apps.places.models import public_places
 from apps.posts.models import (
@@ -164,12 +164,14 @@ class PlaceSave(APIView):
     def post(self, request, pk):
         # Same visibility gate as the favourites app: only public places.
         place = get_object_or_404(public_places(), pk=pk)
+        Favorite.objects.get_or_create(user=request.user, place=place)
         SavedPlace.objects.get_or_create(user=request.user, place=place)
         return Response({"saved": True})
 
     @extend_schema(request=None, responses={"200": {"type": "object"}})
     def delete(self, request, pk):
         place = get_object_or_404(public_places(), pk=pk)
+        Favorite.objects.filter(user=request.user, place=place).delete()
         SavedPlace.objects.filter(user=request.user, place=place).delete()
         return Response({"saved": False})
 

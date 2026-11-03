@@ -211,9 +211,7 @@ export function PostDetailPage() {
               type="button"
               className={clsx("action-button", data.liked && "is-active")}
               aria-pressed={data.liked ?? false}
-              aria-label={
-                data.liked ? "Bỏ thích ảnh" : "Thích ảnh"
-              }
+              aria-label={data.liked ? "Bỏ thích ảnh" : "Thích ảnh"}
               disabled={like.isPending}
               onClick={() =>
                 requireLogin(() => like.mutate(data.liked ?? false))

@@ -61,3 +61,4 @@ frontend/e2e/demo_walkthrough.spec.ts
 .agent/
 .githooks/
 scripts/agent/
+.coverage

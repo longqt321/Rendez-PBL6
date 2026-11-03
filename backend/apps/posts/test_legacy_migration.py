@@ -29,6 +29,7 @@ from apps.posts.models import (
 )
 
 import pytest
+
 pytestmark = pytest.mark.postgres
 
 User = get_user_model()

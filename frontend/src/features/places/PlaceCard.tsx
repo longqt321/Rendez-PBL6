@@ -130,33 +130,3 @@ export function PlaceCard({
     </article>
   );
 }
-
-/** Horizontal variant used in search results and "nearby" lists. */
-export function PlaceRow({ place }: { place: VisualPlace }) {
-  return (
-    <article className="place-row">
-      <Link
-        className="place-row__media"
-        to={"/places/" + place.id}
-        aria-label={"Xem địa điểm " + place.name}
-      >
-        <SafeImage
-          sources={[place.cover_media_url, place.cover_image_url]}
-          alt={place.name}
-          ratio="1 / 1"
-        />
-      </Link>
-      <div className="place-row__body">
-        <p className="eyebrow">{place.category.name}</p>
-        <h3 className="place-row__title">
-          <Link to={"/places/" + place.id}>{place.name}</Link>
-        </h3>
-        <p className="place-row__meta">
-          <MapPin size={13} aria-hidden />
-          <span>{shortAddress(place.address)}</span>
-        </p>
-      </div>
-      <SavePlaceButton place={place} variant="icon" />
-    </article>
-  );
-}

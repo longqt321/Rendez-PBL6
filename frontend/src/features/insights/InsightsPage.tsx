@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router";
-import { TrendingUp, Users, Eye, Sparkles, Image as ImageIcon, Bookmark } from "lucide-react";
+import {
+  TrendingUp,
+  Users,
+  Eye,
+  Sparkles,
+  Image as ImageIcon,
+} from "lucide-react";
 import { useMe } from "../../lib/session";
-import { useFeed } from "../../lib/api/queries";
 
 export function InsightsPage() {
   const me = useMe();
   const profile = me.data;
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
 
-  const feed = useFeed("page_size=10", profile?.id);
   const myPhotosCount = profile?.photo_count ?? 0;
   const mySavedCount = profile?.saved_count ?? 0;
 
@@ -89,7 +92,9 @@ export function InsightsPage() {
             <span className="insights-card__label">Lượt tương tác</span>
             <Sparkles size={16} className="insights-card__icon" aria-hidden />
           </div>
-          <div className="insights-card__value tabular">{estimatedInteractions}</div>
+          <div className="insights-card__value tabular">
+            {estimatedInteractions}
+          </div>
           <div className="insights-card__growth">
             <TrendingUp size={12} aria-hidden />
             <span>+12.0%</span>
@@ -103,7 +108,9 @@ export function InsightsPage() {
           <div className="insights-chart-card__header">
             <div>
               <h2>Biểu đồ tương tác</h2>
-              <p className="muted small">Lượt người xem nội dung của bạn theo thời gian</p>
+              <p className="muted small">
+                Lượt người xem nội dung của bạn theo thời gian
+              </p>
             </div>
           </div>
 
@@ -116,14 +123,43 @@ export function InsightsPage() {
             >
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.28" />
-                  <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0.0" />
+                  <stop
+                    offset="0%"
+                    stopColor="var(--color-accent)"
+                    stopOpacity="0.28"
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--color-accent)"
+                    stopOpacity="0.0"
+                  />
                 </linearGradient>
               </defs>
               {/* Lưới ngang mờ */}
-              <line x1="0" y1="45" x2="600" y2="45" stroke="var(--color-border)" strokeDasharray="3 3" />
-              <line x1="0" y1="90" x2="600" y2="90" stroke="var(--color-border)" strokeDasharray="3 3" />
-              <line x1="0" y1="135" x2="600" y2="135" stroke="var(--color-border)" strokeDasharray="3 3" />
+              <line
+                x1="0"
+                y1="45"
+                x2="600"
+                y2="45"
+                stroke="var(--color-border)"
+                strokeDasharray="3 3"
+              />
+              <line
+                x1="0"
+                y1="90"
+                x2="600"
+                y2="90"
+                stroke="var(--color-border)"
+                strokeDasharray="3 3"
+              />
+              <line
+                x1="0"
+                y1="135"
+                x2="600"
+                y2="135"
+                stroke="var(--color-border)"
+                strokeDasharray="3 3"
+              />
 
               {/* Area gradient */}
               <polygon
@@ -142,9 +178,30 @@ export function InsightsPage() {
               />
 
               {/* Data points */}
-              <circle cx="260" cy="85" r="4" fill="var(--color-surface)" stroke="var(--color-accent)" strokeWidth="2" />
-              <circle cx="480" cy="50" r="4" fill="var(--color-surface)" stroke="var(--color-accent)" strokeWidth="2" />
-              <circle cx="600" cy="30" r="4" fill="var(--color-surface)" stroke="var(--color-accent)" strokeWidth="2" />
+              <circle
+                cx="260"
+                cy="85"
+                r="4"
+                fill="var(--color-surface)"
+                stroke="var(--color-accent)"
+                strokeWidth="2"
+              />
+              <circle
+                cx="480"
+                cy="50"
+                r="4"
+                fill="var(--color-surface)"
+                stroke="var(--color-accent)"
+                strokeWidth="2"
+              />
+              <circle
+                cx="600"
+                cy="30"
+                r="4"
+                fill="var(--color-surface)"
+                stroke="var(--color-accent)"
+                strokeWidth="2"
+              />
             </svg>
 
             <div className="insights-chart-labels">

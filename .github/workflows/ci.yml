@@ -32,6 +32,7 @@ jobs:
       - run: bun install --cwd frontend --frozen-lockfile
       - run: uv run --project backend ruff check backend
       - run: uv run --project backend ruff format --check backend
+      - run: uv run --project backend lint-imports --config backend/.importlinter
       - run: uv run --project backend python backend/manage.py makemigrations --check --dry-run
       - run: uv run --project backend python backend/manage.py migrate
       - run: uv run --project backend pytest backend/tests backend/apps --junitxml=docs/backend-tests.xml
