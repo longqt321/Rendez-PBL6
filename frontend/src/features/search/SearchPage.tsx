@@ -77,16 +77,16 @@ export function SearchPage() {
   const active = hasActiveFilters(filters);
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl mx-auto">
+    <div className="flex flex-col gap-6 max-w-6xl mx-auto">
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">Tìm địa điểm</h1>
-        <p className="text-sm text-neutral-500">
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--ink)]">Tìm địa điểm</h1>
+        <p className="text-sm text-[var(--ink-soft)]">
           Tìm theo tên, địa chỉ hoặc lọc theo loại không gian và đặc điểm trong ảnh.
         </p>
       </header>
 
       <form
-        className="flex items-center gap-2 p-1.5 pl-4 rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xs focus-within:ring-2 focus-within:ring-neutral-900 dark:focus-within:ring-neutral-100 transition-all"
+        className="flex items-center gap-2 p-1.5 pl-4 rounded-full border border-[var(--line)] bg-[var(--surface-card)] shadow-xs focus-within:ring-2 focus-within:ring-[var(--accent)] transition-all"
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
@@ -96,7 +96,7 @@ export function SearchPage() {
         <label className="sr-only" htmlFor="search-q">
           Tìm tên hoặc địa chỉ
         </label>
-        <Search size={18} className="text-neutral-400 shrink-0" aria-hidden />
+        <Search size={18} className="text-[var(--ink-faint)] shrink-0" aria-hidden />
         <Input
           id="search-q"
           name="q"
@@ -111,7 +111,7 @@ export function SearchPage() {
         {draft && (
           <button
             type="button"
-            className="p-1.5 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"
+            className="p-1.5 rounded-full text-[var(--ink-faint)] hover:text-[var(--ink)] cursor-pointer"
             aria-label="Xóa nội dung tìm kiếm"
             onClick={() => {
               setDraft("");
@@ -125,16 +125,16 @@ export function SearchPage() {
       </form>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
-        <aside className="md:col-span-1 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col gap-5 sticky top-20 text-sm">
+        <aside className="md:col-span-1 p-5 rounded-2xl border border-[var(--line)] bg-[var(--surface-card)] flex flex-col gap-5 sticky top-20 text-sm">
           <div className="flex flex-col gap-2">
-            <h2 className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-neutral-500">
+            <h2 className="group-label flex items-center gap-1.5">
               <SlidersHorizontal size={13} aria-hidden />
               Loại địa điểm
             </h2>
             <div className="flex flex-wrap gap-1.5">
               <button
                 type="button"
-                className={`chip cursor-pointer text-xs px-2.5 py-1 rounded-full border transition-colors ${!filters.category ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-transparent font-semibold" : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"}`}
+                className={`chip cursor-pointer text-xs px-2.5 py-1 rounded-full border transition-colors ${!filters.category ? "bg-[var(--accent)] text-[var(--on-accent)] border-transparent font-semibold" : "bg-[var(--surface-muted)] border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--accent)]"}`}
                 aria-pressed={!filters.category}
                 onClick={() => update({ category: "" })}
               >
@@ -144,7 +144,7 @@ export function SearchPage() {
                 <button
                   key={category.slug}
                   type="button"
-                  className={`chip cursor-pointer text-xs px-2.5 py-1 rounded-full border transition-colors ${filters.category === category.slug ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-transparent font-semibold" : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"}`}
+                  className={`chip cursor-pointer text-xs px-2.5 py-1 rounded-full border transition-colors ${filters.category === category.slug ? "bg-[var(--accent)] text-[var(--on-accent)] border-transparent font-semibold" : "bg-[var(--surface-muted)] border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--accent)]"}`}
                   aria-pressed={filters.category === category.slug}
                   onClick={() => update({ category: category.slug })}
                 >
@@ -155,13 +155,13 @@ export function SearchPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <h2 className="font-bold text-xs uppercase tracking-wider text-neutral-500">Nhìn thấy trong ảnh</h2>
+            <h2 className="group-label">Nhìn thấy trong ảnh</h2>
             <div className="flex flex-col gap-1.5">
               {attributes.data?.map((attribute) => (
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 dark:text-neutral-300" key={attribute.code}>
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-[var(--ink-soft)]" key={attribute.code}>
                   <input
                     type="checkbox"
-                    className="rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                    className="rounded border-[var(--line)] text-[var(--accent)] focus:ring-[var(--accent)] accent-[var(--accent)]"
                     checked={filters.attributes.includes(attribute.code)}
                     onChange={() => toggleAttribute(attribute.code)}
                   />
@@ -172,7 +172,7 @@ export function SearchPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="font-bold text-xs uppercase tracking-wider text-neutral-500">Sắp xếp</span>
+            <span className="group-label">Sắp xếp</span>
             <Select
               value={filters.sort}
               onChange={(event) => update({ sort: event.currentTarget.value })}
@@ -204,7 +204,7 @@ export function SearchPage() {
 
         <section className="md:col-span-3 flex flex-col gap-5 min-w-0" aria-label="Kết quả tìm kiếm">
           {places.data && (
-            <p className="text-xs text-neutral-500 font-medium" role="status">
+            <p className="text-xs text-[var(--ink-soft)] font-medium" role="status">
               Tìm thấy {places.data.count} địa điểm
               {filters.q ? ` cho “${filters.q}”` : ""}
             </p>
@@ -245,7 +245,7 @@ export function SearchPage() {
 
           {results.length > 0 && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {results.map((place, index) => (
                   <PlaceCard key={place.id} place={place} eager={index < 4} />
                 ))}
@@ -261,7 +261,7 @@ export function SearchPage() {
               </div>
 
               {(places.data?.next || places.data?.previous) && (
-                <nav className="flex items-center justify-center gap-3 mt-6 text-xs text-neutral-500" aria-label="Phân trang kết quả">
+                <nav className="flex items-center justify-center gap-3 mt-6 text-xs text-[var(--ink-soft)]" aria-label="Phân trang kết quả">
                   <Button
                     variant="outline"
                     size="sm"
@@ -270,7 +270,7 @@ export function SearchPage() {
                   >
                     Trang trước
                   </Button>
-                  <span className="font-semibold text-neutral-800 dark:text-neutral-200" role="status">
+                  <span className="font-semibold text-[var(--ink)]" role="status">
                     Trang {page}
                   </span>
                   <Button

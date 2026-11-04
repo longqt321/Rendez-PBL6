@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bookmark, Camera, Settings, Shield } from "lucide-react";
+import { Bookmark, Camera, Settings, Shield, UserRound } from "lucide-react";
 import { api } from "../../lib/api/client";
 import type { FeedItem, Page, Post, VisualPlace } from "../../lib/api/types";
 import { useMe } from "../../lib/session";
@@ -32,18 +32,37 @@ export function ProfilePage() {
   if (me.isPending) return <AsyncState pending loadingVariant="grid" />;
   if (me.isError)
     return <AsyncState error={me.error} onRetry={() => void me.refetch()} />;
-  if (!me.data) return null;
+  if (!me.data)
+    return (
+      <EmptyState
+        title="Trang cá nhân dành cho thành viên"
+        body="Đăng nhập để xem ảnh bạn đã chia sẻ và danh sách địa điểm đã lưu."
+        icon={<UserRound size={28} aria-hidden />}
+        actions={
+          <div className="flex gap-2">
+            <Button asChild>
+              <Link to="/login" state={{ returnTo: "/profile" }}>
+                Đăng nhập
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/register">Tạo tài khoản</Link>
+            </Button>
+          </div>
+        }
+      />
+    );
 
   const profile = me.data;
 
   return (
-    <div className="profile-view max-w-4xl mx-auto px-4 py-8 flex flex-col gap-8">
-      <header className="profile-banner flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
+    <div className="profile-view max-w-5xl mx-auto px-1 py-8 flex flex-col gap-8">
+      <header className="profile-banner flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 bg-[var(--surface-card)] border border-[var(--line)] rounded-2xl">
         <div className="flex items-center gap-4">
           <Avatar name={profile.display_name} size="lg" />
           <div className="profile-banner__copy flex flex-col gap-1">
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{profile.display_name}</h1>
-            <p className="profile-banner__meta text-sm text-neutral-500 dark:text-neutral-400">
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--ink)]">{profile.display_name}</h1>
+            <p className="profile-banner__meta text-sm text-[var(--ink-soft)]">
               <span>{profile.email}</span>
             </p>
             {profile.is_staff && (
@@ -64,24 +83,24 @@ export function ProfilePage() {
       </header>
 
       <dl className="profile-metrics grid grid-cols-2 gap-4">
-        <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
-          <dt className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Ảnh đã chia sẻ</dt>
-          <dd className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tabular mt-1">{profile.photo_count ?? 0}</dd>
+        <div className="p-5 bg-[var(--surface-card)] border border-[var(--line)] rounded-2xl">
+          <dt className="text-xs font-medium text-[var(--ink-soft)]">Ảnh đã chia sẻ</dt>
+          <dd className="text-3xl font-bold text-[var(--ink)] tabular mt-1">{profile.photo_count ?? 0}</dd>
         </div>
-        <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
-          <dt className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Địa điểm đã lưu</dt>
-          <dd className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tabular mt-1">{profile.saved_count ?? 0}</dd>
+        <div className="p-5 bg-[var(--surface-card)] border border-[var(--line)] rounded-2xl">
+          <dt className="text-xs font-medium text-[var(--ink-soft)]">Địa điểm đã lưu</dt>
+          <dd className="text-3xl font-bold text-[var(--ink)] tabular mt-1">{profile.saved_count ?? 0}</dd>
         </div>
       </dl>
 
-      <nav className="segmented profile-switch flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl gap-1 max-w-fit" aria-label="Nội dung cá nhân">
+      <nav className="segmented profile-switch flex p-1 bg-[var(--surface-muted)] rounded-xl gap-1 max-w-fit" aria-label="Nội dung cá nhân">
         <Link
           to="/profile"
           aria-current={tab === "photos" ? "page" : undefined}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === "photos"
-              ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-xs"
-              : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+              ? "bg-[var(--surface-card)] text-[var(--ink)] shadow-xs"
+              : "text-[var(--ink-soft)] hover:text-[var(--ink)]"
           }`}
         >
           <Camera size={16} aria-hidden />
@@ -92,8 +111,8 @@ export function ProfilePage() {
           aria-current={tab === "saved" ? "page" : undefined}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === "saved"
-              ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-xs"
-              : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+              ? "bg-[var(--surface-card)] text-[var(--ink)] shadow-xs"
+              : "text-[var(--ink-soft)] hover:text-[var(--ink)]"
           }`}
         >
           <Bookmark size={16} aria-hidden />
@@ -104,8 +123,8 @@ export function ProfilePage() {
           aria-current={tab === "posts" ? "page" : undefined}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === "posts"
-              ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-xs"
-              : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+              ? "bg-[var(--surface-card)] text-[var(--ink)] shadow-xs"
+              : "text-[var(--ink-soft)] hover:text-[var(--ink)]"
           }`}
         >
           <Bookmark size={16} aria-hidden />
@@ -264,7 +283,7 @@ function ProfileSavedPosts() {
                     </div>
                   )}
                   <div className="saved-post__body flex-1 min-w-0">
-                    <p className="saved-post__place font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 transition-colors">{post.place_name}</p>
+                    <p className="saved-post__place font-semibold text-[var(--ink)] group-hover:text-[var(--accent)] transition-colors">{post.place_name}</p>
                     {post.caption && (
                       <p className="saved-post__caption line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                         {post.caption}

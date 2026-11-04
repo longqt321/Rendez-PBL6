@@ -16,7 +16,13 @@ export function useMe() {
       try {
         return await api<Profile>("auth/me/");
       } catch (error) {
-        if (error instanceof ApiError && error.status === 401) return null;
+        // Không đăng nhập (401) hoặc backend chưa chạy (5xx, dev mock mode):
+        // coi như khách — app shell vẫn hiển thị đầy đủ cho khách.
+        if (
+          error instanceof ApiError &&
+          (error.status === 401 || error.status >= 500)
+        )
+          return null;
         throw error;
       }
     },

@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConfirmDialog } from "../components/ui/confirm-dialog";
 import { Auth } from "./auth";
-import App from "./App";
+import { AppShell } from "./layouts/AppShell";
 
 const session = vi.hoisted(() => ({
   data: {
@@ -91,7 +91,9 @@ describe("Accessibility and Keyboard Interactions", () => {
       render(
         <QueryClientProvider client={queryClient}>
           <MemoryRouter initialEntries={["/profile"]}>
-            <App />
+            <Routes>
+              <Route path="*" element={<AppShell />} />
+            </Routes>
           </MemoryRouter>
         </QueryClientProvider>,
       );

@@ -49,10 +49,10 @@ export function DiscoveryPrompt() {
         {PROMPTS.map(({ to, label, icon: Icon }) => (
           <li key={to} className="shrink-0">
             <Link
-              className="prompt-card flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-700 text-xs font-medium transition-colors shadow-2xs"
+              className="prompt-card flex items-center gap-2 px-3.5 py-2 rounded-full bg-[var(--surface-card)] border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] text-xs font-medium transition-colors"
               to={to}
             >
-              <Icon size={16} aria-hidden />
+              <Icon size={15} aria-hidden className="text-[var(--accent)]" />
               <span className="prompt-card__label">{label}</span>
             </Link>
           </li>

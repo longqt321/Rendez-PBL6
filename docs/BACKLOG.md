@@ -74,3 +74,47 @@ Mốc thời gian (~Ns) là vị trí trong video merged_e2e.mp4.
   Đã kiểm 2026-11-02: menu avatar chỉ còn "Đăng xuất"; Hồ sơ/Cài đặt chỉ còn ở sidebar (không xóa chức năng nào). Chuyển giao diện: Cài đặt là nơi chính (3 lựa chọn sáng/tối/theo hệ thống), nút ở thanh trên chỉ là lối tắt sáng↔tối. Sơ đồ trước/sau nằm trong báo cáo cuối để duyệt.
 - [ ] **D8 Truy cập**: đo tương phản bằng công cụ cho chữ phụ và eyebrow còn lại; chữ phụ ≥ 12px.
 - [ ] **D9 Chưa kiểm**: dark mode, 390×844, trạng thái đang tải, lỗi mạng. Chụp và kiểm cho từng màn hình, thêm mục mới vào nhóm A khi gặp lỗi.
+
+## Nhóm E: thẩm mỹ và nhận diện thiết kế (từ audit thiết kế 2026-11-04)
+
+Audit bằng tasteskill v2 (inspector + lint + juror trên screenshot 1440/390, app chạy thật tại :8080). Điểm trung bình các màn: 3,7–4,3/10. Xương layout tốt, thiếu "da": ảnh thật, màu nhận diện, mật độ desktop.
+
+**Cập nhật 2026-11-04 (đợt redesign 2):** E2, E3, E4, E6 đã xử lý xong — tokens brand (sand + brand xanh rêu) trong `styles.css`, Geist đã đăng ký `@font-face`, Khám phá có panel phải, meta ≥ 12px. Juror chấm lại: Khám phá light 7.5 + dark 7.8 (ĐẠT cả hai theme). Các mục còn lại giữ nguyên.
+
+- [ ] **E1 Ảnh fixture 1 màu bị serve làm ảnh chính trong feed**
+  Trong `.local/media/visual/derivatives/` (338 file) có 2 fixture rác 1 màu 200×150 (1,1KB): `f6cb4efc-*` xanh `(0,0,254)` và `2a116665-*` đỏ `(254,0,0)` — nguồn không rõ (không tìm thấy trong code seed/test hiện tại, nghi từ lần chạy test cũ). Feed desktop hiện khối xanh 633×474 chiếm ~23% màn hình.
+  Nghiệm thu: xoá 2 file fixture khỏi media + DB record tương ứng; rà query feed không serve ảnh < 5KB; chụp lại feed không còn khối màu trơn.
+- [ ] **E2 Font Geist được preload nhưng không hề đăng ký — app chạy system font**
+  `index.html` preload 2 file woff2 Geist nhưng không có `@font-face` nào trong `src/` hay CSS build (đã grep: 0 kết quả). Toàn app render bằng system-ui.
+  Nghiệm thu: khai báo `@font-face` cho Geist (latin + vietnamese subset) + `--font-sans` trong `styles.css`; xác minh computed font trên text thật.
+- [ ] **E3 Không có design token riêng — palette thuần Tailwind mặc định**
+  `styles.css` chỉ có 1 dòng `@import "tailwindcss"`. Map style.json đã có sẵn beige `#f3f0e8` + xanh đậm `#1f382b` chưa được dùng cho UI. Accent duy nhất là blue-600 Tailwind.
+  Nghiệm thu: định nghĩa `@theme` tokens (màu thương hiệu từ map style, thang chữ 5 cấp, radius, spacing) trong `styles.css`; các component dùng token thay vì hardcode neutral/blue.
+- [ ] **E4 Màn Khám phá desktop trống ~55% bên phải**
+  Feed 1 cột max-w-2xl (672px) giữa canvas 1440px; profile cũng có dải trống lớn giữa banner và grid.
+  Nghiệm thu: bố cục 2 cột (feed + panel gợi ý địa điểm/map mini) hoặc masonry 2–3 cột kiểu Pinterest; kiểm ở 1440 và 1280.
+- [ ] **E5 Bản đồ trắng trơn khi tile lỗi, không có fallback có thiết kế**
+  Tile Esri offline không tải → canvas trắng ~60% màn hình, chỉ còn text lỗi + nút.
+  Nghiệm thu: fallback nền beige từ map style + marker tĩnh từ region.geojson + panel kết quả dạng card list có thumbnail.
+- [ ] **E6 Thang chữ phẳng, meta 11px quá nhỏ**
+  Mọi thứ 11–12px ngoài h1 24px; meta card 11px dưới chuẩn đọc (D8 liên quan).
+  Nghiệm thu: meta card ≥ 12px; xây thang chữ khi làm E3; đo lại tương phản (D8).
+- [ ] **E7 Lint tasteskill: 40 FAIL (shadow 11, hairline 25, mono 1, micro-label 3) + glass 2, transition-all 6**
+  Không phải sửa hàng loạt — app screen được phép 1px border; chỉ xử lý: micro-label uppercase 3 chỗ trong SearchPage, font-mono ngoài code 1 chỗ, glass ngoài sticky bar 1 chỗ, shadow trên card nghỉ (ExperienceCard shadow-md, hover shadow-md).
+  Nghiệm thu: lint lại còn < 10 FAIL, mỗi FAIL còn lại có lý do hoặc comment taste-skill-ignore.
+- [ ] **E8 Chưa có bằng chứng dark mode và 390px sau thay đổi thiết kế**
+  5 ảnh audit đều light mode; 2 ảnh mobile trùng nhau (lỗi chụp). Gắn với D9.
+  Nghiệm thu: khi làm E1–E7 xong, chụp lại đủ light/dark × 1440/390 cho các màn chính.
+
+## Nhóm F: phát hiện thêm khi làm redesign 2026-11-04 (đợt 2)
+
+**Cập nhật đợt 3 (cùng ngày, sau juror đối chiếu):** juror vòng 4 xác nhận đã hết: marker bản đồ (12 pin hiển thị nhờ mock trải toạ độ khắp các quận), card panel map co rúm chữ (media frame 64px cố định), gap 240px mobile (ảnh fill khung 4/5), nhãn tab mobile cắt 1 chữ (nhãn đầy đủ), chữ profile dark chìm (EmptyState đổi token + khai báo `@custom-variant dark` theo `data-theme`), tile bản đồ dark chói (CSS filter). Chờ điểm juror cuối để đóng F3.
+
+- [ ] **F1 3 lỗi ESLint có sẵn trên main, nằm ngoài phạm vi redesign**
+  `CreateExperiencePage.tsx:11` — `Controller` import không dùng; `PostDetailPage.tsx:55` — react-hooks/immutability "Cannot access variable before it is declared"; `client.ts:60` — `schemaPath` khai báo nhưng không dùng trong `onRequest`. (1 warning react-hooks/incompatible-library ở CreateExperiencePage do react-hook-form.)
+  Nghiệm thu: sửa từng lỗi + chạy `bunx eslint src` sạch.
+- [ ] **F2 Panel phải Khám phá mới chỉ có CTA bản đồ tĩnh, chưa có map mini**
+  A1 đã chốt "feed 1 cột + panel phải (gợi ý địa điểm + map mini)"; hiện panel có list địa điểm mới + card "Xem trên bản đồ" (nền accent-soft). Map mini thật cần maplibre instance thứ 2 — cân nhắc chi phí bundle (maplibre ~1MB) trước khi làm.
+  Nghiệm thu: quyết định map mini (lazy chunk riêng) hoặc bỏ mục tiêu này khỏi A1.
+- [ ] **F3 Dark mode chưa có ảnh nghiệm thu sau redesign**
+  Đã chụp đủ 5 màn × light/dark × 1440/390 (`.taste-skill/v4/` + `.taste-skill/final/`); `@custom-variant dark` khai báo theo `data-theme` để mọi tiện ích `dark:*` hoạt động đúng với cơ chế theme của app. Điểm juror: Khám phá light/dark ĐẠT; các màn còn lại theo báo cáo juror vòng 4.

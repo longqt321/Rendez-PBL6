@@ -9,7 +9,7 @@ export function SearchBar() {
 
   return (
     <form
-      className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/60 dark:bg-neutral-800/60 focus-within:ring-2 focus-within:ring-neutral-900 dark:focus-within:ring-neutral-100 focus-within:bg-white dark:focus-within:bg-neutral-900 transition-all w-full"
+      className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--line)] bg-[var(--surface-muted)]/70 focus-within:ring-2 focus-within:ring-[var(--accent)] focus-within:bg-[var(--surface-card)] transition-all w-full"
       role="search"
       key={params.get("q") || ""}
       onSubmit={(event) => {
@@ -35,7 +35,7 @@ export function SearchBar() {
       <label className="sr-only" htmlFor="global-query">
         Tìm tên hoặc địa chỉ
       </label>
-      <button type="submit" aria-label="Tìm kiếm" title="Tìm kiếm" className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200">
+      <button type="submit" aria-label="Tìm kiếm" title="Tìm kiếm" className="text-[var(--ink-faint)] hover:text-[var(--ink)]">
         <Search size={16} aria-hidden />
       </button>
       <input
@@ -45,7 +45,7 @@ export function SearchBar() {
         defaultValue={params.get("q") || ""}
         placeholder="Tìm kiếm địa điểm, quán cà phê, không gian đẹp tại Đà Nẵng..."
         autoComplete="off"
-        className="w-full bg-transparent text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
+        className="w-full bg-transparent text-sm text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
       />
     </form>
   );

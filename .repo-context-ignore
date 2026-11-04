@@ -1,0 +1,75 @@
+# repo-context: loại trừ riêng, bổ sung trên .gitignore.
+# Dependency directories (phòng khi có trong git nhưng để tránh nhầm lẫn).
+node_modules/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Build artifacts, cache, coverage, minified bundles, source maps.
+dist/
+build/
+staticfiles/
+coverage/
+*.min.js
+*.min.css
+*.map
+
+# Database files, logs, runtime state.
+*.sqlite3
+*.db
+*.log
+*.pid
+*.mo
+
+# Thư mục agent/brainstorm cục bộ (không phải source Rendez).
+superpowers/
+.superpowers/
+
+# Lockfile sinh tự động, đọc khi cần dependency chính xác thì tra trực tiếp.
+backend/uv.lock
+frontend/bun.lock
+
+# Tests và E2E (tập trung đọc code chính; xem tests trực tiếp khi cần).
+backend/tests/
+frontend/e2e/
+*.test.tsx
+*.test.ts
+
+# Archives, binary models, datasets, media.
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.ico
+*.pdf
+*.mp4
+*.webm
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.pbf
+*.geojson
+*.parquet
+*.h5
+*.onnx
+*.pt
+*.ckpt
+*.bin
+
+# Secrets (phòng khi chưa nằm trong .gitignore).
+.env
+.env.*
+*.pem
+*.key
+credentials*
+secrets*

@@ -1,5 +1,6 @@
 import createClient, { type Middleware } from "openapi-fetch";
 import type { paths, components } from "./generated";
+import { mockResponse } from "./mock";
 
 export type Profile = components["schemas"]["Profile"];
 export type Category = components["schemas"]["Category"];
@@ -101,14 +102,30 @@ export async function api<T>(
     headers.set("Content-Type", "application/json");
   if (csrfToken) headers.set("X-CSRFToken", csrfToken);
   const timeout = AbortSignal.timeout(20_000);
-  const response = await fetch("/api/v1/" + path, {
-    ...options,
-    signal: options.signal
-      ? AbortSignal.any([options.signal, timeout])
-      : timeout,
-    headers,
-    credentials: "same-origin",
-  });
+  let response: Response;
+  try {
+    response = await fetch("/api/v1/" + path, {
+      ...options,
+      signal: options.signal
+        ? AbortSignal.any([options.signal, timeout])
+        : timeout,
+      headers,
+      credentials: "same-origin",
+    });
+  } catch (error) {
+    // Fetch thất bại hoàn toàn (mạng chết, API không chạy): GET đọc-đọc rơi
+    // về mock để giao diện vẫn xem được khi backend không có. Mutation không
+    // mock — thao tác chưa thành công thì không được báo thành công.
+    if (
+      error instanceof TypeError &&
+      !needsCsrf &&
+      !options.signal &&
+      mockResponse(path) !== null
+    ) {
+      return mockResponse(path) as T;
+    }
+    throw error;
+  }
   if (
     needsCsrf &&
     response.status === 403 &&
@@ -127,6 +144,13 @@ export async function api<T>(
     });
   }
   if (!response.ok) {
+    // Backend chết/quá tải (5xx) hoặc chưa đăng nhập (401 trên endpoint đọc):
+    // GET rơi về mock để giao diện vẫn xem được không cần backend. Mutation
+    // không mock — thao tác chưa thành công thì không được báo thành công.
+    if (!needsCsrf && response.status >= 500) {
+      const mock = mockResponse(path);
+      if (mock !== null) return mock as T;
+    }
     if (
       response.status === 401 &&
       ![

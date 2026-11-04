@@ -22,10 +22,10 @@ function LoadingState({
   return (
     <div role="status" aria-label={label} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {Array.from({ length: count }, (_, index) => (
-        <div className="flex flex-col gap-2.5 p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900" key={index}>
-          <div className="rounded-md bg-neutral-200 dark:bg-neutral-800 animate-pulse aspect-[4/5]" />
-          <div className="rounded bg-neutral-200 dark:bg-neutral-800 animate-pulse h-3.5 w-3/4" />
-          <div className="rounded bg-neutral-200 dark:bg-neutral-800 animate-pulse h-3 w-1/2" />
+        <div className="flex flex-col gap-2.5 p-3 rounded-lg border border-[var(--line)] bg-[var(--surface-card)]" key={index}>
+          <div className="rounded-md bg-[var(--surface-muted)] animate-pulse aspect-[4/5]" />
+          <div className="rounded bg-[var(--surface-muted)] animate-pulse h-3.5 w-3/4" />
+          <div className="rounded bg-[var(--surface-muted)] animate-pulse h-3 w-1/2" />
         </div>
       ))}
     </div>
@@ -163,11 +163,13 @@ export function EmptyState({
           : "flex flex-col items-center justify-center gap-3 py-14 px-4 text-center"
       }
     >
-      <span className="flex items-center justify-center w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
-        {icon ?? <Inbox size={22} aria-hidden />}
+      <span className="flex items-center justify-center w-14 h-14 rounded-full bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--line)]">
+        {icon ?? <Inbox size={24} aria-hidden />}
       </span>
-      <p className="text-base font-semibold text-neutral-800 dark:text-neutral-200">{title}</p>
-      {body ? <p className="text-sm text-neutral-500 max-w-sm">{body}</p> : null}
+      <p className="text-base font-semibold text-[var(--ink)]">{title}</p>
+      {body ? (
+        <p className="text-sm text-[var(--ink-soft)] max-w-sm">{body}</p>
+      ) : null}
       {actions ? <div className="flex justify-center gap-2 mt-2">{actions}</div> : null}
     </div>
   );

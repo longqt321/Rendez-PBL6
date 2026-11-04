@@ -23,62 +23,60 @@ export function ExperienceCard({
     : null;
 
   return (
-    <article className="experience-card group relative flex flex-col rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs hover:shadow-md transition-shadow">
+    <article className="experience-card group relative flex flex-col rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface-card)] shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
       <Link
-        className="experience-card__media relative block aspect-[4/5] overflow-hidden bg-neutral-100 dark:bg-neutral-800"
+        className="experience-card__media relative block aspect-[4/5] overflow-hidden bg-[var(--surface-muted)]"
         to={"/photos/" + photo.id}
         aria-label={"Xem ảnh tại " + place.name}
       >
         <SafeImage
           sources={[photo.url]}
           alt={photo.alt_text || photo.caption || place.name}
-          ratio={
-            photo.width && photo.height
-              ? `${photo.width} / ${photo.height}`
-              : "4 / 5"
-          }
+          /* Khung media cố định 4/5; ảnh gốc lệch tỷ lệ thì object-cover lấp
+             đầy, không để hở nền tạo khoảng trống lớn trước card kế tiếp. */
+          ratio="4 / 5"
           eager={eager}
-          className="group-hover:scale-105 transition-transform duration-300"
+          className="group-hover:scale-[1.03] transition-transform duration-500"
         />
       </Link>
 
-      <div className="absolute top-2.5 right-2.5 z-10">
+      <div className="absolute top-3 right-3 z-10">
         <SavePlaceButton place={place} variant="icon" />
       </div>
 
-      <div className="p-3.5 flex flex-col gap-2 min-w-0">
-        <div className="flex items-center justify-between gap-2 text-[11px] text-neutral-400">
-          <p className="truncate">
+      <div className="p-4 flex flex-col gap-2 min-w-0">
+        <div className="flex items-center justify-between gap-2 text-xs text-[var(--ink-faint)]">
+          <p className="truncate font-medium">
             {place.category?.name || "Địa điểm"}
             {district ? ` · ${district}` : ""}
           </p>
           {timeFormatted && (
             <span className="flex items-center gap-1 shrink-0">
-              <Clock size={11} aria-hidden />
+              <Clock size={12} aria-hidden />
               {timeFormatted}
             </span>
           )}
         </div>
 
-        <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 truncate">
-          <Link to={"/places/" + place.id} className="hover:underline">
+        <h3 className="text-lg font-bold tracking-tight text-[var(--ink)] truncate">
+          <Link to={"/places/" + place.id} className="hover:underline decoration-[var(--accent)] decoration-2 underline-offset-2">
             {place.name}
           </Link>
         </h3>
 
         {photo.caption && (
-          <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
+          <p className="text-sm text-[var(--ink-soft)] line-clamp-2 leading-relaxed">
             {photo.caption}
           </p>
         )}
 
-        <div className="flex items-center justify-between gap-2 text-xs text-neutral-500 pt-1 border-t border-neutral-100 dark:border-neutral-800/60 mt-1">
+        <div className="flex items-center justify-between gap-2 text-xs text-[var(--ink-faint)] pt-2 border-t border-[var(--line)] mt-1">
           <p className="flex items-center gap-1 truncate">
             <MapPin size={12} className="shrink-0" aria-hidden />
             <span className="truncate">{shortAddress(place.address)}</span>
           </p>
           {photo.author_name && (
-            <span className="flex items-center gap-1 shrink-0 text-neutral-400">
+            <span className="flex items-center gap-1 shrink-0">
               <User size={12} aria-hidden />
               {photo.author_name}
             </span>

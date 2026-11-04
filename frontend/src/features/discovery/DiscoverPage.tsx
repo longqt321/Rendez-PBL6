@@ -5,6 +5,8 @@ import { useFeed, usePlaces } from "../../lib/api/queries";
 import { useMe } from "../../lib/session";
 import { AsyncState } from "../../components/ui/states";
 import { Button } from "../../components/ui/button";
+import { SafeImage } from "../../components/ui/safe-image";
+import { extractDistrict } from "../../lib/format";
 import { ExperienceCard } from "../experiences/ExperienceCard";
 import { DiscoveryPrompt } from "./DiscoveryPrompt";
 
@@ -53,77 +55,131 @@ export function DiscoverPage() {
   const placeCount = recentPlaces.data?.count;
 
   return (
-    <div className="discover max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6">
-      <header className="page-head discover-head flex items-center justify-between pb-2 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="page-head__copy">
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">Khám phá</h1>
-          {placeCount != null && (
-            <p className="muted small text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{placeCount} địa điểm</p>
-          )}
-        </div>
-        <Button asChild variant="outline">
-          <Link to="/map">
-            <MapPin size={16} aria-hidden />
-            Bản đồ
-          </Link>
-        </Button>
-      </header>
+    <div className="discover grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-8 max-w-6xl mx-auto px-1 py-6 items-start">
+      {/* Cột feed chính */}
+      <div className="discover-main flex flex-col gap-6 min-w-0">
+        <header className="page-head discover-head flex items-end justify-between pb-3 border-b border-[var(--line)]">
+          <div className="page-head__copy flex flex-col gap-1">
+            <h1 className="text-3xl font-bold tracking-tight text-[var(--ink)]">Khám phá</h1>
+            {placeCount != null && (
+              <p className="muted small text-sm text-[var(--ink-soft)]">{placeCount} địa điểm đang chờ bạn ghé</p>
+            )}
+          </div>
+        </header>
 
-      <DiscoveryPrompt />
+        <DiscoveryPrompt />
 
-      {hasNothing ? (
-        <AsyncState
-          empty="Chưa có bài viết nào."
-          emptyIcon={<Sparkles size={24} aria-hidden />}
-          emptyActions={
-            <Button asChild>
-              <Link to="/create">Đăng ảnh đầu tiên</Link>
-            </Button>
-          }
-        />
-      ) : (
-        <section
-          className="discover-section flex flex-col gap-6"
-          aria-labelledby="experiences-heading"
-        >
-          <h2 id="experiences-heading" className="sr-only">
-            Ảnh mới nhất
-          </h2>
-
+        {hasNothing ? (
           <AsyncState
-            pending={feed.isPending}
-            error={feed.data ? null : feed.error}
-            onRetry={() => void feed.refetch()}
-            loadingVariant="list"
+            empty="Chưa có bài viết nào."
+            emptyIcon={<Sparkles size={24} aria-hidden />}
+            emptyActions={
+              <Button asChild>
+                <Link to="/create">Đăng ảnh đầu tiên</Link>
+              </Button>
+            }
           />
+        ) : (
+          <section
+            className="discover-section flex flex-col gap-8"
+            aria-labelledby="experiences-heading"
+          >
+            <h2 id="experiences-heading" className="sr-only">
+              Ảnh mới nhất
+            </h2>
 
-          {experiences.length > 0 && (
-            <div className="discover-feed-list flex flex-col gap-6">
-              {experiences.map((item, index) => (
-                <ExperienceCard
-                  key={item.photo.id}
-                  item={item}
-                  eager={index < 2}
-                />
-              ))}
-            </div>
-          )}
+            <AsyncState
+              pending={feed.isPending}
+              error={feed.data ? null : feed.error}
+              onRetry={() => void feed.refetch()}
+              loadingVariant="list"
+            />
 
-          <div ref={sentinel} aria-hidden="true" />
+            {experiences.length > 0 && (
+              <div className="discover-feed-list flex flex-col gap-8">
+                {experiences.map((item, index) => (
+                  <ExperienceCard
+                    key={item.photo.id}
+                    item={item}
+                    eager={index < 2}
+                  />
+                ))}
+              </div>
+            )}
 
-          {isFetchingNextPage && (
-            <p className="muted small text-center text-xs text-neutral-400 py-4" role="status">
-              Đang tải thêm…
-            </p>
-          )}
+            <div ref={sentinel} aria-hidden="true" />
 
-          {feed.data && !hasNextPage && experiences.length > 0 && (
-            <p className="muted small text-center text-xs text-neutral-400 py-4">
-              Bạn đã xem hết ảnh mới nhất.
-            </p>
-          )}
+            {isFetchingNextPage && (
+              <p className="muted small text-center text-xs text-[var(--ink-faint)] py-4" role="status">
+                Đang tải thêm…
+              </p>
+            )}
+
+            {feed.data && !hasNextPage && experiences.length > 0 && (
+              <p className="muted small text-center text-xs text-[var(--ink-faint)] py-4">
+                Bạn đã xem hết ảnh mới nhất.
+              </p>
+            )}
+          </section>
+        )}
+      </div>
+
+      {/* Panel phải: địa điểm gợi ý + liên kết bản đồ (ẩn dưới xl) */}
+      <aside className="discover-side hidden xl:flex flex-col gap-6 sticky top-20" aria-label="Địa điểm gợi ý">
+        <section className="card p-5 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="group-label">Địa điểm mới</h2>
+            <Link to="/search" className="text-xs font-semibold text-[var(--accent)] hover:underline">
+              Xem tất cả
+            </Link>
+          </div>
+          <AsyncState
+            pending={recentPlaces.isPending}
+            error={recentPlaces.data ? null : recentPlaces.error}
+            loadingVariant="inline"
+          />
+          <ul className="flex flex-col gap-3" role="list">
+            {(recentPlaces.data?.results ?? []).slice(0, 4).map((place) => (
+              <li key={place.id}>
+                <Link
+                  to={"/places/" + place.id}
+                  className="group flex items-center gap-3 rounded-xl p-1.5 -m-1.5 hover:bg-[var(--surface-muted)] transition-colors"
+                >
+                  <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-[var(--surface-muted)]">
+                    <SafeImage
+                      sources={[place.cover_media_url, place.cover_image_url]}
+                      alt={place.name}
+                      ratio="1 / 1"
+                      className="group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-[var(--ink)] truncate group-hover:underline">
+                      {place.name}
+                    </p>
+                    <p className="text-xs text-[var(--ink-faint)] truncate mt-0.5">
+                      {place.category?.name ?? "Địa điểm"}
+                      {extractDistrict(place.address) ? ` · ${extractDistrict(place.address)}` : ""}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
-      )}
+
+        <section className="card overflow-hidden">
+          <Link
+            to="/map"
+            className="discover-side__map flex flex-col items-center justify-center gap-2 h-40 bg-[var(--accent-soft)] hover:bg-[var(--accent)] hover:text-[var(--on-accent)] text-[var(--accent)] transition-colors"
+            aria-label="Xem bản đồ địa điểm"
+          >
+            <MapPin size={28} aria-hidden />
+            <span className="text-sm font-semibold">Xem trên bản đồ</span>
+            <span className="text-xs opacity-80">Bản đồ Đà Nẵng tương tác</span>
+          </Link>
+        </section>
+      </aside>
     </div>
   );
 }

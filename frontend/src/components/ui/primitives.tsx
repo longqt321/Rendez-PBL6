@@ -74,7 +74,7 @@ export function Input({ className, ...props }: ComponentProps<"input">) {
   return (
     <input
       className={clsx(
-        "w-full h-10 px-3 rounded-md border border-neutral-300 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:ring-neutral-100 disabled:opacity-50 aria-[invalid=true]:border-red-500",
+        "w-full h-10 px-3 rounded-md border border-[var(--line)] bg-[var(--surface-card)] text-sm text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] disabled:opacity-50 aria-[invalid=true]:border-red-500",
         className,
       )}
       {...props}
@@ -86,7 +86,7 @@ export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
   return (
     <textarea
       className={clsx(
-        "w-full p-3 rounded-md border border-neutral-300 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:ring-neutral-100 disabled:opacity-50 aria-[invalid=true]:border-red-500 resize-y",
+        "w-full p-3 rounded-md border border-[var(--line)] bg-[var(--surface-card)] text-sm text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] disabled:opacity-50 aria-[invalid=true]:border-red-500 resize-y",
         className,
       )}
       {...props}
@@ -98,7 +98,7 @@ export function Select({ className, ...props }: ComponentProps<"select">) {
   return (
     <select
       className={clsx(
-        "w-full h-10 px-3 rounded-md border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 cursor-pointer",
+        "w-full h-10 px-3 rounded-md border border-[var(--line)] bg-[var(--surface-card)] text-sm text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] cursor-pointer",
         className,
       )}
       {...props}
@@ -115,9 +115,9 @@ export function Chip({
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border border-neutral-200 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 select-none",
-        active && "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900",
-        accent && "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border border-[var(--line)] bg-[var(--surface-card)] text-[var(--ink-soft)] select-none",
+        active && "border-transparent bg-[var(--accent)] text-[var(--on-accent)]",
+        accent && "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]",
         className,
       )}
       {...props}

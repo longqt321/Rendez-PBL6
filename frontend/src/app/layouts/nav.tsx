@@ -27,8 +27,8 @@ export function SidebarNav({
                 clsx(
                   "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                    : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
+                    ? "bg-[var(--accent-soft)] text-[var(--accent)] font-semibold"
+                    : "text-[var(--ink-soft)] hover:bg-[var(--surface-muted)] hover:text-[var(--ink)]",
                 )
               }
             >
@@ -47,7 +47,7 @@ export function CreateAction({ onNavigate }: { onNavigate?: () => void }) {
     <NavLink
       to="/create"
       onClick={onNavigate}
-      className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-sm font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors shadow-sm"
+      className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-[var(--accent)] text-[var(--on-accent)] text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm"
     >
       <Plus size={18} aria-hidden />
       <span>Đăng ảnh</span>
@@ -57,7 +57,7 @@ export function CreateAction({ onNavigate }: { onNavigate?: () => void }) {
 
 export function MobileNav() {
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 h-14 bg-white/95 dark:bg-neutral-900/95 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-around z-40 px-2" aria-label="Điều hướng chính">
+    <nav className="md:hidden fixed bottom-0 inset-x-0 h-14 bg-[var(--surface-card)]/95 border-t border-[var(--line)] flex items-center justify-around z-40 px-2" aria-label="Điều hướng chính">
       {PRIMARY_NAV.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}
@@ -66,14 +66,16 @@ export function MobileNav() {
             clsx(
               "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-xs font-medium transition-colors",
               isActive
-                ? "text-neutral-900 dark:text-white"
-                : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
+                ? "text-[var(--accent)]"
+                : "text-[var(--ink-faint)] hover:text-[var(--ink)]",
             )
           }
           title={label}
         >
           <Icon size={20} aria-hidden />
-          <span className="truncate max-w-[64px]">{label}</span>
+          {/* Nhãn đầy đủ trên mọi bề rộng: 4 tab × ~90px vừa 390px, không
+              rút gọn thành một chữ cộc ("Khám", "Tìm") gây khó hiểu. */}
+          <span className="truncate max-w-[76px]">{label}</span>
         </NavLink>
       ))}
     </nav>

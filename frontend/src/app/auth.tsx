@@ -111,7 +111,7 @@ export function Auth({ register = false }: { register?: boolean }) {
           aria-label="Rendez"
         >
           <span aria-hidden>r</span>
-          <span className="shell-brand__dot text-blue-600" aria-hidden>
+          <span className="shell-brand__dot text-[var(--accent)]" aria-hidden>
             .
           </span>
           <span className="shell-brand__word">rendez</span>
@@ -209,7 +209,7 @@ export function Auth({ register = false }: { register?: boolean }) {
             {register && (
               <p className="auth-card__terms text-xs text-neutral-500 dark:text-neutral-400">
                 Khi tạo tài khoản, bạn đồng ý với{" "}
-                <Link to="/terms" className="text-blue-600 hover:underline">Điều khoản sử dụng</Link> của Rendez.
+                <Link to="/terms" className="text-[var(--accent)] hover:underline">Điều khoản sử dụng</Link> của Rendez.
               </p>
             )}
 
@@ -241,7 +241,7 @@ export function Auth({ register = false }: { register?: boolean }) {
             <Link
               to={(register ? "/login" : "/register") + location.search}
               state={location.state}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-[var(--accent)] hover:underline font-medium"
             >
               {register ? "Đã có tài khoản? Đăng nhập" : "Tạo tài khoản mới"}
             </Link>

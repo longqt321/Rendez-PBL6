@@ -62,3 +62,6 @@ frontend/e2e/demo_walkthrough.spec.ts
 .githooks/
 scripts/agent/
 .coverage
+
+# repo-context digests (tool output, regenerable)
+.repo-context/

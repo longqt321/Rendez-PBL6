@@ -29,7 +29,7 @@ export function SafeImage({
     return (
       <div
         className={clsx(
-          "media-frame relative overflow-hidden bg-neutral-100 dark:bg-neutral-800 rounded-md flex flex-col items-center justify-center gap-1.5 text-neutral-400 text-xs text-center p-4",
+          "media-frame relative overflow-hidden bg-[var(--surface-muted)] rounded-md flex flex-col items-center justify-center gap-1.5 text-[var(--ink-faint)] text-xs text-center p-4",
           className,
         )}
         style={ratio ? { aspectRatio: ratio } : undefined}
@@ -43,7 +43,7 @@ export function SafeImage({
   return (
     <div
       className={clsx(
-        "media-frame relative overflow-hidden bg-neutral-100 dark:bg-neutral-800 rounded-md [&>img]:w-full [&>img]:h-full [&>img]:object-cover",
+        "media-frame relative overflow-hidden bg-[var(--surface-muted)] rounded-md [&>img]:w-full [&>img]:h-full [&>img]:object-cover",
         className,
       )}
       style={ratio ? { aspectRatio: ratio } : undefined}

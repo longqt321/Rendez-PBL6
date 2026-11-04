@@ -40,10 +40,10 @@ export function SavePlaceButton({
         <button
           type="button"
           className={clsx(
-            "w-8 h-8 rounded-full flex items-center justify-center bg-white/90 dark:bg-neutral-900/90 shadow-sm border border-neutral-200 dark:border-neutral-700 transition-colors cursor-pointer",
+            "w-8 h-8 rounded-full flex items-center justify-center bg-[var(--surface-card)]/95 shadow-sm border border-[var(--line)] transition-colors cursor-pointer backdrop-blur-sm",
             saved
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
+              ? "text-[var(--accent)]"
+              : "text-[var(--ink-soft)] hover:text-[var(--ink)]",
           )}
           aria-label={(saved ? "Bỏ lưu " : "Lưu ") + place.name}
           aria-pressed={saved}
@@ -66,10 +66,10 @@ export function SavePlaceButton({
       <button
         type="button"
         className={clsx(
-          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors cursor-pointer",
+          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer",
           saved
-            ? "border-blue-600 text-blue-600 bg-blue-50 dark:bg-blue-950 dark:text-blue-400"
-            : "border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800",
+            ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--accent-soft)]"
+            : "border-[var(--line)] text-[var(--ink-soft)] hover:bg-[var(--surface-muted)]",
         )}
         aria-label={(saved ? "Bỏ lưu " : "Lưu ") + place.name}
         aria-pressed={saved}
@@ -97,9 +97,9 @@ export function PlaceCard({
 }) {
   const district = extractDistrict(place.address);
   return (
-    <article className="place-card group relative flex flex-col rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs hover:shadow-md transition-shadow">
+    <article className="place-card group relative flex flex-col rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface-card)] shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
       <Link
-        className="place-card__media relative block aspect-[4/5] overflow-hidden bg-neutral-100 dark:bg-neutral-800"
+        className="place-card__media relative block aspect-[4/5] overflow-hidden bg-[var(--surface-muted)]"
         to={"/places/" + place.id}
         aria-label={"Xem địa điểm " + place.name}
       >
@@ -108,24 +108,24 @@ export function PlaceCard({
           alt={place.name}
           ratio="4 / 5"
           eager={eager}
-          className="group-hover:scale-105 transition-transform duration-300"
+          className="group-hover:scale-[1.03] transition-transform duration-500"
         />
       </Link>
-      <div className="absolute top-2.5 right-2.5 z-10">
+      <div className="absolute top-3 right-3 z-10">
         <SavePlaceButton place={place} variant="icon" />
       </div>
-      <div className="p-3.5 flex flex-col gap-1.5 min-w-0">
-        <h3 className="place-card__title text-sm font-bold text-neutral-900 dark:text-neutral-100 truncate">
-          <Link to={"/places/" + place.id} className="hover:underline">
+      <div className="p-4 flex flex-col gap-1.5 min-w-0">
+        <h3 className="place-card__title text-base font-bold tracking-tight text-[var(--ink)] truncate">
+          <Link to={"/places/" + place.id} className="hover:underline decoration-[var(--accent)] decoration-2 underline-offset-2">
             {place.name}
           </Link>
         </h3>
-        <p className="flex items-center gap-1 text-xs text-neutral-500 truncate">
+        <p className="flex items-center gap-1 text-xs text-[var(--ink-soft)] truncate">
           <MapPin size={13} className="shrink-0" aria-hidden />
           <span className="truncate">{shortAddress(place.address)}</span>
         </p>
         {district && (
-          <span className="inline-block mt-1 self-start px-2 py-0.5 rounded text-[11px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+          <span className="inline-block mt-1 self-start px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--accent-soft)] text-[var(--accent)]">
             {district}
           </span>
         )}

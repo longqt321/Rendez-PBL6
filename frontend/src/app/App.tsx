@@ -9,6 +9,7 @@ import {
 } from "react-router";
 import { AsyncState } from "../components/ui/states";
 import { useMe } from "../lib/session";
+import { mockEnabled } from "../lib/api/mock";
 import { Auth } from "./auth";
 import { AppShell } from "./layouts/AppShell";
 import { DiscoverPage } from "../features/discovery/DiscoverPage";
@@ -39,6 +40,9 @@ const MapPage = lazy(() =>
 export function RequireLogin() {
   const me = useMe();
   const location = useLocation();
+  // Mock mode (backend chưa chạy, chỉ dùng để duyệt thiết kế): cho xem UI như
+  // khách thay vì điều hướng sang /login.
+  if (mockEnabled()) return <Outlet />;
   if (me.isPending) return <AsyncState pending loadingVariant="inline" />;
   if (me.isError)
     return <AsyncState error={me.error} onRetry={() => void me.refetch()} />;
