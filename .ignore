@@ -45,11 +45,6 @@ backups/
 erpf/
 .agents/
 .gemini/
-.impeccable/
-.github/agents/
-.github/hooks/
-.github/skills/
-skills-lock.json
 
 # --- Generated verification artifacts ---
 artifacts/

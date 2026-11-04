@@ -9,8 +9,8 @@
  * Rendez design tokens.
  *
  * Palette lấy từ map style.json (beige giấy + xanh lá đậm) — cùng một ngôn
- * ngữ hình ảnh với bản đồ Đà Nẵng mà app hiển thị. Thang chữ 5 cấp, meta ≥ 12px
- * (UX_RULES mục 9). Dark mode đổi nền và mực, giữ hue thương hiệu.
+ * ngữ hình ảnh với bản đồ Đà Nẵng mà app hiển thị. Thang chữ 5 cấp.
+ * Dark mode đổi nền và mực, giữ hue thương hiệu.
  */
 @theme {
   /* Nhận diện: xanh lá đậm làm mực thương hiệu, beige làm nền giấy. */

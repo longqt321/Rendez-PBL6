@@ -6,8 +6,8 @@
  * dùng mock — báo lỗi thật để không lỡ người dùng rằng thao tác đã thành công.
  *
  * Ảnh mock nằm trong `public/mock/` (12 ảnh thật từ media local, copy tĩnh).
- * Tên địa điểm dùng địa điểm có thật ở Đà Nẵng (UX_RULES mục 8: dữ liệu demo
- * phải giống thật). Chỉ phục vụ xem giao diện, không đụng dữ liệu thật.
+ * Tên địa điểm dùng địa điểm có thật ở Đà Nẵng để dữ liệu demo giống thật.
+ * Chỉ phục vụ xem giao diện, không đụng dữ liệu thật.
  */
 import type { FeedItem, VisualPlace, Category, Page } from "./types";
 

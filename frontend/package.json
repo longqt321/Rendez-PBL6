@@ -13,8 +13,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "e2e": "playwright test",
-    "schema:generate": "openapi-typescript ../backend/openapi.yaml -o src/lib/api/generated.d.ts",
-    "lint:copy": "cd .. && node scripts/check-copy.mjs"
+    "schema:generate": "openapi-typescript ../backend/openapi.yaml -o src/lib/api/generated.d.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.0",

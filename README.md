@@ -1,6 +1,5 @@
 # Rendez — Khám Phá Không Gian & Địa Điểm Đà Nẵng
 
-[![Test Status](https://img.shields.io/badge/tests-passed-success)](docs/CHANGELOG_AND_EXECUTION_LOG.md)
 [![TypeScript](https://img.shields.io/badge/TypeScript-React%2019-blue)](frontend)
 [![Django](https://img.shields.io/badge/Django-5.2%20REST-green)](backend)
 
@@ -170,4 +169,4 @@ Mẫu cấu hình chuẩn được cung cấp tại `.env.example`. Trong môi t
 
 ---
 
-Chi tiết kiến trúc và kế hoạch phát triển xem tại [docs/PROJECT_DESCRIPTION.md](docs/PROJECT_DESCRIPTION.md).
+Chi tiết kiến trúc xem trực tiếp trong mã nguồn: `backend/apps` và `frontend/src`.
