@@ -49,10 +49,6 @@ export function ConfirmDialog({
     }
   }, [open]);
 
-  // The <dialog> stays mounted so the platform can close it with close();
-  // that is what returns focus to the button that opened it (UX_RULES 7).
-  // Unmounting it while open would drop the element from the top layer and
-  // send focus to the document body instead.
   return (
     <dialog
       ref={dialogRef}
@@ -62,15 +58,15 @@ export function ConfirmDialog({
         e.preventDefault();
         if (!isLoading) onCancel();
       }}
-      className="dialog"
+      className="m-auto w-[min(480px,calc(100vw-32px))] p-6 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl backdrop:bg-black/50"
     >
-      <h2 id="confirm-dialog-title" className="dialog__title">
+      <h2 id="confirm-dialog-title" className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-2">
         {title}
       </h2>
-      <p id="confirm-dialog-desc" className="dialog__description">
+      <p id="confirm-dialog-desc" className="text-sm text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed">
         {description}
       </p>
-      <div className="dialog__actions">
+      <div className="flex justify-end gap-2">
         <Button
           variant="outline"
           type="button"

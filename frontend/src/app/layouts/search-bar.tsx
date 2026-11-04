@@ -2,12 +2,6 @@ import { useLocation, useNavigate } from "react-router";
 import { Search } from "lucide-react";
 import { discoveryQuery } from "../../lib/api/client";
 
-/**
- * Global search field.
- *
- * Submitting keeps the current camera when the map is open, because a map
- * search is about the same area; anywhere else it opens discovery.
- */
 export function SearchBar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -15,7 +9,7 @@ export function SearchBar() {
 
   return (
     <form
-      className="global-search"
+      className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/60 dark:bg-neutral-800/60 focus-within:ring-2 focus-within:ring-neutral-900 dark:focus-within:ring-neutral-100 focus-within:bg-white dark:focus-within:bg-neutral-900 transition-all w-full"
       role="search"
       key={params.get("q") || ""}
       onSubmit={(event) => {
@@ -41,16 +35,17 @@ export function SearchBar() {
       <label className="sr-only" htmlFor="global-query">
         Tìm tên hoặc địa chỉ
       </label>
-      <button type="submit" aria-label="Tìm kiếm" title="Tìm kiếm">
-        <Search size={21} aria-hidden />
+      <button type="submit" aria-label="Tìm kiếm" title="Tìm kiếm" className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200">
+        <Search size={16} aria-hidden />
       </button>
       <input
         id="global-query"
         name="q"
         type="search"
-        placeholder="Tìm kiếm địa điểm, quán cà phê, không gian đẹp tại Đà Nẵng..."
         defaultValue={params.get("q") || ""}
-        maxLength={100}
+        placeholder="Tìm kiếm địa điểm, quán cà phê, không gian đẹp tại Đà Nẵng..."
+        autoComplete="off"
+        className="w-full bg-transparent text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
       />
     </form>
   );

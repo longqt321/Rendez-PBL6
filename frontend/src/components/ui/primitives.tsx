@@ -1,23 +1,15 @@
 import type { ComponentProps, ReactNode } from "react";
 import { clsx } from "clsx";
-
-/* ------------------------------------------------------------------ Button */
+import { initials } from "../../lib/format";
 
 export { Button, type ButtonProps } from "./button";
 
-/* -------------------------------------------------------------- Icon button */
-
 type IconButtonProps = ComponentProps<"button"> & {
-  /** Required: an icon-only control has no visible text to name it. */
   label: string;
   bordered?: boolean;
   active?: boolean;
 };
 
-/**
- * Icon-only control. The accessible name is mandatory rather than optional so
- * an unlabelled icon button cannot be introduced by accident.
- */
 export function IconButton({
   label,
   bordered = false,
@@ -33,9 +25,11 @@ export function IconButton({
       title={label}
       aria-pressed={active || undefined}
       className={clsx(
-        "icon-btn",
-        bordered && "icon-btn--bordered",
-        active && "icon-btn--active",
+        "inline-flex items-center justify-center w-9 h-9 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+        bordered
+          ? "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
+          : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800",
+        active && "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100",
         className,
       )}
       {...props}
@@ -44,8 +38,6 @@ export function IconButton({
     </button>
   );
 }
-
-/* ------------------------------------------------------------------- Field */
 
 export function Field({
   label,
@@ -63,14 +55,14 @@ export function Field({
   className?: string;
 }) {
   return (
-    <div className={clsx("field", className)}>
-      <label className="field__label" htmlFor={htmlFor}>
+    <div className={clsx("flex flex-col gap-1.5", className)}>
+      <label className="text-xs font-semibold text-neutral-800 dark:text-neutral-200" htmlFor={htmlFor}>
         {label}
       </label>
       {children}
-      {hint && !error ? <p className="field__hint">{hint}</p> : null}
+      {hint && !error ? <p className="text-xs text-neutral-500">{hint}</p> : null}
       {error ? (
-        <p className="field__error" id={`${htmlFor}-error`} role="alert">
+        <p className="text-xs text-red-600 dark:text-red-400 font-medium" id={`${htmlFor}-error`} role="alert">
           {error}
         </p>
       ) : null}
@@ -79,18 +71,40 @@ export function Field({
 }
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
-  return <input className={clsx("input", className)} {...props} />;
+  return (
+    <input
+      className={clsx(
+        "w-full h-10 px-3 rounded-md border border-neutral-300 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:ring-neutral-100 disabled:opacity-50 aria-[invalid=true]:border-red-500",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
-  return <textarea className={clsx("textarea", className)} {...props} />;
+  return (
+    <textarea
+      className={clsx(
+        "w-full p-3 rounded-md border border-neutral-300 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:ring-neutral-100 disabled:opacity-50 aria-[invalid=true]:border-red-500 resize-y",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 export function Select({ className, ...props }: ComponentProps<"select">) {
-  return <select className={clsx("select", className)} {...props} />;
+  return (
+    <select
+      className={clsx(
+        "w-full h-10 px-3 rounded-md border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 cursor-pointer",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
-
-/* -------------------------------------------------------------------- Chip */
 
 export function Chip({
   active = false,
@@ -101,17 +115,15 @@ export function Chip({
   return (
     <span
       className={clsx(
-        "chip",
-        active && "chip--active",
-        accent && "chip--accent",
+        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border border-neutral-200 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 select-none",
+        active && "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900",
+        accent && "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
         className,
       )}
       {...props}
     />
   );
 }
-
-/* ------------------------------------------------------------------- Badge */
 
 export function Badge({
   tone = "neutral",
@@ -123,18 +135,18 @@ export function Badge({
   return (
     <span
       className={clsx(
-        "badge",
-        tone !== "neutral" && `badge--${tone}`,
+        "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold tracking-wide uppercase",
+        tone === "neutral" && "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
+        tone === "success" && "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300",
+        tone === "warning" && "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+        tone === "danger" && "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
+        tone === "accent" && "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
         className,
       )}
       {...props}
     />
   );
 }
-
-import { initials } from "../../lib/format";
-
-/* ------------------------------------------------------------------ Avatar */
 
 export function Avatar({
   name,
@@ -149,8 +161,10 @@ export function Avatar({
   return (
     <span
       className={clsx(
-        "avatar-badge",
-        size !== "md" && `avatar-badge--${size}`,
+        "inline-flex items-center justify-center rounded-full font-bold bg-neutral-200 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200 shrink-0 select-none",
+        size === "sm" && "w-7 h-7 text-xs",
+        size === "md" && "w-9 h-9 text-sm",
+        size === "lg" && "w-12 h-12 text-base",
         className,
       )}
       aria-hidden

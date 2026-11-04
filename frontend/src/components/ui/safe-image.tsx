@@ -2,13 +2,6 @@ import { useState } from "react";
 import { ImageOff } from "lucide-react";
 import { clsx } from "clsx";
 
-/**
- * Image with a real fallback.
- *
- * The fallback is rendered when every candidate URL fails, so a broken media
- * request never leaves an empty box or a broken-image glyph. Candidates are
- * tried in order: the first that loads wins.
- */
 export function SafeImage({
   sources,
   alt,
@@ -19,10 +12,8 @@ export function SafeImage({
   height,
   sizes,
 }: {
-  /** Ordered candidate URLs. Empty/undefined entries are skipped. */
   sources: (string | null | undefined)[];
   alt: string;
-  /** CSS aspect-ratio, e.g. "4 / 5". Keeps layout stable before load. */
   ratio?: string;
   className?: string;
   eager?: boolean;
@@ -37,10 +28,13 @@ export function SafeImage({
   if (!current) {
     return (
       <div
-        className={clsx("media-frame media-frame--empty", className)}
+        className={clsx(
+          "media-frame relative overflow-hidden bg-neutral-100 dark:bg-neutral-800 rounded-md flex flex-col items-center justify-center gap-1.5 text-neutral-400 text-xs text-center p-4",
+          className,
+        )}
         style={ratio ? { aspectRatio: ratio } : undefined}
       >
-        <ImageOff size={22} aria-hidden />
+        <ImageOff size={20} aria-hidden />
         <span>Chưa có ảnh</span>
       </div>
     );
@@ -48,7 +42,10 @@ export function SafeImage({
 
   return (
     <div
-      className={clsx("media-frame", className)}
+      className={clsx(
+        "media-frame relative overflow-hidden bg-neutral-100 dark:bg-neutral-800 rounded-md [&>img]:w-full [&>img]:h-full [&>img]:object-cover",
+        className,
+      )}
       style={ratio ? { aspectRatio: ratio } : undefined}
     >
       <img

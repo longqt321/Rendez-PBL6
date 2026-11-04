@@ -9,15 +9,6 @@ import {
 import { SafeImage } from "../../components/ui/safe-image";
 import { SavePlaceButton } from "../places/PlaceCard";
 
-/**
- * Experience card.
- *
- * This is the community contribution — a photo plus the place it was taken at.
- * It is visually distinct from a place card: the image dominates, the place is
- * a caption-level attribution, and the whole card opens the photo. That keeps
- * "a place" and "someone's experience of a place" from reading as the same
- * object.
- */
 export function ExperienceCard({
   item,
   eager = false,
@@ -32,9 +23,9 @@ export function ExperienceCard({
     : null;
 
   return (
-    <article className="experience-card">
+    <article className="experience-card group relative flex flex-col rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs hover:shadow-md transition-shadow">
       <Link
-        className="experience-card__media"
+        className="experience-card__media relative block aspect-[4/5] overflow-hidden bg-neutral-100 dark:bg-neutral-800"
         to={"/photos/" + photo.id}
         aria-label={"Xem ảnh tại " + place.name}
       >
@@ -47,44 +38,47 @@ export function ExperienceCard({
               : "4 / 5"
           }
           eager={eager}
+          className="group-hover:scale-105 transition-transform duration-300"
         />
       </Link>
 
-      <div className="experience-card__save">
+      <div className="absolute top-2.5 right-2.5 z-10">
         <SavePlaceButton place={place} variant="icon" />
       </div>
 
-      <div className="experience-card__body">
-        <div className="experience-card__header">
-          <p className="experience-card__category">
+      <div className="p-3.5 flex flex-col gap-2 min-w-0">
+        <div className="flex items-center justify-between gap-2 text-[11px] text-neutral-400">
+          <p className="truncate">
             {place.category?.name || "Địa điểm"}
             {district ? ` · ${district}` : ""}
           </p>
           {timeFormatted && (
-            <span className="experience-card__time">
+            <span className="flex items-center gap-1 shrink-0">
               <Clock size={11} aria-hidden />
               {timeFormatted}
             </span>
           )}
         </div>
 
-        <h3 className="experience-card__place">
-          <Link to={"/places/" + place.id}>{place.name}</Link>
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 truncate">
+          <Link to={"/places/" + place.id} className="hover:underline">
+            {place.name}
+          </Link>
         </h3>
 
         {photo.caption && (
-          <p className="experience-card__caption line-clamp-2">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
             {photo.caption}
           </p>
         )}
 
-        <div className="experience-card__footer">
-          <p className="experience-card__address">
-            <MapPin size={13} aria-hidden />
-            <span>{shortAddress(place.address)}</span>
+        <div className="flex items-center justify-between gap-2 text-xs text-neutral-500 pt-1 border-t border-neutral-100 dark:border-neutral-800/60 mt-1">
+          <p className="flex items-center gap-1 truncate">
+            <MapPin size={12} className="shrink-0" aria-hidden />
+            <span className="truncate">{shortAddress(place.address)}</span>
           </p>
           {photo.author_name && (
-            <span className="experience-card__author">
+            <span className="flex items-center gap-1 shrink-0 text-neutral-400">
               <User size={12} aria-hidden />
               {photo.author_name}
             </span>
@@ -95,19 +89,17 @@ export function ExperienceCard({
   );
 }
 
-/** Compact experience tile used inside place detail and related rails. */
 export function ExperienceTile({
   item,
   from,
 }: {
   item: FeedItem;
-  /** Origin path so the photo page can return here. */
   from?: string;
 }) {
   const { photo, place } = item;
   return (
     <Link
-      className="experience-tile"
+      className="group relative block aspect-square rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800"
       to={"/photos/" + photo.id}
       state={from ? { from } : undefined}
       aria-label={"Xem trải nghiệm tại " + place.name}
@@ -116,9 +108,10 @@ export function ExperienceTile({
         sources={[photo.url]}
         alt={photo.alt_text || photo.caption || place.name}
         ratio="1 / 1"
+        className="group-hover:scale-105 transition-transform duration-300"
       />
-      <span className="experience-tile__hint" aria-hidden>
-        <ArrowUpRight size={15} />
+      <span className="absolute top-2 right-2 p-1 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden>
+        <ArrowUpRight size={14} />
       </span>
     </Link>
   );

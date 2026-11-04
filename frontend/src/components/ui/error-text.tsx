@@ -22,9 +22,14 @@ export function ErrorText({ error }: { error: Error | null }) {
       ? error.message
       : "Không kết nối được. Kiểm tra kết nối mạng rồi thử lại.";
 
+  const hasFieldErrors =
+    error instanceof ApiError &&
+    error.status < 500 &&
+    Object.keys(error.fields).length > 0;
+
   return (
     <div role="alert" className="error">
-      <p>{safeMessage}</p>
+      {!hasFieldErrors && <p>{safeMessage}</p>}
       {error instanceof ApiError &&
         error.status < 500 &&
         Object.entries(error.fields).map(([key, value]) => (

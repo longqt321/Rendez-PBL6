@@ -526,7 +526,7 @@ export function CreateExperiencePage() {
           </p>
 
           <label
-            className="upload-drop"
+            className="upload-drop cursor-pointer"
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => {
               event.preventDefault();
@@ -538,6 +538,7 @@ export function CreateExperiencePage() {
             <small>Chọn ảnh bạn tự chụp tại địa điểm</small>
             <input
               type="file"
+              className="sr-only"
               aria-label="Chọn ảnh JPEG hoặc PNG"
               accept="image/jpeg,image/png"
               multiple
@@ -547,6 +548,12 @@ export function CreateExperiencePage() {
               }}
             />
           </label>
+
+          {step === 2 && error && (
+            <p role="alert" className="error mt-2">
+              {error}
+            </p>
+          )}
 
           <p className="muted small tabular">
             Đã chọn {files.length}/{MAX_IMAGES} ảnh.
@@ -657,7 +664,7 @@ export function CreateExperiencePage() {
         </section>
       )}
 
-      {error && (
+      {step !== 2 && error && (
         <p role="alert" className="error">
           {error}
         </p>

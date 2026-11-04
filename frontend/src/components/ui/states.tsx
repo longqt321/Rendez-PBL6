@@ -4,15 +4,6 @@ import { AlertTriangle, Inbox, RefreshCw, WifiOff } from "lucide-react";
 import { ApiError } from "../../lib/api/client";
 import { Button } from "./button";
 
-/**
- * Feedback states.
- *
- * Every screen that fetches has exactly three non-happy outcomes: loading,
- * failure and empty. Centralising them keeps wording, roles and recovery
- * actions consistent, and guarantees a failure is never rendered as if it were
- * an empty result.
- */
-
 function LoadingState({
   label = "Đang tải",
   variant = "grid",
@@ -22,19 +13,19 @@ function LoadingState({
 }) {
   if (variant === "inline") {
     return (
-      <p role="status" aria-label={label} className="muted small">
+      <p role="status" aria-label={label} className="text-xs text-neutral-500">
         {label}…
       </p>
     );
   }
   const count = variant === "grid" ? 6 : 3;
   return (
-    <div role="status" aria-label={label} className="skeleton-grid">
+    <div role="status" aria-label={label} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {Array.from({ length: count }, (_, index) => (
-        <div className="skeleton-card" key={index}>
-          <div className="skeleton-block skeleton-card__media" />
-          <div className="skeleton-block skeleton-card__line" />
-          <div className="skeleton-block skeleton-card__line skeleton-card__line--short" />
+        <div className="flex flex-col gap-2.5 p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900" key={index}>
+          <div className="rounded-md bg-neutral-200 dark:bg-neutral-800 animate-pulse aspect-[4/5]" />
+          <div className="rounded bg-neutral-200 dark:bg-neutral-800 animate-pulse h-3.5 w-3/4" />
+          <div className="rounded bg-neutral-200 dark:bg-neutral-800 animate-pulse h-3 w-1/2" />
         </div>
       ))}
     </div>
@@ -44,11 +35,9 @@ function LoadingState({
 type ErrorStateProps = {
   error: unknown;
   onRetry?: () => void;
-  /** Where "sign in again" should return to. */
   returnTo?: string;
 };
 
-/** Human wording for an API failure. Never leaks server internals. */
 function describe(error: unknown): {
   title: string;
   body: string;
@@ -103,6 +92,14 @@ function describe(error: unknown): {
   };
 }
 
+function flatten(value: unknown): string {
+  if (Array.isArray(value)) return value.map(flatten).join(" ");
+  if (value !== null && typeof value === "object") {
+    return Object.values(value).map(flatten).join(" ");
+  }
+  return String(value ?? "");
+}
+
 function ErrorState({ error, onRetry, returnTo }: ErrorStateProps) {
   const { title, body, icon, needsLogin } = describe(error);
   const Icon = icon === "offline" ? WifiOff : AlertTriangle;
@@ -112,30 +109,30 @@ function ErrorState({ error, onRetry, returnTo }: ErrorStateProps) {
       : [];
 
   return (
-    <div className="feedback" role="alert">
-      <span className="feedback__icon">
-        <Icon size={24} aria-hidden />
+    <div className="flex flex-col items-center justify-center gap-3 py-12 px-4 text-center" role="alert">
+      <span className="flex items-center justify-center w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
+        <Icon size={22} aria-hidden />
       </span>
-      <p className="feedback__title">{title}</p>
-      <p className="feedback__body">{body}</p>
+      <p className="text-base font-bold text-neutral-900 dark:text-neutral-100">{title}</p>
+      <p className="text-sm text-neutral-500 max-w-sm">{body}</p>
       {fields.length > 0 && (
-        <div className="error">
+        <div className="text-xs text-red-600 dark:text-red-400">
           {fields.map(([field, value]) => (
-            <p key={field}>{flatten(value)}</p>
+            <p key={field} className="mt-1">{flatten(value)}</p>
           ))}
         </div>
       )}
-      <div className="feedback__actions">
+      <div className="flex justify-center gap-2 mt-2">
         {needsLogin ? (
-          <Button asChild>
+          <Button asChild size="sm">
             <Link to="/login" state={returnTo ? { returnTo } : undefined}>
               Đăng nhập lại
             </Link>
           </Button>
         ) : (
           onRetry && (
-            <Button variant="outline" onClick={onRetry}>
-              <RefreshCw size={16} aria-hidden />
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              <RefreshCw size={14} aria-hidden />
               Thử lại
             </Button>
           )
@@ -143,14 +140,6 @@ function ErrorState({ error, onRetry, returnTo }: ErrorStateProps) {
       </div>
     </div>
   );
-}
-
-function flatten(value: unknown): string {
-  if (Array.isArray(value)) return value.map(flatten).join(" ");
-  if (value !== null && typeof value === "object") {
-    return Object.values(value).map(flatten).join(" ");
-  }
-  return String(value ?? "");
 }
 
 export function EmptyState({
@@ -167,22 +156,23 @@ export function EmptyState({
   compact?: boolean;
 }) {
   return (
-    <div className={compact ? "feedback feedback--compact" : "feedback"}>
-      <span className="feedback__icon">
-        {icon ?? <Inbox size={24} aria-hidden />}
+    <div
+      className={
+        compact
+          ? "flex flex-col items-center justify-center gap-2 py-8 px-4 text-center"
+          : "flex flex-col items-center justify-center gap-3 py-14 px-4 text-center"
+      }
+    >
+      <span className="flex items-center justify-center w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+        {icon ?? <Inbox size={22} aria-hidden />}
       </span>
-      <p className="feedback__title">{title}</p>
-      {body ? <p className="feedback__body">{body}</p> : null}
-      {actions ? <div className="feedback__actions">{actions}</div> : null}
+      <p className="text-base font-semibold text-neutral-800 dark:text-neutral-200">{title}</p>
+      {body ? <p className="text-sm text-neutral-500 max-w-sm">{body}</p> : null}
+      {actions ? <div className="flex justify-center gap-2 mt-2">{actions}</div> : null}
     </div>
   );
 }
 
-/**
- * One entry point that picks the right state. Passing `pending` wins over
- * `error`, and `error` wins over `empty` — a failed request must never be
- * described as "nothing here".
- */
 export function AsyncState({
   pending,
   error,

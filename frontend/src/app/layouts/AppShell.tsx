@@ -1,20 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 import { LogIn, LogOut, Moon, Sun } from "lucide-react";
-import { ErrorText } from "../../components/ui/error-text";
 import { useMe, useLogout } from "../../lib/session";
 import { SearchBar } from "./search-bar";
 import { useOptionalTheme } from "../../lib/theme";
 import { Avatar, IconButton } from "../../components/ui/primitives";
 import { CreateAction, MobileNav, SidebarNav } from "./nav";
 
-/**
- * Document titles.
- *
- * Every route owns a title so history entries, tabs and screen-reader page
- * announcements are distinguishable. Detail routes fall back to their section
- * name because the entity name arrives asynchronously.
- */
 const TITLES: [matcher: (path: string) => boolean, title: string][] = [
   [(path) => path === "/discover", "Khám phá"],
   [(path) => path === "/search", "Tìm kiếm"],
@@ -33,24 +25,12 @@ function titleFor(pathname: string): string {
   return TITLES.find(([matches]) => matches(pathname))?.[1] ?? "Địa điểm";
 }
 
-/**
- * Application shell.
- *
- * One component owns the frame for every screen: persistent navigation, a
- * search affordance that is always reachable, the theme switch, and the account
- * menu. The mobile bottom bar is CSS-driven from the same markup so navigation
- * never forks into two implementations.
- */
 export function AppShell() {
   const location = useLocation();
   const me = useMe();
   const previousPath = useRef(location.pathname);
-
-  // The map is the only surface that owns the full viewport.
   const fullBleed = location.pathname === "/map";
 
-  // Move focus to the main region on route change so screen-reader and
-  // keyboard users are not stranded at the end of the previous page.
   useEffect(() => {
     document.title = titleFor(location.pathname) + " · Rendez";
     if (previousPath.current !== location.pathname) {
@@ -61,41 +41,52 @@ export function AppShell() {
   }, [location.pathname]);
 
   return (
-    <div className={fullBleed ? "app-shell app-shell--map" : "app-shell"}>
-      <a href="#main" className="skip-link">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex flex-col md:flex-row">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-neutral-900 focus:shadow-lg focus:rounded-md"
+      >
         Đến nội dung chính
       </a>
 
-      <aside className="app-shell__sidebar">
-        <Link
-          className="shell-brand"
-          to="/discover"
-          aria-label="Rendez — Khám phá"
-        >
-          <span aria-hidden>r</span>
-          <span className="shell-brand__dot" aria-hidden>
-            .
-          </span>
-          <span className="shell-brand__word">rendez</span>
-        </Link>
+      {/* Sidebar Desktop */}
+      <aside className="hidden md:flex flex-col w-64 border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shrink-0 justify-between h-screen sticky top-0">
+        <div className="flex flex-col gap-6">
+          <Link
+            className="flex items-center gap-1.5 px-3 text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100"
+            to="/discover"
+            aria-label="Rendez — Khám phá"
+          >
+            <span>r</span>
+            <span className="text-blue-600">.</span>
+            <span>rendez</span>
+          </Link>
 
-        <SidebarNav showSettings={Boolean(me.data)} />
+          <SidebarNav showSettings={Boolean(me.data)} />
+        </div>
 
-        <div className="shell-sidebar__foot">
+        <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
           <CreateAction />
         </div>
       </aside>
 
-      <div className="app-shell__main">
-        <header className="app-shell__topbar">
-          <SearchBar />
-          <div className="shell-topbar__actions">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
+        <header className="h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md sticky top-0 z-30 px-4 flex items-center justify-between gap-3">
+          <div className="flex-1 max-w-lg">
+            <SearchBar />
+          </div>
+          <div className="flex items-center gap-2">
             <ThemeToggle />
             <AccountMenu />
           </div>
         </header>
 
-        <main id="main" className="app-shell__content" tabIndex={-1}>
+        <main
+          id="main"
+          className={fullBleed ? "flex-1 flex flex-col h-[calc(100vh-3.5rem)]" : "flex-1 p-4 md:p-8 max-w-5xl mx-auto w-full"}
+          tabIndex={-1}
+        >
           <Outlet />
         </main>
       </div>
@@ -105,15 +96,8 @@ export function AppShell() {
   );
 }
 
-/**
- * Light/dark shortcut.
- *
- * Settings owns the full choice (light, dark, follow the system). The topbar
- * is a shortcut for the common case and only toggles the two explicit themes.
- */
 function ThemeToggle() {
   const theme = useOptionalTheme();
-  // Tests mount the shell without a ThemeProvider; there is nothing to toggle.
   if (!theme) return null;
   const { resolved, setPreference } = theme;
   const next = resolved === "dark" ? "light" : "dark";
@@ -134,82 +118,96 @@ function ThemeToggle() {
 
 function AccountMenu() {
   const me = useMe();
-  if (me.isPending)
-    return <span className="shell-account-skeleton" aria-hidden />;
-  if (!me.data) {
-    return (
-      <Link to="/login" className="btn btn--outline btn--sm">
-        <LogIn size={16} aria-hidden />
-        Đăng nhập
-      </Link>
-    );
-  }
-  return (
-    <AccountMenuAuthenticated
-      key="authenticated"
-      displayName={me.data.display_name}
-    />
-  );
-}
-
-function AccountMenuAuthenticated({ displayName }: { displayName: string }) {
-  const [open, setOpen] = useState(false);
-  const container = useRef<HTMLDivElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
   const logout = useLogout();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
-    const outside = (event: PointerEvent) => {
-      if (!container.current?.contains(event.target as Node)) setOpen(false);
+    const onDown = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
         setOpen(false);
-        trigger.current?.focus();
+        triggerRef.current?.focus();
       }
     };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", escape);
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKeyDown);
     return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("keydown", escape);
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKeyDown);
     };
   }, [open]);
 
-  return (
-    <div
-      className="shell-account"
-      ref={container}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
-      }}
-    >
-      <button
-        type="button"
-        ref={trigger}
-        className="shell-account__trigger"
-        aria-label={"Tài khoản của " + (displayName || "bạn")}
-        title="Tài khoản"
-        aria-expanded={open}
-        aria-haspopup="menu"
-        aria-controls="account-dropdown"
-        onClick={() => setOpen(!open)}
+  if (me.isPending) {
+    return <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800 animate-pulse" />;
+  }
+
+  if (!me.data) {
+    return (
+      <Link
+        to="/login"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900"
       >
-        <Avatar name={displayName} size="sm" />
+        <LogIn size={14} aria-hidden />
+        <span>Đăng nhập</span>
+      </Link>
+    );
+  }
+
+  return (
+    <div className="relative" ref={rootRef}>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="flex items-center justify-center p-0.5 rounded-full border border-neutral-200 dark:border-neutral-700 hover:ring-2 hover:ring-neutral-400 cursor-pointer"
+        aria-label={`Tài khoản của ${me.data.display_name}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <Avatar name={me.data.display_name} size="sm" />
       </button>
+
       {open && (
-        <div className="shell-account__menu" id="account-dropdown" role="menu">
-          <button
-            type="button"
+        <div
+          role="menu"
+          aria-label="Tài khoản"
+          className="absolute right-0 mt-2 w-48 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg p-1.5 flex flex-col gap-1 z-50 text-sm"
+        >
+          <Link
             role="menuitem"
-            disabled={logout.isPending}
-            onClick={() => logout.mutate()}
+            to="/profile"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200"
           >
-            <LogOut size={17} aria-hidden />
-            {logout.isPending ? "Đang đăng xuất…" : "Đăng xuất"}
+            Trang cá nhân
+          </Link>
+          <Link
+            role="menuitem"
+            to="/settings"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200"
+          >
+            Cài đặt
+          </Link>
+          <div className="h-px bg-neutral-200 dark:border-neutral-800 my-1" />
+          <button
+            role="menuitem"
+            type="button"
+            disabled={logout.isPending}
+            onClick={() => {
+              setOpen(false);
+              logout.mutate();
+            }}
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 cursor-pointer w-full text-left"
+          >
+            <LogOut size={16} aria-hidden />
+            Đăng xuất
           </button>
-          <ErrorText error={logout.error} />
         </div>
       )}
     </div>

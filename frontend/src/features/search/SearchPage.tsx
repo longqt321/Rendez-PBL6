@@ -15,14 +15,6 @@ import { Button } from "../../components/ui/button";
 import { Input, Select } from "../../components/ui/primitives";
 import { PlaceCard } from "../places/PlaceCard";
 
-/**
- * Search.
- *
- * Intent-driven discovery. The URL is the single source of truth: every filter
- * lives in the query string, so results survive reloads, back/forward and
- * sharing. Typing is debounced into the URL rather than kept in local state,
- * which keeps the two in sync by construction.
- */
 export function SearchPage() {
   const [params, setParams] = useSearchParams();
   const filters = useMemo(() => paramsToFilters(params), [params]);
@@ -32,10 +24,6 @@ export function SearchPage() {
   const [draft, setDraft] = useState(filters.q);
   const [syncedQuery, setSyncedQuery] = useState(filters.q);
 
-  // Keep the input in step when the URL changes from outside (chip removal,
-  // back navigation, a link from the homepage). Adjusting state during render
-  // is React's documented pattern for "derive state from props" and avoids the
-  // extra render pass an effect would cost.
   if (filters.q !== syncedQuery) {
     setSyncedQuery(filters.q);
     setDraft(filters.q);
@@ -53,7 +41,6 @@ export function SearchPage() {
   const update = (next: Partial<DiscoveryFilters>) => {
     const merged = { ...filters, ...next };
     const search = filtersToParams(merged);
-    // Any filter change invalidates the current page number.
     search.delete("page");
     setParams(search);
   };
@@ -66,7 +53,6 @@ export function SearchPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Debounce typing so a keystroke does not fire a request per character.
   useEffect(() => {
     const current = params.get("q") ?? "";
     if (draft === current) return;
@@ -91,17 +77,16 @@ export function SearchPage() {
   const active = hasActiveFilters(filters);
 
   return (
-    <div className="search-page">
-      <header className="search-head">
-        <h1 className="search-head__title">Tìm địa điểm</h1>
-        <p className="lede">
-          Tìm theo tên, địa chỉ hoặc lọc theo loại không gian và những gì có
-          trong ảnh.
+    <div className="flex flex-col gap-6 max-w-5xl mx-auto">
+      <header className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">Tìm địa điểm</h1>
+        <p className="text-sm text-neutral-500">
+          Tìm theo tên, địa chỉ hoặc lọc theo loại không gian và đặc điểm trong ảnh.
         </p>
       </header>
 
       <form
-        className="search-bar"
+        className="flex items-center gap-2 p-1.5 pl-4 rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xs focus-within:ring-2 focus-within:ring-neutral-900 dark:focus-within:ring-neutral-100 transition-all"
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
@@ -111,21 +96,22 @@ export function SearchPage() {
         <label className="sr-only" htmlFor="search-q">
           Tìm tên hoặc địa chỉ
         </label>
-        <Search size={19} aria-hidden />
+        <Search size={18} className="text-neutral-400 shrink-0" aria-hidden />
         <Input
           id="search-q"
           name="q"
           type="search"
           value={draft}
           maxLength={100}
-          placeholder="Tìm kiếm địa điểm, quán cà phê, không gian đẹp tại Đà Nẵng..."
+          placeholder="Tìm kiếm địa điểm, quán cà phê tại Đà Nẵng..."
           onChange={(event) => setDraft(event.currentTarget.value)}
           autoComplete="off"
+          className="border-0 bg-transparent focus:ring-0 p-0 h-9"
         />
         {draft && (
           <button
             type="button"
-            className="search-bar__clear"
+            className="p-1.5 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"
             aria-label="Xóa nội dung tìm kiếm"
             onClick={() => {
               setDraft("");
@@ -135,20 +121,20 @@ export function SearchPage() {
             <X size={16} aria-hidden />
           </button>
         )}
-        <Button type="submit">Tìm</Button>
+        <Button type="submit" size="sm">Tìm</Button>
       </form>
 
-      <div className="search-layout">
-        <aside className="search-filters" aria-label="Bộ lọc">
-          <div className="search-filters__group">
-            <h2 className="search-filters__title">
-              <SlidersHorizontal size={15} aria-hidden />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+        <aside className="md:col-span-1 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col gap-5 sticky top-20 text-sm">
+          <div className="flex flex-col gap-2">
+            <h2 className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-neutral-500">
+              <SlidersHorizontal size={13} aria-hidden />
               Loại địa điểm
             </h2>
-            <div className="search-filters__options">
+            <div className="flex flex-wrap gap-1.5">
               <button
                 type="button"
-                className="chip"
+                className={`chip cursor-pointer text-xs px-2.5 py-1 rounded-full border transition-colors ${!filters.category ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-transparent font-semibold" : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"}`}
                 aria-pressed={!filters.category}
                 onClick={() => update({ category: "" })}
               >
@@ -158,7 +144,7 @@ export function SearchPage() {
                 <button
                   key={category.slug}
                   type="button"
-                  className="chip"
+                  className={`chip cursor-pointer text-xs px-2.5 py-1 rounded-full border transition-colors ${filters.category === category.slug ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-transparent font-semibold" : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"}`}
                   aria-pressed={filters.category === category.slug}
                   onClick={() => update({ category: category.slug })}
                 >
@@ -166,69 +152,38 @@ export function SearchPage() {
                 </button>
               ))}
             </div>
-            {categories.isError && (
-              <p className="field__hint">
-                Chưa tải được danh mục.{" "}
-                <button
-                  type="button"
-                  className="link-button"
-                  onClick={() => void categories.refetch()}
-                >
-                  Thử lại
-                </button>
-              </p>
-            )}
           </div>
 
-          <div className="search-filters__group">
-            <h2 className="search-filters__title">Nhìn thấy trong ảnh</h2>
-            <p className="field__hint">
-              Ảnh phải có tất cả đặc điểm được chọn.
-            </p>
-            <div className="search-filters__checks">
+          <div className="flex flex-col gap-2">
+            <h2 className="font-bold text-xs uppercase tracking-wider text-neutral-500">Nhìn thấy trong ảnh</h2>
+            <div className="flex flex-col gap-1.5">
               {attributes.data?.map((attribute) => (
-                <label className="check" key={attribute.code}>
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 dark:text-neutral-300" key={attribute.code}>
                   <input
                     type="checkbox"
+                    className="rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
                     checked={filters.attributes.includes(attribute.code)}
                     onChange={() => toggleAttribute(attribute.code)}
                   />
-                  <span className="check__text">
-                    {attribute.display_name_vi}
-                  </span>
+                  <span>{attribute.display_name_vi}</span>
                 </label>
               ))}
             </div>
-            {attributes.isError && (
-              <p className="field__hint">
-                Chưa tải được bộ lọc đặc điểm.{" "}
-                <button
-                  type="button"
-                  className="link-button"
-                  onClick={() => void attributes.refetch()}
-                >
-                  Thử lại
-                </button>
-              </p>
-            )}
           </div>
 
-          <div className="search-filters__group">
-            <label className="field">
-              <span className="field__label">Sắp xếp</span>
-              <Select
-                value={filters.sort}
-                onChange={(event) =>
-                  update({ sort: event.currentTarget.value })
-                }
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Select>
-            </label>
+          <div className="flex flex-col gap-1.5">
+            <span className="font-bold text-xs uppercase tracking-wider text-neutral-500">Sắp xếp</span>
+            <Select
+              value={filters.sort}
+              onChange={(event) => update({ sort: event.currentTarget.value })}
+              className="h-8 text-xs"
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
           </div>
 
           {active && (
@@ -239,63 +194,18 @@ export function SearchPage() {
                 setDraft("");
                 setParams(new URLSearchParams());
               }}
+              className="mt-2 text-xs"
             >
-              <X size={15} aria-hidden />
+              <X size={14} aria-hidden />
               Xóa tất cả bộ lọc
             </Button>
           )}
         </aside>
 
-        <section className="search-results" aria-label="Kết quả tìm kiếm">
-          {active && (
-            <div
-              className="active-filters"
-              role="group"
-              aria-label="Bộ lọc đã áp dụng"
-            >
-              {filters.q && (
-                <button
-                  type="button"
-                  className="chip chip--active"
-                  aria-label={"Bỏ lọc: " + filters.q}
-                  onClick={() => update({ q: "" })}
-                >
-                  “{filters.q}”
-                  <X size={13} aria-hidden />
-                </button>
-              )}
-              {filters.category && (
-                <button
-                  type="button"
-                  className="chip chip--active"
-                  aria-label={"Bỏ lọc: " + filters.category}
-                  onClick={() => update({ category: "" })}
-                >
-                  {categories.data?.find((c) => c.slug === filters.category)
-                    ?.name ?? filters.category}
-                  <X size={13} aria-hidden />
-                </button>
-              )}
-              {filters.attributes.map((code) => (
-                <button
-                  key={code}
-                  type="button"
-                  className="chip chip--active"
-                  aria-label={"Bỏ lọc: " + code}
-                  onClick={() => toggleAttribute(code)}
-                >
-                  {attributes.data?.find((a) => a.code === code)
-                    ?.display_name_vi ?? code}
-                  <X size={13} aria-hidden />
-                </button>
-              ))}
-            </div>
-          )}
-
+        <section className="md:col-span-3 flex flex-col gap-5 min-w-0" aria-label="Kết quả tìm kiếm">
           {places.data && (
-            <p className="search-count" role="status">
-              {places.data.count}{" "}
-              {places.data.count === 1 ? "địa điểm" : "địa điểm"}
+            <p className="text-xs text-neutral-500 font-medium" role="status">
+              Tìm thấy {places.data.count} địa điểm
               {filters.q ? ` cho “${filters.q}”` : ""}
             </p>
           )}
@@ -314,16 +224,13 @@ export function SearchPage() {
                   ? `Không tìm thấy địa điểm cho “${filters.q}”`
                   : "Không có địa điểm khớp bộ lọc"
               }
-              body={
-                filters.attributes.length > 0
-                  ? "Thử bỏ bớt đặc điểm trong ảnh — mỗi đặc điểm thêm vào đều thu hẹp kết quả."
-                  : "Thử từ khóa ngắn hơn, hoặc bỏ một vài bộ lọc."
-              }
+              body="Thử từ khóa ngắn hơn, hoặc bỏ một vài bộ lọc."
               icon={<Search size={24} aria-hidden />}
               actions={
                 active && (
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={() => {
                       setDraft("");
                       setParams(new URLSearchParams());
@@ -338,22 +245,23 @@ export function SearchPage() {
 
           {results.length > 0 && (
             <>
-              <div className="card-grid card-grid--wide">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {results.map((place, index) => (
                   <PlaceCard key={place.id} place={place} eager={index < 4} />
                 ))}
               </div>
-              <div className="search-map-link">
-                <Button asChild variant="outline">
+
+              <div className="flex justify-center mt-4">
+                <Button asChild variant="outline" size="sm">
                   <Link to={"/map?" + query}>
-                    <MapPin size={16} aria-hidden />
+                    <MapPin size={15} aria-hidden />
                     Xem {places.data?.count} địa điểm trên bản đồ
                   </Link>
                 </Button>
               </div>
 
               {(places.data?.next || places.data?.previous) && (
-                <nav className="pagination" aria-label="Phân trang kết quả">
+                <nav className="flex items-center justify-center gap-3 mt-6 text-xs text-neutral-500" aria-label="Phân trang kết quả">
                   <Button
                     variant="outline"
                     size="sm"
@@ -362,7 +270,7 @@ export function SearchPage() {
                   >
                     Trang trước
                   </Button>
-                  <span className="pagination__status tabular" role="status">
+                  <span className="font-semibold text-neutral-800 dark:text-neutral-200" role="status">
                     Trang {page}
                   </span>
                   <Button

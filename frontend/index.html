@@ -7,9 +7,23 @@
       name="description"
       content="Rendez — khám phá Đà Nẵng qua trải nghiệm của cộng đồng: địa điểm thật, ảnh thật, gợi ý thật."
     />
-    <meta name="theme-color" content="#f7f6f1" />
+    <meta name="theme-color" content="#f8f8f8" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" />
+    <link
+      rel="preload"
+      href="/fonts/Geist-vietnamese.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/GeistMono-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <title>Rendez · Khám phá Đà Nẵng</title>
     <script>
       // Resolve the theme before the first paint so the page never flashes the
@@ -22,6 +36,8 @@
             ((!stored || stored === "system") &&
               window.matchMedia("(prefers-color-scheme: dark)").matches);
           document.documentElement.dataset.theme = dark ? "dark" : "light";
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", dark ? "#0a0a0a" : "#f8f8f8");
         } catch (error) {
           document.documentElement.dataset.theme = "light";
         }
