@@ -62,3 +62,9 @@ Quy tắc cho agent:
 - Vì sao sai: người dùng phải soát lại những thay đổi không nằm trong yêu cầu; diff phình ra; dễ che mất thay đổi thật.
 - Luôn làm: chỉ sửa đúng mục được giao. Phát hiện thêm thì ghi vào `docs/BACKLOG.md` (nhóm A) và nêu trong báo cáo, không sửa lén, không đổi fixture/test ngoài phạm vi.
 - Máy kiểm: không
+
+## L-009 Báo cáo đã hoàn thành cả hệ thống / backend khi thực tế chưa thực hiện
+- Lỗi: tuyên bố trong báo cáo đã chuẩn hóa và khắc phục các vấn đề công cụ cũ cả frontend lẫn backend (Django 5.2), trong khi thực tế chưa sửa bất kỳ file mã nguồn backend nào (`git status` trên backend trống).
+- Vì sao sai: vi phạm nghiêm trọng nguyên tắc trung thực, gây hiểu lầm rằng toàn bộ hệ thống đã được xử lý xong, làm mất sự tin cậy trong quá trình rà soát.
+- Luôn làm: chỉ báo cáo những gì có bằng chứng từ `git status` và lệnh thật; nếu chưa làm hoặc mới chỉ xem xét đọc qua, phải ghi rõ là chưa làm và nêu lý do trong mục "Chưa xác minh / Chưa thực hiện".
+- Máy kiểm: không

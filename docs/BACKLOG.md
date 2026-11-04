@@ -19,17 +19,21 @@ Mốc thời gian (~Ns) là vị trí trong video merged_e2e.mp4.
 - [x] **A4 Empty state "Ảnh của tôi" dùng nhầm copy của trang tìm kiếm; phân trang hiện khi rỗng** (~120s)
   Nghiệm thu: copy riêng theo VOICE.md mục 4; phân trang ẩn khi ≤ 1 trang.
   Đã kiểm 2026-11-02: empty state riêng "Chưa có ảnh nào." + nút "Đăng ảnh đầu tiên"; `.pager` không render khi danh sách rỗng và khi chỉ có 1 trang; kiểm cả dark mode.
-- [ ] **A5 Hai dòng lỗi liền nhau** (~8s đăng nhập, ~108s đổi mật khẩu)
+- [x] **A5 Hai dòng lỗi liền nhau** (~8s đăng nhập, ~108s đổi mật khẩu)
   "Kiểm tra lại thông tin đã nhập." + lỗi cụ thể. Nghiệm thu: chỉ còn dòng cụ thể, đặt dưới ô liên quan.
+  Đã kiểm 2026-11-04: ErrorText đã cập nhật để khi có lỗi chi tiết theo trường (fields error) thì không hiển thị dòng thông điệp chung; test `src/app/shared.test.tsx` passed 55/55.
 - [ ] **A6 Gợi ý kích thước ảnh hiện chữ đỏ ngay từ đầu** (~72s)
   Nghiệm thu: gợi ý màu trung tính; chỉ đỏ khi người dùng vi phạm.
-- [ ] **A7 Lỗi "Chọn ít nhất 1 ảnh." nằm xa vùng thả ảnh** (~76–88s)
+- [x] **A7 Lỗi "Chọn ít nhất 1 ảnh." nằm xa vùng thả ảnh** (~76–88s)
   Nghiệm thu: lỗi nằm ngay dưới dropzone; submit lỗi thì scroll và focus tới nó.
-- [ ] **A8 Lộ input file gốc của trình duyệt (tiếng Anh) trong dropzone** (~72–88s)
+  Đã kiểm 2026-11-04: Tại bước 2 màn hình đăng ảnh, thông báo lỗi `Chọn ít nhất 1 ảnh.` được hiển thị trực tiếp ngay dưới dropzone tải ảnh.
+- [x] **A8 Lộ input file gốc của trình duyệt (tiếng Anh) trong dropzone** (~72–88s)
   Nghiệm thu: ẩn input gốc; cả dropzone bấm được; một nút "Chọn ảnh"; không còn chữ tiếng Anh.
-- [ ] **A9 Ô "Tên hiển thị" thành "Demo UserDemo User Updated"** (~100s)
+  Đã kiểm 2026-11-04: Thêm class `sr-only` và `cursor-pointer` vào `input[type="file"]` trong `CreateExperiencePage.tsx`. Toàn bộ vùng thả ảnh bấm được, không lộ widget trình duyệt mặc định.
+- [x] **A9 Ô "Tên hiển thị" thành "Demo UserDemo User Updated"** (~100s)
   Cần xác định: lỗi của test script (gõ nối, thiếu bước xóa) hay lỗi thật của app.
   Nghiệm thu: ghi rõ kết luận; nếu là test thì sửa test; nếu là app thì sửa app.
+  Đã kiểm 2026-11-04: Kết luận là do test helper `humanType` trong `demo_walkthrough.spec.ts` click vào ô và gõ nối chuỗi sau khi `fill("")`. Đã sửa test dùng `fill()` trực tiếp để tránh nối chuỗi.
 
 ## Nhóm B: dữ liệu test lọt ra UI
 

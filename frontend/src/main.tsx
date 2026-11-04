@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./app/App";
 import { ThemeProvider } from "./lib/theme";
@@ -21,9 +20,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
       <QueryClientProvider client={client}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <App />
       </QueryClientProvider>
     </ThemeProvider>
   </React.StrictMode>,

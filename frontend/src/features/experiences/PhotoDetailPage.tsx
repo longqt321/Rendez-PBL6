@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -63,14 +63,14 @@ export function PhotoDetailPage() {
   const place = data.place;
 
   return (
-    <article className="experience-detail">
-      <Link className="back-link" to={backTo}>
+    <article className="experience-detail max-w-5xl mx-auto px-4 py-6 flex flex-col gap-6">
+      <Link className="back-link inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100" to={backTo}>
         <ArrowLeft size={16} aria-hidden />
         Quay lại
       </Link>
 
-      <div className="experience-detail__layout">
-        <figure className="experience-detail__figure">
+      <div className="experience-detail__layout grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <figure className="experience-detail__figure rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
           <SafeImage
             sources={[data.url]}
             alt={data.alt_text || data.caption || "Ảnh địa điểm"}
@@ -82,49 +82,49 @@ export function PhotoDetailPage() {
             eager
           />
           {data.caption && (
-            <figcaption className="experience-detail__caption">
+            <figcaption className="experience-detail__caption p-4 text-sm text-neutral-700 dark:text-neutral-300 border-t border-neutral-100 dark:border-neutral-800">
               {data.caption}
             </figcaption>
           )}
         </figure>
 
-        <div className="experience-detail__side">
-          <header className="experience-detail__head">
+        <div className="experience-detail__side flex flex-col gap-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6">
+          <header className="experience-detail__head flex flex-col gap-1 border-b border-neutral-100 dark:border-neutral-800 pb-4">
             <Link
-              className="experience-detail__place"
+              className="experience-detail__place text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               to={"/places/" + place.id}
             >
               {place.name}
             </Link>
-            <p className="experience-detail__address">
+            <p className="experience-detail__address flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
               <MapPin size={13} aria-hidden />
               {shortAddress(place.address)}
             </p>
           </header>
 
-          <div className="experience-detail__author">
+          <div className="experience-detail__author flex items-center gap-3">
             <Avatar name={data.author_name} />
             <div>
-              <p className="experience-detail__author-name">
+              <p className="experience-detail__author-name text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                 {data.author_name}
               </p>
-              <p className="experience-detail__time">
+              <p className="experience-detail__time text-xs text-neutral-400">
                 {formatRelative(data.published_at)}
               </p>
             </div>
           </div>
 
           {data.attributes.length > 0 && (
-            <ul className="experience-detail__tags" role="list">
+            <ul className="experience-detail__tags flex flex-wrap gap-1.5" role="list">
               {data.attributes.map((attribute) => (
-                <li key={attribute.code} className="chip">
+                <li key={attribute.code} className="chip px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
                   {attribute.display_name_vi}
                 </li>
               ))}
             </ul>
           )}
 
-          <div className="experience-detail__actions">
+          <div className="experience-detail__actions flex items-center gap-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
             <LikeControl photoId={data.id} />
             <ShareControl photoId={data.id} caption={data.caption} />
             <SavePlaceButton place={place} />
@@ -132,7 +132,7 @@ export function PhotoDetailPage() {
 
           <CommentSection photoId={data.id} />
 
-          <footer className="experience-detail__foot">
+          <footer className="experience-detail__foot flex items-center justify-between pt-4 border-t border-neutral-100 dark:border-neutral-800">
             <ReportDialog kind="photos" id={data.id} />
             {data.is_owner && (
               <OwnerControls
@@ -162,14 +162,31 @@ function LikeControl({ photoId }: { photoId: string }) {
       api<PhotoLikes>("photos/" + photoId + "/likes/", { signal }),
   });
   const mutation = useTogglePhotoLike(photoId);
+  const [, startTransition] = useTransition();
 
-  const liked = likes.data?.liked ?? false;
-  const count = likes.data?.count ?? 0;
+  const serverLiked = likes.data?.liked ?? false;
+  const serverCount = likes.data?.count ?? 0;
+
+  const [optimisticState, setOptimisticState] = useOptimistic(
+    { liked: serverLiked, count: serverCount },
+    (state, update: boolean) => ({
+      liked: update,
+      count: update ? state.count + 1 : Math.max(0, state.count - 1),
+    }),
+  );
+
+  const liked = optimisticState.liked;
+  const count = optimisticState.count;
 
   return (
     <button
       type="button"
-      className={clsx("action-button", liked && "is-active")}
+      className={clsx(
+        "action-button inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer",
+        liked
+          ? "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900"
+          : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200"
+      )}
       aria-label={liked ? "Bỏ thích ảnh" : "Thích ảnh"}
       aria-pressed={liked}
       disabled={mutation.isPending}
@@ -180,7 +197,11 @@ function LikeControl({ photoId }: { photoId: string }) {
           });
           return;
         }
-        mutation.mutate(liked);
+        const nextLiked = !liked;
+        startTransition(async () => {
+          setOptimisticState(nextLiked);
+          await mutation.mutateAsync(liked);
+        });
       }}
     >
       <Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden />
@@ -227,10 +248,10 @@ function ShareControl({
   };
 
   return (
-    <div className="share-control">
+    <div className="share-control relative">
       <button
         type="button"
-        className="action-button"
+        className="action-button inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 cursor-pointer transition-colors"
         aria-label="Chia sẻ ảnh"
         onClick={() => void share()}
       >
@@ -238,7 +259,7 @@ function ShareControl({
         <span>Chia sẻ</span>
       </button>
       {message && (
-        <span className="share-control__toast" role="status">
+        <span className="share-control__toast absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 rounded-md bg-neutral-900 text-white text-xs whitespace-nowrap shadow-md" role="status">
           {message}
         </span>
       )}
@@ -261,13 +282,26 @@ function CommentSection({ photoId }: { photoId: string }) {
   const [body, setBody] = useState("");
   const remaining = 1000 - body.length;
 
+  const [, formAction, isSubmitting] = useActionState(async () => {
+    if (!me.data) {
+      navigate("/login", {
+        state: { returnTo: location.pathname + location.search },
+      });
+      return;
+    }
+    const value = body.trim();
+    if (!value) return;
+    await add.mutateAsync(value);
+    setBody("");
+  }, null);
+
   return (
-    <section className="comment-panel" aria-label="Bình luận">
-      <h2 className="comment-panel__title">
+    <section className="comment-panel flex flex-col gap-4" aria-label="Bình luận">
+      <h2 className="comment-panel__title text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
         <MessageCircle size={16} aria-hidden />
         Bình luận
         {comments.data ? (
-          <span className="muted tabular">({comments.data.length})</span>
+          <span className="muted tabular text-neutral-400 font-normal">({comments.data.length})</span>
         ) : null}
       </h2>
 
@@ -279,22 +313,22 @@ function CommentSection({ photoId }: { photoId: string }) {
       />
 
       {comments.data && comments.data.length === 0 && (
-        <p className="muted small">
+        <p className="muted small text-xs text-neutral-500">
           Chưa có bình luận. Chia sẻ cảm nhận của bạn về địa điểm này.
         </p>
       )}
 
       {comments.data && comments.data.length > 0 && (
-        <ul className="comment-list" role="list">
+        <ul className="comment-list flex flex-col divide-y divide-neutral-100 dark:divide-neutral-800" role="list">
           {comments.data.map((comment) => (
-            <li className="comment" key={comment.id}>
+            <li className="comment flex items-start gap-3 py-3" key={comment.id}>
               <Avatar name={comment.author_name} size="sm" />
-              <div className="comment__body">
-                <p className="comment__meta">
-                  <strong>{comment.author_name}</strong>
-                  <span>{formatRelative(comment.created_at)}</span>
+              <div className="comment__body flex-1 min-w-0">
+                <p className="comment__meta flex items-center gap-2 text-xs">
+                  <strong className="font-semibold text-neutral-900 dark:text-neutral-100">{comment.author_name}</strong>
+                  <span className="text-neutral-400">{formatRelative(comment.created_at)}</span>
                 </p>
-                <p className="comment__text">{comment.body}</p>
+                <p className="comment__text text-sm text-neutral-700 dark:text-neutral-300 mt-1">{comment.body}</p>
               </div>
             </li>
           ))}
@@ -302,39 +336,29 @@ function CommentSection({ photoId }: { photoId: string }) {
       )}
 
       <form
-        className="comment-form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (!me.data) {
-            navigate("/login", {
-              state: { returnTo: location.pathname + location.search },
-            });
-            return;
-          }
-          const value = body.trim();
-          if (!value) return;
-          add.mutate(value, { onSuccess: () => setBody("") });
-        }}
+        className="comment-form flex flex-col gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800"
+        action={formAction}
       >
         <label className="sr-only" htmlFor="photo-comment">
           Viết bình luận
         </label>
         <textarea
           id="photo-comment"
-          className="textarea"
+          name="comment"
+          className="textarea w-full px-3 py-2 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:bg-white dark:focus:bg-neutral-900 focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 outline-none transition-all resize-y min-h-[80px]"
           placeholder="Chia sẻ cảm nhận hoặc câu chuyện của bạn về bức ảnh này…"
           maxLength={1000}
           value={body}
           onChange={(event) => setBody(event.currentTarget.value)}
         />
-        <div className="comment-form__foot">
-          <span className="muted micro tabular">{remaining} ký tự còn lại</span>
+        <div className="comment-form__foot flex items-center justify-between">
+          <span className="muted micro tabular text-[11px] text-neutral-400">{remaining} ký tự còn lại</span>
           <Button
             type="submit"
             size="sm"
-            disabled={add.isPending || !body.trim()}
+            disabled={isSubmitting || add.isPending || !body.trim()}
           >
-            {add.isPending ? "Đang gửi…" : "Gửi"}
+            {isSubmitting || add.isPending ? "Đang gửi…" : "Gửi"}
           </Button>
         </div>
         <ErrorText error={add.error} />
@@ -397,20 +421,20 @@ function OwnerControls({
   };
 
   return (
-    <div className="owner-controls">
+    <div className="owner-controls flex flex-col gap-2">
       {editing ? (
-        <form onSubmit={saveCaption} className="owner-controls__edit">
+        <form onSubmit={saveCaption} className="owner-controls__edit flex flex-col gap-2">
           <label className="sr-only" htmlFor="owner-caption">
             Chú thích ảnh
           </label>
           <textarea
             id="owner-caption"
-            className="textarea"
+            className="textarea w-full px-3 py-2 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:bg-white dark:focus:bg-neutral-900 outline-none"
             maxLength={1000}
             value={draft}
             onChange={(event) => setDraft(event.currentTarget.value)}
           />
-          <div className="cluster">
+          <div className="cluster flex items-center gap-2">
             <Button type="submit" size="sm" disabled={pending}>
               Lưu
             </Button>
@@ -428,17 +452,17 @@ function OwnerControls({
           </div>
         </form>
       ) : (
-        <div className="cluster">
+        <div className="cluster flex items-center gap-3 text-xs">
           <button
             type="button"
-            className="inline-link inline-link--muted"
+            className="inline-link inline-link--muted text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 cursor-pointer"
             onClick={() => setEditing(true)}
           >
             Sửa chú thích
           </button>
           <button
             type="button"
-            className="inline-link inline-link--muted"
+            className="inline-link inline-link--muted flex items-center gap-1 text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => setConfirming(true)}
           >
             <Trash2 size={14} aria-hidden />
@@ -495,25 +519,25 @@ function RelatedExperiences({
 
   return (
     <section
-      className="experience-detail__related"
+      className="experience-detail__related flex flex-col gap-4 mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-800"
       aria-labelledby="related-heading"
     >
-      <div className="section-head">
+      <div className="section-head flex items-center justify-between">
         <div>
-          <h2 id="related-heading" className="editorial section-head__title">
+          <h2 id="related-heading" className="editorial section-head__title text-lg font-bold text-neutral-900 dark:text-neutral-100">
             Ảnh cùng khu vực
           </h2>
         </div>
-        <Link className="section-head__link" to={"/places/" + placeId}>
+        <Link className="section-head__link text-sm font-medium text-blue-600 hover:underline" to={"/places/" + placeId}>
           Xem địa điểm
         </Link>
       </div>
-      <ul className="related-grid" role="list">
+      <ul className="related-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3" role="list">
         {related.map((item) => (
-          <li key={item.photo.id}>
+          <li key={item.photo.id} className="flex flex-col gap-1.5">
             <ExperienceTile item={item} />
             <Link
-              className="related-grid__label"
+              className="related-grid__label text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 truncate"
               to={"/places/" + item.place.id}
             >
               {item.place.name}

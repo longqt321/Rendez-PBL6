@@ -1,5 +1,12 @@
 import { lazy, Suspense } from "react";
-import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  RouterProvider,
+  useLocation,
+  type RouteObject,
+} from "react-router";
 import { AsyncState } from "../components/ui/states";
 import { useMe } from "../lib/session";
 import { Auth } from "./auth";
@@ -48,27 +55,44 @@ export function RequireLogin() {
   return <Outlet />;
 }
 
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/discover" replace />} />
-
-      {/* Auth screens own the whole viewport and sit outside the shell. */}
-      <Route path="login" element={<Auth key="login" />} />
-      <Route path="register" element={<Auth key="register" register />} />
-
-      <Route element={<AppShell />}>
-        {/* Public: a single community post. */}
-        <Route path="posts/:id" element={<PostDetailPage />} />
-        {/* Public: the terms must be readable before an account exists. */}
-        <Route path="terms" element={<TermsPage />} />
-
-        <Route element={<RequireLogin />}>
-          <Route path="discover" element={<DiscoverPage />} />
-          <Route path="search" element={<SearchPage />} />
-          <Route
-            path="map"
-            element={
+export const routes: RouteObject[] = [
+  {
+    path: "/",
+    element: <Navigate to="/discover" replace />,
+  },
+  {
+    path: "login",
+    element: <Auth key="login" />,
+  },
+  {
+    path: "register",
+    element: <Auth key="register" register />,
+  },
+  {
+    element: <AppShell />,
+    children: [
+      {
+        path: "posts/:id",
+        element: <PostDetailPage />,
+      },
+      {
+        path: "terms",
+        element: <TermsPage />,
+      },
+      {
+        element: <RequireLogin />,
+        children: [
+          {
+            path: "discover",
+            element: <DiscoverPage />,
+          },
+          {
+            path: "search",
+            element: <SearchPage />,
+          },
+          {
+            path: "map",
+            element: (
               <Suspense
                 fallback={
                   <p role="status" aria-label="Đang tải" className="muted">
@@ -78,17 +102,44 @@ export default function App() {
               >
                 <MapPage />
               </Suspense>
-            }
-          />
-          <Route path="places/:id" element={<PlaceDetailPage />} />
-          <Route path="photos/:id" element={<PhotoDetailPage />} />
-          <Route path="create" element={<CreateExperiencePage />} />
-          <Route path="submissions/:id" element={<SubmissionDetailPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Route>
-    </Routes>
-  );
+            ),
+          },
+          {
+            path: "places/:id",
+            element: <PlaceDetailPage />,
+          },
+          {
+            path: "photos/:id",
+            element: <PhotoDetailPage />,
+          },
+          {
+            path: "create",
+            element: <CreateExperiencePage />,
+          },
+          {
+            path: "submissions/:id",
+            element: <SubmissionDetailPage />,
+          },
+          {
+            path: "profile",
+            element: <ProfilePage />,
+          },
+          {
+            path: "settings",
+            element: <SettingsPage />,
+          },
+          {
+            path: "*",
+            element: <NotFoundPage />,
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const router = createBrowserRouter(routes);
+
+export default function App() {
+  return <RouterProvider router={router} />;
 }

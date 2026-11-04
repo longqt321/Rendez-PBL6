@@ -1,4 +1,6 @@
-import type { components } from "./generated";
+import createClient, { type Middleware } from "openapi-fetch";
+import type { paths, components } from "./generated";
+
 export type Profile = components["schemas"]["Profile"];
 export type Category = components["schemas"]["Category"];
 export type Page<T> = {
@@ -44,6 +46,48 @@ async function loadCsrfToken(): Promise<string> {
   }
   return csrfBootstrap;
 }
+
+/**
+ * Modern Type-safe OpenAPI Fetch client
+ */
+export const openapi = createClient<paths>({
+  baseUrl: "",
+  credentials: "same-origin",
+});
+
+const csrfMiddleware: Middleware = {
+  async onRequest({ request, schemaPath }) {
+    const method = request.method;
+    const needsCsrf = !["GET", "HEAD", "OPTIONS"].includes(method);
+    if (needsCsrf && !csrfToken) {
+      await loadCsrfToken();
+    }
+    if (csrfToken) {
+      request.headers.set("X-CSRFToken", csrfToken);
+    }
+    return request;
+  },
+  async onResponse({ response, request }) {
+    if (response.status === 401) {
+      const url = new URL(request.url);
+      const pathname = url.pathname;
+      if (
+        ![
+          "/api/v1/auth/login/",
+          "/api/v1/auth/register/",
+          "/api/v1/auth/csrf/",
+          "/api/v1/auth/logout/",
+          "/api/v1/auth/me/",
+        ].includes(pathname)
+      ) {
+        window.dispatchEvent(new Event("rendez:session-expired"));
+      }
+    }
+    return response;
+  },
+};
+
+openapi.use(csrfMiddleware);
 
 export async function api<T>(
   path: string,

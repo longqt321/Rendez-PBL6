@@ -45,10 +45,13 @@ export function DiscoveryPrompt() {
       <h2 id="prompt-heading" className="sr-only">
         Gợi ý khám phá
       </h2>
-      <ul className="prompt-strip__list" role="list">
+      <ul className="prompt-strip__list flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none" role="list">
         {PROMPTS.map(({ to, label, icon: Icon }) => (
-          <li key={to}>
-            <Link className="prompt-card" to={to}>
+          <li key={to} className="shrink-0">
+            <Link
+              className="prompt-card flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-700 text-xs font-medium transition-colors shadow-2xs"
+              to={to}
+            >
               <Icon size={16} aria-hidden />
               <span className="prompt-card__label">{label}</span>
             </Link>

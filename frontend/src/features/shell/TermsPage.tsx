@@ -150,13 +150,13 @@ function TermsContent() {
  */
 export function TermsPage() {
   return (
-    <div className="legal-page container container--reading">
-      <h1>Điều khoản sử dụng</h1>
-      <p className="lede">Cập nhật lần cuối ngày 01 tháng 11 năm 2026.</p>
+    <div className="legal-page max-w-3xl mx-auto px-4 py-8 flex flex-col gap-6">
+      <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">Điều khoản sử dụng</h1>
+      <p className="lede text-neutral-500 dark:text-neutral-400 -mt-2">Cập nhật lần cuối ngày 01 tháng 11 năm 2026.</p>
 
       <TermsContent />
 
-      <div className="legal-page__back">
+      <div className="legal-page__back pt-4 border-t border-neutral-200 dark:border-neutral-800">
         <Button asChild variant="outline">
           <Link to="/discover">
             <ArrowLeft size={16} aria-hidden />

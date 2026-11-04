@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Flag } from "lucide-react";
 import { api, ApiError } from "../../lib/api/client";
 import { useMe } from "../../lib/session";
@@ -21,6 +24,12 @@ const REASONS = [
   { value: "other", label: "Khác" },
 ] as const;
 
+const reportSchema = z.object({
+  reason: z.string().min(1, "Vui lòng chọn lý do."),
+  note: z.string().max(1000, "Ghi chú tối đa 1000 ký tự.").optional(),
+});
+type ReportValues = z.infer<typeof reportSchema>;
+
 export function ReportDialog({
   kind,
   id,
@@ -29,11 +38,14 @@ export function ReportDialog({
   id: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState<string>("wrong_place");
-  const [note, setNote] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [done, setDone] = useState(false);
+
+  const form = useForm<ReportValues>({
+    resolver: zodResolver(reportSchema),
+    defaultValues: { reason: "wrong_place", note: "" },
+  });
 
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -53,16 +65,16 @@ export function ReportDialog({
     trigger.current?.focus();
   };
 
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const onSubmit = form.handleSubmit(async (values) => {
     setPending(true);
     setError(null);
     try {
       await api(`${kind}/${id}/report/`, {
         method: "POST",
-        body: JSON.stringify({ reason, note: note.trim() }),
+        body: JSON.stringify({ reason: values.reason, note: (values.note || "").trim() }),
       });
       setDone(true);
+      form.reset({ reason: "wrong_place", note: "" });
     } catch (caught) {
       setError(
         caught instanceof ApiError
@@ -72,14 +84,14 @@ export function ReportDialog({
     } finally {
       setPending(false);
     }
-  };
+  });
 
   return (
     <>
       <button
         type="button"
         ref={trigger}
-        className="inline-link inline-link--muted"
+        className="inline-link inline-link--muted flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 cursor-pointer"
         onClick={() => {
           if (!me.data) {
             navigate("/login", {
@@ -89,7 +101,7 @@ export function ReportDialog({
           }
           setDone(false);
           setError(null);
-          setNote("");
+          form.reset({ reason: "wrong_place", note: "" });
           setOpen(true);
         }}
       >
@@ -99,7 +111,7 @@ export function ReportDialog({
 
       <dialog
         ref={dialog}
-        className="dialog"
+        className="dialog p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl backdrop:bg-black/50 max-w-md w-full"
         aria-labelledby={"report-title-" + id}
         onCancel={(event) => {
           event.preventDefault();
@@ -107,36 +119,35 @@ export function ReportDialog({
         }}
         onClose={() => setOpen(false)}
       >
-        <div className="dialog__head">
-          <h2 className="dialog__title" id={"report-title-" + id}>
+        <div className="dialog__head mb-4">
+          <h2 className="dialog__title text-lg font-bold text-neutral-900 dark:text-neutral-100" id={"report-title-" + id}>
             Báo cáo nội dung
           </h2>
         </div>
 
         {done ? (
           <>
-            <p className="dialog__description" role="status">
+            <p className="dialog__description text-sm text-neutral-600 dark:text-neutral-400 mb-6" role="status">
               Đã nhận báo cáo của bạn. Chúng tôi sẽ xem xét nội dung này.
             </p>
-            <div className="dialog__actions">
+            <div className="dialog__actions flex justify-end">
               <Button onClick={close}>Đóng</Button>
             </div>
           </>
         ) : (
-          <form onSubmit={submit}>
-            <p className="dialog__description">
+          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            <p className="dialog__description text-sm text-neutral-600 dark:text-neutral-400">
               Cho chúng tôi biết vấn đề bạn gặp phải. Báo cáo được gửi tới đội
               ngũ kiểm duyệt.
             </p>
-            <div className="field">
-              <label className="field__label" htmlFor={"report-reason-" + id}>
+            <div className="field flex flex-col gap-1.5">
+              <label className="field__label text-xs font-semibold text-neutral-700 dark:text-neutral-300" htmlFor={"report-reason-" + id}>
                 Lý do
               </label>
               <select
                 id={"report-reason-" + id}
-                className="select"
-                value={reason}
-                onChange={(event) => setReason(event.currentTarget.value)}
+                className="select w-full px-3 py-2 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:bg-white dark:focus:bg-neutral-900 outline-none"
+                {...form.register("reason")}
               >
                 {REASONS.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -145,20 +156,19 @@ export function ReportDialog({
                 ))}
               </select>
             </div>
-            <div className="field" style={{ marginTop: "var(--space-4)" }}>
-              <label className="field__label" htmlFor={"report-note-" + id}>
+            <div className="field flex flex-col gap-1.5">
+              <label className="field__label text-xs font-semibold text-neutral-700 dark:text-neutral-300" htmlFor={"report-note-" + id}>
                 Ghi chú (không bắt buộc)
               </label>
               <textarea
                 id={"report-note-" + id}
-                className="textarea"
+                className="textarea w-full px-3 py-2 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:bg-white dark:focus:bg-neutral-900 outline-none min-h-[80px]"
                 maxLength={1000}
-                value={note}
-                onChange={(event) => setNote(event.currentTarget.value)}
+                {...form.register("note")}
               />
             </div>
             <ErrorText error={error} />
-            <div className="dialog__actions">
+            <div className="dialog__actions flex items-center justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={close}>
                 Hủy
               </Button>

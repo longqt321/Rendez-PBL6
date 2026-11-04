@@ -103,27 +103,27 @@ export function Auth({ register = false }: { register?: boolean }) {
   if (me.data) return null;
 
   return (
-    <div className="auth-page">
-      <main className="auth-page__panel">
+    <div className="auth-page min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 p-4">
+      <main className="auth-page__panel w-full max-w-md">
         <Link
-          className="shell-brand auth-page__brand"
+          className="shell-brand auth-page__brand flex items-center justify-center gap-1.5 text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mb-8"
           to="/discover"
           aria-label="Rendez"
         >
           <span aria-hidden>r</span>
-          <span className="shell-brand__dot" aria-hidden>
+          <span className="shell-brand__dot text-blue-600" aria-hidden>
             .
           </span>
           <span className="shell-brand__word">rendez</span>
         </Link>
 
-        <div className="auth-card">
-          <h1 className="auth-card__title">
+        <div className="auth-card bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 sm:p-8 shadow-sm">
+          <h1 className="auth-card__title text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mb-6 text-center">
             {register ? "Tạo tài khoản" : "Đăng nhập"}
           </h1>
 
           <form
-            className="auth-form"
+            className="auth-form flex flex-col gap-4"
             noValidate
             onSubmit={(event) => {
               void form.handleSubmit((values) => {
@@ -138,8 +138,8 @@ export function Auth({ register = false }: { register?: boolean }) {
             }}
           >
             {register && (
-              <div className="field">
-                <label className="field__label" htmlFor="auth-name">
+              <div className="field flex flex-col gap-1.5">
+                <label className="field__label text-sm font-medium text-neutral-700 dark:text-neutral-300" htmlFor="auth-name">
                   Tên hiển thị
                 </label>
                 <Input
@@ -150,7 +150,7 @@ export function Auth({ register = false }: { register?: boolean }) {
                   aria-describedby="auth-name-error"
                   {...form.register("display_name")}
                 />
-                <p id="auth-name-error" className="field__error" role="alert">
+                <p id="auth-name-error" className="field__error text-xs text-red-500" role="alert">
                   {form.formState.errors.display_name?.message}
                 </p>
               </div>
@@ -167,26 +167,27 @@ export function Auth({ register = false }: { register?: boolean }) {
               />
             </Field>
             {/* The error id is owned by the span below, not by Field's default. */}
-            <span id="auth-email-error" className="field__error" role="alert">
+            <span id="auth-email-error" className="field__error text-xs text-red-500" role="alert">
               {form.formState.errors.email?.message}
             </span>
 
-            <div className="field">
-              <label className="field__label" htmlFor="auth-password">
+            <div className="field flex flex-col gap-1.5">
+              <label className="field__label text-sm font-medium text-neutral-700 dark:text-neutral-300" htmlFor="auth-password">
                 Mật khẩu
               </label>
-              <div className="auth-form__password">
+              <div className="auth-form__password relative flex items-center">
                 <Input
                   id="auth-password"
                   type={reveal ? "text" : "password"}
                   autoComplete={register ? "new-password" : "current-password"}
                   aria-invalid={!!form.formState.errors.password}
                   aria-describedby="auth-password-error"
+                  className="pr-10"
                   {...form.register("password")}
                 />
                 <button
                   type="button"
-                  className="icon-btn icon-btn--bordered"
+                  className="icon-btn icon-btn--bordered absolute right-2.5 p-1 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer"
                   aria-label={reveal ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                   aria-pressed={reveal}
                   onClick={() => setReveal(!reveal)}
@@ -198,7 +199,7 @@ export function Auth({ register = false }: { register?: boolean }) {
                   )}
                 </button>
               </div>
-              <p id="auth-password-error" className="field__error" role="alert">
+              <p id="auth-password-error" className="field__error text-xs text-red-500" role="alert">
                 {form.formState.errors.password?.message}
               </p>
             </div>
@@ -206,9 +207,9 @@ export function Auth({ register = false }: { register?: boolean }) {
             <ErrorText error={mutation.error} />
 
             {register && (
-              <p className="auth-card__terms">
+              <p className="auth-card__terms text-xs text-neutral-500 dark:text-neutral-400">
                 Khi tạo tài khoản, bạn đồng ý với{" "}
-                <Link to="/terms">Điều khoản sử dụng</Link> của Rendez.
+                <Link to="/terms" className="text-blue-600 hover:underline">Điều khoản sử dụng</Link> của Rendez.
               </p>
             )}
 
@@ -236,10 +237,11 @@ export function Auth({ register = false }: { register?: boolean }) {
             )}
           </form>
 
-          <p className="auth-card__switch">
+          <p className="auth-card__switch mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
             <Link
               to={(register ? "/login" : "/register") + location.search}
               state={location.state}
+              className="text-blue-600 hover:underline font-medium"
             >
               {register ? "Đã có tài khoản? Đăng nhập" : "Tạo tài khoản mới"}
             </Link>

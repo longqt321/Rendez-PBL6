@@ -8,6 +8,9 @@ import {
   Upload,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { api, ApiError } from "../../lib/api/client";
 import type { Page, PhotoSubmission, VisualPlace } from "../../lib/api/types";
 import { useCategories } from "../../lib/api/queries";
@@ -32,6 +35,19 @@ const MAX_PIXELS = 20_000_000;
 
 type Step = 1 | 2 | 3;
 
+const experienceSchema = z.object({
+  proposal: z.boolean(),
+  placeId: z.string(),
+  name: z.string().max(200),
+  address: z.string().max(500),
+  category: z.string(),
+  caption: z.string().max(1000),
+  files: z.array(z.custom<File>((f) => f instanceof File)).max(MAX_IMAGES),
+  consent: z.boolean(),
+});
+
+type FormValues = z.infer<typeof experienceSchema>;
+
 /**
  * Create experience.
  *
@@ -50,8 +66,6 @@ export function CreateExperiencePage() {
   const navigate = useNavigate();
 
   const [step, setStep] = useState<Step>(1);
-  const [proposal, setProposal] = useState(false);
-  const [placeId, setPlaceId] = useState(params.get("place") ?? "");
   const [search, setSearch] = useState("");
   const [placeLimit, setPlaceLimit] = useState(6);
   const [position, setPosition] = useState<{
@@ -59,17 +73,33 @@ export function CreateExperiencePage() {
     longitude: number;
   } | null>(null);
   const [showMap, setShowMap] = useState(false);
-  const [meta, setMeta] = useState({
-    name: "",
-    address: "",
-    category: "",
-    caption: "",
-  });
-  const [files, setFiles] = useState<File[]>([]);
-  const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [submitError, setSubmitError] = useState<Error | null>(null);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(experienceSchema),
+    defaultValues: {
+      proposal: false,
+      placeId: params.get("place") ?? "",
+      name: "",
+      address: "",
+      category: "",
+      caption: "",
+      files: [],
+      consent: false,
+    },
+  });
+
+  const { watch, setValue, register } = form;
+  const proposal = watch("proposal");
+  const placeId = watch("placeId");
+  const name = watch("name");
+  const address = watch("address");
+  const category = watch("category");
+  const caption = watch("caption");
+  const files = watch("files");
+  const consent = watch("consent");
 
   // One key per attempt: retrying a failed submit must not create a duplicate
   // submission, and any edit invalidates the key so the next attempt is new.
@@ -98,7 +128,7 @@ export function CreateExperiencePage() {
   // Default the proposal category to the first real category. Deriving it keeps
   // the select usable before the category list resolves without an extra render
   // pass, and an explicit choice always wins.
-  const categorySlug = meta.category || categories.data?.[0]?.slug || "";
+  const categorySlug = category || categories.data?.[0]?.slug || "";
 
   // Geocode a proposed address so the pin lands somewhere real. A failure here
   // is not fatal: the submission still carries the typed address.
@@ -108,7 +138,7 @@ export function CreateExperiencePage() {
     result: { display_name: string; provider: string } | null;
   }>({ loading: false, failed: false, result: null });
 
-  const addressQuery = proposal ? meta.address.trim() : "";
+  const addressQuery = proposal ? address.trim() : "";
 
   useEffect(() => {
     if (addressQuery.length < 3) return;
@@ -190,13 +220,22 @@ export function CreateExperiencePage() {
       }
     }
     resetKey();
-    setFiles((current) => [...current, ...incoming]);
+    setValue("files", [...files, ...incoming], { shouldValidate: true });
+  };
+
+  const removeFile = (indexToRemove: number) => {
+    resetKey();
+    setValue(
+      "files",
+      files.filter((_, idx) => idx !== indexToRemove),
+      { shouldValidate: true },
+    );
   };
 
   const next = () => {
     if (step === 1) {
       const missing = proposal
-        ? !meta.name.trim() || !meta.address.trim()
+        ? !name.trim() || !address.trim()
         : !placeId;
       if (missing) {
         setError("Chọn địa điểm hoặc nhập tên và địa chỉ địa điểm mới.");
@@ -211,25 +250,25 @@ export function CreateExperiencePage() {
     setStep((current) => (current + 1) as Step);
   };
 
-  const submit = async () => {
+  const onSubmit = form.handleSubmit(async (values) => {
     setPending(true);
     setSubmitError(null);
     try {
       const data = new FormData();
-      files.forEach((file) => data.append("images", file));
-      data.set("caption", meta.caption.trim());
+      values.files.forEach((file) => data.append("images", file));
+      data.set("caption", values.caption.trim());
       data.set("consent", "true");
       data.set("consent_version", "photo-rights-v2");
-      if (proposal) {
-        data.set("proposed_name", meta.name.trim());
-        data.set("proposed_address", meta.address.trim());
+      if (values.proposal) {
+        data.set("proposed_name", values.name.trim());
+        data.set("proposed_address", values.address.trim());
         data.set("proposed_category", categorySlug);
         if (position) {
           data.set("latitude", String(position.latitude));
           data.set("longitude", String(position.longitude));
         }
       } else {
-        data.set("place_id", placeId);
+        data.set("place_id", values.placeId);
       }
       const result = await api<PhotoSubmission>("photo-submissions/", {
         method: "POST",
@@ -249,11 +288,11 @@ export function CreateExperiencePage() {
     } finally {
       setPending(false);
     }
-  };
+  });
 
   const chosenPlace = selected.data;
-  const previewName = proposal ? meta.name : (chosenPlace?.name ?? "");
-  const previewAddress = proposal ? meta.address : (chosenPlace?.address ?? "");
+  const previewName = proposal ? name : (chosenPlace?.name ?? "");
+  const previewAddress = proposal ? address : (chosenPlace?.address ?? "");
 
   const steps = useMemo(
     () => ["Chọn địa điểm", "Chọn ảnh", "Kiểm tra và gửi"],
@@ -283,27 +322,41 @@ export function CreateExperiencePage() {
   }
 
   return (
-    <div className="create-page">
-      <header className="page-head">
+    <div className="create-page max-w-2xl mx-auto px-4 py-8 flex flex-col gap-8">
+      <header className="page-head flex flex-col gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-4">
         <div className="page-head__copy">
-          <h1>Đăng ảnh địa điểm</h1>
-          <p className="lede">
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">Đăng ảnh địa điểm</h1>
+          <p className="lede text-sm text-neutral-500 mt-1">
             Chọn địa điểm, thêm ảnh bạn tự chụp và kể lại điều bạn thấy. Ảnh sẽ
             xuất hiện trong thư viện của địa điểm đó.
           </p>
         </div>
       </header>
 
-      <ol className="stepper" aria-label="Các bước gửi ảnh">
+      <ol className="stepper flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-4" aria-label="Các bước gửi ảnh">
         {steps.map((label, index) => {
           const value = (index + 1) as Step;
+          const isActive = step === value;
+          const isPassed = step > value;
           return (
             <li
               key={label}
-              className="stepper__item"
-              aria-current={step === value ? "step" : undefined}
+              className={`stepper__item flex items-center gap-2 text-xs font-semibold ${
+                isActive
+                  ? "text-blue-600 dark:text-blue-400"
+                  : isPassed
+                    ? "text-neutral-900 dark:text-neutral-100"
+                    : "text-neutral-400"
+              }`}
+              aria-current={isActive ? "step" : undefined}
             >
-              <span className="stepper__index" aria-hidden>
+              <span className={`stepper__index w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                isActive
+                  ? "bg-blue-600 text-white"
+                  : isPassed
+                    ? "bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200"
+                    : "bg-neutral-100 dark:bg-neutral-800 text-neutral-400"
+              }`} aria-hidden>
                 {value}
               </span>
               <span>
@@ -315,31 +368,30 @@ export function CreateExperiencePage() {
       </ol>
 
       {step === 1 && (
-        <section className="create-panel" aria-label="Bước 1: chọn địa điểm">
-          <label className="check">
+        <section className="create-panel flex flex-col gap-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs" aria-label="Bước 1: chọn địa điểm">
+          <label className="check flex items-center gap-2 cursor-pointer text-sm font-medium text-neutral-900 dark:text-neutral-100">
             <input
               type="checkbox"
+              className="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
               checked={proposal}
               onChange={(event) => {
                 resetKey();
-                setProposal(event.currentTarget.checked);
+                setValue("proposal", event.currentTarget.checked);
               }}
             />
             <span className="check__text">Thêm địa điểm mới</span>
           </label>
 
           {proposal ? (
-            <div className="create-panel__grid">
+            <div className="create-panel__grid flex flex-col gap-4">
               <Field label="Tên địa điểm" htmlFor="new-place-name">
                 <Input
                   id="new-place-name"
-                  value={meta.name}
+                  {...register("name", {
+                    onChange: () => resetKey(),
+                  })}
                   maxLength={200}
                   placeholder="Ví dụ: Tiệm Cà Phê Mộc"
-                  onChange={(event) => {
-                    resetKey();
-                    setMeta({ ...meta, name: event.currentTarget.value });
-                  }}
                 />
               </Field>
 
@@ -354,23 +406,21 @@ export function CreateExperiencePage() {
               >
                 <Input
                   id="new-place-address"
-                  value={meta.address}
+                  {...register("address", {
+                    onChange: () => resetKey(),
+                  })}
                   maxLength={500}
                   placeholder="Ví dụ: 100 Phạm Như Xương, Liên Chiểu, Đà Nẵng"
-                  onChange={(event) => {
-                    resetKey();
-                    setMeta({ ...meta, address: event.currentTarget.value });
-                  }}
                 />
               </Field>
 
               {geocodeView.result && (
-                <p className="geocode-note" role="status">
-                  <CheckCircle2 size={15} aria-hidden />
+                <p className="geocode-note flex items-start gap-2 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 text-xs text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/30" role="status">
+                  <CheckCircle2 size={15} className="shrink-0 mt-0.5" aria-hidden />
                   <span>
                     <strong>Đã định vị:</strong>{" "}
                     {geocodeView.result.display_name}
-                    <span className="geocode-note__source">
+                    <span className="geocode-note__source block text-neutral-400 mt-0.5">
                       Nguồn: {geocodeView.result.provider}
                     </span>
                   </span>
@@ -378,8 +428,8 @@ export function CreateExperiencePage() {
               )}
 
               {geocodeView.failed && (
-                <p className="geocode-note geocode-note--failed" role="status">
-                  <AlertCircle size={15} aria-hidden />
+                <p className="geocode-note flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 text-xs text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30" role="status">
+                  <AlertCircle size={15} className="shrink-0 mt-0.5" aria-hidden />
                   <span>
                     <strong>Chưa định vị được địa chỉ này.</strong> Địa điểm vẫn
                     được gửi kèm địa chỉ bạn đã nhập nhưng sẽ không có ghim trên
@@ -394,7 +444,7 @@ export function CreateExperiencePage() {
                   value={categorySlug}
                   onChange={(event) => {
                     resetKey();
-                    setMeta({ ...meta, category: event.currentTarget.value });
+                    setValue("category", event.currentTarget.value);
                   }}
                 >
                   {categories.data?.map((category) => (
@@ -405,7 +455,7 @@ export function CreateExperiencePage() {
                 </Select>
               </Field>
 
-              <div className="create-panel__wide">
+              <div className="create-panel__wide flex flex-col gap-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -421,7 +471,7 @@ export function CreateExperiencePage() {
                 {showMap && (
                   <Suspense
                     fallback={
-                      <p role="status" className="muted small">
+                      <p role="status" className="text-xs text-neutral-500">
                         Đang tải bản đồ…
                       </p>
                     }
@@ -460,38 +510,39 @@ export function CreateExperiencePage() {
               />
 
               {chosenPlace && (
-                <p className="selected-place" role="status">
+                <p className="flex items-center gap-2 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 text-xs text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/30" role="status">
                   <CheckCircle2 size={15} aria-hidden />
                   Đã chọn: <strong>{chosenPlace.name}</strong>
-                  <span className="muted">
+                  <span className="text-neutral-500 dark:text-neutral-400">
                     {" "}
                     · {shortAddress(chosenPlace.address)}
                   </span>
                 </p>
               )}
 
-              <fieldset className="place-picker">
-                <legend className="field__label">Chọn địa điểm</legend>
+              <fieldset className="flex flex-col gap-2">
+                <legend className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">Chọn địa điểm</legend>
                 {places.data?.results.slice(0, placeLimit).map((place) => (
-                  <label className="place-picker__row" key={place.id}>
+                  <label className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors" key={place.id}>
                     <input
                       type="radio"
                       name="place"
+                      className="text-blue-600 focus:ring-blue-500"
                       checked={placeId === place.id}
                       onChange={() => {
                         resetKey();
-                        setPlaceId(place.id);
+                        setValue("placeId", place.id);
                       }}
                     />
                     <SafeImage
                       sources={[place.cover_media_url, place.cover_image_url]}
                       alt=""
                       ratio="1 / 1"
-                      className="place-picker__thumb"
+                      className="w-12 h-12 rounded-lg object-cover overflow-hidden shrink-0 border border-neutral-200 dark:border-neutral-800"
                     />
-                    <span className="place-picker__text">
-                      <strong>{place.name}</strong>
-                      <small>{shortAddress(place.address)}</small>
+                    <span className="flex flex-col text-sm">
+                      <strong className="font-semibold text-neutral-900 dark:text-neutral-100">{place.name}</strong>
+                      <small className="text-xs text-neutral-500">{shortAddress(place.address)}</small>
                     </span>
                   </label>
                 ))}
@@ -506,7 +557,7 @@ export function CreateExperiencePage() {
                   </Button>
                 )}
                 {places.data?.count === 0 && (
-                  <p className="muted small">
+                  <p className="text-xs text-neutral-500">
                     Không tìm thấy địa điểm phù hợp. Chọn “Thêm địa điểm mới” để
                     gửi thông tin địa điểm.
                   </p>
@@ -518,24 +569,26 @@ export function CreateExperiencePage() {
       )}
 
       {step === 2 && (
-        <section className="create-panel" aria-label="Bước 2: chọn ảnh">
-          <h2 className="section-title">Chọn ảnh</h2>
-          <p className="muted small">
-            JPEG hoặc PNG · tối đa {MAX_IMAGES} ảnh · 10 MiB mỗi ảnh · tối thiểu
-            100 × 100 px
-          </p>
+        <section className="create-panel flex flex-col gap-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs" aria-label="Bước 2: chọn ảnh">
+          <div>
+            <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">Chọn ảnh</h2>
+            <p className="text-xs text-neutral-500 mt-1">
+              JPEG hoặc PNG · tối đa {MAX_IMAGES} ảnh · 10 MiB mỗi ảnh · tối thiểu
+              100 × 100 px
+            </p>
+          </div>
 
           <label
-            className="upload-drop cursor-pointer"
+            className="flex flex-col items-center justify-center gap-2 p-8 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-2xl hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors bg-neutral-50/50 dark:bg-neutral-800/30 text-center cursor-pointer"
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => {
               event.preventDefault();
               void addFiles(event.dataTransfer.files);
             }}
           >
-            <Upload size={26} aria-hidden />
-            <strong>Kéo ảnh vào đây hoặc nhấn để chọn</strong>
-            <small>Chọn ảnh bạn tự chụp tại địa điểm</small>
+            <Upload size={26} className="text-neutral-400" aria-hidden />
+            <strong className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Kéo ảnh vào đây hoặc nhấn để chọn</strong>
+            <small className="text-xs text-neutral-500">Chọn ảnh bạn tự chụp tại địa điểm</small>
             <input
               type="file"
               className="sr-only"
@@ -550,36 +603,31 @@ export function CreateExperiencePage() {
           </label>
 
           {step === 2 && error && (
-            <p role="alert" className="error mt-2">
+            <p role="alert" className="text-sm text-red-600 dark:text-red-400 font-medium">
               {error}
             </p>
           )}
 
-          <p className="muted small tabular">
+          <p className="text-xs text-neutral-500 font-mono">
             Đã chọn {files.length}/{MAX_IMAGES} ảnh.
           </p>
 
           {files.length > 0 && (
-            <ul className="upload-list" role="list">
+            <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3" role="list">
               {files.map((file, index) => (
-                <li key={file.name + index} className="upload-item">
+                <li key={file.name + index} className="relative flex flex-col gap-2 p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 overflow-hidden">
                   <FilePreview file={file} />
-                  <div className="upload-item__meta">
-                    <span className="upload-item__name">{file.name}</span>
-                    <span className="muted micro">
+                  <div className="flex flex-col text-xs truncate">
+                    <span className="font-medium text-neutral-900 dark:text-neutral-100 truncate">{file.name}</span>
+                    <span className="text-neutral-500 text-[11px]">
                       {(file.size / 1024 / 1024).toFixed(1)} MiB
                     </span>
                   </div>
                   <button
                     type="button"
-                    className="icon-btn"
+                    className="absolute top-3 right-3 p-1.5 rounded-full bg-white/90 dark:bg-neutral-800/90 text-neutral-600 dark:text-neutral-300 hover:text-red-600 dark:hover:text-red-400 shadow-xs backdrop-blur-xs transition-colors"
                     aria-label={`Xóa ảnh ${index + 1}`}
-                    onClick={() => {
-                      resetKey();
-                      setFiles((current) =>
-                        current.filter((_, position) => position !== index),
-                      );
-                    }}
+                    onClick={() => removeFile(index)}
                   >
                     <Trash2 size={16} aria-hidden />
                   </button>
@@ -591,87 +639,86 @@ export function CreateExperiencePage() {
           <Field
             label="Mô tả ảnh (không bắt buộc)"
             htmlFor="caption"
-            hint={`${1000 - meta.caption.length} ký tự còn lại`}
+            hint={`${1000 - caption.length} ký tự còn lại`}
           >
             <Textarea
               id="caption"
-              value={meta.caption}
+              {...register("caption", {
+                onChange: () => resetKey(),
+              })}
               maxLength={1000}
               placeholder="Bạn thấy gì ở đây? Không gian, món uống, thời điểm…"
-              onChange={(event) => {
-                resetKey();
-                setMeta({ ...meta, caption: event.currentTarget.value });
-              }}
             />
           </Field>
         </section>
       )}
 
       {step === 3 && (
-        <section className="create-panel" aria-label="Bước 3: kiểm tra và gửi">
-          <h2 className="section-title">Kiểm tra trước khi gửi</h2>
+        <section className="create-panel flex flex-col gap-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs" aria-label="Bước 3: kiểm tra và gửi">
+          <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">Kiểm tra trước khi gửi</h2>
 
-          <dl className="review-list">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 text-sm">
             <div>
-              <dt>Địa điểm</dt>
-              <dd>{previewName || "Chưa chọn"}</dd>
+              <dt className="text-xs text-neutral-500 font-medium">Địa điểm</dt>
+              <dd className="font-semibold text-neutral-900 dark:text-neutral-100 mt-0.5">{previewName || "Chưa chọn"}</dd>
             </div>
             <div>
-              <dt>Địa chỉ</dt>
-              <dd>{previewAddress || "Chưa có"}</dd>
+              <dt className="text-xs text-neutral-500 font-medium">Địa chỉ</dt>
+              <dd className="font-semibold text-neutral-900 dark:text-neutral-100 mt-0.5">{previewAddress || "Chưa có"}</dd>
             </div>
             <div>
-              <dt>Số ảnh</dt>
-              <dd className="tabular">{files.length}</dd>
+              <dt className="text-xs text-neutral-500 font-medium">Số ảnh</dt>
+              <dd className="font-semibold text-neutral-900 dark:text-neutral-100 mt-0.5">{files.length}</dd>
             </div>
-            {meta.caption && (
+            {caption && (
               <div>
-                <dt>Mô tả</dt>
-                <dd>{meta.caption}</dd>
+                <dt className="text-xs text-neutral-500 font-medium">Mô tả</dt>
+                <dd className="font-semibold text-neutral-900 dark:text-neutral-100 mt-0.5">{caption}</dd>
               </div>
             )}
           </dl>
 
           {proposal && (
-            <p className="notice notice--info">
+            <p className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-900/40 text-xs">
               Địa điểm mới sẽ được xem xét trước khi xuất hiện công khai. Ảnh
               của bạn vẫn được gửi kèm.
             </p>
           )}
 
-          <ul className="upload-list upload-list--compact" role="list">
+          <ul className="grid grid-cols-3 sm:grid-cols-4 gap-2" role="list">
             {files.map((file, index) => (
-              <li key={file.name + index}>
+              <li key={file.name + index} className="overflow-hidden rounded-lg aspect-square">
                 <FilePreview file={file} />
               </li>
             ))}
           </ul>
 
-          <label className="check">
+          <label className="flex items-center gap-3 cursor-pointer text-sm font-medium text-neutral-900 dark:text-neutral-100">
             <input
               type="checkbox"
+              className="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
               checked={consent}
               onChange={(event) => {
                 resetKey();
-                setConsent(event.currentTarget.checked);
+                setValue("consent", event.currentTarget.checked);
               }}
             />
-            <span className="check__text">
+            <span>
               Tôi có quyền đăng các ảnh này và đồng ý để chúng hiển thị công
-              khai theo <Link to="/terms">Điều khoản sử dụng</Link>.
+              khai theo <Link to="/terms" className="text-blue-600 underline">Điều khoản sử dụng</Link>.
             </span>
           </label>
         </section>
       )}
 
       {step !== 2 && error && (
-        <p role="alert" className="error">
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400 font-medium">
           {error}
         </p>
       )}
       <ErrorText error={submitError} />
 
-      <div className="create-actions">
+      <div className="flex items-center justify-between gap-4 pt-4 border-t border-neutral-200 dark:border-neutral-800">
         {step > 1 && (
           <Button
             variant="outline"
@@ -682,9 +729,9 @@ export function CreateExperiencePage() {
           </Button>
         )}
         {step < 3 ? (
-          <Button onClick={next}>Tiếp tục</Button>
+          <Button onClick={next} className="ml-auto">Tiếp tục</Button>
         ) : (
-          <Button disabled={!consent || pending} onClick={() => void submit()}>
+          <Button disabled={!consent || pending} onClick={() => void onSubmit()} className="ml-auto">
             {pending ? "Đang đăng…" : "Đăng ảnh"}
           </Button>
         )}
@@ -701,7 +748,7 @@ function FilePreview({ file }: { file: File }) {
 
   return (
     <img
-      className="upload-item__preview"
+      className="w-full h-full object-cover rounded-lg aspect-square"
       src={url}
       alt=""
       loading="lazy"

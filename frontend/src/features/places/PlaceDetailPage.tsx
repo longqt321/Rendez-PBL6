@@ -52,21 +52,21 @@ export function PlaceDetailPage() {
   const hasCoordinates = data.latitude !== null && data.longitude !== null;
 
   return (
-    <article className="place-detail">
-      <Link className="back-link" to={backTo}>
+    <article className="place-detail max-w-5xl mx-auto px-4 py-6 flex flex-col gap-8">
+      <Link className="back-link inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100" to={backTo}>
         <ArrowLeft size={16} aria-hidden />
         Quay lại
       </Link>
 
-      <header className="place-detail__head">
-        <div className="place-detail__identity">
-          <h1 className="place-detail__title">{data.name}</h1>
-          <p className="place-detail__address">
+      <header className="place-detail__head grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <div className="place-detail__identity flex flex-col gap-4">
+          <h1 className="place-detail__title text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">{data.name}</h1>
+          <p className="place-detail__address flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-400">
             <MapPin size={15} aria-hidden />
             <span>{data.address}</span>
           </p>
 
-          <div className="place-detail__badges">
+          <div className="place-detail__badges flex flex-wrap gap-2">
             {data.opening_hours && (
               <Badge tone="neutral">
                 <Clock size={12} aria-hidden />
@@ -75,7 +75,7 @@ export function PlaceDetailPage() {
             )}
           </div>
 
-          <div className="place-detail__actions">
+          <div className="place-detail__actions flex flex-wrap items-center gap-2.5 pt-2">
             <SavePlaceButton place={data} />
             <Button asChild variant="outline">
               <a
@@ -106,20 +106,20 @@ export function PlaceDetailPage() {
           </div>
         </div>
 
-        <div className="place-detail__cover">
+        <div className="place-detail__cover rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
           <SafeImage sources={[cover]} alt={data.name} ratio="4 / 3" eager />
         </div>
       </header>
 
       {data.description && (
         <section
-          className="place-detail__section"
+          className="place-detail__section flex flex-col gap-3 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
           aria-labelledby="about-heading"
         >
-          <h2 id="about-heading" className="section-title">
+          <h2 id="about-heading" className="section-title text-lg font-bold text-neutral-900 dark:text-neutral-100">
             Về địa điểm này
           </h2>
-          <p className="prose">{data.description}</p>
+          <p className="prose text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">{data.description}</p>
         </section>
       )}
 
@@ -127,26 +127,26 @@ export function PlaceDetailPage() {
 
       <PlaceGallery placeId={data.id} initialCount={data.photos.count} />
 
-      <section className="place-detail__section" aria-labelledby="info-heading">
-        <h2 id="info-heading" className="section-title">
+      <section className="place-detail__section flex flex-col gap-4 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" aria-labelledby="info-heading">
+        <h2 id="info-heading" className="section-title text-lg font-bold text-neutral-900 dark:text-neutral-100">
           Thông tin thực tế
         </h2>
-        <dl className="info-list">
-          <div>
-            <dt>Địa chỉ</dt>
-            <dd>{data.address}</dd>
+        <dl className="info-list grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <div className="flex flex-col gap-1 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
+            <dt className="text-xs font-medium text-neutral-400">Địa chỉ</dt>
+            <dd className="font-semibold text-neutral-900 dark:text-neutral-100">{data.address}</dd>
           </div>
-          <div>
-            <dt>Khu vực</dt>
-            <dd>{shortAddress(data.address) || "Chưa xác định"}</dd>
+          <div className="flex flex-col gap-1 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
+            <dt className="text-xs font-medium text-neutral-400">Khu vực</dt>
+            <dd className="font-semibold text-neutral-900 dark:text-neutral-100">{shortAddress(data.address) || "Chưa xác định"}</dd>
           </div>
-          <div>
-            <dt>Giờ hoạt động</dt>
-            <dd>
+          <div className="flex flex-col gap-1 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
+            <dt className="text-xs font-medium text-neutral-400">Giờ hoạt động</dt>
+            <dd className="font-semibold text-neutral-900 dark:text-neutral-100">
               {data.opening_hours ? (
                 data.opening_hours.text
               ) : (
-                <span className="info-list__unknown">
+                <span className="info-list__unknown text-neutral-400 font-normal">
                   Chưa có giờ hoạt động được xác minh
                 </span>
               )}
@@ -154,7 +154,7 @@ export function PlaceDetailPage() {
           </div>
         </dl>
 
-        <div className="place-detail__meta-actions">
+        <div className="place-detail__meta-actions pt-2 flex justify-end">
           <ReportDialog kind="places" id={data.id} />
         </div>
       </section>
@@ -199,35 +199,37 @@ function CommunityExperiences({
 
   return (
     <section
-      className="place-detail__section"
+      className="place-detail__section flex flex-col gap-4 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
       aria-labelledby="experiences-heading"
     >
-      <div className="section-head">
+      <div className="section-head flex items-center justify-between">
         <div>
           <h2
             id="experiences-heading"
-            className="editorial section-head__title"
+            className="editorial section-head__title text-lg font-bold text-neutral-900 dark:text-neutral-100"
           >
             Ảnh mới nhất
           </h2>
         </div>
       </div>
-      <ul className="post-list" role="list">
+      <ul className="post-list grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" role="list">
         {posts.map((post) => (
           <li key={post.id}>
-            <Link className="post-card" to={"/posts/" + post.id}>
+            <Link className="post-card flex gap-3 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/30 group transition-all" to={"/posts/" + post.id}>
               {post.media[0] && (
-                <SafeImage
-                  sources={[post.media[0].media_url]}
-                  alt={post.caption || ""}
-                  ratio="1 / 1"
-                  className="post-card__media"
-                />
+                <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-neutral-100 dark:bg-neutral-800">
+                  <SafeImage
+                    sources={[post.media[0].media_url]}
+                    alt={post.caption || ""}
+                    ratio="1 / 1"
+                    className="post-card__media group-hover:scale-105 transition-transform"
+                  />
+                </div>
               )}
-              <div className="post-card__body">
-                <p className="post-card__author">{post.author_name}</p>
+              <div className="post-card__body flex-1 min-w-0 flex flex-col justify-center">
+                <p className="post-card__author font-semibold text-xs text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 transition-colors">{post.author_name}</p>
                 {post.caption && (
-                  <p className="post-card__caption line-clamp-2">
+                  <p className="post-card__caption line-clamp-2 text-xs text-neutral-600 dark:text-neutral-400 mt-1">
                     {post.caption}
                   </p>
                 )}
@@ -256,16 +258,16 @@ function PlaceGallery({
 
   return (
     <section
-      className="place-detail__section"
+      className="place-detail__section flex flex-col gap-4 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
       aria-labelledby="gallery-heading"
     >
-      <div className="section-head">
+      <div className="section-head flex items-center justify-between">
         <div>
-          <h2 id="gallery-heading" className="editorial section-head__title">
+          <h2 id="gallery-heading" className="editorial section-head__title text-lg font-bold text-neutral-900 dark:text-neutral-100">
             Tất cả ảnh
           </h2>
         </div>
-        <span className="muted small tabular">{initialCount} ảnh</span>
+        <span className="muted small tabular text-xs text-neutral-400">{initialCount} ảnh</span>
       </div>
 
       <AsyncState
@@ -276,14 +278,12 @@ function PlaceGallery({
       />
 
       {gallery.data && gallery.data.results.length > 0 && (
-        <ul className="gallery-grid" role="list">
+        <ul className="gallery-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" role="list">
           {gallery.data.results.map((photo) => (
             <li key={photo.id}>
               <Link
-                className="gallery-grid__item"
+                className="gallery-grid__item group block rounded-xl overflow-hidden aspect-square bg-neutral-100 dark:bg-neutral-800"
                 to={"/photos/" + photo.id}
-                // Hand the photo page its origin so "Quay lại" returns to this
-                // place instead of dropping the visitor on the homepage.
                 state={{ from: location.pathname }}
                 aria-label={
                   "Xem ảnh" + (photo.caption ? ": " + photo.caption : "")
@@ -297,6 +297,7 @@ function PlaceGallery({
                       ? `${photo.width} / ${photo.height}`
                       : "1 / 1"
                   }
+                  className="group-hover:scale-105 transition-transform"
                 />
               </Link>
             </li>
@@ -305,7 +306,7 @@ function PlaceGallery({
       )}
 
       {gallery.data && (gallery.data.next || gallery.data.previous) && (
-        <div className="pagination">
+        <div className="pagination flex items-center justify-center gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
           <Button
             variant="outline"
             size="sm"
@@ -314,7 +315,7 @@ function PlaceGallery({
           >
             Trang trước
           </Button>
-          <span className="tabular">Trang {page}</span>
+          <span className="tabular text-xs font-medium text-neutral-600 dark:text-neutral-400">Trang {page}</span>
           <Button
             variant="outline"
             size="sm"
@@ -350,22 +351,22 @@ function RelatedPlaces({
 
   return (
     <section
-      className="place-detail__section"
+      className="place-detail__section flex flex-col gap-4 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
       aria-labelledby="related-heading"
     >
-      <div className="section-head">
+      <div className="section-head flex items-center justify-between">
         <div>
-          <h2 id="related-heading" className="editorial section-head__title">
+          <h2 id="related-heading" className="editorial section-head__title text-lg font-bold text-neutral-900 dark:text-neutral-100">
             Địa điểm gần đây
           </h2>
         </div>
       </div>
-      <ul className="related-grid" role="list">
+      <ul className="related-grid grid grid-cols-2 sm:grid-cols-4 gap-4" role="list">
         {related.map((item) => (
-          <li key={item.photo.id}>
+          <li key={item.photo.id} className="flex flex-col gap-1.5">
             <ExperienceTile item={item} from={"/places/" + placeId} />
             <Link
-              className="related-grid__label"
+              className="related-grid__label text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-blue-600 truncate"
               to={"/places/" + item.place.id}
             >
               {item.place.name}

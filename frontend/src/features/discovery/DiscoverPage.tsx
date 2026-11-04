@@ -53,12 +53,12 @@ export function DiscoverPage() {
   const placeCount = recentPlaces.data?.count;
 
   return (
-    <div className="discover">
-      <header className="page-head discover-head">
+    <div className="discover max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6">
+      <header className="page-head discover-head flex items-center justify-between pb-2 border-b border-neutral-200 dark:border-neutral-800">
         <div className="page-head__copy">
-          <h1>Khám phá</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">Khám phá</h1>
           {placeCount != null && (
-            <p className="muted small">{placeCount} địa điểm</p>
+            <p className="muted small text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{placeCount} địa điểm</p>
           )}
         </div>
         <Button asChild variant="outline">
@@ -83,7 +83,7 @@ export function DiscoverPage() {
         />
       ) : (
         <section
-          className="discover-section"
+          className="discover-section flex flex-col gap-6"
           aria-labelledby="experiences-heading"
         >
           <h2 id="experiences-heading" className="sr-only">
@@ -98,7 +98,7 @@ export function DiscoverPage() {
           />
 
           {experiences.length > 0 && (
-            <div className="discover-feed-list">
+            <div className="discover-feed-list flex flex-col gap-6">
               {experiences.map((item, index) => (
                 <ExperienceCard
                   key={item.photo.id}
@@ -112,13 +112,13 @@ export function DiscoverPage() {
           <div ref={sentinel} aria-hidden="true" />
 
           {isFetchingNextPage && (
-            <p className="muted small text-center" role="status">
+            <p className="muted small text-center text-xs text-neutral-400 py-4" role="status">
               Đang tải thêm…
             </p>
           )}
 
           {feed.data && !hasNextPage && experiences.length > 0 && (
-            <p className="muted small text-center">
+            <p className="muted small text-center text-xs text-neutral-400 py-4">
               Bạn đã xem hết ảnh mới nhất.
             </p>
           )}
