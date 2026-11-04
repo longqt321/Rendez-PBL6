@@ -1,6 +1,7 @@
 import unicodedata
 from django.core.cache import cache
 from django.db.models import BooleanField, Exists, OuterRef, Subquery, Value
+from django.db.models.expressions import RawSQL
 from rest_framework import serializers
 
 from apps.favorites.models import Favorite
@@ -55,13 +56,13 @@ def visual_places(request, codes, filter_results=True):
 
         words = normalize_vietnamese_text(q).split()
         if connection.vendor == "postgresql":
+            search_expr = RawSQL(
+                "f_unaccent(lower(places_place.name || ' ' || places_place.address || ' ' || coalesce(places_place.description, '')))",
+                (),
+            )
+            places = places.annotate(_search_text=search_expr)
             for word in words:
-                places = places.extra(
-                    where=[
-                        "f_unaccent(lower(places_place.name || ' ' || places_place.address || ' ' || coalesce(places_place.description, ''))) LIKE %s"
-                    ],
-                    params=[f"%{word}%"],
-                )
+                places = places.filter(_search_text__contains=word)
         else:
             matched_ids = [
                 row[0]
