@@ -110,3 +110,96 @@ Dùng `import.meta.dirname` (Node ≥ 20.11).
 ### Lý do
 
 `__dirname` không tồn tại trong ESM. Node ở đây là v26 nên `import.meta.dirname` có sẵn.
+
+---
+
+## D-005 — Kiến trúc Feature-based + App-level, triển khai theo bản gọn
+
+**Ngày:** 2026-11-06
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Dự án cần cấu trúc cho frontend nhiều chức năng, có backend Django REST riêng, phát triển lâu dài.
+Hướng dẫn đưa ra hai cấu trúc: bản mục tiêu dài hạn (mục 1) và bản khuyên bắt đầu (mục 7).
+
+### Quyết định
+
+Triển khai **bản gọn (mục 7)**: `app/`, `components/{ui,layout,shared}`, `features/`, `lib/`, `stores/`, `types/`.
+**Không** tạo `services/`, không tạo sẵn feature nào, không tạo `src/hooks/`.
+
+### Lý do
+
+- Hướng dẫn nói rõ mục 1 là mục tiêu dài hạn, mục 7 là nơi nên bắt đầu; và "không cần tạo sẵn hàng chục thư mục trống".
+- `services/` chỉ có nghĩa khi có tích hợp ngoài dùng ở nhiều feature. Hiện chưa có → tạo trước là overengineering.
+- `src/hooks/` chưa có hook nào dùng chung. Hook của feature phải nằm trong feature (colocation).
+- Tạo sẵn 6 feature rỗng sẽ khiến người đọc tưởng đã có tính năng, và dễ sinh import chéo giữa feature rỗng.
+
+### Phương án đã xem
+
+- Bản đầy đủ mục 1 + 6 feature rỗng: loại, vì vi phạm "no premature abstraction" và tạo 60+ thư mục trống.
+- Bản gọn + `services/api/` rỗng: loại, vì chưa có API dùng chung nào; `lib/axios.ts` đã đủ cho tầng HTTP.
+
+### Hệ quả
+
+- Muốn thêm tính năng: tạo `features/<tên>/` với các thư mục con cần dùng, không cần đủ 7 thư mục ngay.
+- Chỉ chuyển component lên `components/shared/` khi có nhu cầu dùng ở nơi thứ hai.
+
+---
+
+## D-006 — Nội dung khung tối thiểu, không có UI nghiệp vụ
+
+**Ngày:** 2026-11-06
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Yêu cầu: "Chỉ triển khai cấu trúc, không triển khai bất cứ chức năng gì."
+
+### Quyết định
+
+- `app/providers/query-provider.tsx`: tạo `QueryClient` + `QueryClientProvider` (không cấu hình option nào).
+- `app/providers/app-provider.tsx`: chỉ gộp provider.
+- `app/router/routes.tsx`: một route `/` render một `<main>` placeholder inline.
+- `lib/axios.ts`: axios instance với `baseURL` từ `VITE_API_BASE_URL`, chưa có interceptor.
+- Xóa `src/App.tsx`, `src/App.css` (template Vite) vì đã có `app/app.tsx` thay thế.
+
+### Lý do
+
+Cấu trúc phải chứng minh được là chạy được (`typecheck`/`lint`/`build` pass), nhưng không được chứa logic nghiệp vụ.
+Placeholder viết inline trong `routes.tsx` thay vì tách file, để không tạo component "dùng chung" chỉ dùng một lần.
+
+### Hệ quả
+
+- Khi có trang thật: thay `element` của route bằng component trong `features/<feature>/pages/`.
+- `QueryClient` hiện dùng default option; chỉnh `staleTime`/`retry` khi có nhu cầu thật.
+
+---
+
+## D-007 — `.env` bị ignore, `.env.example` được commit
+
+**Ngày:** 2026-11-06
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+`.gitignore` gốc của Vite chỉ có `*.local`, không chặn `.env`. Nếu tạo `.env` chứa secret thì sẽ bị commit.
+
+### Quyết định
+
+Thêm vào `.gitignore`:
+
+```
+.env
+.env.*
+!.env.example
+```
+
+### Lý do
+
+Quy ước dự án: "Không ghi secret vào mã. Secret chỉ qua biến môi trường."
+`.env.example` phải được commit để người khác biết cần biến gì.
+
+### Hệ quả
+
+Đã xác minh: `git check-ignore -v .env` → khớp rule `.gitignore:16`; `.env.example` → khớp negation `!.env.example`.

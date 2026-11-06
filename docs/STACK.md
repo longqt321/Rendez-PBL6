@@ -43,3 +43,64 @@ bun run format:check # prettier --check .
 
 `@/*` → `src/*`, khai báo ở 3 nơi phải khớp nhau:
 `vite.config.ts` (`resolve.alias`), `tsconfig.app.json` (`paths`), `tsconfig.json` (`paths`).
+
+## Cấu trúc thư mục
+
+Kiến trúc: **Feature-based + App-level**. Chi tiết lý do ở `DECISIONS.md` D-005.
+
+```
+src/
+├── app/                    # cấu hình cấp ứng dụng, KHÔNG chứa business logic
+│   ├── providers/
+│   │   ├── app-provider.tsx    # gộp toàn bộ provider
+│   │   └── query-provider.tsx  # QueryClientProvider
+│   ├── router/
+│   │   ├── index.tsx           # createBrowserRouter + RouterProvider
+│   │   └── routes.tsx          # khai báo route
+│   └── app.tsx             # root component
+│
+├── assets/                 # tài nguyên tĩnh
+│   ├── fonts/
+│   ├── icons/
+│   └── images/
+│
+├── components/             # chỉ component dùng ở NHIỀU nơi
+│   ├── ui/                 # shadcn sinh ra, không sửa tay
+│   ├── layout/             # header, sidebar, navigation
+│   └── shared/             # component dùng chung có ý nghĩa nghiệp vụ
+│
+├── features/               # mỗi feature tự quản api/components/hooks/types/pages
+│   └── <feature>/
+│       ├── api/
+│       ├── components/
+│       ├── hooks/
+│       ├── pages/
+│       ├── schemas/
+│       ├── types/
+│       └── index.ts        # public API của feature
+│
+├── lib/                    # tiện ích & cấu hình thư viện dùng chung
+│   ├── axios.ts            # axios instance, baseURL từ VITE_API_BASE_URL
+│   └── utils.ts            # cn()
+│
+├── stores/                 # Zustand — chỉ global CLIENT state
+├── types/                  # type dùng chung toàn app
+├── index.css
+├── main.tsx
+└── vite-env.d.ts           # khai báo type cho import.meta.env
+```
+
+### Quy tắc
+
+1. Component chỉ dùng trong một feature → đặt trong `features/<feature>/components/`, **không** lên `components/`.
+2. Page chỉ ghép component và gọi hook. Không viết axios trực tiếp trong component.
+3. Luồng API: Page → feature hook (`useQuery`) → feature api → `lib/axios` → backend.
+4. Không dùng Zustand/Context/TanStack Query chồng chéo cho cùng một dữ liệu.
+5. Không tạo `index.ts` barrel cho toàn bộ thư mục — chỉ cho `features/<feature>/index.ts` khi thực sự cần.
+6. Tên file `kebab-case`, component `PascalCase`, hàm/biến `camelCase`.
+
+### Chưa tạo (theo hướng dẫn: không tạo thư mục trống)
+
+- `services/` — chỉ thêm khi có tích hợp ngoài (upload, maps) dùng ở nhiều feature.
+- Các feature cụ thể — mở rộng dần khi làm tính năng.
+- `src/hooks/` — hook dùng chung chỉ tạo khi có hook thứ hai thực sự dùng chung.
