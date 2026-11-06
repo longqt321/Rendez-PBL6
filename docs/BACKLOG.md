@@ -34,3 +34,17 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
       kiểm contrast, focus order, keyboard nav.
 - [ ] **Chưa có README mô tả dự án** — vẫn là README mặc định của Vite.
 - [ ] **Chưa cấu hình `base` cho Vite** nếu deploy dưới subpath.
+
+## Phát hiện khi dùng design stack (2026-11-06)
+
+- [ ] **Cảnh báo `<script>` trong `#root` ở chế độ dev.** `next-themes` render script chống nháy
+      theme bên trong React tree → React 19 cảnh báo script không thực thi. Đã xác minh:
+      chỉ ở dev, production sạch, không phải code dự án. Chi tiết ở `DECISIONS.md` D-008.
+      Nếu muốn sạch console: tự viết theme provider và sửa `src/components/ui/sonner.tsx`.
+- [ ] **`src/components/shared/design-showcase-page.tsx` là trang tạm** để kiểm tra design stack.
+      Xóa cùng route `/design` khi bắt đầu làm giao diện thật.
+- [ ] **Bundle tăng lên 490 KB (gzip 156 KB)** sau khi thêm router + query + sonner + dialog.
+      Chưa cần tối ưu, nhưng nên theo dõi khi thêm feature.
+- [ ] **Chưa có component nào cho form thật** — `react-hook-form` + `zod` + `@hookform/resolvers`
+      vẫn chưa được dùng. Trang showcase chỉ có `Input` + `Label` đơn lẻ.
+- [ ] **Chưa có `error boundary`** cho route; nếu một page throw thì cả app trắng.

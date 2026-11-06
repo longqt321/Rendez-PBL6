@@ -1,4 +1,5 @@
 import type { RouteObject } from "react-router"
+import { DesignShowcasePage } from "@/components/shared/design-showcase-page"
 
 export const routes: RouteObject[] = [
   {
@@ -8,5 +9,9 @@ export const routes: RouteObject[] = [
         <p className="text-sm text-muted-foreground">Chưa có trang nào được triển khai.</p>
       </main>
     ),
+  },
+  {
+    path: "/design",
+    element: <DesignShowcasePage />,
   },
 ]

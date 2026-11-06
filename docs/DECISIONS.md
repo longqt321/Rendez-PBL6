@@ -203,3 +203,61 @@ Quy ước dự án: "Không ghi secret vào mã. Secret chỉ qua biến môi t
 ### Hệ quả
 
 Đã xác minh: `git check-ignore -v .env` → khớp rule `.gitignore:16`; `.env.example` → khớp negation `!.env.example`.
+
+---
+
+## D-008 — Thêm `next-themes` (dependency ngoài danh sách ban đầu)
+
+**Ngày:** 2026-11-06
+**Trạng thái:** Đã áp dụng — **cần người dùng xác nhận**
+
+### Bối cảnh
+
+Khi chạy `bunx shadcn add sonner`, CLI tự thêm `next-themes@^0.4.6` vào `dependencies`.
+Lý do: file `src/components/ui/sonner.tsx` do shadcn sinh ra dùng `useTheme()` từ `next-themes`
+để toast tự đổi màu theo theme sáng/tối.
+
+Dependency này **không nằm trong danh sách package người dùng đã duyệt** (React, React Router,
+TanStack Query, Zustand, React Hook Form, Zod, Axios, Tailwind, shadcn/ui, Lucide, Sonner).
+
+### Quyết định
+
+Giữ `next-themes`, dùng cho cả toast lẫn nút chuyển sáng/tối.
+
+### Lý do
+
+- Đây là lựa chọn mặc định của shadcn cho Sonner; bỏ nó phải sửa file generated.
+- `index.css` đã có sẵn biến `.dark` — cần một cơ chế gắn class `dark` lên `<html>`.
+- Tự viết provider (~25 dòng: `useState` + `localStorage` + `matchMedia`) là phương án thay thế
+  khả thi, nhưng phải sửa `sonner.tsx` và sẽ bị ghi đè mỗi lần `shadcn add sonner --overwrite`.
+
+### Phương án đã xem
+
+1. **Giữ `next-themes`** (đã chọn) — ít code tự viết, đúng chuẩn shadcn.
+2. Tự viết theme provider + sửa `sonner.tsx` — không thêm dependency, nhưng thêm code tự bảo trì
+   và sửa file generated.
+3. Bỏ dark mode — loại, vì `index.css` đã có sẵn theme tối và người dùng yêu cầu demo.
+
+### Kích thước / license
+
+- `next-themes@0.4.6`, license **MIT**, 44 KB trên đĩa, **0 runtime dependency**.
+
+### Hệ quả — có một cảnh báo đã biết
+
+Ở **chế độ dev**, console hiện cảnh báo của React 19:
+
+```
+Encountered a script tag while rendering React component. Scripts inside React
+components are never executed when rendering on the client.
+```
+
+Nguyên nhân: `next-themes` render một `<script>` inline **bên trong `#root`** để chống nháy theme
+(FOUC) trước khi React hydrate. Đã xác minh bằng CDP:
+
+- `document.querySelector("#root script")` → tồn tại, nội dung là hàm set class `light`/`dark`.
+- Cảnh báo xuất hiện **chỉ ở dev**, **không xuất hiện ở production build**
+  (`vite preview` + CDP: 0 error qua cả 6 bước tương tác).
+- Bỏ `ThemeProvider` thì cảnh báo **vẫn còn** → không phải do code của dự án.
+
+Đây là cảnh báo mỹ quan của thư viện, không phải lỗi chức năng. Đã ghi vào `BACKLOG.md`.
+Nếu muốn sạch console: chuyển sang phương án 2.
