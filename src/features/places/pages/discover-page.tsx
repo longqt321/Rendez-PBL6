@@ -43,9 +43,9 @@ export function DiscoverPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2.5">
         <Popover>
-          <PopoverTrigger render={<Button variant="outline" size="sm" />}>
+          <PopoverTrigger render={<Button variant="outline" />}>
             <ListFilterIcon />
             Lọc
             {activeFilterCount > 0 ? (
@@ -55,10 +55,10 @@ export function DiscoverPage() {
             ) : null}
           </PopoverTrigger>
           <PopoverContent align="start" className="w-80">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <label
                 htmlFor="discover-filter"
-                className="text-xs font-semibold text-muted-foreground"
+                className="text-sm font-semibold text-muted-foreground"
               >
                 Từ khoá
               </label>
@@ -77,17 +77,17 @@ export function DiscoverPage() {
               </InputGroup>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-muted-foreground">Loại hình</span>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-muted-foreground">Loại hình</span>
               <div
                 role="group"
                 aria-label="Lọc theo loại hình"
-                className="flex flex-wrap items-center gap-1.5"
+                className="flex flex-wrap items-center gap-2"
               >
                 {CATEGORY_TABS.map((tab) => (
                   <Button
                     key={tab.value}
-                    size="xs"
+                    size="sm"
                     variant={category === tab.value ? "default" : "outline"}
                     aria-pressed={category === tab.value}
                     onClick={() => setCategory(tab.value)}
@@ -101,7 +101,6 @@ export function DiscoverPage() {
             {activeFilterCount > 0 ? (
               <Button
                 variant="ghost"
-                size="sm"
                 className="justify-start"
                 onClick={() => {
                   setCategory("all")
@@ -115,10 +114,12 @@ export function DiscoverPage() {
           </PopoverContent>
         </Popover>
 
-        <Badge variant="outline">{places.length} địa điểm</Badge>
+        <Badge variant="outline" className="h-6 px-2.5 text-sm">
+          {places.length} địa điểm
+        </Badge>
         {isFetchingNextPage ? (
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Spinner className="size-3" />
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Spinner className="size-4" />
             Đang tải thêm…
           </span>
         ) : null}
@@ -138,7 +139,7 @@ export function DiscoverPage() {
             <EmptyTitle>Không tải được danh sách địa điểm</EmptyTitle>
             <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
           </EmptyHeader>
-          <Button variant="outline" size="sm" onClick={() => void refetch()}>
+          <Button variant="outline" onClick={() => void refetch()}>
             Thử lại
           </Button>
         </Empty>
@@ -153,7 +154,6 @@ export function DiscoverPage() {
           </EmptyHeader>
           <Button
             variant="outline"
-            size="sm"
             onClick={() => {
               setCategory("all")
               setQuery("")
@@ -165,7 +165,7 @@ export function DiscoverPage() {
       ) : (
         <>
           {/* PC: 3 cột đều. Mobile: 2 cột masonry, mỗi thẻ có chiều cao ảnh riêng. */}
-          <ul className="mt-5 grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+          <ul className="mt-6 grid grid-cols-2 items-start gap-4 md:grid-cols-3">
             {places.map((place) => (
               <li key={place.id} className="lg:h-full">
                 <PlaceCard place={place} />
@@ -175,7 +175,7 @@ export function DiscoverPage() {
 
           <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
 
-          <div className="mt-6 flex justify-center">
+          <div className="mt-8 flex justify-center">
             {hasNextPage ? (
               <Button
                 variant="outline"
@@ -186,7 +186,7 @@ export function DiscoverPage() {
                 {isFetchingNextPage ? "Đang tải…" : "Tải thêm"}
               </Button>
             ) : (
-              <p className="text-xs text-muted-foreground">Đã hết địa điểm.</p>
+              <p className="text-sm text-muted-foreground">Đã hết địa điểm.</p>
             )}
           </div>
         </>

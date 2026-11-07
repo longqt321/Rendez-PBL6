@@ -27,20 +27,20 @@ export function PostCard({ post }: PostCardProps) {
   const place = post.place
 
   return (
-    <article className="overflow-hidden rounded-[0.25rem] border border-border bg-card shadow-(--shadow-soft)">
-      <header className="flex items-center gap-2.5 px-3 py-2.5">
-        <Avatar>
-          <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
+    <article className="overflow-hidden rounded-md border border-border bg-card shadow-(--shadow-soft)">
+      <header className="flex items-center gap-3 px-4 py-3">
+        <Avatar size="lg">
+          <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
             {post.author.initials}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm leading-tight font-semibold">
+          <p className="truncate text-base leading-tight font-semibold">
             <Link to={`/post/${post.id}`} className="outline-none hover:underline">
               {post.author.name}
             </Link>
           </p>
-          <p className="truncate text-xs text-muted-foreground">
+          <p className="truncate text-sm text-muted-foreground">
             @{post.author.handle} · {formatRelativeTime(post.createdAt)}
           </p>
         </div>
@@ -54,31 +54,33 @@ export function PostCard({ post }: PostCardProps) {
         />
       </Link>
 
-      <div className="flex flex-col gap-2 p-3">
-        <p className="text-sm leading-relaxed whitespace-pre-line">{post.caption}</p>
+      <div className="flex flex-col gap-3 p-4">
+        <p className="text-base leading-relaxed whitespace-pre-line">{post.caption}</p>
 
         {place ? (
-          <div className="flex items-center gap-2 rounded-[0.2rem] border border-border/70 bg-muted/70 px-2 py-1.5">
-            <MapPinIcon className="size-3.5 shrink-0" aria-hidden="true" />
+          <div className="flex items-center gap-2.5 rounded-md border border-border/70 bg-muted/70 px-3 py-2">
+            <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-semibold">{place.name}</span>
-              <span className="block truncate text-xs text-muted-foreground">{place.address}</span>
+              <span className="block truncate text-sm font-semibold">{place.name}</span>
+              <span className="block truncate text-sm text-muted-foreground">{place.address}</span>
             </span>
-            <Badge variant={place.isPublished ? "secondary" : "outline"} className="shrink-0">
+            <Badge
+              variant={place.isPublished ? "secondary" : "outline"}
+              className="h-6 shrink-0 text-sm"
+            >
               {place.isPublished ? "Trên Khám phá" : categoryLabel(place.category)}
             </Badge>
           </div>
         ) : (
-          <p className="flex items-center gap-1.5 rounded-[0.2rem] border border-dashed border-border px-2 py-1.5 text-xs text-muted-foreground">
-            <SparklesIcon className="size-3 shrink-0" aria-hidden="true" />
+          <p className="flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-sm text-muted-foreground">
+            <SparklesIcon className="size-4 shrink-0" aria-hidden="true" />
             Chưa gắn địa điểm — hệ thống sẽ đề xuất cho bạn.
           </p>
         )}
 
-        <footer className="flex items-center gap-1 pt-0.5">
+        <footer className="flex items-center gap-1.5 pt-0.5">
           <Button
             variant="ghost"
-            size="sm"
             aria-pressed={post.likedByMe}
             aria-label={post.likedByMe ? "Bỏ thích" : "Thích"}
             onClick={() => setLiked.mutate({ postId: post.id, liked: !post.likedByMe })}
@@ -88,19 +90,13 @@ export function PostCard({ post }: PostCardProps) {
             {formatCount(post.likeCount)}
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label="Bình luận"
-            onClick={() => setCommentsOpen(true)}
-          >
+          <Button variant="ghost" aria-label="Bình luận" onClick={() => setCommentsOpen(true)}>
             <MessageCircleIcon />
             {formatCount(post.commentCount)}
           </Button>
 
           <Button
             variant="ghost"
-            size="sm"
             aria-pressed={post.savedByMe}
             aria-label={post.savedByMe ? "Bỏ lưu" : "Lưu bài"}
             onClick={() => setSaved.mutate({ postId: post.id, saved: !post.savedByMe })}

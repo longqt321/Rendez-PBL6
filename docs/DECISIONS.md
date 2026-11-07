@@ -994,3 +994,58 @@ Không đổi dependency. `package.json`, `bun.lock` không đổi. Không sửa
 - Chưa test Firefox/Safari — chỉ Chrome 156. `offsetWidth` làm tròn về số nguyên nên lệch dưới 1px
   không phát hiện được.
 - Chưa đo trên màn hình mật độ cao (DPR 2/3) — mới DPR 1.
+
+## D-018 — Tăng kích thước vùng trung tâm /discover và /social
+
+**Ngày:** 2026-11-07 · **Trạng thái:** đã triển khai
+
+### Bối cảnh
+
+User phản hồi: thiết kế đã ổn, nhưng components và chữ trong vùng trung tâm (nội dung trong
+`<main>`) của `/discover` và `/social` còn hơi nhỏ; tăng chữ thì phải tăng components theo.
+
+### Quyết định
+
+Tăng một bậc theo thang Tailwind, chỉ trong file dùng chung 2 skin (không đụng `src/components/ui/`,
+không đụng topbar/side nav/bottom nav):
+
+| Vị trí | Trước | Sau |
+| --- | --- | --- |
+| Thẻ địa điểm: body | `p-3 gap-1.5` | `p-4 gap-2` |
+| Tên địa điểm | 14px | 16px (`text-base`) |
+| Địa chỉ + meta | 12px | 14px (`text-sm`) |
+| Badge danh mục / đếm | h-5, 12px | `h-6 px-2.5`, 14px |
+| Rating span | `px-1.5 py-0.5 text-xs` | `px-2 py-1 text-sm` |
+| Thẻ bài đăng: header | `px-3 py-2.5` | `px-4 py-3` |
+| Avatar bài đăng | 32px | 40px (`size="lg"`) |
+| Tên / handle | 14 / 12px | 16 / 14px |
+| Caption | 14px | 16px (`text-base`) |
+| Nút footer | h-7 (`size="sm"`) | h-8 (mặc định) |
+| Composer | `p-3` | `p-4`; textarea `min-h-28`, 16px cả desktop (override `md:text-sm` của ui) |
+| Khối địa điểm trong post/composer | `px-2 py-1.5 text-xs` | `px-3 py-2 text-sm` |
+| Nút Lọc / chip / popover | `size="sm"` / `size="xs"` | mặc định / `size="sm"`, label 14px |
+| Bo góc lẻ `rounded-[0.15/0.25rem]` | 2.4 / 4px | `rounded-md` (8px, D-017) |
+
+### Phương án đã xem
+
+- _Đổi `--radius` chung hoặc font-size gốc `html`_ — loại: ảnh hưởng mọi route kể cả nav.
+- _Chỉ tăng chữ, giữ components_ — loại: user yêu cầu tăng cả hai.
+- _Thêm bậc chữ lẻ (13px, 15px)_ — loại: vi phạm cam kết chỉ dùng thang Tailwind (D-017).
+- _Sửa `src/components/ui/textarea.tsx`_ — loại: cam kết không sửa ui; override `md:text-base` ở
+  nơi dùng.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build` → exit 0.
+- `scratch/center-size.mjs` @1280: title 16px, addr 14px, badge 24px, body pad 16, avatar 40,
+  caption 16px/26, btn h-8 (32), composer pad 16, textarea min-h 112px/16px. @390: 2 route
+  `overflow: false`.
+- `scratch/size-parity.mjs`: **0 mục lệch** trên 6 route × 4 tổ hợp (chạy trên working tree trước
+  commit).
+
+### Chưa xác minh
+
+- **Chưa xem giao diện bằng mắt người** — model không đọc được PNG; "to hơn" được xác nhận bằng số
+  đo DOM, cảm nhận thị giác chỉ user xác nhận được.
+- Chưa test Firefox/Safari — chỉ Chrome 156.
+- Chưa kiểm trên màn hình thật / DPR khác 1.

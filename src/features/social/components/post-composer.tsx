@@ -59,7 +59,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-[0.25rem] border border-border bg-card p-3 shadow-(--shadow-soft)"
+      className="rounded-md border border-border bg-card p-4 shadow-(--shadow-soft)"
     >
       <label htmlFor="post-caption" className="sr-only">
         Nội dung bài đăng
@@ -69,18 +69,20 @@ export function PostComposer({ onCreated }: PostComposerProps) {
         value={caption}
         onChange={(event) => setCaption(event.target.value)}
         placeholder="Hôm nay bạn ăn gì? Kể vài dòng về quán, món, không khí…"
-        className="min-h-20 resize-none border-0 bg-transparent px-0 text-sm shadow-none focus-visible:ring-0"
+        className="min-h-28 resize-none border-0 bg-transparent px-0 text-base md:text-base shadow-none focus-visible:ring-0"
       />
 
       {selectedPlace ? (
-        <div className="mt-2 flex items-center gap-2 rounded-[0.2rem] border border-border bg-secondary px-2 py-1.5 text-xs">
-          <MapPinIcon className="size-3.5 shrink-0" aria-hidden="true" />
+        <div className="mt-3 flex items-center gap-2.5 rounded-md border border-border bg-secondary px-3 py-2 text-sm">
+          <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />
           <span className="flex-1 font-semibold">{selectedPlace.name}</span>
-          <Badge variant="outline">{categoryLabel(selectedPlace.category)}</Badge>
+          <Badge variant="outline" className="h-6 text-sm">
+            {categoryLabel(selectedPlace.category)}
+          </Badge>
           <Button
             type="button"
             variant="ghost"
-            size="icon-xs"
+            size="icon-sm"
             aria-label="Bỏ gắn địa điểm"
             onClick={() => setSelectedPlace(null)}
           >
@@ -90,12 +92,12 @@ export function PostComposer({ onCreated }: PostComposerProps) {
       ) : null}
 
       {showSuggestions && suggestions.length > 0 ? (
-        <div className="mt-2 rounded-[0.2rem] border border-dashed border-border bg-muted/60 p-2">
-          <p className="flex items-center gap-1 text-xs font-semibold tracking-wide uppercase">
-            <SparklesIcon className="size-3" aria-hidden="true" />
+        <div className="mt-3 rounded-md border border-dashed border-border bg-muted/60 p-3">
+          <p className="flex items-center gap-1.5 text-sm font-semibold tracking-wide uppercase">
+            <SparklesIcon className="size-3.5" aria-hidden="true" />
             Địa điểm có thể bạn đang nói tới
           </p>
-          <ul className="mt-1.5 flex flex-col gap-1">
+          <ul className="mt-2 flex flex-col gap-1">
             {suggestions.map(({ place, reason }) => (
               <li key={place.id}>
                 <Item
@@ -109,18 +111,16 @@ export function PostComposer({ onCreated }: PostComposerProps) {
                       }}
                     />
                   }
-                  className="group gap-2 px-1.5 py-1 text-left text-xs hover:bg-accent/15"
+                  className="group gap-2 px-2 py-1.5 text-left hover:bg-accent/15"
                 >
                   <ItemMedia variant="icon">
-                    <MapPinIcon className="size-3" aria-hidden="true" />
+                    <MapPinIcon className="size-3.5" aria-hidden="true" />
                   </ItemMedia>
                   <ItemContent className="gap-0">
-                    <ItemTitle className="line-clamp-none text-xs font-semibold">
-                      {place.name}
-                    </ItemTitle>
-                    <ItemDescription className="line-clamp-none text-xs">{reason}</ItemDescription>
+                    <ItemTitle className="line-clamp-none font-semibold">{place.name}</ItemTitle>
+                    <ItemDescription className="line-clamp-none">{reason}</ItemDescription>
                   </ItemContent>
-                  <CheckIcon className="size-3 shrink-0 opacity-0 group-hover:opacity-100" />
+                  <CheckIcon className="size-3.5 shrink-0 opacity-0 group-hover:opacity-100" />
                 </Item>
               </li>
             ))}
@@ -128,11 +128,10 @@ export function PostComposer({ onCreated }: PostComposerProps) {
         </div>
       ) : null}
 
-      <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-dashed border-border pt-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border pt-3">
         <Button
           type="button"
           variant="ghost"
-          size="sm"
           onClick={() => setShowSuggestions((value) => !value)}
           aria-expanded={showSuggestions}
           disabled={caption.trim().length < 8}
@@ -149,16 +148,15 @@ export function PostComposer({ onCreated }: PostComposerProps) {
         <Button
           type="button"
           variant="ghost"
-          size="sm"
           onClick={() => setSeedIndex((index) => index + 1)}
           aria-label="Đổi ảnh minh hoạ"
         >
           Đổi ảnh
         </Button>
 
-        <span className="ml-auto text-xs text-muted-foreground">{caption.trim().length}/500</span>
+        <span className="ml-auto text-sm text-muted-foreground">{caption.trim().length}/500</span>
 
-        <Button type="submit" size="sm" disabled={!canSubmit}>
+        <Button type="submit" disabled={!canSubmit}>
           {createPost.isPending ? <Spinner /> : null}
           Đăng
         </Button>
