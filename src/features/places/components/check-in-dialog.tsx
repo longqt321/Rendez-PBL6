@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { CameraIcon, MapPinIcon } from "lucide-react"
+import { CameraIcon, MapPinIcon, RefreshCwIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -104,21 +104,19 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
               className="min-h-24 resize-none"
               autoFocus
             />
-            <FieldDescription className="flex items-center justify-between gap-2">
-              <span>{caption.trim().length}/500 ký tự</span>
-              <Button
-                type="button"
-                variant="link"
-                size="sm"
-                className="h-auto p-0"
-                onClick={() => setSeedIndex((index) => index + 1)}
-              >
-                Đổi ảnh
-              </Button>
-            </FieldDescription>
+            <FieldDescription>{caption.trim().length}/500 ký tự</FieldDescription>
           </Field>
 
           <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              className="sm:mr-auto"
+              onClick={() => setSeedIndex((index) => index + 1)}
+            >
+              <RefreshCwIcon />
+              Đổi ảnh
+            </Button>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Huỷ
             </Button>
