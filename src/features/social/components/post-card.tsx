@@ -8,6 +8,7 @@ import { formatCount, formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useSetPostLiked } from "../hooks/use-set-post-liked"
 import { useSetPostSaved } from "../hooks/use-set-post-saved"
+import { PostCommentsInline } from "./post-comments-inline"
 import type { Post } from "../types/post"
 
 interface PostCardProps {
@@ -96,6 +97,8 @@ export function PostCard({ post }: PostCardProps) {
           </Button>
         </footer>
       </div>
+
+      <PostCommentsInline post={post} />
     </article>
   )
 }
