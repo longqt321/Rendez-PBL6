@@ -73,10 +73,10 @@ function Brand() {
         aria-hidden="true"
         className="grid size-8 place-items-center rounded-[0.2rem] border border-border bg-secondary text-sm font-bold text-secondary-foreground"
       >
-        S
+        Đ
       </span>
       <span className="font-heading text-lg leading-none font-bold tracking-tight">
-        Sài Gòn
+        Đà Nẵng
         <span className="block text-xs font-medium tracking-[0.18em] uppercase opacity-60">
           Ăn &amp; Đi
         </span>

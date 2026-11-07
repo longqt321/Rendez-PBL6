@@ -13,7 +13,7 @@ const AUTHORS: Record<string, Author> = {
   "u-1": { id: "u-1", name: "Trần Bảo", handle: "bao.an.day", initials: "TB" },
   "u-2": { id: "u-2", name: "Lê Thu Hà", handle: "thuha.foodmap", initials: "TH" },
   "u-3": { id: "u-3", name: "Phạm Quốc", handle: "quoc.around", initials: "PQ" },
-  "u-4": { id: "u-4", name: "Nguyễn Yến", handle: "yen.saigon", initials: "NY" },
+  "u-4": { id: "u-4", name: "Nguyễn Yến", handle: "yen.danang", initials: "NY" },
   "u-5": { id: "u-5", name: "Đỗ Khánh", handle: "khanh.brunch", initials: "ĐK" },
 }
 
@@ -23,7 +23,7 @@ const AUTHORS: Record<string, Author> = {
  * (lồng 1 cấp), `replyTo` do server tự suy ra từ bình luận cha lúc serialize.
  */
 export const MOCK_COMMENTS: MockCommentSeed[] = [
-  // ---- post-01 (Cà phê Muối Chú Long) ----
+  // ---- post-01 (Cà phê Út Tịch) ----
   {
     id: "c-01-1",
     postId: "post-01",
@@ -38,7 +38,7 @@ export const MOCK_COMMENTS: MockCommentSeed[] = [
     id: "c-01-2",
     postId: "post-01",
     author: AUTHORS["u-1"],
-    body: "Ly muối của quán có vị gì nổi bật vậy bạn, so với muối Cà Mau thì sao?",
+    body: "Cà phê muối của quán có vị gì nổi bật vậy bạn, so với muối Cà Mau thì sao?",
     createdAt: "2026-11-07T09:20:00+07:00",
     likeCount: 5,
     likedByMe: false,
@@ -58,19 +58,19 @@ export const MOCK_COMMENTS: MockCommentSeed[] = [
     id: "c-01-4",
     postId: "post-01",
     author: AUTHORS["u-4"],
-    body: "Sân vườn có màn chống muỗi không, định chiều cuối tuần đưa ba mẹ qua.",
+    body: "Bàn sát cửa sổ nhìn sông Hàn có màn chống muỗi không, định chiều cuối tuần đưa ba mẹ qua.",
     createdAt: "2026-11-07T10:05:00+07:00",
     likeCount: 3,
     likedByMe: false,
     parentId: null,
   },
 
-  // ---- post-02 (Bánh mì Huỳnh Hoa) ----
+  // ---- post-02 (Mì Quảng Bà Mua) ----
   {
     id: "c-02-1",
     postId: "post-02",
     author: AUTHORS["u-3"],
-    body: "Chuẩn bài! 11h đêm mà chờ 15 phút là thường, đáng từng phút.",
+    body: "Chuẩn bài! Trưa mà chờ 15 phút là thường, đáng từng phút.",
     createdAt: "2026-11-07T02:00:00+07:00",
     likeCount: 41,
     likedByMe: false,
@@ -80,7 +80,7 @@ export const MOCK_COMMENTS: MockCommentSeed[] = [
     id: "c-02-2",
     postId: "post-02",
     author: AUTHORS["u-5"],
-    body: "Mình toàn gọi thêm pate, nhân đầy ắp không biết chốn nào.",
+    body: "Mình toàn gọi thêm ếch om, nước dùng đậm không biết chốn nào.",
     createdAt: "2026-11-07T02:30:00+07:00",
     likeCount: 17,
     likedByMe: false,
@@ -129,12 +129,12 @@ export const MOCK_COMMENTS: MockCommentSeed[] = [
     parentId: null,
   },
 
-  // ---- post-04 (croissant Fleur) ----
+  // ---- post-04 (bún chả cá Hờn) ----
   {
     id: "c-04-1",
     postId: "post-04",
     author: AUTHORS["u-5"],
-    body: "Croissant bơ AOP của quán đúng chuẩn, mình mua cả chục mang về đông lạnh.",
+    body: "Chả cá ở đây chiên và hấp đều ngon, mình gọi thêm một chén riêng ăn kèm.",
     createdAt: "2026-11-06T10:00:00+07:00",
     likeCount: 12,
     likedByMe: false,
@@ -144,7 +144,7 @@ export const MOCK_COMMENTS: MockCommentSeed[] = [
     id: "c-04-2",
     postId: "post-04",
     author: AUTHORS["u-1"],
-    body: "Ngồi ngoài nhìn Pasteur buổi sáng là vibe chuẩn của quán luôn.",
+    body: "Ăn kèm ớt xanh và mắm ruốc là vibe chuẩn của quán luôn.",
     createdAt: "2026-11-06T10:30:00+07:00",
     likeCount: 7,
     likedByMe: false,

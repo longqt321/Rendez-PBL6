@@ -5,7 +5,7 @@ const AUTHORS: Record<string, Author> = {
   "u-1": { id: "u-1", name: "Trần Bảo", handle: "bao.an.day", initials: "TB" },
   "u-2": { id: "u-2", name: "Lê Thu Hà", handle: "thuha.foodmap", initials: "TH" },
   "u-3": { id: "u-3", name: "Phạm Quốc", handle: "quoc.around", initials: "PQ" },
-  "u-4": { id: "u-4", name: "Nguyễn Yến", handle: "yen.saigon", initials: "NY" },
+  "u-4": { id: "u-4", name: "Nguyễn Yến", handle: "yen.danang", initials: "NY" },
 }
 
 /**
