@@ -1,6 +1,9 @@
 import { useState } from "react"
-import { MessageCircleIcon, XIcon } from "lucide-react"
+import { MapPinIcon, MessageCircleIcon, XIcon } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { SeedImage } from "@/components/shared/seed-image"
+import { formatRelativeTime } from "@/lib/format"
 import {
   Dialog,
   DialogContent,
@@ -37,7 +40,7 @@ export function CommentThread({ post, open, onOpenChange }: CommentThreadProps) 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl gap-0 overflow-hidden p-0">
+        <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[min(64rem,calc(100%-2rem))]">
           <DialogHeader className="border-b px-4 py-3">
             <DialogTitle className="flex items-center gap-2 text-base">
               <MessageCircleIcon className="size-4" aria-hidden="true" />
@@ -48,10 +51,9 @@ export function CommentThread({ post, open, onOpenChange }: CommentThreadProps) 
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid max-h-[70vh] grid-cols-2">
-            <div className="min-w-0 border-r p-4">
-              <p className="mb-2 text-xs font-semibold text-muted-foreground">Bài đăng</p>
-              <p className="line-clamp-6 text-sm leading-relaxed">{post.caption}</p>
+          <div className="grid max-h-[75vh] grid-cols-2 grid-rows-1">
+            <div className="min-h-0 overflow-y-auto border-r">
+              <PostPreview post={post} />
             </div>
 
             <CommentThreadPanel postId={post.id} />
@@ -79,6 +81,54 @@ export function CommentThread({ post, open, onOpenChange }: CommentThreadProps) 
         <CommentThreadPanel postId={post.id} />
       </DrawerContent>
     </Drawer>
+  )
+}
+
+/**
+ * Bản xem trước bài đăng ở cột trái của thread — đủ ảnh, tác giả, chú thích, địa điểm
+ * để người đọc vừa xem bình luận vừa nhớ mình đang bình luận bài nào.
+ */
+function PostPreview({ post }: { post: Post }) {
+  const place = post.place
+
+  return (
+    <div className="flex flex-col">
+      <SeedImage
+        seed={post.imageSeed}
+        height={post.imageHeight}
+        alt={`Ảnh minh hoạ bài đăng của ${post.author.name}`}
+      />
+
+      <div className="flex flex-col gap-2 p-4">
+        <div className="flex items-center gap-2.5">
+          <Avatar>
+            <AvatarFallback className="bg-accent text-[0.65rem] font-bold text-accent-foreground">
+              {post.author.initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm leading-tight font-semibold">{post.author.name}</p>
+            <p className="truncate text-[0.7rem] text-muted-foreground">
+              @{post.author.handle} · {formatRelativeTime(post.createdAt)}
+            </p>
+          </div>
+        </div>
+
+        <p className="text-sm leading-relaxed whitespace-pre-line">{post.caption}</p>
+
+        {place && (
+          <div className="flex items-center gap-2 rounded-[0.2rem] border-2 border-foreground/70 bg-muted/70 px-2 py-1.5">
+            <MapPinIcon className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-xs font-semibold">{place.name}</span>
+              <span className="block truncate text-[0.68rem] text-muted-foreground">
+                {place.address}
+              </span>
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

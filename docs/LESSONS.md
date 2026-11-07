@@ -140,3 +140,57 @@ Radix mà không đọc source base-ui.
 
 **Đã sửa:** `src/components/layout/app-shell.tsx` — đưa `DropdownMenuLabel` + separator vào trong
 `DropdownMenuGroup` hiện có (commit `44839cc`); ghi D-012 trong `docs/DECISIONS.md`.
+
+---
+
+## L-004 — Override class mặc định của shadcn phải cùng variant prefix (`sm:`), không chỉ cùng thuộc tính
+
+**Ngày:** 2026-11-07
+**Lỗi người dùng chỉ ra:**
+
+> "phần dialog bình luận hiện tại nhỏ quá, nó còn là thiết kế dọc thay vì thiết kế ngang nữa."
+
+**Đã làm sai gì:**
+
+`CommentThread` đã khai báo `DialogContent className="max-w-4xl"` và `grid grid-cols-2` — đọc code thì
+tưởng đã đúng. Nhưng đo bằng CDP: dialog rộng **384px**, mỗi cột **192px**, tức là vẫn là bố cục dọc
+bị bóp, đúng như người dùng thấy.
+
+| Việc đã làm                                                                    | Bằng chứng                                                                                    |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| Dùng `max-w-4xl` (không variant) để ghi đè `sm:max-w-sm` có sẵn trong template | `src/features/social/components/comment-thread.tsx`                                           |
+| Tin rằng `cn()` sẽ merge hai class cùng thuộc tính `max-width`                 | `node -e "cn('sm:max-w-sm','max-w-4xl')"` → `"sm:max-w-sm max-w-4xl"`                         |
+| Thử `!max-w-4xl` / `max-w-4xl!` (Tailwind 4 important)                         | Không có rule trong CSS build — class chỉ được thêm runtime qua CDP, Tailwind không quét thấy |
+| Chỉ tin "đã sửa" sau khi đọc code, không đo lại kích thước thật                | phải tới khi đo CDP mới thấy 384px                                                            |
+
+**Nguyên nhân:**
+
+`cn()` của package `cn` **có** merge xung đột, nhưng merge theo **đúng chuỗi class**, không suy ra
+rằng `max-w-4xl` và `sm:max-w-sm` là cùng một thuộc tính. Vì vậy cả hai class cùng tồn tại trên
+element. Trong CSS build, `.sm\:max-w-sm` nằm trong `@media (width >= 40rem)` và đứng **sau**
+`.max-w-4xl` trong layer `utilities` → thắng cascade ở mọi viewport ≥ 640px. Kết quả: dialog luôn
+384px dù đã khai báo `max-w-4xl`.
+
+**Quy tắc rút ra:**
+
+1. Muốn ghi đè một class có variant prefix, phải dùng **cùng variant prefix**:
+   `sm:max-w-sm` → `sm:max-w-[...]`. `cn()` merge được cặp này (verify: `cn('sm:max-w-sm','sm:max-w-5xl')`
+   → `"sm:max-w-5xl"`).
+2. Giá trị nên tự chặn trần theo viewport: `sm:max-w-[min(64rem,calc(100%-2rem))]` thay vì
+   `sm:max-w-5xl`, để không tràn ngang ở màn hình hẹp.
+3. **Đo bằng máy sau khi sửa layout**, không đọc code rồi kết luận. `getBoundingClientRect()` +
+   `getComputedStyle(grid).gridTemplateColumns` là đủ để phát hiện "2 cột nhưng mỗi cột 192px".
+4. Không sửa `src/components/ui/dialog.tsx` để "cho nhanh" — override ở nơi dùng, giữ file ui là
+   template gốc.
+
+**Cách kiểm tra bằng máy:**
+
+- CDP: mở thread ở viewport 1280×900 → `dialog-content` phải rộng ≥ 960px và
+  `gridTemplateColumns` phải là 2 giá trị bằng nhau, mỗi giá trị ≥ 400px.
+- Quét tĩnh: `grep -rn 'DialogContent className="[^"]*\bmax-w-' src/features` → mọi `max-w-*` tìm được
+  phải có prefix `sm:` (nếu không, nó sẽ thua `sm:max-w-sm` của template).
+- Regression: `feature-check.mjs` 38/38 (có check "Thread PC: Dialog 2 cột") trên cả dev và preview.
+
+**Đã sửa:** `src/features/social/components/comment-thread.tsx` — `sm:max-w-[min(64rem,calc(100%-2rem))]`,
+cột trái là `PostPreview` đầy đủ (ảnh + tác giả + chú thích + địa điểm) tự cuộn, cột phải giữ
+`min-h-0 flex-1` cho danh sách bình luận.
