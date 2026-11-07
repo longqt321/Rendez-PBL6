@@ -35,7 +35,7 @@ export function PlaceCard({ place }: PlaceCardProps) {
       <div className="flex flex-1 flex-col gap-1.5 p-3">
         <h3 className="font-heading text-sm leading-tight font-bold">
           <Link
-            to="/discover"
+            to={`/discover/${place.id}`}
             className="outline-none after:absolute after:inset-0 focus-visible:underline"
           >
             {place.name}

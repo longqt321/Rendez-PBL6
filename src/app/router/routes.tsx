@@ -7,6 +7,9 @@ import { SocialPage } from "@/features/social/pages/social-page"
 import { NotificationPage } from "@/features/notification/pages/notification-page"
 import { ProfilePage } from "@/features/profile/pages/profile-page"
 import { UserProfilePageRoute } from "./user-profile-route"
+import { PlaceDetailPage } from "@/features/places/pages/place-detail-page"
+import { SearchPage } from "@/features/search/pages/search-page"
+import { SavedPage } from "@/features/saved/pages/saved-page"
 
 export const routes: RouteObject[] = [
   {
@@ -34,6 +37,30 @@ export const routes: RouteObject[] = [
     element: (
       <AppShell>
         <NotificationPage />
+      </AppShell>
+    ),
+  },
+  {
+    path: "/discover/:id",
+    element: (
+      <AppShell>
+        <PlaceDetailPage />
+      </AppShell>
+    ),
+  },
+  {
+    path: "/search",
+    element: (
+      <AppShell>
+        <SearchPage />
+      </AppShell>
+    ),
+  },
+  {
+    path: "/saved",
+    element: (
+      <AppShell>
+        <SavedPage />
       </AppShell>
     ),
   },

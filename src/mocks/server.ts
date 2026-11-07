@@ -577,6 +577,16 @@ const routes: Route[] = [
   },
   {
     method: "get",
+    pattern: /^\/places\/([^/]+)\/posts$/,
+    handler: (config, [placeId]) => {
+      const place = findPlace(placeId)
+      if (!place || place.publishedAt === null) notFound(config, "Không tìm thấy địa điểm")
+      const items = db.posts.filter((post) => post.placeId === placeId).map(toPostDto)
+      return { items, next: null } satisfies Page<Post>
+    },
+  },
+  {
+    method: "get",
     pattern: /^\/me$/,
     handler: () => ({ ...ME }),
   },
