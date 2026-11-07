@@ -10,6 +10,8 @@ import { UserProfilePageRoute } from "./user-profile-route"
 import { PlaceDetailPage } from "@/features/places/pages/place-detail-page"
 import { SearchPage } from "@/features/search/pages/search-page"
 import { SavedPage } from "@/features/saved/pages/saved-page"
+import { SettingsPage } from "@/features/settings/pages/settings-page"
+import { NotFoundPage } from "@/features/not-found/pages/not-found-page"
 
 export const routes: RouteObject[] = [
   {
@@ -81,7 +83,19 @@ export const routes: RouteObject[] = [
     ),
   },
   {
+    path: "/settings",
+    element: (
+      <AppShell>
+        <SettingsPage />
+      </AppShell>
+    ),
+  },
+  {
     path: "/design",
     element: <DesignShowcasePage />,
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]
