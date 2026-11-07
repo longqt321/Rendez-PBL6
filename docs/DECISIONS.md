@@ -1141,3 +1141,47 @@ lực chính để quay lại ứng dụng. User chốt: form chỉ nhận **tex
 - Trình duyệt khác Chrome 156; màn hình thật.
 - Hiệu năng khi số review lớn (hiện render toàn bộ, chưa phân trang — khớp contract `Page` sẵn có
   để phân trang sau mà không đổi API).
+
+## D-021: Bộ sưu tập địa điểm (Collections)
+
+### Bối cảnh
+
+- Người dùng có nhu cầu gom nhóm địa điểm yêu thích theo chủ đề (công việc, ăn vặt, hẹn hò...)
+  để xem lại hoặc chia sẻ cho người khác.
+- Trước đây mục `/saved` chỉ có "Bài đăng" và tab "Địa điểm" rỗng.
+- Cần tính năng tạo, quản lý, lưu địa điểm vào bộ sưu tập, xem trang chi tiết và chia sẻ link URL.
+
+### Quyết định
+
+- **Model:** `Collection` gồm `{ id, name, description, isPrivate, owner, placeIds, createdAt, isMine }`.
+  Bản rút gọn `CollectionSummary` gồm `{ id, name, description, isPrivate, placeCount, previewPlaceIds, createdAt, containsPlace? }`.
+- **API:**
+  - `GET /collections[?placeId=...]`: Danh sách bộ sưu tập của người dùng hiện tại (mới tạo trước).
+    Nếu truyền `placeId`, trả kèm `containsPlace: boolean` để dialog biết chính xác trạng thái thành viên.
+  - `POST /collections`: Tạo bộ sưu tập mới (tên 1-80 ký tự, mô tả, tuỳ chọn riêng tư).
+  - `GET /collections/:id`: Chi tiết một bộ sưu tập và danh sách địa điểm theo thứ tự thêm.
+  - `DELETE /collections/:id`: Xoá bộ sưu tập (chỉ owner).
+  - `PATCH /collections/:id/places`: Thêm (`member: true`) hoặc bớt địa điểm (idempotent).
+- **UI:**
+  - Tab "Bộ sưu tập" trên `/saved` hiển thị danh sách dạng lưới `CollectionCard` (preview 3 ảnh đầu, badge riêng tư, ngày tạo).
+  - Nút "Lưu vào bộ sưu tập" trên trang chi tiết địa điểm (`/discover/:id`), mở `SaveToCollectionDialog` (dùng `Item` và `Switch`, click nhãn/item toggle tức thì, form tạo nhanh bộ mới).
+  - Trang chi tiết `/collections/:id`: Breadcrumb, tiêu đề, badge riêng tư, nút Sửa (sắp ra mắt), nút Xoá với `AlertDialog` xác nhận (destructive), danh sách địa điểm `PlaceCard`.
+- **Thư viện UI:**
+  - 100% dùng shadcn/ui có sẵn: `Tabs`, `Dialog`, `AlertDialog`, `Item`, `Switch`, `Badge`, `Breadcrumb`, `Empty`, `Spinner`, `Button`, `Input`, `Label`. Không viết CSS/inline styles riêng.
+
+### Phương án đã xem
+
+- _Lưu bài đăng vào collection:_ loại, chỉ gom địa điểm để tập trung vào giá trị cốt lõi khám phá quán.
+- _Cơ chế share token phức tạp:_ loại, URL trực tiếp `/collections/:id` đã đáp ứng nhu cầu chia sẻ.
+- _Dùng `Dialog` cho confirm xoá:_ đã thay bằng `AlertDialog` chuẩn shadcn convention.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build` → exit 0.
+- `scratch/collection-flow-check.mjs` (CDP dev 5173): **13/13 pass** — hiển thị seed, mở chi tiết, lưu địa điểm qua dialog, tăng số lượng, tạo bộ mới, xoá qua AlertDialog, quay về `/saved`.
+- `scratch/click-label-and-persistence-check.mjs` (CDP dev 5173): **3/3 pass** — click chữ toggle được Switch, bật nhiều Switch đồng thời không bị tắt chéo, đóng mở lại dialog vẫn giữ nguyên trạng thái ON.
+
+### Chưa xác minh
+
+- Chưa kiểm tra trên thiết bị mobile thực tế.
+- Chưa test trên Safari / Firefox.

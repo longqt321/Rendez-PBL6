@@ -3,6 +3,7 @@ import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from "ax
 import type { AppNotification } from "@/features/notification/types/notification"
 import type { Place, PlaceCategory, PlaceSuggestion } from "@/features/places/types/place"
 import type { Review } from "@/features/places/types/review"
+import type { Collection, CollectionSummary } from "@/features/collections/types/collection"
 import type { Post } from "@/features/social/types/post"
 import type { Comment, CommentSort } from "@/features/social/types/comment"
 import type { Page } from "@/types/api"
@@ -11,10 +12,11 @@ import { MOCK_PLACES, type MockPlace } from "./fixtures/places"
 import { CURRENT_USER, MOCK_POSTS } from "./fixtures/posts"
 import { CURRENT_USER as COMMENT_USER, MOCK_COMMENTS } from "./fixtures/comments"
 import { MOCK_REVIEWS } from "./fixtures/reviews"
+import { MOCK_COLLECTIONS } from "./fixtures/collections"
 import { ME, MOCK_USERS } from "./fixtures/users"
 import { rankPlaceSuggestions } from "./ranking"
 import { normalizeText } from "./text"
-import type { MockComment, MockPost, MockReview } from "./types"
+import type { MockCollection, MockComment, MockPost, MockReview } from "./types"
 
 /**
  * SERVER GIẢ LẬP — không phải code frontend.
@@ -36,6 +38,7 @@ const db = {
   notifications: MOCK_NOTIFICATIONS.map((notification) => ({ ...notification })),
   comments: MOCK_COMMENTS.map((comment) => ({ ...comment, deleted: false })),
   reviews: MOCK_REVIEWS.map((review) => ({ ...review })),
+  collections: MOCK_COLLECTIONS.map((collection) => ({ ...collection })),
   users: { ...MOCK_USERS },
 }
 
@@ -46,6 +49,7 @@ let postSeq = 0
 let notificationSeq = 0
 let commentSeq = 0
 let reviewSeq = 0
+let collectionSeq = 0
 
 // ---------------------------------------------------------------------------
 // Serialize: chuyển bản ghi nội bộ thành đúng hợp đồng API
@@ -259,6 +263,43 @@ function listReviews(placeId: string): Review[] {
     .map(toReviewDto)
 }
 
+function toCollectionDto(collection: MockCollection): Collection {
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description,
+    isPrivate: collection.isPrivate,
+    owner: collection.owner,
+    placeIds: [...collection.placeIds],
+    createdAt: collection.createdAt,
+    isMine: collection.owner.id === ME.id,
+  }
+}
+
+function toCollectionSummary(
+  collection: MockCollection,
+  targetPlaceId?: string,
+): CollectionSummary {
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description,
+    isPrivate: collection.isPrivate,
+    placeCount: collection.placeIds.length,
+    previewPlaceIds: collection.placeIds.slice(0, 3),
+    createdAt: collection.createdAt,
+    ...(targetPlaceId ? { containsPlace: collection.placeIds.includes(targetPlaceId) } : {}),
+  }
+}
+
+/** Bộ sưu tập của người dùng hiện tại, mới tạo trước. */
+function listMyCollections(targetPlaceId?: string): CollectionSummary[] {
+  return db.collections
+    .filter((collection) => collection.owner.id === ME.id)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((c) => toCollectionSummary(c, targetPlaceId))
+}
+
 function findComment(commentId: string): MockComment | undefined {
   return db.comments.find((comment) => comment.id === commentId)
 }
@@ -369,6 +410,65 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
   }
   db.reviews.push(review)
   return toReviewDto(review)
+}
+
+/**
+ * Tạo bộ sưu tập rỗng cho người dùng hiện tại.
+ *
+ * Tên bắt buộc, mô tả tuỳ chọn. `isPrivate` mặc định công khai nếu không truyền.
+ */
+function createCollection(config: InternalAxiosRequestConfig): Collection {
+  const body = parseBody(config) as { name?: unknown; description?: unknown; isPrivate?: unknown }
+  const name = typeof body.name === "string" ? body.name.trim() : ""
+  if (name.length === 0) badRequest(config, "Tên bộ sưu tập trống")
+  if (name.length > 80) badRequest(config, "Tên bộ sưu tập tối đa 80 ký tự")
+  const description = typeof body.description === "string" ? body.description.trim() : ""
+
+  collectionSeq += 1
+  const collection: MockCollection = {
+    id: `c-new-${collectionSeq}`,
+    name,
+    description,
+    isPrivate: body.isPrivate === true,
+    owner: ME,
+    placeIds: [],
+    createdAt: new Date().toISOString(),
+  }
+  db.collections.push(collection)
+  return toCollectionDto(collection)
+}
+
+/** Chỉ chủ sở hữu được xoá bộ sưu tập. */
+function deleteCollection(config: InternalAxiosRequestConfig, collectionId: string): boolean {
+  const index = db.collections.findIndex((item) => item.id === collectionId)
+  if (index === -1) notFound(config, "Không tìm thấy bộ sưu tập")
+  if (db.collections[index].owner.id !== ME.id) forbidden(config, "Không phải bộ sưu tập của bạn")
+  db.collections.splice(index, 1)
+  return true
+}
+
+/**
+ * Thêm/bớt địa điểm khỏi bộ sưu tập của mình — body `{ placeId, member: boolean }`.
+ *
+ * `member: true` khi địa điểm chưa có thì đẩy xuống cuối danh sách; `false` khi
+ * không có trong danh sách là no-op (idempotent, không lỗi).
+ */
+function setCollectionPlaces(config: InternalAxiosRequestConfig, collectionId: string): Collection {
+  const collection = db.collections.find((item) => item.id === collectionId)
+  if (!collection) notFound(config, "Không tìm thấy bộ sưu tập")
+  if (collection.owner.id !== ME.id) forbidden(config, "Không phải bộ sưu tập của bạn")
+
+  const body = parseBody(config) as { placeId?: unknown; member?: unknown }
+  const placeId = typeof body.placeId === "string" ? body.placeId : ""
+  if (!findPlace(placeId)) notFound(config, "Không tìm thấy địa điểm")
+  const member = body.member !== false
+
+  if (member && !collection.placeIds.includes(placeId)) {
+    collection.placeIds.push(placeId)
+  } else if (!member) {
+    collection.placeIds = collection.placeIds.filter((id) => id !== placeId)
+  }
+  return toCollectionDto(collection)
 }
 
 function setCommentLike(commentId: string, liked: boolean): Comment {
@@ -494,6 +594,16 @@ function badRequest(config: InternalAxiosRequestConfig, message: string): never 
   })
 }
 
+function forbidden(config: InternalAxiosRequestConfig, message: string): never {
+  throw new AxiosError(message, "ERR_FORBIDDEN", config, undefined, {
+    data: { detail: message },
+    status: 403,
+    statusText: "Forbidden",
+    headers: new AxiosHeaders({ "content-type": "application/json" }),
+    config,
+  })
+}
+
 function parseBody<T>(config: InternalAxiosRequestConfig): T {
   const raw = config.data
   if (typeof raw !== "string" || raw.length === 0) return {} as T
@@ -556,6 +666,38 @@ const routes: Route[] = [
     method: "post",
     pattern: /^\/places\/([^/]+)\/reviews$/,
     handler: (config, [placeId]) => createReview(config, placeId),
+  },
+  {
+    method: "get",
+    pattern: /^\/collections$/,
+    handler: (config) => {
+      const { placeId } = query(config)
+      return { items: listMyCollections(placeId), next: null } satisfies Page<CollectionSummary>
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/collections$/,
+    handler: (config) => createCollection(config),
+  },
+  {
+    method: "get",
+    pattern: /^\/collections\/([^/]+)$/,
+    handler: (config, [collectionId]) => {
+      const collection = db.collections.find((item) => item.id === collectionId)
+      if (!collection) notFound(config, "Không tìm thấy bộ sưu tập")
+      return toCollectionDto(collection)
+    },
+  },
+  {
+    method: "delete",
+    pattern: /^\/collections\/([^/]+)$/,
+    handler: (config, [collectionId]) => deleteCollection(config, collectionId),
+  },
+  {
+    method: "patch",
+    pattern: /^\/collections\/([^/]+)\/places$/,
+    handler: (config, [collectionId]) => setCollectionPlaces(config, collectionId),
   },
   {
     method: "get",

@@ -173,3 +173,22 @@ Còn lại, **chưa sửa** vì lý do ghi kèm:
       `ItemSeparator` giữa các gợi ý thì phải bỏ `gap-1`.
 - [ ] **`/search` tab "Người" vẫn lọc trên `MOCK_USERS` phía client** (đã có trong BACKLOG cũ) —
       vi phạm L-001 khi có backend thật; cần `GET /users?q=`.
+
+## Audit shadcn/convention — tính năng Bộ sưu tập (2026-11-08)
+
+Kết luận chung: API/hooks/mock/card/detail/saved dùng đúng thành phần có sẵn, không có CSS tự
+viết, `style={{}}`, DOM hack hay `any`. Bốn điểm dưới đây phát hiện khi audit, **đã sửa toàn bộ**:
+
+- [x] **[Bug hiển thị] Switch trong dialog "Lưu vào bộ sưu tập" chỉ đúng cho bộ vừa bấm**
+      — Đã giải quyết: `GET /collections?placeId=...` trả kèm `containsPlace?: boolean`.
+      Cập nhật `toCollectionSummary` trong server mock, `CollectionSummary` type, `useCollections({ placeId })`.
+- [x] **Confirm xoá bộ sưu tập dùng `Dialog` thay vì `AlertDialog`**
+      — Đã giải quyết: chuyển sang dùng `AlertDialog`, `AlertDialogContent`, `AlertDialogHeader`,
+      `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`,
+      `AlertDialogAction` từ `@/components/ui/alert-dialog`.
+- [x] **Hàng bộ sưu tập trong dialog tự dựng `<label role="listitem">`**
+      — Đã giải quyết: chuyển sang cấu trúc `ItemGroup`, `Item`, `ItemContent`, `ItemTitle`,
+      `ItemDescription`, `ItemActions` từ `@/components/ui/item`.
+- [x] **`<label>` bọc `Switch` (base-ui) không kích hoạt bằng chữ**
+      — Đã giải quyết: gắn `id` cho Switch và `htmlFor` cho `Label`, thêm handler toggle khi click
+      vào Item. Đã verify 3/3 bằng CDP script `click-label-and-persistence-check.mjs`.

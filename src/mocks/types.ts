@@ -51,3 +51,19 @@ export interface MockReview {
 
 /** Dữ liệu seed cho đánh giá. */
 export type MockReviewSeed = MockReview
+
+/**
+ * Bộ sưu tập địa điểm của người dùng trong "database" của server giả lập.
+ *
+ * `isMine` không lưu; server gán lúc serialize dựa trên người dùng hiện tại.
+ * Chi tiết nội bộ — frontend không thấy type này.
+ */
+export interface MockCollection {
+  id: string
+  name: string
+  description: string
+  isPrivate: boolean
+  owner: Author
+  placeIds: string[]
+  createdAt: string
+}

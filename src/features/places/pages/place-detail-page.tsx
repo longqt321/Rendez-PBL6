@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useParams } from "react-router"
-import { MapPinIcon, StarIcon } from "lucide-react"
+import { MapPinIcon, StarIcon, FolderPlusIcon } from "lucide-react"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,6 +24,7 @@ import { useMe } from "@/features/profile/hooks/use-me"
 import { ReviewForm } from "../components/review-form"
 import { ReviewItem } from "../components/review-item"
 import type { Review } from "../types/review"
+import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
 
 /** Trang chi tiết địa điểm — `/discover/:id`. */
 export function PlaceDetailPage() {
@@ -123,6 +124,15 @@ export function PlaceDetailPage() {
               </li>
             ))}
           </ul>
+
+          <div className="mt-2 flex items-center gap-2">
+            <SaveToCollectionDialog placeId={placeId} placeName={place.name}>
+              <Button variant="outline">
+                <FolderPlusIcon />
+                Lưu vào bộ sưu tập
+              </Button>
+            </SaveToCollectionDialog>
+          </div>
         </div>
       </div>
 
