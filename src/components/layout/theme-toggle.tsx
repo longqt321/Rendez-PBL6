@@ -1,19 +1,40 @@
-import { MoonIcon, SunIcon } from "lucide-react"
+import { CheckIcon, ChevronDownIcon, MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
+/** Nút đổi chế độ sáng/tối dạng dropdown — 2 lựa chọn, dấu tích đánh dấu chế độ đang dùng. */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
 
   return (
-    <Button
-      variant="outline"
-      size="icon-sm"
-      aria-label="Đổi giao diện sáng/tối"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-    >
-      <SunIcon className="scale-100 rotate-0 transition-transform dark:scale-0 dark:-rotate-90" />
-      <MoonIcon className="absolute scale-0 rotate-90 transition-transform dark:scale-100 dark:rotate-0" />
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="outline" size="sm" aria-label="Chọn chế độ sáng/tối">
+            {resolvedTheme === "dark" ? <MoonIcon /> : <SunIcon />}
+            {resolvedTheme === "dark" ? "Tối" : "Sáng"}
+            <ChevronDownIcon />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-32">
+        <DropdownMenuItem closeOnClick={false} onClick={() => setTheme("light")}>
+          <SunIcon />
+          Sáng
+          {resolvedTheme === "light" ? <CheckIcon className="ml-auto" /> : null}
+        </DropdownMenuItem>
+        <DropdownMenuItem closeOnClick={false} onClick={() => setTheme("dark")}>
+          <MoonIcon />
+          Tối
+          {resolvedTheme === "dark" ? <CheckIcon className="ml-auto" /> : null}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

@@ -2,13 +2,13 @@ import {
   BellIcon,
   BookmarkIcon,
   CompassIcon,
+  EyeIcon,
   HelpCircleIcon,
   LogOutIcon,
   MapPinIcon,
   PaletteIcon,
   SearchIcon,
   SettingsIcon,
-  TypeIcon,
   UserIcon,
   UsersIcon,
 } from "lucide-react"
@@ -16,7 +16,6 @@ import { NavLink, Link } from "react-router"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -132,33 +131,10 @@ function SideNav() {
 }
 
 function SkinSwitch() {
-  const { skin, setSkin } = useSkin()
-  const isRetro = skin === "retro"
-
   return (
     <div className="flex items-center justify-between gap-2">
       <span className="text-xs font-medium text-muted-foreground">Giao diện</span>
-      <div className="flex items-center gap-1">
-        <Button
-          variant={isRetro ? "ghost" : "outline"}
-          size="icon-sm"
-          aria-label="Dùng giao diện mặc định"
-          aria-pressed={!isRetro}
-          onClick={() => setSkin("default")}
-        >
-          <PaletteIcon />
-        </Button>
-        <Button
-          variant={isRetro ? "outline" : "ghost"}
-          size="icon-sm"
-          aria-label="Dùng giao diện retro"
-          aria-pressed={isRetro}
-          onClick={() => setSkin("retro")}
-        >
-          <TypeIcon />
-        </Button>
-        <ThemeToggle />
-      </div>
+      <ThemeToggle />
     </div>
   )
 }
@@ -268,6 +244,11 @@ function UserMenu() {
               <DropdownMenuRadioItem value="default">Mặc định</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="retro">Retro</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link to="/design" />}>
+              <EyeIcon />
+              Xem trước giao diện
+            </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuItem>

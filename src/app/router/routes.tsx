@@ -101,7 +101,11 @@ export const routes: RouteObject[] = [
   },
   {
     path: "/design",
-    element: <DesignShowcasePage />,
+    element: (
+      <AppShell>
+        <DesignShowcasePage />
+      </AppShell>
+    ),
   },
   {
     path: "*",

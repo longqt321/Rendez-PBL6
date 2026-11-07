@@ -69,7 +69,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
         value={caption}
         onChange={(event) => setCaption(event.target.value)}
         placeholder="Hôm nay bạn ăn gì? Kể vài dòng về quán, món, không khí…"
-        className="min-h-28 resize-none border-0 bg-transparent px-0 text-base md:text-base shadow-none focus-visible:ring-0"
+        className="min-h-28 resize-none border-0 bg-transparent px-0 text-base shadow-none focus-visible:ring-0 md:text-base"
       />
 
       {selectedPlace ? (

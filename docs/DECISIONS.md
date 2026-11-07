@@ -1009,22 +1009,22 @@ User phản hồi: thiết kế đã ổn, nhưng components và chữ trong vù
 Tăng một bậc theo thang Tailwind, chỉ trong file dùng chung 2 skin (không đụng `src/components/ui/`,
 không đụng topbar/side nav/bottom nav):
 
-| Vị trí | Trước | Sau |
-| --- | --- | --- |
-| Thẻ địa điểm: body | `p-3 gap-1.5` | `p-4 gap-2` |
-| Tên địa điểm | 14px | 16px (`text-base`) |
-| Địa chỉ + meta | 12px | 14px (`text-sm`) |
-| Badge danh mục / đếm | h-5, 12px | `h-6 px-2.5`, 14px |
-| Rating span | `px-1.5 py-0.5 text-xs` | `px-2 py-1 text-sm` |
-| Thẻ bài đăng: header | `px-3 py-2.5` | `px-4 py-3` |
-| Avatar bài đăng | 32px | 40px (`size="lg"`) |
-| Tên / handle | 14 / 12px | 16 / 14px |
-| Caption | 14px | 16px (`text-base`) |
-| Nút footer | h-7 (`size="sm"`) | h-8 (mặc định) |
-| Composer | `p-3` | `p-4`; textarea `min-h-28`, 16px cả desktop (override `md:text-sm` của ui) |
-| Khối địa điểm trong post/composer | `px-2 py-1.5 text-xs` | `px-3 py-2 text-sm` |
-| Nút Lọc / chip / popover | `size="sm"` / `size="xs"` | mặc định / `size="sm"`, label 14px |
-| Bo góc lẻ `rounded-[0.15/0.25rem]` | 2.4 / 4px | `rounded-md` (8px, D-017) |
+| Vị trí                             | Trước                     | Sau                                                                        |
+| ---------------------------------- | ------------------------- | -------------------------------------------------------------------------- |
+| Thẻ địa điểm: body                 | `p-3 gap-1.5`             | `p-4 gap-2`                                                                |
+| Tên địa điểm                       | 14px                      | 16px (`text-base`)                                                         |
+| Địa chỉ + meta                     | 12px                      | 14px (`text-sm`)                                                           |
+| Badge danh mục / đếm               | h-5, 12px                 | `h-6 px-2.5`, 14px                                                         |
+| Rating span                        | `px-1.5 py-0.5 text-xs`   | `px-2 py-1 text-sm`                                                        |
+| Thẻ bài đăng: header               | `px-3 py-2.5`             | `px-4 py-3`                                                                |
+| Avatar bài đăng                    | 32px                      | 40px (`size="lg"`)                                                         |
+| Tên / handle                       | 14 / 12px                 | 16 / 14px                                                                  |
+| Caption                            | 14px                      | 16px (`text-base`)                                                         |
+| Nút footer                         | h-7 (`size="sm"`)         | h-8 (mặc định)                                                             |
+| Composer                           | `p-3`                     | `p-4`; textarea `min-h-28`, 16px cả desktop (override `md:text-sm` của ui) |
+| Khối địa điểm trong post/composer  | `px-2 py-1.5 text-xs`     | `px-3 py-2 text-sm`                                                        |
+| Nút Lọc / chip / popover           | `size="sm"` / `size="xs"` | mặc định / `size="sm"`, label 14px                                         |
+| Bo góc lẻ `rounded-[0.15/0.25rem]` | 2.4 / 4px                 | `rounded-md` (8px, D-017)                                                  |
 
 ### Phương án đã xem
 
@@ -1049,3 +1049,47 @@ không đụng topbar/side nav/bottom nav):
   đo DOM, cảm nhận thị giác chỉ user xác nhận được.
 - Chưa test Firefox/Safari — chỉ Chrome 156.
 - Chưa kiểm trên màn hình thật / DPR khác 1.
+
+## D-019 — Gộp điều khiển giao diện vào một dropdown; /design thành trang xem trước
+
+**Ngày:** 2026-11-07 · **Trạng thái:** đã triển khai
+
+### Bối cảnh
+
+Route `/design` là "trang mồ côi": không có đường dẫn nào trỏ tới, chỉ mở được bằng tay. Ô
+"Giao diện" ở góc dưới trái sidebar chứa 2 icon skin + nút sáng/tối — rối, và chọn skin ở đây
+trùng với submenu Giao diện trong menu avatar.
+
+### Quyết định
+
+1. `ThemeToggle` đổi thành dropdown 2 mục Sáng/Tối (icon mặt trời/mặt trăng + nhãn chế độ hiện
+   tại), thay nút icon xoay vòng cũ.
+2. Sidebar bỏ cặp icon chọn skin — một nghiệp vụ một chỗ xử lý: chọn skin ở submenu Giao diện
+   (menu avatar) và ở trang `/design`.
+3. Submenu Giao diện thêm mục **"Xem trước giao diện"** (`EyeIcon`, link tới `/design`).
+4. `/design` đổi thành trang **"Xem trước giao diện"**: nằm trong `AppShell` (trước đó là trang
+   trần), giữ phần trưng bày component làm nội dung xem trước, thêm section "Chọn kiểu hiển thị"
+   với 2 nút Mặc định/Retro.
+
+### Phương án đã xem
+
+- _Giữ 2 icon skin ở sidebar và chỉ thêm link `/design`_ — loại: trùng lặp với submenu, 3 điều
+  khiển dồn một ô nhỏ.
+- _Xoá route `/design`_ — loại: mất chỗ xem các trạng thái component (loading, toast, dialog) mà
+  không cần luồng nghiệp vụ.
+- _Dropdown gộp cả skin lẫn sáng/tối_ — loại: chọn skin là lựa chọn hiếm (theo D-014 chỉ 2 skin,
+  layout giống nhau), để submenu + trang xem trước là đủ.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build` → exit 0.
+- `scratch/design-theme-check.mjs` (CDP thật trên cả dev 5173 lẫn preview 4174): **12/12 pass** —
+  sidebar còn đúng 1 nút có nhãn Sáng/Tối; dropdown 2 mục và đổi được `html.dark`; submenu Giao
+  diện có "Xem trước giao diện" và điều hướng tới `/design`; trang có h1 đúng, nằm trong AppShell,
+  2 nút chọn skin đổi được `data-skin`.
+- 5 bộ regression 161/161 pass trên dev, feature-check 39/39 pass lại trên preview 4174.
+
+### Chưa xác minh
+
+- Cảm nhận thị giác của user (menu mới có dễ nhìn hơn không) — chỉ user tự đánh giá được.
+- Trình duyệt khác Chrome 156.

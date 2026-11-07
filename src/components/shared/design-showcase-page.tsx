@@ -10,6 +10,7 @@ import {
   TriangleAlertIcon,
 } from "lucide-react"
 import { toast } from "sonner"
+import { useSkin } from "@/app/providers/skin-context"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -36,8 +37,6 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
-import { SkinToggle } from "@/components/layout/skin-toggle"
-import { ThemeToggle } from "@/components/layout/theme-toggle"
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -50,6 +49,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function DesignShowcasePage() {
   const [loading, setLoading] = useState(false)
+  const { skin, setSkin } = useSkin()
 
   function simulateLoading() {
     setLoading(true)
@@ -62,17 +62,38 @@ export function DesignShowcasePage() {
         <div className="flex flex-col gap-1">
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
             <PaletteIcon className="size-6" />
-            Kiểm tra design stack
+            Xem trước giao diện
           </h1>
           <p className="text-sm text-muted-foreground">
-            Trang tạm để xác nhận các package giao diện hoạt động. Không chứa nghiệp vụ.
+            Xem toàn bộ thành phần giao diện của ứng dụng trong 2 kiểu hiển thị trước khi chọn.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <SkinToggle />
-          <ThemeToggle />
-        </div>
       </header>
+
+      <Section title="Chọn kiểu hiển thị">
+        <p className="text-sm text-muted-foreground">
+          Cả hai kiểu dùng chung kích thước và bố cục, chỉ khác bảng màu. Lựa chọn được lưu lại cho
+          lần truy cập sau.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          {(
+            [
+              { value: "default", label: "Mặc định" },
+              { value: "retro", label: "Retro" },
+            ] as const
+          ).map((option) => (
+            <Button
+              key={option.value}
+              variant={skin === option.value ? "default" : "outline"}
+              aria-pressed={skin === option.value}
+              onClick={() => setSkin(option.value)}
+            >
+              {skin === option.value ? <CheckIcon /> : null}
+              {option.label}
+            </Button>
+          ))}
+        </div>
+      </Section>
 
       <Separator />
 
