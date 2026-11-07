@@ -261,3 +261,86 @@ Nguyên nhân: `next-themes` render một `<script>` inline **bên trong `#root`
 
 Đây là cảnh báo mỹ quan của thư viện, không phải lỗi chức năng. Đã ghi vào `BACKLOG.md`.
 Nếu muốn sạch console: chuyển sang phương án 2.
+
+---
+
+## D-009 — Skin thứ hai "retro" bằng token CSS + `data-skin`, thêm font Fraunces
+
+**Ngày:** 2026-11-07
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Người dùng yêu cầu một bộ giao diện khác, "trẻ trung, năng động, phong cách hơn" so với theme hiện tại,
+và đã chốt qua 3 câu hỏi:
+
+1. Phong cách: **Retro/Vintage ấm áp** — nền kem giấy cũ, màu đất (đỏ gạch, vàng mù tạt, xanh rêu),
+   font serif cổ điển, viền mỏng, huy hiệu/tem nhãn, họa tiết in ấn cũ.
+2. Cách làm: **đổi token trong `index.css`** để component shadcn tự đổi theo, **không sửa file generated**.
+3. Phạm vi: **theme thứ hai cạnh theme hiện tại**, chuyển bằng nút — giữ theme cũ để so sánh.
+
+### Quyết định
+
+1. Thêm skin `retro` chọn bằng attribute `data-skin="retro"` trên `<html>`, KHÔNG thay theme cũ.
+2. Toàn bộ màu/bo góc khai báo lại bằng token trong `[data-skin="retro"]` và
+   `[data-skin="retro"].dark` — component shadcn tự đổi mà không cần sửa file nào trong `src/components/ui/`.
+3. Phần không thể làm bằng token (bóng cứng, viền, nét đứt, font) làm bằng CSS selector bám `data-slot`.
+4. Thêm dependency `@fontsource-variable/fraunces@5.3.0`, import biến thể `wonk.css`.
+5. `SkinProvider` + `useSkin()` đặt trong `src/app/providers/`, `SkinToggle` trong `src/components/layout/`.
+
+### Lý do
+
+- **Token-first**: shadcn sinh component dùng `bg-background`, `text-foreground`, `rounded-lg`…
+  Đổi token là cách duy nhất đổi được toàn bộ UI mà không sửa file generated (ràng buộc của dự án).
+- **`data-skin` thay vì class**: `next-themes` đã chiếm class `light`/`dark` trên `<html>`.
+  Dùng attribute riêng giữ hai cơ chế độc lập, kết hợp được 4 tổ hợp (mặc định/retro × sáng/tối).
+- **`wonk.css` thay vì `index.css`**: đã kiểm bằng `fontTools` trên file woff2 thật —
+  `index.css` chỉ có trục `wght` nên `font-variation-settings: "SOFT" 40` **vô tác dụng**.
+  `wonk.css` có `wght` + `WONK`, cùng kích thước latin (36.6 kB) nên không tăng bundle.
+
+### Phương án đã xem
+
+| Phương án                                      | Kết quả                                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| Sửa trực tiếp class trong `src/components/ui/` | Loại — vi phạm ràng buộc, `shadcn add --overwrite` sẽ xoá mất            |
+| Thay theme cũ bằng theme mới                   | Loại — người dùng muốn **giữ** theme cũ để so sánh                       |
+| Dùng Google Fonts CDN cho Fraunces             | Loại — thêm request mạng bên thứ ba, chậm first paint, phụ thuộc uptime  |
+| Dùng font serif hệ thống (`Georgia`)           | Loại — không đồng nhất giữa Linux/macOS/Windows, mất cá tính thương hiệu |
+| `@fontsource-variable/fraunces` (đã chọn)      | Self-hosted, cùng nguồn với `geist` đang dùng, offline được              |
+| Biến thể `full.css` (đủ 4 trục)                | Loại — 105 kB latin, gấp ~3 lần `wonk.css` mà chỉ thêm `SOFT`/`opsz`     |
+
+### Kích thước / license
+
+- `@fontsource-variable/fraunces@5.3.0`: license **OFL-1.1**, 2.0 MB trên đĩa (gồm mọi biến thể + italic).
+  Bundle thực tế chỉ lấy 3 file woff2 (vietnamese 11.6 kB + latin-ext 33.6 kB + latin 36.6 kB ≈ 82 kB).
+- Không thêm runtime dependency nào khác.
+
+### Hệ quả — 3 điều đã phát hiện khi kiểm chứng
+
+**(1) `html { @apply font-sans }` bị biên dịch thành tên font cứng.**
+
+CSS đầu ra là `html{font-family:Geist Variable,sans-serif}` — **không** phải `var(--font-sans)`.
+Nên chỉ đổi `--font-sans` trong `[data-skin="retro"]` **không** đổi được font body.
+Đã xử lý bằng override tường minh `html[data-skin="retro"] { font-family: var(--font-display) }`.
+
+**(2) `border-width: 1.5px` bị Chrome làm tròn thành `1px` ở DPR = 1.**
+
+Đã đo trực tiếp trong Chrome 156: `1px→1px`, `1.5px→1px`, `2px→2px`, `2.5px→2px`, `3px→3px`.
+Tức `1.5px` **không có tác dụng gì** so với `1px`. Toàn bộ viền retro đã đổi sang `2px`.
+
+**(3) `font-variation-settings` chỉ có tác dụng với trục tồn tại trong file font.**
+
+Đã xác minh bằng `fontTools` (xem bảng ở `STACK.md`). Khai báo `"SOFT"` trong khi dùng
+`wonk.css` là khai báo chết → đã bỏ, chỉ giữ `"WONK" 1`.
+
+### Đã xác minh
+
+- `typecheck`, `lint`, `format:check`, `build` đều exit 0.
+- CDP (Chrome 156 headless, dev server thật): **30/30** check pass — gồm chuyển skin, giữ sau reload,
+  kết hợp dark, font Fraunces load thật (`document.fonts.check`), bóng cứng, bo góc, badge in hoa,
+  separator nét đứt, không lỗi JS.
+- Contrast đo từ `getComputedStyle` của element thật, có xử lý alpha và nền kế thừa: **45/45** cặp
+  đạt WCAG AA ở cả 3 chế độ (retro sáng, retro tối, mặc định sáng). Thấp nhất 5.16:1.
+- Layout: không scroll ngang, không phần tử tràn ở cả 1100px và 390px.
+- Phân tích pixel ảnh chụp: retro có 3701 màu khác nhau (texture giấy) so với 498 màu của theme phẳng;
+  nền retro `#f8f2e5` (kem) / `#261b14` (nâu đêm) đúng như thiết kế.

@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SkinToggle } from "@/components/layout/skin-toggle"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -67,7 +68,10 @@ export function DesignShowcasePage() {
             Trang tạm để xác nhận các package giao diện hoạt động. Không chứa nghiệp vụ.
           </p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <SkinToggle />
+          <ThemeToggle />
+        </div>
       </header>
 
       <Separator />

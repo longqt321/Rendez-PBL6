@@ -12,8 +12,10 @@ Phiên bản đã cài thực tế (đọc từ `node_modules/*/package.json`), 
 | shadcn                                | 4.23.0         | CLI sinh component + `shadcn/tailwind.css`             |
 | cn                                    | 0.2.6          | Merge class Tailwind (thay `clsx` + `tailwind-merge`)  |
 | class-variance-authority              | 0.7.1          | Variant API cho component                              |
-| @fontsource-variable/geist            | 5.3.0          | Font self-hosted                                       |
+| @fontsource-variable/geist            | 5.3.0          | Font self-hosted — skin mặc định                       |
+| @fontsource-variable/fraunces         | 5.3.0          | Font serif self-hosted — skin retro                    |
 | tw-animate-css                        | 1.4.0          | Animation utilities cho Tailwind 4                     |
+| next-themes                           | 0.4.6          | Sáng/tối, gắn class `dark` lên `<html>`                |
 | react-router                          | 8.5.1          | Routing — **chưa dùng**                                |
 | @tanstack/react-query                 | 5.106.1        | Server state — **chưa dùng**                           |
 | zustand                               | 5.1.0          | Client state — **chưa dùng**                           |
@@ -53,7 +55,10 @@ src/
 ├── app/                    # cấu hình cấp ứng dụng, KHÔNG chứa business logic
 │   ├── providers/
 │   │   ├── app-provider.tsx    # gộp toàn bộ provider
-│   │   └── query-provider.tsx  # QueryClientProvider
+│   │   ├── query-provider.tsx  # QueryClientProvider
+│   │   ├── theme-provider.tsx  # next-themes (sáng/tối)
+│   │   ├── skin-context.ts     # SkinContext + useSkin()
+│   │   └── skin-provider.tsx   # skin (mặc định/retro), gắn data-skin
 │   ├── router/
 │   │   ├── index.tsx           # createBrowserRouter + RouterProvider
 │   │   └── routes.tsx          # khai báo route
@@ -66,7 +71,7 @@ src/
 │
 ├── components/             # chỉ component dùng ở NHIỀU nơi
 │   ├── ui/                 # shadcn sinh ra, không sửa tay
-│   ├── layout/             # header, sidebar, navigation
+│   ├── layout/             # header, sidebar, navigation, theme/skin toggle
 │   └── shared/             # component dùng chung có ý nghĩa nghiệp vụ
 │
 ├── features/               # mỗi feature tự quản api/components/hooks/types/pages
@@ -104,3 +109,41 @@ src/
 - `services/` — chỉ thêm khi có tích hợp ngoài (upload, maps) dùng ở nhiều feature.
 - Các feature cụ thể — mở rộng dần khi làm tính năng.
 - `src/hooks/` — hook dùng chung chỉ tạo khi có hook thứ hai thực sự dùng chung.
+
+## Hệ thống skin (giao diện)
+
+Hai lớp tuỳ biến **độc lập nhau**, có thể kết hợp tự do (4 tổ hợp):
+
+| Lớp      | Cơ chế                               | Giá trị                      | Lưu ở                   |
+| -------- | ------------------------------------ | ---------------------------- | ----------------------- |
+| Sáng/tối | class `light` / `dark` trên `<html>` | `next-themes`                | `localStorage["theme"]` |
+| Skin     | attribute `data-skin` trên `<html>`  | `SkinProvider` + `useSkin()` | `localStorage["skin"]`  |
+
+- Skin mặc định: **không có** attribute `data-skin` → dùng token gốc trong `:root` / `.dark`.
+- Skin retro: `data-skin="retro"` → khối `[data-skin="retro"]` trong `src/index.css` ghi đè token.
+- Chuyển skin: [`skin-toggle.tsx`](../src/components/layout/skin-toggle.tsx) (icon `Palette` / `Type`).
+- Chuyển sáng/tối: [`theme-toggle.tsx`](../src/components/layout/theme-toggle.tsx).
+
+> [!IMPORTANT]
+> Không sửa file trong `src/components/ui/` để đổi giao diện. Mọi tuỳ biến skin đi qua
+> CSS selector bám vào `data-slot` (ví dụ `[data-skin="retro"] [data-slot="card"]`),
+> nhờ vậy `shadcn add --overwrite` không xoá mất tuỳ biến.
+
+### Font
+
+| Skin     | Font body/heading           | File import                              |
+| -------- | --------------------------- | ---------------------------------------- |
+| Mặc định | `Geist Variable` (sans)     | `@fontsource-variable/geist`             |
+| Retro    | `Fraunces Variable` (serif) | `@fontsource-variable/fraunces/wonk.css` |
+
+Retro dùng biến thể `wonk.css` chứ không phải `index.css` mặc định, vì đã kiểm bằng `fontTools`:
+
+| File CSS    | Trục biến thiên có trong file  | Latin woff2 |
+| ----------- | ------------------------------ | ----------- |
+| `index.css` | `wght`                         | 36.6 kB     |
+| `wonk.css`  | `wght`, `WONK`                 | 36.6 kB     |
+| `soft.css`  | `wght`, `SOFT`                 | 56.0 kB     |
+| `full.css`  | `opsz`, `wght`, `SOFT`, `WONK` | 105.2 kB    |
+
+`wonk.css` cùng kích thước với `index.css` nhưng có thêm trục `WONK` — dùng được
+`font-variation-settings: "WONK" 1` cho heading mà không tăng bundle.
