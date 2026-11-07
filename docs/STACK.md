@@ -75,8 +75,11 @@ src/
 │   └── shared/             # component dùng chung (seed-image…)
 │
 ├── features/               # mỗi feature tự quản api/components/hooks/types/pages
-│   ├── places/             # /discover + gợi ý địa điểm (api, components, hooks, lib, pages, types)
-│   ├── social/             # /social: api, components, hooks, pages, types
+│   ├── places/             # /discover + chi tiết địa điểm (api, components, hooks, lib, pages, types)
+│   ├── social/             # /social: api, components, hooks, pages, types (+ bình luận)
+│   ├── profile/            # /profile + /u/:handle: api, components, hooks, pages, types
+│   ├── search/             # /search: pages (tái dùng hooks của places/social)
+│   ├── settings/           # /settings: pages (RHF + zod)
 │   └── notification/       # /notification: api, components, hooks, pages, types
 │
 ├── hooks/                  # hook dùng chung (use-infinite-scroll, use-debounced-value)
@@ -101,13 +104,20 @@ src/
 
 ### Route
 
-| Route           | Trang                   | Ghi chú                                          |
-| --------------- | ----------------------- | ------------------------------------------------ |
-| `/`             | redirect → `/discover`  |                                                  |
-| `/discover`     | `features/places`       | 3 cột PC / 2 cột masonry mobile, infinity scroll |
-| `/social`       | `features/social`       | feed dọc + ô soạn bài có gợi ý địa điểm          |
-| `/notification` | `features/notification` | thẻ "Đề xuất thêm địa điểm" với 3 gợi ý          |
-| `/design`       | `components/shared`     | trang kiểm tra design stack (tạm)                |
+| Route           | Trang                   | Ghi chú                                                  |
+| --------------- | ----------------------- | -------------------------------------------------------- |
+| `/`             | redirect → `/discover`  |                                                          |
+| `/discover`     | `features/places`       | 3 cột PC / 2 cột masonry mobile, infinity scroll         |
+| `/discover/:id` | `features/places`       | chi tiết địa điểm: breadcrumb + tabs + rating            |
+| `/social`       | `features/social`       | feed dọc + ô soạn bài + bình luận (thread Dialog/Drawer) |
+| `/notification` | `features/notification` | thẻ "Đề xuất thêm địa điểm" với 3 gợi ý                  |
+| `/profile`      | `features/profile`      | trang cá nhân của mình (tabs posts/pinned/saved)         |
+| `/u/:handle`    | `features/profile`      | trang cá nhân người khác (follow, chỉ tab posts)         |
+| `/search`       | `features/search`       | tìm địa điểm/bài/người, debounce 400 ms                  |
+| `/saved`        | `features/social`       | bài đã lưu, lọc `savedByMe`                              |
+| `/settings`     | `features/settings`     | form RHF + zod (Field/Switch)                            |
+| `*`             | 404                     | Empty + link về `/discover`                              |
+| `/design`       | `components/shared`     | trang kiểm tra design stack (tạm)                        |
 
 ### Phân chia state
 

@@ -562,3 +562,53 @@ Không thêm dependency. `axios` và `@tanstack/react-query` đều đã có tro
   có test nào chứng minh request bị huỷ thật khi đổi bộ lọc nhanh.
 - **Chưa kiểm optimistic update rollback.** `useSetPostLiked` / `useSetPostSaved` có nhánh `onError`
   hoàn tác, nhưng chưa có cách nào làm server trả lỗi để thử.
+
+---
+
+## D-012 — Bình luận + trang cá nhân + trang mới: dùng đúng component shadcn/base-ui đã có
+
+**Ngày:** 2026-11-07
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Kế hoạch v2 (đã duyệt) thêm: phần Bình luận ở `/social`, dropdown avatar, trang cá nhân
+(`/profile`, `/u/:handle`), `/discover/:id`, `/search`, `/saved`, `/settings`, 404. Ràng buộc:
+0 dependency npm mới, ưu tiên component shadcn đã cài, mọi logic nghiệp vụ nằm ở mock server.
+
+### Quyết định
+
+- **Component:** sinh thêm 11 component bằng `bunx shadcn add` (`item`, `spinner`, `empty`,
+  `scroll-area`, `drawer`, `toggle`, `toggle-group`, `alert-dialog`, `input-group`, `field`,
+  `switch`, `breadcrumb`) — không sửa tay file `src/components/ui/` có sẵn, `bun.lock` không đổi.
+- **Kiến trúc:** `src/features/social/` (comment types/api/hooks/components) và
+  `src/features/profile/` (profile types/api/hooks/components/pages) theo đúng pattern feature
+  sẵn có; mock server (`src/mocks/server.ts`) giữ mọi logic (sắp xếp, phân trang, xoá mềm,
+  follow, đếm).
+- **Route helper:** `UserProfilePageRoute` tách sang `src/app/router/user-profile-route.tsx` vì
+  react-refresh/only-export-components chỉ cho phép 1 export component mỗi file.
+- **`useMediaQuery`:** dùng `@base-ui/react/unstable-use-media-query` (đã cài kèm base-ui) thay vì
+  tự viết listener — chọn Dialog 2 cột (PC) / Drawer (mobile) cho thread bình luận.
+
+### Lỗi phát hiện qua CDP (đã sửa, commit `44839cc`)
+
+`DropdownMenuLabel` của shadcn style `base-nova` map sang `Menu.GroupLabel` của `@base-ui/react`,
+thành phần này **bắt buộc** nằm trong `<Menu.Group>` hoặc `<Menu.RadioGroup>`
+(`MenuGroupContext is missing` nếu không). Label trước đó nằm ngoài group → mở dropdown avatar
+làm crash app (React Router ErrorBoundary chiếm cả trang). Sửa tối thiểu: đưa label + separator
+vào trong `DropdownMenuGroup` hiện có. Bài học: đọc source thư viện đã cài trước khi ghép API,
+không suy từ template Radix classic.
+
+### Đã xác minh
+
+- `typecheck`, `lint`, `format:check`, `build` → exit 0; `bun.lock` không đổi sau mỗi lần shadcn add.
+- CDP `app-check.mjs`: **44/44** trên dev 5173 và preview 4174.
+- CDP `feature-check.mjs` (38 check mới: bình luận inline/thread/sort/gửi, Drawer mobile,
+  dropdown 7 check + điều hướng, `/profile`, `/u/:handle`, `/discover/:id`, `/search`, `/saved`,
+  `/settings` + zod, 404): **38/38** trên dev 5173 và preview 4174.
+
+### Chưa xác minh
+
+- `PATCH /me` chưa có route mock — `/settings` chỉ lưu optimistic + toast minh hoạ.
+- Lưu/bỏ lưu địa điểm chưa có endpoint — nút lưu ở `PlaceCard` chưa nối.
+- Tab "Người" ở `/search` lọc trên `MOCK_USERS` phía client, chưa có endpoint `/users?q=`.

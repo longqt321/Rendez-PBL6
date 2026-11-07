@@ -109,3 +109,34 @@ Không dùng `docs/banned-phrases.json` được — file đó quét `src/` và 
 
 **Đã sửa:** `src/components/shared/seed-image.tsx` → `<img src="https://picsum.photos/seed/...">`;
 `docs/DECISIONS.md` D-010 viết lại theo lựa chọn A3; xoá `src/lib/seed-color.ts` (hết dùng).
+
+---
+
+## L-003 — Đọc source thư viện đã cài trước khi ghép API; không suy từ template của thư viện khác
+
+**Ngày:** 2026-11-07
+**Triệu chứng:** Mở dropdown avatar làm crash toàn bộ app — React Router ErrorBoundary chiếm trang,
+menu không bao giờ mở. Lỗi chỉ thấy qua CDP (click thật), typecheck/lint đều xanh.
+
+**Nguyên nhân:** Template shadcn style `base-nova` map `DropdownMenuLabel` → `Menu.GroupLabel` của
+`@base-ui/react`. Radix classic (mà template cũ dựa vào) render label là `<div>` thường, không cần
+context. Base-ui thì `Menu.GroupLabel` gọi `useMenuGroupRootContext()` và **throw** nếu không nằm
+trong `<Menu.Group>`/`<Menu.RadioGroup>`. Tôi ghép `<DropdownMenuLabel>` ngoài group theo thói quen
+Radix mà không đọc source base-ui.
+
+**Quy tắc rút ra:**
+
+1. Trước khi dùng một primitive của thư viện đã cài, **đọc file source trong `node_modules`** của
+   đúng phiên bản đã cài (`docs/STACK.md`) — đặc biệt các hook `use*Context()` ở đầu component.
+2. Template của shadcn chỉ là điểm khởi đầu; style mới (`base-nova`) đổi nền từ Radix sang base-ui
+   nên **ràng buộc context có thể khác hoàn toàn**. Không suy quy tắc Radix sang base-ui.
+3. Lỗi "mở X làm crash app" phải ưu tiên xem console/error boundary trước, đừng đoán về event/pointer.
+
+**Cách kiểm tra bằng máy:**
+
+- CDP click thật (scrollIntoView + `Input.dispatchMouseEvent`) rồi đọc
+  `Runtime.consoleAPICalled` type `error` → thấy `MenuGroupContext is missing`.
+- Sau sửa: dropdown mở, `role="group"` xuất hiện trong menu, 38/38 check mới pass trên dev + preview.
+
+**Đã sửa:** `src/components/layout/app-shell.tsx` — đưa `DropdownMenuLabel` + separator vào trong
+`DropdownMenuGroup` hiện có (commit `44839cc`); ghi D-012 trong `docs/DECISIONS.md`.

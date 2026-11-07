@@ -97,15 +97,14 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 - [ ] **Ảnh là gradient tự sinh, không phải ảnh thật.** Người dùng đã chọn picsum.photos nhưng
       không dùng vì phụ thuộc mạng — xem `DECISIONS.md` D-010. Nếu muốn ảnh thật, đổi thân
       `SeedImage` sang `<img loading="lazy">`.
-- [ ] **Search bar ở topbar chưa hoạt động.** Chỉ `preventDefault()`, chưa nối vào bộ lọc của
-      `/discover` hay `/social`. Cần thống nhất: search toàn cục hay search theo trang?
+- [ ] **Search bar ở topbar chưa hoạt động.** Chỉ `preventDefault()`, chưa nối vào `/search`.
+      Cần thống nhất: search toàn cục hay search theo trang? (Trang `/search` riêng đã có —
+      `features/search`.)
 - [ ] **`/notification` chưa có infinite scroll.** Danh sách thông báo render toàn bộ. Hiện chỉ có
       4 mục nên chưa cần, nhưng khi nối backend phải phân trang.
 - [ ] **`/social` chưa có infinite scroll.** Feed render toàn bộ 10 bài. Yêu cầu ban đầu chỉ nói
       infinity scroll cho `/discover` và `/social` — `/social` hiện chưa làm.
-- [ ] **Chưa có trang chi tiết địa điểm.** `PlaceCard` link tới `/discover` (chính nó) vì chưa có
-      route `/discover/:id`.
-- [ ] **Nút "Bình luận" và "Đăng xuất" chưa có hành vi.** Chỉ là UI.
+- [ ] **Nút "Đăng xuất" chưa có hành vi.** Chỉ là UI (menu avatar đã có đầy đủ link điều hướng).
 - [ ] **`runPlaceDetection` là nút bấm tay, không tự chạy.** Đúng cho mục đích demo, nhưng khi có
       backend thì đây phải là job phía server.
 - [ ] **Chưa có test tự động.** Toàn bộ kiểm chứng là script CDP trong `scratch/`, không nằm trong
@@ -115,3 +114,18 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 - [ ] **Chưa test Firefox/Safari.** Chỉ Chrome 156.
 - [ ] **`SkinSwitch` đặt trong dropdown avatar ở mobile** — chưa kiểm tra trực quan dropdown này
       có bị tràn màn hình 390px không.
+
+## Phát hiện khi làm Bình luận + Profile (2026-11-07)
+
+- [ ] **`PATCH /me` chưa có route mock.** `/settings` chỉ cập nhật cache + toast minh hoạ; cần
+      `PATCH /me` ở mock (và backend) để lưu thật tên/bio/địa điểm/riêng tư.
+- [ ] **Lưu/bỏ lưu địa điểm chưa có endpoint.** Nút lưu ở `PlaceCard`/`/discover/:id` chưa nối;
+      cần `PATCH /places/:id/save` (hoặc tương đương) + tab "Đã lưu" ở `/profile`.
+- [ ] **Tab "Người" ở `/search` lọc trên `MOCK_USERS` phía client.** Vi phạm nguyên tắc "mọi lọc
+      ở server" khi có backend — cần `GET /users?q=`.
+- [ ] **`Menu.GroupLabel` của base-ui bắt buộc nằm trong `Menu.Group`.** Template shadcn
+      `base-nova` map `DropdownMenuLabel` → `GroupLabel`; dùng label ngoài group làm crash app
+      (đã sửa ở commit `44839cc`). Khi sinh component mới từ template, đọc source base-ui trước
+      khi ghép API.
+- [ ] **Bundle 957.61 kB (gzip 300.93 kB)** — tăng từ 715.82 kB sau khi thêm 6 feature mới.
+      Cần code-split theo route (chưa làm).
