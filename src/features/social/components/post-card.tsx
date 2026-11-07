@@ -3,11 +3,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SeedImage } from "@/components/shared/seed-image"
-import { getPlace } from "@/features/places/api/mock-places"
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import { formatCount, formatRelativeTime } from "@/lib/format"
-import { useAppStore } from "@/stores/app-store"
 import { cn } from "@/lib/utils"
+import { useSetPostLiked } from "../hooks/use-set-post-liked"
+import { useSetPostSaved } from "../hooks/use-set-post-saved"
 import type { Post } from "../types/post"
 
 interface PostCardProps {
@@ -15,12 +15,11 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
-  const toggleLike = useAppStore((state) => state.toggleLike)
-  const toggleSave = useAppStore((state) => state.toggleSave)
-  const publishedPlaceIds = useAppStore((state) => state.publishedPlaceIds)
+  const setLiked = useSetPostLiked()
+  const setSaved = useSetPostSaved()
 
-  const place = post.placeId ? getPlace(post.placeId) : undefined
-  const placeIsPublished = place ? publishedPlaceIds.includes(place.id) : false
+  // Địa điểm do server nhúng kèm — không tra cứu id ở client.
+  const place = post.place
 
   return (
     <article className="overflow-hidden rounded-[0.25rem] border-2 border-foreground bg-card shadow-[4px_4px_0_0_var(--foreground)]">
@@ -56,8 +55,8 @@ export function PostCard({ post }: PostCardProps) {
                 {place.address}
               </span>
             </span>
-            <Badge variant={placeIsPublished ? "secondary" : "outline"} className="shrink-0">
-              {placeIsPublished ? "Trên Khám phá" : categoryLabel(place.category)}
+            <Badge variant={place.isPublished ? "secondary" : "outline"} className="shrink-0">
+              {place.isPublished ? "Trên Khám phá" : categoryLabel(place.category)}
             </Badge>
           </div>
         ) : (
@@ -73,7 +72,7 @@ export function PostCard({ post }: PostCardProps) {
             size="sm"
             aria-pressed={post.likedByMe}
             aria-label={post.likedByMe ? "Bỏ thích" : "Thích"}
-            onClick={() => toggleLike(post.id)}
+            onClick={() => setLiked.mutate({ postId: post.id, liked: !post.likedByMe })}
             className={cn(post.likedByMe && "text-primary")}
           >
             <HeartIcon className={cn(post.likedByMe && "fill-current")} />
@@ -90,7 +89,7 @@ export function PostCard({ post }: PostCardProps) {
             size="sm"
             aria-pressed={post.savedByMe}
             aria-label={post.savedByMe ? "Bỏ lưu" : "Lưu bài"}
-            onClick={() => toggleSave(post.id)}
+            onClick={() => setSaved.mutate({ postId: post.id, saved: !post.savedByMe })}
             className={cn("ml-auto", post.savedByMe && "text-accent")}
           >
             <BookmarkIcon className={cn(post.savedByMe && "fill-current")} />

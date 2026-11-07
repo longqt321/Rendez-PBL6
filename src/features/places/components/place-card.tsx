@@ -8,16 +8,15 @@ import type { Place } from "../types/place"
 
 interface PlaceCardProps {
   place: Place
-  /** Chiều cao ảnh cố định — dùng cho bố cục masonry trên mobile */
-  imageHeight: number
 }
 
-export function PlaceCard({ place, imageHeight }: PlaceCardProps) {
+export function PlaceCard({ place }: PlaceCardProps) {
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-[0.25rem] border-2 border-foreground bg-card shadow-[4px_4px_0_0_var(--foreground)] transition-shadow hover:shadow-[6px_6px_0_0_var(--foreground)]">
+      {/* Chiều cao ảnh do server trả về (`imageHeight`) → lưới mobile có nhịp masonry. */}
       <SeedImage
         seed={place.imageSeed}
-        height={imageHeight}
+        height={place.imageHeight}
         alt={`Ảnh minh hoạ ${place.name}`}
         className="w-full shrink-0"
       >

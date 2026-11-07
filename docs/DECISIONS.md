@@ -380,9 +380,13 @@ TanStack Query chỉ giữ phần phân trang của `/discover` (server-state-li
 client state (bài đăng vừa tạo, địa điểm đã duyệt, thông báo). Không chồng chéo: Query không cache
 danh sách bài đăng, Zustand không cache trang `/discover`.
 
-**Về 3 quy tắc nghiệp vụ:**
+> [!WARNING]
+> Quyết định về state và về thuật toán trong mục này **đã bị thay thế bởi D-011**. Giữ lại phần
+> dưới chỉ để ghi lại lịch sử; đọc D-011 trước khi sửa code.
 
-| Quy tắc của người dùng                   | Cách triển khai                                                                                                                                                   |
+**Về 3 quy tắc nghiệp vụ (cách làm ban đầu — đã bị thay thế bởi D-011):**
+
+| Quy tắc của người dùng                   | Cách triển khai ban đầu                                                                                                                                           |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/social` độc lập với `/discover`        | `MOCK_PLACES` có `publishedAt: null` (p-31…p-38). Bài đăng trỏ tới các địa điểm này vẫn hiển thị bình thường ở `/social`                                          |
 | Địa điểm có trước → gợi ý khi tạo post   | `PostComposer` chạy `rankPlaceSuggestions` trên các địa điểm **đã publish**, hiện tối đa 3 gợi ý ngay khi gõ                                                      |
@@ -392,6 +396,10 @@ danh sách bài đăng, Zustand không cache trang `/discover`.
 tên quán khớp nguyên cụm (60) → khớp từng từ của tên (12/từ) → khớp tag (10/tag) →
 cùng loại hình (8/từ khoá) → cùng tên đường (6/từ) → cùng thành phố (5) → rating × 0.6 (chỉ phá hoà).
 Bỏ dấu tiếng Việt trước khi so khớp, có danh sách stop-word.
+
+> [!CAUTION]
+> Hàm này **không còn tồn tại ở frontend**. Nó chỉ còn một bản duy nhất trong
+> `src/mocks/ranking.ts` (phía server giả lập). Xem D-011.
 
 ### Phương án đã xem
 
@@ -427,3 +435,125 @@ Nguyên nhân: dùng `publishedPlaceIds` để quyết định trạng thái nú
 `/discover`" (thuật toán phát hiện) khác với "người dùng đã chọn địa điểm này cho bài của mình".
 Sửa: đọc `post.placeId` của chính bài đó. Đây là lỗi logic thật, phát hiện qua CDP chứ không phải
 qua typecheck.
+
+---
+
+## D-011 — Gỡ xếp hạng/phát hiện địa điểm khỏi frontend; mock đóng vai server qua axios adapter
+
+**Ngày:** 2026-11-07
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Người dùng chỉ ra lỗi kiến trúc: _"Đây là code frontend, đừng tự đưa các thuật toán ranking, và
+những thứ đáng lẽ phải xử lý ở phía backend lên frontend."_
+
+Code trước đó vi phạm ở 3 chỗ:
+
+| Vi phạm                                                                            | Vị trí cũ                                                     |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Hàm chấm điểm + xếp hạng đề xuất chạy trong bundle client                          | `src/features/places/lib/rank-suggestions.ts`                 |
+| Job "phát hiện địa điểm mới" + sinh thông báo chạy trong Zustand store             | `runPlaceDetection()` trong `src/stores/app-store.ts`         |
+| Client tự lọc + phân trang dữ liệu đã tải hết; tự suy ra địa điểm nào "đã publish" | `get-places.ts`, `post-card.tsx`, `place-suggestion-card.tsx` |
+
+### Quyết định
+
+**1. Frontend chỉ gọi API.** Mọi thao tác dữ liệu đi qua `axios` + TanStack Query:
+
+```
+Component/Page → feature hook (useQuery/useMutation) → feature api (axios) → lib/axios → server
+```
+
+**2. Hợp đồng API được chốt trước, backend implement sau.**
+
+| Method | Path                            | Response                             |
+| ------ | ------------------------------- | ------------------------------------ |
+| GET    | `/places?cursor=&category=&q=`  | `Page<Place>`                        |
+| GET    | `/places/:id`                   | `Place`                              |
+| GET    | `/places/suggestions?q=&limit=` | `{ suggestions: PlaceSuggestion[] }` |
+| GET    | `/posts?filter=`                | `Page<Post>`                         |
+| POST   | `/posts`                        | `Post`                               |
+| PATCH  | `/posts/:id/place`              | `Post`                               |
+| PATCH  | `/posts/:id/like`               | `Post`                               |
+| PATCH  | `/posts/:id/save`               | `Post`                               |
+| GET    | `/notifications`                | `Page<AppNotification>`              |
+| PATCH  | `/notifications/:id`            | `AppNotification`                    |
+| PATCH  | `/notifications`                | `AppNotification[]`                  |
+
+`Page<T> = { items: T[]; next: string | null }` — cursor do server quyết định, client chỉ chuyền lại.
+
+**3. Server nhúng dữ liệu liên quan, client không tra cứu id.**
+
+- `Post.place: PlaceSummary | null` — server nhúng kèm địa điểm đã gắn.
+- `PlaceSummary.isPublished` — server kết luận địa điểm đã lên `/discover` hay chưa.
+- `PlaceSuggestionNotification.postPlaceId` — server cho biết bài hiện gắn địa điểm nào.
+- `PlaceSuggestion` = `{ place: PlaceSummary; reason: string }` — **không còn `score`**, vì điểm số
+  là chi tiết nội bộ của server, không phải thứ client cần.
+
+Nhờ vậy `getPlace(id)` và `publishedPlaceIds` bị xoá hoàn toàn — hết nguồn sự thật thứ hai.
+
+**4. Chưa có backend → mock đóng vai server, không phải logic trong component.**
+
+`src/mocks/server.ts` là một **axios custom adapter** (`AxiosAdapter`), gắn vào instance qua
+`adapter` trong `src/lib/axios.ts`. Nó giữ "database" trong bộ nhớ và implement đúng hợp đồng trên,
+gồm cả phần xếp hạng (`src/mocks/ranking.ts`) và job sinh thông báo.
+
+| Trước                                                                                    | Sau                                                                          |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Logic nằm trong `features/*/lib`, `stores/` → nằm trong bundle, chạy trên máy người dùng | Logic nằm trong `src/mocks/` → chỉ chạy "phía server", frontend không import |
+| Component gọi thẳng store                                                                | Component gọi hook → axios → adapter                                         |
+| Không có dấu vết của API                                                                 | Mỗi file `features/*/api/*.ts` là một lời gọi HTTP thật                      |
+
+Khi backend sẵn sàng: xoá `src/mocks/`, bỏ dòng `adapter` trong `lib/axios.ts`. Không phải sửa
+feature api, hook hay component.
+
+**5. Zustand bị xoá.** `src/stores/app-store.ts` không còn: toàn bộ dữ liệu nó giữ đều là server
+state, và đã chuyển sang TanStack Query. Chưa có client state toàn cục nào cần Zustand, nên
+dependency vẫn để trong `package.json` nhưng **chưa dùng** (ghi ở `STACK.md`).
+
+### Phương án đã xem
+
+| Phương án                                                 | Kết quả                                                                           |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Giữ logic, chỉ thêm comment "sau này chuyển sang backend" | Loại — người dùng yêu cầu rõ, và comment không ngăn được việc dùng lại            |
+| Dùng MSW (Mock Service Worker)                            | Loại — thêm dependency mới; adapter của axios đủ dùng và không cần service worker |
+| Đặt mock trong `features/*/api/`                          | Loại — sẽ lẫn logic server vào thư mục frontend, đúng thứ đang phải sửa           |
+| `json-server` / mock server riêng                         | Loại — thêm tiến trình phải chạy, không cần cho phạm vi hiện tại                  |
+| Giữ Zustand cho optimistic update                         | Loại — TanStack Query làm được qua `setQueriesData`, không cần thêm nguồn state   |
+
+### Kích thước / license
+
+Không thêm dependency. `axios` và `@tanstack/react-query` đều đã có trong stack.
+
+### Hệ quả
+
+- Bundle tăng nhẹ (649.96 kB → 715.82 kB, gzip 206.49 → 229.59 kB) vì mock adapter + fixtures nằm
+  trong bundle. Đây là chi phí tạm thời; xoá `src/mocks/` là hết. Ghi `BACKLOG.md`.
+- Mọi thao tác dữ liệu giờ **bất đồng bộ** (adapter có delay 320 ms) → phải có trạng thái loading.
+  Đã thêm skeleton cho `/discover`, loading state cho `/social` và `/notification`.
+- State của server giả lập nằm trong bộ nhớ trang → **tải lại trang là reset**. Test CDP phải điều
+  hướng trong SPA bằng `link.click()`.
+
+### Đã xác minh
+
+- `typecheck`, `lint`, `format:check`, `build` → exit 0.
+- CDP: **44/44** check pass trên **cả dev (5173) và production preview (4174)**. Các check mới thay
+  cho các check "thuật toán chạy đúng" cũ:
+  - Gợi ý **không** xuất hiện tức thì (chứng tỏ có round-trip bất đồng bộ), rồi mới xuất hiện.
+  - Số gợi ý ≤ 3, gợi ý đầu khớp quán trong bài, mỗi gợi ý có lý do — tất cả đọc từ response.
+  - `/social` **không còn** nút "Chạy gợi ý địa điểm".
+  - Thẻ đề xuất xuất hiện ở `/notification` **mà không cần thao tác nào trên client**.
+  - Chọn đề xuất → chỉ 1 mục ở trạng thái "Đã gắn", các nút còn lại không bị khoá nhầm.
+  - Server publish địa điểm vừa chọn → bài tương ứng ở `/social` hiện "Trên Khám phá".
+  - 0 lỗi JS, 0 `console.error`.
+
+### Chưa xác minh
+
+- **Chưa có backend thật.** Toàn bộ "server" là adapter trong `src/mocks/`. Hợp đồng API ở trên mới
+  được kiểm với mock, chưa kiểm với Django.
+- **Chưa kiểm hành vi lỗi mạng thật.** Adapter chỉ trả 200 (và 404 khi sai route). Chưa test
+  timeout, 500, mất mạng, retry.
+- **Chưa kiểm `AbortSignal`.** Adapter có xử lý `config.signal` → reject `CanceledError`, nhưng chưa
+  có test nào chứng minh request bị huỷ thật khi đổi bộ lọc nhanh.
+- **Chưa kiểm optimistic update rollback.** `useSetPostLiked` / `useSetPostSaved` có nhánh `onError`
+  hoàn tác, nhưng chưa có cách nào làm server trả lỗi để thử.

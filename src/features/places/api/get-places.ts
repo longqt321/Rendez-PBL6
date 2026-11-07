@@ -1,70 +1,29 @@
+import { api } from "@/lib/axios"
+import type { Page } from "@/types/api"
 import type { Place, PlaceCategory } from "../types/place"
-import { MOCK_PLACES } from "./mock-places"
 
 export interface DiscoverFilters {
   category: PlaceCategory | "all"
   query: string
 }
 
-export interface DiscoverPage {
-  items: Place[]
-  nextCursor: string | null
-}
-
-const PAGE_SIZE = 9
-
-function normalize(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/gi, "d")
-    .toLowerCase()
-}
-
-export function filterPlaces(places: Place[], filters: DiscoverFilters): Place[] {
-  const q = normalize(filters.query.trim())
-  return places.filter((place) => {
-    if (filters.category !== "all" && place.category !== filters.category) return false
-    if (!q) return true
-    const haystack = normalize([place.name, place.address, place.city, ...place.tags].join(" "))
-    return haystack.includes(q)
-  })
-}
-
 /**
- * Mô phỏng endpoint phân trang cursor.
+ * `GET /places` — danh sách địa điểm đã được duyệt lên /discover.
  *
- * `publishedIds` do store cung cấp — chỉ địa điểm đã được thuật toán đưa lên
- * /discover mới nằm trong danh sách này. Cursor là offset dạng chuỗi; khi có
- * backend thật thì thay bằng giá trị `next` do server trả về.
+ * Server lo việc lọc và phân trang; client chỉ chuyền lại `cursor` mà server trả về.
  */
-export async function getDiscoverPage(
+export async function getPlaces(
   filters: DiscoverFilters,
-  publishedIds: string[],
   cursor: string | null,
   signal?: AbortSignal,
-): Promise<DiscoverPage> {
-  // Giả lập độ trễ mạng để thấy skeleton và trạng thái loading của infinite scroll.
-  await new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(resolve, 420)
-    signal?.addEventListener("abort", () => {
-      clearTimeout(timer)
-      reject(new DOMException("Aborted", "AbortError"))
-    })
+): Promise<Page<Place>> {
+  const { data } = await api.get<Page<Place>>("/places", {
+    params: {
+      cursor: cursor ?? undefined,
+      category: filters.category === "all" ? undefined : filters.category,
+      q: filters.query.trim() || undefined,
+    },
+    signal,
   })
-
-  const published = new Set(publishedIds)
-  const source = MOCK_PLACES.filter((place) => published.has(place.id))
-  const matched = filterPlaces(source, filters)
-
-  const offset = cursor === null ? 0 : Number(cursor)
-  const items = matched.slice(offset, offset + PAGE_SIZE)
-  const nextOffset = offset + items.length
-
-  return {
-    items,
-    nextCursor: nextOffset < matched.length ? String(nextOffset) : null,
-  }
+  return data
 }
-
-export const DISCOVER_PAGE_SIZE = PAGE_SIZE

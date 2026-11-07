@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react"
-import { CheckIcon, MapPinIcon, SparklesIcon, XIcon } from "lucide-react"
+import { useState } from "react"
+import { CheckIcon, Loader2Icon, MapPinIcon, SparklesIcon, XIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { getPlace, MOCK_PLACES } from "@/features/places/api/mock-places"
-import { rankPlaceSuggestions } from "@/features/places/lib/rank-suggestions"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { categoryLabel } from "@/features/places/lib/category-meta"
-import { useAppStore } from "@/stores/app-store"
+import { usePlaceSuggestions } from "@/features/places/hooks/use-place-suggestions"
+import type { PlaceSummary } from "@/features/places/types/place"
+import { useCreatePost } from "../hooks/use-create-post"
 
 const IMAGE_SEEDS = ["post-new-01", "post-new-02", "post-new-03", "post-new-04"]
 
@@ -15,41 +16,42 @@ interface PostComposerProps {
 }
 
 /**
- * Ô soạn bài. Khi người dùng gõ nội dung, thuật toán gợi ý chạy ngay trên
- * client và hiện tối đa 3 địa điểm khớp nhất để gắn vào bài.
+ * Ô soạn bài.
+ *
+ * Khi người dùng gõ, frontend hỏi server (`GET /places/suggestions`) và chỉ hiển
+ * thị những gì server trả về. Không có bước xử lý nào chạy trên client.
  */
 export function PostComposer({ onCreated }: PostComposerProps) {
   const [caption, setCaption] = useState("")
-  const [placeId, setPlaceId] = useState<string | null>(null)
+  const [selectedPlace, setSelectedPlace] = useState<PlaceSummary | null>(null)
   const [seedIndex, setSeedIndex] = useState(0)
   const [showSuggestions, setShowSuggestions] = useState(false)
 
-  const createPost = useAppStore((state) => state.createPost)
-  const publishedPlaceIds = useAppStore((state) => state.publishedPlaceIds)
+  const debouncedCaption = useDebouncedValue(caption, 450)
+  const { data: suggestions = [], isFetching } = usePlaceSuggestions(debouncedCaption)
+  const createPost = useCreatePost()
 
-  const suggestions = useMemo(() => {
-    if (caption.trim().length < 8) return []
-    const candidates = MOCK_PLACES.filter(
-      (place) => publishedPlaceIds.includes(place.id) && place.id !== placeId,
-    )
-    return rankPlaceSuggestions(caption, candidates, 3)
-  }, [caption, placeId, publishedPlaceIds])
-
-  const selectedPlace = placeId ? getPlace(placeId) : undefined
-  const canSubmit = caption.trim().length >= 3
+  const canSubmit = caption.trim().length >= 3 && !createPost.isPending
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     if (!canSubmit) return
-    createPost({
-      caption: caption.trim(),
-      imageSeed: IMAGE_SEEDS[seedIndex % IMAGE_SEEDS.length],
-      placeId,
-    })
-    setCaption("")
-    setPlaceId(null)
-    setShowSuggestions(false)
-    onCreated?.()
+
+    createPost.mutate(
+      {
+        caption: caption.trim(),
+        imageSeed: IMAGE_SEEDS[seedIndex % IMAGE_SEEDS.length],
+        placeId: selectedPlace?.id ?? null,
+      },
+      {
+        onSuccess: () => {
+          setCaption("")
+          setSelectedPlace(null)
+          setShowSuggestions(false)
+          onCreated?.()
+        },
+      },
+    )
   }
 
   return (
@@ -80,7 +82,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
             variant="ghost"
             size="icon-xs"
             aria-label="Bỏ gắn địa điểm"
-            onClick={() => setPlaceId(null)}
+            onClick={() => setSelectedPlace(null)}
           >
             <XIcon />
           </Button>
@@ -99,10 +101,10 @@ export function PostComposer({ onCreated }: PostComposerProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    setPlaceId(place.id)
+                    setSelectedPlace(place)
                     setShowSuggestions(false)
                   }}
-                  className="flex w-full items-start gap-2 rounded-[0.15rem] px-1.5 py-1 text-left text-xs hover:bg-accent/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  className="group flex w-full items-start gap-2 rounded-[0.15rem] px-1.5 py-1 text-left text-xs hover:bg-accent/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   <MapPinIcon className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
                   <span className="flex-1">
@@ -126,7 +128,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
           aria-expanded={showSuggestions}
           disabled={caption.trim().length < 8}
         >
-          <MapPinIcon />
+          {isFetching ? <Loader2Icon className="animate-spin" /> : <MapPinIcon />}
           Gắn địa điểm
           {suggestions.length > 0 ? (
             <Badge variant="secondary" className="ml-1">
@@ -150,6 +152,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
         </span>
 
         <Button type="submit" size="sm" disabled={!canSubmit}>
+          {createPost.isPending ? <Loader2Icon className="animate-spin" /> : null}
           Đăng
         </Button>
       </div>

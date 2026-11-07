@@ -3,6 +3,7 @@ import {
   CheckCheckIcon,
   HeartIcon,
   InfoIcon,
+  Loader2Icon,
   MessageCircleIcon,
   UserPlusIcon,
 } from "lucide-react"
@@ -10,9 +11,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatRelativeTime } from "@/lib/format"
-import { useAppStore } from "@/stores/app-store"
 import { cn } from "@/lib/utils"
 import { PlaceSuggestionCard } from "../components/place-suggestion-card"
+import { useMarkAllNotificationsRead } from "../hooks/use-mark-all-notifications-read"
+import { useNotifications } from "../hooks/use-notifications"
 import type { ActorNotification, AppNotification } from "../types/notification"
 
 function ActorRow({ notification }: { notification: ActorNotification }) {
@@ -55,15 +57,16 @@ function ActorRow({ notification }: { notification: ActorNotification }) {
 }
 
 export function NotificationPage() {
-  const notifications = useAppStore((state) => state.notifications)
-  const markAllRead = useAppStore((state) => state.markAllNotificationsRead)
+  const { data, isPending, isError, refetch } = useNotifications()
+  const markAllRead = useMarkAllNotificationsRead()
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const notifications = data?.items ?? []
+  const unreadCount = notifications.filter((notification) => !notification.read).length
   const suggestions = notifications.filter(
-    (n): n is Extract<AppNotification, { kind: "place-suggestion" }> =>
-      n.kind === "place-suggestion",
+    (notification): notification is Extract<AppNotification, { kind: "place-suggestion" }> =>
+      notification.kind === "place-suggestion",
   )
-  const others = notifications.filter((n) => n.kind !== "place-suggestion")
+  const others = notifications.filter((notification) => notification.kind !== "place-suggestion")
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
@@ -77,8 +80,13 @@ export function NotificationPage() {
             {unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : "Bạn đã đọc hết thông báo."}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
-          <CheckCheckIcon />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => markAllRead.mutate()}
+          disabled={unreadCount === 0 || markAllRead.isPending}
+        >
+          {markAllRead.isPending ? <Loader2Icon className="animate-spin" /> : <CheckCheckIcon />}
           Đọc tất cả
         </Button>
       </header>
@@ -92,56 +100,76 @@ export function NotificationPage() {
         </Tabs>
       </div>
 
-      {suggestions.length > 0 ? (
-        <section className="mt-5">
-          <h2 className="mb-2 font-heading text-sm font-bold tracking-wide uppercase">
-            Đề xuất thêm địa điểm
-          </h2>
-          <ul className="flex flex-col gap-3">
-            {suggestions.map((notification) => (
-              <li key={notification.id}>
-                <PlaceSuggestionCard notification={notification} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : (
-        <p className="mt-6 flex items-start gap-2 rounded-[0.2rem] border-2 border-dashed border-foreground/30 p-3 text-xs text-muted-foreground">
-          <InfoIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-          Chưa có đề xuất nào. Vào Cộng đồng, đăng một bài không gắn địa điểm rồi bấm “Chạy gợi ý
-          địa điểm” để mô phỏng thuật toán.
+      {isPending ? (
+        <p className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2Icon className="size-4 animate-spin" aria-hidden="true" />
+          Đang tải thông báo…
         </p>
-      )}
-
-      <section className="mt-6">
-        <h2 className="mb-2 font-heading text-sm font-bold tracking-wide uppercase">
-          Hoạt động khác
-        </h2>
-        <ul className="flex flex-col gap-2">
-          {others.map((notification) =>
-            notification.kind === "system" ? (
-              <li
-                key={notification.id}
-                className={cn(
-                  "rounded-[0.2rem] border-2 p-2.5",
-                  notification.read ? "border-foreground/15" : "border-primary bg-primary/5",
-                )}
-              >
-                <p className="flex items-center gap-1.5 text-xs font-semibold">
-                  <InfoIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                  {notification.title}
-                </p>
-                <p className="mt-1 text-[0.7rem] text-muted-foreground">{notification.body}</p>
-                <p className="mt-1 text-[0.65rem] text-muted-foreground">
-                  {formatRelativeTime(notification.createdAt)}
-                </p>
-              </li>
-            ) : (
-              <ActorRow key={notification.id} notification={notification} />
-            ),
+      ) : isError ? (
+        <div className="mt-10 flex flex-col items-center gap-2 text-center">
+          <p className="text-sm text-muted-foreground">Không tải được thông báo.</p>
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            className="text-xs font-semibold underline underline-offset-4"
+          >
+            Thử lại
+          </button>
+        </div>
+      ) : (
+        <>
+          {suggestions.length > 0 ? (
+            <section className="mt-5">
+              <h2 className="mb-2 font-heading text-sm font-bold tracking-wide uppercase">
+                Đề xuất thêm địa điểm
+              </h2>
+              <ul className="flex flex-col gap-3">
+                {suggestions.map((notification) => (
+                  <li key={notification.id}>
+                    <PlaceSuggestionCard notification={notification} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : (
+            <p className="mt-6 flex items-start gap-2 rounded-[0.2rem] border-2 border-dashed border-foreground/30 p-3 text-xs text-muted-foreground">
+              <InfoIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+              Chưa có đề xuất nào. Khi hệ thống tìm thấy địa điểm phù hợp với một bài đăng chưa gắn
+              địa điểm của bạn, đề xuất sẽ xuất hiện ở đây.
+            </p>
           )}
-        </ul>
-      </section>
+
+          <section className="mt-6">
+            <h2 className="mb-2 font-heading text-sm font-bold tracking-wide uppercase">
+              Hoạt động khác
+            </h2>
+            <ul className="flex flex-col gap-2">
+              {others.map((notification) =>
+                notification.kind === "system" ? (
+                  <li
+                    key={notification.id}
+                    className={cn(
+                      "rounded-[0.2rem] border-2 p-2.5",
+                      notification.read ? "border-foreground/15" : "border-primary bg-primary/5",
+                    )}
+                  >
+                    <p className="flex items-center gap-1.5 text-xs font-semibold">
+                      <InfoIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                      {notification.title}
+                    </p>
+                    <p className="mt-1 text-[0.7rem] text-muted-foreground">{notification.body}</p>
+                    <p className="mt-1 text-[0.65rem] text-muted-foreground">
+                      {formatRelativeTime(notification.createdAt)}
+                    </p>
+                  </li>
+                ) : (
+                  <ActorRow key={notification.id} notification={notification} />
+                ),
+              )}
+            </ul>
+          </section>
+        </>
+      )}
     </div>
   )
 }

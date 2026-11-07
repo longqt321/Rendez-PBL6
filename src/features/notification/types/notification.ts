@@ -1,11 +1,6 @@
-export type NotificationKind = "place-suggestion" | "like" | "comment" | "follow" | "system"
+import type { PlaceSuggestion } from "@/features/places/types/place"
 
-export interface PlaceSuggestion {
-  placeId: string
-  score: number
-  /** Lý do ngắn gọn để người dùng hiểu vì sao được đề xuất */
-  reason: string
-}
+export type NotificationKind = "place-suggestion" | "like" | "comment" | "follow" | "system"
 
 interface NotificationBase {
   id: string
@@ -13,10 +8,18 @@ interface NotificationBase {
   read: boolean
 }
 
+/**
+ * Thông báo "Đề xuất thêm địa điểm" do server sinh ra.
+ *
+ * `suggestions` đã được server xếp hạng sẵn (tối đa 3 mục). `postPlaceId` là địa
+ * điểm hiện tại của bài — server tính, frontend chỉ dùng để hiển thị trạng thái
+ * "Đã gắn", không tự tra cứu.
+ */
 export interface PlaceSuggestionNotification extends NotificationBase {
   kind: "place-suggestion"
   postId: string
   postCaption: string
+  postPlaceId: string | null
   suggestions: PlaceSuggestion[]
 }
 

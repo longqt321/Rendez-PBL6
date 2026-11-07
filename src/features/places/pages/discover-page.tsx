@@ -18,8 +18,8 @@ const CATEGORY_TABS: { value: PlaceCategory | "all"; label: string }[] = [
   })),
 ]
 
-/** Chiều cao ảnh lệch nhau để lưới mobile có nhịp điệu masonry. */
-const HEIGHT_PATTERN = [320, 400, 280, 360, 440, 300, 380, 340, 420]
+/** Chiều cao ảnh cho skeleton — chỉ là hình thức chờ, không phải dữ liệu. */
+const SKELETON_HEIGHTS = [320, 400, 280, 360, 440, 300, 380, 340, 420]
 
 export function DiscoverPage() {
   const [category, setCategory] = useState<PlaceCategory | "all">("all")
@@ -93,7 +93,7 @@ export function DiscoverPage() {
         <ul className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3">
           {Array.from({ length: 6 }).map((_, index) => (
             <li key={index}>
-              <PlaceCardSkeleton imageHeight={HEIGHT_PATTERN[index % HEIGHT_PATTERN.length]} />
+              <PlaceCardSkeleton imageHeight={SKELETON_HEIGHTS[index % SKELETON_HEIGHTS.length]} />
             </li>
           ))}
         </ul>
@@ -125,12 +125,9 @@ export function DiscoverPage() {
         <>
           {/* PC: 3 cột đều. Mobile: 2 cột masonry, mỗi thẻ có chiều cao ảnh riêng. */}
           <ul className="mt-5 grid grid-cols-2 items-start gap-4 md:grid-cols-3">
-            {places.map((place, index) => (
+            {places.map((place) => (
               <li key={place.id} className="lg:h-full">
-                <PlaceCard
-                  place={place}
-                  imageHeight={HEIGHT_PATTERN[index % HEIGHT_PATTERN.length]}
-                />
+                <PlaceCard place={place} />
               </li>
             ))}
           </ul>

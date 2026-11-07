@@ -1,0 +1,14 @@
+{
+  "$comment": "Cụm không được xuất hiện trong src/features/, src/components/, src/stores/. Nguồn: docs/LESSONS.md L-001 — không đưa logic backend lên frontend. Cho phép ở src/mocks/ (server giả lập) và docs/.",
+  "phrases": [
+    "rankPlaceSuggestions",
+    "runPlaceDetection",
+    "publishedPlaceIds",
+    "newlyPublishedPlaceIds",
+    "getPlace(",
+    "thuật toán xếp hạng",
+    "xếp hạng đề xuất",
+    "chấm điểm",
+    "mô phỏng thuật toán"
+  ]
+}

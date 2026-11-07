@@ -2,6 +2,24 @@
 
 Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ngoài phạm vi được giao).
 
+## Cần backend implement (chặn khi bỏ mock)
+
+- [ ] **Toàn bộ hợp đồng API ở `DECISIONS.md` D-011** phải được backend implement đúng path/shape:
+      `GET /places`, `GET /places/:id`, `GET /places/suggestions`, `GET /posts`, `POST /posts`,
+      `PATCH /posts/:id/place|like|save`, `GET /notifications`, `PATCH /notifications[/:id]`.
+- [ ] **`GET /places/suggestions?q=&limit=`** — endpoint quan trọng nhất: xếp hạng đề xuất địa điểm
+      theo nội dung bài đăng. Frontend không có logic này; nếu backend chưa có, tính năng gợi ý
+      không hoạt động.
+- [ ] **Job phát hiện địa điểm mới** — server quét bài chưa gắn địa điểm, tìm địa điểm chưa publish
+      khớp nội dung, sinh thông báo `place-suggestion`. Hiện `syncPlaceSuggestions()` chạy mỗi lần
+      client tải `/notifications` — đó là mô phỏng, backend thật phải là job nền.
+- [ ] **Xoá `src/mocks/` và bỏ `adapter` trong `src/lib/axios.ts`** khi backend sẵn sàng. Không phải
+      sửa feature api/hook/component.
+- [ ] **Server phải nhúng `place` vào `Post`** và `isPublished` vào `PlaceSummary`. Nếu backend chỉ
+      trả `placeId`, frontend sẽ phải tra cứu id → quay lại nguồn sự thật thứ hai (xem L-001).
+- [ ] **`GET /posts` cần phân trang cursor** — hiện mock trả `next: null` (10 bài, một trang). Hợp
+      đồng đã là `Page<Post>` nên không phải đổi type, chỉ cần backend trả `next` thật.
+
 ## Ưu tiên cao
 
 - [ ] **Chưa có test runner.** Không có Vitest/Playwright, không có script `test`. Nên thêm Vitest +
@@ -9,10 +27,9 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 - [ ] **Chưa có CI.** Không có `.github/workflows`. Nên chạy `typecheck` + `lint` + `format:check` + `build`
       trên mỗi PR.
 - [ ] **Chưa có pre-commit hook.** Husky + lint-staged để chặn commit lỗi.
-- [ ] **11 dependency chưa dùng:** `react-router`, `@tanstack/react-query`, `zustand`, `zod`,
-      `react-hook-form`, `@hookform/resolvers`, `axios`, `sonner`, `lucide-react`.
-      Quyết định: giữ (nếu sắp dùng) hay bỏ. Nếu giữ thì phải wire provider vào `main.tsx`
-      (`QueryClientProvider`, `BrowserRouter`, `<Toaster />`) — hiện chưa có.
+- [ ] **Dependency còn chưa dùng:** `zustand`, `zod`, `react-hook-form`, `@hookform/resolvers`, `sonner`.
+      Quyết định: giữ (nếu sắp dùng) hay bỏ. (`react-router`, `axios`, `@tanstack/react-query`,
+      `lucide-react` đã dùng.)
 - [ ] **`src/App.tsx` vẫn là template Vite** (logo, counter, link docs/social). Cần thay bằng UI thật.
       Khi thay thì xóa luôn `src/App.css` và `src/assets/{hero.png,react.svg,vite.svg}`.
 - [ ] **`index.html`:** `lang="en"` và `<title>frontend</title>` vẫn là placeholder.
@@ -43,8 +60,9 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
       Nếu muốn sạch console: tự viết theme provider và sửa `src/components/ui/sonner.tsx`.
 - [ ] **`src/components/shared/design-showcase-page.tsx` là trang tạm** để kiểm tra design stack.
       Xóa cùng route `/design` khi bắt đầu làm giao diện thật.
-- [ ] **Bundle tăng lên 490 KB (gzip 156 KB)** sau khi thêm router + query + sonner + dialog.
-      Chưa cần tối ưu, nhưng nên theo dõi khi thêm feature.
+- [ ] **Bundle 715.82 KB (gzip 229.59 KB)** — tăng từ 649.96 kB sau khi thêm mock adapter + fixtures
+      (xem D-011). Phần tăng này biến mất khi xoá `src/mocks/`. Vẫn nên code-split theo route
+      (hiện chưa làm) để giảm bundle thật.
 - [ ] **Chưa có component nào cho form thật** — `react-hook-form` + `zod` + `@hookform/resolvers`
       vẫn chưa được dùng. Trang showcase chỉ có `Input` + `Label` đơn lẻ.
 - [ ] **Chưa có `error boundary`** cho route; nếu một page throw thì cả app trắng.

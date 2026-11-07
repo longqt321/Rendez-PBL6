@@ -2,23 +2,21 @@ import type { PlaceCategory } from "../types/place"
 
 interface CategoryMeta {
   label: string
-  /** Cụm từ dùng để so khớp với nội dung bài đăng (đã bỏ dấu, chữ thường) */
-  keywords: string[]
 }
 
+/**
+ * Nhãn hiển thị của loại hình địa điểm.
+ *
+ * Chỉ chứa dữ liệu để hiển thị. Các từ khoá dùng cho việc so khớp/xếp hạng
+ * thuộc về server (`src/mocks/ranking.ts`), không nằm ở đây.
+ */
 export const CATEGORY_META: Record<PlaceCategory, CategoryMeta> = {
-  cafe: { label: "Cà phê", keywords: ["ca phe", "cafe", "coffee", "quan nuoc"] },
-  restaurant: {
-    label: "Quán ăn",
-    keywords: ["quan an", "nha hang", "an com", "com tam", "bun bo", "pho", "lau"],
-  },
-  "street-food": {
-    label: "Ăn vặt",
-    keywords: ["an vat", "banh mi", "banh canh", "banh khot", "xoi", "oc", "banh xeo"],
-  },
-  bakery: { label: "Tiệm bánh", keywords: ["tien banh", "banh ngot", "banh my", "bakery"] },
-  dessert: { label: "Tráng miệng", keywords: ["che", "kem", "flan", "trang mieng"] },
-  bar: { label: "Quán bar", keywords: ["bar", "bia", "cocktail", "rooftop", "pub"] },
+  cafe: { label: "Cà phê" },
+  restaurant: { label: "Quán ăn" },
+  "street-food": { label: "Ăn vặt" },
+  bakery: { label: "Tiệm bánh" },
+  dessert: { label: "Tráng miệng" },
+  bar: { label: "Quán bar" },
 }
 
 export function categoryLabel(category: PlaceCategory): string {

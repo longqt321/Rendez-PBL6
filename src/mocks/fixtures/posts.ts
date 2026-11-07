@@ -1,5 +1,7 @@
-import type { Author, Post } from "../types/post"
+import type { Author } from "@/features/social/types/post"
+import type { MockPost } from "../types"
 
+/** Người dùng đang đăng nhập, phía server dùng khi tạo bài mới. */
 export const CURRENT_USER: Author = {
   id: "u-me",
   name: "Minh Anh",
@@ -19,7 +21,7 @@ const AUTHORS: Author[] = [
  * Feed /social. Độc lập hoàn toàn với /discover: có bài gắn địa điểm đã lên
  * /discover, có bài gắn địa điểm CHƯA lên, và có bài chưa gắn gì cả.
  */
-export const MOCK_POSTS: Post[] = [
+export const MOCK_POSTS: MockPost[] = [
   {
     id: "post-01",
     author: AUTHORS[0],
@@ -56,7 +58,7 @@ export const MOCK_POSTS: Post[] = [
     imageSeed: "post-caphe-hem",
     imageHeight: 460,
     createdAt: "2026-11-06T16:40:00+07:00",
-    // Chưa gắn địa điểm: thuật toán sẽ đề xuất 3 địa điểm khớp nhất
+    // Chưa gắn địa điểm: server sẽ đề xuất khi có địa điểm phù hợp
     placeId: null,
     likeCount: 132,
     commentCount: 9,

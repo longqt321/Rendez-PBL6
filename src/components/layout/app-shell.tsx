@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { useAppStore } from "@/stores/app-store"
+import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
 import { cn } from "@/lib/utils"
 import { NAV_ITEMS } from "./nav-items"
 import { ThemeToggle } from "./theme-toggle"
@@ -66,7 +66,7 @@ function Brand() {
 }
 
 function SideNav() {
-  const unread = useAppStore((state) => state.notifications.filter((n) => !n.read).length)
+  const { data: unread = 0 } = useUnreadNotificationCount()
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r-2 border-foreground/15 bg-sidebar px-4 py-5 lg:flex">
@@ -214,7 +214,7 @@ function UserMenu() {
 }
 
 function BottomNav() {
-  const unread = useAppStore((state) => state.notifications.filter((n) => !n.read).length)
+  const { data: unread = 0 } = useUnreadNotificationCount()
 
   return (
     <nav

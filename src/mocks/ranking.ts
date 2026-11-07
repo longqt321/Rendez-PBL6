@@ -1,23 +1,16 @@
-import type { Place } from "../types/place"
-import { CATEGORY_META } from "./category-meta"
+import type { PlaceCategory } from "@/features/places/types/place"
+import type { MockPlace } from "./fixtures/places"
+import { normalizeText } from "./text"
 
-export interface RankedSuggestion {
-  place: Place
-  score: number
-  reason: string
-}
-
-/** Bỏ dấu tiếng Việt + chữ thường để so khớp không phân biệt dấu. */
-export function normalizeText(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/gi, "d")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-}
+/**
+ * Xếp hạng địa điểm phù hợp với nội dung bài đăng.
+ *
+ * ĐÂY LÀ LOGIC PHÍA SERVER. Toàn bộ phần chấm điểm, so khớp mờ, chọn top N nằm ở
+ * đây và chỉ chạy bên trong `src/mocks/server.ts`. Frontend không import file này;
+ * nó chỉ nhận mảng `PlaceSuggestion` đã xếp hạng sẵn qua API.
+ *
+ * Khi có backend thật, file này bị xoá cùng `src/mocks/`.
+ */
 
 const STOP_WORDS = new Set([
   "va",
@@ -46,24 +39,42 @@ const STOP_WORDS = new Set([
   "an",
 ])
 
+/** Từ khoá loại hình — dữ liệu của server, không phải của UI. */
+const CATEGORY_KEYWORDS: Record<PlaceCategory, string[]> = {
+  cafe: ["ca phe", "cafe", "coffee", "quan nuoc"],
+  restaurant: ["quan an", "nha hang", "an com", "com tam", "bun bo", "pho", "lau"],
+  "street-food": ["an vat", "banh mi", "banh canh", "banh khot", "xoi", "oc", "banh xeo"],
+  bakery: ["tien banh", "banh ngot", "banh my", "bakery"],
+  dessert: ["che", "kem", "flan", "trang mieng"],
+  bar: ["bar", "bia", "cocktail", "rooftop", "pub"],
+}
+
+const CATEGORY_LABEL: Record<PlaceCategory, string> = {
+  cafe: "Cà phê",
+  restaurant: "Quán ăn",
+  "street-food": "Ăn vặt",
+  bakery: "Tiệm bánh",
+  dessert: "Tráng miệng",
+  bar: "Quán bar",
+}
+
 function tokenize(text: string): string[] {
   return normalizeText(text)
     .split(" ")
     .filter((token) => token.length >= 2 && !STOP_WORDS.has(token))
 }
 
-/**
- * Xếp hạng địa điểm phù hợp với nội dung một bài đăng.
- *
- * Đây là mô phỏng thuật toán gợi ý ở phía client: chấm điểm theo mức độ trùng
- * khớp giữa nội dung bài viết và thông tin địa điểm. Khi có backend, hàm này
- * được thay bằng kết quả ranking do server trả về — phần UI không phải đổi.
- */
+export interface RankedPlace {
+  place: MockPlace
+  score: number
+  reason: string
+}
+
 export function rankPlaceSuggestions(
   caption: string,
-  candidates: Place[],
+  candidates: MockPlace[],
   limit = 3,
-): RankedSuggestion[] {
+): RankedPlace[] {
   const normalizedCaption = normalizeText(caption)
   const captionTokens = new Set(tokenize(caption))
 
@@ -79,7 +90,6 @@ export function rankPlaceSuggestions(
       score += 60
       reasons.push("tên quán xuất hiện trong bài")
     } else {
-      // Hoặc khớp theo từng từ có nghĩa của tên quán.
       const nameHits = tokenize(place.name).filter((token) => captionTokens.has(token))
       if (nameHits.length > 0) {
         score += nameHits.length * 12
@@ -97,13 +107,13 @@ export function rankPlaceSuggestions(
       reasons.push(`khớp tag: ${tagHits.slice(0, 2).join(", ")}`)
     }
 
-    // 3. Từ khoá của loại hình (cà phê, bánh mì, ốc…) xuất hiện trong bài.
-    const categoryKeywords = CATEGORY_META[place.category].keywords.filter((keyword) =>
+    // 3. Từ khoá loại hình xuất hiện trong bài.
+    const categoryKeywords = CATEGORY_KEYWORDS[place.category].filter((keyword) =>
       normalizedCaption.includes(keyword),
     )
     if (categoryKeywords.length > 0) {
       score += categoryKeywords.length * 8
-      reasons.push(`cùng loại hình: ${CATEGORY_META[place.category].label}`)
+      reasons.push(`cùng loại hình: ${CATEGORY_LABEL[place.category]}`)
     }
 
     // 4. Tên đường / thành phố được nhắc tới.

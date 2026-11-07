@@ -1,25 +1,16 @@
 import { useState } from "react"
-import { SparklesIcon, UsersIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Loader2Icon, SparklesIcon, UsersIcon } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useAppStore } from "@/stores/app-store"
+import { usePosts } from "../hooks/use-posts"
+import type { PostFeedFilter } from "../types/post"
 import { PostCard } from "../components/post-card"
 import { PostComposer } from "../components/post-composer"
 
-type FeedFilter = "all" | "unplaced" | "mine"
-
 export function SocialPage() {
-  const [filter, setFilter] = useState<FeedFilter>("all")
-  const posts = useAppStore((state) => state.posts)
-  const runPlaceDetection = useAppStore((state) => state.runPlaceDetection)
+  const [filter, setFilter] = useState<PostFeedFilter>("all")
+  const { data, isPending, isError, refetch } = usePosts(filter)
 
-  const visible = posts.filter((post) => {
-    if (filter === "unplaced") return post.placeId === null
-    if (filter === "mine") return post.author.id === "u-me"
-    return true
-  })
-
-  const unplacedCount = posts.filter((post) => post.placeId === null).length
+  const posts = data?.items ?? []
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
@@ -38,39 +29,51 @@ export function SocialPage() {
       </div>
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
-        <Tabs value={filter} onValueChange={(value) => setFilter(value as FeedFilter)}>
+        <Tabs value={filter} onValueChange={(value) => setFilter(value as PostFeedFilter)}>
           <TabsList>
             <TabsTrigger value="all">Tất cả</TabsTrigger>
             <TabsTrigger value="unplaced">Chưa gắn địa điểm</TabsTrigger>
             <TabsTrigger value="mine">Của tôi</TabsTrigger>
           </TabsList>
         </Tabs>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={runPlaceDetection}
-          disabled={unplacedCount === 0}
-          title="Mô phỏng thuật toán quét bài chưa gắn địa điểm"
-        >
-          <SparklesIcon />
-          Chạy gợi ý địa điểm
-        </Button>
       </div>
 
-      {visible.length === 0 ? (
+      {isPending ? (
+        <p className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2Icon className="size-4 animate-spin" aria-hidden="true" />
+          Đang tải bài đăng…
+        </p>
+      ) : isError ? (
+        <div className="mt-10 flex flex-col items-center gap-2 text-center">
+          <p className="text-sm text-muted-foreground">Không tải được bài đăng.</p>
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            className="text-xs font-semibold underline underline-offset-4"
+          >
+            Thử lại
+          </button>
+        </div>
+      ) : posts.length === 0 ? (
         <p className="mt-10 text-center text-sm text-muted-foreground">
           Chưa có bài đăng nào trong mục này.
         </p>
       ) : (
         <ul className="mt-4 flex flex-col gap-4">
-          {visible.map((post) => (
+          {posts.map((post) => (
             <li key={post.id}>
               <PostCard post={post} />
             </li>
           ))}
         </ul>
       )}
+
+      {posts.length > 0 ? (
+        <p className="mt-6 flex items-center justify-center gap-1.5 text-[0.7rem] text-muted-foreground">
+          <SparklesIcon className="size-3" aria-hidden="true" />
+          Đề xuất địa điểm do hệ thống tạo, bạn xem ở trang Thông báo.
+        </p>
+      ) : null}
     </div>
   )
 }

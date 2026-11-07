@@ -1,11 +1,10 @@
-import { CheckIcon, MapPinIcon, SparklesIcon } from "lucide-react"
+import { CheckIcon, Loader2Icon, MapPinIcon, SparklesIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SeedImage } from "@/components/shared/seed-image"
-import { getPlace } from "@/features/places/api/mock-places"
 import { categoryLabel } from "@/features/places/lib/category-meta"
+import { useUpdatePostPlace } from "@/features/social/hooks/use-update-post-place"
 import { formatRelativeTime } from "@/lib/format"
-import { useAppStore } from "@/stores/app-store"
 import { cn } from "@/lib/utils"
 import type { PlaceSuggestionNotification } from "../types/notification"
 
@@ -14,16 +13,13 @@ interface PlaceSuggestionCardProps {
 }
 
 /**
- * Thẻ "Đề xuất thêm địa điểm": hiện khi thuật toán tìm thấy địa điểm mới khớp
- * với một bài đăng cũ chưa gắn địa điểm. Người dùng chọn 1 trong 3 để xác nhận.
+ * Thẻ "Đề xuất thêm địa điểm".
+ *
+ * Danh sách đề xuất (đã xếp hạng) và trạng thái địa điểm hiện tại của bài đều do
+ * server cung cấp. Component chỉ render và gửi lựa chọn của người dùng lên server.
  */
 export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) {
-  const setPostPlace = useAppStore((state) => state.setPostPlace)
-  // "Đã gắn" phải dựa trên địa điểm thực sự gắn vào bài, KHÔNG phải việc địa điểm
-  // đã lên /discover (thuật toán phát hiện là chuyện khác với người dùng chọn).
-  const currentPlaceId = useAppStore(
-    (state) => state.posts.find((post) => post.id === notification.postId)?.placeId ?? null,
-  )
+  const updatePlace = useUpdatePostPlace()
 
   return (
     <article
@@ -60,12 +56,12 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
 
       <ul className="mt-2 flex flex-col gap-2">
         {notification.suggestions.map((suggestion, index) => {
-          const place = getPlace(suggestion.placeId)
-          if (!place) return null
-          const isChosen = currentPlaceId === place.id
+          const place = suggestion.place
+          const isChosen = notification.postPlaceId === place.id
+          const isPending = updatePlace.isPending && updatePlace.variables?.placeId === place.id
 
           return (
-            <li key={suggestion.placeId}>
+            <li key={place.id}>
               <div className="flex items-center gap-2.5 rounded-[0.2rem] border-2 border-foreground/25 p-1.5 transition-colors hover:border-foreground/60">
                 <SeedImage
                   seed={place.imageSeed}
@@ -92,9 +88,12 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
                   <Button
                     size="xs"
                     variant={isChosen ? "secondary" : "default"}
-                    onClick={() => setPostPlace(notification.postId, place.id)}
+                    disabled={isChosen || isPending}
+                    onClick={() =>
+                      updatePlace.mutate({ postId: notification.postId, placeId: place.id })
+                    }
                   >
-                    <CheckIcon />
+                    {isPending ? <Loader2Icon className="animate-spin" /> : <CheckIcon />}
                     {isChosen ? "Đã gắn" : "Chọn"}
                   </Button>
                 </div>

@@ -1,10 +1,16 @@
-import type { Place } from "../types/place"
+import type { Place } from "@/features/places/types/place"
 
 /**
- * Dữ liệu mẫu cho /discover. `publishedAt: null` nghĩa là địa điểm CHƯA lên /discover —
- * dùng để mô phỏng luồng "đề xuất thêm địa điểm" sau khi người dùng đã đăng bài.
+ * Bản ghi địa điểm phía server.
+ *
+ * `publishedAt` là dữ liệu nội bộ của server, KHÔNG nằm trong hợp đồng API:
+ * client chỉ nhận `Place` (đã lọc sẵn) hoặc `PlaceSummary.isPublished`.
+ *
+ * `publishedAt: null` = chưa được duyệt lên /discover.
  */
-export const MOCK_PLACES: Place[] = [
+export type MockPlace = Place & { publishedAt: string | null }
+
+export const MOCK_PLACES: MockPlace[] = [
   {
     id: "p-01",
     name: "Cà phê Muối Chú Long",
@@ -540,9 +546,3 @@ export const MOCK_PLACES: Place[] = [
     publishedAt: null,
   },
 ]
-
-export const PLACES_BY_ID = new Map(MOCK_PLACES.map((place) => [place.id, place]))
-
-export function getPlace(id: string): Place | undefined {
-  return PLACES_BY_ID.get(id)
-}
