@@ -68,3 +68,32 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
       Khi thêm skin thứ ba, cần sửa type + `readStoredSkin()` + `SkinToggle` (hiện là if/else 2 nhánh).
 - [ ] **`SkinToggle` chỉ có icon, không có chữ.** Có `aria-label` + `title` nhưng người dùng mới
       có thể không hiểu icon `Palette` nghĩa là gì. Cân nhắc thêm tooltip hoặc label ở header thật.
+
+## Phát hiện khi làm 3 route giao diện (2026-11-07)
+
+- [ ] **Bundle 650 kB (gzip 206 kB) — vượt ngưỡng cảnh báo 500 kB.** Chưa code-split theo route.
+      Nên dùng `lazy()` + `Suspense` cho `/social` và `/notification`, hoặc `codeSplitting` của rolldown.
+- [ ] **Toàn bộ dữ liệu là mock trong bộ nhớ.** Tải lại trang sẽ mất bài đăng vừa tạo và thông báo
+      vừa sinh. Khi có backend: chuyển `MOCK_PLACES`/`MOCK_POSTS` sang gọi API qua `lib/axios`,
+      giữ Zustand chỉ cho optimistic update.
+- [ ] **Ảnh là gradient tự sinh, không phải ảnh thật.** Người dùng đã chọn picsum.photos nhưng
+      không dùng vì phụ thuộc mạng — xem `DECISIONS.md` D-010. Nếu muốn ảnh thật, đổi thân
+      `SeedImage` sang `<img loading="lazy">`.
+- [ ] **Search bar ở topbar chưa hoạt động.** Chỉ `preventDefault()`, chưa nối vào bộ lọc của
+      `/discover` hay `/social`. Cần thống nhất: search toàn cục hay search theo trang?
+- [ ] **`/notification` chưa có infinite scroll.** Danh sách thông báo render toàn bộ. Hiện chỉ có
+      4 mục nên chưa cần, nhưng khi nối backend phải phân trang.
+- [ ] **`/social` chưa có infinite scroll.** Feed render toàn bộ 10 bài. Yêu cầu ban đầu chỉ nói
+      infinity scroll cho `/discover` và `/social` — `/social` hiện chưa làm.
+- [ ] **Chưa có trang chi tiết địa điểm.** `PlaceCard` link tới `/discover` (chính nó) vì chưa có
+      route `/discover/:id`.
+- [ ] **Nút "Bình luận" và "Đăng xuất" chưa có hành vi.** Chỉ là UI.
+- [ ] **`runPlaceDetection` là nút bấm tay, không tự chạy.** Đúng cho mục đích demo, nhưng khi có
+      backend thì đây phải là job phía server.
+- [ ] **Chưa có test tự động.** Toàn bộ kiểm chứng là script CDP trong `scratch/`, không nằm trong
+      repo và không chạy được trong CI. Cần Vitest cho `rankPlaceSuggestions` + `filterPlaces`.
+- [ ] **Chưa xem giao diện bằng mắt người.** Đã chụp 5 ảnh và phân tích pixel (bảng màu, số màu,
+      dải trái/phải) nhưng model không đọc được file ảnh.
+- [ ] **Chưa test Firefox/Safari.** Chỉ Chrome 156.
+- [ ] **`SkinSwitch` đặt trong dropdown avatar ở mobile** — chưa kiểm tra trực quan dropdown này
+      có bị tràn màn hình 390px không.

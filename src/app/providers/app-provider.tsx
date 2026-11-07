@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryProvider } from "./query-provider"
 import { SkinProvider } from "./skin-provider"
 import { ThemeProvider } from "./theme-provider"
@@ -9,8 +10,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <ThemeProvider>
       <SkinProvider>
         <QueryProvider>
-          {children}
-          <Toaster />
+          <TooltipProvider>
+            {children}
+            <Toaster />
+          </TooltipProvider>
         </QueryProvider>
       </SkinProvider>
     </ThemeProvider>

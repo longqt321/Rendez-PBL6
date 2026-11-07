@@ -71,29 +71,48 @@ src/
 │
 ├── components/             # chỉ component dùng ở NHIỀU nơi
 │   ├── ui/                 # shadcn sinh ra, không sửa tay
-│   ├── layout/             # header, sidebar, navigation, theme/skin toggle
-│   └── shared/             # component dùng chung có ý nghĩa nghiệp vụ
+│   ├── layout/             # app-shell, nav, theme/skin toggle
+│   └── shared/             # component dùng chung (seed-image…)
 │
 ├── features/               # mỗi feature tự quản api/components/hooks/types/pages
-│   └── <feature>/
-│       ├── api/
-│       ├── components/
-│       ├── hooks/
-│       ├── pages/
-│       ├── schemas/
-│       ├── types/
-│       └── index.ts        # public API của feature
+│   ├── places/             # /discover: api, components, hooks, lib, pages, types
+│   ├── social/             # /social: api, components, pages, types
+│   └── notification/       # /notification: components, pages, types
 │
+├── hooks/                  # hook dùng chung (use-infinite-scroll)
 ├── lib/                    # tiện ích & cấu hình thư viện dùng chung
 │   ├── axios.ts            # axios instance, baseURL từ VITE_API_BASE_URL
+│   ├── format.ts           # formatRelativeTime, formatCount
+│   ├── seed-color.ts       # gradient ổn định từ seed
 │   └── utils.ts            # cn()
 │
-├── stores/                 # Zustand — chỉ global CLIENT state
+├── stores/                 # Zustand — global CLIENT state
+│   └── app-store.ts        # bài đăng, địa điểm đã duyệt, thông báo
 ├── types/                  # type dùng chung toàn app
 ├── index.css
 ├── main.tsx
 └── vite-env.d.ts           # khai báo type cho import.meta.env
 ```
+
+### Route
+
+| Route           | Trang                   | Ghi chú                                          |
+| --------------- | ----------------------- | ------------------------------------------------ |
+| `/`             | redirect → `/discover`  |                                                  |
+| `/discover`     | `features/places`       | 3 cột PC / 2 cột masonry mobile, infinity scroll |
+| `/social`       | `features/social`       | feed dọc + ô soạn bài có gợi ý địa điểm          |
+| `/notification` | `features/notification` | thẻ "Đề xuất thêm địa điểm" với 3 gợi ý          |
+| `/design`       | `components/shared`     | trang kiểm tra design stack (tạm)                |
+
+### Phân chia state
+
+| Loại dữ liệu                           | Nơi quản lý                          |
+| -------------------------------------- | ------------------------------------ |
+| Danh sách địa điểm phân trang          | TanStack Query (`useDiscoverPlaces`) |
+| Bài đăng, địa điểm đã duyệt, thông báo | Zustand (`app-store.ts`)             |
+| Sáng/tối                               | `next-themes`                        |
+| Skin (mặc định/retro)                  | `SkinProvider` + `data-skin`         |
+| Bộ lọc, trạng thái form                | React `useState`                     |
 
 ### Quy tắc
 

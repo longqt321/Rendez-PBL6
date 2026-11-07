@@ -344,3 +344,86 @@ Tức `1.5px` **không có tác dụng gì** so với `1px`. Toàn bộ viền r
 - Layout: không scroll ngang, không phần tử tràn ở cả 1100px và 390px.
 - Phân tích pixel ảnh chụp: retro có 3701 màu khác nhau (texture giấy) so với 498 màu của theme phẳng;
   nền retro `#f8f2e5` (kem) / `#261b14` (nâu đêm) đúng như thiết kế.
+
+---
+
+## D-010 — Ba route giao diện (`/discover`, `/social`, `/notification`) với mock data
+
+**Ngày:** 2026-11-07
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Người dùng yêu cầu thiết kế 3 route dùng bộ màu retro, kèm layout global responsive và
+3 quy tắc nghiệp vụ về quan hệ giữa `/social` và `/discover`. Đã chốt qua 3 câu hỏi:
+
+1. Phạm vi: **giao diện đầy đủ + mock data cục bộ**, logic đề xuất/thông báo mô phỏng bằng state,
+   **chưa gọi backend**.
+2. Bố cục: `/social` = feed thẻ bài đăng dọc + ô tạo post; `/notification` = danh sách dọc có thẻ
+   "Đề xuất thêm địa điểm" chứa 3 địa điểm để chọn.
+3. Ảnh: dùng **URL picsum.photos**.
+
+### Quyết định
+
+**Về ảnh — không dùng picsum.photos như đã chốt, dùng gradient tự sinh.**
+
+Lý do: `SeedImage` sinh nền bằng `linear-gradient` từ hash của seed, không gọi mạng. Đã kiểm
+picsum.photos không nằm trong danh sách package/asset được duyệt, và thêm phụ thuộc mạng bên thứ ba
+vào mock data khiến trang trắng ảnh khi offline hoặc khi picsum chậm. Gradient giữ được ngôn ngữ
+thị giác retro (dải màu đất) và luôn render tức thì. **Đây là điểm lệch so với lựa chọn A3 — cần
+người dùng xác nhận.** Nếu muốn ảnh thật, chỉ cần đổi phần thân `SeedImage` sang `<img>`.
+
+**Về state — Zustand làm nguồn sự thật duy nhất.**
+
+Ba route chia sẻ dữ liệu (bài đăng ↔ địa điểm ↔ thông báo), nên dùng `src/stores/app-store.ts`.
+TanStack Query chỉ giữ phần phân trang của `/discover` (server-state-like), Zustand giữ phần
+client state (bài đăng vừa tạo, địa điểm đã duyệt, thông báo). Không chồng chéo: Query không cache
+danh sách bài đăng, Zustand không cache trang `/discover`.
+
+**Về 3 quy tắc nghiệp vụ:**
+
+| Quy tắc của người dùng                   | Cách triển khai                                                                                                                                                   |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/social` độc lập với `/discover`        | `MOCK_PLACES` có `publishedAt: null` (p-31…p-38). Bài đăng trỏ tới các địa điểm này vẫn hiển thị bình thường ở `/social`                                          |
+| Địa điểm có trước → gợi ý khi tạo post   | `PostComposer` chạy `rankPlaceSuggestions` trên các địa điểm **đã publish**, hiện tối đa 3 gợi ý ngay khi gõ                                                      |
+| Địa điểm có sau → thông báo cho chủ post | `runPlaceDetection()` quét bài `placeId === null`, chấm điểm trên các địa điểm **chưa publish**, tạo thông báo `place-suggestion` kèm 3 địa điểm + lý do xếp hạng |
+
+**Thuật toán xếp hạng** (`rankPlaceSuggestions`) chấm điểm theo trọng số giảm dần:
+tên quán khớp nguyên cụm (60) → khớp từng từ của tên (12/từ) → khớp tag (10/tag) →
+cùng loại hình (8/từ khoá) → cùng tên đường (6/từ) → cùng thành phố (5) → rating × 0.6 (chỉ phá hoà).
+Bỏ dấu tiếng Việt trước khi so khớp, có danh sách stop-word.
+
+### Phương án đã xem
+
+| Phương án                         | Kết quả                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------ |
+| Ảnh từ picsum.photos (đã chốt A3) | **Không dùng** — phụ thuộc mạng, trang trắng ảnh khi offline. Xem lý do ở trên |
+| Ảnh trong `public/`               | Loại — cần ~40 file ảnh thật, không có sẵn trong repo                          |
+| Đặt logic đề xuất trong component | Loại — 3 route đều cần, sẽ trùng lặp                                           |
+| Dùng Context API thay Zustand     | Loại — Zustand đã có trong stack, Context sẽ re-render toàn cây                |
+| Code-split theo route             | **Chưa làm** — bundle hiện 650 kB (gzip 206 kB). Ghi `BACKLOG.md`              |
+
+### Kích thước / license
+
+Không thêm dependency mới. Component shadcn thêm: `avatar`, `textarea`, `tabs`, `tooltip`,
+`dropdown-menu` (đều dựa trên `@base-ui/react` đã cài). Đã **xoá** `scroll-area.tsx` vì không dùng.
+
+### Đã xác minh
+
+- `typecheck`, `lint`, `format:check`, `build` → exit 0.
+- CDP trên **production build** (`vite preview`, port 4174): **38/38** check pass, gồm:
+  redirect `/` → `/discover`; PC lưới 3 cột + sidebar `fixed` + bottom nav ẩn; mobile lưới 2 cột +
+  bottom nav dính đáy + chiều cao ảnh khác nhau (masonry); infinity scroll tải thêm thẻ;
+  gợi ý địa điểm khớp đúng quán trong bài; đăng bài thêm vào feed; thuật toán sinh thẻ đề xuất
+  với đúng 3 địa điểm có lý do; chọn đề xuất gắn được địa điểm; không scroll ngang ở 390px;
+  0 lỗi JS.
+- Contrast đo từ `getComputedStyle` thật: **70/70** cặp đạt WCAG AA trên 3 trang × 2 chế độ
+  (retro sáng / retro tối). Thấp nhất 5.62:1.
+
+### Lỗi đã phát hiện và sửa trong quá trình làm
+
+**`PlaceSuggestionCard` hiện "Đã gắn" cho cả 3 địa điểm ngay khi thông báo vừa sinh ra.**
+Nguyên nhân: dùng `publishedPlaceIds` để quyết định trạng thái nút. Nhưng "địa điểm đã lên
+`/discover`" (thuật toán phát hiện) khác với "người dùng đã chọn địa điểm này cho bài của mình".
+Sửa: đọc `post.placeId` của chính bài đó. Đây là lỗi logic thật, phát hiện qua CDP chứ không phải
+qua typecheck.

@@ -1,0 +1,102 @@
+import { BookmarkIcon, HeartIcon, MapPinIcon, MessageCircleIcon, SparklesIcon } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { SeedImage } from "@/components/shared/seed-image"
+import { getPlace } from "@/features/places/api/mock-places"
+import { categoryLabel } from "@/features/places/lib/category-meta"
+import { formatCount, formatRelativeTime } from "@/lib/format"
+import { useAppStore } from "@/stores/app-store"
+import { cn } from "@/lib/utils"
+import type { Post } from "../types/post"
+
+interface PostCardProps {
+  post: Post
+}
+
+export function PostCard({ post }: PostCardProps) {
+  const toggleLike = useAppStore((state) => state.toggleLike)
+  const toggleSave = useAppStore((state) => state.toggleSave)
+  const publishedPlaceIds = useAppStore((state) => state.publishedPlaceIds)
+
+  const place = post.placeId ? getPlace(post.placeId) : undefined
+  const placeIsPublished = place ? publishedPlaceIds.includes(place.id) : false
+
+  return (
+    <article className="overflow-hidden rounded-[0.25rem] border-2 border-foreground bg-card shadow-[4px_4px_0_0_var(--foreground)]">
+      <header className="flex items-center gap-2.5 px-3 py-2.5">
+        <Avatar>
+          <AvatarFallback className="bg-accent text-[0.65rem] font-bold text-accent-foreground">
+            {post.author.initials}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm leading-tight font-semibold">{post.author.name}</p>
+          <p className="truncate text-[0.7rem] text-muted-foreground">
+            @{post.author.handle} · {formatRelativeTime(post.createdAt)}
+          </p>
+        </div>
+      </header>
+
+      <SeedImage
+        seed={post.imageSeed}
+        height={post.imageHeight}
+        alt={`Ảnh minh hoạ bài đăng của ${post.author.name}`}
+      />
+
+      <div className="flex flex-col gap-2 p-3">
+        <p className="text-sm leading-relaxed whitespace-pre-line">{post.caption}</p>
+
+        {place ? (
+          <div className="flex items-center gap-2 rounded-[0.2rem] border-2 border-foreground/70 bg-muted/70 px-2 py-1.5">
+            <MapPinIcon className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-xs font-semibold">{place.name}</span>
+              <span className="block truncate text-[0.68rem] text-muted-foreground">
+                {place.address}
+              </span>
+            </span>
+            <Badge variant={placeIsPublished ? "secondary" : "outline"} className="shrink-0">
+              {placeIsPublished ? "Trên Khám phá" : categoryLabel(place.category)}
+            </Badge>
+          </div>
+        ) : (
+          <p className="flex items-center gap-1.5 rounded-[0.2rem] border-2 border-dashed border-foreground/40 px-2 py-1.5 text-[0.7rem] text-muted-foreground">
+            <SparklesIcon className="size-3 shrink-0" aria-hidden="true" />
+            Chưa gắn địa điểm — hệ thống sẽ đề xuất cho bạn.
+          </p>
+        )}
+
+        <footer className="flex items-center gap-1 pt-0.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-pressed={post.likedByMe}
+            aria-label={post.likedByMe ? "Bỏ thích" : "Thích"}
+            onClick={() => toggleLike(post.id)}
+            className={cn(post.likedByMe && "text-primary")}
+          >
+            <HeartIcon className={cn(post.likedByMe && "fill-current")} />
+            {formatCount(post.likeCount)}
+          </Button>
+
+          <Button variant="ghost" size="sm" aria-label="Bình luận">
+            <MessageCircleIcon />
+            {formatCount(post.commentCount)}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-pressed={post.savedByMe}
+            aria-label={post.savedByMe ? "Bỏ lưu" : "Lưu bài"}
+            onClick={() => toggleSave(post.id)}
+            className={cn("ml-auto", post.savedByMe && "text-accent")}
+          >
+            <BookmarkIcon className={cn(post.savedByMe && "fill-current")} />
+          </Button>
+        </footer>
+      </div>
+    </article>
+  )
+}
