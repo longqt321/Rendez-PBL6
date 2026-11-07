@@ -192,3 +192,22 @@ viết, `style={{}}`, DOM hack hay `any`. Bốn điểm dưới đây phát hi�
 - [x] **`<label>` bọc `Switch` (base-ui) không kích hoạt bằng chữ**
       — Đã giải quyết: gắn `id` cho Switch và `htmlFor` cho `Label`, thêm handler toggle khi click
       vào Item. Đã verify 3/3 bằng CDP script `click-label-and-persistence-check.mjs`.
+
+## Nhóm Core Engagement — việc còn lại (2026-11-08)
+
+Đã làm xong: sửa thông tin bộ sưu tập (`PATCH /collections/:id`), xoá địa điểm khỏi bộ sưu tập, thả
+tim bộ sưu tập (`POST`/`DELETE /collections/:id/like`), tab "Bộ sưu tập" trên `/u/:handle`, nút chia
+sẻ dùng Web Share API + clipboard fallback, và dialog check-in từ trang quán.
+
+- [ ] **Kéo thả sắp xếp địa điểm trong bộ sưu tập.** Hiện chỉ có nút xoá từng địa điểm. Muốn kéo thả
+      thì phải chọn thư viện DnD (thêm dependency → cần một mục DECISIONS) hoặc tự viết pointer
+      handling. Chưa làm vì nút xoá đã đủ cho nhu cầu "dọn bộ sưu tập".
+- [ ] **`p-28`–`p-30` cố ý để `publishedAt: null`.** Đây là ứng viên cho job đề xuất địa điểm phía
+      server (`syncPlaceSuggestions`). Đừng publish chúng khi chỉnh dữ liệu mẫu, nếu không luồng
+      "Đề xuất thêm địa điểm" sẽ hết ứng viên và `app-check.mjs` fail.
+- [ ] **Nút "Nhắn tin" trên `/u/:handle` vẫn không có handler** (tồn tại từ trước, không thuộc nhóm
+      này). Cần chốt hành vi (mở chat thật? disable kèm tooltip?) trước khi làm.
+- [ ] **`app-check.mjs` và các script CDP khác nằm ngoài repo** (thư mục artifact của phiên làm
+      việc), không chạy được trong CI. Nếu muốn hồi quy tự động thì phải chuyển vào `e2e/` và thêm
+      script npm.
+- [ ] **`Spinner` vẫn có `aria-label="Loading"` tiếng Anh** — vấn đề cũ, xem mục audit 2026-11-07.

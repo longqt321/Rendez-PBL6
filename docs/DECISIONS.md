@@ -1255,3 +1255,61 @@ lực chính để quay lại ứng dụng. User chốt: form chỉ nhận **tex
 ### Chưa xác minh
 
 - Độ chính xác GPS trên thiết bị di động thực tế trong môi trường sóng yếu.
+
+## D-024: Hoàn thiện nhóm "Core Engagement" — sửa bộ sưu tập, thả tim, chia sẻ, check-in
+
+**Ngày:** 2026-11-08
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Nhóm tính năng 1 (Core Engagement) trong đề xuất phát triển còn ba việc chưa có: nút "Sửa" bộ sưu tập
+đang bị `disabled`, bộ sưu tập chưa chia sẻ/thả tim được và chưa hiện trên trang cá nhân, và trang
+chi tiết quán chưa có đường tắt để đăng bài check-in. Bản đồ tương tác (việc thứ nhất của nhóm) đã
+xong ở D-022.
+
+### Quyết định
+
+- **Sửa bộ sưu tập:** bật `EditCollectionDialog` thay cho nút `disabled`. Thêm `PATCH /collections/:id`
+  (chỉ chủ sở hữu, `name` 1–80 ký tự, `description` ≤ 400, `isPrivate` boolean). Xoá địa điểm khỏi bộ
+  sưu tập dùng lại `useSetCollectionPlace` đã có (nút X trên từng thẻ, chỉ hiện với chủ sở hữu).
+- **Thả tim bộ sưu tập:** thêm `likeCount` + `likedByMe` vào cả `Collection` và `CollectionSummary`
+  để danh sách và trang chi tiết cùng một nguồn dữ liệu. API `POST`/`DELETE /collections/:id/like`
+  idempotent; trả 404 khi bộ sưu tập riêng tư của người khác, 400 khi tự thả tim bộ của mình.
+  Mutation optimistic trên cả detail và list, rollback khi lỗi.
+- **Bộ sưu tập công khai trên trang cá nhân:** `GET /users/:handle/collections` (ẩn bộ riêng tư trừ
+  khi là chính chủ, mới nhất trước). Tab "Bộ sưu tập" trong `profile-tabs.tsx` render
+  `ProfileCollectionGrid`, empty state khác nhau cho chủ và người xem.
+- **Chia sẻ:** `src/lib/share.ts` bọc `navigator.share` và fallback `navigator.clipboard.writeText`,
+  trả `"shared" | "copied" | "cancelled" | "failed"` để UI chọn toast. **Không thêm dependency** —
+  Web Share API và Clipboard API đều có sẵn trong trình duyệt.
+- **Check-in từ trang quán:** `CheckInDialog` mở từ nút "Đăng bài check-in tại đây" ở
+  `/discover/:id`, địa điểm gắn cố định (không cho gỡ), dùng lại `useCreatePost` và invalidate
+  `placePostsQueryKey(place.id)` để tab "Bài đăng" của quán cập nhật ngay.
+- **Dữ liệu mẫu:** thêm `p-28`–`p-30` với `publishedAt: null` — job đề xuất địa điểm phía server
+  cần ứng viên CHƯA publish, trước đó toàn bộ 27 địa điểm đều đã publish nên không còn gì để đề xuất.
+  Đồng thời chỉnh caption các bài seed khớp với `placeId` (trước đó caption nói quán Sài Gòn nhưng
+  gắn địa điểm Đà Nẵng) và đổi `handle` `yen.saigon` → `yen.danang`, bio/location của người dùng mẫu
+  sang Đà Nẵng.
+
+### Phương án đã xem
+
+- _Kéo thả sắp xếp địa điểm trong bộ sưu tập:_ hoãn — cần thêm thư viện DnD hoặc tự viết pointer
+  handling, trong khi nút xoá đã giải quyết nhu cầu chính. Ghi vào `docs/BACKLOG.md`.
+- _Đếm lượt thích riêng ở endpoint `/collections/:id/likes`:_ loại, nhúng thẳng vào DTO để tránh
+  thêm round-trip khi render danh sách.
+- _Dùng `sonner` trực tiếp trong từng trang:_ loại, gom vào `ShareButton` để hành vi chia sẻ chỉ có
+  một chỗ xử lý.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build` đều pass.
+- Script CDP: `core-engagement-check.mjs` 19/19, `g1-responsive-check.mjs` 11/11,
+  `app-check.mjs` 44/44, `collection-flow-check.mjs` 13/13, `review-flow-check.mjs` 11/11,
+  `interactive-map-check.mjs` 11/11, `danang-districts-and-nearby-check.mjs` 9/9.
+
+### Chưa xác minh
+
+- Bảng chia sẻ hệ điều hành thật (`navigator.share`) trên điện thoại thật.
+- Hộp thoại xin quyền clipboard của Safari/Firefox.
+- Kéo thả sắp xếp địa điểm trong bộ sưu tập (chưa làm).
