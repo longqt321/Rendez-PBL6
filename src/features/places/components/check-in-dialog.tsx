@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Spinner } from "@/components/ui/spinner"
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Textarea } from "@/components/ui/textarea"
 import { useCreatePost } from "@/features/social/hooks/use-create-post"
 import { categoryLabel } from "../lib/category-meta"
@@ -91,10 +92,8 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
             </Badge>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="checkin-caption" className="sr-only">
-              Nội dung bài đăng
-            </label>
+          <Field>
+            <FieldLabel htmlFor="checkin-caption">Nội dung bài đăng</FieldLabel>
             <Textarea
               id="checkin-caption"
               value={caption}
@@ -105,16 +104,23 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
               className="min-h-24 resize-none"
               autoFocus
             />
-            <p className="text-right text-xs text-muted-foreground">{caption.trim().length}/500</p>
-          </div>
+            <FieldDescription className="flex items-center justify-between gap-2">
+              <span>{caption.trim().length}/500 ký tự</span>
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                className="h-auto p-0"
+                onClick={() => setSeedIndex((index) => index + 1)}
+              >
+                Đổi ảnh
+              </Button>
+            </FieldDescription>
+          </Field>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setSeedIndex((index) => index + 1)}
-            >
-              Đổi ảnh
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+              Huỷ
             </Button>
             <Button type="submit" disabled={!canSubmit}>
               {createPost.isPending ? <Spinner /> : <CameraIcon />}
