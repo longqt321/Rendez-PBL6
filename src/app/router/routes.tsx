@@ -5,6 +5,8 @@ import { DesignShowcasePage } from "@/components/shared/design-showcase-page"
 import { DiscoverPage } from "@/features/places/pages/discover-page"
 import { SocialPage } from "@/features/social/pages/social-page"
 import { NotificationPage } from "@/features/notification/pages/notification-page"
+import { ProfilePage } from "@/features/profile/pages/profile-page"
+import { UserProfilePageRoute } from "./user-profile-route"
 
 export const routes: RouteObject[] = [
   {
@@ -32,6 +34,22 @@ export const routes: RouteObject[] = [
     element: (
       <AppShell>
         <NotificationPage />
+      </AppShell>
+    ),
+  },
+  {
+    path: "/profile",
+    element: (
+      <AppShell>
+        <ProfilePage />
+      </AppShell>
+    ),
+  },
+  {
+    path: "/u/:handle",
+    element: (
+      <AppShell>
+        <UserProfilePageRoute />
       </AppShell>
     ),
   },

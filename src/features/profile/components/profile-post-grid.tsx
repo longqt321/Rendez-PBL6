@@ -1,0 +1,70 @@
+import { Link } from "react-router"
+import { CameraIcon } from "lucide-react"
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Skeleton } from "@/components/ui/skeleton"
+import { SeedImage } from "@/components/shared/seed-image"
+import type { Post } from "@/features/social/types/post"
+
+interface ProfilePostGridProps {
+  posts: Post[]
+  isPending: boolean
+  emptyTitle: string
+  emptyDescription: string
+}
+
+/** Lưới bài đăng 2 cột mobile / 3 cột PC — mỗi ô là ảnh với chiều cao riêng. */
+export function ProfilePostGrid({
+  posts,
+  isPending,
+  emptyTitle,
+  emptyDescription,
+}: ProfilePostGridProps) {
+  if (isPending) {
+    return (
+      <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <li key={index}>
+            <Skeleton
+              className="w-full rounded-[0.25rem]"
+              style={{ height: 260 + (index % 3) * 60 }}
+            />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  if (posts.length === 0) {
+    return (
+      <Empty className="mt-6">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <CameraIcon />
+          </EmptyMedia>
+          <EmptyTitle>{emptyTitle}</EmptyTitle>
+          <EmptyDescription>{emptyDescription}</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    )
+  }
+
+  return (
+    <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+      {posts.map((post) => (
+        <li key={post.id}>
+          <Link
+            to={`/post/${post.id}`}
+            className="block overflow-hidden rounded-[0.25rem] border-2 border-foreground bg-card shadow-[4px_4px_0_0_var(--foreground)] transition-transform hover:-translate-y-0.5"
+          >
+            <SeedImage
+              seed={post.imageSeed}
+              height={post.imageHeight}
+              alt={`Ảnh bài đăng: ${post.caption.slice(0, 60)}`}
+            />
+            <p className="line-clamp-2 px-2.5 py-2 text-xs leading-snug">{post.caption}</p>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )
+}

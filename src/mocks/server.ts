@@ -9,6 +9,7 @@ import { MOCK_NOTIFICATIONS } from "./fixtures/notifications"
 import { MOCK_PLACES, type MockPlace } from "./fixtures/places"
 import { CURRENT_USER, MOCK_POSTS } from "./fixtures/posts"
 import { CURRENT_USER as COMMENT_USER, MOCK_COMMENTS } from "./fixtures/comments"
+import { ME, MOCK_USERS } from "./fixtures/users"
 import { rankPlaceSuggestions } from "./ranking"
 import { normalizeText } from "./text"
 import type { MockComment, MockPost } from "./types"
@@ -32,6 +33,7 @@ const db = {
   posts: MOCK_POSTS.map((post) => ({ ...post })),
   notifications: MOCK_NOTIFICATIONS.map((notification) => ({ ...notification })),
   comments: MOCK_COMMENTS.map((comment) => ({ ...comment, deleted: false })),
+  users: { ...MOCK_USERS },
 }
 
 /** Bài đã được server gửi thông báo đề xuất — tránh sinh trùng. */
@@ -336,6 +338,39 @@ function notFoundComment(): never {
 }
 
 // ---------------------------------------------------------------------------
+// Hồ sơ người dùng — nghiệp vụ phía server
+// ---------------------------------------------------------------------------
+
+function findUserByHandle(handle: string) {
+  return Object.values(db.users).find((user) => user.handle === handle)
+}
+
+function listProfilePosts(handle: string, tab: string): Post[] {
+  const user = findUserByHandle(handle)
+  if (!user) throw new Error("Không tìm thấy người dùng")
+
+  return db.posts
+    .filter((post) => {
+      if (post.author.id !== user.id) return false
+      if (tab === "pinned" || tab === "saved") return post.savedByMe && user.id === ME.id
+      return true
+    })
+    .map(toPostDto)
+}
+
+function setFollow(handle: string, followed: boolean) {
+  const user = findUserByHandle(handle)
+  if (!user) throw new Error("Không tìm thấy người dùng")
+  if (user.isMe) throw new Error("Không thể tự theo dõi chính mình")
+
+  if (followed !== user.followedByMe) {
+    user.followedByMe = followed
+    user.followerCount += followed ? 1 : -1
+  }
+  return user
+}
+
+// ---------------------------------------------------------------------------
 // Adapter
 // ---------------------------------------------------------------------------
 
@@ -538,6 +573,55 @@ const routes: Route[] = [
       if (!comment || comment.deleted) notFound(config, "Không tìm thấy bình luận")
       deleteCommentSoft(commentId)
       return { deleted: true }
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/me$/,
+    handler: () => ({ ...ME }),
+  },
+  {
+    method: "get",
+    pattern: /^\/users\/([^/]+)$/,
+    handler: (config, [handle]) => {
+      const user = findUserByHandle(handle)
+      if (!user) notFound(config, "Không tìm thấy người dùng")
+      return { ...user }
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/users\/([^/]+)\/posts$/,
+    handler: (config, [handle]) => {
+      const { tab = "posts" } = query(config)
+      try {
+        const items = listProfilePosts(handle, tab)
+        return { items, next: null } satisfies Page<Post>
+      } catch {
+        notFound(config, "Không tìm thấy người dùng")
+      }
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/users\/([^/]+)\/follow$/,
+    handler: (config, [handle]) => {
+      try {
+        return setFollow(handle, true)
+      } catch (error) {
+        badRequest(config, error instanceof Error ? error.message : "Yêu cầu không hợp lệ")
+      }
+    },
+  },
+  {
+    method: "delete",
+    pattern: /^\/users\/([^/]+)\/follow$/,
+    handler: (config, [handle]) => {
+      try {
+        return setFollow(handle, false)
+      } catch (error) {
+        badRequest(config, error instanceof Error ? error.message : "Yêu cầu không hợp lệ")
+      }
     },
   },
   {

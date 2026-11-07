@@ -1,0 +1,96 @@
+import type { UserProfile } from "@/features/profile/types/profile"
+
+/**
+ * Hồ sơ mẫu. `me` khớp `CURRENT_USER` trong fixtures/posts.ts — cùng id/handle.
+ *
+ * `postCount`/`followerCount` là dữ liệu seed; server tự cập nhật khi có thay đổi.
+ */
+export const MOCK_USERS: Record<string, UserProfile> = {
+  "u-me": {
+    id: "u-me",
+    name: "Minh Anh",
+    handle: "minhanh.eats",
+    initials: "MA",
+    bio: "Săn quán Sài Gòn, ghi lại từng bữa ăn đáng tiền. Ưu tiên quán nhỏ, chủ nhiệt tình.",
+    location: "TP. Hồ Chí Minh",
+    joinedAt: "2025-03-14T00:00:00+07:00",
+    postCount: 2,
+    followerCount: 128,
+    followingCount: 64,
+    followedByMe: false,
+    isMe: true,
+  },
+  "u-1": {
+    id: "u-1",
+    name: "Trần Bảo",
+    handle: "bao.an.day",
+    initials: "TB",
+    bio: "Ăn để sống, sống để ăn. Review thật, không quảng cáo.",
+    location: "TP. Hồ Chí Minh",
+    joinedAt: "2024-11-02T00:00:00+07:00",
+    postCount: 2,
+    followerCount: 342,
+    followingCount: 87,
+    followedByMe: true,
+    isMe: false,
+  },
+  "u-2": {
+    id: "u-2",
+    name: "Lê Thu Hà",
+    handle: "thuha.foodmap",
+    initials: "TH",
+    bio: "Food map cá nhân. Đi là ghi, ghi là chia sẻ.",
+    location: "TP. Hồ Chí Minh",
+    joinedAt: "2025-01-20T00:00:00+07:00",
+    postCount: 2,
+    followerCount: 519,
+    followingCount: 122,
+    followedByMe: false,
+    isMe: false,
+  },
+  "u-3": {
+    id: "u-3",
+    name: "Phạm Quốc",
+    handle: "quoc.around",
+    initials: "PQ",
+    bio: "Cà phê + laptop là đủ một ngày vui.",
+    location: "TP. Hồ Chí Minh",
+    joinedAt: "2024-06-09T00:00:00+07:00",
+    postCount: 2,
+    followerCount: 203,
+    followingCount: 45,
+    followedByMe: false,
+    isMe: false,
+  },
+  "u-4": {
+    id: "u-4",
+    name: "Nguyễn Yến",
+    handle: "yen.saigon",
+    initials: "NY",
+    bio: "Sài Gòn có gì ăn ngon là lên đây hết.",
+    location: "TP. Hồ Chí Minh",
+    joinedAt: "2025-05-30T00:00:00+07:00",
+    postCount: 2,
+    followerCount: 876,
+    followingCount: 210,
+    followedByMe: false,
+    isMe: false,
+  },
+  "u-5": {
+    id: "u-5",
+    name: "Đỗ Khánh",
+    handle: "khanh.brunch",
+    initials: "ĐK",
+    bio: "Brunch là một bữa nghiêm túc.",
+    location: "TP. Hồ Chí Minh",
+    joinedAt: "2025-08-11T00:00:00+07:00",
+    postCount: 2,
+    followerCount: 154,
+    followingCount: 98,
+    followedByMe: false,
+    isMe: false,
+  },
+}
+
+/** Người dùng đang đăng nhập — khớp CURRENT_USER ở fixtures/posts.ts. */
+export const ME = MOCK_USERS["u-me"]

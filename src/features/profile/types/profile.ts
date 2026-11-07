@@ -1,0 +1,24 @@
+/**
+ * Hồ sơ người dùng — hợp đồng API của `GET /me` và `GET /users/:handle`.
+ *
+ * Server quyết định `isMe`; client không tự so sánh handle với user hiện tại.
+ */
+export interface UserProfile {
+  id: string
+  name: string
+  handle: string
+  /** Hai chữ cái đầu, dùng cho AvatarFallback */
+  initials: string
+  bio: string
+  location: string
+  /** ISO date — client chỉ format, không tính toán. */
+  joinedAt: string
+  postCount: number
+  followerCount: number
+  followingCount: number
+  followedByMe: boolean
+  isMe: boolean
+}
+
+/** Tab trang cá nhân — server lọc theo tab, client chỉ gửi tham số. */
+export type ProfileTab = "posts" | "pinned" | "saved"
