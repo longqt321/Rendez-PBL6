@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useParams } from "react-router"
-import { MapPinIcon, StarIcon, FolderPlusIcon } from "lucide-react"
+import { CameraIcon, MapPinIcon, StarIcon, FolderPlusIcon } from "lucide-react"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -26,6 +26,7 @@ import { ReviewItem } from "../components/review-item"
 import type { Review } from "../types/review"
 import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
 import { PlaceMiniMap } from "../components/place-mini-map"
+import { CheckInDialog } from "../components/check-in-dialog"
 
 /** Trang chi tiết địa điểm — `/discover/:id`. */
 export function PlaceDetailPage() {
@@ -126,13 +127,19 @@ export function PlaceDetailPage() {
             ))}
           </ul>
 
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <SaveToCollectionDialog placeId={placeId} placeName={place.name}>
               <Button variant="outline">
                 <FolderPlusIcon />
                 Lưu vào bộ sưu tập
               </Button>
             </SaveToCollectionDialog>
+            <CheckInDialog place={place}>
+              <Button>
+                <CameraIcon />
+                Đăng bài check-in tại đây
+              </Button>
+            </CheckInDialog>
           </div>
         </div>
       </div>
