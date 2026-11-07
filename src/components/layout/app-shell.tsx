@@ -151,13 +151,13 @@ function TopBar() {
 
         <form
           role="search"
-          className="ml-auto w-full max-w-md lg:ml-0 lg:max-w-lg"
+          className="ml-auto w-full max-w-lg lg:ml-0 lg:max-w-xl"
           onSubmit={(event) => {
             event.preventDefault()
             submit()
           }}
         >
-          <InputGroup>
+          <InputGroup className="h-10">
             <InputGroupAddon>
               <SearchIcon />
             </InputGroupAddon>
