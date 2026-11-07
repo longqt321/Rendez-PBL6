@@ -61,6 +61,7 @@ function toPlaceDto(place: MockPlace): Place {
     name: place.name,
     address: place.address,
     city: place.city,
+    district: place.district,
     category: place.category,
     tags: place.tags,
     rating: place.rating,
@@ -82,6 +83,7 @@ function toPlaceSummary(place: MockPlace) {
     id: place.id,
     name: place.name,
     address: place.address,
+    district: place.district,
     category: place.category,
     imageSeed: place.imageSeed,
     isPublished: place.publishedAt !== null,
@@ -112,19 +114,27 @@ function paginate<T>(items: T[], cursor: string | null, pageSize: number): Page<
   return { items: slice, next: nextOffset < items.length ? String(nextOffset) : null }
 }
 
-function listPublishedPlaces(params: { category?: string; q?: string }): Place[] {
+function listPublishedPlaces(params: {
+  category?: string
+  district?: string
+  q?: string
+}): Place[] {
   const published = db.places.filter((place) => place.publishedAt !== null)
   const query = normalizeText(params.q ?? "")
   const category = params.category
+  const district = params.district
 
   return published
     .filter((place) => {
       if (category && category !== "all" && place.category !== (category as PlaceCategory)) {
         return false
       }
+      if (district && district !== "all" && place.district !== district) {
+        return false
+      }
       if (!query) return true
       const haystack = normalizeText(
-        [place.name, place.address, place.city, ...place.tags].join(" "),
+        [place.name, place.address, place.city, place.district ?? "", ...place.tags].join(" "),
       )
       return haystack.includes(query)
     })
@@ -644,8 +654,12 @@ const routes: Route[] = [
     method: "get",
     pattern: /^\/places$/,
     handler: (config) => {
-      const { cursor, category, q } = query(config)
-      return paginate(listPublishedPlaces({ category, q }), cursor ?? null, PLACES_PAGE_SIZE)
+      const { cursor, category, district, q } = query(config)
+      return paginate(
+        listPublishedPlaces({ category, district, q }),
+        cursor ?? null,
+        PLACES_PAGE_SIZE,
+      )
     },
   },
   {

@@ -3,29 +3,39 @@ import { Link } from "react-router"
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import { ExternalLinkIcon, StarIcon } from "lucide-react"
+import { ExternalLinkIcon, NavigationIcon, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SeedImage } from "@/components/shared/seed-image"
 import { CATEGORY_META } from "../lib/category-meta"
+import { calculateDistanceKm, formatDistance } from "../lib/danang-districts"
 import type { Place } from "../types/place"
 
-// Tọa độ mặc định (Trung tâm TP.HCM)
-const DEFAULT_CENTER: [number, number] = [10.7769, 106.7009]
+// Tọa độ mặc định: Trung tâm Thành phố Đà Nẵng (Khu vực Cầu Rồng / Sông Hàn)
+const DEFAULT_CENTER: [number, number] = [16.0544, 108.2022]
 const DEFAULT_ZOOM = 13
 
 interface PlacesMapProps {
   places: Place[]
   selectedPlaceId?: string | null
   onSelectPlace?: (place: Place) => void
+  userCoordinates?: { lat: number; lng: number } | null
   className?: string
   /** Chiều cao bản đồ (mặc định 100% hoặc giá trị h-...) */
   height?: string
 }
 
 /** Tự động căn chỉnh tầm nhìn bao quát các địa điểm */
-function MapBoundsUpdater({ places, selectedPlace }: { places: Place[]; selectedPlace?: Place }) {
+function MapBoundsUpdater({
+  places,
+  selectedPlace,
+  userCoordinates,
+}: {
+  places: Place[]
+  selectedPlace?: Place
+  userCoordinates?: { lat: number; lng: number } | null
+}) {
   const map = useMap()
 
   useEffect(() => {
@@ -37,34 +47,44 @@ function MapBoundsUpdater({ places, selectedPlace }: { places: Place[]; selected
     }
 
     const validPlaces = places.filter((p) => p.lat !== undefined && p.lng !== undefined)
-    if (validPlaces.length === 0) return
+    const points: [number, number][] = validPlaces.map((p) => [p.lat!, p.lng!])
+    if (userCoordinates) {
+      points.push([userCoordinates.lat, userCoordinates.lng])
+    }
 
-    if (validPlaces.length === 1) {
-      const p = validPlaces[0]
-      map.setView([p.lat!, p.lng!], 15)
+    if (points.length === 0) return
+
+    if (points.length === 1) {
+      map.setView(points[0], 15)
       return
     }
 
-    const bounds = L.latLngBounds(validPlaces.map((p) => [p.lat!, p.lng!]))
+    const bounds = L.latLngBounds(points)
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 })
-  }, [places, selectedPlace, map])
+  }, [places, selectedPlace, userCoordinates, map])
 
   return null
 }
 
-/** Tạo icon custom HTML cho Marker */
-function createMarkerIcon(place: Place, isSelected: boolean) {
+/** Tạo icon custom HTML cho Marker quán ăn */
+function createMarkerIcon(place: Place, isSelected: boolean, distanceKm?: number) {
   const priceIndicator = "₫".repeat(place.priceLevel)
   const bgClass = isSelected
     ? "bg-primary text-primary-foreground ring-4 ring-primary/30 scale-110 z-50"
     : "bg-card text-card-foreground border border-border shadow-md hover:scale-105 hover:bg-accent"
 
+  const distanceHtml =
+    distanceKm !== undefined
+      ? `<span class="ml-1 text-[10px] text-primary font-bold ${isSelected ? "text-primary-foreground" : ""}">${formatDistance(distanceKm)}</span>`
+      : ""
+
   const html = `
     <div class="relative flex items-center justify-center transition-transform duration-200 cursor-pointer">
-      <div class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${bgClass}">
+      <div class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${bgClass}">
         <span class="inline-block size-2 rounded-full bg-primary ${isSelected ? "bg-background" : ""}"></span>
         <span class="truncate max-w-[120px]">${place.name}</span>
         <span class="text-[10px] opacity-75">${priceIndicator}</span>
+        ${distanceHtml}
       </div>
       <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 ${isSelected ? "bg-primary" : "bg-card border-r border-b border-border"}"></div>
     </div>
@@ -73,9 +93,26 @@ function createMarkerIcon(place: Place, isSelected: boolean) {
   return L.divIcon({
     html,
     className: "custom-place-marker",
-    iconSize: [140, 36],
-    iconAnchor: [70, 36],
+    iconSize: [160, 36],
+    iconAnchor: [80, 36],
     popupAnchor: [0, -36],
+  })
+}
+
+/** Marker hiển thị vị trí người dùng */
+function createUserLocationIcon() {
+  const html = `
+    <div class="relative flex items-center justify-center">
+      <div class="size-6 rounded-full bg-blue-500/20 ring-4 ring-blue-500/30 flex items-center justify-center animate-pulse">
+        <div class="size-3.5 rounded-full bg-blue-600 border-2 border-white shadow-md"></div>
+      </div>
+    </div>
+  `
+  return L.divIcon({
+    html,
+    className: "user-location-marker",
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
   })
 }
 
@@ -83,6 +120,7 @@ export function PlacesMap({
   places,
   selectedPlaceId,
   onSelectPlace,
+  userCoordinates,
   className = "",
   height = "h-[650px]",
 }: PlacesMapProps) {
@@ -126,11 +164,35 @@ export function PlacesMap({
         className={`z-0 h-full w-full ${isDark ? "map-tiles-dark" : ""}`}
       >
         <TileLayer attribution={attribution} url={tileUrl} />
-        <MapBoundsUpdater places={validPlaces} selectedPlace={selectedPlace} />
+        <MapBoundsUpdater
+          places={validPlaces}
+          selectedPlace={selectedPlace}
+          userCoordinates={userCoordinates}
+        />
+
+        {/* Marker vị trí hiện tại của người dùng */}
+        {userCoordinates ? (
+          <Marker
+            position={[userCoordinates.lat, userCoordinates.lng]}
+            icon={createUserLocationIcon()}
+          >
+            <Popup closeButton={false}>
+              <div className="flex items-center gap-1 p-1 text-xs font-semibold text-foreground">
+                <NavigationIcon className="size-3 text-blue-500" />
+                Vị trí của bạn
+              </div>
+            </Popup>
+          </Marker>
+        ) : null}
 
         {validPlaces.map((place) => {
           const isSelected = place.id === selectedPlaceId
-          const icon = createMarkerIcon(place, isSelected)
+          const distanceKm =
+            userCoordinates && place.lat && place.lng
+              ? calculateDistanceKm(userCoordinates.lat, userCoordinates.lng, place.lat, place.lng)
+              : undefined
+
+          const icon = createMarkerIcon(place, isSelected, distanceKm)
 
           return (
             <Marker
@@ -155,9 +217,19 @@ export function PlacesMap({
                       alt={place.name}
                       className="h-full w-full object-cover"
                     />
-                    <Badge variant="secondary" className="absolute top-2 left-2 text-[10px]">
-                      {CATEGORY_META[place.category]?.label}
-                    </Badge>
+                    <div className="absolute top-2 left-2 flex gap-1">
+                      <Badge variant="secondary" className="text-[10px]">
+                        {CATEGORY_META[place.category]?.label}
+                      </Badge>
+                      {place.district ? (
+                        <Badge
+                          variant="outline"
+                          className="bg-background/80 text-[10px] backdrop-blur"
+                        >
+                          {place.district}
+                        </Badge>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="flex flex-col gap-1">
@@ -174,9 +246,18 @@ export function PlacesMap({
                           ({place.reviewCount})
                         </span>
                       </span>
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {"₫".repeat(place.priceLevel)}
-                      </span>
+
+                      <div className="flex items-center gap-2">
+                        {distanceKm !== undefined ? (
+                          <span className="flex items-center gap-0.5 text-xs font-semibold text-primary">
+                            <NavigationIcon className="size-3" />
+                            {formatDistance(distanceKm)}
+                          </span>
+                        ) : null}
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {"₫".repeat(place.priceLevel)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -198,8 +279,13 @@ export function PlacesMap({
       </MapContainer>
 
       {/* Tóm tắt số lượng địa điểm trên bản đồ */}
-      <div className="absolute bottom-3 left-3 z-[1000] rounded-md border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur">
-        Đang hiển thị {validPlaces.length} địa điểm
+      <div className="absolute bottom-3 left-3 z-[1000] flex items-center gap-2 rounded-md border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur">
+        <span>Đang hiển thị {validPlaces.length} địa điểm tại Đà Nẵng</span>
+        {userCoordinates ? (
+          <span className="flex items-center gap-0.5 text-primary">
+            <NavigationIcon className="size-3" /> Đã bật vị trí
+          </span>
+        ) : null}
       </div>
     </div>
   )

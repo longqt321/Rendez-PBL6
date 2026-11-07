@@ -13,14 +13,14 @@ const AUTHORS: Record<string, Author> = {
  * Mỗi (placeId, authorId) chỉ một bản ghi: đánh giá lại là ghi đè.
  */
 export const MOCK_REVIEWS: MockReviewSeed[] = [
-  // ---- p-01 (Cà phê Muối Chú Long) ----
+  // ---- p-01 (Bánh Xèo Bà Dưỡng) ----
   {
     id: "r-01-1",
     placeId: "p-01",
     author: AUTHORS["u-2"],
     rating: 5,
     content:
-      "Cà phê muối đậm vị, foam béo mượt mà không gắt. View cổ điển ngồi làm việc cả buổi vẫn thoải mái.",
+      "Bánh xèo giòn rụm, nước sốt gan heo mè đậu phộng độc quyền ăn hoài không ngán. Nem lụi nướng thơm nức mũi, đi Đà Nẵng nhất định phải ghé!",
     createdAt: "2026-11-05T09:30:00+07:00",
   },
   {
@@ -28,25 +28,28 @@ export const MOCK_REVIEWS: MockReviewSeed[] = [
     placeId: "p-01",
     author: AUTHORS["u-4"],
     rating: 4,
-    content: "Quán đông cuối tuần, nên đặt trước. Bánh mì chà bong ăn kèm cũng ổn.",
+    content:
+      "Quán nằm sâu trong kiệt Hoàng Diệu nhưng cực kỳ đông khách. Bánh mang ra nóng hổi, rau sống tươi rói.",
     createdAt: "2026-11-02T15:10:00+07:00",
   },
-  // ---- p-02 (Bánh Mì Huỳnh Hoa) ----
+  // ---- p-02 (Mì Quảng Bà Mua) ----
   {
     id: "r-02-1",
     placeId: "p-02",
     author: AUTHORS["u-1"],
     rating: 5,
-    content: "Đầy ụ pate, giá hợp lý. Hàng luôn dài nhưng chạy nhanh, chờ 10 phút là có bánh nóng.",
+    content:
+      "Mì quảng gà ta thịt chắc thơm, nước nhưn đậm đà chan vừa phải, bánh tráng nướng mè giòn tan ăn kèm chuẩn vị xứ Quảng.",
     createdAt: "2026-11-04T11:45:00+07:00",
   },
-  // ---- p-03 ----
+  // ---- p-03 (Cà phê Út Tịch) ----
   {
     id: "r-03-1",
     placeId: "p-03",
     author: AUTHORS["u-3"],
     rating: 4,
-    content: "Nước cam ép nguyên chất, không gian nhỏ xinh. Hơi khó tìm chỗ để xe.",
+    content:
+      "Quán cà phê mang phong cách phố cổ ngay mặt đường Bạch Đằng, view nhìn thẳng ra cầu sông Hàn gió mát rượi.",
     createdAt: "2026-11-01T08:20:00+07:00",
   },
 ]

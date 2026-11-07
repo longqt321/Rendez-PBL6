@@ -4,6 +4,7 @@ import type { Place, PlaceCategory } from "../types/place"
 
 export interface DiscoverFilters {
   category: PlaceCategory | "all"
+  district?: string | "all"
   query: string
 }
 
@@ -21,6 +22,7 @@ export async function getPlaces(
     params: {
       cursor: cursor ?? undefined,
       category: filters.category === "all" ? undefined : filters.category,
+      district: filters.district && filters.district !== "all" ? filters.district : undefined,
       q: filters.query.trim() || undefined,
     },
     signal,

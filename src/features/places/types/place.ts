@@ -6,6 +6,8 @@ export interface Place {
   name: string
   address: string
   city: string
+  /** Quận / Huyện tại Đà Nẵng (Hải Châu, Sơn Trà, v.v.) */
+  district?: string
   category: PlaceCategory
   tags: string[]
   rating: number
@@ -30,6 +32,7 @@ export interface PlaceSummary {
   id: string
   name: string
   address: string
+  district?: string
   category: PlaceCategory
   imageSeed: string
   isPublished: boolean

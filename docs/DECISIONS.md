@@ -1224,3 +1224,34 @@ lực chính để quay lại ứng dụng. User chốt: form chỉ nhận **tex
 ### Chưa xác minh
 
 - Trải nghiệm cảm ứng đa điểm trên màn hình điện thoại thật.
+
+## D-023: Tái định hướng ứng dụng chuyên sâu cho Thành phố Đà Nẵng, bổ sung bộ lọc Quận và tính năng "Gần đây"
+
+### Bối cảnh
+
+- Ứng dụng định hướng tập trung phục vụ chuyên biệt cho thị trường Thành phố Đà Nẵng.
+- Người dùng cần trải nghiệm tìm kiếm quán ăn theo khu vực địa lý quen thuộc: theo từng Quận (Hải Châu, Sơn Trà, Thanh Khê, Ngũ Hành Sơn, Cẩm Lệ, Liên Chiểu) và tìm quán "Gần đây" (dựa theo định vị thực tế).
+
+### Quyết định
+
+- **Toạ độ trung tâm mặc định:** Chuyển về Đà Nẵng `[16.0544, 108.2022]` (khu vực cầu Rồng / Sông Hàn).
+- **Dữ liệu mẫu (`MOCK_PLACES`):** Chuyển 100% dữ liệu mẫu sang các quán ăn, quán cà phê, đặc sản nổi tiếng tại Đà Nẵng, phân bổ đầy đủ trên các quận.
+- **Model:** Bổ sung trường `district: string` vào `Place` và `PlaceSummary`.
+- **UI `/discover`:**
+  - Thanh chip cuộn ngang trên đầu trang chọn nhanh theo Quận: "Tất cả", "Hải Châu", "Sơn Trà", "Thanh Khê", "Ngũ Hành Sơn", "Cẩm Lệ", "Liên Chiểu".
+  - Nút kích hoạt chế độ "Gần đây" sử dụng Geolocation API của trình duyệt.
+  - Tính toán khoảng cách (km / m) theo công thức Haversine hiển thị trên `PlaceCard` và popup bản đồ `PlacesMap`.
+  - Tự động sắp xếp địa điểm từ gần nhất đến xa nhất khi bật chế độ "Gần đây".
+
+### Phương án đã xem
+
+- _Đặt chọn quận trong dropdown Popover Lọc:_ loại, đưa ra thanh chip 1 chạm trên đầu trang giúp người dùng tiếp cận nhanh hơn nhiều.
+- _Giữ dữ liệu toàn quốc hỗn hợp:_ loại, tập trung 100% vào Đà Nẵng mang lại trải nghiệm bản địa chất lượng cao và các quán kết nối liền mạch trên bản đồ.
+
+### Đã xác minh
+
+- Sẽ xác minh qua typecheck, lint, build, và test E2E CDP.
+
+### Chưa xác minh
+
+- Độ chính xác GPS trên thiết bị di động thực tế trong môi trường sóng yếu.
