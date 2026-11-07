@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils"
-import { seedToGradient } from "@/lib/seed-color"
 
 interface SeedImageProps {
   seed: string
@@ -12,26 +11,18 @@ interface SeedImageProps {
 }
 
 /**
- * Ảnh placeholder tự sinh bằng CSS gradient — không gọi mạng, không cần asset.
- * Khi nối backend, thay bằng `<img src={place.coverUrl} loading="lazy" />`.
+ * Ảnh minh hoạ lấy từ picsum.photos — URL tất định theo seed, nên mỗi địa điểm/bài đăng
+ * luôn ra cùng một ảnh. Cần mạng; khi nối backend thì đổi `src` sang `place.coverUrl`.
  */
 export function SeedImage({ seed, height, className, alt, children }: SeedImageProps) {
   return (
-    <div
-      role="img"
-      aria-label={alt ?? "Ảnh minh hoạ địa điểm"}
-      className={cn("relative overflow-hidden bg-muted", className)}
-      style={{ backgroundImage: seedToGradient(seed), height }}
-    >
-      {/* Lớp hoạ tiết in ấn: chấm nhỏ li ti, tạo cảm giác giấy cũ */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-25"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.9) 1px, transparent 0)",
-          backgroundSize: "7px 7px",
-        }}
+    <div className={cn("relative overflow-hidden bg-muted", className)} style={{ height }}>
+      <img
+        src={`https://picsum.photos/seed/${seed}/600/${height ?? 600}`}
+        alt={alt ?? "Ảnh minh hoạ địa điểm"}
+        loading="lazy"
+        decoding="async"
+        className="size-full object-cover"
       />
       {children}
     </div>

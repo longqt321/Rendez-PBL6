@@ -99,12 +99,13 @@ và khi backend xuất hiện thì phải viết lại gần như toàn bộ.
 
 **Cách kiểm tra bằng máy:**
 
-Chưa có. Hai cụm đáng chặn là `danh sách package/asset được duyệt` và `cần người dùng xác nhận`
-(trong ngữ cảnh một mục Quyết định), **nhưng chưa thêm vào `docs/banned-phrases.json`** vì D-010
-hiện vẫn còn cả hai câu đó và tôi chưa được phép sửa D-010 — thêm vào lúc này sẽ làm bước kiểm đỏ
-ngay từ đầu. Thêm cùng lúc với việc sửa D-010.
+Không dùng `docs/banned-phrases.json` được — file đó quét `src/` và hai cụm sai đều là câu văn trong
+`docs/`. Cách kiểm đã dùng:
 
-**Trạng thái hiện tại (chưa sửa, chờ người dùng cho phép):**
+- `grep -rn "danh sách package/asset được duyệt" docs/ src/ | grep -v docs/LESSONS.md` → phải rỗng
+  (LESSONS.md tự trích lại câu sai nên phải loại trừ chính nó).
+- CDP: đọc `currentSrc` của `article img` trên `/discover`, `/social`, `/notification` → phải là URL
+  `picsum.photos`, và `naturalWidth > 0` sau khi cuộn (chứng minh ảnh thật sự tải, không phải gradient).
 
-- `src/components/shared/seed-image.tsx` vẫn là gradient, chưa phải `picsum.photos`.
-- `docs/DECISIONS.md` D-010 vẫn còn mâu thuẫn và vẫn còn câu viện dẫn danh sách không tồn tại.
+**Đã sửa:** `src/components/shared/seed-image.tsx` → `<img src="https://picsum.photos/seed/...">`;
+`docs/DECISIONS.md` D-010 viết lại theo lựa chọn A3; xoá `src/lib/seed-color.ts` (hết dùng).

@@ -365,13 +365,17 @@ Người dùng yêu cầu thiết kế 3 route dùng bộ màu retro, kèm layou
 
 ### Quyết định
 
-**Về ảnh — không dùng picsum.photos như đã chốt, dùng gradient tự sinh.**
+**Về ảnh — dùng URL picsum.photos, đúng lựa chọn A3 của người dùng.**
 
-Lý do: `SeedImage` sinh nền bằng `linear-gradient` từ hash của seed, không gọi mạng. Đã kiểm
-picsum.photos không nằm trong danh sách package/asset được duyệt, và thêm phụ thuộc mạng bên thứ ba
-vào mock data khiến trang trắng ảnh khi offline hoặc khi picsum chậm. Gradient giữ được ngôn ngữ
-thị giác retro (dải màu đất) và luôn render tức thì. **Đây là điểm lệch so với lựa chọn A3 — cần
-người dùng xác nhận.** Nếu muốn ảnh thật, chỉ cần đổi phần thân `SeedImage` sang `<img>`.
+`SeedImage` render `<img src="https://picsum.photos/seed/<seed>/600/<height>" loading="lazy">`.
+Seed lấy từ `place.imageSeed` / `post.imageSeed` nên cùng một mục luôn ra cùng một ảnh.
+Hệ quả đã biết và đã được người dùng chấp nhận: cần mạng, ảnh trắng khi offline, layout có thể
+nhảy trong lúc ảnh tải (đã có `bg-muted` giữ chỗ + `height` cố định cho masonry).
+
+> [!NOTE]
+> Trước đây mục này ghi ngược lại (dùng gradient tự sinh) và viện dẫn một "danh sách package/asset
+> được duyệt" **không tồn tại trong repo**. Đó là lỗi, đã sửa theo lựa chọn A3 của người dùng.
+> Xem `LESSONS.md` L-002.
 
 **Về state — Zustand làm nguồn sự thật duy nhất.**
 
@@ -403,13 +407,14 @@ Bỏ dấu tiếng Việt trước khi so khớp, có danh sách stop-word.
 
 ### Phương án đã xem
 
-| Phương án                         | Kết quả                                                                        |
-| --------------------------------- | ------------------------------------------------------------------------------ |
-| Ảnh từ picsum.photos (đã chốt A3) | **Không dùng** — phụ thuộc mạng, trang trắng ảnh khi offline. Xem lý do ở trên |
-| Ảnh trong `public/`               | Loại — cần ~40 file ảnh thật, không có sẵn trong repo                          |
-| Đặt logic đề xuất trong component | Loại — 3 route đều cần, sẽ trùng lặp                                           |
-| Dùng Context API thay Zustand     | Loại — Zustand đã có trong stack, Context sẽ re-render toàn cây                |
-| Code-split theo route             | **Chưa làm** — bundle hiện 650 kB (gzip 206 kB). Ghi `BACKLOG.md`              |
+| Phương án                         | Kết quả                                                                  |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| Ảnh từ picsum.photos (đã chốt A3) | **Dùng** — xem mục Quyết định ở trên                                     |
+| Ảnh gradient tự sinh              | Loại — người dùng đã chọn picsum, gradient chỉ là đề xuất của tôi bị bác |
+| Ảnh trong `public/`               | Loại — cần ~40 file ảnh thật, không có sẵn trong repo                    |
+| Đặt logic đề xuất trong component | Loại — 3 route đều cần, sẽ trùng lặp                                     |
+| Dùng Context API thay Zustand     | Loại — Zustand đã có trong stack, Context sẽ re-render toàn cây          |
+| Code-split theo route             | **Chưa làm** — bundle hiện 650 kB (gzip 206 kB). Ghi `BACKLOG.md`        |
 
 ### Kích thước / license
 
