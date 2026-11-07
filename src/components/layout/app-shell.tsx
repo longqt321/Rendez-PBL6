@@ -12,7 +12,7 @@ import {
   UserIcon,
   UsersIcon,
 } from "lucide-react"
-import { NavLink, Link } from "react-router"
+import { NavLink, Link, useLocation, useNavigate, useSearchParams } from "react-router"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -162,6 +162,13 @@ function SkinSwitch() {
 }
 
 function TopBar() {
+  const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const location = useLocation()
+
+  // Ô search phản chiếu `?q=` của trang tìm kiếm: rời trang thì xoá, vào `/search?q=` thì điền sẵn.
+  const currentQuery = location.pathname === "/search" ? (params.get("q") ?? "") : ""
+
   return (
     <header className="sticky top-0 z-20 border-b-2 border-foreground/15 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 lg:px-8">
@@ -172,15 +179,21 @@ function TopBar() {
         <form
           role="search"
           className="relative ml-auto w-full max-w-md lg:ml-0 lg:max-w-lg"
-          onSubmit={(event) => event.preventDefault()}
+          onSubmit={(event) => {
+            event.preventDefault()
+            const query = String(new FormData(event.currentTarget).get("q") ?? "").trim()
+            navigate(query ? `/search?q=${encodeURIComponent(query)}` : "/search")
+          }}
         >
           <SearchIcon
             className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
           />
           <Input
+            key={currentQuery}
             type="search"
             name="q"
+            defaultValue={currentQuery}
             placeholder="Tìm quán ăn, địa điểm, bài viết…"
             aria-label="Tìm kiếm"
             className="pl-9"

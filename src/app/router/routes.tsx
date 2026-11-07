@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell"
 import { DesignShowcasePage } from "@/components/shared/design-showcase-page"
 import { DiscoverPage } from "@/features/places/pages/discover-page"
 import { SocialPage } from "@/features/social/pages/social-page"
+import { PostDetailPage } from "@/features/social/pages/post-detail-page"
 import { NotificationPage } from "@/features/notification/pages/notification-page"
 import { ProfilePage } from "@/features/profile/pages/profile-page"
 import { UserProfilePageRoute } from "./user-profile-route"
@@ -31,6 +32,14 @@ export const routes: RouteObject[] = [
     element: (
       <AppShell>
         <SocialPage />
+      </AppShell>
+    ),
+  },
+  {
+    path: "/post/:id",
+    element: (
+      <AppShell>
+        <PostDetailPage />
       </AppShell>
     ),
   },
@@ -96,6 +105,10 @@ export const routes: RouteObject[] = [
   },
   {
     path: "*",
-    element: <NotFoundPage />,
+    element: (
+      <AppShell>
+        <NotFoundPage />
+      </AppShell>
+    ),
   },
 ]

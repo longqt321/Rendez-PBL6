@@ -497,6 +497,16 @@ const routes: Route[] = [
     handler: (config) => createPost(parseBody(config)),
   },
   {
+    method: "get",
+    // Chỉ khớp đúng `/posts/:id` — không nuốt `/posts/:id/comments` vì `[^/]+` loại dấu `/`.
+    pattern: /^\/posts\/([^/]+)$/,
+    handler: (config, [postId]) => {
+      const post = db.posts.find((item) => item.id === postId)
+      if (!post) notFound(config, "Không tìm thấy bài đăng")
+      return toPostDto(post)
+    },
+  },
+  {
     method: "patch",
     pattern: /^\/posts\/([^/]+)\/place$/,
     handler: (config, [postId]) => {

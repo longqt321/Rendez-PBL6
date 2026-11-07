@@ -127,5 +127,24 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
       `base-nova` map `DropdownMenuLabel` → `GroupLabel`; dùng label ngoài group làm crash app
       (đã sửa ở commit `44839cc`). Khi sinh component mới từ template, đọc source base-ui trước
       khi ghép API.
-- [ ] **Bundle 957.61 kB (gzip 300.93 kB)** — tăng từ 715.82 kB sau khi thêm 6 feature mới.
+- [ ] **Bundle 964.54 kB (gzip 302.22 kB)** — tăng từ 715.82 kB sau khi thêm 6 feature mới.
       Cần code-split theo route (chưa làm).
+
+## Phát hiện khi sửa 4 luồng bị chặn — Nhóm 1 (2026-11-07)
+
+Đã làm xong trong đợt này (ghi lại để không tìm lại): route `/post/:id` + `usePost` + `getPost`;
+topbar search ghi `?q=`; `/search` đọc/ghi `?q=` với debounce 300 ms; tab Thông báo có `TabsContent`;
+hàng thông báo bấm được và gọi `useMarkNotificationRead`; 404 render trong `AppShell`.
+
+- [ ] **`/profile` luôn rỗng.** `MOCK_POSTS` chỉ có bài của `AUTHORS[0..4]` (`u-1`…`u-5`), **không có
+      bài nào của `u-me`** → tab Bài đăng của `/profile` luôn hiện "Chưa có bài đăng nào". Không phải
+      lỗi UI; nếu muốn trang cá nhân có nội dung để xem thì phải thêm fixture bài của `u-me`.
+      (Test CDP phải dùng `/u/bao.an.day` thay vì `/profile`.)
+- [ ] **`/post/:id` chưa có nút chia sẻ / báo cáo / sửa-xoá.** Trang chi tiết mới có thích, lưu,
+      bình luận. Cần chốt hành vi trước khi thêm (xoá bài có xác nhận? sửa caption?).
+- [ ] **`markNotificationRead` chưa optimistic.** Bấm thông báo → chờ `PATCH` xong mới
+      `invalidateQueries`; mạng chậm sẽ thấy badge trễ. Cân nhắc `onMutate` + rollback như like/save.
+- [ ] **`syncPlaceSuggestions()` chạy lại mỗi lần `GET /notifications`** — nếu backend thật làm vậy
+      sẽ sinh trùng. Đã có `notifiedPostIds` chặn trong một phiên, nhưng vẫn là mô phỏng job nền.
+- [ ] **Chưa có trang danh sách thông báo phân trang.** `NOTIFICATIONS_PAGE_SIZE` có trong mock
+      nhưng UI chưa có nút "Tải thêm" — hiện chỉ hiện trang đầu.

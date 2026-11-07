@@ -110,13 +110,14 @@ src/
 | `/discover`     | `features/places`       | 3 cột PC / 2 cột masonry mobile, infinity scroll         |
 | `/discover/:id` | `features/places`       | chi tiết địa điểm: breadcrumb + tabs + rating            |
 | `/social`       | `features/social`       | feed dọc + ô soạn bài + bình luận (thread Dialog/Drawer) |
-| `/notification` | `features/notification` | thẻ "Đề xuất thêm địa điểm" với 3 gợi ý                  |
+| `/post/:id`     | `features/social`       | chi tiết bài đăng: preview + thread bình luận 2 cột (PC) |
+| `/notification` | `features/notification` | tab Tất cả / Đề xuất địa điểm; thông báo bấm được        |
 | `/profile`      | `features/profile`      | trang cá nhân của mình (tabs posts/pinned/saved)         |
 | `/u/:handle`    | `features/profile`      | trang cá nhân người khác (follow, chỉ tab posts)         |
-| `/search`       | `features/search`       | tìm địa điểm/bài/người, debounce 400 ms                  |
+| `/search`       | `features/search`       | tìm địa điểm/bài/người; `?q=` trên URL, debounce 300 ms  |
 | `/saved`        | `features/social`       | bài đã lưu, lọc `savedByMe`                              |
 | `/settings`     | `features/settings`     | form RHF + zod (Field/Switch)                            |
-| `*`             | 404                     | Empty + link về `/discover`                              |
+| `*`             | 404                     | Empty + link về `/discover`, render **trong** `AppShell` |
 | `/design`       | `components/shared`     | trang kiểm tra design stack (tạm)                        |
 
 ### Phân chia state

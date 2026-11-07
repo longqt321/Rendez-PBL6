@@ -1,9 +1,10 @@
-import { useState } from "react"
-import { Link } from "react-router"
+import { useEffect, useRef, useState } from "react"
+import { Link, useSearchParams } from "react-router"
 import { SearchIcon, SearchXIcon, UsersIcon } from "lucide-react"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { usePosts } from "@/features/social/hooks/use-posts"
@@ -14,11 +15,36 @@ import { MOCK_USERS } from "@/mocks/fixtures/users"
 /**
  * Trang tìm kiếm — `/search?q=`.
  *
+ * Từ khoá nằm trong URL nên F5, back/forward và link chia sẻ đều giữ kết quả.
+ * Ô nhập giữ bản nháp riêng, chỉ ghi lại URL sau khi người dùng ngừng gõ.
+ *
  * Dùng lại đúng các hook dữ liệu đã có (places/posts): server chịu trách nhiệm
  * lọc theo `q`. Tab Người lọc trên danh sách hồ sơ mock, chưa có endpoint.
  */
 export function SearchPage() {
-  const [query, setQuery] = useState("")
+  const [params, setParams] = useSearchParams()
+  const urlQuery = params.get("q") ?? ""
+
+  const [draft, setDraft] = useState(urlQuery)
+  const debouncedDraft = useDebouncedValue(draft, 300)
+  /** Giá trị cuối cùng trang này tự ghi vào URL — để không ghi đè lúc người dùng đang gõ. */
+  const lastWritten = useRef(urlQuery)
+
+  // URL đổi từ bên ngoài (back/forward, submit ở topbar) → nạp lại vào ô nhập.
+  useEffect(() => {
+    if (urlQuery === lastWritten.current) return
+    lastWritten.current = urlQuery
+    setDraft(urlQuery)
+  }, [urlQuery])
+
+  // Ngừng gõ 300 ms → ghi từ khoá vào URL (replace để không làm rối lịch sử).
+  useEffect(() => {
+    if (debouncedDraft === urlQuery) return
+    lastWritten.current = debouncedDraft
+    setParams(debouncedDraft ? { q: debouncedDraft } : {}, { replace: true })
+  }, [debouncedDraft, urlQuery, setParams])
+
+  const query = urlQuery
   const { data: placesData, isPending: placesPending } = useDiscoverPlaces({
     category: "all",
     query,
@@ -52,8 +78,8 @@ export function SearchPage() {
           </InputGroupAddon>
           <InputGroupInput
             type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
             placeholder="Tìm quán ăn, địa điểm, bài viết…"
             aria-label="Tìm kiếm"
           />

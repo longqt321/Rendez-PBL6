@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router"
 import { BookmarkIcon, HeartIcon, MapPinIcon, MessageCircleIcon, SparklesIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -34,18 +35,24 @@ export function PostCard({ post }: PostCardProps) {
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm leading-tight font-semibold">{post.author.name}</p>
+          <p className="truncate text-sm leading-tight font-semibold">
+            <Link to={`/post/${post.id}`} className="outline-none hover:underline">
+              {post.author.name}
+            </Link>
+          </p>
           <p className="truncate text-[0.7rem] text-muted-foreground">
             @{post.author.handle} · {formatRelativeTime(post.createdAt)}
           </p>
         </div>
       </header>
 
-      <SeedImage
-        seed={post.imageSeed}
-        height={post.imageHeight}
-        alt={`Ảnh minh hoạ bài đăng của ${post.author.name}`}
-      />
+      <Link to={`/post/${post.id}`} aria-label={`Mở bài đăng của ${post.author.name}`}>
+        <SeedImage
+          seed={post.imageSeed}
+          height={post.imageHeight}
+          alt={`Ảnh minh hoạ bài đăng của ${post.author.name}`}
+        />
+      </Link>
 
       <div className="flex flex-col gap-2 p-3">
         <p className="text-sm leading-relaxed whitespace-pre-line">{post.caption}</p>

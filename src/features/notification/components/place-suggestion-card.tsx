@@ -1,4 +1,5 @@
 import { CheckIcon, Loader2Icon, MapPinIcon, SparklesIcon } from "lucide-react"
+import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SeedImage } from "@/components/shared/seed-image"
@@ -46,7 +47,12 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
       </header>
 
       <p className="mt-2 line-clamp-2 border-l-2 border-foreground/30 pl-2 text-xs text-muted-foreground italic">
-        “{notification.postCaption}”
+        <Link
+          to={`/post/${notification.postId}`}
+          className="underline-offset-2 hover:text-foreground hover:underline"
+        >
+          “{notification.postCaption}”
+        </Link>
       </p>
 
       <p className="mt-2 text-xs">

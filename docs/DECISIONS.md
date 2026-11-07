@@ -612,3 +612,64 @@ không suy từ template Radix classic.
 - `PATCH /me` chưa có route mock — `/settings` chỉ lưu optimistic + toast minh hoạ.
 - Lưu/bỏ lưu địa điểm chưa có endpoint — nút lưu ở `PlaceCard` chưa nối.
 - Tab "Người" ở `/search` lọc trên `MOCK_USERS` phía client, chưa có endpoint `/users?q=`.
+
+---
+
+## D-013 — Trang chi tiết bài đăng, tìm kiếm ghi vào URL, thông báo bấm được
+
+**Ngày:** 2026-11-07
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Kế hoạch "giao diện còn thiếu" (đã duyệt) chỉ ra 4 luồng bị chặn: 2 nơi link tới `/post/:id` nhưng
+route không tồn tại (404), ô tìm kiếm ở topbar chỉ là trang trí, tab Thông báo không có
+`TabsContent`, và hàng thông báo không bấm được. Ràng buộc giữ nguyên: 0 dependency npm mới,
+`bun.lock` không đổi, mọi logic nghiệp vụ ở mock server, không sửa tay `src/components/ui/`.
+
+### Quyết định
+
+- **`/post/:id` tách trang riêng** (`features/social/pages/post-detail-page.tsx`) thay vì mở
+  Dialog từ feed. Lý do: URL chia sẻ được, F5 giữ nguyên, và 2 nơi đã link tới đường dẫn này
+  (`post-card`, thông báo) nên phải có trang thật.
+- **Tách `PostPreview` + `CommentThreadPanel` thành component export** khỏi `comment-thread.tsx`.
+  Thread Dialog/Drawer và trang chi tiết dùng chung — một nghiệp vụ một chỗ xử lý.
+- **`postQueryKey(id)` nằm dưới tiền tố `["posts"]`** → `invalidateQueries({ queryKey: ["posts"] })`
+  làm mới cả feed lẫn trang chi tiết mà không phải liệt kê từng key.
+- **`patchPostInCache` xử lý cả 2 shape** (`Page<Post>` và `Post` lẻ) vì `setQueriesData` khớp theo
+  tiền tố nên sẽ chạm cả `["posts","detail",id]`. Nếu chỉ xử lý `Page`, like ở trang chi tiết sẽ
+  không cập nhật lạc quan.
+- **Topbar search: `Input` uncontrolled + `key={currentQuery}`, đọc qua `FormData`.** Không thêm
+  state. `key` đổi khi URL đổi → ô tự reset về từ khoá hiện tại của `/search`.
+- **`/search` giữ `draft` state + `lastWritten` ref**, ghi URL bằng `setParams(..., { replace: true })`
+  sau debounce 300 ms. `replace` để không làm rỗng lịch sử khi gõ.
+- **Thông báo: `ActorRow` là `<Link>` khi có `postId`, là `<button>` khi không** (loại `follow`).
+  Cả hai gọi `useMarkNotificationRead` nếu chưa đọc.
+- **404 render trong `AppShell`** — route `*` bọc `<AppShell>`, `NotFoundPage` đổi `min-h-dvh` →
+  `min-h-[60dvh]` để không đẩy layout.
+
+### Phương án đã xem
+
+- _Mở Dialog từ mọi nơi thay vì thêm route_ — loại: link `/post/:id` đã tồn tại ở 2 chỗ, đổi chúng
+  thành mở Dialog sẽ phải truyền state qua router; URL không chia sẻ được.
+- _Dùng `useState` cho ô search topbar_ — loại: phải đồng bộ 2 chiều với URL, thêm bug vòng lặp.
+- _Đặt `postQueryKey` ngoài tiền tố `["posts"]`_ — loại: invalidate feed sẽ bỏ sót trang chi tiết.
+
+### Kích thước / license
+
+Không thêm dependency. Không đổi `bun.lock`, không đổi `package.json`.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build` → exit 0.
+- CDP `group1-check.mjs` (31 check: `/post/:id` từ 3 nguồn + responsive 3 mốc + bài không tồn tại;
+  topbar submit + `/search` đọc/ghi `?q=` + F5; 2 `TabsContent` riêng; thông báo bấm được + badge
+  giảm 1; 404 trong shell; hồi quy dialog bình luận): **31/31** trên dev 5173 và preview 4174.
+- Hồi quy `feature-check.mjs` **38/38**, `app-check.mjs` **44/44** trên cả dev và preview.
+
+### Chưa xác minh
+
+- Chưa xem giao diện bằng mắt người (model không đọc được ảnh PNG); mọi kết luận về layout đều
+  từ `getBoundingClientRect` / `getComputedStyle`.
+- Chưa test Firefox/Safari — chỉ Chrome 156 qua CDP.
+- `markNotificationRead` chưa optimistic (xem `BACKLOG.md`).
