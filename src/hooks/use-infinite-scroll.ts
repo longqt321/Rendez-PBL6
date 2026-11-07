@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react"
+import { useIntersectionObserver } from "@uidotdev/usehooks"
 
 interface UseInfiniteScrollOptions {
   /** Còn dữ liệu để tải hay không */
@@ -11,33 +12,31 @@ interface UseInfiniteScrollOptions {
 
 /**
  * Tự động gọi `fetchNextPage` khi phần tử sentinel lọt vào viewport.
- * Dùng IntersectionObserver — không cần thư viện ngoài.
+ *
+ * Dùng `useIntersectionObserver` của `@uidotdev/usehooks` (đã cài) thay vì tự
+ * dựng `IntersectionObserver` + `useEffect`.
+ *
+ * Trả về callback ref — gắn vào một `<div>` ở cuối danh sách.
  */
-export function useInfiniteScroll<T extends HTMLElement = HTMLDivElement>({
+export function useInfiniteScroll({
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
   rootMargin = "400px",
 }: UseInfiniteScrollOptions) {
-  const sentinelRef = useRef<T | null>(null)
+  const [ref, entry] = useIntersectionObserver({ rootMargin, threshold: 0 })
+
+  // Giữ `fetchNextPage` mới nhất trong ref để callback không bị tạo lại mỗi render.
+  const fetchRef = useRef(fetchNextPage)
+  useEffect(() => {
+    fetchRef.current = fetchNextPage
+  }, [fetchNextPage])
 
   useEffect(() => {
-    const node = sentinelRef.current
-    if (!node) return
+    if (!entry?.isIntersecting) return
     if (!hasNextPage || isFetchingNextPage) return
+    fetchRef.current()
+  }, [entry, hasNextPage, isFetchingNextPage])
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          fetchNextPage()
-        }
-      },
-      { rootMargin },
-    )
-
-    observer.observe(node)
-    return () => observer.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, rootMargin])
-
-  return sentinelRef
+  return ref
 }

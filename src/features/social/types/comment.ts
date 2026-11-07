@@ -15,6 +15,13 @@ export interface Comment {
   createdAt: string
   likeCount: number
   likedByMe: boolean
+  /**
+   * Bình luận của chính người dùng đang đăng nhập hay không.
+   *
+   * Server quyết định (giống `Review.isMine` và `Profile.isMe`); client không
+   * tự so sánh handle — làm vậy sẽ cần import fixture của mock vào production.
+   */
+  isMine: boolean
   /** null = bình luận gốc; khác null = trả lời bình luận khác (lồng 1 cấp). */
   parentId: string | null
   /** Thông tin người được trả lời — server nhúng kèm, client không tự tra cứu. */

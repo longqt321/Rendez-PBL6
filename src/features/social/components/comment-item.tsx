@@ -23,14 +23,12 @@ import type { Comment } from "../types/comment"
 
 interface CommentItemProps {
   comment: Comment
-  /** Người dùng hiện tại — quyết định hiện menu Xoá hay không. */
-  isMe: boolean
   onReply: (comment: Comment) => void
   onDelete: (comment: Comment) => void
 }
 
 /** Một mục bình luận — dựng bằng `Item` theo đúng mục đích thiết kế của nó. */
-export function CommentItem({ comment, isMe, onReply, onDelete }: CommentItemProps) {
+export function CommentItem({ comment, onReply, onDelete }: CommentItemProps) {
   const setLiked = useSetCommentLiked(comment.postId)
 
   return (
@@ -82,7 +80,7 @@ export function CommentItem({ comment, isMe, onReply, onDelete }: CommentItemPro
         </ItemFooter>
       </ItemContent>
 
-      {isMe && (
+      {comment.isMine && (
         <ItemActions>
           <DropdownMenu>
             <DropdownMenuTrigger

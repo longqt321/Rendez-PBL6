@@ -31,7 +31,6 @@ export function CommentThreadPanel({ postId, listClassName }: CommentThreadPanel
       <CommentList
         postId={postId}
         sort={sort}
-        isMe
         onReply={setReplyTo}
         onDelete={setDeleting}
         className={listClassName ?? "min-h-0 flex-1 px-3 py-2"}

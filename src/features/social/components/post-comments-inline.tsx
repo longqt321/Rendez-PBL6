@@ -2,7 +2,6 @@ import { useState } from "react"
 import { MessageCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ItemGroup, ItemSeparator } from "@/components/ui/item"
-import { CURRENT_USER } from "@/mocks/fixtures/posts"
 import { useComments } from "../hooks/use-comments"
 import type { Post } from "../types/post"
 import { CommentItem } from "./comment-item"
@@ -32,7 +31,6 @@ export function PostCommentsInline({ post }: PostCommentsInlineProps) {
             <div key={comment.id}>
               <CommentItem
                 comment={comment}
-                isMe={comment.author.id === CURRENT_USER.id}
                 onReply={() => setThreadOpen(true)}
                 onDelete={() => setThreadOpen(true)}
               />

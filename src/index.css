@@ -51,11 +51,25 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ------------------------------------------------------------------------
+     BÁN KÍNH NGỮ NGHĨA — thay cho mọi giá trị lẻ `rounded-[…]`.
+     Chỉ 3 mức này được phép ngoài thang Tailwind:
+       rounded-surface → khối nội dung / panel phụ (4px)
+       rounded-control → chip, ô nhỏ trong hàng (3.2px)
+       rounded-thumb   → ảnh thu nhỏ trong danh sách (2.4px)
+     Không viết `rounded-[0.25rem]` ở bất kỳ đâu trong `src/`.
+     ------------------------------------------------------------------------ */
+  --radius-surface: 0.25rem;
+  --radius-control: 0.2rem;
+  --radius-thumb: 0.15rem;
+
+  /* Màu sao đánh giá — một token duy nhất cho mọi chỗ hiển thị điểm số. */
+  --color-star: var(--star);
 }
 
 /* ==========================================================================
-   BẢNG MÀU — 2 bảng, mỗi bảng 1 màu nhấn.
-   Nguyên tắc: không dùng #fff/#000 (gây chói + halation), giữ ΔL nền↔chữ
+   BẢNG MÀU — 2 bảng, mỗi bảng 1 màu nhấn.   Nguyên tắc: không dùng #fff/#000 (gây chói + halation), giữ ΔL nền↔chữ
    trong khoảng 0.64–0.70 thay vì 0.84–0.86 như template mặc định.
    Mọi cặp chữ/nền đã đo WCAG: xem docs/DECISIONS.md D-016.
    ========================================================================== */
@@ -90,6 +104,8 @@
   --border: oklch(0.838 0.006 250);
   --input: oklch(0.838 0.006 250);
   --ring: oklch(0.56 0.07 258);
+  /* Sao đánh giá: vàng hổ phách ấm, đủ tương phản trên nền sáng. */
+  --star: oklch(0.72 0.16 75);
   --chart-1: oklch(0.475 0.088 258);
   --chart-2: oklch(0.56 0.09 200);
   --chart-3: oklch(0.52 0.155 25);
@@ -128,6 +144,7 @@
   --border: oklch(0.36 0.01 255);
   --input: oklch(0.36 0.01 255);
   --ring: oklch(0.7 0.08 258);
+  --star: oklch(0.8 0.15 80);
   --chart-1: oklch(0.72 0.098 258);
   --chart-2: oklch(0.72 0.085 200);
   --chart-3: oklch(0.68 0.145 25);
@@ -167,6 +184,7 @@
   --border: oklch(0.822 0.018 80);
   --input: oklch(0.822 0.018 80);
   --ring: oklch(0.52 0.12 35);
+  --star: oklch(0.68 0.14 70);
   --chart-1: oklch(0.52 0.12 35);
   --chart-2: oklch(0.6 0.08 80);
   --chart-3: oklch(0.48 0.06 120);
@@ -204,6 +222,7 @@
   --border: oklch(0.4 0.014 55);
   --input: oklch(0.4 0.014 55);
   --ring: oklch(0.7 0.105 40);
+  --star: oklch(0.79 0.13 75);
   --sidebar: oklch(0.285 0.015 55);
   --sidebar-foreground: oklch(0.898 0.014 85);
   --sidebar-primary: oklch(0.7 0.105 40);
@@ -232,10 +251,6 @@
   body {
     @apply bg-background text-foreground;
     line-height: 1.6;
-  }
-  /* Chữ nhỏ nhất trong UI là 0.72rem ≈ 11.5px — không nhỏ hơn nữa. */
-  small {
-    font-size: 0.8125rem;
   }
 }
 

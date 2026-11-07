@@ -16,6 +16,13 @@ import { MOCK_COLLECTIONS } from "./fixtures/collections"
 import { ME, MOCK_USERS } from "./fixtures/users"
 import { rankPlaceSuggestions } from "./ranking"
 import { normalizeText } from "./text"
+import {
+  MAX_CAPTION_LENGTH,
+  MAX_COLLECTION_DESCRIPTION_LENGTH,
+  MAX_COLLECTION_NAME_LENGTH,
+  MAX_REVIEW_CONTENT_LENGTH,
+  MIN_CAPTION_LENGTH,
+} from "@/lib/constants"
 import type { MockCollection, MockComment, MockPost, MockReview } from "./types"
 
 /**
@@ -108,7 +115,8 @@ function toNotificationDto(notification: AppNotification): AppNotification {
 // ---------------------------------------------------------------------------
 
 function paginate<T>(items: T[], cursor: string | null, pageSize: number): Page<T> {
-  const offset = cursor === null ? 0 : Number(cursor)
+  const parsed = cursor === null ? 0 : Number.parseInt(cursor, 10)
+  const offset = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
   const slice = items.slice(offset, offset + pageSize)
   const nextOffset = offset + slice.length
   return { items: slice, next: nextOffset < items.length ? String(nextOffset) : null }
@@ -213,12 +221,21 @@ function attachPlaceToPost(postId: string, placeId: string): Post | undefined {
   return toPostDto(post)
 }
 
-function createPost(body: { caption?: string; imageSeed?: string; placeId?: string | null }) {
+function createPost(config: InternalAxiosRequestConfig) {
+  const body = parseBody<{ caption?: string; imageSeed?: string; placeId?: string | null }>(config)
+  const caption = (body.caption ?? "").trim()
+  if (caption.length < MIN_CAPTION_LENGTH) {
+    badRequest(config, `Nội dung bài đăng cần ít nhất ${MIN_CAPTION_LENGTH} ký tự`)
+  }
+  if (caption.length > MAX_CAPTION_LENGTH) {
+    badRequest(config, `Nội dung bài đăng tối đa ${MAX_CAPTION_LENGTH} ký tự`)
+  }
+
   postSeq += 1
   const post: MockPost = {
     id: `post-new-${postSeq}`,
     author: CURRENT_USER,
-    caption: (body.caption ?? "").trim(),
+    caption,
     imageSeed: body.imageSeed ?? "post-new-01",
     imageHeight: 380,
     createdAt: new Date().toISOString(),
@@ -249,6 +266,7 @@ function toCommentDto(comment: MockComment): Comment {
     createdAt: comment.createdAt,
     likeCount: comment.likeCount,
     likedByMe: comment.likedByMe,
+    isMine: comment.author.id === COMMENT_USER.id,
     parentId: comment.parentId,
     replyTo:
       comment.parentId === null || parentHandle === null
@@ -406,6 +424,9 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
   }
   const content = typeof body.content === "string" ? body.content.trim() : ""
   if (content.length === 0) badRequest(config, "Nội dung đánh giá trống")
+  if (content.length > MAX_REVIEW_CONTENT_LENGTH) {
+    badRequest(config, `Nội dung đánh giá tối đa ${MAX_REVIEW_CONTENT_LENGTH} ký tự`)
+  }
 
   const existing = db.reviews.find(
     (review) => review.placeId === placeId && review.author.id === COMMENT_USER.id,
@@ -439,8 +460,13 @@ function createCollection(config: InternalAxiosRequestConfig): Collection {
   const body = parseBody(config) as { name?: unknown; description?: unknown; isPrivate?: unknown }
   const name = typeof body.name === "string" ? body.name.trim() : ""
   if (name.length === 0) badRequest(config, "Tên bộ sưu tập trống")
-  if (name.length > 80) badRequest(config, "Tên bộ sưu tập tối đa 80 ký tự")
+  if (name.length > MAX_COLLECTION_NAME_LENGTH) {
+    badRequest(config, `Tên bộ sưu tập tối đa ${MAX_COLLECTION_NAME_LENGTH} ký tự`)
+  }
   const description = typeof body.description === "string" ? body.description.trim() : ""
+  if (description.length > MAX_COLLECTION_DESCRIPTION_LENGTH) {
+    badRequest(config, `Mô tả tối đa ${MAX_COLLECTION_DESCRIPTION_LENGTH} ký tự`)
+  }
 
   collectionSeq += 1
   const collection: MockCollection = {
@@ -474,13 +500,17 @@ function updateCollection(config: InternalAxiosRequestConfig, collectionId: stri
   if (body.name !== undefined) {
     const name = typeof body.name === "string" ? body.name.trim() : ""
     if (name.length === 0) badRequest(config, "Tên bộ sưu tập trống")
-    if (name.length > 80) badRequest(config, "Tên bộ sưu tập tối đa 80 ký tự")
+    if (name.length > MAX_COLLECTION_NAME_LENGTH) {
+      badRequest(config, `Tên bộ sưu tập tối đa ${MAX_COLLECTION_NAME_LENGTH} ký tự`)
+    }
     collection.name = name
   }
 
   if (body.description !== undefined) {
     const description = typeof body.description === "string" ? body.description.trim() : ""
-    if (description.length > 400) badRequest(config, "Mô tả tối đa 400 ký tự")
+    if (description.length > MAX_COLLECTION_DESCRIPTION_LENGTH) {
+      badRequest(config, `Mô tả tối đa ${MAX_COLLECTION_DESCRIPTION_LENGTH} ký tự`)
+    }
     collection.description = description
   }
 
@@ -810,10 +840,13 @@ const routes: Route[] = [
     method: "get",
     pattern: /^\/posts$/,
     handler: (config) => {
-      const { filter = "all" } = query(config)
+      const { filter = "all", q } = query(config)
+      const needle = typeof q === "string" ? normalizeText(q.trim()) : ""
       const items = db.posts.filter((post) => {
-        if (filter === "unplaced") return post.placeId === null
-        if (filter === "mine") return post.author.id === CURRENT_USER.id
+        if (filter === "unplaced" && post.placeId !== null) return false
+        if (filter === "mine" && post.author.id !== CURRENT_USER.id) return false
+        if (filter === "saved" && !post.savedByMe) return false
+        if (needle.length > 0 && !normalizeText(post.caption).includes(needle)) return false
         return true
       })
       return { items: items.map(toPostDto), next: null } satisfies Page<Post>
@@ -822,7 +855,7 @@ const routes: Route[] = [
   {
     method: "post",
     pattern: /^\/posts$/,
-    handler: (config) => createPost(parseBody(config)),
+    handler: (config) => createPost(config),
   },
   {
     method: "get",
@@ -909,6 +942,10 @@ const routes: Route[] = [
     handler: (config, [commentId]) => {
       const comment = findComment(commentId)
       if (!comment || comment.deleted) notFound(config, "Không tìm thấy bình luận")
+      // Chỉ tác giả mới xoá được — trước đây thiếu kiểm tra này nên ai cũng xoá được.
+      if (comment.author.id !== COMMENT_USER.id) {
+        forbidden(config, "Không phải bình luận của bạn")
+      }
       deleteCommentSoft(commentId)
       return { deleted: true }
     },
@@ -927,6 +964,21 @@ const routes: Route[] = [
     method: "get",
     pattern: /^\/me$/,
     handler: () => ({ ...ME }),
+  },
+  {
+    method: "get",
+    pattern: /^\/users$/,
+    handler: (config) => {
+      const { q } = query(config)
+      const needle = typeof q === "string" ? normalizeText(q.trim()) : ""
+      const items = Object.values(MOCK_USERS).filter((user) => {
+        if (needle.length === 0) return true
+        return (
+          normalizeText(user.name).includes(needle) || normalizeText(user.handle).includes(needle)
+        )
+      })
+      return { items, next: null } satisfies Page<(typeof MOCK_USERS)[string]>
+    },
   },
   {
     method: "get",

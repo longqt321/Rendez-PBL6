@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SeedImage } from "@/components/shared/seed-image"
 import { CATEGORY_META } from "../lib/category-meta"
-import { calculateDistanceKm, formatDistance } from "../lib/danang-districts"
+import { formatDistance } from "@/lib/format"
+import { calculateDistanceKm } from "../lib/danang-districts"
 import type { Place } from "../types/place"
 
 // Tọa độ mặc định: Trung tâm Thành phố Đà Nẵng (Khu vực Cầu Rồng / Sông Hàn)

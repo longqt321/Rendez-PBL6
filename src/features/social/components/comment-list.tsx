@@ -11,7 +11,6 @@ import { CommentItem } from "./comment-item"
 interface CommentListProps {
   postId: string
   sort: CommentSort
-  isMe: boolean
   onReply: (comment: Comment) => void
   onDelete: (comment: Comment) => void
   /** Chiều cao tối đa của vùng cuộn — khác nhau giữa inline và thread. */
@@ -19,14 +18,7 @@ interface CommentListProps {
 }
 
 /** Danh sách bình luận phẳng theo thứ tự server trả về (reply nằm sau cha). */
-export function CommentList({
-  postId,
-  sort,
-  isMe,
-  onReply,
-  onDelete,
-  className,
-}: CommentListProps) {
+export function CommentList({ postId, sort, onReply, onDelete, className }: CommentListProps) {
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useComments(
     postId,
     sort,
@@ -86,7 +78,7 @@ export function CommentList({
                 : undefined
             }
           >
-            <CommentItem comment={comment} isMe={isMe} onReply={onReply} onDelete={onDelete} />
+            <CommentItem comment={comment} onReply={onReply} onDelete={onDelete} />
             <ItemSeparator />
           </div>
         ))}

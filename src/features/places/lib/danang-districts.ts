@@ -10,7 +10,11 @@ export const DANANG_DISTRICTS = [
 export type DanangDistrict = (typeof DANANG_DISTRICTS)[number]
 
 /**
- * Tính khoảng cách đường chim bay giữa hai toạ độ theo công thức Haversine (km).
+ * Khoảng cách đường chim bay giữa hai toạ độ (km) — công thức Haversine.
+ *
+ * Cố ý **không** dùng `L.latLng(a).distanceTo(b)` của Leaflet: helper này còn
+ * được gọi ở dạng danh sách (`/discover` grid, `PlaceCard`) nơi Leaflet chưa
+ * được nạp; kéo Leaflet vào đó sẽ tăng bundle mà không có lợi ích.
  */
 export function calculateDistanceKm(
   lat1: number,
@@ -29,15 +33,4 @@ export function calculateDistanceKm(
       Math.sin(dLng / 2)
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return R * c
-}
-
-/**
- * Định dạng khoảng cách thân thiện: < 1km hiện theo mét (vd: 350 m), >= 1km hiện số thập phân (vd: 1.2 km).
- */
-export function formatDistance(distanceKm: number): string {
-  if (distanceKm < 1) {
-    const meters = Math.round(distanceKm * 1000)
-    return `${meters} m`
-  }
-  return `${distanceKm.toFixed(1)} km`
 }

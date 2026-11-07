@@ -43,14 +43,14 @@ export function DiscoverPage() {
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid")
   const [isNearbyActive, setIsNearbyActive] = useState(false)
 
-  const { coordinates, isLocating, locationError, requestLocation, clearLocation } =
+  const { coordinates, isLocating, locationError, requestLocation, clearLocation, locationGate } =
     useUserLocation()
 
   const filters = useMemo(() => ({ category, district, query }), [category, district, query])
   const { data, isPending, isError, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useDiscoverPlaces(filters)
 
-  const sentinelRef = useInfiniteScroll<HTMLDivElement>({
+  const sentinelRef = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,
     fetchNextPage,
@@ -117,6 +117,7 @@ export function DiscoverPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+      {locationGate}
       {/* =========================================================================
           THANH CHỌN QUẬN ĐÀ NẴNG (Thanh chip cuộn ngang trên cùng)
          ========================================================================= */}

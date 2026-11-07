@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { SeedImage } from "@/components/shared/seed-image"
 import { formatCount } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
-import { formatDistance } from "../lib/danang-districts"
+import { formatDistance } from "@/lib/format"
 import type { Place } from "../types/place"
 
 interface PlaceCardProps {
