@@ -37,7 +37,7 @@ export function CommentItem({ comment, isMe, onReply, onDelete }: CommentItemPro
     <Item variant="default" className="border-transparent px-0 py-1">
       <ItemMedia>
         <Avatar size="sm">
-          <AvatarFallback className="bg-accent text-[0.72rem] font-bold text-accent-foreground">
+          <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
             {comment.author.initials}
           </AvatarFallback>
         </Avatar>
@@ -65,7 +65,7 @@ export function CommentItem({ comment, isMe, onReply, onDelete }: CommentItemPro
             aria-pressed={comment.likedByMe}
             aria-label={comment.likedByMe ? "Bỏ thích bình luận" : "Thích bình luận"}
             onClick={() => setLiked.mutate({ commentId: comment.id, liked: !comment.likedByMe })}
-            className={cn("h-6 px-1.5 text-[0.78rem]", comment.likedByMe && "text-primary")}
+            className={cn("h-6 px-1.5 text-xs", comment.likedByMe && "text-primary")}
           >
             <HeartIcon className={cn("size-3", comment.likedByMe && "fill-current")} />
             {formatCount(comment.likeCount)}
@@ -74,7 +74,7 @@ export function CommentItem({ comment, isMe, onReply, onDelete }: CommentItemPro
           <Button
             variant="ghost"
             size="xs"
-            className="h-6 px-1.5 text-[0.78rem]"
+            className="h-6 px-1.5 text-xs"
             onClick={() => onReply(comment)}
           >
             Trả lời

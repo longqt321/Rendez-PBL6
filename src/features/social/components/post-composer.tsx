@@ -91,7 +91,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
 
       {showSuggestions && suggestions.length > 0 ? (
         <div className="mt-2 rounded-[0.2rem] border border-dashed border-border bg-muted/60 p-2">
-          <p className="flex items-center gap-1 text-[0.78rem] font-semibold tracking-wide uppercase">
+          <p className="flex items-center gap-1 text-xs font-semibold tracking-wide uppercase">
             <SparklesIcon className="size-3" aria-hidden="true" />
             Địa điểm có thể bạn đang nói tới
           </p>
@@ -118,9 +118,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
                     <ItemTitle className="line-clamp-none text-xs font-semibold">
                       {place.name}
                     </ItemTitle>
-                    <ItemDescription className="line-clamp-none text-[0.75rem]">
-                      {reason}
-                    </ItemDescription>
+                    <ItemDescription className="line-clamp-none text-xs">{reason}</ItemDescription>
                   </ItemContent>
                   <CheckIcon className="size-3 shrink-0 opacity-0 group-hover:opacity-100" />
                 </Item>
@@ -158,9 +156,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
           Đổi ảnh
         </Button>
 
-        <span className="ml-auto text-[0.78rem] text-muted-foreground">
-          {caption.trim().length}/500
-        </span>
+        <span className="ml-auto text-xs text-muted-foreground">{caption.trim().length}/500</span>
 
         <Button type="submit" size="sm" disabled={!canSubmit}>
           {createPost.isPending ? <Spinner /> : null}

@@ -26,7 +26,7 @@ export function PlaceCard({ place }: PlaceCardProps) {
         >
           {categoryLabel(place.category)}
         </Badge>
-        <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-[0.15rem] border border-border bg-background px-1.5 py-0.5 text-[0.78rem] font-bold">
+        <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-[0.15rem] border border-border bg-background px-1.5 py-0.5 text-xs font-bold">
           <StarIcon className="size-3 fill-current" aria-hidden="true" />
           {place.rating.toFixed(1)}
         </span>
@@ -47,7 +47,7 @@ export function PlaceCard({ place }: PlaceCardProps) {
           <span className="line-clamp-2">{place.address}</span>
         </p>
 
-        <div className="mt-auto flex items-center justify-between pt-1.5 text-[0.78rem] text-muted-foreground">
+        <div className="mt-auto flex items-center justify-between pt-1.5 text-xs text-muted-foreground">
           <span>{formatCount(place.reviewCount)} đánh giá</span>
           <span aria-label={`Mức giá ${place.priceLevel} trên 3`} className="font-bold">
             {"₫".repeat(place.priceLevel)}

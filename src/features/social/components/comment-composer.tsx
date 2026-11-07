@@ -45,7 +45,7 @@ export function CommentComposer({ postId, replyTo, onCancelReply }: CommentCompo
   return (
     <div className="flex flex-col gap-1.5">
       {replyTo !== null && (
-        <p className="flex items-center gap-2 text-[0.78rem] text-muted-foreground">
+        <p className="flex items-center gap-2 text-xs text-muted-foreground">
           Đang trả lời @{replyTo.author.handle}
           <Button variant="link" size="xs" onClick={onCancelReply}>
             Huỷ

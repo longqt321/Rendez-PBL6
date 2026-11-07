@@ -41,7 +41,7 @@ function ActorRow({ notification }: { notification: ActorNotification }) {
   const body = (
     <>
       <Avatar>
-        <AvatarFallback className="bg-accent text-[0.75rem] font-bold text-accent-foreground">
+        <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
           {notification.actorInitials}
         </AvatarFallback>
       </Avatar>
@@ -50,11 +50,11 @@ function ActorRow({ notification }: { notification: ActorNotification }) {
           <span className="font-semibold">{notification.actorName}</span> {meta.text}
         </p>
         {notification.excerpt ? (
-          <p className="mt-1 line-clamp-2 border-l border-border pl-2 text-[0.78rem] text-muted-foreground italic">
+          <p className="mt-1 line-clamp-2 border-l border-border pl-2 text-xs text-muted-foreground italic">
             “{notification.excerpt}”
           </p>
         ) : null}
-        <p className="mt-1 text-[0.75rem] text-muted-foreground">
+        <p className="mt-1 text-xs text-muted-foreground">
           {formatRelativeTime(notification.createdAt)}
         </p>
       </div>
@@ -240,8 +240,8 @@ function OtherActivitySection({ notifications }: { notifications: OtherNotificat
                 <InfoIcon className="size-3.5 shrink-0" aria-hidden="true" />
                 {notification.title}
               </p>
-              <p className="mt-1 text-[0.78rem] text-muted-foreground">{notification.body}</p>
-              <p className="mt-1 text-[0.75rem] text-muted-foreground">
+              <p className="mt-1 text-xs text-muted-foreground">{notification.body}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
                 {formatRelativeTime(notification.createdAt)}
               </p>
             </li>

@@ -65,7 +65,7 @@ export function SocialPage() {
       )}
 
       {posts.length > 0 ? (
-        <p className="mt-6 flex items-center justify-center gap-1.5 text-[0.78rem] text-muted-foreground">
+        <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <SparklesIcon className="size-3" aria-hidden="true" />
           Đề xuất địa điểm do hệ thống tạo, bạn xem ở trang Thông báo.
         </p>

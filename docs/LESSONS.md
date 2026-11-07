@@ -305,3 +305,70 @@ lỗi chọn màu.
 
 **Đã sửa:** `src/index.css` (toàn bộ token 2 skin × 2 mode + `@layer base` + khối retro),
 19 file `.tsx` (cỡ chữ + viền/bóng). Chi tiết quyết định ở `docs/DECISIONS.md` D-016.
+
+---
+
+## L-007 — Skin khác nhau về MÀU, không được khác về KÍCH THƯỚC
+
+**Ngày:** 2026-11-07
+**Lỗi người dùng chỉ ra:**
+
+> "Cần thống nhất rõ về kích thước các element, components, cỡ chữ… Những thứ này phải đồng bộ
+> hoàn toàn giữa các theme. Màu sắc components, màu viền, màu chữ có thể thay đổi. Các thay đổi có
+> thể ảnh hưởng kích thước như phông chữ, bo góc của element, components thì cần xem xét kĩ càng."
+
+**Đã làm sai gì:**
+
+| Việc đã làm                                                                     | Bằng chứng (đo `scratch/size-parity.mjs`)                                       |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Khai báo `--radius` khác nhau: `0.625rem` (mặc định) vs `0.375rem` (retro)      | 34 mục lệch trên 5 route; button 8→4, input 10→4, tabs 10→6                     |
+| Override bo góc rời rạc trong khối retro                                        | button/input `0.25rem`, badge `0.2rem` — **4 giá trị radius** cho cùng một skin |
+| Badge retro đổi `border-radius`, `font-family`, `font-weight`, `letter-spacing` | badge 20×20 nhưng `r` 26→3.2, `fw` 700→600, `ls` 0→0.24px                       |
+| Dùng Fraunces cho `h2`/`h3`/badge (chữ nằm trong khối hẹp)                      | Fraunces rộng hơn Geist **1–7.8%** (đo canvas @14px) → wrap khác chỗ            |
+| Để 3 bậc cỡ chữ lẻ `0.72rem`/`0.75rem`/`0.78rem` rải rác 37 chỗ                 | không có trong thang Tailwind, không ai nhớ nổi bậc nào dùng ở đâu              |
+
+**Nguyên nhân:**
+
+Tôi coi "skin" là "bộ CSS riêng", nên mỗi skin được tự do ghi đè mọi thứ — kể cả hình học. Nhưng
+người dùng đổi skin để **đổi không khí thị giác**, không phải để **đổi bố cục**. Khi bố cục đổi, mọi
+thứ phải kiểm lại: chiều cao khối, số dòng, chỗ wrap, vị trí sticky, chiều cao ảnh trong masonry. Đó
+là bề mặt lỗi rất lớn mà không đem lại lợi ích gì.
+
+Riêng phông chữ là trường hợp khó: nó **là** một phần bản sắc skin, nhưng nó cũng **làm đổi bề rộng
+chữ**. Không thể vừa "đổi phông" vừa "kích thước y hệt" ở mọi vị trí.
+
+**Quy tắc rút ra:**
+
+1. **Skin chỉ được khác token MÀU.** `--radius`, cỡ chữ, `line-height`, padding, `border-width`,
+   `font-family` của component: khai báo **một lần** ở tầng dùng chung. Khối `[data-skin="…"]`
+   không được chứa thuộc tính hình học.
+2. **Nếu buộc phải đổi phông, chỉ đổi ở nơi không gây wrap.** Chỗ an toàn: tiêu đề trang `h1` (một
+   dòng riêng, không nằm trong khối hẹp). Chỗ nguy hiểm: badge, nhãn, `h2`/`h3` mục, nút — đều nằm
+   trong flex/grid hẹp, đổi bề rộng chữ là đổi số dòng.
+3. **Đo trước, sửa sau.** Trước khi nói "đã đồng bộ", phải có script so **từng thuộc tính hình học**
+   của **từng `[data-slot]`** trên **nhiều route** × **4 tổ hợp**. Con số phải là **0**.
+4. **Không tự tạo bậc cỡ chữ ngoài thang.** Chỉ dùng `text-xs`/`text-sm`/`text-base`/`text-lg`/
+   `text-xl`/`text-2xl`. Nếu thấy 12.5px là cần, nghĩ lại — 12px hoặc 14px gần như luôn đúng.
+
+**Cách kiểm tra bằng máy:**
+
+- `scratch/size-parity.mjs` — mở 6 route × 4 tổ hợp, với mọi `[data-slot]` so 11 thuộc tính:
+  `w`, `h`, `border-radius`, `border-width`, `font-size`, `line-height`, `letter-spacing`,
+  `font-family`, `font-weight`, `padding-x`, `padding-y`; cộng `scrollHeight` của `main` và của
+  document. **Ngưỡng: 0 mục lệch.**
+- `scratch/font-metrics.mjs` — đo bề rộng chữ của 2 phông bằng canvas ở cùng `font-size`, để biết
+  trước phông nào rộng hơn bao nhiêu %.
+- Quét tĩnh: `grep -n "border-radius\|border-width\|font-size\|letter-spacing\|font-weight"
+src/index.css` trong phạm vi khối `[data-skin=…]` — không được có kết quả.
+
+**Bẫy đo lường đã gặp:**
+
+- `getBoundingClientRect()` trên element có `animate-spin` (Spinner) trả **hộp bao trục xoay**, đổi
+  theo góc → báo lệch giả 20.16 vs 22.35px. Dùng `offsetWidth`/`offsetHeight` (kích thước layout,
+  không bị transform) hoặc bỏ qua element đang animate.
+- `offsetWidth` làm tròn về số nguyên → không phát hiện lệch dưới 1px.
+
+**Đã sửa:** `src/index.css` (tách `--radius` ra khối dùng chung; khối retro chỉ còn màu + `h1` font
+
+- bóng + nhiễu giấy), 11 file `.tsx` (37 chỗ cỡ chữ lẻ → `text-xs`). Chi tiết ở `docs/DECISIONS.md`
+  D-017.

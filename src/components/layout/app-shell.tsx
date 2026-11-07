@@ -78,7 +78,7 @@ function Brand() {
       </span>
       <span className="font-heading text-lg leading-none font-bold tracking-tight">
         Sài Gòn
-        <span className="block text-[0.72rem] font-medium tracking-[0.18em] uppercase opacity-60">
+        <span className="block text-xs font-medium tracking-[0.18em] uppercase opacity-60">
           Ăn &amp; Đi
         </span>
       </span>
@@ -112,7 +112,7 @@ function SideNav() {
               <Icon className="size-4 shrink-0" aria-hidden="true" />
               <span className="flex-1">{item.label}</span>
               {item.to === "/notification" && unread > 0 ? (
-                <Badge variant="secondary" className="min-w-5 px-1 text-[0.75rem] font-bold">
+                <Badge variant="secondary" className="min-w-5 px-1 text-xs font-bold">
                   {unread}
                 </Badge>
               ) : null}
@@ -123,7 +123,7 @@ function SideNav() {
 
       <div className="mt-auto flex flex-col gap-3 border-t border-dashed border-border pt-4">
         <SkinSwitch />
-        <p className="text-[0.75rem] leading-relaxed text-muted-foreground">
+        <p className="text-xs leading-relaxed text-muted-foreground">
           Dữ liệu minh hoạ. Chưa kết nối backend.
         </p>
       </div>
@@ -231,7 +231,7 @@ function UserMenu() {
             <span className="block text-xs font-normal text-muted-foreground">@minhanh.eats</span>
             <Link
               to="/profile"
-              className="mt-1 block text-[0.78rem] font-medium text-foreground underline underline-offset-2"
+              className="mt-1 block text-xs font-medium text-foreground underline underline-offset-2"
             >
               Xem trang cá nhân →
             </Link>
@@ -301,7 +301,7 @@ function BottomNav() {
                 to={item.to}
                 className={({ isActive }) =>
                   cn(
-                    "relative flex flex-col items-center gap-1 py-2.5 text-[0.75rem] font-medium transition-colors",
+                    "relative flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground",
                   )
                 }

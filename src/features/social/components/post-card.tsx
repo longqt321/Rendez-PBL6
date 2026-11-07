@@ -30,7 +30,7 @@ export function PostCard({ post }: PostCardProps) {
     <article className="overflow-hidden rounded-[0.25rem] border border-border bg-card shadow-(--shadow-soft)">
       <header className="flex items-center gap-2.5 px-3 py-2.5">
         <Avatar>
-          <AvatarFallback className="bg-accent text-[0.75rem] font-bold text-accent-foreground">
+          <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
             {post.author.initials}
           </AvatarFallback>
         </Avatar>
@@ -40,7 +40,7 @@ export function PostCard({ post }: PostCardProps) {
               {post.author.name}
             </Link>
           </p>
-          <p className="truncate text-[0.78rem] text-muted-foreground">
+          <p className="truncate text-xs text-muted-foreground">
             @{post.author.handle} · {formatRelativeTime(post.createdAt)}
           </p>
         </div>
@@ -62,16 +62,14 @@ export function PostCard({ post }: PostCardProps) {
             <MapPinIcon className="size-3.5 shrink-0" aria-hidden="true" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-semibold">{place.name}</span>
-              <span className="block truncate text-[0.75rem] text-muted-foreground">
-                {place.address}
-              </span>
+              <span className="block truncate text-xs text-muted-foreground">{place.address}</span>
             </span>
             <Badge variant={place.isPublished ? "secondary" : "outline"} className="shrink-0">
               {place.isPublished ? "Trên Khám phá" : categoryLabel(place.category)}
             </Badge>
           </div>
         ) : (
-          <p className="flex items-center gap-1.5 rounded-[0.2rem] border border-dashed border-border px-2 py-1.5 text-[0.78rem] text-muted-foreground">
+          <p className="flex items-center gap-1.5 rounded-[0.2rem] border border-dashed border-border px-2 py-1.5 text-xs text-muted-foreground">
             <SparklesIcon className="size-3 shrink-0" aria-hidden="true" />
             Chưa gắn địa điểm — hệ thống sẽ đề xuất cho bạn.
           </p>

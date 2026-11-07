@@ -845,15 +845,19 @@ Dùng trực tiếp bằng cú pháp Tailwind 4 `shadow-(--shadow-soft)` — **k
 `@theme inline`.
 
 **Retro: bỏ serif cho body.** `html[data-skin="retro"] { font-family: var(--font-display) }` và
-`--font-sans: var(--font-display)` đã xoá. Giờ chỉ `h1/h2/h3/[data-slot="badge"]/[data-sonner-toast]`
-dùng Fraunces; body dùng Geist sans. `font-variation-settings: "WONK" 0` (trước là `1` — gây méo nét).
+`--font-sans: var(--font-display)` đã xoá. Body dùng Geist sans ở cả 2 skin.
+`font-variation-settings: "WONK" 0` (trước là `1` — gây méo nét).
 
 **Retro: bỏ viền 2px màu chữ + bóng cứng.** Card/input/button/dialog/toast chuyển về `1px` +
-`var(--border)` + `var(--shadow-soft|raised)`. `--radius` tăng `0.25rem → 0.375rem`. Badge bỏ
-`text-transform: uppercase`. Separator bỏ `repeating-linear-gradient` gạch đứt.
+`var(--border)` + `var(--shadow-soft|raised)`. Badge bỏ `text-transform: uppercase`.
 
-**Cỡ chữ:** `0.6rem→0.72rem`, `0.65/0.68rem→0.75rem`, `0.7rem→0.78rem` (áp cho toàn `src/` trừ
-`components/ui/`). Body 16px / `line-height: 1.6`.
+**Cỡ chữ:** gom về đúng thang Tailwind (`text-xs` 12px / `text-sm` 14px / `text-base` 16px /
+`text-lg` / `text-xl` / `text-2xl`). Trước đó có 3 bậc lẻ `0.72rem` / `0.75rem` / `0.78rem` rải rác
+37 chỗ — đã gộp hết về `text-xs`. Body 16px / `line-height: 1.6`.
+
+> [!IMPORTANT]
+> **Hai skin chỉ được khác MÀU, không được khác KÍCH THƯỚC.** Xem D-017 — đây là quyết định
+> riêng, sửa lại phần hình học của D-016.
 
 ### Phương án đã xem
 
@@ -900,3 +904,93 @@ Không thêm dependency npm. `package.json`, `bun.lock` không đổi. Bảng m�
 - Chưa test Firefox/Safari — chỉ Chrome 156 qua CDP.
 - Chưa kiểm tra dark mode trên màn hình OLED thật (halation chỉ thấy bằng mắt).
 - Chưa đo tương phản của ảnh seed (`SeedImage`) với nền — ảnh do server trả, không thuộc palette.
+
+## D-017 — Hai skin chỉ khác MÀU; mọi kích thước dùng chung một nguồn
+
+**Ngày:** 2026-11-07
+**Trạng thái:** Đã áp dụng
+**Liên quan:** D-016, L-006, L-007
+
+### Bối cảnh
+
+Người dùng yêu cầu: _"Không nhất thiết phải thiết kế mới… Thiết kế mới chỉ được xem là 'mới' khi nó
+đáp ứng được các tiêu chí về khả năng hiển thị, còn các thiết kế không đáp ứng thì chỉ sửa chứ không
+tạo thêm. Ngoài ra, cần thống nhất rõ về kích thước các element, components, cỡ chữ… Những thứ này
+phải đồng bộ hoàn toàn giữa các theme. Màu sắc components, màu viền, màu chữ có thể thay đổi. Các
+thay đổi có thể ảnh hưởng kích thước như phông chữ, bo góc của element, components thì cần xem xét kĩ
+càng."_
+
+Đo trước khi sửa (`scratch/size-parity.mjs`, 5 route × 4 tổ hợp): **34 mục lệch**. Kích thước hộp và
+cỡ chữ đã khớp; lệch nằm ở 3 nguồn:
+
+| Nguồn                   | Mặc định                   | Retro                                  |
+| ----------------------- | -------------------------- | -------------------------------------- |
+| `--radius`              | `0.625rem`                 | `0.375rem`                             |
+| Override bo góc rời rạc | —                          | button/input `0.25rem`, badge `0.2rem` |
+| `badge`                 | pill `r=26`, Geist, fw 700 | `r=3.2`, Fraunces, fw 600, ls `0.24px` |
+| `h2`/`h3`               | Geist, tracking 0.35/0     | Fraunces, tracking `−0.07`             |
+
+Đo bề rộng chữ bằng canvas ở cùng `font-size` 14px: **Fraunces rộng hơn Geist 1–7.8%** (tuỳ chuỗi).
+Nghĩa là dùng Fraunces cho nhãn/tiêu đề mục sẽ làm câu xuống dòng ở chỗ khác → chiều cao khối lệch.
+
+### Quyết định
+
+**1. Một `--radius` duy nhất cho cả 2 skin: `0.625rem`.** Khai báo trong khối `:root` riêng, đặt
+trước cả hai bảng màu, có comment nêu rõ đây là hình học dùng chung. Khối `[data-skin="retro"]`
+**không** còn khai báo `--radius`.
+
+**2. Xoá toàn bộ override kích thước trong khối retro.** Đã bỏ: `border-radius` trên
+`button`/`input`/`input-group`/`dialog-content`/`badge`, `border-width` trên `badge`/`card`/`input`/
+`dialog-content`/`toast`, `font-weight` + `letter-spacing` trên `badge`, `font-family` trên
+`h2`/`h3`/`badge`/`[data-sonner-toast]`, `letter-spacing` trên `h1`, `background` trên `input`.
+Khối retro còn lại **chỉ**: màu token, `font-family` cho `h1`, `box-shadow`, `border-color`,
+`background-image` (nhiễu giấy), `transform` khi `:active`.
+
+**3. Fraunces chỉ dùng cho `h1`** (tiêu đề trang: tên địa điểm, tên người dùng). Đây là chỗ chữ nằm
+một dòng riêng, không bị wrap trong khối hẹp, nên bề rộng chữ khác nhau không đổi layout. Mọi chữ
+trong component (badge, `h2`/`h3` mục, nhãn, nút) dùng Geist.
+
+**4. Cỡ chữ gom về đúng thang Tailwind.** Ba bậc lẻ `0.72rem` (11.5px) / `0.75rem` (12px) /
+`0.78rem` (12.5px) — 37 chỗ — gộp hết về `text-xs` (12px). Không còn giá trị `text-[…rem]` nào
+ngoài `src/components/ui/`.
+
+**5. Màu vẫn được phép khác** (đúng yêu cầu người dùng): `--background`, `--card`, `--primary`,
+`--border`, `--muted-foreground`, `--shadow-*` khác nhau giữa 2 skin.
+
+### Phương án đã xem
+
+- _Giữ `--radius` retro nhỏ hơn có chủ đích, chỉ gom các giá trị lẻ về 1_ — loại: người dùng chọn
+  "kích thước khớp tuyệt đối"; và bo góc là thứ nhìn thấy được ngay khi so 2 skin cạnh nhau.
+- _Bỏ Fraunces hoàn toàn_ — loại: mất luôn khác biệt về phông, retro chỉ còn khác màu. Người dùng
+  chọn giữ ở `h1`.
+- _Giữ Fraunces ở mọi tiêu đề, chấp nhận wrap khác nhau_ — loại: vi phạm trực tiếp yêu cầu "đồng bộ
+  hoàn toàn".
+- _Đặt `font-stretch`/`font-size-adjust` để bù bề rộng Fraunces_ — loại: Fraunces không có trục
+  `wdth`; `font-size-adjust` chỉ chuẩn hoá x-height, không làm bề rộng bằng nhau, và sẽ làm cỡ chữ
+  hiển thị khác đi.
+
+### Kích thước / license
+
+Không đổi dependency. `package.json`, `bun.lock` không đổi. Không sửa file nào trong
+`src/components/ui/`.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run build` → exit 0.
+- `scratch/size-parity.mjs` trên **6 route** (`/discover`, `/social`, `/notification`, `/settings`,
+  `/saved`, `/design`) × **4 tổ hợp**: **0 mục lệch**. Script so 11 thuộc tính cho mọi `[data-slot]`
+  hiện diện: `w`, `h`, `border-radius`, `border-width`, `font-size`, `line-height`,
+  `letter-spacing`, `font-family`, `font-weight`, `padding-x`, `padding-y`; cộng `scrollHeight` của
+  `main` và `scrollHeight` của document.
+- `scratch/palette-live.mjs`: vẫn **TẤT CẢ ĐẠT** sau khi đổi (contrast 11.57–13.78, viền 1.52–1.70,
+  chữ nhỏ nhất trong `main` 12px, viền card `1px`).
+
+### Chưa xác minh
+
+- **Chưa xem giao diện bằng mắt người** — model không đọc được PNG.
+- `h1` retro dùng Fraunces nên **bề rộng chữ khác** skin mặc định (1–7.8%). Kích thước hộp và chiều
+  cao dòng đã khớp, nhưng nếu một `h1` rất dài xuống 2 dòng thì số dòng có thể khác. Đã kiểm với
+  dữ liệu mock hiện tại (0 lệch), chưa kiểm với tên dài bất kỳ.
+- Chưa test Firefox/Safari — chỉ Chrome 156. `offsetWidth` làm tròn về số nguyên nên lệch dưới 1px
+  không phát hiện được.
+- Chưa đo trên màn hình mật độ cao (DPR 2/3) — mới DPR 1.

@@ -39,7 +39,7 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">Đề xuất thêm địa điểm</p>
-          <p className="text-[0.78rem] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {formatRelativeTime(notification.createdAt)}
             {!notification.read ? " · chưa đọc" : ""}
           </p>
@@ -77,19 +77,19 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
                 />
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-1 text-xs font-semibold">
-                    <span className="grid size-4 shrink-0 place-items-center rounded-full bg-primary text-[0.72rem] text-primary-foreground">
+                    <span className="grid size-4 shrink-0 place-items-center rounded-full bg-primary text-xs text-primary-foreground">
                       {index + 1}
                     </span>
                     <span className="truncate">{place.name}</span>
                   </p>
-                  <p className="truncate text-[0.75rem] text-muted-foreground">{place.address}</p>
-                  <p className="mt-0.5 flex items-center gap-1 text-[0.75rem] text-muted-foreground">
+                  <p className="truncate text-xs text-muted-foreground">{place.address}</p>
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPinIcon className="size-2.5 shrink-0" aria-hidden="true" />
                     <span className="truncate">{suggestion.reason}</span>
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
-                  <Badge variant="outline" className="text-[0.72rem]">
+                  <Badge variant="outline" className="text-xs">
                     {categoryLabel(place.category)}
                   </Badge>
                   <Button

@@ -60,6 +60,16 @@
    Mọi cặp chữ/nền đã đo WCAG: xem docs/DECISIONS.md D-016.
    ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   HÌNH HỌC DÙNG CHUNG — hai skin chỉ được khác MÀU, không được khác KÍCH THƯỚC.
+   --radius, cỡ chữ, line-height, padding, border-width, phông chữ của
+   component: tất cả khai báo ở đây, KHÔNG ghi đè trong khối [data-skin="retro"].
+   Kiểm bằng máy: scratch/size-parity.mjs (phải ra 0 mục lệch).
+   -------------------------------------------------------------------------- */
+:root {
+  --radius: 0.625rem;
+}
+
 /* Skin mặc định — "Slate mềm": trung tính hơi lạnh + nhấn indigo-xanh. */
 :root {
   --background: oklch(0.974 0.004 250);
@@ -85,7 +95,6 @@
   --chart-3: oklch(0.52 0.155 25);
   --chart-4: oklch(0.6 0.08 140);
   --chart-5: oklch(0.56 0.06 300);
-  --radius: 0.625rem;
   --sidebar: oklch(0.96 0.005 250);
   --sidebar-foreground: oklch(0.275 0.014 255);
   --sidebar-primary: oklch(0.475 0.088 258);
@@ -163,7 +172,6 @@
   --chart-3: oklch(0.48 0.06 120);
   --chart-4: oklch(0.56 0.07 55);
   --chart-5: oklch(0.48 0.05 300);
-  --radius: 0.375rem;
   --sidebar: oklch(0.94 0.014 85);
   --sidebar-foreground: oklch(0.3 0.024 55);
   --sidebar-primary: oklch(0.52 0.12 35);
@@ -231,16 +239,15 @@
   }
 }
 
-/* --- Chi tiết retro: không thể làm chỉ bằng token --- */
+/* --- Chi tiết retro: chỉ MÀU và PHÔNG. Không đổi kích thước. --- */
 
-/* Serif chỉ dành cho tiêu đề + nhãn nhỏ. Body dùng sans để đọc được lâu —
-   trước đây ép cả body sang Fraunces (serif có WONK) nên rất mỏi mắt. */
-[data-skin="retro"] h1,
-[data-skin="retro"] h2,
-[data-skin="retro"] h3,
-[data-skin="retro"] [data-slot="badge"],
-[data-skin="retro"] [data-sonner-toast] {
+/* Fraunces chỉ dùng cho tiêu đề trang (h1) — nơi chữ nằm một dòng riêng,
+   không bị wrap trong khối hẹp. Đo bằng canvas: Fraunces rộng hơn Geist
+   1–7.8% ở cùng cỡ chữ, nên dùng cho nhãn/tiêu đề mục sẽ làm xuống dòng
+   khác nhau → chiều cao khối lệch giữa 2 skin. */
+[data-skin="retro"] h1 {
   font-family: var(--font-display);
+  font-variation-settings: "WONK" 0;
 }
 
 /* Nền giấy có hạt rất nhẹ — giảm từ 6% xuống 3.5% để không gây nhiễu thị giác. */
@@ -251,38 +258,19 @@
   background-attachment: fixed;
 }
 
-/* Heading: bỏ WONK (trục gây méo nét chữ nhỏ), giãn chữ nhẹ cho dễ đọc. */
-[data-skin="retro"] h1,
-[data-skin="retro"] h2,
-[data-skin="retro"] h3 {
-  font-variation-settings: "WONK" 0;
-  letter-spacing: -0.005em;
-}
-
-/* Badge kiểu tem nhãn: viền 1px thay vì 2px, bỏ in hoa toàn bộ (khó đọc). */
+/* Badge kiểu tem nhãn: chỉ đổi MÀU và độ đậm viền, giữ nguyên bo góc + cỡ chữ
+   + phông + letter-spacing của skin mặc định để kích thước khớp tuyệt đối. */
 [data-skin="retro"] [data-slot="badge"] {
-  border-width: 1px;
   border-color: currentColor;
-  border-radius: 0.2rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
 }
 
-/* Card: viền 1px màu --border (không phải --foreground) + bóng mềm.
-   Trước đây viền 2px màu chữ + bóng cứng 4px cùng màu chữ → gắt ở dark mode. */
+/* Card: bóng mềm thay vì bóng cứng 4px màu chữ (gắt ở dark mode).
+   Viền/bo góc/kích thước giữ nguyên như skin mặc định. */
 [data-skin="retro"] [data-slot="card"] {
-  border-width: 1px;
-  border-color: var(--border);
   box-shadow: var(--shadow-soft);
 }
 
 /* Nút: bóng mềm, giữ phản hồi "nhấn xuống" nhưng không dùng bóng cứng. */
-[data-skin="retro"] [data-slot="button"] {
-  border-radius: 0.25rem;
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
 [data-skin="retro"] [data-slot="button"]:not([data-variant="link"]):not([data-variant="ghost"]) {
   box-shadow: var(--shadow-soft);
 }
@@ -292,36 +280,12 @@
   transform: translateY(0.5px);
 }
 
-/* Input: viền 1px màu --border, không phải viền đậm màu chữ. */
-[data-skin="retro"] [data-slot="input"],
-[data-skin="retro"] [data-slot="input-group"] {
-  border-radius: 0.25rem;
-}
-
-[data-skin="retro"] [data-slot="input"] {
-  border-width: 1px;
-  border-color: var(--border);
-  background: var(--card);
-}
-
-/* Dialog: viền 1px + bóng mềm thay vì viền dày + bóng cứng 6px. */
+/* Dialog: bóng mềm thay vì viền dày + bóng cứng 6px. */
 [data-skin="retro"] [data-slot="dialog-content"] {
-  border-width: 1px;
-  border-color: var(--border);
-  border-radius: 0.375rem;
   box-shadow: var(--shadow-raised);
 }
 
-/* Đường kẻ ngăn cách: nét liền mảnh thay vì gạch đứt tự vẽ (gây nhiễu). */
-[data-skin="retro"] [data-slot="separator"] {
-  background: var(--border);
-  opacity: 1;
-}
-
-/* Toast: viền 1px cho khớp ngôn ngữ thị giác. */
+/* Toast: bóng mềm cho khớp ngôn ngữ thị giác. */
 [data-skin="retro"] [data-sonner-toast] {
-  border-width: 1px;
-  border-color: var(--border);
-  border-radius: 0.375rem;
   box-shadow: var(--shadow-raised);
 }
