@@ -44,9 +44,8 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
   }
 
   const position: [number, number] = [place.lat, place.lng]
-  const tileUrl = isDark
-    ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  // OpenStreetMap Tile tiêu chuẩn hoàn toàn miễn phí, 100% không cần API key
+  const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${place.name} ${place.address}`,
@@ -59,7 +58,7 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
           center={position}
           zoom={16}
           scrollWheelZoom={false}
-          className="z-0 h-full w-full"
+          className={`z-0 h-full w-full ${isDark ? "map-tiles-dark" : ""}`}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

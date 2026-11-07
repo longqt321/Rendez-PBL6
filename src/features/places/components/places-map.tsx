@@ -110,14 +110,10 @@ export function PlacesMap({
     }
   }, [selectedPlaceId])
 
-  // OpenStreetMap Tile URL tuỳ biến nhẹ theo theme
-  const tileUrl = isDark
-    ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-
-  const attribution = isDark
-    ? '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  // OpenStreetMap Tile tiêu chuẩn hoàn toàn miễn phí, 100% không cần API key
+  const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  const attribution =
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 
   return (
     <div
@@ -127,7 +123,7 @@ export function PlacesMap({
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}
         scrollWheelZoom={true}
-        className="z-0 h-full w-full"
+        className={`z-0 h-full w-full ${isDark ? "map-tiles-dark" : ""}`}
       >
         <TileLayer attribution={attribution} url={tileUrl} />
         <MapBoundsUpdater places={validPlaces} selectedPlace={selectedPlace} />
