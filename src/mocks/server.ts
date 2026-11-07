@@ -2,6 +2,7 @@ import { AxiosError, AxiosHeaders, CanceledError } from "axios"
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from "axios"
 import type { AppNotification } from "@/features/notification/types/notification"
 import type { Place, PlaceCategory, PlaceSuggestion } from "@/features/places/types/place"
+import type { Review } from "@/features/places/types/review"
 import type { Post } from "@/features/social/types/post"
 import type { Comment, CommentSort } from "@/features/social/types/comment"
 import type { Page } from "@/types/api"
@@ -9,10 +10,11 @@ import { MOCK_NOTIFICATIONS } from "./fixtures/notifications"
 import { MOCK_PLACES, type MockPlace } from "./fixtures/places"
 import { CURRENT_USER, MOCK_POSTS } from "./fixtures/posts"
 import { CURRENT_USER as COMMENT_USER, MOCK_COMMENTS } from "./fixtures/comments"
+import { MOCK_REVIEWS } from "./fixtures/reviews"
 import { ME, MOCK_USERS } from "./fixtures/users"
 import { rankPlaceSuggestions } from "./ranking"
 import { normalizeText } from "./text"
-import type { MockComment, MockPost } from "./types"
+import type { MockComment, MockPost, MockReview } from "./types"
 
 /**
  * SERVER GIẢ LẬP — không phải code frontend.
@@ -33,6 +35,7 @@ const db = {
   posts: MOCK_POSTS.map((post) => ({ ...post })),
   notifications: MOCK_NOTIFICATIONS.map((notification) => ({ ...notification })),
   comments: MOCK_COMMENTS.map((comment) => ({ ...comment, deleted: false })),
+  reviews: MOCK_REVIEWS.map((review) => ({ ...review })),
   users: { ...MOCK_USERS },
 }
 
@@ -42,6 +45,7 @@ const notifiedPostIds = new Set<string>()
 let postSeq = 0
 let notificationSeq = 0
 let commentSeq = 0
+let reviewSeq = 0
 
 // ---------------------------------------------------------------------------
 // Serialize: chuyển bản ghi nội bộ thành đúng hợp đồng API
@@ -235,6 +239,26 @@ function toCommentDto(comment: MockComment): Comment {
   }
 }
 
+function toReviewDto(review: MockReview): Review {
+  return {
+    id: review.id,
+    placeId: review.placeId,
+    author: review.author,
+    rating: review.rating,
+    content: review.content,
+    createdAt: review.createdAt,
+    isMine: review.author.id === COMMENT_USER.id,
+  }
+}
+
+/** Đánh giá của một địa điểm, mới nhất trước. */
+function listReviews(placeId: string): Review[] {
+  return db.reviews
+    .filter((review) => review.placeId === placeId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map(toReviewDto)
+}
+
 function findComment(commentId: string): MockComment | undefined {
   return db.comments.find((comment) => comment.id === commentId)
 }
@@ -304,6 +328,47 @@ function createComment(postId: string, body: { body?: string; parentId?: string 
   db.comments.push(comment)
   post.commentCount += 1
   return toCommentDto(comment)
+}
+
+/**
+ * Tạo hoặc ghi đè đánh giá của người dùng hiện tại cho một địa điểm.
+ *
+ * Form đánh giá chỉ nhận text + số sao (không có ảnh/file), nên body chỉ có
+ * `rating` và `content` — server cũng từ chối mọi trường đính kèm.
+ */
+function createReview(config: InternalAxiosRequestConfig, placeId: string): Review {
+  const place = findPlace(placeId)
+  if (!place || place.publishedAt === null) notFound(config, "Không tìm thấy địa điểm")
+
+  const body = parseBody(config) as { rating?: unknown; content?: unknown }
+  const rating = Number(body.rating)
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    badRequest(config, "Số sao phải là số nguyên từ 1 đến 5")
+  }
+  const content = typeof body.content === "string" ? body.content.trim() : ""
+  if (content.length === 0) badRequest(config, "Nội dung đánh giá trống")
+
+  const existing = db.reviews.find(
+    (review) => review.placeId === placeId && review.author.id === COMMENT_USER.id,
+  )
+  if (existing) {
+    existing.rating = rating
+    existing.content = content
+    existing.createdAt = new Date().toISOString()
+    return toReviewDto(existing)
+  }
+
+  reviewSeq += 1
+  const review: MockReview = {
+    id: `r-new-${reviewSeq}`,
+    placeId,
+    author: COMMENT_USER,
+    rating,
+    content,
+    createdAt: new Date().toISOString(),
+  }
+  db.reviews.push(review)
+  return toReviewDto(review)
 }
 
 function setCommentLike(commentId: string, liked: boolean): Comment {
@@ -477,6 +542,20 @@ const routes: Route[] = [
       if (!place || place.publishedAt === null) notFound(config, "Không tìm thấy địa điểm")
       return toPlaceDto(place)
     },
+  },
+  {
+    method: "get",
+    pattern: /^\/places\/([^/]+)\/reviews$/,
+    handler: (config, [placeId]) => {
+      const place = findPlace(placeId)
+      if (!place || place.publishedAt === null) notFound(config, "Không tìm thấy địa điểm")
+      return { items: listReviews(placeId), next: null } satisfies Page<Review>
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/places\/([^/]+)\/reviews$/,
+    handler: (config, [placeId]) => createReview(config, placeId),
   },
   {
     method: "get",

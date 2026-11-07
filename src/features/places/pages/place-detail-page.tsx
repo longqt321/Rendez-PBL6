@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Link, useParams } from "react-router"
 import { MapPinIcon, StarIcon } from "lucide-react"
 import {
@@ -9,6 +10,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -17,13 +19,30 @@ import { formatCount } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
 import { usePlace } from "../hooks/use-place"
 import { usePlacePosts } from "../hooks/use-place-posts"
+import { usePlaceReviews } from "../hooks/use-place-reviews"
+import { useMe } from "@/features/profile/hooks/use-me"
+import { ReviewForm } from "../components/review-form"
+import { ReviewItem } from "../components/review-item"
+import type { Review } from "../types/review"
 
 /** Trang chi tiết địa điểm — `/discover/:id`. */
 export function PlaceDetailPage() {
   const { id } = useParams()
-  const { data: place, isPending, isError } = usePlace(id ?? "")
-  const { data: postsData, isPending: postsPending } = usePlacePosts(id ?? "")
+  const placeId = id ?? ""
+  const { data: place, isPending, isError } = usePlace(placeId)
+  const { data: postsData, isPending: postsPending } = usePlacePosts(placeId)
   const posts = postsData?.pages.flatMap((page) => page.items) ?? []
+  const { data: reviews, isPending: reviewsPending } = usePlaceReviews(placeId)
+  const { data: me } = useMe()
+  const [editingReview, setEditingReview] = useState<Review | null>(null)
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const myReview = reviews?.find((review) => review.isMine) ?? null
+  const reviewFormVisible = showReviewForm || editingReview !== null
+
+  function closeReviewForm() {
+    setEditingReview(null)
+    setShowReviewForm(false)
+  }
 
   if (isPending) {
     return (
@@ -107,11 +126,68 @@ export function PlaceDetailPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="posts" className="mt-6">
+      <Tabs defaultValue="reviews" className="mt-6">
         <TabsList>
+          <TabsTrigger value="reviews">
+            Đánh giá{reviews && reviews.length > 0 ? ` (${reviews.length})` : ""}
+          </TabsTrigger>
           <TabsTrigger value="posts">Bài đăng</TabsTrigger>
           <TabsTrigger value="overview">Tổng quan</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="reviews" className="mt-4">
+          <div className="flex flex-col gap-4">
+            {reviewFormVisible ? (
+              <section className="rounded-md border bg-card p-4" aria-label="Form đánh giá">
+                <ReviewForm
+                  key={editingReview?.id ?? "new"}
+                  placeId={placeId}
+                  myReview={editingReview}
+                  authorInitials={me?.initials ?? "Tôi"}
+                  onDone={closeReviewForm}
+                />
+              </section>
+            ) : myReview ? (
+              <div className="flex items-center justify-between gap-3 rounded-md border bg-card p-4">
+                <p className="text-sm text-muted-foreground">
+                  Bạn đã đánh giá {myReview.rating}/5 sao cho địa điểm này.
+                </p>
+                <Button variant="outline" size="sm" onClick={() => setEditingReview(myReview)}>
+                  Sửa đánh giá
+                </Button>
+              </div>
+            ) : (
+              <Button className="self-start" onClick={() => setShowReviewForm(true)}>
+                <StarIcon />
+                Viết đánh giá
+              </Button>
+            )}
+
+            {reviewsPending ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">Đang tải đánh giá…</p>
+            ) : reviews && reviews.length > 0 ? (
+              <ul className="flex flex-col gap-3">
+                {reviews.map((review) => (
+                  <li key={review.id}>
+                    <ReviewItem
+                      review={review}
+                      onEdit={review.isMine ? setEditingReview : undefined}
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Empty className="mt-2">
+                <EmptyHeader>
+                  <EmptyTitle>Chưa có đánh giá nào</EmptyTitle>
+                  <EmptyDescription>
+                    Hãy là người đầu tiên chia sẻ trải nghiệm tại đây.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            )}
+          </div>
+        </TabsContent>
 
         <TabsContent value="posts" className="mt-4">
           {postsPending ? (

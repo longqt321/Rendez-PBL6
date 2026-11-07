@@ -1093,3 +1093,51 @@ trùng với submenu Giao diện trong menu avatar.
 
 - Cảm nhận thị giác của user (menu mới có dễ nhìn hơn không) — chỉ user tự đánh giá được.
 - Trình duyệt khác Chrome 156.
+
+## D-020 — Tab Đánh giá trên trang chi tiết địa điểm (text + số sao, không đính kèm)
+
+**Ngày:** 2026-11-07 · **Trạng thái:** đã triển khai
+
+### Bối cảnh
+
+Ưu tiên 1 của danh sách chức năng thiếu (22:53): người dùng không thể đánh giá địa điểm — động
+lực chính để quay lại ứng dụng. User chốt: form chỉ nhận **text + số sao**, không nhận ảnh/file.
+
+### Quyết định
+
+- **Model:** `Review { id, placeId, author, rating 1–5, content, createdAt, isMine }`. Ràng buộc
+  nghiệp vụ: **mỗi người dùng một đánh giá mỗi địa điểm — đánh giá lại là ghi đè** (upsert), không
+  có xoá ở phiên này.
+- **API:** `GET /places/:id/reviews` (phẳng, mới nhất trước), `POST /places/:id/reviews` (upsert).
+  Server từ chối rating ngoài 1–5 và content rỗng; body chỉ có 2 trường — không có hình thức đính
+  kèm nào.
+- **UI:** tab "Đánh giá" mặc định trên `/discover/:id`, phía trên "Bài đăng"/"Tổng quan". Form gồm
+  `RatingStars` (5 nút sao, `radiogroup`) + `Textarea` 1000 ký tự; nút "Viết đánh giá" khi chưa có,
+  banner + "Sửa đánh giá" khi đã có; `ReviewItem` hiện nút Sửa chỉ trên đánh giá của mình. Đếm số
+  đánh giá hiện trên tiêu đề tab.
+- **File mới:** `types/review.ts`, `api/get-place-reviews.ts`, `api/upsert-review.ts`,
+  `hooks/use-place-reviews.ts`, `hooks/use-upsert-review.ts`,
+  `components/{rating-stars,review-form,review-item}.tsx`, `mocks/fixtures/reviews.ts`.
+
+### Phương án đã xem
+
+- _Cho upload ảnh review_ — loại: user yêu cầu chốt không cho đăng hình/file.
+- _CRUD đầy đủ có xoá_ — để lại: chưa có nhu cầu đã nêu; upsert là đủ cho vòng đầu, thêm sau là
+  migration nhỏ.
+- _Nửa sao (4.5)_ — loại: form nhập phức tạp, các app tham chiếu (Foody) cũng dùng số nguyên.
+- _Đặt rating vào `Place` bằng aggregate_ — hoãn: đếm sao trung bình cần nghĩ về chống gian lận;
+  hiện đếm số review trên tab là đủ.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build` → exit 0.
+- `scratch/review-flow-check.mjs` (CDP, dev 5173): **11/11 pass** — tab + đếm seed; gửi review mới
+  (chọn sao → nút Gửi bật → bài hiện đầu danh sách, banner "Bạn đã đánh giá"); sửa → ghi đè còn
+  đúng một bản ghi; p-05 không có seed → đúng empty state + nút Viết.
+
+### Chưa xác minh
+
+- Preview 4174 (dist) chưa chạy lại sau khi build bản này — chỉ verify trên dev.
+- Trình duyệt khác Chrome 156; màn hình thật.
+- Hiệu năng khi số review lớn (hiện render toàn bộ, chưa phân trang — khớp contract `Page` sẵn có
+  để phân trang sau mà không đổi API).

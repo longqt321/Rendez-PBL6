@@ -30,3 +30,24 @@ export interface MockComment {
 
 /** Dữ liệu seed chưa có trạng thái xoá — server gán `deleted: false` khi nạp. */
 export type MockCommentSeed = Omit<MockComment, "deleted">
+
+/**
+ * Bản ghi đánh giá địa điểm trong "database" của server giả lập.
+ *
+ * Mỗi (placeId, authorId) chỉ tồn tại tối đa một bản ghi — đánh giá lại là ghi
+ * đè bản cũ. `isMine` không lưu trong db; server gán lúc serialize dựa trên
+ * người dùng hiện tại. Chi tiết nội bộ — frontend không thấy type này.
+ */
+export interface MockReview {
+  id: string
+  placeId: string
+  author: Author
+  /** Số nguyên 1–5. */
+  rating: number
+  /** Chỉ text: form đánh giá không nhận ảnh hay file đính kèm. */
+  content: string
+  createdAt: string
+}
+
+/** Dữ liệu seed cho đánh giá. */
+export type MockReviewSeed = MockReview
