@@ -739,3 +739,59 @@ Không thêm dependency. Không đổi `bun.lock`, không đổi `package.json`.
   `getBoundingClientRect` / `getComputedStyle`.
 - Chưa test Firefox/Safari — chỉ Chrome 156 qua CDP.
 - Chưa chạy trên preview 4174 (chỉ dev 5173).
+
+## D-015 — Bỏ heading trang; bộ lọc `/discover` gộp vào popover của nút "Lọc"
+
+**Ngày:** 2026-11-07
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Người dùng chỉ ra `/discover` vẫn còn hai ô input trông giống nhau (topbar `Tìm kiếm` + bộ lọc trong
+trang), và yêu cầu: đổi bộ lọc thành nút "Lọc" mở popover kèm chip danh mục; xoá các heading kiểu
+"Khám phá", "Địa điểm đã được kiểm duyệt và đưa lên bản đồ"… ở mọi route, vì tên route + tư duy
+người dùng đã đủ nhận biết chức năng.
+
+### Quyết định
+
+- **Thêm `src/components/ui/popover.tsx` bằng `bunx shadcn@latest add popover`** (đường sinh chuẩn
+  của template `base-nova`, nền `@base-ui/react/popover`). Không sửa tay file `ui/`. Không thêm
+  dependency npm — `package.json` và `bun.lock` không đổi.
+- **`/discover`: bỏ ô lọc ngoài trang + hàng chip ngoài trang.** Cả hai vào `PopoverContent` của
+  nút `Lọc` (`ListFilterIcon`). Nút hiện `Badge` đếm số bộ lọc đang bật (0/1/2), có nút "Xoá bộ lọc"
+  chỉ xuất hiện khi có bộ lọc. Nhờ vậy `/discover` còn **đúng 1 ô `input[type="search"]`** — chỉ ở topbar.
+- **Bỏ `<h1>` + đoạn mô tả ở 6 route**: `/discover`, `/social`, `/notification`, `/saved`,
+  `/settings`, `/search`. Giữ lại thông tin **không phải trình bày lại chức năng**:
+  - `/notification`: dòng "N thông báo chưa đọc" (trạng thái, không phải tiêu đề).
+  - `/search`: dòng "Kết quả cho “…”" (dữ liệu, không phải tiêu đề).
+  - `/discover`: `Badge` "N địa điểm" + trạng thái tải thêm.
+- **Giữ `<h1>` ở nơi nó là dữ liệu, không phải nhãn route**: `place-detail-page` (tên địa điểm),
+  `profile-header` (tên người dùng), `design-showcase-page` (trang demo).
+
+### Phương án đã xem
+
+- _Tự viết popover bằng `useState` + `absolute`_ — loại: đã có primitive `@base-ui/react/popover`,
+  tự viết sẽ mất focus trap, Escape, click-outside, positioning.
+- _Giữ hàng chip ngoài trang, chỉ đưa ô từ khoá vào popover_ — loại: người dùng yêu cầu gộp cả chip.
+- _Bỏ luôn dòng "N thông báo chưa đọc" và "Kết quả cho …"_ — loại: đó là dữ liệu/trạng thái, không
+  phải lặp lại tên route.
+
+### Kích thước / license
+
+Không thêm dependency npm. `package.json`, `bun.lock` không đổi. `popover.tsx` sinh từ registry
+shadcn, dùng `@base-ui/react` đã có trong dự án.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build` → exit 0.
+- CDP `check-filter.mjs` (28 check): 6 route không còn `<h1>`; `/discover` chỉ 1 ô search; nút "Lọc"
+  mở popover chứa ô từ khoá + chip danh mục; chọn chip → `aria-pressed` đúng + danh sách đổi;
+  badge = 1 rồi = 2; "Xoá bộ lọc" reset cả hai; mobile 390 không tràn ngang → **28/28**.
+- Hồi quy dev 5173: `search-check.mjs` **19/19**, `group1-check.mjs` **31/31**,
+  `feature-check.mjs` **39/39**, `app-check.mjs` **44/44**.
+
+### Chưa xác minh
+
+- Chưa xem giao diện bằng mắt người (model không đọc được PNG); kết luận từ DOM + `getBoundingClientRect`.
+- Chưa test Firefox/Safari — chỉ Chrome 156.
+- Chưa chạy lại trên preview 4174 sau thay đổi này (chỉ dev 5173).

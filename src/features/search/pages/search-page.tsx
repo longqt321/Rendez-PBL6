@@ -47,14 +47,11 @@ function SearchResults({ query }: { query: string }) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-bold tracking-tight">Tìm kiếm</h1>
-        <p className="text-sm text-muted-foreground">
-          Kết quả cho <span className="font-semibold text-foreground">“{query}”</span>
-        </p>
-      </header>
+      <p className="text-sm text-muted-foreground">
+        Kết quả cho <span className="font-semibold text-foreground">“{query}”</span>
+      </p>
 
-      <Tabs defaultValue="places" className="mt-5">
+      <Tabs defaultValue="places" className="mt-4">
         <TabsList>
           <TabsTrigger value="places">Địa điểm</TabsTrigger>
           <TabsTrigger value="posts">Bài đăng</TabsTrigger>

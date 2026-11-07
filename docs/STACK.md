@@ -104,21 +104,21 @@ src/
 
 ### Route
 
-| Route           | Trang                   | Ghi chú                                                                |
-| --------------- | ----------------------- | ---------------------------------------------------------------------- |
-| `/`             | redirect → `/discover`  |                                                                        |
-| `/discover`     | `features/places`       | 3 cột PC / 2 cột masonry mobile, infinity scroll                       |
-| `/discover/:id` | `features/places`       | chi tiết địa điểm: breadcrumb + tabs + rating                          |
-| `/social`       | `features/social`       | feed dọc + ô soạn bài + bình luận (thread Dialog/Drawer)               |
-| `/post/:id`     | `features/social`       | chi tiết bài đăng: preview + thread bình luận 2 cột (PC)               |
-| `/notification` | `features/notification` | tab Tất cả / Đề xuất địa điểm; thông báo bấm được                      |
-| `/profile`      | `features/profile`      | trang cá nhân của mình (tabs posts/pinned/saved)                       |
-| `/u/:handle`    | `features/profile`      | trang cá nhân người khác (follow, chỉ tab posts)                       |
-| `/search`       | `features/search`       | chỉ đọc `?q=` từ URL; ô nhập duy nhất ở topbar; `q` rỗng → `/discover` |
-| `/saved`        | `features/social`       | bài đã lưu, lọc `savedByMe`                                            |
-| `/settings`     | `features/settings`     | form RHF + zod (Field/Switch)                                          |
-| `*`             | 404                     | Empty + link về `/discover`, render **trong** `AppShell`               |
-| `/design`       | `components/shared`     | trang kiểm tra design stack (tạm)                                      |
+| Route           | Trang                   | Ghi chú                                                                   |
+| --------------- | ----------------------- | ------------------------------------------------------------------------- |
+| `/`             | redirect → `/discover`  |                                                                           |
+| `/discover`     | `features/places`       | 3 cột PC / 2 cột masonry mobile, infinity scroll; lọc trong popover "Lọc" |
+| `/discover/:id` | `features/places`       | chi tiết địa điểm: breadcrumb + tabs + rating                             |
+| `/social`       | `features/social`       | feed dọc + ô soạn bài + bình luận (thread Dialog/Drawer)                  |
+| `/post/:id`     | `features/social`       | chi tiết bài đăng: preview + thread bình luận 2 cột (PC)                  |
+| `/notification` | `features/notification` | tab Tất cả / Đề xuất địa điểm; thông báo bấm được                         |
+| `/profile`      | `features/profile`      | trang cá nhân của mình (tabs posts/pinned/saved)                          |
+| `/u/:handle`    | `features/profile`      | trang cá nhân người khác (follow, chỉ tab posts)                          |
+| `/search`       | `features/search`       | chỉ đọc `?q=` từ URL; ô nhập duy nhất ở topbar; `q` rỗng → `/discover`    |
+| `/saved`        | `features/social`       | bài đã lưu, lọc `savedByMe`                                               |
+| `/settings`     | `features/settings`     | form RHF + zod (Field/Switch)                                             |
+| `*`             | 404                     | Empty + link về `/discover`, render **trong** `AppShell`                  |
+| `/design`       | `components/shared`     | trang kiểm tra design stack (tạm)                                         |
 
 ### Phân chia state
 

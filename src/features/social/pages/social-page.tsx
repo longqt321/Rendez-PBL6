@@ -17,19 +17,7 @@ export function SocialPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="flex items-center gap-2 font-heading text-2xl font-bold tracking-tight">
-          <UsersIcon className="size-6" aria-hidden="true" />
-          Cộng đồng
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Nơi mọi người chia sẻ bữa ăn. Bài đăng ở đây độc lập với danh sách Khám phá.
-        </p>
-      </header>
-
-      <div className="mt-5">
-        <PostComposer />
-      </div>
+      <PostComposer />
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
         <Tabs value={filter} onValueChange={(value) => setFilter(value as PostFeedFilter)}>

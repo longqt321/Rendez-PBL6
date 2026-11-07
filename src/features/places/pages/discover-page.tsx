@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react"
-import { CompassIcon, ListFilterIcon, SearchXIcon } from "lucide-react"
+import { ListFilterIcon, SearchXIcon, XIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Spinner } from "@/components/ui/spinner"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { CATEGORY_META } from "../lib/category-meta"
@@ -38,67 +39,85 @@ export function DiscoverPage() {
   })
 
   const places = data?.pages.flatMap((page) => page.items) ?? []
+  const activeFilterCount = (category === "all" ? 0 : 1) + (query.trim() ? 1 : 0)
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="flex items-center gap-2 font-heading text-2xl font-bold tracking-tight">
-          <CompassIcon className="size-6" aria-hidden="true" />
-          Khám phá
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Địa điểm đã được kiểm duyệt và đưa lên bản đồ. Cuộn để tải thêm.
-        </p>
-      </header>
+      <div className="flex flex-wrap items-center gap-2">
+        <Popover>
+          <PopoverTrigger render={<Button variant="outline" size="sm" />}>
+            <ListFilterIcon />
+            Lọc
+            {activeFilterCount > 0 ? (
+              <Badge variant="secondary" className="ml-0.5">
+                {activeFilterCount}
+              </Badge>
+            ) : null}
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-80">
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="discover-filter"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Từ khoá
+              </label>
+              <InputGroup>
+                <InputGroupAddon>
+                  <ListFilterIcon />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="discover-filter"
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Tên quán, món, khu vực…"
+                  aria-label="Lọc theo từ khoá"
+                />
+              </InputGroup>
+            </div>
 
-      <div className="mt-5 flex flex-col gap-3">
-        {/* Đây là bộ lọc trong trang, không phải ô tìm kiếm toàn cục ở topbar —
-            dùng icon + nhãn riêng để không bị nhầm thành thanh search thứ hai. */}
-        <div className="max-w-md">
-          <label
-            htmlFor="discover-filter"
-            className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"
-          >
-            Lọc địa điểm
-          </label>
-          <InputGroup>
-            <InputGroupAddon>
-              <ListFilterIcon />
-            </InputGroupAddon>
-            <InputGroupInput
-              id="discover-filter"
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Tên quán, món, khu vực…"
-              aria-label="Lọc địa điểm"
-            />
-          </InputGroup>
-        </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-muted-foreground">Loại hình</span>
+              <div
+                role="group"
+                aria-label="Lọc theo loại hình"
+                className="flex flex-wrap items-center gap-1.5"
+              >
+                {CATEGORY_TABS.map((tab) => (
+                  <Button
+                    key={tab.value}
+                    size="xs"
+                    variant={category === tab.value ? "default" : "outline"}
+                    aria-pressed={category === tab.value}
+                    onClick={() => setCategory(tab.value)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
 
-        <div
-          role="group"
-          aria-label="Lọc theo loại hình"
-          className="flex flex-wrap items-center gap-1.5"
-        >
-          {CATEGORY_TABS.map((tab) => (
-            <Button
-              key={tab.value}
-              size="sm"
-              variant={category === tab.value ? "default" : "outline"}
-              aria-pressed={category === tab.value}
-              onClick={() => setCategory(tab.value)}
-            >
-              {tab.label}
-            </Button>
-          ))}
-        </div>
-      </div>
+            {activeFilterCount > 0 ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-start"
+                onClick={() => {
+                  setCategory("all")
+                  setQuery("")
+                }}
+              >
+                <XIcon />
+                Xoá bộ lọc
+              </Button>
+            ) : null}
+          </PopoverContent>
+        </Popover>
 
-      <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
         <Badge variant="outline">{places.length} địa điểm</Badge>
         {isFetchingNextPage ? (
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
             <Spinner className="size-3" />
             Đang tải thêm…
           </span>
