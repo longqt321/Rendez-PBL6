@@ -23,6 +23,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "caphe-muoi-01",
     imageHeight: 320,
+    lat: 10.7688,
+    lng: 106.6897,
     publishedAt: "2026-10-02T08:00:00+07:00",
   },
   {
@@ -37,6 +39,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "banhmi-huynhhoa",
     imageHeight: 420,
+    lat: 10.7712,
+    lng: 106.6918,
     publishedAt: "2026-09-18T08:00:00+07:00",
   },
   {
@@ -51,6 +55,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "quanan-ngon",
     imageHeight: 380,
+    lat: 10.7735,
+    lng: 106.698,
     publishedAt: "2026-08-30T08:00:00+07:00",
   },
   {
@@ -65,6 +71,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "tiembanh-fleur",
     imageHeight: 300,
+    lat: 10.7792,
+    lng: 106.6961,
     publishedAt: "2026-10-11T08:00:00+07:00",
   },
   {
@@ -79,6 +87,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "oc-dao",
     imageHeight: 360,
+    lat: 10.7538,
+    lng: 106.6741,
     publishedAt: "2026-07-22T08:00:00+07:00",
   },
   {
@@ -93,6 +103,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "che-mam",
     imageHeight: 340,
+    lat: 10.7521,
+    lng: 106.671,
     publishedAt: "2026-06-15T08:00:00+07:00",
   },
   {
@@ -107,6 +119,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 3,
     imageSeed: "workshop-coffee",
     imageHeight: 440,
+    lat: 10.7725,
+    lng: 106.7042,
     publishedAt: "2026-10-20T08:00:00+07:00",
   },
   {
@@ -121,6 +135,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "bunbo-hanh",
     imageHeight: 310,
+    lat: 10.762,
+    lng: 106.6948,
     publishedAt: "2026-09-05T08:00:00+07:00",
   },
   {
@@ -135,6 +151,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 3,
     imageSeed: "rooftop-skybar",
     imageHeight: 400,
+    lat: 10.776,
+    lng: 106.703,
     publishedAt: "2026-10-25T08:00:00+07:00",
   },
   {
@@ -149,6 +167,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "banhxeo-baduong",
     imageHeight: 350,
+    lat: 16.0612,
+    lng: 108.2215,
     publishedAt: "2026-08-12T08:00:00+07:00",
   },
   {
@@ -163,6 +183,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "caphe-duongtau",
     imageHeight: 430,
+    lat: 21.0315,
+    lng: 105.845,
     publishedAt: "2026-07-08T08:00:00+07:00",
   },
   {
@@ -177,6 +199,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "pho-batdan",
     imageHeight: 330,
+    lat: 21.0352,
+    lng: 105.8485,
     publishedAt: "2026-06-28T08:00:00+07:00",
   },
   {
@@ -191,6 +215,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "kem-trangtien",
     imageHeight: 290,
+    lat: 21.0245,
+    lng: 105.8562,
     publishedAt: "2026-05-19T08:00:00+07:00",
   },
   {
@@ -205,6 +231,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "banhmi-phuong",
     imageHeight: 370,
+    lat: 15.8775,
+    lng: 108.329,
     publishedAt: "2026-09-29T08:00:00+07:00",
   },
   {
@@ -219,6 +247,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "caolau-babe",
     imageHeight: 320,
+    lat: 15.8768,
+    lng: 108.3315,
     publishedAt: "2026-10-08T08:00:00+07:00",
   },
   {
@@ -233,6 +263,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "caphe-nau",
     imageHeight: 340,
+    lat: 10.778,
+    lng: 106.6912,
     publishedAt: "2026-10-28T08:00:00+07:00",
   },
   {
@@ -247,6 +279,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "banhcanh-cua87",
     imageHeight: 300,
+    lat: 10.7935,
+    lng: 106.6852,
     publishedAt: "2026-08-02T08:00:00+07:00",
   },
   {
@@ -261,6 +295,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "caphe-sanvuon-la",
     imageHeight: 410,
+    lat: 11.9425,
+    lng: 108.438,
     publishedAt: "2026-10-31T08:00:00+07:00",
   },
   {
@@ -275,6 +311,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "banhcan-dalat",
     imageHeight: 280,
+    lat: 11.945,
+    lng: 108.4352,
     publishedAt: "2026-07-14T08:00:00+07:00",
   },
   {
@@ -289,6 +327,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "chaca-lavong",
     imageHeight: 360,
+    lat: 21.036,
+    lng: 105.848,
     publishedAt: "2026-06-05T08:00:00+07:00",
   },
   {
@@ -303,6 +343,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "biahơi-tahien",
     imageHeight: 330,
+    lat: 21.0345,
+    lng: 105.8525,
     publishedAt: "2026-09-12T08:00:00+07:00",
   },
   {
@@ -317,6 +359,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "banhmi-chao-coba",
     imageHeight: 310,
+    lat: 10.7765,
+    lng: 106.701,
     publishedAt: "2026-10-16T08:00:00+07:00",
   },
   {
@@ -331,6 +375,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "quanchay-annhien",
     imageHeight: 350,
+    lat: 10.7845,
+    lng: 106.694,
     publishedAt: "2026-10-05T08:00:00+07:00",
   },
   {
@@ -345,6 +391,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "caphe-trung-giang",
     imageHeight: 390,
+    lat: 21.031,
+    lng: 105.854,
     publishedAt: "2026-08-21T08:00:00+07:00",
   },
   {
@@ -359,6 +407,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "flan-cotdien",
     imageHeight: 290,
+    lat: 10.771,
+    lng: 106.7025,
     publishedAt: "2026-09-24T08:00:00+07:00",
   },
   {
@@ -373,6 +423,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "quannhau-boke",
     imageHeight: 370,
+    lat: 10.7915,
+    lng: 106.708,
     publishedAt: "2026-07-30T08:00:00+07:00",
   },
   {
@@ -387,6 +439,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "tiembanh-hoacuc",
     imageHeight: 300,
+    lat: 10.035,
+    lng: 105.782,
     publishedAt: "2026-10-22T08:00:00+07:00",
   },
   {
@@ -401,6 +455,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "buncha-hangmanh",
     imageHeight: 340,
+    lat: 21.032,
+    lng: 105.849,
     publishedAt: "2026-06-19T08:00:00+07:00",
   },
   {
@@ -415,6 +471,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "caphe-bet",
     imageHeight: 320,
+    lat: 10.777,
+    lng: 106.6975,
     publishedAt: "2026-08-08T08:00:00+07:00",
   },
   {
@@ -429,6 +487,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "banhkhot-vungtau",
     imageHeight: 350,
+    lat: 10.346,
+    lng: 107.0843,
     publishedAt: "2026-09-08T08:00:00+07:00",
   },
 
@@ -445,6 +505,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "caphe-hem44",
     imageHeight: 330,
+    lat: 10.7852,
+    lng: 106.6995,
     publishedAt: null,
   },
   {
@@ -459,6 +521,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "banhmi-chao-hem44",
     imageHeight: 300,
+    lat: 10.7853,
+    lng: 106.6996,
     publishedAt: null,
   },
   {
@@ -473,6 +537,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "tiembanh-hem44",
     imageHeight: 280,
+    lat: 10.7855,
+    lng: 106.6998,
     publishedAt: null,
   },
   {
@@ -487,6 +553,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "quannuong-hem44",
     imageHeight: 340,
+    lat: 10.7857,
+    lng: 106.7,
     publishedAt: null,
   },
   {
@@ -501,6 +569,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 2,
     imageSeed: "caphe-sach-trang",
     imageHeight: 360,
+    lat: 10.7895,
+    lng: 106.687,
     publishedAt: null,
   },
   {
@@ -515,6 +585,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "banhcuon-trang",
     imageHeight: 290,
+    lat: 10.7896,
+    lng: 106.6872,
     publishedAt: null,
   },
   {
@@ -529,6 +601,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "comtam-trang",
     imageHeight: 320,
+    lat: 10.7898,
+    lng: 106.6874,
     publishedAt: null,
   },
   {
@@ -543,6 +617,8 @@ export const MOCK_PLACES: MockPlace[] = [
     priceLevel: 1,
     imageSeed: "che-saigon-1975",
     imageHeight: 300,
+    lat: 10.805,
+    lng: 106.692,
     publishedAt: null,
   },
 ]

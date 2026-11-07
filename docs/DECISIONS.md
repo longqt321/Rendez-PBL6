@@ -1185,3 +1185,42 @@ lực chính để quay lại ứng dụng. User chốt: form chỉ nhận **tex
 
 - Chưa kiểm tra trên thiết bị mobile thực tế.
 - Chưa test trên Safari / Firefox.
+
+## D-022: Tích hợp Bản đồ tương tác (Interactive Map View) với Leaflet
+
+### Bối cảnh
+
+- Ứng dụng khám phá ẩm thực và địa điểm cần trải nghiệm bản đồ tương tác để người dùng trực quan hoá vị trí các quán ăn theo không gian địa lý, thay vì chỉ xem dạng danh sách tĩnh.
+- Trang `/discover` cần nút chuyển đổi giữa dạng xem "Lưới" (Grid) và "Bản đồ" (Map).
+- Trang chi tiết địa điểm `/discover/:id` cần mini map hiển thị vị trí chính xác của quán kèm liên kết dẫn đường ngoài.
+
+### Quyết định
+
+- **Dependency mới:** `leaflet` (~140 kB gzip nhẹ, license BSD-2-Clause), `react-leaflet` (license Hippocratic 2.1 / MIT, wrapper React chính thức), `@types/leaflet` (devDependencies).
+- **Lý do chọn:**
+  - Không tốn chi phí API key (dùng OpenStreetMap tiles công khai).
+  - Tương thích tốt với React 19, dung lượng nhỏ gọn hơn Mapbox/MapLibre GL nhiều lần.
+  - Hỗ trợ `L.divIcon` giúp tạo custom marker hoàn toàn bằng JSX/HTML/Tailwind CSS chuẩn với giao diện dự án.
+- **Model:** Mở rộng `Place` và `PlaceSummary` thêm tọa độ tuỳ chọn:
+  ```ts
+  lat?: number
+  lng?: number
+  ```
+- **UI:**
+  - Trên `/discover`: Thêm `ToggleGroup` (hoặc button pair) chuyển đổi Chế độ xem: `Lưới` (icon `LayoutGrid`) và `Bản đồ` (icon `Map`).
+  - Bản đồ toàn phần hỗ trợ thu phóng, rê chuột, click marker hiển thị thẻ popup preview địa điểm (ảnh, tên, địa chỉ, sao, nút mở chi tiết).
+  - Trên `/discover/:id`: Thêm mini-map vị trí quán trong tab "Tổng quan".
+
+### Phương án đã xem
+
+- _Google Maps JS API:_ loại vì cần API key, thẻ tín dụng và có phí theo lượt request.
+- _MapLibre GL:_ loại vì bundle size lớn (~600 kB) và yêu cầu vector tile server phức tạp.
+- _SVG nội bộ:_ loại vì không có khả năng kéo thả, thu phóng bản đồ thế giới thật như OpenStreetMap.
+
+### Đã xác minh
+
+- Sẽ xác minh qua `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build`, và script CDP E2E.
+
+### Chưa xác minh
+
+- Trải nghiệm cảm ứng đa điểm trên màn hình điện thoại thật.

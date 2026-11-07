@@ -14,6 +14,10 @@ export interface Place {
   imageSeed: string
   /** Chiều cao ảnh (px) cho bố cục masonry trên mobile */
   imageHeight: number
+  /** Vĩ độ toạ độ địa lý (WGS84) */
+  lat?: number
+  /** Kinh độ toạ độ địa lý (WGS84) */
+  lng?: number
 }
 
 /**
@@ -29,6 +33,8 @@ export interface PlaceSummary {
   category: PlaceCategory
   imageSeed: string
   isPublished: boolean
+  lat?: number
+  lng?: number
 }
 
 /**

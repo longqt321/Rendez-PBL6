@@ -68,6 +68,8 @@ function toPlaceDto(place: MockPlace): Place {
     priceLevel: place.priceLevel,
     imageSeed: place.imageSeed,
     imageHeight: place.imageHeight,
+    lat: place.lat,
+    lng: place.lng,
   }
 }
 
@@ -83,6 +85,8 @@ function toPlaceSummary(place: MockPlace) {
     category: place.category,
     imageSeed: place.imageSeed,
     isPublished: place.publishedAt !== null,
+    lat: place.lat,
+    lng: place.lng,
   }
 }
 

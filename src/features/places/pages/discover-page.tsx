@@ -1,17 +1,19 @@
 import { useMemo, useState } from "react"
-import { ListFilterIcon, SearchXIcon, XIcon } from "lucide-react"
+import { LayoutGridIcon, ListFilterIcon, MapIcon, SearchXIcon, XIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Spinner } from "@/components/ui/spinner"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { CATEGORY_META } from "../lib/category-meta"
 import { useDiscoverPlaces } from "../hooks/use-discover-places"
 import type { PlaceCategory } from "../types/place"
 import { PlaceCard } from "../components/place-card"
 import { PlaceCardSkeleton } from "../components/place-card-skeleton"
+import { PlacesMap } from "../components/places-map"
 
 const CATEGORY_TABS: { value: PlaceCategory | "all"; label: string }[] = [
   { value: "all", label: "Tất cả" },
@@ -27,6 +29,7 @@ const SKELETON_HEIGHTS = [320, 400, 280, 360, 440, 300, 380, 340, 420]
 export function DiscoverPage() {
   const [category, setCategory] = useState<PlaceCategory | "all">("all")
   const [query, setQuery] = useState("")
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid")
 
   const filters = useMemo(() => ({ category, query }), [category, query])
   const { data, isPending, isError, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
@@ -117,6 +120,28 @@ export function DiscoverPage() {
         <Badge variant="outline" className="h-6 px-2.5 text-sm">
           {places.length} địa điểm
         </Badge>
+
+        <div className="ml-auto flex items-center gap-2">
+          <ToggleGroup
+            value={[viewMode]}
+            onValueChange={(val) => {
+              const next = val[0] as "grid" | "map" | undefined
+              if (next) setViewMode(next)
+            }}
+            variant="outline"
+            size="sm"
+            aria-label="Chế độ xem"
+          >
+            <ToggleGroupItem value="grid" aria-label="Xem dạng lưới">
+              <LayoutGridIcon className="size-4" />
+              <span className="ml-1 hidden sm:inline">Lưới</span>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="map" aria-label="Xem trên bản đồ">
+              <MapIcon className="size-4" />
+              <span className="ml-1 hidden sm:inline">Bản đồ</span>
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
         {isFetchingNextPage ? (
           <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Spinner className="size-4" />
@@ -162,6 +187,10 @@ export function DiscoverPage() {
             Xoá bộ lọc
           </Button>
         </Empty>
+      ) : viewMode === "map" ? (
+        <div className="mt-6">
+          <PlacesMap places={places} height="h-[calc(100vh-220px)] min-h-[500px]" />
+        </div>
       ) : (
         <>
           {/* PC: 3 cột đều. Mobile: 2 cột masonry, mỗi thẻ có chiều cao ảnh riêng. */}

@@ -25,6 +25,7 @@ import { ReviewForm } from "../components/review-form"
 import { ReviewItem } from "../components/review-item"
 import type { Review } from "../types/review"
 import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
+import { PlaceMiniMap } from "../components/place-mini-map"
 
 /** Trang chi tiết địa điểm — `/discover/:id`. */
 export function PlaceDetailPage() {
@@ -236,11 +237,19 @@ export function PlaceDetailPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="overview" className="mt-4">
-          <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-            {place.name} nằm ở {place.city}. Địa điểm do cộng đồng đăng và được kiểm duyệt trước khi
-            xuất hiện trên trang Khám phá.
-          </p>
+        <TabsContent value="overview" className="mt-4 flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <h3 className="font-heading text-base font-semibold">Vị trí & Chỉ đường</h3>
+            <PlaceMiniMap place={place} />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <h3 className="font-heading text-base font-semibold">Giới thiệu</h3>
+            <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
+              {place.name} nằm ở {place.city}. Địa điểm do cộng đồng đăng và được kiểm duyệt trước
+              khi xuất hiện trên trang Khám phá.
+            </p>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
