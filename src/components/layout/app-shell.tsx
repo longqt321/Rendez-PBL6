@@ -216,18 +216,18 @@ function UserMenu() {
         }
       />
       <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuLabel>
-          <span className="block text-sm font-semibold">Minh Anh</span>
-          <span className="block text-xs font-normal text-muted-foreground">@minhanh.eats</span>
-          <Link
-            to="/profile"
-            className="mt-1 block text-[0.7rem] font-medium text-foreground underline underline-offset-2"
-          >
-            Xem trang cá nhân →
-          </Link>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <span className="block text-sm font-semibold">Minh Anh</span>
+            <span className="block text-xs font-normal text-muted-foreground">@minhanh.eats</span>
+            <Link
+              to="/profile"
+              className="mt-1 block text-[0.7rem] font-medium text-foreground underline underline-offset-2"
+            >
+              Xem trang cá nhân →
+            </Link>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
           <DropdownMenuItem render={<Link to="/profile" />}>
             <UserIcon />
             Trang cá nhân
