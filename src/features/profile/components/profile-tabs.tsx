@@ -1,22 +1,25 @@
 import { useSearchParams } from "react-router"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useProfilePosts } from "../hooks/use-profile-posts"
-import type { UserProfile } from "../types/profile"
+import type { ProfileTab, UserProfile } from "../types/profile"
+import { ProfileCollectionGrid } from "./profile-collection-grid"
 import { ProfilePostGrid } from "./profile-post-grid"
 
 interface ProfileTabsProps {
   profile: UserProfile
 }
 
-const TAB_VALUES = ["posts", "pinned", "saved"] as const
+const POST_TABS: ProfileTab[] = ["posts", "pinned", "saved"]
+const TAB_VALUES = ["posts", "pinned", "saved", "collections"] as const
+type TabValue = (typeof TAB_VALUES)[number]
 
-/** Tabs Bài đăng / Đã ghim / Đã lưu — tab đồng bộ với query `?tab=`. */
+/** Tabs Bài đăng / Đã ghim / Đã lưu / Bộ sưu tập — đồng bộ với query `?tab=`. */
 export function ProfileTabs({ profile }: ProfileTabsProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const rawTab = searchParams.get("tab")
   const tab =
     TAB_VALUES.includes(rawTab as never) && (rawTab !== "saved" || profile.isMe)
-      ? (rawTab as (typeof TAB_VALUES)[number])
+      ? (rawTab as TabValue)
       : "posts"
 
   return (
@@ -28,24 +31,23 @@ export function ProfileTabs({ profile }: ProfileTabsProps) {
         <TabsTrigger value="posts">Bài đăng</TabsTrigger>
         {profile.isMe && <TabsTrigger value="pinned">Đã ghim</TabsTrigger>}
         {profile.isMe && <TabsTrigger value="saved">Đã lưu</TabsTrigger>}
+        <TabsTrigger value="collections">Bộ sưu tập</TabsTrigger>
       </TabsList>
 
-      {TAB_VALUES.map((value) => (
+      {POST_TABS.map((value) => (
         <TabsContent key={value} value={value} className="mt-4">
           <ProfileTabContent profile={profile} tab={value} />
         </TabsContent>
       ))}
+
+      <TabsContent value="collections" className="mt-4">
+        <ProfileCollectionGrid handle={profile.handle} isMe={profile.isMe} />
+      </TabsContent>
     </Tabs>
   )
 }
 
-function ProfileTabContent({
-  profile,
-  tab,
-}: {
-  profile: UserProfile
-  tab: (typeof TAB_VALUES)[number]
-}) {
+function ProfileTabContent({ profile, tab }: { profile: UserProfile; tab: ProfileTab }) {
   const { data, isPending } = useProfilePosts(profile.handle, tab)
   const posts = data?.pages.flatMap((page) => page.items) ?? []
 
