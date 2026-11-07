@@ -3,13 +3,15 @@ import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from "ax
 import type { AppNotification } from "@/features/notification/types/notification"
 import type { Place, PlaceCategory, PlaceSuggestion } from "@/features/places/types/place"
 import type { Post } from "@/features/social/types/post"
+import type { Comment, CommentSort } from "@/features/social/types/comment"
 import type { Page } from "@/types/api"
 import { MOCK_NOTIFICATIONS } from "./fixtures/notifications"
 import { MOCK_PLACES, type MockPlace } from "./fixtures/places"
 import { CURRENT_USER, MOCK_POSTS } from "./fixtures/posts"
+import { CURRENT_USER as COMMENT_USER, MOCK_COMMENTS } from "./fixtures/comments"
 import { rankPlaceSuggestions } from "./ranking"
 import { normalizeText } from "./text"
-import type { MockPost } from "./types"
+import type { MockComment, MockPost } from "./types"
 
 /**
  * SERVER GIẢ LẬP — không phải code frontend.
@@ -29,6 +31,7 @@ const db = {
   places: MOCK_PLACES.map((place) => ({ ...place })),
   posts: MOCK_POSTS.map((post) => ({ ...post })),
   notifications: MOCK_NOTIFICATIONS.map((notification) => ({ ...notification })),
+  comments: MOCK_COMMENTS.map((comment) => ({ ...comment, deleted: false })),
 }
 
 /** Bài đã được server gửi thông báo đề xuất — tránh sinh trùng. */
@@ -36,6 +39,7 @@ const notifiedPostIds = new Set<string>()
 
 let postSeq = 0
 let notificationSeq = 0
+let commentSeq = 0
 
 // ---------------------------------------------------------------------------
 // Serialize: chuyển bản ghi nội bộ thành đúng hợp đồng API
@@ -205,6 +209,133 @@ function createPost(body: { caption?: string; imageSeed?: string; placeId?: stri
 }
 
 // ---------------------------------------------------------------------------
+// Bình luận — nghiệp vụ phía server
+// ---------------------------------------------------------------------------
+
+function toCommentDto(comment: MockComment): Comment {
+  // replyTo do server tự suy ra từ bình luận cha — client không tự tra cứu.
+  const parent = comment.parentId === null ? undefined : findComment(comment.parentId)
+  const parentHandle = parent && !parent.deleted ? parent.author.handle : null
+
+  return {
+    id: comment.id,
+    postId: comment.postId,
+    author: comment.author,
+    body: comment.body,
+    createdAt: comment.createdAt,
+    likeCount: comment.likeCount,
+    likedByMe: comment.likedByMe,
+    parentId: comment.parentId,
+    replyTo:
+      comment.parentId === null || parentHandle === null
+        ? null
+        : { commentId: comment.parentId, handle: parentHandle },
+  }
+}
+
+function findComment(commentId: string): MockComment | undefined {
+  return db.comments.find((comment) => comment.id === commentId)
+}
+
+/** Bình luận gốc (không phải trả lời, chưa xoá) — dùng cho phân trang cấp 1. */
+function listTopLevelComments(postId: string): MockComment[] {
+  return db.comments.filter(
+    (comment) => comment.postId === postId && comment.parentId === null && !comment.deleted,
+  )
+}
+
+function sortComments(comments: MockComment[], sort: CommentSort): MockComment[] {
+  const sorted = [...comments]
+  if (sort === "top") {
+    sorted.sort((a, b) => b.likeCount - a.likeCount)
+  } else {
+    sorted.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+  }
+  return sorted
+}
+
+function listComments(postId: string, sort: CommentSort): Page<Comment> {
+  const topLevel = sortComments(listTopLevelComments(postId), sort)
+  const items: Comment[] = []
+
+  for (const comment of topLevel) {
+    items.push(toCommentDto(comment))
+    // Reply chưa xoá đi kèm ngay sau cha, theo thứ tự thời gian — client không tự ghép cây.
+    const replies = db.comments
+      .filter((item) => item.postId === postId && item.parentId === comment.id && !item.deleted)
+      .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))
+    for (const reply of replies) {
+      items.push(toCommentDto(reply))
+    }
+  }
+
+  return { items, next: null }
+}
+
+function createComment(postId: string, body: { body?: string; parentId?: string | null }): Comment {
+  const post = db.posts.find((item) => item.id === postId)
+  if (!post) throw new Error("Không tìm thấy bài đăng")
+
+  const text = (body.body ?? "").trim()
+  if (text.length === 0) throw new Error("Nội dung bình luận trống")
+
+  const parentId = body.parentId ?? null
+  if (parentId !== null) {
+    const parent = findComment(parentId)
+    if (!parent || parent.postId !== postId) throw new Error("Không tìm thấy bình luận gốc")
+    if (parent.parentId !== null) throw new Error("Chỉ hỗ trợ trả lời 1 cấp")
+  }
+
+  commentSeq += 1
+  const comment: MockComment = {
+    id: `c-new-${commentSeq}`,
+    postId,
+    author: COMMENT_USER,
+    body: text,
+    createdAt: new Date().toISOString(),
+    likeCount: 0,
+    likedByMe: false,
+    parentId,
+    deleted: false,
+  }
+
+  db.comments.push(comment)
+  post.commentCount += 1
+  return toCommentDto(comment)
+}
+
+function setCommentLike(commentId: string, liked: boolean): Comment {
+  const comment = findComment(commentId)
+  if (!comment || comment.deleted) notFoundComment()
+  if (liked !== comment.likedByMe) {
+    comment.likedByMe = liked
+    comment.likeCount += liked ? 1 : -1
+  }
+  return toCommentDto(comment)
+}
+
+function deleteCommentSoft(commentId: string): void {
+  const comment = findComment(commentId)
+  if (!comment || comment.deleted) notFoundComment()
+
+  // Xoá mềm: giữ bản ghi để reply không mất cha, nhưng ẩn nội dung.
+  comment.deleted = true
+  for (const reply of db.comments) {
+    if (reply.parentId === commentId && !reply.deleted) reply.deleted = true
+  }
+
+  const post = db.posts.find((item) => item.id === comment.postId)
+  if (post) {
+    const removedCount = 1 + db.comments.filter((item) => item.parentId === commentId).length
+    post.commentCount = Math.max(0, post.commentCount - removedCount)
+  }
+}
+
+function notFoundComment(): never {
+  throw new Error("Không tìm thấy bình luận")
+}
+
+// ---------------------------------------------------------------------------
 // Adapter
 // ---------------------------------------------------------------------------
 
@@ -248,6 +379,16 @@ function notFound(config: InternalAxiosRequestConfig, message: string): never {
     data: { detail: message },
     status: 404,
     statusText: "Not Found",
+    headers: new AxiosHeaders({ "content-type": "application/json" }),
+    config,
+  })
+}
+
+function badRequest(config: InternalAxiosRequestConfig, message: string): never {
+  throw new AxiosError(message, "ERR_BAD_REQUEST", config, undefined, {
+    data: { detail: message },
+    status: 400,
+    statusText: "Bad Request",
     headers: new AxiosHeaders({ "content-type": "application/json" }),
     config,
   })
@@ -355,6 +496,48 @@ const routes: Route[] = [
       if (!post) notFound(config, "Không tìm thấy bài đăng")
       post.savedByMe = body.saved ?? !post.savedByMe
       return toPostDto(post)
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/posts\/([^/]+)\/comments$/,
+    handler: (config, [postId]) => {
+      const { sort = "new" } = query(config)
+      const post = db.posts.find((item) => item.id === postId)
+      if (!post) notFound(config, "Không tìm thấy bài đăng")
+      return listComments(postId, sort === "top" ? "top" : "new")
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/posts\/([^/]+)\/comments$/,
+    handler: (config, [postId]) => {
+      const body = parseBody<{ body?: string; parentId?: string | null }>(config)
+      try {
+        return createComment(postId, body)
+      } catch (error) {
+        badRequest(config, error instanceof Error ? error.message : "Yêu cầu không hợp lệ")
+      }
+    },
+  },
+  {
+    method: "patch",
+    pattern: /^\/comments\/([^/]+)\/like$/,
+    handler: (config, [commentId]) => {
+      const body = parseBody<{ liked?: boolean }>(config)
+      const comment = findComment(commentId)
+      if (!comment || comment.deleted) notFound(config, "Không tìm thấy bình luận")
+      return setCommentLike(commentId, body.liked ?? !comment.likedByMe)
+    },
+  },
+  {
+    method: "delete",
+    pattern: /^\/comments\/([^/]+)$/,
+    handler: (config, [commentId]) => {
+      const comment = findComment(commentId)
+      if (!comment || comment.deleted) notFound(config, "Không tìm thấy bình luận")
+      deleteCommentSoft(commentId)
+      return { deleted: true }
     },
   },
   {

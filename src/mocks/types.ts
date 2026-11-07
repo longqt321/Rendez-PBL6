@@ -1,4 +1,4 @@
-import type { Post } from "@/features/social/types/post"
+import type { Author, Post } from "@/features/social/types/post"
 
 /**
  * Bản ghi bài đăng trong "database" của server giả lập.
@@ -7,3 +7,26 @@ import type { Post } from "@/features/social/types/post"
  * Đây là chi tiết nội bộ phía server — frontend không bao giờ thấy type này.
  */
 export type MockPost = Omit<Post, "place">
+
+/**
+ * Bản ghi bình luận trong "database" của server giả lập.
+ *
+ * Server chỉ lưu `parentId`; object `replyTo` (handle người được trả lời) được
+ * suy ra từ bình luận cha lúc serialize. Xoá mềm: bản ghi giữ lại trong db để
+ * cây reply không mất cha, nhưng nội dung không còn được trả về. Chi tiết nội
+ * bộ — frontend không thấy type này.
+ */
+export interface MockComment {
+  id: string
+  postId: string
+  author: Author
+  body: string
+  createdAt: string
+  likeCount: number
+  likedByMe: boolean
+  parentId: string | null
+  deleted: boolean
+}
+
+/** Dữ liệu seed chưa có trạng thái xoá — server gán `deleted: false` khi nạp. */
+export type MockCommentSeed = Omit<MockComment, "deleted">
