@@ -66,4 +66,8 @@ export interface MockCollection {
   owner: Author
   placeIds: string[]
   createdAt: string
+  /** Số lượt thả tim — server đếm. */
+  likeCount: number
+  /** Người dùng hiện tại đã thả tim chưa — server lưu, không suy ra lúc serialize. */
+  likedByMe: boolean
 }

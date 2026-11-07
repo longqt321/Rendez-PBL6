@@ -8,6 +8,16 @@ export async function getCollections(params?: { placeId?: string }): Promise<Col
   return data.items
 }
 
+/**
+ * `GET /users/:handle/collections` — bộ sưu tập công khai của một người.
+ *
+ * Server lo việc ẩn bộ sưu tập riêng tư; client chỉ render đúng những gì nhận được.
+ */
+export async function getUserCollections(handle: string): Promise<CollectionSummary[]> {
+  const { data } = await api.get<Page<CollectionSummary>>(`/users/${handle}/collections`)
+  return data.items
+}
+
 export interface CreateCollectionInput {
   name: string
   description?: string
@@ -17,6 +27,21 @@ export interface CreateCollectionInput {
 /** `POST /collections` — tạo bộ sưu tập rỗng. */
 export async function createCollection(input: CreateCollectionInput): Promise<Collection> {
   const { data } = await api.post<Collection>("/collections", input)
+  return data
+}
+
+export interface UpdateCollectionInput {
+  name?: string
+  description?: string
+  isPrivate?: boolean
+}
+
+/** `PATCH /collections/:id` — sửa tên, mô tả, trạng thái công khai (chỉ chủ sở hữu). */
+export async function updateCollection(
+  id: string,
+  input: UpdateCollectionInput,
+): Promise<Collection> {
+  const { data } = await api.patch<Collection>(`/collections/${id}`, input)
   return data
 }
 
@@ -41,5 +66,17 @@ export async function setCollectionPlace(
     placeId,
     member,
   })
+  return data
+}
+
+/** `POST /collections/:id/like` — thả tim bộ sưu tập công khai. */
+export async function likeCollection(id: string): Promise<Collection> {
+  const { data } = await api.post<Collection>(`/collections/${id}/like`)
+  return data
+}
+
+/** `DELETE /collections/:id/like` — bỏ thả tim. */
+export async function unlikeCollection(id: string): Promise<Collection> {
+  const { data } = await api.delete<Collection>(`/collections/${id}/like`)
   return data
 }

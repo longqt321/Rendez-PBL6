@@ -287,6 +287,8 @@ function toCollectionDto(collection: MockCollection): Collection {
     placeIds: [...collection.placeIds],
     createdAt: collection.createdAt,
     isMine: collection.owner.id === ME.id,
+    likeCount: collection.likeCount,
+    likedByMe: collection.likedByMe,
   }
 }
 
@@ -302,6 +304,8 @@ function toCollectionSummary(
     placeCount: collection.placeIds.length,
     previewPlaceIds: collection.placeIds.slice(0, 3),
     createdAt: collection.createdAt,
+    likeCount: collection.likeCount,
+    likedByMe: collection.likedByMe,
     ...(targetPlaceId ? { containsPlace: collection.placeIds.includes(targetPlaceId) } : {}),
   }
 }
@@ -447,9 +451,79 @@ function createCollection(config: InternalAxiosRequestConfig): Collection {
     owner: ME,
     placeIds: [],
     createdAt: new Date().toISOString(),
+    likeCount: 0,
+    likedByMe: false,
   }
   db.collections.push(collection)
   return toCollectionDto(collection)
+}
+
+/**
+ * Sửa thông tin bộ sưu tập — body có thể chứa một phần `name`, `description`,
+ * `isPrivate`. Trường không gửi thì giữ nguyên.
+ *
+ * Ràng buộc giống lúc tạo: tên không rỗng, tối đa 80 ký tự; mô tả tối đa 400.
+ */
+function updateCollection(config: InternalAxiosRequestConfig, collectionId: string): Collection {
+  const collection = db.collections.find((item) => item.id === collectionId)
+  if (!collection) notFound(config, "Không tìm thấy bộ sưu tập")
+  if (collection.owner.id !== ME.id) forbidden(config, "Không phải bộ sưu tập của bạn")
+
+  const body = parseBody(config) as { name?: unknown; description?: unknown; isPrivate?: unknown }
+
+  if (body.name !== undefined) {
+    const name = typeof body.name === "string" ? body.name.trim() : ""
+    if (name.length === 0) badRequest(config, "Tên bộ sưu tập trống")
+    if (name.length > 80) badRequest(config, "Tên bộ sưu tập tối đa 80 ký tự")
+    collection.name = name
+  }
+
+  if (body.description !== undefined) {
+    const description = typeof body.description === "string" ? body.description.trim() : ""
+    if (description.length > 400) badRequest(config, "Mô tả tối đa 400 ký tự")
+    collection.description = description
+  }
+
+  if (body.isPrivate !== undefined) {
+    collection.isPrivate = body.isPrivate === true
+  }
+
+  return toCollectionDto(collection)
+}
+
+/** Thả tim / bỏ thả tim — idempotent, không cho tự tim bộ sưu tập của mình. */
+function setCollectionLike(
+  config: InternalAxiosRequestConfig,
+  collectionId: string,
+  liked: boolean,
+): Collection {
+  const collection = db.collections.find((item) => item.id === collectionId)
+  if (!collection) notFound(config, "Không tìm thấy bộ sưu tập")
+  if (collection.isPrivate && collection.owner.id !== ME.id) {
+    notFound(config, "Không tìm thấy bộ sưu tập")
+  }
+  if (collection.owner.id === ME.id) badRequest(config, "Không thể thả tim bộ sưu tập của mình")
+
+  if (liked !== collection.likedByMe) {
+    collection.likedByMe = liked
+    collection.likeCount += liked ? 1 : -1
+  }
+  return toCollectionDto(collection)
+}
+
+/**
+ * Bộ sưu tập công khai của một người — ẩn hết bộ riêng tư, trừ khi xem chính mình.
+ * Mới tạo trước.
+ */
+function listUserCollections(handle: string): CollectionSummary[] {
+  const user = findUserByHandle(handle)
+  if (!user) throw new Error("Không tìm thấy người dùng")
+
+  return db.collections
+    .filter((collection) => collection.owner.id === user.id)
+    .filter((collection) => !collection.isPrivate || user.id === ME.id)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((collection) => toCollectionSummary(collection))
 }
 
 /** Chỉ chủ sở hữu được xoá bộ sưu tập. */
@@ -714,6 +788,21 @@ const routes: Route[] = [
   },
   {
     method: "patch",
+    pattern: /^\/collections\/([^/]+)$/,
+    handler: (config, [collectionId]) => updateCollection(config, collectionId),
+  },
+  {
+    method: "post",
+    pattern: /^\/collections\/([^/]+)\/like$/,
+    handler: (config, [collectionId]) => setCollectionLike(config, collectionId, true),
+  },
+  {
+    method: "delete",
+    pattern: /^\/collections\/([^/]+)\/like$/,
+    handler: (config, [collectionId]) => setCollectionLike(config, collectionId, false),
+  },
+  {
+    method: "patch",
     pattern: /^\/collections\/([^/]+)\/places$/,
     handler: (config, [collectionId]) => setCollectionPlaces(config, collectionId),
   },
@@ -856,6 +945,18 @@ const routes: Route[] = [
       try {
         const items = listProfilePosts(handle, tab)
         return { items, next: null } satisfies Page<Post>
+      } catch {
+        notFound(config, "Không tìm thấy người dùng")
+      }
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/users\/([^/]+)\/collections$/,
+    handler: (config, [handle]) => {
+      try {
+        const items = listUserCollections(handle)
+        return { items, next: null } satisfies Page<CollectionSummary>
       } catch {
         notFound(config, "Không tìm thấy người dùng")
       }

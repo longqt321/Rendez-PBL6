@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router"
-import { ArrowLeftIcon, LockIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import { ArrowLeftIcon, LockIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -24,14 +24,25 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
+import { ShareButton } from "@/components/shared/share-button"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { usePlace } from "@/features/places/hooks/use-place"
 import { useCollection } from "../hooks/use-collection"
-import { useDeleteCollection } from "../hooks/use-collections"
+import { useDeleteCollection, useSetCollectionPlace } from "../hooks/use-collections"
+import { CollectionLikeButton } from "../components/collection-like-button"
+import { EditCollectionDialog } from "../components/edit-collection-dialog"
+
+interface CollectionPlaceItemProps {
+  placeId: string
+  /** Chỉ chủ sở hữu mới có nút bỏ địa điểm khỏi bộ sưu tập. */
+  canRemove: boolean
+  collectionId: string
+}
 
 /** Một địa điểm trong bộ sưu tập — tra riêng qua cache địa điểm. */
-function CollectionPlaceItem({ placeId }: { placeId: string }) {
+function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPlaceItemProps) {
   const { data: place, isPending } = usePlace(placeId)
+  const setPlace = useSetCollectionPlace()
 
   if (isPending) {
     return (
@@ -41,7 +52,35 @@ function CollectionPlaceItem({ placeId }: { placeId: string }) {
     )
   }
   if (!place) return null
-  return <PlaceCard place={place} />
+
+  function handleRemove() {
+    setPlace.mutate(
+      { id: collectionId, placeId, member: false },
+      {
+        onSuccess: () => toast.success(`Đã bỏ “${place?.name}” khỏi bộ sưu tập`),
+        onError: () => toast.error("Không bỏ được, thử lại nhé"),
+      },
+    )
+  }
+
+  return (
+    <div className="relative h-full">
+      <PlaceCard place={place} />
+      {canRemove ? (
+        <Button
+          variant="outline"
+          size="icon-sm"
+          className="absolute top-2 right-2 z-10 bg-background/90 backdrop-blur"
+          aria-label={`Bỏ ${place.name} khỏi bộ sưu tập`}
+          title="Bỏ khỏi bộ sưu tập"
+          disabled={setPlace.isPending}
+          onClick={handleRemove}
+        >
+          {setPlace.isPending ? <Spinner /> : <XIcon />}
+        </Button>
+      ) : null}
+    </div>
+  )
 }
 
 /** Trang chi tiết bộ sưu tập — `/collections/:id`. */
@@ -100,13 +139,13 @@ export function CollectionDetailPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <header className="mt-4 flex items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="flex items-center gap-2 font-heading text-2xl font-bold tracking-tight">
+      <header className="mt-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <h1 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-bold tracking-tight">
             {collection.name}
             {collection.isPrivate ? (
-              <Badge variant="secondary" className="gap-1 text-sm">
-                <LockIcon className="size-3.5" aria-hidden="true" />
+              <Badge variant="secondary" className="gap-1 text-xs">
+                <LockIcon className="size-3" aria-hidden="true" />
                 Riêng tư
               </Badge>
             ) : null}
@@ -117,31 +156,46 @@ export function CollectionDetailPage() {
             </p>
           ) : null}
           <p className="text-sm text-muted-foreground">
-            {collection.placeIds.length} địa điểm · {collection.owner.name}
+            {collection.placeIds.length} địa điểm ·{" "}
+            {collection.isMine ? (
+              collection.owner.name
+            ) : (
+              <Link
+                to={`/u/${collection.owner.handle}`}
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                {collection.owner.name}
+              </Link>
+            )}
           </p>
         </div>
-        {collection.isMine ? (
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled
-              title="Sửa thông tin bộ sưu tập sẽ ra mắt sau"
-            >
-              <PencilIcon />
-              Sửa
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => setConfirming(true)}
-            >
-              <Trash2Icon />
-              Xoá
-            </Button>
-          </div>
-        ) : null}
+
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <CollectionLikeButton collection={collection} />
+          <ShareButton
+            title={`Bộ sưu tập “${collection.name}”`}
+            url={`/collections/${collection.id}`}
+          />
+          {collection.isMine ? (
+            <>
+              <EditCollectionDialog collection={collection}>
+                <Button variant="outline" size="sm">
+                  <PencilIcon />
+                  Sửa
+                </Button>
+              </EditCollectionDialog>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setConfirming(true)}
+              >
+                <Trash2Icon />
+                Xoá
+              </Button>
+            </>
+          ) : null}
+        </div>
       </header>
 
       {collection.placeIds.length === 0 ? (
@@ -160,8 +214,12 @@ export function CollectionDetailPage() {
       ) : (
         <ul className="mt-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {collection.placeIds.map((placeId) => (
-            <li key={placeId}>
-              <CollectionPlaceItem placeId={placeId} />
+            <li key={placeId} className="h-full">
+              <CollectionPlaceItem
+                placeId={placeId}
+                canRemove={collection.isMine}
+                collectionId={collection.id}
+              />
             </li>
           ))}
         </ul>

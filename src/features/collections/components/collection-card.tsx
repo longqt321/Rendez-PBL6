@@ -1,8 +1,8 @@
 import { Link } from "react-router"
-import { LockIcon, MapPinIcon } from "lucide-react"
+import { HeartIcon, LockIcon, MapPinIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { SeedImage } from "@/components/shared/seed-image"
-import { formatRelativeTime } from "@/lib/format"
+import { formatCount, formatRelativeTime } from "@/lib/format"
 import type { CollectionSummary } from "../types/collection"
 
 /** Thẻ bộ sưu tập trong lưới tab Bộ sưu tập — bấm mở chi tiết. */
@@ -42,7 +42,16 @@ export function CollectionCard({ collection }: { collection: CollectionSummary }
               Riêng tư
             </Badge>
           ) : null}
-          <span className="ml-auto">{formatRelativeTime(collection.createdAt)}</span>
+          <span className="ml-auto flex items-center gap-1">
+            <HeartIcon
+              className={
+                collection.likedByMe ? "size-3.5 fill-current text-destructive" : "size-3.5"
+              }
+              aria-hidden="true"
+            />
+            {formatCount(collection.likeCount)}
+          </span>
+          <span className="text-xs">{formatRelativeTime(collection.createdAt)}</span>
         </div>
       </div>
     </article>

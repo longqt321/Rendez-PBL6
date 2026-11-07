@@ -17,6 +17,10 @@ export interface Collection {
   placeIds: string[]
   createdAt: string
   isMine: boolean
+  /** Số lượt thả tim — server đếm, client chỉ hiển thị. */
+  likeCount: number
+  /** Người dùng hiện tại đã thả tim bộ sưu tập này chưa. */
+  likedByMe: boolean
 }
 
 /** Bản rút gọn nhúng khi liệt kê — chưa cần danh sách địa điểm đầy đủ. */
@@ -31,4 +35,6 @@ export interface CollectionSummary {
   createdAt: string
   /** Có chứa địa điểm đang truy vấn không (khi gọi kèm `?placeId=...`). */
   containsPlace?: boolean
+  likeCount: number
+  likedByMe: boolean
 }
