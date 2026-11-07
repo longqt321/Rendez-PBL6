@@ -246,3 +246,62 @@ input[type="search"]`; so `aria-label` của ô lọc `/discover` với topbar; 
 `src/features/search/pages/search-page.tsx` (bỏ form + state, thêm `Navigate`),
 `src/features/places/pages/discover-page.tsx` (ô lọc có nhãn riêng),
 `src/components/layout/app-shell.tsx` (dùng hook chung).
+
+---
+
+## L-006 — Tương phản cực đại + viền/bóng dùng màu chữ = đau mắt
+
+**Ngày:** 2026-11-07
+**Lỗi người dùng chỉ ra:**
+
+> "Hiện tại, tôi thấy thiết kế theo theme retro hay mặc định đều khá khó nhìn. Cả 2 thiết kế đều
+> tương phản quá lớn, nhìn hơi đau mắt. Hơn nữa, kích cỡ chữ và phông chữ cũng khó đọc, đau mắt.
+> Màu sắc được lựa chọn cho cả theme mặc định và retro của cả dark mode và light mode đều khó nhìn."
+
+**Đã làm sai gì:**
+
+| Việc đã làm                                                                         | Bằng chứng (đo trên trình duyệt thật)                                                |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Giữ nguyên template shadcn: nền `#ffffff`, chữ `#0a0a0a`                            | `default/light` contrast **19.79**, ΔL **0.855** — quá gắt cho đọc lâu               |
+| Dark mode dùng `#0a0a0a` / `#fafafa`                                                | contrast **18.96**, ΔL **0.840**; chữ trắng trên nền đen gây halation                |
+| Viền và bóng đổ dùng chính `--foreground`                                           | 30 chỗ `border-2 border-foreground` + 7 chỗ `shadow-[4px_4px_0_0_var(--foreground)]` |
+| Ở dark mode `--foreground` là màu **sáng** → bóng sáng chói đổ trên nền tối         | đây là thủ phạm lớn nhất của cảm giác "đau mắt", không phải riêng màu nền            |
+| 35 chỗ dùng cỡ chữ `text-[0.6rem]`…`text-[0.7rem]`                                  | = **9.6–11.2px**, dưới ngưỡng đọc thoải mái                                          |
+| Retro ép **toàn bộ body** sang Fraunces serif + `font-variation-settings: "WONK" 1` | trục `WONK` làm nét chữ méo; serif cho đoạn dài rất mỏi mắt                          |
+| Retro dùng 3 màu nhấn (đỏ gạch + vàng mù tạt + xanh rêu)                            | chọi nhau, vi phạm chính yêu cầu "1–2 bảng màu, không nhiều màu"                     |
+
+**Nguyên nhân:**
+
+Tôi coi "đúng token của template" là đủ, không đo cảm giác đọc. Template shadcn tối ưu cho **tương
+phản tối đa** (dễ nhận diện trên màn hình xấu) chứ không tối ưu cho **đọc lâu**. Và tôi dùng
+`--foreground` cho viền/bóng vì nó "đậm, rõ" — nhưng `--foreground` là **màu chữ**, đổi theo sáng/tối,
+nên ở dark mode nó biến thành nguồn sáng duy nhất trên nền tối. Đó là lỗi kiến trúc token, không phải
+lỗi chọn màu.
+
+**Quy tắc rút ra:**
+
+1. **Không dùng `#fff` / `#000` tuyệt đối.** Giữ ΔL (độ sáng OKLCH) giữa nền và chữ trong khoảng
+   **0.64–0.72** — đủ rõ nhưng không chói. Contrast thu được 11.5–13.8 (vượt AA 4.5 rất xa).
+2. **Viền và bóng không bao giờ dùng `--foreground`.** Dùng `--border` (một bậc trung tính) và token
+   bóng mềm `--shadow-soft` / `--shadow-raised` khai báo theo từng mode.
+3. **Cỡ chữ nhỏ nhất 0.72rem (11.5px)**; body 16px, `line-height: 1.6`. Không có ngoại lệ "cho gọn".
+4. **Serif chỉ cho tiêu đề**, không cho body. Nếu dùng font biến thiên, để trục tuỳ biến (`WONK`,
+   `SOFT`) ở **0** cho văn bản dài.
+5. **Mỗi skin đúng 1 màu nhấn.** Màu nhấn thứ hai chỉ được là biến thể của màu thứ nhất (hover/active).
+6. **Đo bằng số trước khi tuyên bố "đã đẹp"**: contrast từng cặp token, cỡ chữ nhỏ nhất trong `main`,
+   độ dày viền. Cảm giác thị giác thì người dùng xác nhận, nhưng các ngưỡng trên là điều kiện cần.
+
+**Cách kiểm tra bằng máy:**
+
+- `scratch/palette-live.mjs` — mở 4 tổ hợp (2 skin × 2 mode), resolve `oklch()` → sRGB bằng
+  `<canvas>` (không đọc chuỗi `oklch(...)` bằng regex — sẽ ra số sai), đo 5 cặp: chữ/nền,
+  chữ phụ/nền, chữ phụ/thẻ, chữ trên nút chính, viền/nền. Ngưỡng: **≥4.5** cho chữ, **≥1.5** cho viền.
+- `scratch/eval-candidate-palette.mjs` — chấm 40 cặp token trước khi áp vào CSS (dùng khi đổi palette).
+- Quét tĩnh phải bằng **0**:
+  - `grep -rn "border-2 border-foreground" src`
+  - `grep -rn "shadow-\[4px_4px_0_0_var(--foreground)\]" src`
+  - `grep -rnE "text-\[0\.(6|65|68|7)[0-9]*rem\]" src --include=*.tsx | grep -v "components/ui/"`
+- Đo trên DOM thật: cỡ chữ nhỏ nhất trong `main` phải **≥12px**; `border-width` của card phải là `1px`.
+
+**Đã sửa:** `src/index.css` (toàn bộ token 2 skin × 2 mode + `@layer base` + khối retro),
+19 file `.tsx` (cỡ chữ + viền/bóng). Chi tiết quyết định ở `docs/DECISIONS.md` D-016.

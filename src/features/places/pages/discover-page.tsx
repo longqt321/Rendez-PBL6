@@ -133,7 +133,7 @@ export function DiscoverPage() {
           ))}
         </ul>
       ) : isError ? (
-        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+        <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>
             <EmptyTitle>Không tải được danh sách địa điểm</EmptyTitle>
             <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
@@ -143,7 +143,7 @@ export function DiscoverPage() {
           </Button>
         </Empty>
       ) : places.length === 0 ? (
-        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+        <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <SearchXIcon />

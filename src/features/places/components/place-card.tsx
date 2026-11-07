@@ -12,7 +12,7 @@ interface PlaceCardProps {
 
 export function PlaceCard({ place }: PlaceCardProps) {
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-[0.25rem] border-2 border-foreground bg-card shadow-[4px_4px_0_0_var(--foreground)] transition-shadow hover:shadow-[6px_6px_0_0_var(--foreground)]">
+    <article className="group relative flex flex-col overflow-hidden rounded-[0.25rem] border border-border bg-card shadow-(--shadow-soft) transition-shadow hover:shadow-(--shadow-raised)">
       {/* Chiều cao ảnh do server trả về (`imageHeight`) → lưới mobile có nhịp masonry. */}
       <SeedImage
         seed={place.imageSeed}
@@ -22,11 +22,11 @@ export function PlaceCard({ place }: PlaceCardProps) {
       >
         <Badge
           variant="secondary"
-          className="absolute top-2 left-2 border-foreground bg-secondary text-secondary-foreground"
+          className="absolute top-2 left-2 border-border bg-secondary text-secondary-foreground"
         >
           {categoryLabel(place.category)}
         </Badge>
-        <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-[0.15rem] border-2 border-foreground bg-background px-1.5 py-0.5 text-[0.7rem] font-bold">
+        <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-[0.15rem] border border-border bg-background px-1.5 py-0.5 text-[0.78rem] font-bold">
           <StarIcon className="size-3 fill-current" aria-hidden="true" />
           {place.rating.toFixed(1)}
         </span>
@@ -47,7 +47,7 @@ export function PlaceCard({ place }: PlaceCardProps) {
           <span className="line-clamp-2">{place.address}</span>
         </p>
 
-        <div className="mt-auto flex items-center justify-between pt-1.5 text-[0.7rem] text-muted-foreground">
+        <div className="mt-auto flex items-center justify-between pt-1.5 text-[0.78rem] text-muted-foreground">
           <span>{formatCount(place.reviewCount)} đánh giá</span>
           <span aria-label={`Mức giá ${place.priceLevel} trên 3`} className="font-bold">
             {"₫".repeat(place.priceLevel)}

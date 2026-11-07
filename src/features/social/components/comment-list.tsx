@@ -82,7 +82,7 @@ export function CommentList({
             key={comment.id}
             className={
               comment.parentId !== null
-                ? "ml-8 border-l-2 border-dashed border-foreground/25 pl-3"
+                ? "ml-8 border-l border-dashed border-border pl-3"
                 : undefined
             }
           >

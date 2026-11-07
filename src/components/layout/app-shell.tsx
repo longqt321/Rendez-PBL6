@@ -72,13 +72,13 @@ function Brand() {
     <div className="flex items-center gap-2">
       <span
         aria-hidden="true"
-        className="grid size-8 place-items-center rounded-[0.2rem] border-2 border-foreground bg-secondary text-sm font-bold text-secondary-foreground"
+        className="grid size-8 place-items-center rounded-[0.2rem] border border-border bg-secondary text-sm font-bold text-secondary-foreground"
       >
         S
       </span>
       <span className="font-heading text-lg leading-none font-bold tracking-tight">
         Sài Gòn
-        <span className="block text-[0.6rem] font-medium tracking-[0.18em] uppercase opacity-60">
+        <span className="block text-[0.72rem] font-medium tracking-[0.18em] uppercase opacity-60">
           Ăn &amp; Đi
         </span>
       </span>
@@ -90,7 +90,7 @@ function SideNav() {
   const { data: unread = 0 } = useUnreadNotificationCount()
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r-2 border-foreground/15 bg-sidebar px-4 py-5 lg:flex">
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-border bg-sidebar px-4 py-5 lg:flex">
       <Brand />
 
       <nav aria-label="Điều hướng chính" className="mt-8 flex flex-col gap-1">
@@ -102,17 +102,17 @@ function SideNav() {
               to={item.to}
               className={({ isActive }) =>
                 cn(
-                  "group flex items-center gap-3 rounded-[0.2rem] border-2 px-3 py-2 text-sm font-medium transition-colors",
+                  "group flex items-center gap-3 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "border-foreground bg-primary text-primary-foreground"
-                    : "border-transparent hover:border-foreground/25 hover:bg-muted",
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-transparent hover:border-border hover:bg-muted",
                 )
               }
             >
               <Icon className="size-4 shrink-0" aria-hidden="true" />
               <span className="flex-1">{item.label}</span>
               {item.to === "/notification" && unread > 0 ? (
-                <Badge variant="secondary" className="min-w-5 px-1 text-[0.65rem] font-bold">
+                <Badge variant="secondary" className="min-w-5 px-1 text-[0.75rem] font-bold">
                   {unread}
                 </Badge>
               ) : null}
@@ -121,9 +121,9 @@ function SideNav() {
         })}
       </nav>
 
-      <div className="mt-auto flex flex-col gap-3 border-t-2 border-dashed border-foreground/20 pt-4">
+      <div className="mt-auto flex flex-col gap-3 border-t border-dashed border-border pt-4">
         <SkinSwitch />
-        <p className="text-[0.65rem] leading-relaxed text-muted-foreground">
+        <p className="text-[0.75rem] leading-relaxed text-muted-foreground">
           Dữ liệu minh hoạ. Chưa kết nối backend.
         </p>
       </div>
@@ -167,7 +167,7 @@ function TopBar() {
   const { draft, setDraft, submit } = useSearchQuerySync()
 
   return (
-    <header className="sticky top-0 z-20 border-b-2 border-foreground/15 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 lg:px-8">
         <div className="lg:hidden">
           <Brand />
@@ -231,7 +231,7 @@ function UserMenu() {
             <span className="block text-xs font-normal text-muted-foreground">@minhanh.eats</span>
             <Link
               to="/profile"
-              className="mt-1 block text-[0.7rem] font-medium text-foreground underline underline-offset-2"
+              className="mt-1 block text-[0.78rem] font-medium text-foreground underline underline-offset-2"
             >
               Xem trang cá nhân →
             </Link>
@@ -290,7 +290,7 @@ function BottomNav() {
   return (
     <nav
       aria-label="Điều hướng chính"
-      className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-foreground/15 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
     >
       <ul className="mx-auto flex max-w-md items-stretch">
         {NAV_ITEMS.map((item) => {
@@ -301,7 +301,7 @@ function BottomNav() {
                 to={item.to}
                 className={({ isActive }) =>
                   cn(
-                    "relative flex flex-col items-center gap-1 py-2.5 text-[0.65rem] font-medium transition-colors",
+                    "relative flex flex-col items-center gap-1 py-2.5 text-[0.75rem] font-medium transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground",
                   )
                 }

@@ -30,13 +30,13 @@ export function PostPreview({ post, footer }: PostPreviewProps) {
       <div className="flex flex-col gap-2 p-4">
         <div className="flex items-center gap-2.5">
           <Avatar>
-            <AvatarFallback className="bg-accent text-[0.65rem] font-bold text-accent-foreground">
+            <AvatarFallback className="bg-accent text-[0.75rem] font-bold text-accent-foreground">
               {post.author.initials}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm leading-tight font-semibold">{post.author.name}</p>
-            <p className="truncate text-[0.7rem] text-muted-foreground">
+            <p className="truncate text-[0.78rem] text-muted-foreground">
               @{post.author.handle} · {formatRelativeTime(post.createdAt)}
             </p>
           </div>
@@ -45,11 +45,14 @@ export function PostPreview({ post, footer }: PostPreviewProps) {
         <p className="text-sm leading-relaxed whitespace-pre-line">{post.caption}</p>
 
         {place && (
-          <div className="flex items-center gap-2 rounded-[0.2rem] border-2 border-foreground/70 bg-muted/70 px-2 py-1.5">
+          <div
+            data-slot="post-place"
+            className="flex items-center gap-2 rounded-md border border-border/70 bg-muted/70 px-2 py-1.5"
+          >
             <MapPinIcon className="size-3.5 shrink-0" aria-hidden="true" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-semibold">{place.name}</span>
-              <span className="block truncate text-[0.68rem] text-muted-foreground">
+              <span className="block truncate text-[0.75rem] text-muted-foreground">
                 {place.address}
               </span>
             </span>

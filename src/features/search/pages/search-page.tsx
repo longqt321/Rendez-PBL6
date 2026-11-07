@@ -99,7 +99,7 @@ function SearchResults({ query }: { query: string }) {
                 <li key={user.id}>
                   <Link
                     to={user.isMe ? "/profile" : `/u/${user.handle}`}
-                    className="flex items-center gap-3 rounded-[0.25rem] border-2 border-foreground/15 p-3 transition-colors hover:bg-muted"
+                    className="flex items-center gap-3 rounded-[0.25rem] border border-border/15 p-3 transition-colors hover:bg-muted"
                   >
                     <Avatar size="lg">
                       <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">

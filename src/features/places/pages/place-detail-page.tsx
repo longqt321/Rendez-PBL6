@@ -67,7 +67,7 @@ export function PlaceDetailPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="mt-4 overflow-hidden rounded-[0.25rem] border-2 border-foreground bg-card shadow-[4px_4px_0_0_var(--foreground)]">
+      <div className="mt-4 overflow-hidden rounded-[0.25rem] border border-border bg-card shadow-(--shadow-soft)">
         <SeedImage
           seed={place.imageSeed}
           height={280}
@@ -129,7 +129,7 @@ export function PlaceDetailPage() {
                 <li key={post.id}>
                   <Link
                     to={`/post/${post.id}`}
-                    className="flex items-start gap-3 rounded-[0.25rem] border-2 border-foreground/15 p-3 transition-colors hover:bg-muted"
+                    className="flex items-start gap-3 rounded-[0.25rem] border border-border/15 p-3 transition-colors hover:bg-muted"
                   >
                     <SeedImage
                       seed={post.imageSeed}

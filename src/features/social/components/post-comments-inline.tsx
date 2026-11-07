@@ -25,7 +25,7 @@ export function PostCommentsInline({ post }: PostCommentsInlineProps) {
   const preview = comments.slice(0, 2)
 
   return (
-    <div className="border-t border-dashed border-foreground/20 px-3 py-2">
+    <div className="border-t border-dashed border-border px-3 py-2">
       {preview.length > 0 && (
         <ItemGroup className="gap-0">
           {preview.map((comment) => (

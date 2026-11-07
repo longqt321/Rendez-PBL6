@@ -41,7 +41,7 @@ function ActorRow({ notification }: { notification: ActorNotification }) {
   const body = (
     <>
       <Avatar>
-        <AvatarFallback className="bg-accent text-[0.65rem] font-bold text-accent-foreground">
+        <AvatarFallback className="bg-accent text-[0.75rem] font-bold text-accent-foreground">
           {notification.actorInitials}
         </AvatarFallback>
       </Avatar>
@@ -50,11 +50,11 @@ function ActorRow({ notification }: { notification: ActorNotification }) {
           <span className="font-semibold">{notification.actorName}</span> {meta.text}
         </p>
         {notification.excerpt ? (
-          <p className="mt-1 line-clamp-2 border-l-2 border-foreground/25 pl-2 text-[0.7rem] text-muted-foreground italic">
+          <p className="mt-1 line-clamp-2 border-l border-border pl-2 text-[0.78rem] text-muted-foreground italic">
             “{notification.excerpt}”
           </p>
         ) : null}
-        <p className="mt-1 text-[0.65rem] text-muted-foreground">
+        <p className="mt-1 text-[0.75rem] text-muted-foreground">
           {formatRelativeTime(notification.createdAt)}
         </p>
       </div>
@@ -63,8 +63,8 @@ function ActorRow({ notification }: { notification: ActorNotification }) {
   )
 
   const className = cn(
-    "relative flex items-start gap-2.5 rounded-[0.2rem] border-2 p-2.5 transition-colors",
-    notification.read ? "border-foreground/15" : "border-primary bg-primary/5",
+    "relative flex items-start gap-2.5 rounded-md border p-2.5 transition-colors",
+    notification.read ? "border-border" : "border-primary bg-primary/5",
   )
 
   // Thông báo `follow` không gắn với bài nào → chỉ đánh dấu đã đọc, không điều hướng.
@@ -132,7 +132,7 @@ export function NotificationPage() {
           Đang tải thông báo…
         </p>
       ) : isError ? (
-        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+        <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>
             <EmptyTitle>Không tải được thông báo</EmptyTitle>
             <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
@@ -172,7 +172,7 @@ function SuggestionSection({
 }) {
   if (suggestions.length === 0) {
     return (
-      <Empty className="border-2 border-dashed border-foreground/30">
+      <Empty className="border border-dashed border-border">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <InfoIcon />
@@ -207,7 +207,7 @@ function SuggestionSection({
 function OtherActivitySection({ notifications }: { notifications: OtherNotification[] }) {
   if (notifications.length === 0) {
     return (
-      <Empty className="border-2 border-dashed border-foreground/30">
+      <Empty className="border border-dashed border-border">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <BellIcon />
@@ -232,16 +232,16 @@ function OtherActivitySection({ notifications }: { notifications: OtherNotificat
             <li
               key={notification.id}
               className={cn(
-                "rounded-[0.2rem] border-2 p-2.5",
-                notification.read ? "border-foreground/15" : "border-primary bg-primary/5",
+                "rounded-md border p-2.5",
+                notification.read ? "border-border" : "border-primary bg-primary/5",
               )}
             >
               <p className="flex items-center gap-1.5 text-xs font-semibold">
                 <InfoIcon className="size-3.5 shrink-0" aria-hidden="true" />
                 {notification.title}
               </p>
-              <p className="mt-1 text-[0.7rem] text-muted-foreground">{notification.body}</p>
-              <p className="mt-1 text-[0.65rem] text-muted-foreground">
+              <p className="mt-1 text-[0.78rem] text-muted-foreground">{notification.body}</p>
+              <p className="mt-1 text-[0.75rem] text-muted-foreground">
                 {formatRelativeTime(notification.createdAt)}
               </p>
             </li>

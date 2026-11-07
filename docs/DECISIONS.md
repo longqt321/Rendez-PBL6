@@ -795,3 +795,108 @@ shadcn, dùng `@base-ui/react` đã có trong dự án.
 - Chưa xem giao diện bằng mắt người (model không đọc được PNG); kết luận từ DOM + `getBoundingClientRect`.
 - Chưa test Firefox/Safari — chỉ Chrome 156.
 - Chưa chạy lại trên preview 4174 sau thay đổi này (chỉ dev 5173).
+
+## D-016 — Hai bảng màu dịu mắt (Slate mềm + Giấy ấm), mỗi bảng một màu nhấn
+
+**Ngày:** 2026-11-07
+**Trạng thái:** Đã áp dụng
+**Liên quan:** L-006
+
+### Bối cảnh
+
+Người dùng phản hồi cả 2 skin (mặc định + retro) ở cả 2 mode đều **tương phản quá lớn, đau mắt**;
+cỡ chữ và phông chữ khó đọc; màu khó nhìn. Yêu cầu: tìm bảng màu thiết kế phù hợp, **không dùng quá
+nhiều màu**, chọn 1–2 bảng chính.
+
+Đo lại bộ token cũ (`scratch/audit-current-palette.mjs`) xác nhận bằng số:
+
+| Tổ hợp        | nền       | chữ       | contrast | ΔL    |
+| ------------- | --------- | --------- | -------- | ----- |
+| default/light | `#ffffff` | `#0a0a0a` | 19.79    | 0.855 |
+| default/dark  | `#0a0a0a` | `#fafafa` | 18.96    | 0.840 |
+| retro/light   | —         | —         | —        | 0.702 |
+| retro/dark    | —         | —         | —        | 0.700 |
+
+Đây là template shadcn nguyên bản — tối ưu cho nhận diện, không tối ưu cho đọc lâu.
+
+### Quyết định
+
+**Hai bảng, mỗi bảng đúng 1 màu nhấn.** Nền/chữ đều là trung tính (không phải `#fff`/`#000`), màu
+nhấn chỉ dùng cho `--primary`, `--ring`, trạng thái active.
+
+| Skin                 | Trung tính    | Màu nhấn duy nhất                  | Tham chiếu      |
+| -------------------- | ------------- | ---------------------------------- | --------------- |
+| Mặc định "Slate mềm" | lạnh, hue 250 | indigo `oklch(0.475 0.088 258)`    | Radix **Slate** |
+| Retro "Giấy ấm"      | ấm, hue 85    | terracotta `oklch(0.520 0.120 35)` | Radix **Sand**  |
+
+Đã **bỏ** hai màu nhấn cũ của retro (vàng mù tạt + xanh rêu) — chọi nhau và vi phạm yêu cầu.
+
+**ΔL mục tiêu 0.64–0.70** (thay vì 0.84–0.86). Contrast vẫn 11.5–13.8, vượt AA (4.5) rất xa và gần
+ngưỡng AAA (7).
+
+**Token bóng mới** thay bóng cứng màu chữ:
+
+```css
+--shadow-soft: 0 1px 2px <fg>/8%, 0 2px 8px <fg>/6%;
+--shadow-raised: 0 2px 4px <fg>/10%, 0 6px 16px <fg>/8%;
+```
+
+Dùng trực tiếp bằng cú pháp Tailwind 4 `shadow-(--shadow-soft)` — **không** cần đăng ký trong
+`@theme inline`.
+
+**Retro: bỏ serif cho body.** `html[data-skin="retro"] { font-family: var(--font-display) }` và
+`--font-sans: var(--font-display)` đã xoá. Giờ chỉ `h1/h2/h3/[data-slot="badge"]/[data-sonner-toast]`
+dùng Fraunces; body dùng Geist sans. `font-variation-settings: "WONK" 0` (trước là `1` — gây méo nét).
+
+**Retro: bỏ viền 2px màu chữ + bóng cứng.** Card/input/button/dialog/toast chuyển về `1px` +
+`var(--border)` + `var(--shadow-soft|raised)`. `--radius` tăng `0.25rem → 0.375rem`. Badge bỏ
+`text-transform: uppercase`. Separator bỏ `repeating-linear-gradient` gạch đứt.
+
+**Cỡ chữ:** `0.6rem→0.72rem`, `0.65/0.68rem→0.75rem`, `0.7rem→0.78rem` (áp cho toàn `src/` trừ
+`components/ui/`). Body 16px / `line-height: 1.6`.
+
+### Phương án đã xem
+
+- _Giữ template shadcn, chỉ đổi màu nhấn_ — loại: gốc rễ là contrast 19.79 và ΔL 0.855, đổi màu nhấn
+  không chạm tới.
+- _Dùng nguyên bảng Radix Sand/Slate không tune_ — loại: `--border` của Radix ở light mode vẫn chỉ đạt
+  contrast 1.33 với nền, dưới ngưỡng 1.5 cần cho viền thấy được. Phải hạ L của `--border`.
+- _Thêm dependency palette (ví dụ `@radix-ui/colors`)_ — loại: chỉ cần ~20 giá trị tĩnh, thêm dep là
+  overengineering; `package.json`/`bun.lock` giữ nguyên.
+- _Giữ serif cho body retro nhưng tăng cỡ chữ_ — loại: vấn đề là hình dáng nét (serif + WONK), không
+  phải cỡ.
+- _Bỏ hẳn skin retro_ — loại: người dùng muốn cả 2 skin đều đọc được, không phải bỏ một.
+
+### Kích thước / license
+
+Không thêm dependency npm. `package.json`, `bun.lock` không đổi. Bảng màu tham chiếu Radix Colors
+(MIT) nhưng chỉ dùng giá trị màu, không copy mã.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build` → exit 0.
+- `scratch/eval-candidate-palette.mjs`: **40/40** cặp token đạt ngưỡng (chữ ≥4.5, viền ≥1.5).
+- `scratch/palette-live.mjs` đo trên trình duyệt thật (canvas resolve `oklch()` → sRGB):
+
+| Tổ hợp        | nền       | chữ       | contrast  | chữ phụ/nền | chữ phụ/thẻ | nút chính | viền/nền |
+| ------------- | --------- | --------- | --------- | ----------- | ----------- | --------- | -------- |
+| default/light | `#f4f7f9` | `#23282f` | **13.78** | 5.71        | 5.99        | 6.39      | 1.53     |
+| default/dark  | `#191b1f` | `#dadee1` | **12.74** | 6.92        | 6.09        | 7.22      | 1.58     |
+| retro/light   | `#f4f0e7` | `#382b22` | **12.01** | 5.53        | 5.83        | 5.42      | 1.52     |
+| retro/dark    | `#29221d` | `#e2ddd3` | **11.57** | 7.12        | 6.19        | 6.10      | 1.70     |
+
+- DOM thật: font body cả 4 tổ hợp `Geist Variable 16px / 25.6px`; chữ nhỏ nhất trong `main` là
+  **12px** (trước 9.6px); viền card `1px` (trước `2px`).
+- Quét tĩnh: không còn `border-2 border-foreground`, `shadow-[4px_4px_0_0_var(--foreground)]`,
+  `text-[0.6*]`/`text-[0.7*]` ngoài `components/ui/`.
+- Hồi quy trên **dev 5173** và **preview 4174** (bundle production mới build):
+  `search-check.mjs` **19/19**, `group1-check.mjs` **31/31**, `feature-check.mjs` **39/39**,
+  `app-check.mjs` **44/44**, `check-filter.mjs` **28/28** — cả 2 môi trường.
+
+### Chưa xác minh
+
+- **Chưa xem giao diện bằng mắt người** — model không đọc được PNG. Mọi kết luận từ computed style +
+  canvas resolve. Cảm giác "hết đau mắt" chỉ người dùng xác nhận được.
+- Chưa test Firefox/Safari — chỉ Chrome 156 qua CDP.
+- Chưa kiểm tra dark mode trên màn hình OLED thật (halation chỉ thấy bằng mắt).
+- Chưa đo tương phản của ảnh seed (`SeedImage`) với nền — ảnh do server trả, không thuộc palette.

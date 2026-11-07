@@ -195,10 +195,15 @@ Hai lớp tuỳ biến **độc lập nhau**, có thể kết hợp tự do (4 t
 
 ### Font
 
-| Skin     | Font body/heading           | File import                              |
-| -------- | --------------------------- | ---------------------------------------- |
-| Mặc định | `Geist Variable` (sans)     | `@fontsource-variable/geist`             |
-| Retro    | `Fraunces Variable` (serif) | `@fontsource-variable/fraunces/wonk.css` |
+| Skin     | Font body               | Font tiêu đề                | File import                              |
+| -------- | ----------------------- | --------------------------- | ---------------------------------------- |
+| Mặc định | `Geist Variable` (sans) | `Geist Variable` (sans)     | `@fontsource-variable/geist`             |
+| Retro    | `Geist Variable` (sans) | `Fraunces Variable` (serif) | `@fontsource-variable/fraunces/wonk.css` |
+
+> [!IMPORTANT]
+> Từ D-016, **body của cả 2 skin đều dùng sans**. Fraunces chỉ áp cho `h1/h2/h3`,
+> `[data-slot="badge"]`, `[data-sonner-toast]`. Serif cho đoạn văn dài gây mỏi mắt (L-006).
+> Trục `WONK` để **0** cho mọi văn bản — `WONK 1` làm méo nét chữ.
 
 Retro dùng biến thể `wonk.css` chứ không phải `index.css` mặc định, vì đã kiểm bằng `fontTools`:
 
@@ -209,5 +214,6 @@ Retro dùng biến thể `wonk.css` chứ không phải `index.css` mặc địn
 | `soft.css`  | `wght`, `SOFT`                 | 56.0 kB     |
 | `full.css`  | `opsz`, `wght`, `SOFT`, `WONK` | 105.2 kB    |
 
-`wonk.css` cùng kích thước với `index.css` nhưng có thêm trục `WONK` — dùng được
-`font-variation-settings: "WONK" 1` cho heading mà không tăng bundle.
+`wonk.css` cùng kích thước với `index.css` nhưng có thêm trục `WONK` — cần file này để đặt
+`font-variation-settings: "WONK" 0` một cách tường minh cho tiêu đề (giá trị `0` = nét bình thường,
+không méo). Không dùng `WONK 1` cho văn bản (L-006).

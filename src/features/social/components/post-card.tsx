@@ -27,10 +27,10 @@ export function PostCard({ post }: PostCardProps) {
   const place = post.place
 
   return (
-    <article className="overflow-hidden rounded-[0.25rem] border-2 border-foreground bg-card shadow-[4px_4px_0_0_var(--foreground)]">
+    <article className="overflow-hidden rounded-[0.25rem] border border-border bg-card shadow-(--shadow-soft)">
       <header className="flex items-center gap-2.5 px-3 py-2.5">
         <Avatar>
-          <AvatarFallback className="bg-accent text-[0.65rem] font-bold text-accent-foreground">
+          <AvatarFallback className="bg-accent text-[0.75rem] font-bold text-accent-foreground">
             {post.author.initials}
           </AvatarFallback>
         </Avatar>
@@ -40,7 +40,7 @@ export function PostCard({ post }: PostCardProps) {
               {post.author.name}
             </Link>
           </p>
-          <p className="truncate text-[0.7rem] text-muted-foreground">
+          <p className="truncate text-[0.78rem] text-muted-foreground">
             @{post.author.handle} · {formatRelativeTime(post.createdAt)}
           </p>
         </div>
@@ -58,11 +58,11 @@ export function PostCard({ post }: PostCardProps) {
         <p className="text-sm leading-relaxed whitespace-pre-line">{post.caption}</p>
 
         {place ? (
-          <div className="flex items-center gap-2 rounded-[0.2rem] border-2 border-foreground/70 bg-muted/70 px-2 py-1.5">
+          <div className="flex items-center gap-2 rounded-[0.2rem] border border-border/70 bg-muted/70 px-2 py-1.5">
             <MapPinIcon className="size-3.5 shrink-0" aria-hidden="true" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-semibold">{place.name}</span>
-              <span className="block truncate text-[0.68rem] text-muted-foreground">
+              <span className="block truncate text-[0.75rem] text-muted-foreground">
                 {place.address}
               </span>
             </span>
@@ -71,7 +71,7 @@ export function PostCard({ post }: PostCardProps) {
             </Badge>
           </div>
         ) : (
-          <p className="flex items-center gap-1.5 rounded-[0.2rem] border-2 border-dashed border-foreground/40 px-2 py-1.5 text-[0.7rem] text-muted-foreground">
+          <p className="flex items-center gap-1.5 rounded-[0.2rem] border border-dashed border-border px-2 py-1.5 text-[0.78rem] text-muted-foreground">
             <SparklesIcon className="size-3 shrink-0" aria-hidden="true" />
             Chưa gắn địa điểm — hệ thống sẽ đề xuất cho bạn.
           </p>

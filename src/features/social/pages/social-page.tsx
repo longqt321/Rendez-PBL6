@@ -35,7 +35,7 @@ export function SocialPage() {
           Đang tải bài đăng…
         </p>
       ) : isError ? (
-        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+        <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>
             <EmptyTitle>Không tải được bài đăng</EmptyTitle>
             <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
@@ -45,7 +45,7 @@ export function SocialPage() {
           </Button>
         </Empty>
       ) : posts.length === 0 ? (
-        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+        <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <UsersIcon />
@@ -65,7 +65,7 @@ export function SocialPage() {
       )}
 
       {posts.length > 0 ? (
-        <p className="mt-6 flex items-center justify-center gap-1.5 text-[0.7rem] text-muted-foreground">
+        <p className="mt-6 flex items-center justify-center gap-1.5 text-[0.78rem] text-muted-foreground">
           <SparklesIcon className="size-3" aria-hidden="true" />
           Đề xuất địa điểm do hệ thống tạo, bạn xem ở trang Thông báo.
         </p>

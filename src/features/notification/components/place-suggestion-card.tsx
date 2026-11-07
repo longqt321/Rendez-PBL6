@@ -26,20 +26,20 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
   return (
     <article
       className={cn(
-        "rounded-[0.25rem] border-2 border-foreground bg-card p-3 shadow-[4px_4px_0_0_var(--foreground)]",
+        "rounded-[0.25rem] border border-border bg-card p-3 shadow-(--shadow-soft)",
         !notification.read && "border-primary",
       )}
     >
       <header className="flex items-start gap-2">
         <span
           aria-hidden="true"
-          className="grid size-8 shrink-0 place-items-center rounded-[0.2rem] border-2 border-foreground bg-secondary text-secondary-foreground"
+          className="grid size-8 shrink-0 place-items-center rounded-[0.2rem] border border-border bg-secondary text-secondary-foreground"
         >
           <SparklesIcon className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">Đề xuất thêm địa điểm</p>
-          <p className="text-[0.7rem] text-muted-foreground">
+          <p className="text-[0.78rem] text-muted-foreground">
             {formatRelativeTime(notification.createdAt)}
             {!notification.read ? " · chưa đọc" : ""}
           </p>
@@ -47,7 +47,7 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
         {!notification.read ? <Badge variant="destructive">Mới</Badge> : null}
       </header>
 
-      <p className="mt-2 line-clamp-2 border-l-2 border-foreground/30 pl-2 text-xs text-muted-foreground italic">
+      <p className="mt-2 line-clamp-2 border-l border-border pl-2 text-xs text-muted-foreground italic">
         <Link
           to={`/post/${notification.postId}`}
           className="underline-offset-2 hover:text-foreground hover:underline"
@@ -69,7 +69,7 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
 
           return (
             <li key={place.id}>
-              <div className="flex items-center gap-2.5 rounded-[0.2rem] border-2 border-foreground/25 p-1.5 transition-colors hover:border-foreground/60">
+              <div className="flex items-center gap-2.5 rounded-[0.2rem] border border-border p-1.5 transition-colors hover:border-primary/50">
                 <SeedImage
                   seed={place.imageSeed}
                   className="size-12 shrink-0 rounded-[0.15rem]"
@@ -77,19 +77,19 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
                 />
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-1 text-xs font-semibold">
-                    <span className="grid size-4 shrink-0 place-items-center rounded-full bg-foreground text-[0.6rem] text-background">
+                    <span className="grid size-4 shrink-0 place-items-center rounded-full bg-primary text-[0.72rem] text-primary-foreground">
                       {index + 1}
                     </span>
                     <span className="truncate">{place.name}</span>
                   </p>
-                  <p className="truncate text-[0.68rem] text-muted-foreground">{place.address}</p>
-                  <p className="mt-0.5 flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+                  <p className="truncate text-[0.75rem] text-muted-foreground">{place.address}</p>
+                  <p className="mt-0.5 flex items-center gap-1 text-[0.75rem] text-muted-foreground">
                     <MapPinIcon className="size-2.5 shrink-0" aria-hidden="true" />
                     <span className="truncate">{suggestion.reason}</span>
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
-                  <Badge variant="outline" className="text-[0.6rem]">
+                  <Badge variant="outline" className="text-[0.72rem]">
                     {categoryLabel(place.category)}
                   </Badge>
                   <Button

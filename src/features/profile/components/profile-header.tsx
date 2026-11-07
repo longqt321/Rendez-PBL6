@@ -22,7 +22,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
         <SeedImage
           seed={`cover-${profile.handle}`}
           height={200}
-          className="w-full rounded-none border-0 border-b-2 border-foreground/15"
+          className="w-full rounded-none border-0 border-b border-border"
           alt={`Ảnh bìa của ${profile.name}`}
         />
         <Avatar className="absolute -bottom-12 left-6 size-24 border-4 border-background bg-background">
@@ -74,7 +74,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               <span className="font-heading text-lg font-bold">
                 {formatCount(profile.postCount)}
               </span>
-              <span className="text-[0.7rem] text-muted-foreground">Bài đăng</span>
+              <span className="text-[0.78rem] text-muted-foreground">Bài đăng</span>
             </ItemContent>
           </Item>
           <Item variant="muted" className="flex-col items-center gap-0.5 py-3">
@@ -82,7 +82,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               <span className="font-heading text-lg font-bold">
                 {formatCount(profile.followerCount)}
               </span>
-              <span className="text-[0.7rem] text-muted-foreground">Người theo dõi</span>
+              <span className="text-[0.78rem] text-muted-foreground">Người theo dõi</span>
             </ItemContent>
           </Item>
           <Item variant="muted" className="flex-col items-center gap-0.5 py-3">
@@ -90,7 +90,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               <span className="font-heading text-lg font-bold">
                 {formatCount(profile.followingCount)}
               </span>
-              <span className="text-[0.7rem] text-muted-foreground">Đang theo dõi</span>
+              <span className="text-[0.78rem] text-muted-foreground">Đang theo dõi</span>
             </ItemContent>
           </Item>
         </ItemGroup>

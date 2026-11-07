@@ -54,7 +54,7 @@ export function ProfilePostGrid({
         <li key={post.id}>
           <Link
             to={`/post/${post.id}`}
-            className="block overflow-hidden rounded-[0.25rem] border-2 border-foreground bg-card shadow-[4px_4px_0_0_var(--foreground)] transition-transform hover:-translate-y-0.5"
+            className="block overflow-hidden rounded-[0.25rem] border border-border bg-card shadow-(--shadow-soft) transition-transform hover:-translate-y-0.5"
           >
             <SeedImage
               seed={post.imageSeed}

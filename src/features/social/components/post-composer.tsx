@@ -59,7 +59,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-[0.25rem] border-2 border-foreground bg-card p-3 shadow-[4px_4px_0_0_var(--foreground)]"
+      className="rounded-[0.25rem] border border-border bg-card p-3 shadow-(--shadow-soft)"
     >
       <label htmlFor="post-caption" className="sr-only">
         Nội dung bài đăng
@@ -73,12 +73,10 @@ export function PostComposer({ onCreated }: PostComposerProps) {
       />
 
       {selectedPlace ? (
-        <div className="mt-2 flex items-center gap-2 rounded-[0.2rem] border-2 border-foreground bg-secondary px-2 py-1.5 text-xs">
+        <div className="mt-2 flex items-center gap-2 rounded-[0.2rem] border border-border bg-secondary px-2 py-1.5 text-xs">
           <MapPinIcon className="size-3.5 shrink-0" aria-hidden="true" />
           <span className="flex-1 font-semibold">{selectedPlace.name}</span>
-          <Badge variant="outline" className="border-foreground">
-            {categoryLabel(selectedPlace.category)}
-          </Badge>
+          <Badge variant="outline">{categoryLabel(selectedPlace.category)}</Badge>
           <Button
             type="button"
             variant="ghost"
@@ -92,8 +90,8 @@ export function PostComposer({ onCreated }: PostComposerProps) {
       ) : null}
 
       {showSuggestions && suggestions.length > 0 ? (
-        <div className="mt-2 rounded-[0.2rem] border-2 border-dashed border-foreground/40 bg-muted/60 p-2">
-          <p className="flex items-center gap-1 text-[0.7rem] font-semibold tracking-wide uppercase">
+        <div className="mt-2 rounded-[0.2rem] border border-dashed border-border bg-muted/60 p-2">
+          <p className="flex items-center gap-1 text-[0.78rem] font-semibold tracking-wide uppercase">
             <SparklesIcon className="size-3" aria-hidden="true" />
             Địa điểm có thể bạn đang nói tới
           </p>
@@ -120,7 +118,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
                     <ItemTitle className="line-clamp-none text-xs font-semibold">
                       {place.name}
                     </ItemTitle>
-                    <ItemDescription className="line-clamp-none text-[0.68rem]">
+                    <ItemDescription className="line-clamp-none text-[0.75rem]">
                       {reason}
                     </ItemDescription>
                   </ItemContent>
@@ -132,7 +130,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
         </div>
       ) : null}
 
-      <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t-2 border-dashed border-foreground/15 pt-2">
+      <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-dashed border-border pt-2">
         <Button
           type="button"
           variant="ghost"
@@ -160,7 +158,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
           Đổi ảnh
         </Button>
 
-        <span className="ml-auto text-[0.7rem] text-muted-foreground">
+        <span className="ml-auto text-[0.78rem] text-muted-foreground">
           {caption.trim().length}/500
         </span>
 
