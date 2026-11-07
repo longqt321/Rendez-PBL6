@@ -1,14 +1,33 @@
-import { BellIcon, CompassIcon, PaletteIcon, SearchIcon, TypeIcon, UsersIcon } from "lucide-react"
-import { NavLink } from "react-router"
+import {
+  BellIcon,
+  BookmarkIcon,
+  CompassIcon,
+  HelpCircleIcon,
+  LogOutIcon,
+  MapPinIcon,
+  PaletteIcon,
+  SearchIcon,
+  SettingsIcon,
+  TypeIcon,
+  UserIcon,
+  UsersIcon,
+} from "lucide-react"
+import { NavLink, Link } from "react-router"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -177,6 +196,8 @@ function TopBar() {
 }
 
 function UserMenu() {
+  const { skin, setSkin } = useSkin()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -194,20 +215,61 @@ function UserMenu() {
           </button>
         }
       />
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel>
           <span className="block text-sm font-semibold">Minh Anh</span>
           <span className="block text-xs font-normal text-muted-foreground">@minhanh.eats</span>
+          <Link
+            to="/profile"
+            className="mt-1 block text-[0.7rem] font-medium text-foreground underline underline-offset-2"
+          >
+            Xem trang cá nhân →
+          </Link>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Trang cá nhân</DropdownMenuItem>
-        <DropdownMenuItem>Bài đăng đã lưu</DropdownMenuItem>
-        <DropdownMenuItem>Cài đặt</DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem render={<Link to="/profile" />}>
+            <UserIcon />
+            Trang cá nhân
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link to="/saved" />}>
+            <BookmarkIcon />
+            Bài đăng đã lưu
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link to="/profile?tab=pinned" />}>
+            <MapPinIcon />
+            Địa điểm đã ghim
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <div className="px-2 py-1.5 lg:hidden">
-          <SkinSwitch />
-        </div>
-        <DropdownMenuItem variant="destructive">Đăng xuất</DropdownMenuItem>
+        <DropdownMenuItem render={<Link to="/settings" />}>
+          <SettingsIcon />
+          Cài đặt
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <PaletteIcon />
+            Giao diện
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup
+              value={skin}
+              onValueChange={(value) => setSkin(value as typeof skin)}
+            >
+              <DropdownMenuRadioItem value="default">Mặc định</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="retro">Retro</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuItem>
+          <HelpCircleIcon />
+          Trợ giúp
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive">
+          <LogOutIcon />
+          Đăng xuất
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
