@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { BookmarkIcon, HeartIcon, MapPinIcon, MessageCircleIcon, SparklesIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { useSetPostLiked } from "../hooks/use-set-post-liked"
 import { useSetPostSaved } from "../hooks/use-set-post-saved"
 import { PostCommentsInline } from "./post-comments-inline"
+import { CommentThread } from "./comment-thread"
 import type { Post } from "../types/post"
 
 interface PostCardProps {
@@ -18,6 +20,7 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const setLiked = useSetPostLiked()
   const setSaved = useSetPostSaved()
+  const [commentsOpen, setCommentsOpen] = useState(false)
 
   // Địa điểm do server nhúng kèm — không tra cứu id ở client.
   const place = post.place
@@ -80,7 +83,12 @@ export function PostCard({ post }: PostCardProps) {
             {formatCount(post.likeCount)}
           </Button>
 
-          <Button variant="ghost" size="sm" aria-label="Bình luận">
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Bình luận"
+            onClick={() => setCommentsOpen(true)}
+          >
             <MessageCircleIcon />
             {formatCount(post.commentCount)}
           </Button>
@@ -99,6 +107,9 @@ export function PostCard({ post }: PostCardProps) {
       </div>
 
       <PostCommentsInline post={post} />
+
+      {/* Thread đầy đủ — nút Bình luận ở footer cũng mở cùng thread. */}
+      <CommentThread post={post} open={commentsOpen} onOpenChange={setCommentsOpen} />
     </article>
   )
 }
