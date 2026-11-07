@@ -1,5 +1,8 @@
 import { useState } from "react"
-import { Loader2Icon, SparklesIcon, UsersIcon } from "lucide-react"
+import { SparklesIcon, UsersIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { usePosts } from "../hooks/use-posts"
 import type { PostFeedFilter } from "../types/post"
@@ -40,24 +43,29 @@ export function SocialPage() {
 
       {isPending ? (
         <p className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2Icon className="size-4 animate-spin" aria-hidden="true" />
+          <Spinner className="size-4" />
           Đang tải bài đăng…
         </p>
       ) : isError ? (
-        <div className="mt-10 flex flex-col items-center gap-2 text-center">
-          <p className="text-sm text-muted-foreground">Không tải được bài đăng.</p>
-          <button
-            type="button"
-            onClick={() => void refetch()}
-            className="text-xs font-semibold underline underline-offset-4"
-          >
+        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+          <EmptyHeader>
+            <EmptyTitle>Không tải được bài đăng</EmptyTitle>
+            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+          </EmptyHeader>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>
             Thử lại
-          </button>
-        </div>
+          </Button>
+        </Empty>
       ) : posts.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-muted-foreground">
-          Chưa có bài đăng nào trong mục này.
-        </p>
+        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <UsersIcon />
+            </EmptyMedia>
+            <EmptyTitle>Chưa có bài đăng nào</EmptyTitle>
+            <EmptyDescription>Mục này chưa có bài. Thử chọn bộ lọc khác.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <ul className="mt-4 flex flex-col gap-4">
           {posts.map((post) => (

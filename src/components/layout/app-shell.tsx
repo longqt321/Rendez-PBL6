@@ -12,9 +12,10 @@ import {
   UserIcon,
   UsersIcon,
 } from "lucide-react"
-import { NavLink, Link, useLocation, useNavigate, useSearchParams } from "react-router"
+import { NavLink, Link } from "react-router"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -30,8 +31,9 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
+import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
 import { cn } from "@/lib/utils"
 import { NAV_ITEMS } from "./nav-items"
 import { ThemeToggle } from "./theme-toggle"
@@ -110,9 +112,9 @@ function SideNav() {
               <Icon className="size-4 shrink-0" aria-hidden="true" />
               <span className="flex-1">{item.label}</span>
               {item.to === "/notification" && unread > 0 ? (
-                <span className="grid min-w-5 place-items-center rounded-full bg-secondary px-1 text-[0.65rem] font-bold text-secondary-foreground">
+                <Badge variant="secondary" className="min-w-5 px-1 text-[0.65rem] font-bold">
                   {unread}
-                </span>
+                </Badge>
               ) : null}
             </NavLink>
           )
@@ -162,12 +164,7 @@ function SkinSwitch() {
 }
 
 function TopBar() {
-  const navigate = useNavigate()
-  const [params] = useSearchParams()
-  const location = useLocation()
-
-  // Ô search phản chiếu `?q=` của trang tìm kiếm: rời trang thì xoá, vào `/search?q=` thì điền sẵn.
-  const currentQuery = location.pathname === "/search" ? (params.get("q") ?? "") : ""
+  const { draft, setDraft, submit } = useSearchQuerySync()
 
   return (
     <header className="sticky top-0 z-20 border-b-2 border-foreground/15 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -178,26 +175,25 @@ function TopBar() {
 
         <form
           role="search"
-          className="relative ml-auto w-full max-w-md lg:ml-0 lg:max-w-lg"
+          className="ml-auto w-full max-w-md lg:ml-0 lg:max-w-lg"
           onSubmit={(event) => {
             event.preventDefault()
-            const query = String(new FormData(event.currentTarget).get("q") ?? "").trim()
-            navigate(query ? `/search?q=${encodeURIComponent(query)}` : "/search")
+            submit()
           }}
         >
-          <SearchIcon
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <Input
-            key={currentQuery}
-            type="search"
-            name="q"
-            defaultValue={currentQuery}
-            placeholder="Tìm quán ăn, địa điểm, bài viết…"
-            aria-label="Tìm kiếm"
-            className="pl-9"
-          />
+          <InputGroup>
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupInput
+              type="search"
+              name="q"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder="Tìm quán ăn, địa điểm, bài viết…"
+              aria-label="Tìm kiếm"
+            />
+          </InputGroup>
         </form>
 
         <div className="ml-auto flex items-center gap-2">

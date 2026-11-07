@@ -1,7 +1,8 @@
-import { CheckIcon, Loader2Icon, MapPinIcon, SparklesIcon } from "lucide-react"
+import { CheckIcon, MapPinIcon, SparklesIcon } from "lucide-react"
 import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { SeedImage } from "@/components/shared/seed-image"
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import { useUpdatePostPlace } from "@/features/social/hooks/use-update-post-place"
@@ -99,7 +100,7 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
                       updatePlace.mutate({ postId: notification.postId, placeId: place.id })
                     }
                   >
-                    {isPending ? <Loader2Icon className="animate-spin" /> : <CheckIcon />}
+                    {isPending ? <Spinner /> : <CheckIcon />}
                     {isChosen ? "Đã gắn" : "Chọn"}
                   </Button>
                 </div>

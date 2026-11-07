@@ -1,7 +1,9 @@
 import { useState } from "react"
-import { CheckIcon, Loader2Icon, MapPinIcon, SparklesIcon, XIcon } from "lucide-react"
+import { CheckIcon, MapPinIcon, SparklesIcon, XIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item"
+import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { categoryLabel } from "@/features/places/lib/category-meta"
@@ -98,21 +100,32 @@ export function PostComposer({ onCreated }: PostComposerProps) {
           <ul className="mt-1.5 flex flex-col gap-1">
             {suggestions.map(({ place, reason }) => (
               <li key={place.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedPlace(place)
-                    setShowSuggestions(false)
-                  }}
-                  className="group flex w-full items-start gap-2 rounded-[0.15rem] px-1.5 py-1 text-left text-xs hover:bg-accent/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                <Item
+                  variant="default"
+                  render={
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPlace(place)
+                        setShowSuggestions(false)
+                      }}
+                    />
+                  }
+                  className="group gap-2 px-1.5 py-1 text-left text-xs hover:bg-accent/15"
                 >
-                  <MapPinIcon className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
-                  <span className="flex-1">
-                    <span className="block font-semibold">{place.name}</span>
-                    <span className="block text-[0.68rem] text-muted-foreground">{reason}</span>
-                  </span>
-                  <CheckIcon className="mt-0.5 size-3 shrink-0 opacity-0 group-hover:opacity-100" />
-                </button>
+                  <ItemMedia variant="icon">
+                    <MapPinIcon className="size-3" aria-hidden="true" />
+                  </ItemMedia>
+                  <ItemContent className="gap-0">
+                    <ItemTitle className="line-clamp-none text-xs font-semibold">
+                      {place.name}
+                    </ItemTitle>
+                    <ItemDescription className="line-clamp-none text-[0.68rem]">
+                      {reason}
+                    </ItemDescription>
+                  </ItemContent>
+                  <CheckIcon className="size-3 shrink-0 opacity-0 group-hover:opacity-100" />
+                </Item>
               </li>
             ))}
           </ul>
@@ -128,7 +141,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
           aria-expanded={showSuggestions}
           disabled={caption.trim().length < 8}
         >
-          {isFetching ? <Loader2Icon className="animate-spin" /> : <MapPinIcon />}
+          {isFetching ? <Spinner /> : <MapPinIcon />}
           Gắn địa điểm
           {suggestions.length > 0 ? (
             <Badge variant="secondary" className="ml-1">
@@ -152,7 +165,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
         </span>
 
         <Button type="submit" size="sm" disabled={!canSubmit}>
-          {createPost.isPending ? <Loader2Icon className="animate-spin" /> : null}
+          {createPost.isPending ? <Spinner /> : null}
           Đăng
         </Button>
       </div>

@@ -1,4 +1,5 @@
 import { MessageCircleIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import { ItemGroup, ItemSeparator } from "@/components/ui/item"
@@ -93,14 +94,14 @@ export function CommentList({
 
       {hasNextPage && (
         <div className="flex justify-center py-2">
-          <button
-            type="button"
-            className="text-xs font-medium text-muted-foreground underline underline-offset-2 disabled:opacity-50"
+          <Button
+            variant="link"
+            size="sm"
             disabled={isFetchingNextPage}
             onClick={() => void fetchNextPage()}
           >
             {isFetchingNextPage ? "Đang tải…" : "Xem thêm bình luận"}
-          </button>
+          </Button>
         </div>
       )}
     </ScrollArea>

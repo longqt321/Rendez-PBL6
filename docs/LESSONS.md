@@ -194,3 +194,55 @@ element. Trong CSS build, `.sm\:max-w-sm` nằm trong `@media (width >= 40rem)` 
 **Đã sửa:** `src/features/social/components/comment-thread.tsx` — `sm:max-w-[min(64rem,calc(100%-2rem))]`,
 cột trái là `PostPreview` đầy đủ (ảnh + tác giả + chú thích + địa điểm) tự cuộn, cột phải giữ
 `min-h-0 flex-1` cho danh sách bình luận.
+
+---
+
+## L-005 — Một trạng thái UI chỉ một nơi giữ; trạng thái rỗng phải có đích đến
+
+**Ngày:** 2026-11-07
+**Lỗi người dùng chỉ ra:**
+
+> "Có tận 2 thanh search bar, khi q trong search bar là rỗng thì route bị kẹt ở /search thay vì
+> được chuyển về và hiển thị lại nội dung của /discover"
+
+**Đã làm sai gì:**
+
+| Việc đã làm                                                                      | Bằng chứng                                                                |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `TopBar` và `SearchPage` **cùng** giữ state của `?q=`                            | `app-shell.tsx` có `draft` + `useEffect`; `search-page.tsx` có `draft`    |
+| `SearchPage` tự vẽ `InputGroup` thứ hai trong `<main>`                           | CDP: `main input[type="search"]` tồn tại song song `header ... input`     |
+| `q` rỗng không có nhánh điều hướng, chỉ render `Empty "Bắt đầu gõ để tìm kiếm"`  | CDP: `/search` trần → URL đứng nguyên `/search`, `main` không có nội dung |
+| Ô lọc ở `/discover` cũng là `type="search"` không nhãn riêng, trông y hệt topbar | CDP: 2 `input[type="search"]` cùng `aria-label` null                      |
+
+**Nguyên nhân:**
+
+Tôi coi "ô search ở topbar" và "ô search ở trang kết quả" là hai tính năng riêng, nên để mỗi nơi tự
+giữ state và tự ghi URL. Hai nguồn cùng ghi một giá trị → phải đồng bộ hai chiều, sinh vòng lặp và
+trùng lặp. Và vì `SearchPage` chỉ biết "chưa có từ khoá thì chưa hiện gì", nó không có lý do để rời
+đi — nên route bị kẹt.
+
+**Quy tắc rút ra:**
+
+1. **Một trạng thái, một nơi giữ.** `?q=` trên URL là nguồn sự thật duy nhất. `SearchPage` là hàm
+   thuần của URL: không `useState`, không `useEffect` ghi URL. Chỉ topbar (qua
+   `useSearchQuerySync`) được ghi `?q=`.
+2. **Mọi trạng thái "rỗng" phải có đích đến tường minh**, không render màn hình chờ:
+   `if (query.length === 0) return <Navigate to="/discover" replace />`. Người dùng không bao giờ
+   phải tự bấm back để thoát khỏi một trang không có nội dung.
+3. **Hai ô input cùng `type="search"` phải phân biệt được bằng máy**: khác `aria-label`, và ô phụ
+   phải có `<label htmlFor>` riêng (ô lọc ở `/discover` → "Lọc địa điểm").
+4. Rẽ nhánh trước khi gọi hook sẽ vi phạm `react-hooks/rules-of-hooks` → tách component con
+   (`SearchResults`) chứa toàn bộ hook, component cha chỉ đọc URL + `Navigate`.
+
+**Cách kiểm tra bằng máy:**
+
+- `scratch/search-check.mjs` (19 check): đếm `header input[type="search"]` vs `main
+input[type="search"]`; so `aria-label` của ô lọc `/discover` với topbar; kiểm `/search`,
+  `/search?q=`, `/search?q=%20%20` đều kết thúc ở `/discover` với nội dung Khám phá hiện lại;
+  mobile 390 vẫn đúng 1 ô.
+- Quét tĩnh: `grep -rn 'input\[type="search"\]' src` — không được có ô thứ hai ngoài topbar.
+
+**Đã sửa:** `src/features/search/hooks/use-search-query-sync.ts` (mới — một nguồn ghi `?q=`),
+`src/features/search/pages/search-page.tsx` (bỏ form + state, thêm `Navigate`),
+`src/features/places/pages/discover-page.tsx` (ô lọc có nhãn riêng),
+`src/components/layout/app-shell.tsx` (dùng hook chung).

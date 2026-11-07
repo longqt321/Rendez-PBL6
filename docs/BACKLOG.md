@@ -148,3 +148,28 @@ hàng thông báo bấm được và gọi `useMarkNotificationRead`; 404 render
       sẽ sinh trùng. Đã có `notifiedPostIds` chặn trong một phiên, nhưng vẫn là mô phỏng job nền.
 - [ ] **Chưa có trang danh sách thông báo phân trang.** `NOTIFICATIONS_PAGE_SIZE` có trong mock
       nhưng UI chưa có nút "Tải thêm" — hiện chỉ hiện trang đầu.
+
+## Phát hiện khi audit component tự chế (2026-11-07)
+
+Đợt này đã thay bằng component có sẵn: `Spinner` (9 chỗ), `Empty` (3 trang), `Button variant="link"`
+(2 nút), `Avatar` (avatar người ở `/search`), `Badge` (badge số chưa đọc ở sidebar), `Item` (danh
+sách gợi ý địa điểm ở `post-composer`), `InputGroup` (topbar + ô lọc `/discover`).
+
+Còn lại, **chưa sửa** vì lý do ghi kèm:
+
+- [ ] **`Spinner` có `aria-label="Loading"` tiếng Anh** (`src/components/ui/spinner.tsx`, template
+      shadcn) trong khi toàn bộ UI tiếng Việt. Screen reader sẽ đọc "Loading" giữa câu tiếng Việt.
+      Không sửa tay file `ui/` → cần override bằng `aria-label` ở nơi dùng, hoặc chấp nhận. Ảnh
+      hưởng: 9 chỗ đang dùng `Spinner`.
+- [ ] **Badge số thứ tự trong `place-suggestion-card.tsx`** vẫn tự vẽ bằng `<span>` với
+      `grid size-4 rounded-full bg-foreground`. `Badge` có `h-5` cố định + `text-xs` → to hơn
+      badge hiện tại (16px) và làm lệch hàng tiêu đề. Giữ nguyên có chủ ý; nếu muốn dùng `Badge`
+      thì phải đo lại chiều cao hàng.
+- [ ] **Chấm đỏ thông báo trên bottom nav mobile** (`app-shell.tsx`, `size-2 rounded-full`) không
+      dùng `Badge` vì `Badge` luôn render số/chữ và có `h-5`; đây là dot thuần trang trí có
+      `aria-hidden` ngầm định qua việc nav đã có nhãn. Giữ nguyên.
+- [ ] **`Item` trong `post-composer` dùng `render={<button/>}`** — `Item` mặc định `flex-wrap` +
+      `px-3 py-2.5`; đã override `px-1.5 py-1` để khớp khu vực gợi ý nhỏ. Nếu sau này cần
+      `ItemSeparator` giữa các gợi ý thì phải bỏ `gap-1`.
+- [ ] **`/search` tab "Người" vẫn lọc trên `MOCK_USERS` phía client** (đã có trong BACKLOG cũ) —
+      vi phạm L-001 khi có backend thật; cần `GET /users?q=`.

@@ -3,7 +3,6 @@ import {
   CheckCheckIcon,
   HeartIcon,
   InfoIcon,
-  Loader2Icon,
   MessageCircleIcon,
   UserPlusIcon,
 } from "lucide-react"
@@ -11,6 +10,7 @@ import { Link } from "react-router"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -127,27 +127,26 @@ export function NotificationPage() {
           onClick={() => markAllRead.mutate()}
           disabled={unreadCount === 0 || markAllRead.isPending}
         >
-          {markAllRead.isPending ? <Loader2Icon className="animate-spin" /> : <CheckCheckIcon />}
+          {markAllRead.isPending ? <Spinner /> : <CheckCheckIcon />}
           Đọc tất cả
         </Button>
       </header>
 
       {isPending ? (
         <p className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2Icon className="size-4 animate-spin" aria-hidden="true" />
+          <Spinner className="size-4" />
           Đang tải thông báo…
         </p>
       ) : isError ? (
-        <div className="mt-10 flex flex-col items-center gap-2 text-center">
-          <p className="text-sm text-muted-foreground">Không tải được thông báo.</p>
-          <button
-            type="button"
-            onClick={() => void refetch()}
-            className="text-xs font-semibold underline underline-offset-4"
-          >
+        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+          <EmptyHeader>
+            <EmptyTitle>Không tải được thông báo</EmptyTitle>
+            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+          </EmptyHeader>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>
             Thử lại
-          </button>
-        </div>
+          </Button>
+        </Empty>
       ) : (
         <Tabs defaultValue="all" className="mt-4">
           <TabsList>

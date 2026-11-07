@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState } from "react"
-import { Link, useSearchParams } from "react-router"
-import { SearchIcon, SearchXIcon, UsersIcon } from "lucide-react"
+import { Link, Navigate, useSearchParams } from "react-router"
+import { SearchXIcon, UsersIcon } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { usePosts } from "@/features/social/hooks/use-posts"
@@ -16,35 +14,24 @@ import { MOCK_USERS } from "@/mocks/fixtures/users"
  * Trang tìm kiếm — `/search?q=`.
  *
  * Từ khoá nằm trong URL nên F5, back/forward và link chia sẻ đều giữ kết quả.
- * Ô nhập giữ bản nháp riêng, chỉ ghi lại URL sau khi người dùng ngừng gõ.
+ * Ô nhập duy nhất nằm ở topbar (`AppShell`); trang này chỉ đọc `?q=` để tránh hai
+ * thanh tìm kiếm cùng lúc. Không có từ khoá → quay về `/discover`.
  *
  * Dùng lại đúng các hook dữ liệu đã có (places/posts): server chịu trách nhiệm
  * lọc theo `q`. Tab Người lọc trên danh sách hồ sơ mock, chưa có endpoint.
  */
 export function SearchPage() {
-  const [params, setParams] = useSearchParams()
-  const urlQuery = params.get("q") ?? ""
+  const [params] = useSearchParams()
+  const query = (params.get("q") ?? "").trim()
 
-  const [draft, setDraft] = useState(urlQuery)
-  const debouncedDraft = useDebouncedValue(draft, 300)
-  /** Giá trị cuối cùng trang này tự ghi vào URL — để không ghi đè lúc người dùng đang gõ. */
-  const lastWritten = useRef(urlQuery)
+  // Rỗng từ khoá thì không có gì để tìm — trả người dùng về trang Khám phá.
+  // Tách component con để không gọi hook có điều kiện (rules-of-hooks).
+  if (query.length === 0) return <Navigate to="/discover" replace />
 
-  // URL đổi từ bên ngoài (back/forward, submit ở topbar) → nạp lại vào ô nhập.
-  useEffect(() => {
-    if (urlQuery === lastWritten.current) return
-    lastWritten.current = urlQuery
-    setDraft(urlQuery)
-  }, [urlQuery])
+  return <SearchResults query={query} />
+}
 
-  // Ngừng gõ 300 ms → ghi từ khoá vào URL (replace để không làm rối lịch sử).
-  useEffect(() => {
-    if (debouncedDraft === urlQuery) return
-    lastWritten.current = debouncedDraft
-    setParams(debouncedDraft ? { q: debouncedDraft } : {}, { replace: true })
-  }, [debouncedDraft, urlQuery, setParams])
-
-  const query = urlQuery
+function SearchResults({ query }: { query: string }) {
   const { data: placesData, isPending: placesPending } = useDiscoverPlaces({
     category: "all",
     query,
@@ -54,125 +41,94 @@ export function SearchPage() {
 
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
   const posts = postsData?.items.filter((post) => post.placeId !== null) ?? []
-  const people = query
-    ? Object.values(MOCK_USERS).filter((user) =>
-        `${user.name} ${user.handle}`.toLowerCase().includes(query.toLowerCase()),
-      )
-    : []
-
-  const hasQuery = query.trim().length > 0
+  const people = Object.values(MOCK_USERS).filter((user) =>
+    `${user.name} ${user.handle}`.toLowerCase().includes(query.toLowerCase()),
+  )
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
       <header className="flex flex-col gap-1">
         <h1 className="font-heading text-2xl font-bold tracking-tight">Tìm kiếm</h1>
         <p className="text-sm text-muted-foreground">
-          Tìm quán ăn, địa điểm, bài viết và người dùng.
+          Kết quả cho <span className="font-semibold text-foreground">“{query}”</span>
         </p>
       </header>
 
-      <form role="search" className="mt-4 max-w-md" onSubmit={(event) => event.preventDefault()}>
-        <InputGroup>
-          <InputGroupAddon>
-            <SearchIcon aria-hidden="true" />
-          </InputGroupAddon>
-          <InputGroupInput
-            type="search"
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder="Tìm quán ăn, địa điểm, bài viết…"
-            aria-label="Tìm kiếm"
-          />
-        </InputGroup>
-      </form>
+      <Tabs defaultValue="places" className="mt-5">
+        <TabsList>
+          <TabsTrigger value="places">Địa điểm</TabsTrigger>
+          <TabsTrigger value="posts">Bài đăng</TabsTrigger>
+          <TabsTrigger value="people">Người</TabsTrigger>
+        </TabsList>
 
-      {!hasQuery ? (
-        <Empty className="mt-10">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <SearchIcon />
-            </EmptyMedia>
-            <EmptyTitle>Bắt đầu gõ để tìm kiếm</EmptyTitle>
-            <EmptyDescription>
-              Kết quả từ Địa điểm, Bài đăng và Người dùng sẽ hiện ở đây.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <Tabs defaultValue="places" className="mt-5">
-          <TabsList>
-            <TabsTrigger value="places">Địa điểm</TabsTrigger>
-            <TabsTrigger value="posts">Bài đăng</TabsTrigger>
-            <TabsTrigger value="people">Người</TabsTrigger>
-          </TabsList>
+        <TabsContent value="places" className="mt-4">
+          {placesPending ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Đang tìm…</p>
+          ) : places.length === 0 ? (
+            <SearchEmptyBlock label="địa điểm" />
+          ) : (
+            <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+              {places.map((place) => (
+                <li key={place.id}>
+                  <PlaceCard place={place} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
 
-          <TabsContent value="places" className="mt-4">
-            {placesPending ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">Đang tìm…</p>
-            ) : places.length === 0 ? (
-              <SearchEmptyBlock label="địa điểm" />
-            ) : (
-              <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
-                {places.map((place) => (
-                  <li key={place.id}>
-                    <PlaceCard place={place} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </TabsContent>
+        <TabsContent value="posts" className="mt-4">
+          {postsPending ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Đang tìm…</p>
+          ) : posts.length === 0 ? (
+            <SearchEmptyBlock label="bài đăng" />
+          ) : (
+            <ul className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+              {posts.map((post) => (
+                <li key={post.id}>
+                  <PostCard post={post} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
 
-          <TabsContent value="posts" className="mt-4">
-            {postsPending ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">Đang tìm…</p>
-            ) : posts.length === 0 ? (
-              <SearchEmptyBlock label="bài đăng" />
-            ) : (
-              <ul className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-                {posts.map((post) => (
-                  <li key={post.id}>
-                    <PostCard post={post} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </TabsContent>
-
-          <TabsContent value="people" className="mt-4">
-            {people.length === 0 ? (
-              <SearchEmptyBlock label="người dùng" />
-            ) : (
-              <ul className="grid max-w-xl grid-cols-1 gap-2">
-                {people.map((user) => (
-                  <li key={user.id}>
-                    <Link
-                      to={user.isMe ? "/profile" : `/u/${user.handle}`}
-                      className="flex items-center gap-3 rounded-[0.25rem] border-2 border-foreground/15 p-3 transition-colors hover:bg-muted"
-                    >
-                      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
+        <TabsContent value="people" className="mt-4">
+          {people.length === 0 ? (
+            <SearchEmptyBlock label="người dùng" />
+          ) : (
+            <ul className="grid max-w-xl grid-cols-1 gap-2">
+              {people.map((user) => (
+                <li key={user.id}>
+                  <Link
+                    to={user.isMe ? "/profile" : `/u/${user.handle}`}
+                    className="flex items-center gap-3 rounded-[0.25rem] border-2 border-foreground/15 p-3 transition-colors hover:bg-muted"
+                  >
+                    <Avatar size="lg">
+                      <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
                         {user.initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold">
+                        {user.name}
+                        {me && user.id === me.id ? " (bạn)" : ""}
                       </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold">
-                          {user.name}
-                          {me && user.id === me.id ? " (bạn)" : ""}
-                        </span>
-                        <span className="block truncate text-xs text-muted-foreground">
-                          @{user.handle} · {user.postCount} bài đăng
-                        </span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        @{user.handle} · {user.postCount} bài đăng
                       </span>
-                      <UsersIcon
-                        className="ml-auto size-4 shrink-0 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </TabsContent>
-        </Tabs>
-      )}
+                    </span>
+                    <UsersIcon
+                      className="ml-auto size-4 shrink-0 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

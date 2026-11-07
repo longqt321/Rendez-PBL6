@@ -3,7 +3,6 @@ import {
   ArrowRightIcon,
   CheckIcon,
   HeartIcon,
-  Loader2Icon,
   PaletteIcon,
   SparklesIcon,
   StarIcon,
@@ -36,6 +35,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import { SkinToggle } from "@/components/layout/skin-toggle"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 
@@ -100,7 +100,7 @@ export function DesignShowcasePage() {
             <HeartIcon />
           </Button>
           <Button disabled>
-            <Loader2Icon className="animate-spin" />
+            <Spinner />
             Đang tải
           </Button>
         </div>
@@ -200,7 +200,7 @@ export function DesignShowcasePage() {
       <Section title="Skeleton + animation — tw-animate-css">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={simulateLoading} disabled={loading}>
-            {loading ? <Loader2Icon className="animate-spin" /> : null}
+            {loading ? <Spinner /> : null}
             Mô phỏng tải
           </Button>
           <div className="flex flex-1 flex-col gap-2">

@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react"
-import { CompassIcon, Loader2Icon, SearchXIcon } from "lucide-react"
+import { CompassIcon, ListFilterIcon, SearchXIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import { Spinner } from "@/components/ui/spinner"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { CATEGORY_META } from "../lib/category-meta"
 import { useDiscoverPlaces } from "../hooks/use-discover-places"
@@ -50,14 +52,28 @@ export function DiscoverPage() {
       </header>
 
       <div className="mt-5 flex flex-col gap-3">
-        <div className="relative max-w-md">
-          <Input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Lọc theo tên quán, món, khu vực…"
-            aria-label="Lọc địa điểm"
-          />
+        {/* Đây là bộ lọc trong trang, không phải ô tìm kiếm toàn cục ở topbar —
+            dùng icon + nhãn riêng để không bị nhầm thành thanh search thứ hai. */}
+        <div className="max-w-md">
+          <label
+            htmlFor="discover-filter"
+            className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"
+          >
+            Lọc địa điểm
+          </label>
+          <InputGroup>
+            <InputGroupAddon>
+              <ListFilterIcon />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="discover-filter"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Tên quán, món, khu vực…"
+              aria-label="Lọc địa điểm"
+            />
+          </InputGroup>
         </div>
 
         <div
@@ -83,7 +99,7 @@ export function DiscoverPage() {
         <Badge variant="outline">{places.length} địa điểm</Badge>
         {isFetchingNextPage ? (
           <span className="flex items-center gap-1">
-            <Loader2Icon className="size-3 animate-spin" aria-hidden="true" />
+            <Spinner className="size-3" />
             Đang tải thêm…
           </span>
         ) : null}
@@ -98,21 +114,27 @@ export function DiscoverPage() {
           ))}
         </ul>
       ) : isError ? (
-        <div className="mt-10 flex flex-col items-center gap-3 text-center">
-          <p className="text-sm text-muted-foreground">Không tải được danh sách địa điểm.</p>
-          <Button variant="outline" onClick={() => void refetch()}>
+        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+          <EmptyHeader>
+            <EmptyTitle>Không tải được danh sách địa điểm</EmptyTitle>
+            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+          </EmptyHeader>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>
             Thử lại
           </Button>
-        </div>
+        </Empty>
       ) : places.length === 0 ? (
-        <div className="mt-12 flex flex-col items-center gap-2 text-center">
-          <SearchXIcon className="size-8 text-muted-foreground" aria-hidden="true" />
-          <p className="text-sm font-medium">Không tìm thấy địa điểm phù hợp</p>
-          <p className="text-xs text-muted-foreground">Thử bỏ bộ lọc hoặc tìm bằng từ khoá khác.</p>
+        <Empty className="mt-10 border-2 border-dashed border-foreground/30">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <SearchXIcon />
+            </EmptyMedia>
+            <EmptyTitle>Không tìm thấy địa điểm phù hợp</EmptyTitle>
+            <EmptyDescription>Thử bỏ bộ lọc hoặc tìm bằng từ khoá khác.</EmptyDescription>
+          </EmptyHeader>
           <Button
             variant="outline"
             size="sm"
-            className="mt-1"
             onClick={() => {
               setCategory("all")
               setQuery("")
@@ -120,7 +142,7 @@ export function DiscoverPage() {
           >
             Xoá bộ lọc
           </Button>
-        </div>
+        </Empty>
       ) : (
         <>
           {/* PC: 3 cột đều. Mobile: 2 cột masonry, mỗi thẻ có chiều cao ảnh riêng. */}
@@ -141,7 +163,7 @@ export function DiscoverPage() {
                 onClick={() => void fetchNextPage()}
                 disabled={isFetchingNextPage}
               >
-                {isFetchingNextPage ? <Loader2Icon className="animate-spin" /> : null}
+                {isFetchingNextPage ? <Spinner /> : null}
                 {isFetchingNextPage ? "Đang tải…" : "Tải thêm"}
               </Button>
             ) : (

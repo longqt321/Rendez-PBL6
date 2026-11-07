@@ -673,3 +673,69 @@ Không thêm dependency. Không đổi `bun.lock`, không đổi `package.json`.
   từ `getBoundingClientRect` / `getComputedStyle`.
 - Chưa test Firefox/Safari — chỉ Chrome 156 qua CDP.
 - `markNotificationRead` chưa optimistic (xem `BACKLOG.md`).
+
+## D-014 — Một ô tìm kiếm duy nhất ở topbar; `?q=` là nguồn sự thật; audit thay component tự chế bằng shadcn
+
+**Ngày:** 2026-11-07
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Người dùng chỉ ra hai lỗi cùng lúc: (1) có tận 2 thanh search bar, (2) khi `q` rỗng thì route kẹt ở
+`/search` thay vì hiện lại `/discover`. Nguyên nhân chung: `?q=` có **hai** nơi cùng giữ state
+(`TopBar` và `SearchPage`), và `SearchPage` không có nhánh điều hướng khi rỗng. Ngoài ra ô lọc ở
+`/discover` cũng là `type="search"` không nhãn riêng nên người dùng thấy như "thanh search thứ hai".
+
+Sau khi sửa, người dùng yêu cầu tự audit: chỗ nào đang tự viết Tailwind/CSS/TS để dựng UI trong khi
+đã có component shadcn/base-ui làm sẵn.
+
+### Quyết định
+
+- **Một ô nhập duy nhất** ở topbar (`AppShell`). `SearchPage` **không có state**, chỉ đọc `?q=`.
+- **`useSearchQuerySync()`** (`features/search/hooks/`) là nơi duy nhất ghi `?q=`:
+  - Ở `/search`: gõ → ghi URL sau debounce 300 ms với `{ replace: true }`.
+  - Xoá hết từ khoá khi đang ở `/search` → `navigate("/discover", { replace: true })`.
+  - Ở trang khác: gõ không tự ghi URL (chờ submit).
+  - `submit()`: có từ khoá → `/search?q=...`; rỗng → `/discover`.
+- **`q` rỗng là trạng thái có đích**: `SearchPage` trả `<Navigate to="/discover" replace />` trước
+  khi render bất cứ thứ gì. Tách `SearchResults` để không gọi hook có điều kiện.
+- **Ô lọc `/discover` giữ `type="search"`** (hành vi đúng) nhưng có `<label htmlFor>` "Lọc địa điểm",
+  icon `ListFilterIcon` và `aria-label` khác topbar → phân biệt được bằng máy và bằng mắt.
+- **Audit component**: thay các chỗ tự chế bằng component có sẵn —
+  | Trước                                                                         | Sau                                                                                       |
+  | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+  | `Loader2Icon className="animate-spin"` (9 chỗ)                                | `Spinner`                                                                                 |
+  | error/empty state tự vẽ bằng `<p>` + icon                                     | `Empty` + `EmptyHeader` + `EmptyMedia variant="icon"` + `EmptyTitle`/`EmptyDescription`   |
+  | `<button>` chữ "Xem thêm"/"Huỷ"                                               | `Button variant="link"`                                                                   |
+  | avatar `<span className="grid size-10 rounded-full">`                         | `Avatar size="lg"` + `AvatarFallback`                                                     |
+  | badge số chưa đọc `<span className="grid min-w-5 rounded-full bg-secondary">` | `Badge variant="secondary"`                                                               |
+  | danh sách gợi ý `<ul>/<li>/<button>`                                          | `Item` (`render={<button/>}`) + `ItemMedia` + `ItemContent`/`ItemTitle`/`ItemDescription` |
+  | `Input` thô + icon `absolute` (topbar, `/discover`)                           | `InputGroup` + `InputGroupAddon` + `InputGroupInput`                                      |
+
+### Phương án đã xem
+
+- _Giữ ô search thứ hai trong `SearchPage` để "tiện gõ lại"_ — loại: đúng là nguồn gốc lỗi trùng
+  thanh search; topbar đã đủ và luôn hiện.
+- _Ẩn topbar search khi ở `/search`_ — loại: layout nhảy, và vẫn còn 2 nguồn state.
+- _Đổi `/discover` sang `type="text"` để "không trùng"_ — loại: mất hành vi xoá nhanh của
+  `type="search"`; vấn đề thật là thiếu nhãn, không phải type.
+- _Tự viết `Spinner`/`Empty` mới_ — loại: `src/components/ui/spinner.tsx` và `empty.tsx` đã có sẵn.
+
+### Kích thước / license
+
+Không thêm dependency. Không đổi `bun.lock`, không đổi `package.json`. Không sửa file nào trong
+`src/components/ui/`.
+
+### Đã xác minh
+
+- `bun run typecheck`, `bun run lint`, `bun run format:check`, `bun run build` → exit 0.
+- CDP trên dev 5173: `search-check.mjs` **19/19**, `group1-check.mjs` **31/31**,
+  `feature-check.mjs` **39/39**, `app-check.mjs` **44/44** (sau khi cập nhật selector của script
+  theo `Item`/`InputGroup` mới).
+
+### Chưa xác minh
+
+- Chưa xem giao diện bằng mắt người (model không đọc được PNG); kết luận layout từ
+  `getBoundingClientRect` / `getComputedStyle`.
+- Chưa test Firefox/Safari — chỉ Chrome 156 qua CDP.
+- Chưa chạy trên preview 4174 (chỉ dev 5173).
