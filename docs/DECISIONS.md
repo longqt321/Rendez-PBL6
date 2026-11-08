@@ -1740,3 +1740,38 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
   của base-nova render `div`), `places-map` popup dùng `<h4>` (popup Leaflet không bọc `Card` —
   ngoại lệ đã ghi), `notification-page` dùng `<button>` trong `render={}` (pattern base-ui).
 - `skin-provider` vẫn tự đọc/ghi localStorage (lý do ở D-033).
+
+## D-035 — Rà soát đợt 3: sửa bug rời phòng, nút "Xoá bộ lọc" vô hiệu khi ở trong phòng, gỡ dep chết
+
+### Bối cảnh
+
+- Rà sâu theo hành vi (không chỉ grep class): đọc lại luồng phòng lọc nhóm, trạng thái rỗng của
+  hai trang lọc, và đối chiếu `package.json` với `import` thật.
+
+### Bug đã sửa
+
+- **Rời phòng xoá nhầm người**: `leaveRoom(room)` lọc `members.filter(m => !m.isMe)` và
+  `proposals.filter(p => p.memberId !== ME_MEMBER.id)` — tức luôn xoá **chủ phòng**. Tab B (thành
+  viên tham gia, `isMe: false`) bấm "Rời phòng" sẽ đá tab A ra khỏi phòng và xoá đề xuất của A.
+  Sửa: `leaveRoom(room, memberId)` xoá theo id; hook truyền `myMemberId` của tab.
+  Kiểm chứng CDP (`room-leave-check.mjs`): trước khi B rời `2 members, 1 proposal`; sau khi B rời
+  `1 member (creator still in: true), 0 proposal`, B `activeCode = ""`, 0 exception.
+- **Nút "Xoá bộ lọc" vô hiệu khi đang trong phòng**: kết quả do `RoomFilter` quyết định nên
+  `filters.resetAll` không đổi gì. Đổi thành nút "Mở phòng lọc nhóm" (link `/rooms/:code`) ở cả
+  `/discover` và `/map`; `/map` thêm mô tả trạng thái rỗng nhận biết phòng (trước đó chỉ
+  `/discover` có).
+- **`priceMax` không kiểm tra kiểu**: `Number("abc")` → `NaN` khiến `priceLevel > NaN` luôn false
+  (âm thầm bỏ lọc). Giờ chỉ nhận 1–3, giá trị lạ coi như không lọc.
+
+### Dọn dẹp
+
+- Gỡ `zustand` và `date-fns` — 0 `import` sau khi bỏ Trip/calendar.
+- Xác nhận không còn file/component chết: mọi `src/components/ui/*.tsx` đều được import; mọi
+  `key={index}` chỉ nằm ở skeleton/placeholder tĩnh; mọi `target="_blank"` có `rel`; mọi
+  `<Button>` trong `<form>` có `type`; mọi `Link`/`Button` chỉ có icon đều có `aria-label`.
+
+### Hệ quả
+
+- Ghi BACKLOG các mục cần quyết định sản phẩm: thiếu `<h1>` ở hầu hết trang, điểm đánh giá địa
+  điểm không tính lại sau khi gửi review, ô tìm kiếm topbar khi đang trong phòng, ngữ nghĩa
+  nhiều từ khoá include (OR hiện tại).

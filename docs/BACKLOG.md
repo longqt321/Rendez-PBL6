@@ -266,3 +266,20 @@ Còn lại, cập nhật sau đợt chuẩn hoá thứ hai (2026-11-08):
 - [ ] **Backend thật cho đa thiết bị (Phòng lọc nhóm)** — mock là db in-memory per tab; đồng bộ
       giữa các thiết bị thật bắt buộc WebSocket/Supabase Realtime. Đợt này chỉ demo các tab cùng
       1 trình duyệt qua BroadcastChannel + localStorage.
+
+## Phát hiện 2026-11-09 (rà soát sâu đợt 3)
+
+- [ ] **Thiếu `<h1>` ở hầu hết trang** — chỉ `place-detail`, `profile-header`, `collection-detail`
+      có; `/discover`, `/map`, `/social`, `/search`, `/saved`, `/notification`, `/settings`,
+      `/rooms/:code`, `/not-found` không có. Cần quyết định kiểu tiêu đề (ẩn thị giác hay hiện)
+      trước khi thêm, tránh đổi thiết kế.
+- [ ] **Điểm đánh giá địa điểm không tính lại sau khi gửi review** — `upsertReview` trong
+      `mocks/server.ts` chỉ ghi `db.reviews`, không cập nhật `place.rating`/`reviewCount`; trang
+      chi tiết vẫn hiện số cũ đến khi backend thật tính.
+- [ ] **Ô tìm kiếm topbar khi đang trong phòng** — gõ không có tác dụng (kết quả do phòng quyết
+      định), bấm Enter lại sang `/search` không kèm bộ lọc phòng. Cần chọn: ẩn ô tìm kiếm khi ở
+      trong phòng, hay hiện gợi ý "đang lọc theo phòng".
+- [ ] **Nhiều từ khoá include đang là OR** — nhóm thêm "hải sản" + "bình dân" sẽ ra quán khớp
+      một trong hai. Nếu muốn AND thì đổi `some` → `every` trong `listPublishedPlaces`.
+- [ ] **Trùng tên khi tham gia phòng** — `joinRoom` coi tên đã tồn tại là cùng người (không tạo
+      thành viên mới). Với demo 1 máy là chấp nhận được; backend thật cần danh tính riêng.

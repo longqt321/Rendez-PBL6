@@ -144,7 +144,10 @@ function listPublishedPlaces(params: {
     .split(",")
     .filter((value) => value && value !== "all") as PlaceCategory[]
   const districts = (params.district ?? "").split(",").filter((value) => value && value !== "all")
-  const priceMax = params.priceMax ? (Number(params.priceMax) as 1 | 2 | 3) : undefined
+  const priceMaxRaw = Number(params.priceMax)
+  // Chỉ nhận 1–3; giá trị lạ (NaN, 0, 9...) coi như không lọc thay vì lọc sai.
+  const priceMax =
+    params.priceMax && priceMaxRaw >= 1 && priceMaxRaw <= 3 ? (priceMaxRaw as 1 | 2 | 3) : undefined
   const excludedCategories = (params.excludeCategory ?? "")
     .split(",")
     .filter(Boolean) as PlaceCategory[]

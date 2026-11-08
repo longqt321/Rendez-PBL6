@@ -151,10 +151,12 @@ export function useRooms(): UseRoomsResult {
 
   const leaveRoom = useCallback(
     (code: string) => {
-      updateRoom(code, (room) => leaveRoomLib(room))
+      // Rời theo danh tính của tab này — không phải thành viên `isMe` (chủ phòng
+      // có thể vẫn đang ở trong phòng từ tab khác).
+      updateRoom(code, (room) => leaveRoomLib(room, myMemberId))
       setActiveCode("")
     },
-    [updateRoom, setActiveCode],
+    [updateRoom, setActiveCode, myMemberId],
   )
 
   return {

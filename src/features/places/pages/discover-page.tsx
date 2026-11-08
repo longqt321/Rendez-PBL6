@@ -1,4 +1,5 @@
 import { SearchXIcon } from "lucide-react"
+import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
@@ -64,9 +65,17 @@ export function DiscoverPage() {
                   : "Thử bỏ bộ lọc hoặc tìm bằng từ khoá khác."}
             </EmptyDescription>
           </EmptyHeader>
-          <Button variant="outline" onClick={filters.resetAll}>
-            Xoá bộ lọc
-          </Button>
+          {/* Đang trong phòng thì bộ lọc chung quyết định kết quả — "Xoá bộ lọc"
+              cá nhân không có tác dụng, đưa người dùng tới phòng thay vì nút vô hiệu. */}
+          {room ? (
+            <Button variant="outline" render={<Link to={`/rooms/${room.code}`} />}>
+              Mở phòng lọc nhóm
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={filters.resetAll}>
+              Xoá bộ lọc
+            </Button>
+          )}
         </Empty>
       ) : (
         <>

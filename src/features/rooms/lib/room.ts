@@ -155,12 +155,12 @@ export function dismissProposal(room: Room, proposalId: string): Room {
   }
 }
 
-/** Rời phòng: xoá thành viên `isMe` và mọi đề xuất của họ. */
-export function leaveRoom(room: Room): Room {
+/** Rời phòng: xoá thành viên theo id và mọi đề xuất của họ. */
+export function leaveRoom(room: Room, memberId: string): Room {
   return {
     ...room,
-    members: room.members.filter((member) => !member.isMe),
-    proposals: room.proposals.filter((proposal) => proposal.memberId !== ME_MEMBER.id),
+    members: room.members.filter((member) => member.id !== memberId),
+    proposals: room.proposals.filter((proposal) => proposal.memberId !== memberId),
   }
 }
 

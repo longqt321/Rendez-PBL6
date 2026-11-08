@@ -1,4 +1,5 @@
 import { SearchXIcon } from "lucide-react"
+import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -15,7 +16,7 @@ import { useDiscoverView } from "../hooks/use-discover-view"
  */
 export function MapPage() {
   const view = useDiscoverView()
-  const { filters } = view
+  const { filters, room } = view
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
@@ -40,11 +41,23 @@ export function MapPage() {
               <SearchXIcon />
             </EmptyMedia>
             <EmptyTitle>Không có địa điểm nào trên bản đồ</EmptyTitle>
-            <EmptyDescription>Thử bỏ bộ lọc hoặc tìm bằng từ khoá khác.</EmptyDescription>
+            <EmptyDescription>
+              {room
+                ? "Bộ lọc của phòng đang loại hết kết quả. Thử bỏ một đề xuất trong phòng."
+                : "Thử bỏ bộ lọc hoặc tìm bằng từ khoá khác."}
+            </EmptyDescription>
           </EmptyHeader>
-          <Button variant="outline" onClick={filters.resetAll}>
-            Xoá bộ lọc
-          </Button>
+          {/* Đang trong phòng thì bộ lọc chung quyết định kết quả — "Xoá bộ lọc"
+              cá nhân không có tác dụng, đưa người dùng tới phòng thay vì nút vô hiệu. */}
+          {room ? (
+            <Button variant="outline" render={<Link to={`/rooms/${room.code}`} />}>
+              Mở phòng lọc nhóm
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={filters.resetAll}>
+              Xoá bộ lọc
+            </Button>
+          )}
         </Empty>
       ) : (
         <div className="mt-5">
