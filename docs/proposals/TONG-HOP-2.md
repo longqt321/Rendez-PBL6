@@ -215,7 +215,45 @@ flowchart LR
 - **Ước lượng**: mọi con số suy từ Haversine phải ghi "ước lượng/xấp xỉ" trong UI, dùng hệ số
   bảo thủ, không hứa chính xác.
 
-## 9. Chưa xác minh
+## 9. Chốt lựa chọn (2026-11-08)
+
+Sau 2 đợt nghiên cứu (49 đề xuất: 24 đợt 1 + 25 đợt 2), chốt phương hướng như sau.
+
+### 9.1 Trục sản phẩm được chọn: **"Lên kế hoạch cho chuyến đi Đà Nẵng"**
+
+Lý do: (1) đúng định vị app — thành phố du lịch, người dùng chính là khách 2–4 ngày;
+(2) toàn bộ cụm này chạy được **thuần FE với mock hiện tại**, không vướng giới hạn mock 1 user /
+per-tab; (3) là vùng chưa có đối thủ trong các đề xuất — nhánh xã hội đã có nền, nhánh nhóm bị
+chặn bởi hạ tầng mock.
+
+### 9.2 Gói chốt cho đợt triển khai kế tiếp
+
+| #   | Đề xuất                                                         | Vì sao chốt                                                                                       | Cỡ  |
+| --- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | --- |
+| 1   | **DX-10.1 Trip** — khung ngày + điểm neo                        | Container của cả cụm kế hoạch; FE + localStorage; biến app "tra một lần" thành app dùng hằng ngày | S/M |
+| 2   | **DX-10.4 Món phải thử** + **DX-10.5 Ngân sách bậc**            | Dựng trên Trip với chi phí S; tái dùng `tags` và `priceLevel` đang bỏ phí                         | S   |
+| 3   | **DX-6.1 Lịch trình** (+ DX-6.2 kiểm tra, DX-6.3 sắp giờ gợi ý) | Phần còn thiếu của bộ sưu tập sau DX-4.2/4.3; `DayPlan` là tầng trong ngày của Trip               | M   |
+| 4   | **DX-8.1 Chia đều nhanh** (+ DX-8.5 lưu bill)                   | Quick win nhu cầu thật mỗi tuần; thuần client 100%                                                | S   |
+| 5   | **`shareText`** trong `share.ts`                                | Hạ tầng dùng chung của DX-6.5 + DX-8.4 — làm một lần ngay từ đầu                                  | S   |
+
+### 9.3 Chờ — làm khi có điều kiện
+
+- **DX-9.1 + DX-9.2/9.3 (phiên nhóm)**: giá trị cao nhất về mặt sản phẩm nhưng bị chặn bởi mock
+  per-tab (chỉ demo được bằng bot server). Làm khi quyết định đầu tư backend thật, hoặc chấp nhận
+  demo hạn chế.
+- **DX-7.1 + DX-7.2 (sở thích nhóm)**: phụ thuộc DX-9.1; thuật toán hợp nhất đã thiết kế xong,
+  giữ nguyên thiết kế để implement sau.
+- **DX-10.2 + DX-10.3 (mỗi ngày một khu, "hôm nay ăn gì")**: dựng trên Trip — làm ngay sau gói
+  chốt, không phải chờ gì khác.
+- **DX-7.5 dietary, DX-A giờ mở cửa**: chờ dữ liệu thật (DATA).
+
+### 9.4 Không theo đuổi
+
+- Đa thiết bị thật cho phiên nhóm trên mock (không thể quanh giới hạn adapter per-tab).
+- AI/LLM gợi ý (chưa có backend/model; rule-based giải thích được là lợi thế).
+- Ngân sách quy đổi VND, timeline giờ trong Trip, chat trong phiên, gamification (cấm).
+
+## 10. Chưa xác minh
 
 - Toàn bộ 5 file dựa trên **đọc code**, chưa chạy app trong trình duyệt; chưa đo UI thật của
   timeline/tab mới/form sở thích.
