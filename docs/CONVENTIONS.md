@@ -5,14 +5,16 @@ Lý do của từng quyết định nằm ở `docs/DECISIONS.md` (D-025 trở �
 
 ## 1. Không tự chế khi đã có component
 
-Trước khi viết một khối `div` + class, kiểm tra `src/components/ui/` (31 file, sinh bằng
+Trước khi viết một khối `div` + class, kiểm tra `src/components/ui/` (30 file, sinh bằng
 `bunx shadcn@4.23.0 add <name>`). Danh sách hiện có:
 
-`alert` `alert-dialog` `avatar` `badge` `breadcrumb` `button` `calendar` `card`
-`collapsible` `dialog` `drawer` `dropdown-menu` `empty` `field` `input`
-`input-group` `item` `label` `popover` `radio-group` `scroll-area` `separator`
-`skeleton` `sonner` `spinner` `switch` `tabs` `textarea` `toggle` `toggle-group`
-`tooltip`
+`alert` `alert-dialog` `avatar` `badge` `breadcrumb` `button` `card` `collapsible`
+`dialog` `drawer` `dropdown-menu` `empty` `field` `input` `input-group` `item`
+`label` `popover` `radio-group` `scroll-area` `separator` `skeleton` `sonner`
+`spinner` `switch` `tabs` `textarea` `toggle` `toggle-group` `tooltip`
+
+> Lưu ý: `calendar` **chưa cài được** — tool `shadcn add` treo vì mạng (2 lần, xem
+> `docs/DECISIONS.md` D-026 và `docs/LESSONS.md` L-008). Khi cài được, thêm vào danh sách này.
 
 Thiếu component nào thì **cài**, không tự viết:
 

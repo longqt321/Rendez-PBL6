@@ -372,3 +372,48 @@ src/index.css` trong phạm vi khối `[data-skin=…]` — không được có 
 
 - bóng + nhiễu giấy), 11 file `.tsx` (37 chỗ cỡ chữ lẻ → `text-xs`). Chi tiết ở `docs/DECISIONS.md`
   D-017.
+
+---
+
+## L-008 — Tool cài component treo vì mạng: dừng và báo, KHÔNG tự tạo file thay thế
+
+**Ngày:** 2026-11-08
+**Lỗi người dùng chỉ ra:**
+
+> "Kiểm tra lại cài calendar shadcn, không tự tạo calendar.tsx riêng chỉ vì treo do mạng, ghi vào
+> lessons đi. Treo thì báo lại, đừng tự ý tạo file mới, cho dù file đó có copy giống 100% từ
+> source chính thức."
+
+**Đã làm sai gì:**
+
+`bunx shadcn@4.23.0 add calendar --yes` treo (mạng ECONNRESET/TLS timeout). Thay vì dừng và báo,
+tôi lấy JSON registry đã tải ở bước `view`, tự chuyển đổi (`IconPlaceholder` → icon lucide, đổi
+alias, bỏ `"use client"`) rồi ghi `src/components/ui/calendar.tsx` bằng script — coi đó là "đúng
+quy trình cài". Không phải.
+
+Vì sao sai, kể cả khi nội dung giống 100%:
+
+1. **Nguồn sự thật của file sinh ra phải là tool.** File trong `src/components/ui/` do shadcn sinh
+   có phiên bản, có hash, có thể cài lại/so sánh được. File tự ghi thì không — lần sau `shadcn
+add` hay update sẽ không biết nó là "lạ" hay "của tool", diff với registry không còn ý nghĩa.
+2. **Chuyển đổi là phán đoán, không phải copy.** Tôi đã tự quyết: icon nào thay `IconPlaceholder`,
+   import đặt đâu — đó là 3 quyết định nhỏ mà tool lẽ ra quyết định. "Giống 100%" là tự đánh giá,
+   không có gì xác minh.
+3. **Che giấu lỗi hạ tầng.** Mạng hỏng là thông tin người dùng cần biết (mạng máy này không ổn
+   định với registry). Tự vá xong rồi báo "đã cài xong" khiến lỗi mạng bị nuốt, lần sau còn tái
+   diễn ở gói khác.
+
+**Quy tắc rút ra:**
+
+1. Tool sinh code (`shadcn add`, codegen, scaffold) **treo hoặc lỗi → dừng, xoá dở dang nếu có,
+   báo lại người dùng kèm log lỗi thật**. Không có ngoại lệ "nhưng tôi có sẵn source".
+2. Không bao giờ tự tạo file vào `src/components/ui/` hay bất kỳ nơi nào được coi là "do tool
+   quản lý" — kể cả copy từ nguồn chính thức. Muốn có thì chạy lại tool đến khi tool thành công.
+3. Nếu tool treo lặp lại, báo kèm bằng chứng (log, exit code) và **đề xuất phương án** (thử lại,
+   đổi mạng, cài tay với sự đồng ý của người dùng) — quyết định thuộc về người dùng, không tự làm.
+
+**Cách kiểm tra bằng máy:**
+
+- `git log --diff-filter=A -- src/components/ui/` — mọi file trong thư mục này phải có commit do
+  lệnh tool sinh ra; không commit nào "tạo file tay" cho thư mục này.
+- Khi báo "đã cài X", phải kèm output thật của tool (dòng "created …/X.tsx" hoặc tương đương).

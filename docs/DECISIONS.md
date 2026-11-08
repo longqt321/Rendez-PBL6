@@ -1429,7 +1429,10 @@ react-dom >=18`; tarball 32.242 B.
 ## D-026 — Dùng `Calendar` của shadcn (react-day-picker + date-fns) cho chọn ngày
 
 **Ngày:** 2026-11-08
-**Trạng thái:** Đã áp dụng
+**Trạng thái:** Chờ cài đặt — `bunx shadcn add calendar` treo vì mạng (2 lần: 2026-11-08 16:37 và
+16:46, không có output, bị kill sau ~90–110 giây). Dependency `react-day-picker` + `date-fns` đã
+được cài theo lần đầu rồi **đã gỡ** vì không còn gì import. Quyết định dùng `Calendar` vẫn đứng;
+thực hiện lại bằng chính tool khi mạng ổn — **không tự tạo file** (L-008).
 
 ### Bối cảnh
 
@@ -1484,7 +1487,8 @@ chỉ dùng vài hàm format. Không ảnh hưởng bundle đáng kể.
 
 ### Hệ quả
 
-- `src/components/ui/calendar.tsx` mới; **xoá dòng `"use client"`** sau khi sinh (quy ước dự án).
+- Khi cài thành công: `src/components/ui/calendar.tsx` mới; **xoá dòng `"use client"`** sau khi
+  sinh (quy ước dự án). File phải do tool sinh — không tự tạo (L-008).
 - Ngày trong `Trip` vẫn lưu dạng chuỗi `YYYY-MM-DD` (local), không lưu `Date` — `Calendar` chỉ
   là lớp chọn, chuyển đổi ở `features/trips/lib/trip.ts`.
 - Không dùng `date-fns` trực tiếp trong code nghiệp vụ; mọi format ngày vẫn qua `src/lib/format.ts`
@@ -1494,6 +1498,8 @@ chỉ dùng vài hàm format. Không ảnh hưởng bundle đáng kể.
 
 - Chưa render thử `Calendar` trong `Popover`/`Drawer` trên mobile 360px.
 - Chưa đo bundle tăng thực tế sau `vite build` (chỉ có số unpacked của npm).
+- Nguyên nhân treo của `shadcn add` chưa xác định được (tool treo im lặng, không log lỗi; bước
+  `view` trước đó lại fetch được registry).
 
 ---
 

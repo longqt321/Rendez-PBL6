@@ -18,8 +18,10 @@
    `@uidotdev/usehooks`, đúng pattern [comment-thread.tsx:31](../../src/features/social/components/comment-thread.tsx#L31).
 4. **Không thêm thư viện kéo thả**: sắp thứ tự bằng `DropdownMenu` "Lên/Xuống". Kéo thả cần
    `dnd-kit` (dependency mới) → chỉ làm khi có quyết định riêng trong `docs/DECISIONS.md`.
-5. **Chọn ngày bằng `Calendar` của shadcn** (`react-day-picker` + `date-fns` — đã cài theo
-   `docs/DECISIONS.md` D-026), không dùng `<Input type="date">` native.
+5. **Chọn ngày bằng `Calendar` của shadcn** (`react-day-picker` + `date-fns`) — quyết định đã
+   chốt (D-026) nhưng **chưa cài được** vì `shadcn add` treo do mạng (L-008). Chờ cài lại bằng
+   tool; nếu cài không được, phương án dự phòng là `<Input type="date">` native (phải chốt lại
+   với người dùng, không tự đổi).
 6. **Kéo thả bằng `dnd-kit`** (`@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities` — đã
    cài theo D-027) cho sắp thứ tự chặng; **giữ nút Lên/Xuống trong `DropdownMenu`** làm phương án
    bàn phím/a11y.
@@ -576,29 +578,29 @@ interface Bill {
 
 ## 6. Bảng tổng hợp component shadcn theo màn hình
 
-| Màn hình              | Component shadcn dùng                                                                                                                                                                                                                                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Tab Chuyến đi         | `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent`, `Card` (+Header/Title/Description/Content/Action), `Badge`, `Button`, `DropdownMenu` (+Item/Separator), `Empty` (+Header/Media/Title/Description/Content), `Skeleton`                                                                                               |
-| Dialog tạo/sửa chuyến | `Dialog` (+Content/Header/Title/Description/Footer), `Drawer` (+Content/Header/Title/Footer) cho mobile, `Field` (+Group/Label/Description/Error/Title), `Input`, **`Calendar`** (`mode="range"`, bọc `Popover` desktop / `Drawer` mobile — D-026), `ToggleGroup`/`ToggleGroupItem`, `Button`, `Spinner` (nếu cần) |
-| Chi tiết chuyến       | `Breadcrumb` (+List/Item/Link/Separator/Page), `Card`, `Badge`, `Button`, `DropdownMenu`, `Alert` (+Title/Action), `ScrollArea`/`ScrollBar`, `ToggleGroup`, `ItemGroup`/`Item`/`ItemMedia`/`ItemContent`/`ItemTitle`/`ItemDescription`/`ItemActions`, `Empty`, `Tooltip`, `Separator` (qua `ItemSeparator`)        |
-| Place picker          | `Dialog`/`Drawer`, `InputGroup` (+Addon/Input), `ItemGroup`/`Item`, `Badge`, `Button`, `Skeleton`, `Empty`, `Tooltip`                                                                                                                                                                                              |
-| Món phải thử          | `Card`, `ItemGroup`/`Item`, `Button`, `Badge` (nếu cần)                                                                                                                                                                                                                                                            |
-| Ngân sách bậc         | `Field`/`FieldTitle`, `ToggleGroup`, `Alert`                                                                                                                                                                                                                                                                       |
-| Lịch trình bộ sưu tập | `ToggleGroup`, `Card`, `FieldSet`/`FieldLegend`, `RadioGroup`/`RadioGroupItem`, `Button`, `Alert`, `ItemGroup`/`Item`, `Input type="time"`, `DropdownMenu` (+RadioGroup/RadioItem), `Empty`, `Tooltip`                                                                                                             |
-| Chia tiền             | `Card`, `FieldGroup`/`Field`/`FieldLabel`/`FieldDescription`/`FieldError`, `InputGroup` (+Input/Button/Text/Addon), `Input`, `RadioGroup`/`RadioGroupItem`, `Label`, `ItemGroup`/`Item`, `Button`, `Empty`, `DropdownMenu`                                                                                         |
-| Toàn cục              | `sonner` (toast), `Tooltip`, `Spinner`, `Skeleton`, `Separator`, `Badge`                                                                                                                                                                                                                                           |
+| Màn hình              | Component shadcn dùng                                                                                                                                                                                                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tab Chuyến đi         | `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent`, `Card` (+Header/Title/Description/Content/Action), `Badge`, `Button`, `DropdownMenu` (+Item/Separator), `Empty` (+Header/Media/Title/Description/Content), `Skeleton`                                                                                                                |
+| Dialog tạo/sửa chuyến | `Dialog` (+Content/Header/Title/Description/Footer), `Drawer` (+Content/Header/Title/Footer) cho mobile, `Field` (+Group/Label/Description/Error/Title), `Input`, **`Calendar`** (`mode="range"`, bọc `Popover` desktop / `Drawer` mobile — D-026, **chờ cài lại**), `ToggleGroup`/`ToggleGroupItem`, `Button`, `Spinner` (nếu cần) |
+| Chi tiết chuyến       | `Breadcrumb` (+List/Item/Link/Separator/Page), `Card`, `Badge`, `Button`, `DropdownMenu`, `Alert` (+Title/Action), `ScrollArea`/`ScrollBar`, `ToggleGroup`, `ItemGroup`/`Item`/`ItemMedia`/`ItemContent`/`ItemTitle`/`ItemDescription`/`ItemActions`, `Empty`, `Tooltip`, `Separator` (qua `ItemSeparator`)                         |
+| Place picker          | `Dialog`/`Drawer`, `InputGroup` (+Addon/Input), `ItemGroup`/`Item`, `Badge`, `Button`, `Skeleton`, `Empty`, `Tooltip`                                                                                                                                                                                                               |
+| Món phải thử          | `Card`, `ItemGroup`/`Item`, `Button`, `Badge` (nếu cần)                                                                                                                                                                                                                                                                             |
+| Ngân sách bậc         | `Field`/`FieldTitle`, `ToggleGroup`, `Alert`                                                                                                                                                                                                                                                                                        |
+| Lịch trình bộ sưu tập | `ToggleGroup`, `Card`, `FieldSet`/`FieldLegend`, `RadioGroup`/`RadioGroupItem`, `Button`, `Alert`, `ItemGroup`/`Item`, `Input type="time"`, `DropdownMenu` (+RadioGroup/RadioItem), `Empty`, `Tooltip`                                                                                                                              |
+| Chia tiền             | `Card`, `FieldGroup`/`Field`/`FieldLabel`/`FieldDescription`/`FieldError`, `InputGroup` (+Input/Button/Text/Addon), `Input`, `RadioGroup`/`RadioGroupItem`, `Label`, `ItemGroup`/`Item`, `Button`, `Empty`, `DropdownMenu`                                                                                                          |
+| Toàn cục              | `sonner` (toast), `Tooltip`, `Spinner`, `Skeleton`, `Separator`, `Badge`                                                                                                                                                                                                                                                            |
 
 **Không dùng / không cần cài thêm:** `select`, `checkbox`, `slider`,
 `progress`, `command`, `form`, `sheet`, `table`, `pagination`, `chart`, `carousel`, `sidebar`.
 Lý do: `ToggleGroup`/`RadioGroup` đủ cho lựa chọn; không có nhu cầu bảng/phân trang. `calendar`
-và `dnd-kit` **đã cài** (D-026, D-027).
+và `dnd-kit` **đã cài** (D-027); `calendar` **chưa cài được** (D-026 — tool treo, L-008).
 
 ## 7. Thứ tự thực hiện & kế hoạch file
 
 | Bước | Việc                                                                                                  | File chính                                                                                                | Ước lượng |
 | ---- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | --------- |
 | 1    | Hạ tầng: `formatClock`, `formatVnd`, `shareText`, `estimateTravelMinutes`, constants                  | `src/lib/format.ts`, `src/lib/share.ts`, `src/features/places/lib/travel.ts`, `src/lib/constants.ts`      | 0,5 ngày  |
-| 2    | Trip: types + lib + hook + tab + card + form (dùng `Calendar` đã cài)                                 | `src/features/trips/**`, `src/features/saved/pages/saved-page.tsx`                                        | 1,5 ngày  |
+| 2    | Trip: types + lib + hook + tab + card + form (`Calendar` chờ cài lại — D-026)                         | `src/features/trips/**`, `src/features/saved/pages/saved-page.tsx`                                        | 1,5 ngày  |
 | 3    | Trip detail: header + dải ngày + thẻ ngày + picker + reorder                                          | `src/features/trips/pages/trip-detail-page.tsx`, `src/features/trips/components/*`                        | 2 ngày    |
 | 4    | Món phải thử + ngân sách bậc (+ đọc `q` từ URL ở `/discover`)                                         | `src/features/trips/components/trip-dishes-card.tsx`, `trip-budget-toggle.tsx`, `discover-page.tsx`       | 1 ngày    |
 | 5    | Lịch trình bộ sưu tập: DayPlan lib + timeline + validate + sắp giờ + share (kéo thả `dnd-kit` đã cài) | `src/features/collections/components/collection-day-plan.tsx`, `src/features/collections/lib/day-plan.ts` | 2,5 ngày  |
