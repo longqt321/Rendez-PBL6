@@ -1,3 +1,4 @@
+import { Fragment } from "react"
 import {
   BellIcon,
   CheckCheckIcon,
@@ -7,18 +8,30 @@ import {
   UserPlusIcon,
 } from "lucide-react"
 import { Link } from "react-router"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemSeparator,
+  ItemTitle,
+} from "@/components/ui/item"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SectionHeading } from "@/components/shared/section-heading"
 import { formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { PlaceSuggestionCard } from "../components/place-suggestion-card"
 import { useMarkAllNotificationsRead } from "../hooks/use-mark-all-notifications-read"
 import { useMarkNotificationRead } from "../hooks/use-mark-notification-read"
 import { useNotifications } from "../hooks/use-notifications"
-import type { ActorNotification, AppNotification } from "../types/notification"
+import type { ActorNotification, AppNotification, SystemNotification } from "../types/notification"
 
 /** Thông báo không phải đề xuất địa điểm — tương tác hoặc hệ thống. */
 type OtherNotification = Exclude<AppNotification, { kind: "place-suggestion" }>
@@ -29,7 +42,14 @@ const ACTOR_META = {
   follow: { icon: UserPlusIcon, text: "đã bắt đầu theo dõi bạn" },
 } as const
 
-function ActorRow({ notification }: { notification: ActorNotification }) {
+/**
+ * Một hàng thông báo tương tác (thích / bình luận / theo dõi).
+ *
+ * Hai nhánh trước đây — `<button>` khi thông báo không gắn bài, `<Link>` khi có —
+ * lặp lại đúng một khối nội dung; nay chỉ khác phần tử bọc ngoài, chọn qua
+ * prop `render` của `Item`.
+ */
+function NotificationRow({ notification }: { notification: ActorNotification }) {
   const markRead = useMarkNotificationRead()
   const meta = ACTOR_META[notification.kind]
   const Icon = meta.icon
@@ -40,58 +60,88 @@ function ActorRow({ notification }: { notification: ActorNotification }) {
 
   const body = (
     <>
-      <Avatar>
-        <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
-          {notification.actorInitials}
-        </AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs leading-relaxed">
+      <ItemMedia>
+        <Avatar>
+          <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
+            {notification.actorInitials}
+          </AvatarFallback>
+          {notification.read ? null : <AvatarBadge aria-hidden="true" />}
+        </Avatar>
+      </ItemMedia>
+      <ItemContent className="gap-1">
+        <ItemTitle className="line-clamp-none block w-full text-xs leading-relaxed">
           <span className="font-semibold">{notification.actorName}</span> {meta.text}
-        </p>
+        </ItemTitle>
         {notification.excerpt ? (
-          <p className="mt-1 line-clamp-2 border-l border-border pl-2 text-xs text-muted-foreground italic">
+          <ItemDescription className="line-clamp-2 border-l border-border pl-2 text-xs italic">
             “{notification.excerpt}”
-          </p>
+          </ItemDescription>
         ) : null}
-        <p className="mt-1 text-xs text-muted-foreground">
+        <ItemDescription className="text-xs">
           {formatRelativeTime(notification.createdAt)}
-        </p>
-      </div>
-      <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </ItemDescription>
+      </ItemContent>
+      <ItemActions>
+        <Icon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+      </ItemActions>
     </>
   )
 
   const className = cn(
-    "relative flex items-start gap-2.5 rounded-md border p-2.5 transition-colors",
+    "items-start",
     notification.read ? "border-border" : "border-primary bg-primary/5",
   )
 
   // Thông báo `follow` không gắn với bài nào → chỉ đánh dấu đã đọc, không điều hướng.
   if (!notification.postId) {
     return (
-      <li>
-        <button
-          type="button"
-          onClick={handleActivate}
-          className={cn(className, "w-full text-left hover:bg-muted")}
-        >
-          {body}
-        </button>
-      </li>
+      <Item
+        variant="outline"
+        size="sm"
+        render={<button type="button" onClick={handleActivate} />}
+        className={cn(className, "w-full text-left hover:bg-muted")}
+      >
+        {body}
+      </Item>
     )
   }
 
   return (
-    <li>
-      <Link
-        to={`/post/${notification.postId}`}
-        onClick={handleActivate}
-        className={cn(className, "hover:bg-muted")}
-      >
-        {body}
-      </Link>
-    </li>
+    <Item
+      variant="outline"
+      size="sm"
+      render={<Link to={`/post/${notification.postId}`} onClick={handleActivate} />}
+      className={cn(className, "hover:bg-muted")}
+    >
+      {body}
+    </Item>
+  )
+}
+
+/** Một hàng thông báo hệ thống — không bấm được, chỉ đọc. */
+function SystemRow({ notification }: { notification: SystemNotification }) {
+  return (
+    <Item
+      variant="outline"
+      size="sm"
+      className={cn(
+        "items-start",
+        notification.read ? "border-border" : "border-primary bg-primary/5",
+      )}
+    >
+      <ItemMedia variant="icon">
+        <InfoIcon aria-hidden="true" />
+      </ItemMedia>
+      <ItemContent className="gap-1">
+        <ItemTitle className="line-clamp-none block w-full text-xs font-semibold">
+          {notification.title}
+        </ItemTitle>
+        <ItemDescription className="text-xs">{notification.body}</ItemDescription>
+        <ItemDescription className="text-xs">
+          {formatRelativeTime(notification.createdAt)}
+        </ItemDescription>
+      </ItemContent>
+    </Item>
   )
 }
 
@@ -127,10 +177,11 @@ export function NotificationPage() {
       </header>
 
       {isPending ? (
-        <p className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Spinner className="size-4" />
-          Đang tải thông báo…
-        </p>
+        <div className="mt-4 flex flex-col gap-2">
+          {Array.from({ length: 4 }, (_, index) => (
+            <Skeleton key={index} className="h-16 w-full rounded-surface" />
+          ))}
+        </div>
       ) : isError ? (
         <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>
@@ -189,9 +240,7 @@ function SuggestionSection({
 
   return (
     <section>
-      <h2 className="mb-2 font-heading text-sm font-bold tracking-wide uppercase">
-        Đề xuất thêm địa điểm
-      </h2>
+      <SectionHeading className="mb-2">Đề xuất thêm địa điểm</SectionHeading>
       <ul className="flex flex-col gap-3">
         {suggestions.map((notification) => (
           <li key={notification.id}>
@@ -223,33 +272,19 @@ function OtherActivitySection({ notifications }: { notifications: OtherNotificat
 
   return (
     <section>
-      <h2 className="mb-2 font-heading text-sm font-bold tracking-wide uppercase">
-        Hoạt động khác
-      </h2>
-      <ul className="flex flex-col gap-2">
-        {notifications.map((notification) =>
-          notification.kind === "system" ? (
-            <li
-              key={notification.id}
-              className={cn(
-                "rounded-md border p-2.5",
-                notification.read ? "border-border" : "border-primary bg-primary/5",
-              )}
-            >
-              <p className="flex items-center gap-1.5 text-xs font-semibold">
-                <InfoIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                {notification.title}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">{notification.body}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {formatRelativeTime(notification.createdAt)}
-              </p>
-            </li>
-          ) : (
-            <ActorRow key={notification.id} notification={notification} />
-          ),
-        )}
-      </ul>
+      <SectionHeading className="mb-2">Hoạt động khác</SectionHeading>
+      <ItemGroup className="gap-0">
+        {notifications.map((notification, index) => (
+          <Fragment key={notification.id}>
+            {index > 0 ? <ItemSeparator /> : null}
+            {notification.kind === "system" ? (
+              <SystemRow notification={notification} />
+            ) : (
+              <NotificationRow notification={notification} />
+            )}
+          </Fragment>
+        ))}
+      </ItemGroup>
     </section>
   )
 }
