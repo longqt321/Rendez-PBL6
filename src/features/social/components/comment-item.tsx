@@ -1,6 +1,7 @@
 import { HeartIcon, MoreHorizontalIcon, TrashIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Toggle } from "@/components/ui/toggle"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,17 +58,18 @@ export function CommentItem({ comment, onReply, onDelete }: CommentItemProps) {
         </ItemDescription>
 
         <ItemFooter className="mt-1 justify-start gap-1">
-          <Button
-            variant="ghost"
-            size="xs"
-            aria-pressed={comment.likedByMe}
+          <Toggle
+            size="sm"
             aria-label={comment.likedByMe ? "Bỏ thích bình luận" : "Thích bình luận"}
-            onClick={() => setLiked.mutate({ commentId: comment.id, liked: !comment.likedByMe })}
+            pressed={comment.likedByMe}
+            onPressedChange={(pressed) =>
+              setLiked.mutate({ commentId: comment.id, liked: pressed })
+            }
             className={cn("h-6 px-1.5 text-xs", comment.likedByMe && "text-primary")}
           >
             <HeartIcon className={cn("size-3", comment.likedByMe && "fill-current")} />
             {formatCount(comment.likeCount)}
-          </Button>
+          </Toggle>
 
           <Button
             variant="ghost"

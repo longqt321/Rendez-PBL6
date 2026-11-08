@@ -2,12 +2,23 @@ import { Link, Navigate, useSearchParams } from "react-router"
 import { SearchXIcon, UsersIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
 import { PlaceCard } from "@/features/places/components/place-card"
+import { PlaceCardSkeleton } from "@/features/places/components/place-card-skeleton"
 import { usePosts } from "@/features/social/hooks/use-posts"
 import { PostCard } from "@/features/social/components/post-card"
 import { useMe } from "@/features/profile/hooks/use-me"
+import { formatCount } from "@/lib/format"
 import { MOCK_USERS } from "@/mocks/fixtures/users"
 
 /**
@@ -36,7 +47,8 @@ function SearchResults({ query }: { query: string }) {
     category: "all",
     query,
   })
-  const { data: postsData, isPending: postsPending } = usePosts("all")
+  // `q` được lọc server-side (GET /posts?q=); lọc client chỉ giữ bài có gắn địa điểm.
+  const { data: postsData, isPending: postsPending } = usePosts({ filter: "all", q: query })
   const { data: me } = useMe()
 
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
@@ -60,7 +72,13 @@ function SearchResults({ query }: { query: string }) {
 
         <TabsContent value="places" className="mt-4">
           {placesPending ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Đang tìm…</p>
+            <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <li key={index}>
+                  <PlaceCardSkeleton imageHeight={280 + (index % 3) * 60} />
+                </li>
+              ))}
+            </ul>
           ) : places.length === 0 ? (
             <SearchEmptyBlock label="địa điểm" />
           ) : (
@@ -76,7 +94,11 @@ function SearchResults({ query }: { query: string }) {
 
         <TabsContent value="posts" className="mt-4">
           {postsPending ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Đang tìm…</p>
+            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-64 w-full rounded-md" />
+              ))}
+            </div>
           ) : posts.length === 0 ? (
             <SearchEmptyBlock label="bài đăng" />
           ) : (
@@ -97,29 +119,35 @@ function SearchResults({ query }: { query: string }) {
             <ul className="grid max-w-xl grid-cols-1 gap-2">
               {people.map((user) => (
                 <li key={user.id}>
-                  <Link
-                    to={user.isMe ? "/profile" : `/u/${user.handle}`}
-                    className="flex items-center gap-3 rounded-surface border border-border/15 p-3 transition-colors hover:bg-muted"
+                  {/* Item tự là thẻ `<a>` qua `render` nên cần hover riêng (`[a]:hover` chỉ áp cho con). */}
+                  <Item
+                    variant="outline"
+                    className="transition-colors hover:bg-muted"
+                    render={<Link to={user.isMe ? "/profile" : `/u/${user.handle}`} />}
                   >
-                    <Avatar size="lg">
-                      <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
-                        {user.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold">
+                    <ItemMedia>
+                      <Avatar size="lg">
+                        <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
+                          {user.initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle className="text-sm font-semibold">
                         {user.name}
                         {me && user.id === me.id ? " (bạn)" : ""}
-                      </span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        @{user.handle} · {user.postCount} bài đăng
-                      </span>
-                    </span>
-                    <UsersIcon
-                      className="ml-auto size-4 shrink-0 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                  </Link>
+                      </ItemTitle>
+                      <ItemDescription className="text-xs">
+                        @{user.handle} · {formatCount(user.postCount)} bài đăng
+                      </ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      <UsersIcon
+                        className="size-4 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                      />
+                    </ItemActions>
+                  </Item>
                 </li>
               ))}
             </ul>

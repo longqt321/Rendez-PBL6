@@ -37,4 +37,4 @@ export interface CreatePostInput {
 }
 
 /** Bộ lọc feed — server lọc, frontend chỉ gửi tham số. */
-export type PostFeedFilter = "all" | "unplaced" | "mine"
+export type PostFeedFilter = "all" | "unplaced" | "mine" | "saved"

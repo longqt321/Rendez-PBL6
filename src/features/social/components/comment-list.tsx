@@ -1,9 +1,9 @@
 import { MessageCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { Spinner } from "@/components/ui/spinner"
 import { ItemGroup, ItemSeparator } from "@/components/ui/item"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useComments } from "../hooks/use-comments"
 import type { Comment, CommentSort } from "../types/comment"
 import { CommentItem } from "./comment-item"
@@ -26,12 +26,16 @@ export function CommentList({ postId, sort, onReply, onDelete, className }: Comm
 
   if (isPending) {
     return (
-      <div
-        className="flex items-center justify-center py-8"
-        role="status"
-        aria-label="Đang tải bình luận"
-      >
-        <Spinner className="size-5" />
+      <div className="flex flex-col gap-3 px-1 py-2">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="flex gap-2.5">
+            <Skeleton className="size-8 shrink-0 rounded-full" />
+            <div className="flex flex-1 flex-col gap-1.5">
+              <Skeleton className="h-3 w-32" />
+              <Skeleton className="h-3.5 w-full" />
+            </div>
+          </div>
+        ))}
       </div>
     )
   }

@@ -3,6 +3,7 @@ import { SendIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
+import { MAX_CAPTION_LENGTH } from "@/lib/constants"
 import { toast } from "sonner"
 import { useCreateComment } from "../hooks/use-create-comment"
 import type { Comment } from "../types/comment"
@@ -62,6 +63,7 @@ export function CommentComposer({ postId, replyTo, onCancelReply }: CommentCompo
             replyTo !== null ? `Trả lời @{replyTo.author.handle}…` : "Viết bình luận của bạn…"
           }
           aria-label="Nội dung bình luận"
+          maxLength={MAX_CAPTION_LENGTH}
           rows={1}
           className="min-h-9"
           onKeyDown={(event) => {
@@ -78,7 +80,7 @@ export function CommentComposer({ postId, replyTo, onCancelReply }: CommentCompo
           disabled={createComment.isPending || body.trim().length === 0}
           onClick={handleSubmit}
         >
-          {createComment.isPending ? <Spinner /> : <SendIcon />}
+          {createComment.isPending ? <Spinner /> : <SendIcon aria-hidden="true" />}
         </Button>
       </div>
     </div>

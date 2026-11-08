@@ -1,7 +1,7 @@
 import { Link } from "react-router"
 import { BookmarkIcon, FolderPlusIcon, MapPinIcon } from "lucide-react"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { usePosts } from "@/features/social/hooks/use-posts"
 import { PostCard } from "@/features/social/components/post-card"
@@ -11,12 +11,12 @@ import { CollectionCard } from "@/features/collections/components/collection-car
 /**
  * Trang bài đã lưu — `/saved`.
  *
- * Tab "Bài đăng" do server lọc `savedByMe`; tab "Bộ sưu tập" là danh sách bộ
- * sưu tập của người dùng (xem chi tiết tại /collections/:id).
+ * Tab "Bài đăng" dùng `GET /posts?filter=saved` (server lọc `savedByMe`). Tab "Bộ sưu
+ * tập" là danh sách bộ sưu tập của người dùng (xem chi tiết tại /collections/:id).
  */
 export function SavedPage() {
-  const { data: postsData, isPending } = usePosts("all")
-  const savedPosts = postsData?.items.filter((post) => post.savedByMe) ?? []
+  const { data: postsData, isPending } = usePosts({ filter: "saved" })
+  const savedPosts = postsData?.items ?? []
   const { data: collections, isPending: collectionsPending } = useCollections()
 
   return (
@@ -30,7 +30,11 @@ export function SavedPage() {
 
         <TabsContent value="posts" className="mt-4">
           {isPending ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Đang tải…</p>
+            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-64 w-full rounded-md" />
+              ))}
+            </div>
           ) : savedPosts.length === 0 ? (
             <Empty className="mt-2">
               <EmptyHeader>
@@ -74,9 +78,11 @@ export function SavedPage() {
 
         <TabsContent value="collections" className="mt-4">
           {collectionsPending ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              <Spinner /> Đang tải…
-            </p>
+            <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} className="h-40 w-full rounded-md" />
+              ))}
+            </div>
           ) : collections && collections.length > 0 ? (
             <ul className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {collections.map((collection) => (

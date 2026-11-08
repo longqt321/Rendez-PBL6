@@ -1,9 +1,12 @@
 import { useState } from "react"
 import { Link } from "react-router"
 import { BookmarkIcon, HeartIcon, MapPinIcon, MessageCircleIcon, SparklesIcon } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Toggle } from "@/components/ui/toggle"
 import { SeedImage } from "@/components/shared/seed-image"
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import { formatCount, formatRelativeTime } from "@/lib/format"
@@ -27,7 +30,7 @@ export function PostCard({ post }: PostCardProps) {
   const place = post.place
 
   return (
-    <article className="overflow-hidden rounded-md border border-border bg-card shadow-(--shadow-soft)">
+    <Card className="gap-0 py-0 shadow-(--shadow-soft)">
       <header className="flex items-center gap-3 px-4 py-3">
         <Avatar size="lg">
           <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
@@ -72,38 +75,36 @@ export function PostCard({ post }: PostCardProps) {
             </Badge>
           </div>
         ) : (
-          <p className="flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-sm text-muted-foreground">
+          <Alert className="flex items-center gap-2 border-dashed">
             <SparklesIcon className="size-4 shrink-0" aria-hidden="true" />
-            Chưa gắn địa điểm — hệ thống sẽ đề xuất cho bạn.
-          </p>
+            <AlertDescription>Chưa gắn địa điểm — hệ thống sẽ đề xuất cho bạn.</AlertDescription>
+          </Alert>
         )}
 
         <footer className="flex items-center gap-1.5 pt-0.5">
-          <Button
-            variant="ghost"
-            aria-pressed={post.likedByMe}
+          <Toggle
             aria-label={post.likedByMe ? "Bỏ thích" : "Thích"}
-            onClick={() => setLiked.mutate({ postId: post.id, liked: !post.likedByMe })}
+            pressed={post.likedByMe}
+            onPressedChange={(pressed) => setLiked.mutate({ postId: post.id, liked: pressed })}
             className={cn(post.likedByMe && "text-primary")}
           >
             <HeartIcon className={cn(post.likedByMe && "fill-current")} />
             {formatCount(post.likeCount)}
-          </Button>
+          </Toggle>
 
           <Button variant="ghost" aria-label="Bình luận" onClick={() => setCommentsOpen(true)}>
             <MessageCircleIcon />
             {formatCount(post.commentCount)}
           </Button>
 
-          <Button
-            variant="ghost"
-            aria-pressed={post.savedByMe}
+          <Toggle
             aria-label={post.savedByMe ? "Bỏ lưu" : "Lưu bài"}
-            onClick={() => setSaved.mutate({ postId: post.id, saved: !post.savedByMe })}
+            pressed={post.savedByMe}
+            onPressedChange={(pressed) => setSaved.mutate({ postId: post.id, saved: pressed })}
             className={cn("ml-auto", post.savedByMe && "text-accent")}
           >
             <BookmarkIcon className={cn(post.savedByMe && "fill-current")} />
-          </Button>
+          </Toggle>
         </footer>
       </div>
 
@@ -111,6 +112,6 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Thread đầy đủ — nút Bình luận ở footer cũng mở cùng thread. */}
       <CommentThread post={post} open={commentsOpen} onOpenChange={setCommentsOpen} />
-    </article>
+    </Card>
   )
 }
