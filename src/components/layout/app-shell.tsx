@@ -1,6 +1,6 @@
+import { Suspense, useEffect, useRef } from "react"
 import {
   BookmarkIcon,
-  EyeIcon,
   HelpCircleIcon,
   LogOutIcon,
   MapPinIcon,
@@ -33,7 +33,57 @@ import { useUnreadNotificationCount } from "@/features/notification/hooks/use-no
 import { useRooms } from "@/features/rooms/hooks/use-rooms"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
 import { cn } from "@/lib/utils"
+import { PageLoading } from "@/components/shared/page-loading"
 import { FILTER_SHARED_PATHS, NAV_ITEMS, type NavItem } from "./nav-items"
+
+/** Tiêu đề theo path — một nguồn duy nhất, khớp các route ở `routes.tsx`. */
+const PAGE_TITLES: [RegExp, string][] = [
+  [/^\/discover\/[^/]+$/, "Địa điểm"],
+  [/^\/post\/[^/]+$/, "Bài đăng"],
+  [/^\/collections\/[^/]+$/, "Bộ sưu tập"],
+  [/^\/rooms\/[^/]+$/, "Phòng lọc nhóm"],
+  [/^\/u\/[^/]+$/, "Hồ sơ"],
+  [/^\/discover$/, "Khám phá"],
+  [/^\/map$/, "Bản đồ"],
+  [/^\/social$/, "Cộng đồng"],
+  [/^\/notification$/, "Thông báo"],
+  [/^\/search$/, "Tìm kiếm"],
+  [/^\/saved$/, "Đã lưu"],
+  [/^\/profile$/, "Trang cá nhân"],
+  [/^\/settings$/, "Cài đặt"],
+]
+
+/** Tiêu đề tab trình duyệt cho path hiện tại; `undefined` → giữ tiêu đề mặc định. */
+function titleForPath(pathname: string): string | undefined {
+  const match = PAGE_TITLES.find(([pattern]) => pattern.test(pathname))
+  return match?.[1]
+}
+
+/**
+ * Gắn tiêu đề tab trình duyệt theo trang — gọi một lần ở `AppShell` (một nghiệp
+ * vụ một chỗ); trang động (địa điểm, bài đăng) dùng tiêu đề chung của nhóm.
+ */
+function useDocumentTitle(pathname: string) {
+  useEffect(() => {
+    const title = titleForPath(pathname)
+    if (title) document.title = `${title} · Đà Nẵng Ăn & Đi`
+  }, [pathname])
+}
+
+/**
+ * Chuyển route thì đưa focus về đầu nội dung — điều hướng bàn phím/screen
+ * reader không bị "mất vị trí" sau khi trang mới render.
+ */
+function useFocusMainOnNavigate(pathname: string, mainRef: React.RefObject<HTMLElement | null>) {
+  const isFirstRender = useRef(true)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    mainRef.current?.focus()
+  }, [pathname, mainRef])
+}
 import { ThemeToggle } from "./theme-toggle"
 
 interface AppShellProps {
@@ -48,13 +98,30 @@ interface AppShellProps {
  * Dùng làm layout route: không truyền `children` thì render `<Outlet />`.
  */
 export function AppShell({ children }: AppShellProps) {
+  const location = useLocation()
+  const mainRef = useRef<HTMLElement>(null)
+  useDocumentTitle(location.pathname)
+  useFocusMainOnNavigate(location.pathname, mainRef)
+
   return (
     <div className="min-h-dvh">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-control focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:text-primary-foreground"
+      >
+        Bỏ qua tới nội dung
+      </a>
       <SideNav />
       <div className="flex min-h-dvh flex-col lg:pl-56">
         <TopBar />
         {/* pb-20 chừa chỗ cho bottom nav trên mobile */}
-        <main className="flex-1 pb-20 lg:pb-0">{children ?? <Outlet />}</main>
+        <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 pb-20 outline-none lg:pb-0">
+          {children ?? (
+            <Suspense fallback={<PageLoading />}>
+              <Outlet />
+            </Suspense>
+          )}
+        </main>
       </div>
       <BottomNav />
     </div>
@@ -270,11 +337,6 @@ function UserMenu() {
               <DropdownMenuRadioItem value="default">Mặc định</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="retro">Retro</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem render={<Link to="/design" />}>
-              <EyeIcon />
-              Xem trước giao diện
-            </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuItem>

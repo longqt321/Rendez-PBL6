@@ -28,7 +28,7 @@ export function ProfileTabs({ profile }: ProfileTabsProps) {
   return (
     <Tabs
       value={tab}
-      onValueChange={(value) => setSearchParams(value === "posts" ? {} : { tab: value })}
+      onValueChange={(value) => setSearchParams(value === "posts" ? {} : { tab: String(value) })}
     >
       <TabsList>
         <TabsTrigger value="posts">Bài đăng</TabsTrigger>

@@ -65,7 +65,10 @@ export function ReviewForm({ placeId, myReview, authorInitials, onDone }: Review
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
+    <form
+      onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
+      className="flex flex-col gap-3"
+    >
       <div className="flex items-center gap-3">
         <Avatar size="lg">
           <AvatarFallback>{authorInitials}</AvatarFallback>

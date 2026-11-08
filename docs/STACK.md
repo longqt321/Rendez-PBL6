@@ -2,32 +2,31 @@
 
 Phiên bản đã cài thực tế (đọc từ `node_modules/*/package.json`), không phải version trong `package.json`.
 
-| Gói                                   | Version cài            | Vai trò                                                                                                                    |
-| ------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| react / react-dom                     | 19.3.1                 | UI runtime                                                                                                                 |
-| vite                                  | 8.3.6                  | Build tool (dùng rolldown)                                                                                                 |
-| typescript                            | 6.0.3                  | Type checker                                                                                                               |
-| tailwindcss / @tailwindcss/vite       | 4.3.5                  | Styling (CSS-first, không có `tailwind.config.js`)                                                                         |
-| @base-ui/react                        | 1.9.0                  | Headless primitives (nền của shadcn style `base-nova`)                                                                     |
-| shadcn                                | 4.23.0                 | CLI sinh component + `shadcn/tailwind.css`                                                                                 |
-| cn                                    | 0.2.6                  | Merge class Tailwind (thay `clsx` + `tailwind-merge`)                                                                      |
-| class-variance-authority              | 0.7.1                  | Variant API cho component                                                                                                  |
-| @fontsource-variable/geist            | 5.3.0                  | Font self-hosted — skin mặc định                                                                                           |
-| @fontsource-variable/fraunces         | 5.3.0                  | Font serif self-hosted — skin retro                                                                                        |
-| tw-animate-css                        | 1.4.0                  | Animation utilities cho Tailwind 4                                                                                         |
-| next-themes                           | 0.4.6                  | Sáng/tối, gắn class `dark` lên `<html>`                                                                                    |
-| react-router                          | 8.5.1                  | Routing                                                                                                                    |
-| @tanstack/react-query                 | 5.106.1                | Server state (mọi dữ liệu từ API)                                                                                          |
-| zustand                               | 5.1.0                  | Client state toàn cục — **chưa dùng**, giữ lại theo quyết định 2026-11-08 (BACKLOG)                                        |
-| zod                                   | 4.6.7                  | Schema validation — dùng ở `settings-page`, `review-form`, dialog bộ sưu tập                                               |
-| react-hook-form / @hookform/resolvers | 7.91.0 / 7.0.3         | Form + cầu nối zod (xem `docs/CONVENTIONS.md` §8)                                                                          |
-| axios                                 | 1.21.0                 | HTTP client                                                                                                                |
-| sonner                                | 2.0.8                  | Toast — dùng qua `toast()` và `<Toaster>` ở `app-provider`                                                                 |
-| lucide-react                          | 1.70.0                 | Icon                                                                                                                       |
-| @uidotdev/usehooks                    | 2.4.1                  | `useGeolocation`, `useIntersectionObserver`, `useDebounce`, `useLocalStorage`, `useMediaQuery` — thay hook tự viết (D-025) |
-| react-day-picker                      | 10.0.2                 | Lịch chọn ngày — nền của `Calendar` shadcn (D-026)                                                                         |
-| date-fns                              | 4.4.0                  | Dependency bắt buộc của `react-day-picker`; không dùng trực tiếp trong nghiệp vụ                                           |
-| @dnd-kit/core / sortable / utilities  | 6.3.1 / 10.0.0 / 3.2.2 | Kéo thả sắp thứ tự chặng (D-027)                                                                                           |
+| Gói                                            | Version cài    | Vai trò                                                                                                                    |
+| ---------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| react / react-dom                              | 19.3.1         | UI runtime                                                                                                                 |
+| vite                                           | 8.3.6          | Build tool (dùng rolldown)                                                                                                 |
+| typescript                                     | 6.0.3          | Type checker                                                                                                               |
+| tailwindcss / @tailwindcss/vite                | 4.3.5          | Styling (CSS-first, không có `tailwind.config.js`)                                                                         |
+| @base-ui/react                                 | 1.9.0          | Headless primitives (nền của shadcn style `base-nova`)                                                                     |
+| shadcn                                         | 4.23.0         | CLI sinh component + `shadcn/tailwind.css`                                                                                 |
+| cn                                             | 0.2.6          | Merge class Tailwind (thay `clsx` + `tailwind-merge`)                                                                      |
+| class-variance-authority                       | 0.7.1          | Variant API cho component                                                                                                  |
+| @fontsource-variable/geist                     | 5.3.0          | Font self-hosted — skin mặc định                                                                                           |
+| @fontsource-variable/fraunces                  | 5.3.0          | Font serif self-hosted — skin retro                                                                                        |
+| tw-animate-css                                 | 1.4.0          | Animation utilities cho Tailwind 4                                                                                         |
+| next-themes                                    | 0.4.6          | Sáng/tối, gắn class `dark` lên `<html>`                                                                                    |
+| react-router                                   | 8.5.1          | Routing                                                                                                                    |
+| @tanstack/react-query                          | 5.106.1        | Server state (mọi dữ liệu từ API)                                                                                          |
+| zod                                            | 4.6.7          | Schema validation — dùng ở `settings-page`, `review-form`, dialog bộ sưu tập                                               |
+| react-hook-form / @hookform/resolvers          | 7.91.0 / 7.0.3 | Form + cầu nối zod (xem `docs/CONVENTIONS.md` §8)                                                                          |
+| axios                                          | 1.21.0         | HTTP client                                                                                                                |
+| sonner                                         | 2.0.8          | Toast — dùng qua `toast()` và `<Toaster>` ở `app-provider`                                                                 |
+| lucide-react                                   | 1.70.0         | Icon                                                                                                                       |
+| vitest / jsdom                                 | (bun.lock)     | Test runner + môi trường DOM (D-037)                                                                                       |
+| @testing-library/react / user-event / jest-dom | (bun.lock)     | Test component theo hành vi người dùng (D-037)                                                                             |
+| husky / lint-staged                            | (bun.lock)     | Pre-commit hook: prettier + eslint trên file staged (D-037)                                                                |
+| @uidotdev/usehooks                             | 2.4.1          | `useGeolocation`, `useIntersectionObserver`, `useDebounce`, `useLocalStorage`, `useMediaQuery` — thay hook tự viết (D-025) |
 
 ## Runtime
 
@@ -43,6 +42,8 @@ bun run typecheck    # tsc -b --pretty
 bun run lint         # eslint .
 bun run format       # prettier --write .
 bun run format:check # prettier --check .
+bun run test         # vitest run
+bun run test:watch   # vitest (watch)
 ```
 
 ## Alias

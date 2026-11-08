@@ -1810,3 +1810,52 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 - CDP: `room-flow` (2 tab join + đề xuất), `room-leave-check` (memberId deterministic), `room-ux`
   (ẩn tìm kiếm + trùng tên bị chặn, thành viên vẫn 1), `review-rating-check` (2→3 review),
   `map-flow` (giữ filter khi đổi tab), `mobile-360-check` (không tràn 360px) — 0 exception.
+
+## D-037 — Hoàn thiện frontend, chuẩn bị backend
+
+### Lớp API & cấu hình
+
+- **`src/lib/env.ts`** — đọc `import.meta.env` một chỗ, validate bằng zod. Component/hook không
+  gọi env trực tiếp. `VITE_API_BASE_URL` mặc định `/api` (đi qua proxy dev, không vướng CORS).
+- **Mock chỉ tồn tại ở dev**: `axios.ts` dùng `import.meta.env.DEV && env.enableMocks` + dynamic
+  import nên Vite loại hẳn `src/mocks/` khỏi bundle production (đã kiểm: `dist/assets` không còn
+  chunk `server-*`). `VITE_ENABLE_MOCKS=false` tắt mock cả ở dev khi backend chạy local.
+- **`ApiError`** — interceptor chuẩn hoá lỗi (`status`, `code`, `message` tiếng Việt); lỗi mạng
+  `status = 0`. UI không phải biết axios. Timeout 10s.
+- **`vite.config.ts`** — `server.proxy` `/api` → `VITE_PROXY_TARGET`; `build.sourcemap: true`.
+
+### Bundle & route
+
+- **Code-split theo route** (`React.lazy` + `Suspense` fallback `PageLoading` trong `AppShell`).
+  Bundle chính giảm từ 1.244 kB (384 kB gzip) → 456 kB (147 kB gzip); Leaflet tách chunk riêng.
+- **Bỏ trang tạm `/design`** + `design-showcase-page.tsx` + mục menu "Xem trước giao diện".
+- **Favicon thật** (chữ Đ, màu primary) thay favicon template; xoá `public/icons.svg` không dùng.
+
+### A11y
+
+- **Skip-link** "Bỏ qua tới nội dung" (hiện khi focus) + `<main id="main" tabIndex={-1}>`.
+- **Focus về `<main>` khi đổi route** — điều hướng bàn phím/screen reader không mất vị trí.
+- **Tiêu đề tab theo trang** — bảng `PAGE_TITLES` một nguồn trong `app-shell.tsx`.
+
+### Chất lượng
+
+- **ESLint type-aware** (`recommendedTypeChecked` + `projectService`). Sửa 18 lỗi thật: floating
+  promise (`navigate`, `requestLocation`), `no-misused-promises` ở `onSubmit`, `any` từ base-ui
+  (`RatingStars`, `Tabs`), `String(object)` ở mock query, `parseBody` generic tường minh.
+- **Vitest + Testing Library** (jsdom): 29 test — `lib/format`, `rooms/lib/room` (join/duplicate/
+  apply/dismiss/leave), bất biến `NAV_ITEMS`/`FILTER_SHARED_PATHS`, component `RatingStars`.
+- **CI** `.github/workflows/ci.yml`: typecheck → lint → format:check → test → build.
+- **Pre-commit** husky + lint-staged (prettier + eslint trên file staged).
+- **README thật**, `.editorconfig`, `.nvmrc`.
+
+### Dependency thêm (đã cân nhắc)
+
+`vitest`, `jsdom`, `@testing-library/{react,user-event,jest-dom}`, `husky`, `lint-staged` — đều
+dev-only, license MIT, không vào bundle. Lý do: BACKLOG "ưu tiên cao" (chưa có test runner/CI/hook);
+không có lưới an toàn thì bước nối backend rất rủi ro.
+
+### Bằng chứng
+
+- `typecheck` / `lint` / `format:check` / `test` (29 pass) / `build` — exit 0.
+- CDP smoke: `room-flow` (2 tab, join, đề xuất, áp dụng, tab A thấy kết quả), `map-flow` (giữ
+  filter discover ↔ map), `review-rating-check` (2 → 3 review) — 0 exception.

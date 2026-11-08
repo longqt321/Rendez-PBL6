@@ -1,22 +1,60 @@
+import { lazy } from "react"
 import type { RouteObject } from "react-router"
 import { Navigate } from "react-router"
 import { AppShell } from "@/components/layout/app-shell"
-import { DesignShowcasePage } from "@/components/shared/design-showcase-page"
-import { DiscoverPage } from "@/features/places/pages/discover-page"
-import { MapPage } from "@/features/places/pages/map-page"
-import { SocialPage } from "@/features/social/pages/social-page"
-import { PostDetailPage } from "@/features/social/pages/post-detail-page"
-import { NotificationPage } from "@/features/notification/pages/notification-page"
-import { ProfilePage } from "@/features/profile/pages/profile-page"
-import { UserProfilePageRoute } from "./user-profile-route"
-import { PlaceDetailPage } from "@/features/places/pages/place-detail-page"
-import { SearchPage } from "@/features/search/pages/search-page"
-import { SavedPage } from "@/features/saved/pages/saved-page"
-import { CollectionDetailPage } from "@/features/collections/pages/collection-detail-page"
-import { RoomPage } from "@/features/rooms/pages/room-page"
-import { SettingsPage } from "@/features/settings/pages/settings-page"
-import { NotFoundPage } from "@/features/not-found/pages/not-found-page"
 import { RouteErrorPage } from "./route-error-page"
+
+/**
+ * Trang được tách chunk theo route (`React.lazy`) — bundle khởi động chỉ còn
+ * shell + trang đầu tiên, các trang nặng (bản đồ/Leaflet, social) tải khi cần.
+ * `Suspense` fallback nằm trong `AppShell` nên mọi route con đều có.
+ */
+const DiscoverPage = lazy(() =>
+  import("@/features/places/pages/discover-page").then((m) => ({ default: m.DiscoverPage })),
+)
+const MapPage = lazy(() =>
+  import("@/features/places/pages/map-page").then((m) => ({ default: m.MapPage })),
+)
+const PlaceDetailPage = lazy(() =>
+  import("@/features/places/pages/place-detail-page").then((m) => ({ default: m.PlaceDetailPage })),
+)
+const SocialPage = lazy(() =>
+  import("@/features/social/pages/social-page").then((m) => ({ default: m.SocialPage })),
+)
+const PostDetailPage = lazy(() =>
+  import("@/features/social/pages/post-detail-page").then((m) => ({ default: m.PostDetailPage })),
+)
+const NotificationPage = lazy(() =>
+  import("@/features/notification/pages/notification-page").then((m) => ({
+    default: m.NotificationPage,
+  })),
+)
+const ProfilePage = lazy(() =>
+  import("@/features/profile/pages/profile-page").then((m) => ({ default: m.ProfilePage })),
+)
+const UserProfilePageRoute = lazy(() =>
+  import("./user-profile-route").then((m) => ({ default: m.UserProfilePageRoute })),
+)
+const SearchPage = lazy(() =>
+  import("@/features/search/pages/search-page").then((m) => ({ default: m.SearchPage })),
+)
+const SavedPage = lazy(() =>
+  import("@/features/saved/pages/saved-page").then((m) => ({ default: m.SavedPage })),
+)
+const CollectionDetailPage = lazy(() =>
+  import("@/features/collections/pages/collection-detail-page").then((m) => ({
+    default: m.CollectionDetailPage,
+  })),
+)
+const RoomPage = lazy(() =>
+  import("@/features/rooms/pages/room-page").then((m) => ({ default: m.RoomPage })),
+)
+const SettingsPage = lazy(() =>
+  import("@/features/settings/pages/settings-page").then((m) => ({ default: m.SettingsPage })),
+)
+const NotFoundPage = lazy(() =>
+  import("@/features/not-found/pages/not-found-page").then((m) => ({ default: m.NotFoundPage })),
+)
 
 /**
  * `AppShell` là layout route duy nhất: mọi trang con render qua `<Outlet />`,
@@ -44,7 +82,6 @@ export const routes: RouteObject[] = [
       { path: "/profile", element: <ProfilePage /> },
       { path: "/u/:handle", element: <UserProfilePageRoute /> },
       { path: "/settings", element: <SettingsPage /> },
-      { path: "/design", element: <DesignShowcasePage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

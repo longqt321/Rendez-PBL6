@@ -50,16 +50,16 @@ export function useSearchQuerySync() {
 
     lastWritten.current = trimmed
     if (trimmed.length === 0) {
-      navigate("/discover", { replace: true })
+      void navigate("/discover", { replace: true })
       return
     }
 
-    setParams({ q: trimmed }, { replace: true })
+    void setParams({ q: trimmed }, { replace: true })
   }, [debouncedDraft, draft, isSearchPage, urlQuery, navigate, setParams])
 
   const submit = () => {
     const trimmed = draft.trim()
-    navigate(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : "/discover")
+    void navigate(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : "/discover")
   }
 
   return { draft, setDraft, submit }

@@ -15,7 +15,8 @@ const VALID_CATEGORIES: PlaceCategory[] = [
 
 export interface DiscoverFiltersState {
   category: PlaceCategory | "all"
-  district: string | "all"
+  /** `"all"` = không lọc quận. */
+  district: string
   /** Từ khoá đã ghi vào URL (đã debounce) — dùng để gọi API. */
   query: string
   /** Giá trị ô nhập hiện tại, cập nhật ngay theo từng ký tự. */
@@ -23,7 +24,7 @@ export interface DiscoverFiltersState {
   setDraftQuery: (value: string) => void
   isNearbyActive: boolean
   setCategory: (value: PlaceCategory | "all") => void
-  setDistrict: (value: string | "all") => void
+  setDistrict: (value: string) => void
   setIsNearbyActive: (value: boolean) => void
   /** Xoá toàn bộ bộ lọc (kể cả từ khoá và "Gần đây"). */
   resetAll: () => void

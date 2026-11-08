@@ -95,7 +95,7 @@ export function EditCollectionDialog({ collection, children }: EditCollectionDia
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={children} />
       <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
           <DialogHeader>
             <DialogTitle>Sửa bộ sưu tập</DialogTitle>
             <DialogDescription>

@@ -46,7 +46,7 @@ export function RatingStars({ value, onChange, size = "md", className }: RatingS
   return (
     <RadioGroup
       value={value}
-      onValueChange={(next) => onChange?.(next)}
+      onValueChange={(next) => onChange?.(Number(next))}
       aria-label="Chọn số sao đánh giá, từ 1 đến 5"
       className={cn("w-auto flex-row items-center gap-0.5", className)}
     >

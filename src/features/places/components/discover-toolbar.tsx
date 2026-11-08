@@ -55,7 +55,7 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
 
   function switchMode(next: "grid" | "map") {
     if (next === mode) return
-    navigate({ pathname: next === "grid" ? "/discover" : "/map", search: location.search })
+    void navigate({ pathname: next === "grid" ? "/discover" : "/map", search: location.search })
   }
 
   function handleToggleNearby() {
@@ -64,7 +64,7 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
       view.clearLocation()
     } else {
       filters.setIsNearbyActive(true)
-      view.requestLocation()
+      void view.requestLocation()
     }
   }
 

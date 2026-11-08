@@ -22,33 +22,15 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 
 ## Ưu tiên cao
 
-- [ ] **Chưa có test runner.** Không có Vitest/Playwright, không có script `test`. Nên thêm Vitest +
-      Testing Library trước khi viết component đầu tiên.
-- [ ] **Chưa có CI.** Không có `.github/workflows`. Nên chạy `typecheck` + `lint` + `format:check` + `build`
-      trên mỗi PR.
-- [ ] **Chưa có pre-commit hook.** Husky + lint-staged để chặn commit lỗi.
-- [ ] **Dependency còn chưa dùng:** `zustand`. Quyết định: giữ (nếu sắp dùng) hay bỏ.
-      (`zod`, `react-hook-form`, `@hookform/resolvers`, `sonner` đã dùng — xem `docs/STACK.md`.)
-- [ ] **Asset template Vite còn sót:** `src/assets/images/hero.png`, `src/assets/icons/react.svg`,
-      `src/assets/icons/vite.svg` — 0 import. (`index.html` đã là `lang="vi"` +
-      `<title>Đà Nẵng Ăn &amp; Đi</title>`, không còn là placeholder.)
+(không còn — test runner, CI, pre-commit hook đã có ở D-037)
 
 ## Ưu tiên trung bình
 
-- [ ] **ESLint chưa type-aware.** Đang dùng `tseslint.configs.recommended`. Cân nhắc
-      `recommendedTypeChecked` + `parserOptions.project` (bắt floating promise, unsafe `any`).
-- [ ] **Chưa có `eslint-plugin-react` / `react-x` / `react-dom`** — rule React-specific.
-- [ ] **Chưa có `.editorconfig`, `.nvmrc`** — dễ lệch whitespace/Node version giữa máy.
-- [ ] **Chưa có `.env.example`** và chưa dùng `import.meta.env` ở đâu.
-- [ ] **`vite.config.ts` chưa có `server.proxy`** cho API backend, chưa bật `build.sourcemap`.
-- [ ] **Chưa có `error boundary` / route-level error UI.**
-- [ ] **`public/favicon.svg` (9.5 kB) và `public/icons.svg` (5 kB)** vẫn là asset của Vite template.
+- [ ] **A11y còn lại**: đã có skip-link, focus-on-navigate, tiêu đề tab (D-037); chưa audit
+      contrast toàn trang và keyboard nav từng dialog.
 
 ## Ưu tiên thấp
 
-- [ ] **Chưa audit a11y.** `App.tsx` dùng `<svg role="presentation" aria-hidden>` đúng, nhưng chưa
-      kiểm contrast, focus order, keyboard nav.
-- [ ] **Chưa có README mô tả dự án** — vẫn là README mặc định của Vite.
 - [ ] **Chưa cấu hình `base` cho Vite** nếu deploy dưới subpath.
 
 ## Phát hiện khi dùng design stack (2026-11-06)
@@ -57,11 +39,8 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
       theme bên trong React tree → React 19 cảnh báo script không thực thi. Đã xác minh:
       chỉ ở dev, production sạch, không phải code dự án. Chi tiết ở `DECISIONS.md` D-008.
       Nếu muốn sạch console: tự viết theme provider và sửa `src/components/ui/sonner.tsx`.
-- [ ] **`src/components/shared/design-showcase-page.tsx` là trang tạm** để kiểm tra design stack.
-      Xóa cùng route `/design` khi bắt đầu làm giao diện thật.
-- [ ] **Bundle 715.82 KB (gzip 229.59 KB)** — tăng từ 649.96 kB sau khi thêm mock adapter + fixtures
-      (xem D-011). Phần tăng này biến mất khi xoá `src/mocks/`. Vẫn nên code-split theo route
-      (hiện chưa làm) để giảm bundle thật.
+- [x] **Bundle lớn** — đã code-split theo route (D-037): 1.244 kB → 456 kB (gzip 384 → 147 kB);
+      mock tách khỏi bundle production.
 - [ ] **Chưa có component nào cho form thật** — `react-hook-form` + `zod` + `@hookform/resolvers`
       vẫn chưa được dùng. Trang showcase chỉ có `Input` + `Label` đơn lẻ.
 - [ ] **Chưa có `error boundary`** cho route; nếu một page throw thì cả app trắng.

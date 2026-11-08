@@ -458,7 +458,7 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
   const place = findPlace(placeId)
   if (!place || place.publishedAt === null) notFound(config, "Không tìm thấy địa điểm")
 
-  const body = parseBody(config) as { rating?: unknown; content?: unknown }
+  const body = parseBody<{ rating?: unknown; content?: unknown }>(config)
   const rating = Number(body.rating)
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     badRequest(config, "Số sao phải là số nguyên từ 1 đến 5")
@@ -508,7 +508,7 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
  * Tên bắt buộc, mô tả tuỳ chọn. `isPrivate` mặc định công khai nếu không truyền.
  */
 function createCollection(config: InternalAxiosRequestConfig): Collection {
-  const body = parseBody(config) as { name?: unknown; description?: unknown; isPrivate?: unknown }
+  const body = parseBody<{ name?: unknown; description?: unknown; isPrivate?: unknown }>(config)
   const name = typeof body.name === "string" ? body.name.trim() : ""
   if (name.length === 0) badRequest(config, "Tên bộ sưu tập trống")
   if (name.length > MAX_COLLECTION_NAME_LENGTH) {
@@ -546,7 +546,7 @@ function updateCollection(config: InternalAxiosRequestConfig, collectionId: stri
   if (!collection) notFound(config, "Không tìm thấy bộ sưu tập")
   if (collection.owner.id !== ME.id) forbidden(config, "Không phải bộ sưu tập của bạn")
 
-  const body = parseBody(config) as { name?: unknown; description?: unknown; isPrivate?: unknown }
+  const body = parseBody<{ name?: unknown; description?: unknown; isPrivate?: unknown }>(config)
 
   if (body.name !== undefined) {
     const name = typeof body.name === "string" ? body.name.trim() : ""
@@ -627,7 +627,7 @@ function setCollectionPlaces(config: InternalAxiosRequestConfig, collectionId: s
   if (!collection) notFound(config, "Không tìm thấy bộ sưu tập")
   if (collection.owner.id !== ME.id) forbidden(config, "Không phải bộ sưu tập của bạn")
 
-  const body = parseBody(config) as { placeId?: unknown; member?: unknown }
+  const body = parseBody<{ placeId?: unknown; member?: unknown }>(config)
   const placeId = typeof body.placeId === "string" ? body.placeId : ""
   if (!findPlace(placeId)) notFound(config, "Không tìm thấy địa điểm")
   const member = body.member !== false
@@ -774,7 +774,7 @@ function forbidden(config: InternalAxiosRequestConfig, message: string): never {
 }
 
 function parseBody<T>(config: InternalAxiosRequestConfig): T {
-  const raw = config.data
+  const raw: unknown = config.data
   if (typeof raw !== "string" || raw.length === 0) return {} as T
   return JSON.parse(raw) as T
 }
@@ -783,7 +783,8 @@ function query(config: InternalAxiosRequestConfig): Record<string, string> {
   const params = (config.params ?? {}) as Record<string, unknown>
   const result: Record<string, string> = {}
   for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null) result[key] = String(value)
+    if (typeof value === "string") result[key] = value
+    else if (typeof value === "number" || typeof value === "boolean") result[key] = String(value)
   }
   return result
 }

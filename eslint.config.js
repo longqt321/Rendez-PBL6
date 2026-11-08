@@ -11,12 +11,16 @@ export default defineConfig([
     files: ["**/*.{ts,tsx}"],
     extends: [
       js.configs.recommended,
-      tseslint.configs.recommended,
+      tseslint.configs.recommendedTypeChecked,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
     languageOptions: {
       globals: globals.browser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
   },
   {
@@ -29,6 +33,13 @@ export default defineConfig([
     // Component do shadcn sinh ra: export kèm hằng số (vd. buttonVariants)
     // nên rule fast-refresh không áp dụng được.
     files: ["src/components/ui/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
+  {
+    // File cấu hình route: khai báo `React.lazy` chứ không định nghĩa component.
+    files: ["src/app/router/**/*.{ts,tsx}"],
     rules: {
       "react-refresh/only-export-components": "off",
     },
