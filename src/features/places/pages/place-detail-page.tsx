@@ -17,6 +17,7 @@ import { Item, ItemActions, ItemContent, ItemGroup, ItemMedia } from "@/componen
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SeedImage } from "@/components/shared/seed-image"
+import { SectionHeading } from "@/components/shared/section-heading"
 import { formatCount, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
@@ -245,12 +246,12 @@ export function PlaceDetailPage() {
 
         <TabsContent value="overview" className="mt-4 flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <h3 className="font-heading text-base font-semibold">Vị trí & Chỉ đường</h3>
+            <SectionHeading>Vị trí & Chỉ đường</SectionHeading>
             <PlaceMiniMap place={place} />
           </div>
 
           <div className="flex flex-col gap-2">
-            <h3 className="font-heading text-base font-semibold">Giới thiệu</h3>
+            <SectionHeading>Giới thiệu</SectionHeading>
             <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
               {place.name} nằm ở {place.city}. Địa điểm do cộng đồng đăng và được kiểm duyệt trước
               khi xuất hiện trên trang Khám phá.

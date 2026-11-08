@@ -12,7 +12,7 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { MAX_ROOM_NAME_LENGTH, ROOM_CODE_LENGTH } from "@/lib/constants"
+import { MAX_MEMBER_NAME_LENGTH, MAX_ROOM_NAME_LENGTH, ROOM_CODE_LENGTH } from "@/lib/constants"
 
 interface RoomJoinDialogProps {
   open: boolean
@@ -97,7 +97,7 @@ export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoi
             />
             <Input
               placeholder="Tên bạn"
-              maxLength={30}
+              maxLength={MAX_MEMBER_NAME_LENGTH}
               autoComplete="off"
               className="w-28"
               value={displayName}

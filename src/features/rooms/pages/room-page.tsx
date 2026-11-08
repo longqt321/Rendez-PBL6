@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator"
 import { SectionHeading } from "@/components/shared/section-heading"
 import { formatInitials } from "@/lib/format"
 import { ShareButton } from "@/components/shared/share-button"
+import { MAX_MEMBER_NAME_LENGTH } from "@/lib/constants"
 import { useRooms } from "../hooks/use-rooms"
 import { ProposalForm } from "../components/proposal-form"
 import { ProposalList } from "../components/proposal-list"
@@ -129,7 +130,7 @@ export function RoomPage() {
               <div className="flex items-center gap-1.5">
                 <Input
                   placeholder="Tên bạn"
-                  maxLength={30}
+                  maxLength={MAX_MEMBER_NAME_LENGTH}
                   autoComplete="off"
                   className="h-8 w-28 text-xs"
                   value={joinName}

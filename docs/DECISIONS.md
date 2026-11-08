@@ -1708,3 +1708,35 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 
 - `package.json` bớt 4 dependency; danh sách component trong `docs/CONVENTIONS.md` còn 30.
 - Arbitrary value còn lại trong `src/` chỉ là viewport/calc/variant — grep được để kiểm.
+
+## D-034 — Rà soát đợt 2: hằng số, tâm bản đồ, `cn`, tiêu đề nhóm, logic giá
+
+### Bối cảnh
+
+- Rà lại toàn bộ checklist `docs/CONVENTIONS.md` sau D-033, tìm các chỗ còn vi phạm ở mã cũ.
+
+### Quyết định
+
+- **Một nguồn cho toạ độ/zoom bản đồ**: `places-map.tsx` tự khai `DEFAULT_CENTER`/`DEFAULT_ZOOM`
+  trong khi `DANANG_CENTER_TUPLE`/`DANANG_DEFAULT_ZOOM` (constants.ts) không ai dùng → map dùng
+  hằng số chung, xoá bản cục bộ. Tâm mặc định dịch từ (16.0544, 108.2022) sang `DANANG_CENTER`
+  (16.0612, 108.2272 — Cầu Rồng), cùng nguồn với fallback GPS.
+- **Xoá hằng số chết**: `MAX_BILL_AMOUNT`, `MAX_BILL_PEOPLE` (chia hoá đơn thuộc Trip đã bỏ, 0 chỗ
+  dùng).
+- **Thêm hằng số còn thiếu**: `MAX_MEMBER_NAME_LENGTH` (30, dùng ở `room-join-dialog` +
+  `room-page` thay số cứng), `MAX_PROFILE_NAME_LENGTH`/`MAX_PROFILE_BIO_LENGTH`/
+  `MAX_PROFILE_LOCATION_LENGTH` (40/160/60, dùng trong zod schema `settings-page`).
+- **`cn()` thay nối chuỗi**: 3 chỗ `className={`… ${x}`}` (places-map ×2, place-mini-map ×1) đổi
+  sang `cn(...)` — tailwind-merge xử lý xung đột class đúng.
+- **Tiêu đề nhóm**: `place-detail-page` ("Vị trí & Chỉ đường", "Giới thiệu") và `post-detail-page`
+  ("Bình luận") đổi sang `SectionHeading` (bản post-detail truyền `icon` + `className` cho khung
+  viền dưới).
+- **Một nguồn cho chuỗi mức giá**: `"₫".repeat(n)` bị copy ở `room.ts`, `proposal-form`,
+  `room-banner` → dùng `priceLevelLabel()` (`places/lib/price-level.ts`).
+
+### Hệ quả
+
+- Giữ nguyên có lý do: `place-card` dùng `<h3>` (giữ ngữ nghĩa heading cho tiêu đề thẻ; `CardTitle`
+  của base-nova render `div`), `places-map` popup dùng `<h4>` (popup Leaflet không bọc `Card` —
+  ngoại lệ đã ghi), `notification-page` dùng `<button>` trong `render={}` (pattern base-ui).
+- `skin-provider` vẫn tự đọc/ghi localStorage (lý do ở D-033).

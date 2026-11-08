@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Toggle } from "@/components/ui/toggle"
+import { SectionHeading } from "@/components/shared/section-heading"
 import { formatCount } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { Post } from "../types/post"
@@ -112,10 +113,12 @@ export function PostDetailPage() {
           aria-label={`Bình luận (${post.commentCount})`}
           className="gap-0 py-0 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-7rem)]"
         >
-          <h2 className="flex items-center gap-2 border-b px-4 py-2.5 font-heading text-sm font-bold">
-            <MessageCircleIcon className="size-4" aria-hidden="true" />
+          <SectionHeading
+            icon={<MessageCircleIcon className="size-4" aria-hidden="true" />}
+            className="border-b px-4 py-2.5"
+          >
             Bình luận ({formatCount(post.commentCount)})
-          </h2>
+          </SectionHeading>
 
           <CommentThreadPanel postId={post.id} />
         </Card>

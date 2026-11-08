@@ -6,6 +6,7 @@ import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { formatCoordinate } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import type { Place } from "../types/place"
 
 interface PlaceMiniMapProps {
@@ -77,7 +78,7 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
           center={position}
           zoom={16}
           scrollWheelZoom={false}
-          className={`z-0 h-full w-full ${isDark ? "map-tiles-dark" : ""}`}
+          className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

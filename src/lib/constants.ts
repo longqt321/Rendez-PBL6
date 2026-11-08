@@ -61,12 +61,18 @@ export const ROOM_CODE_LENGTH = 6
 /** Từ khoá đề xuất include/exclude. */
 export const MAX_ROOM_KEYWORD_LENGTH = 30
 
+/** Tên hiển thị của thành viên khi vào phòng (nhập tay, không có tài khoản). */
+export const MAX_MEMBER_NAME_LENGTH = 30
+
 // ---------------------------------------------------------------------------
-// Chia hóa đơn
+// Hồ sơ cá nhân — khớp validate form ở `settings-page`
 // ---------------------------------------------------------------------------
 
-/** Tổng tiền một bill (đồng) — chặn trên để tránh số vô lý do gõ nhầm. */
-export const MAX_BILL_AMOUNT = 100_000_000
+/** Tên hiển thị trong hồ sơ. */
+export const MAX_PROFILE_NAME_LENGTH = 40
 
-/** Số người tối đa khi chia bill. */
-export const MAX_BILL_PEOPLE = 20
+/** Dòng giới thiệu ngắn trong hồ sơ. */
+export const MAX_PROFILE_BIO_LENGTH = 160
+
+/** Địa điểm hiển thị trong hồ sơ. */
+export const MAX_PROFILE_LOCATION_LENGTH = 60

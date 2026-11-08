@@ -19,11 +19,21 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { Spinner } from "@/components/ui/spinner"
+import {
+  MAX_PROFILE_BIO_LENGTH,
+  MAX_PROFILE_LOCATION_LENGTH,
+  MAX_PROFILE_NAME_LENGTH,
+} from "@/lib/constants"
 
 const settingsSchema = z.object({
-  name: z.string().min(2, "Tên cần ít nhất 2 ký tự").max(40, "Tên tối đa 40 ký tự"),
-  bio: z.string().max(160, "Giới thiệu tối đa 160 ký tự"),
-  location: z.string().max(60, "Địa điểm tối đa 60 ký tự"),
+  name: z
+    .string()
+    .min(2, "Tên cần ít nhất 2 ký tự")
+    .max(MAX_PROFILE_NAME_LENGTH, `Tên tối đa ${MAX_PROFILE_NAME_LENGTH} ký tự`),
+  bio: z.string().max(MAX_PROFILE_BIO_LENGTH, `Giới thiệu tối đa ${MAX_PROFILE_BIO_LENGTH} ký tự`),
+  location: z
+    .string()
+    .max(MAX_PROFILE_LOCATION_LENGTH, `Địa điểm tối đa ${MAX_PROFILE_LOCATION_LENGTH} ký tự`),
   privateProfile: z.boolean(),
 })
 

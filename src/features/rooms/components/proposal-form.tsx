@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { CATEGORY_META } from "@/features/places/lib/category-meta"
 import { DANANG_DISTRICTS } from "@/features/places/lib/danang-districts"
+import { priceLevelLabel } from "@/features/places/lib/price-level"
 import type { PlaceCategory } from "@/features/places/types/place"
 import { MAX_ROOM_KEYWORD_LENGTH } from "@/lib/constants"
 import type { RoomProposalField } from "../types/room"
@@ -83,7 +84,7 @@ export function ProposalForm({ onSubmit }: ProposalFormProps) {
               value={String(level)}
               className="h-7 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
             >
-              {"₫".repeat(level)}
+              {priceLevelLabel(level)}
               {level < 3 ? " trở xuống" : ""}
             </ToggleGroupItem>
           ))

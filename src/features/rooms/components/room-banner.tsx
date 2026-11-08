@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { categoryLabel } from "@/features/places/lib/category-meta"
+import { priceLevelLabel } from "@/features/places/lib/price-level"
 import type { Room } from "../types/room"
 
 interface RoomBannerProps {
@@ -27,7 +28,7 @@ function filterLabels(room: Room): string[] {
     labels.push(`Không ${categoryLabel(category).toLowerCase()}`)
   for (const district of filter.districts) labels.push(district)
   for (const district of filter.excludedDistricts) labels.push(`Không ${district}`)
-  if (filter.priceMax !== undefined) labels.push(`Tối đa ${"₫".repeat(filter.priceMax)}`)
+  if (filter.priceMax !== undefined) labels.push(`Tối đa ${priceLevelLabel(filter.priceMax)}`)
   for (const keyword of filter.includeKeywords) labels.push(`Có “${keyword}”`)
   for (const keyword of filter.excludeKeywords) labels.push(`Không “${keyword}”`)
   return labels

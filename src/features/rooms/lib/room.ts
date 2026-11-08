@@ -1,4 +1,5 @@
 import { categoryLabel } from "@/features/places/lib/category-meta"
+import { priceLevelLabel } from "@/features/places/lib/price-level"
 import type { PlaceCategory } from "@/features/places/types/place"
 import type { Room, RoomFilter, RoomProposal } from "../types/room"
 
@@ -170,7 +171,7 @@ export function describeProposal(proposal: RoomProposal): string {
     return `${sign} Loại hình: ${categoryLabel(proposal.value as PlaceCategory)}`
   if (proposal.field === "district") return `${sign} Quận: ${proposal.value}`
   if (proposal.field === "priceMax") {
-    return `＋ Mức giá tối đa: ${"₫".repeat(Number(proposal.value) || 3)}`
+    return `＋ Mức giá tối đa: ${priceLevelLabel((Number(proposal.value) || 3) as 1 | 2 | 3)}`
   }
   return `${sign} Từ khoá: ${proposal.value}`
 }

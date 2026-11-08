@@ -12,11 +12,9 @@ import { CATEGORY_META } from "../lib/category-meta"
 import { formatDistance, formatRating } from "@/lib/format"
 import { calculateDistanceKm } from "../lib/danang-districts"
 import { priceLevelLabel } from "../lib/price-level"
+import { cn } from "@/lib/utils"
+import { DANANG_CENTER_TUPLE, DANANG_DEFAULT_ZOOM } from "@/lib/constants"
 import type { Place } from "../types/place"
-
-// Tọa độ mặc định: Trung tâm Thành phố Đà Nẵng (Khu vực Cầu Rồng / Sông Hàn)
-const DEFAULT_CENTER: [number, number] = [16.0544, 108.2022]
-const DEFAULT_ZOOM = 13
 
 interface PlacesMapProps {
   places: Place[]
@@ -160,13 +158,17 @@ export function PlacesMap({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-xl border bg-muted shadow-inner ${height} ${className}`}
+      className={cn(
+        "relative w-full overflow-hidden rounded-xl border bg-muted shadow-inner",
+        height,
+        className,
+      )}
     >
       <MapContainer
-        center={DEFAULT_CENTER}
-        zoom={DEFAULT_ZOOM}
+        center={DANANG_CENTER_TUPLE}
+        zoom={DANANG_DEFAULT_ZOOM}
         scrollWheelZoom={true}
-        className={`z-0 h-full w-full ${isDark ? "map-tiles-dark" : ""}`}
+        className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
       >
         <TileLayer attribution={attribution} url={tileUrl} />
         <MapBoundsUpdater
