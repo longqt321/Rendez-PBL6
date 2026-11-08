@@ -85,13 +85,13 @@ export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoi
 
         <Field>
           <FieldLabel htmlFor="room-join-code">Vào phòng có sẵn</FieldLabel>
-          <div className="grid grid-cols-[1fr_auto] gap-2">
+          <div className="flex items-center gap-2">
             <Input
               id="room-join-code"
               placeholder="Mã 6 ký tự"
               maxLength={ROOM_CODE_LENGTH}
               autoComplete="off"
-              className="font-mono uppercase"
+              className="min-w-0 flex-1 font-mono uppercase"
               value={code}
               onChange={(event) => setCode(event.target.value.toUpperCase())}
             />

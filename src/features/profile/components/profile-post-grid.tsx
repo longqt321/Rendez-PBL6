@@ -1,10 +1,17 @@
 import { Link } from "react-router"
 import { CameraIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SeedImage } from "@/components/shared/seed-image"
 import type { Post } from "@/features/social/types/post"
+
+/**
+ * Chiều cao skeleton luân phiên theo cột (260/320/380px) — khớp `imageHeight`
+ * của fixture bài đăng, để skeleton không nhảy layout khi dữ liệu về.
+ */
+const POST_SKELETON_HEIGHTS = ["h-65", "h-80", "h-95"] as const
 
 interface ProfilePostGridProps {
   posts: Post[]
@@ -25,10 +32,7 @@ export function ProfilePostGrid({
       <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
         {Array.from({ length: 6 }).map((_, index) => (
           <li key={index}>
-            <Skeleton
-              className="w-full rounded-surface"
-              style={{ height: 260 + (index % 3) * 60 }}
-            />
+            <Skeleton className={cn("w-full rounded-surface", POST_SKELETON_HEIGHTS[index % 3])} />
           </li>
         ))}
       </ul>

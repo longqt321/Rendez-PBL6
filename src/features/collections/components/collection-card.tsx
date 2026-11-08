@@ -16,7 +16,7 @@ export function CollectionCard({ collection }: { collection: CollectionSummary }
         ))}
         {collection.previewPlaceIds.length === 0
           ? Array.from({ length: 3 }, (_, index) => (
-              <div key={index} className="flex h-[90px] items-center justify-center bg-muted">
+              <div key={index} className="flex h-22.5 items-center justify-center bg-muted">
                 <MapPinIcon className="size-5 text-muted-foreground/50" aria-hidden="true" />
               </div>
             ))

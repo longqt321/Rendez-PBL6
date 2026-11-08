@@ -89,7 +89,7 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
         <Button
           size="sm"
           variant="secondary"
-          className="absolute right-3 bottom-3 z-[1000] shadow-md backdrop-blur"
+          className="absolute right-3 bottom-3 z-1000 shadow-md backdrop-blur"
           render={<a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" />}
         >
           <ExternalLinkIcon className="mr-1 size-3.5" />

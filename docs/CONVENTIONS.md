@@ -8,7 +8,7 @@ Lý do của từng quyết định nằm ở `docs/DECISIONS.md` (D-025 trở �
 Trước khi viết một khối `div` + class, kiểm tra `src/components/ui/` (31 file, sinh bằng
 `bunx shadcn@4.23.0 add <name>`). Danh sách hiện có:
 
-`alert` `alert-dialog` `avatar` `badge` `breadcrumb` `button` `calendar` `card`
+`alert` `alert-dialog` `avatar` `badge` `breadcrumb` `button` `card`
 `collapsible` `dialog` `drawer` `dropdown-menu` `empty` `field` `input`
 `input-group` `item` `label` `popover` `radio-group` `scroll-area` `separator`
 `skeleton` `sonner` `spinner` `switch` `tabs` `textarea` `toggle` `toggle-group`

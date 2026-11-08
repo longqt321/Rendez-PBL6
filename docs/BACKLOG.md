@@ -266,5 +266,3 @@ Còn lại, cập nhật sau đợt chuẩn hoá thứ hai (2026-11-08):
 - [ ] **Backend thật cho đa thiết bị (Phòng lọc nhóm)** — mock là db in-memory per tab; đồng bộ
       giữa các thiết bị thật bắt buộc WebSocket/Supabase Realtime. Đợt này chỉ demo các tab cùng
       1 trình duyệt qua BroadcastChannel + localStorage.
-- [ ] **`calendar` + `dnd-kit` đã cài chưa có nơi dùng** sau khi bỏ Trip — gỡ hoặc chờ tính năng
-      mới dùng lại; quyết định khi Phòng lọc nhóm hoàn thiện.

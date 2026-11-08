@@ -87,7 +87,7 @@ function createMarkerIcon(place: Place, isSelected: boolean, distanceKm?: number
     <div class="relative flex items-center justify-center transition-transform duration-200 cursor-pointer">
       <div class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${bgClass}">
         <span class="inline-block size-2 rounded-full bg-primary ${isSelected ? "bg-background" : ""}"></span>
-        <span class="truncate max-w-[120px]">${place.name}</span>
+        <span class="truncate max-w-30">${place.name}</span>
         <span class="text-xs opacity-75">${priceIndicator}</span>
         ${distanceHtml}
       </div>
@@ -215,7 +215,7 @@ export function PlacesMap({
             >
               <Popup className="place-popup" closeButton={false}>
                 {/* Ngoại lệ có chủ đích: popup Leaflet tự quản khung/overflow nên dùng `div`, không bọc `Card` (ring + overflow-hidden phá layout popup). Xem docs/CONVENTIONS.md. */}
-                <div className="flex max-w-[260px] min-w-[220px] flex-col gap-2 p-1">
+                <div className="flex max-w-65 min-w-55 flex-col gap-2 p-1">
                   <div className="relative h-28 w-full overflow-hidden rounded-md bg-muted">
                     <SeedImage
                       seed={place.imageSeed}
@@ -282,7 +282,7 @@ export function PlacesMap({
       </MapContainer>
 
       {/* Tóm tắt số lượng địa điểm trên bản đồ */}
-      <div className="absolute bottom-3 left-3 z-[1000] flex items-center gap-2 rounded-md border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur">
+      <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-md border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur">
         <span>Đang hiển thị {validPlaces.length} địa điểm tại Đà Nẵng</span>
         {userCoordinates ? (
           <span className="flex items-center gap-0.5 text-primary">

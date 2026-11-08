@@ -1597,6 +1597,7 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 
 - `calendar` (react-day-picker + date-fns) và `dnd-kit` đã cài nhưng hiện **chưa có nơi dùng** —
   không gỡ (D-026/D-027 vẫn hợp lệ cho tính năng tương lai), ghi chú ở đây để không quên.
+  _(Cập nhật 2026-11-09: đã gỡ hẳn — xem D-033.)_
 - Docs thiết kế `docs/design/ke-hoach-thiet-ke.md` giữ làm tài liệu tham khảo, đánh dấu đã bỏ.
 
 ## D-031 — "Phòng lọc nhóm": nhóm cùng lọc /discover với đề xuất include/exclude
@@ -1670,3 +1671,40 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 - Lỗi cũ "Gần đây" phải `clearLocation()` khi tắt được giữ nguyên hành vi qua `DiscoverToolbar`.
 - `viewMode` cục bộ của `/discover` bị xoá — không còn toggle Lưới/Bản đồ trong trang, chỉ còn
   chuyển trang qua nav hoặc nút trong toolbar.
+
+## D-033 — Gỡ `calendar` + `dnd-kit` không còn nơi dùng; dọn arbitrary value theo thang Tailwind 4
+
+### Bối cảnh
+
+- Audit "tự dựng thay shadcn/package có sẵn" (2026-11-09) kết thúc với các mục còn lại:
+  `calendar` (react-day-picker) + `dnd-kit` cài từ thời Trip (D-026/D-027) giờ không có nơi nào
+  import; một số arbitrary value px lẻ (`max-w-[120px]`, `h-[90px]`, `z-[1000]`...) có thể map
+  sang thang số động của Tailwind 4.
+
+### Quyết định
+
+- `bun remove @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities react-day-picker`; xoá
+  `src/components/ui/calendar.tsx` (sinh bởi shadcn, không còn import nào). Cần lịch/ngày lại
+  thì `bunx shadcn add calendar` + cài lại dependency — git history giữ tham chiếu.
+- Arbitrary value px lẻ đổi sang thang số động của Tailwind 4 (spacing = 0.25rem): `max-w-[120px]`
+  → `max-w-30`, `max-w-[260px]` → `max-w-65`, `min-w-[220px]` → `min-w-55`, `h-[90px]` → `h-22.5`,
+  `h-[200px]` → `h-50`, `min-h-[420px]` → `min-h-105`, `z-[1000]` → `z-1000`. Mỗi class đã xác
+  minh bằng cách build rồi grep đúng rule trong `dist/assets/*.css`.
+- Inline `style={{ height }}` ở `SeedImage`/`place-card-skeleton` **giữ**: chiều cao là dữ liệu
+  runtime (`post.imageHeight`), Tailwind không sinh class cho giá trị runtime.
+- `profile-post-grid` đổi inline style skeleton sang mảng class `POST_SKELETON_HEIGHTS`
+  (`h-65`/`h-80`/`h-95`).
+- `room-join-dialog` đổi `grid-cols-[1fr_auto]` sang `flex` + `flex-1 min-w-0`.
+- **Giữ lại** (không có token tương đương): `tracking-[0.18em]` (logo), `pb-[env(safe-area-inset-bottom)]`
+  (safe-area iOS), `sm:max-w-[min(64rem,calc(100%-2rem))]` (dialog giữ lề 2rem trên màn hẹp),
+  `max-h-[75vh]`/`max-h-[85dvh]`/`min-h-[60dvh]`/`h-[70dvh]` (viewport-based),
+  `lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]` + `lg:max-h-[calc(100dvh-7rem)]` (layout sticky),
+  `[&>*]:w-full`, `supports-[backdrop-filter]:…` (variant).
+- `skin-provider` giữ tự đọc/ghi `localStorage` (không đổi sang `useLocalStorage`): cần đọc đồng bộ
+  trước paint (`useLayoutEffect`) và lưu chuỗi thô để tương thích giá trị cũ — `useLocalStorage`
+  JSON-stringify sẽ đổi format storage.
+
+### Hệ quả
+
+- `package.json` bớt 4 dependency; danh sách component trong `docs/CONVENTIONS.md` còn 30.
+- Arbitrary value còn lại trong `src/` chỉ là viewport/calc/variant — grep được để kiểm.

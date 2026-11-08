@@ -16,7 +16,7 @@ export function UserProfilePage({ handle }: UserProfilePageProps) {
   if (isPending) {
     return (
       <div className="mx-auto w-full max-w-4xl">
-        <Skeleton className="h-[200px] w-full rounded-none" />
+        <Skeleton className="h-50 w-full rounded-none" />
         <div className="flex flex-col gap-3 px-4 pt-4 lg:px-6">
           <Skeleton className="size-24 rounded-full" />
           <Skeleton className="h-6 w-40" />

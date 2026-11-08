@@ -22,7 +22,7 @@ export function MapPage() {
       <DiscoverToolbar view={view} mode="map" />
 
       {view.isPending ? (
-        <Skeleton className="mt-5 h-[70dvh] min-h-[420px] rounded-surface" />
+        <Skeleton className="mt-5 h-[70dvh] min-h-105 rounded-surface" />
       ) : view.isError ? (
         <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>
@@ -51,7 +51,7 @@ export function MapPage() {
           <PlacesMap
             places={view.sortedPlaces}
             userCoordinates={view.coordinates}
-            height="h-[70dvh] min-h-[420px]"
+            height="h-[70dvh] min-h-105"
           />
         </div>
       )}
