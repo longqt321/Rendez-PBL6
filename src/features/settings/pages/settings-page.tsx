@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSeparator,
+  FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -46,12 +47,8 @@ export function SettingsPage() {
 
   if (isPending || !me) {
     return (
-      <div
-        className="flex items-center justify-center py-24"
-        role="status"
-        aria-label="Đang tải cài đặt"
-      >
-        <Spinner className="size-6" />
+      <div className="flex items-center justify-center py-24">
+        <Spinner className="size-6" aria-label="Đang tải cài đặt" />
       </div>
     )
   }
@@ -66,50 +63,70 @@ export function SettingsPage() {
     <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
-          <FieldGroup>
+          <FieldSet>
             <FieldLegend>Hồ sơ</FieldLegend>
 
-            <Field>
-              <FieldLabel htmlFor="settings-name">Tên hiển thị</FieldLabel>
-              <Input id="settings-name" {...form.register("name")} />
-              {form.formState.errors.name && (
-                <FieldError>{form.formState.errors.name.message}</FieldError>
-              )}
-            </Field>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="settings-name">Tên hiển thị</FieldLabel>
+                <Input id="settings-name" {...form.register("name")} />
+                {form.formState.errors.name && (
+                  <FieldError>{form.formState.errors.name.message}</FieldError>
+                )}
+              </Field>
 
-            <Field>
-              <FieldLabel htmlFor="settings-bio">Giới thiệu</FieldLabel>
-              <Textarea id="settings-bio" rows={3} {...form.register("bio")} />
-              <FieldDescription>Đoạn ngắn giới thiệu bản thân, tối đa 160 ký tự.</FieldDescription>
-              {form.formState.errors.bio && (
-                <FieldError>{form.formState.errors.bio.message}</FieldError>
-              )}
-            </Field>
+              <Field>
+                <FieldLabel htmlFor="settings-bio">Giới thiệu</FieldLabel>
+                <Textarea id="settings-bio" rows={3} {...form.register("bio")} />
+                <FieldDescription>
+                  Đoạn ngắn giới thiệu bản thân, tối đa 160 ký tự.
+                </FieldDescription>
+                {form.formState.errors.bio && (
+                  <FieldError>{form.formState.errors.bio.message}</FieldError>
+                )}
+              </Field>
 
-            <Field>
-              <FieldLabel htmlFor="settings-location">Địa điểm</FieldLabel>
-              <Input id="settings-location" {...form.register("location")} />
-              {form.formState.errors.location && (
-                <FieldError>{form.formState.errors.location.message}</FieldError>
-              )}
-            </Field>
-          </FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="settings-location">Địa điểm</FieldLabel>
+                <Input id="settings-location" {...form.register("location")} />
+                {form.formState.errors.location && (
+                  <FieldError>{form.formState.errors.location.message}</FieldError>
+                )}
+              </Field>
+            </FieldGroup>
+          </FieldSet>
 
           <FieldSeparator />
 
-          <FieldGroup>
+          <FieldSet>
             <FieldLegend>Riêng tư</FieldLegend>
 
-            <Field orientation="horizontal">
-              <FieldContent>
-                <FieldLabel htmlFor="settings-private">Hồ sơ riêng tư</FieldLabel>
-                <FieldDescription>
-                  Chỉ người theo dõi mới xem được bài đăng của bạn.
-                </FieldDescription>
-              </FieldContent>
-              <Switch id="settings-private" {...form.register("privateProfile")} />
-            </Field>
-          </FieldGroup>
+            <FieldGroup>
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldLabel htmlFor="settings-private">Hồ sơ riêng tư</FieldLabel>
+                  <FieldDescription>
+                    Chỉ người theo dõi mới xem được bài đăng của bạn.
+                  </FieldDescription>
+                </FieldContent>
+                {/*
+                 * `Switch` của base-ui chỉ có `inputRef` + `onCheckedChange`, không nhận
+                 * `ref`/`onChange` → phải đi qua `Controller` thì giá trị form mới cập nhật.
+                 */}
+                <Controller
+                  control={form.control}
+                  name="privateProfile"
+                  render={({ field }) => (
+                    <Switch
+                      id="settings-private"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </Field>
+            </FieldGroup>
+          </FieldSet>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => form.reset()}>
