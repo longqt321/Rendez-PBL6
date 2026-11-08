@@ -1633,3 +1633,35 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
   là đã có realtime đa thiết bị.
 - `priceMax` chỉ có chiều include (exclude mức giá vô nghĩa) — nút "Không muốn" bị disable.
 - Mã phòng sinh từ bảng ký tự bỏ O/0/I/1 (`generateRoomCode`).
+
+## D-032 — "Bản đồ" thành mục nav riêng; bộ lọc khám phá nằm trên URL dùng chung
+
+### Bối cảnh
+
+- User yêu cầu: đưa "map" thành mục riêng ở nav trái, và khi chuyển giữa discover ↔ map phải
+  **giữ nguyên search + filter**. Trước đây map chỉ là `viewMode` cục bộ của `/discover`
+  (`useState("grid" | "map")`) — đổi trang là mất hết bộ lọc.
+
+### Quyết định
+
+- Thêm mục nav `{ to: "/map", label: "Bản đồ" }` vào `NAV_ITEMS`, route `/map` → `MapPage`.
+- **Bộ lọc nằm trên URL** (`?category=&district=&q=&nearby=1`) qua hook mới
+  `useDiscoverFilters` — `/discover` và `/map` là **hai cách nhìn của cùng một bộ lọc**:
+  reload, back/forward, gửi link đều giữ nguyên. Giá trị rỗng/"all" bị xoá khỏi URL cho gọn.
+- **Một nghiệp vụ một chỗ**: toàn bộ logic lọc (server filters + lọc phòng nhóm client-side +
+  khoảng cách + sort "Gần đây") gom vào `useDiscoverView`; `DiscoverToolbar` là toolbar dùng
+  chung của cả 2 trang (nút Lưới/Bản đồ chỉ đổi pathname, giữ nguyên `search`).
+- Nav (`useNavTarget`): đứng ở trang chia sẻ filter thì bấm mục còn lại **mang theo
+  `location.search`**; ở trang khác thì không.
+- Ô tìm kiếm topbar (`useSearchQuerySync`) hiện `?q=` cả trên `/discover` và `/map` — trước đây
+  chỉ hiện trên `/search`, gây cảm giác "ô trống nhưng kết quả đang lọc theo từ khoá".
+- Từ khoá gõ trong popover Lọc ghi URL sau 300 ms debounce (`replace: true`) — không làm rối
+  lịch sử trình duyệt, cùng cách với `useSearchQuerySync`.
+
+### Hệ quả
+
+- `/discover/:id` (chi tiết quán) KHÔNG mang filter theo khi điều hướng — chỉ các trang lọc
+  (`FILTER_SHARED_PATHS`) mới mang.
+- Lỗi cũ "Gần đây" phải `clearLocation()` khi tắt được giữ nguyên hành vi qua `DiscoverToolbar`.
+- `viewMode` cục bộ của `/discover` bị xoá — không còn toggle Lưới/Bản đồ trong trang, chỉ còn
+  chuyển trang qua nav hoặc nút trong toolbar.

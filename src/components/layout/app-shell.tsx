@@ -9,7 +9,7 @@ import {
   SettingsIcon,
   UserIcon,
 } from "lucide-react"
-import { NavLink, Link, Outlet } from "react-router"
+import { NavLink, Link, Outlet, useLocation } from "react-router"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -32,7 +32,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
 import { cn } from "@/lib/utils"
-import { NAV_ITEMS } from "./nav-items"
+import { FILTER_SHARED_PATHS, NAV_ITEMS, type NavItem } from "./nav-items"
 import { ThemeToggle } from "./theme-toggle"
 
 interface AppShellProps {
@@ -79,8 +79,23 @@ function Brand() {
   )
 }
 
+/**
+ * Trả về hàm dựng `to` cho một mục nav.
+ *
+ * Đứng ở `/discover` hoặc `/map` thì mang theo `?category=&district=&q=&nearby=`
+ * khi bấm mục còn lại — bộ lọc của hai trang là một, đổi cách nhìn không mất
+ * search/filter. Ở trang khác thì không mang gì.
+ */
+function useNavTarget() {
+  const location = useLocation()
+  const carrySearch = FILTER_SHARED_PATHS.includes(location.pathname) ? location.search : ""
+
+  return (item: NavItem) => (item.sharesFilters ? item.to + carrySearch : item.to)
+}
+
 function SideNav() {
   const { data: unread = 0 } = useUnreadNotificationCount()
+  const navTarget = useNavTarget()
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-border bg-sidebar px-4 py-5 lg:flex">
@@ -92,7 +107,7 @@ function SideNav() {
           return (
             <NavLink
               key={item.to}
-              to={item.to}
+              to={navTarget(item)}
               className={({ isActive }) =>
                 cn(
                   "group flex items-center gap-3 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
@@ -262,6 +277,7 @@ function UserMenu() {
 
 function BottomNav() {
   const { data: unread = 0 } = useUnreadNotificationCount()
+  const navTarget = useNavTarget()
 
   return (
     <nav
@@ -274,7 +290,7 @@ function BottomNav() {
           return (
             <li key={item.to} className="flex-1">
               <NavLink
-                to={item.to}
+                to={navTarget(item)}
                 className={({ isActive }) =>
                   cn(
                     "relative flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors",

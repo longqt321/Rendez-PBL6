@@ -3,6 +3,7 @@ import { Navigate } from "react-router"
 import { AppShell } from "@/components/layout/app-shell"
 import { DesignShowcasePage } from "@/components/shared/design-showcase-page"
 import { DiscoverPage } from "@/features/places/pages/discover-page"
+import { MapPage } from "@/features/places/pages/map-page"
 import { SocialPage } from "@/features/social/pages/social-page"
 import { PostDetailPage } from "@/features/social/pages/post-detail-page"
 import { NotificationPage } from "@/features/notification/pages/notification-page"
@@ -31,6 +32,7 @@ export const routes: RouteObject[] = [
     errorElement: <RouteErrorPage />,
     children: [
       { path: "/discover", element: <DiscoverPage /> },
+      { path: "/map", element: <MapPage /> },
       { path: "/social", element: <SocialPage /> },
       { path: "/post/:id", element: <PostDetailPage /> },
       { path: "/notification", element: <NotificationPage /> },

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useLocation, useNavigate, useSearchParams } from "react-router"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { FILTER_SHARED_PATHS } from "@/components/layout/nav-items"
 
 /**
  * Đồng bộ ô tìm kiếm duy nhất ở topbar với `?q=` của `/search`.
@@ -20,7 +21,12 @@ export function useSearchQuerySync() {
   const [params, setParams] = useSearchParams()
 
   const isSearchPage = location.pathname === "/search"
-  const urlQuery = isSearchPage ? (params.get("q") ?? "") : ""
+  /**
+   * `/discover` và `/map` dùng chung `?q=` làm từ khoá lọc — ô tìm kiếm ở topbar
+   * phải hiện đúng từ khoá đó, nếu không người dùng thấy ô trống dù kết quả đang lọc.
+   */
+  const isFilterPage = FILTER_SHARED_PATHS.includes(location.pathname)
+  const urlQuery = isSearchPage || isFilterPage ? (params.get("q") ?? "") : ""
 
   const [draft, setDraft] = useState(urlQuery)
   const debouncedDraft = useDebouncedValue(draft, 300)
