@@ -1,6 +1,7 @@
 import { Link } from "react-router"
 import { HeartIcon, LockIcon, MapPinIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SeedImage } from "@/components/shared/seed-image"
 import { formatCount, formatRelativeTime } from "@/lib/format"
 import type { CollectionSummary } from "../types/collection"
@@ -8,7 +9,7 @@ import type { CollectionSummary } from "../types/collection"
 /** Thẻ bộ sưu tập trong lưới tab Bộ sưu tập — bấm mở chi tiết. */
 export function CollectionCard({ collection }: { collection: CollectionSummary }) {
   return (
-    <article className="relative overflow-hidden rounded-md border bg-card">
+    <Card className="relative gap-0 py-0">
       <div className="grid grid-cols-3 gap-px bg-border">
         {collection.previewPlaceIds.map((placeId) => (
           <SeedImage key={placeId} seed={placeId} height={90} alt="" className="w-full" />
@@ -22,38 +23,37 @@ export function CollectionCard({ collection }: { collection: CollectionSummary }
           : null}
       </div>
 
-      <div className="flex flex-col gap-1.5 p-4">
-        <h3 className="flex items-center gap-2 font-heading text-base leading-tight font-bold">
+      <CardHeader className="gap-1.5 px-4 pt-4">
+        <CardTitle className="flex items-center gap-2 text-base leading-tight font-bold">
           <Link
             to={`/collections/${collection.id}`}
             className="outline-none after:absolute after:inset-0 focus-visible:underline"
           >
             {collection.name}
           </Link>
-        </h3>
+        </CardTitle>
         {collection.description ? (
-          <p className="line-clamp-2 text-sm text-muted-foreground">{collection.description}</p>
+          <CardDescription className="line-clamp-2">{collection.description}</CardDescription>
         ) : null}
-        <div className="flex items-center gap-2 pt-1 text-sm text-muted-foreground">
-          <span>{collection.placeCount} địa điểm</span>
-          {collection.isPrivate ? (
-            <Badge variant="secondary" className="gap-1 text-xs">
-              <LockIcon className="size-3" aria-hidden="true" />
-              Riêng tư
-            </Badge>
-          ) : null}
-          <span className="ml-auto flex items-center gap-1">
-            <HeartIcon
-              className={
-                collection.likedByMe ? "size-3.5 fill-current text-destructive" : "size-3.5"
-              }
-              aria-hidden="true"
-            />
-            {formatCount(collection.likeCount)}
-          </span>
-          <span className="text-xs">{formatRelativeTime(collection.createdAt)}</span>
-        </div>
-      </div>
-    </article>
+      </CardHeader>
+
+      <CardContent className="flex items-center gap-2 px-4 pt-1.5 pb-4 text-sm text-muted-foreground">
+        <span>{collection.placeCount} địa điểm</span>
+        {collection.isPrivate ? (
+          <Badge variant="secondary" className="gap-1 text-xs">
+            <LockIcon className="size-3" aria-hidden="true" />
+            Riêng tư
+          </Badge>
+        ) : null}
+        <span className="ml-auto flex items-center gap-1">
+          <HeartIcon
+            className={collection.likedByMe ? "size-3.5 fill-current text-destructive" : "size-3.5"}
+            aria-hidden="true"
+          />
+          {formatCount(collection.likeCount)}
+        </span>
+        <span className="text-xs">{formatRelativeTime(collection.createdAt)}</span>
+      </CardContent>
+    </Card>
   )
 }

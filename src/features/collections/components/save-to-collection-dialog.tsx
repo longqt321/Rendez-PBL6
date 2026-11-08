@@ -11,6 +11,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
   Item,
@@ -20,9 +22,10 @@ import {
   ItemGroup,
   ItemTitle,
 } from "@/components/ui/item"
-import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { MAX_COLLECTION_NAME_LENGTH } from "@/lib/constants"
 import { useCollections } from "../hooks/use-collection"
 import { useCreateCollection, useSetCollectionPlace } from "../hooks/use-collections"
 import type { CollectionSummary } from "../types/collection"
@@ -68,21 +71,25 @@ export function SaveToCollectionDialog({
     )
   }
 
-  async function handleCreate() {
+  function handleCreate() {
     const name = newName.trim()
     if (name.length === 0) return
-    const collection = await createCollection.mutateAsync({
-      name,
-      isPrivate: newPrivate,
-    })
-    setNewName("")
-    setNewPrivate(false)
-    // Tự động lưu địa điểm đang mở vào bộ sưu tập vừa tạo
-    setPlace.mutate(
-      { id: collection.id, placeId, member: true },
+    createCollection.mutate(
+      { name, isPrivate: newPrivate },
       {
-        onSuccess: () => toast.success(`Đã tạo “${name}” và lưu ${placeName}`),
-        onError: () => toast.error(`Đã tạo “${name}” nhưng chưa lưu được địa điểm`),
+        onSuccess: (collection) => {
+          setNewName("")
+          setNewPrivate(false)
+          // Tự động lưu địa điểm đang mở vào bộ sưu tập vừa tạo
+          setPlace.mutate(
+            { id: collection.id, placeId, member: true },
+            {
+              onSuccess: () => toast.success(`Đã tạo “${name}” và lưu ${placeName}`),
+              onError: () => toast.error(`Đã tạo “${name}” nhưng chưa lưu được địa điểm`),
+            },
+          )
+        },
+        onError: () => toast.error("Không tạo được bộ sưu tập, thử lại nhé"),
       },
     )
   }
@@ -105,7 +112,7 @@ export function SaveToCollectionDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex max-h-64 flex-col overflow-y-auto" role="list">
+        <div className="max-h-64 overflow-y-auto">
           {isPending ? (
             <p className="py-4 text-center text-sm text-muted-foreground">
               <Spinner /> Đang tải bộ sưu tập…
@@ -156,38 +163,51 @@ export function SaveToCollectionDialog({
               })}
             </ItemGroup>
           ) : (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              Chưa có bộ sưu tập nào — tạo bên dưới.
-            </p>
+            <Empty className="border border-dashed border-border">
+              <EmptyHeader>
+                <EmptyTitle>Chưa có bộ sưu tập nào — tạo bên dưới.</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
           )}
         </div>
 
         <div className="flex flex-col gap-2 rounded-md border p-3">
-          <Label htmlFor="new-collection-name" className="text-sm">
-            Tạo bộ sưu tập mới
-          </Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="new-collection-name"
-              value={newName}
-              onChange={(event) => setNewName(event.target.value.slice(0, 80))}
-              placeholder="Ví dụ: Quán hẹn hò"
-              maxLength={80}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={newName.trim().length === 0 || createCollection.isPending}
-              onClick={() => void handleCreate()}
+          <Field>
+            <FieldLabel htmlFor="new-collection-name">Tạo bộ sưu tập mới</FieldLabel>
+            <div className="flex items-center gap-2">
+              <Input
+                id="new-collection-name"
+                value={newName}
+                onChange={(event) =>
+                  setNewName(event.target.value.slice(0, MAX_COLLECTION_NAME_LENGTH))
+                }
+                placeholder="Ví dụ: Quán hẹn hò"
+                maxLength={MAX_COLLECTION_NAME_LENGTH}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={newName.trim().length === 0 || createCollection.isPending}
+                onClick={handleCreate}
+              >
+                {createCollection.isPending ? <Spinner /> : <PlusIcon />}
+                Tạo
+              </Button>
+            </div>
+          </Field>
+          <Field orientation="horizontal">
+            <FieldLabel
+              htmlFor="new-collection-private"
+              className="flex-1 text-sm text-muted-foreground"
             >
-              {createCollection.isPending ? <Spinner /> : <PlusIcon />}
-              Tạo
-            </Button>
-          </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-            <Switch checked={newPrivate} onCheckedChange={setNewPrivate} />
-            Riêng tư (không hiện ở trang cá nhân)
-          </label>
+              Riêng tư (không hiện ở trang cá nhân)
+            </FieldLabel>
+            <Switch
+              id="new-collection-private"
+              checked={newPrivate}
+              onCheckedChange={setNewPrivate}
+            />
+          </Field>
         </div>
 
         <DialogFooter>

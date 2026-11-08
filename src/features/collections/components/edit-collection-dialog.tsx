@@ -1,4 +1,7 @@
 import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Controller, useForm, useWatch } from "react-hook-form"
+import { z } from "zod"
 import { CheckIcon, LockIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -11,13 +14,33 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { MAX_COLLECTION_DESCRIPTION_LENGTH, MAX_COLLECTION_NAME_LENGTH } from "@/lib/constants"
+import { formatNumber } from "@/lib/format"
 import { useUpdateCollection } from "../hooks/use-collections"
 import type { Collection } from "../types/collection"
+
+const editCollectionSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Tên bộ sưu tập không được để trống")
+    .max(MAX_COLLECTION_NAME_LENGTH, `Tên tối đa ${MAX_COLLECTION_NAME_LENGTH} ký tự`),
+  description: z
+    .string()
+    .trim()
+    .max(
+      MAX_COLLECTION_DESCRIPTION_LENGTH,
+      `Mô tả tối đa ${MAX_COLLECTION_DESCRIPTION_LENGTH} ký tự`,
+    ),
+  isPrivate: z.boolean(),
+})
+
+type EditCollectionForm = z.infer<typeof editCollectionSchema>
 
 interface EditCollectionDialogProps {
   collection: Collection
@@ -32,43 +55,41 @@ interface EditCollectionDialogProps {
  */
 export function EditCollectionDialog({ collection, children }: EditCollectionDialogProps) {
   const [open, setOpen] = useState(false)
-  const [name, setName] = useState(collection.name)
-  const [description, setDescription] = useState(collection.description)
-  const [isPrivate, setIsPrivate] = useState(collection.isPrivate)
   const updateCollection = useUpdateCollection(collection.id)
 
-  const trimmedName = name.trim()
-  const canSubmit =
-    trimmedName.length > 0 &&
-    trimmedName.length <= 80 &&
-    description.trim().length <= 400 &&
-    !updateCollection.isPending
+  const form = useForm<EditCollectionForm>({
+    resolver: zodResolver(editCollectionSchema),
+    defaultValues: {
+      name: collection.name,
+      description: collection.description,
+      isPrivate: collection.isPrivate,
+    },
+  })
+  const name = useWatch({ control: form.control, name: "name" })
+  const description = useWatch({ control: form.control, name: "description" })
+  const isPrivate = useWatch({ control: form.control, name: "isPrivate" })
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
     if (next) {
       // Mở lại thì nạp đúng dữ liệu hiện tại, kể cả khi lần trước bấm Huỷ.
-      setName(collection.name)
-      setDescription(collection.description)
-      setIsPrivate(collection.isPrivate)
+      form.reset({
+        name: collection.name,
+        description: collection.description,
+        isPrivate: collection.isPrivate,
+      })
     }
   }
 
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault()
-    if (!canSubmit) return
-
-    updateCollection.mutate(
-      { name: trimmedName, description: description.trim(), isPrivate },
-      {
-        onSuccess: () => {
-          toast.success("Đã cập nhật bộ sưu tập")
-          setOpen(false)
-        },
-        onError: () => toast.error("Không cập nhật được, thử lại nhé"),
+  const handleSubmit = form.handleSubmit((values) => {
+    updateCollection.mutate(values, {
+      onSuccess: () => {
+        toast.success("Đã cập nhật bộ sưu tập")
+        setOpen(false)
       },
-    )
-  }
+      onError: () => toast.error("Không cập nhật được, thử lại nhé"),
+    })
+  })
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -87,27 +108,34 @@ export function EditCollectionDialog({ collection, children }: EditCollectionDia
               <FieldLabel htmlFor="collection-name">Tên bộ sưu tập</FieldLabel>
               <Input
                 id="collection-name"
-                value={name}
-                onChange={(event) => setName(event.target.value.slice(0, 80))}
-                maxLength={80}
+                maxLength={MAX_COLLECTION_NAME_LENGTH}
                 placeholder="Ví dụ: Quán hẹn hò"
                 autoComplete="off"
+                aria-invalid={Boolean(form.formState.errors.name)}
+                {...form.register("name")}
               />
-              <FieldDescription>{name.trim().length}/80 ký tự</FieldDescription>
+              <FieldDescription>
+                {formatNumber(name.trim().length)}/{formatNumber(MAX_COLLECTION_NAME_LENGTH)} ký tự
+              </FieldDescription>
+              <FieldError>{form.formState.errors.name?.message}</FieldError>
             </Field>
 
             <Field>
               <FieldLabel htmlFor="collection-description">Mô tả</FieldLabel>
               <Textarea
                 id="collection-description"
-                value={description}
-                onChange={(event) => setDescription(event.target.value.slice(0, 400))}
-                maxLength={400}
+                maxLength={MAX_COLLECTION_DESCRIPTION_LENGTH}
                 rows={3}
                 placeholder="Ghi chú ngắn để bạn nhớ vì sao lập bộ sưu tập này…"
                 className="min-h-20 resize-none"
+                aria-invalid={Boolean(form.formState.errors.description)}
+                {...form.register("description")}
               />
-              <FieldDescription>{description.trim().length}/400 ký tự</FieldDescription>
+              <FieldDescription>
+                {formatNumber(description.trim().length)}/
+                {formatNumber(MAX_COLLECTION_DESCRIPTION_LENGTH)} ký tự
+              </FieldDescription>
+              <FieldError>{form.formState.errors.description?.message}</FieldError>
             </Field>
 
             <Field orientation="horizontal">
@@ -115,11 +143,18 @@ export function EditCollectionDialog({ collection, children }: EditCollectionDia
                 <LockIcon className="size-3.5" aria-hidden="true" />
                 Riêng tư
               </FieldLabel>
-              <Switch
-                id="collection-private"
-                checked={isPrivate}
-                onCheckedChange={setIsPrivate}
-                aria-describedby="collection-private-hint"
+              {/* base-ui Switch không nhận ref/onChange → bắt buộc đi qua Controller. */}
+              <Controller
+                control={form.control}
+                name="isPrivate"
+                render={({ field }) => (
+                  <Switch
+                    id="collection-private"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    aria-describedby="collection-private-hint"
+                  />
+                )}
               />
             </Field>
             <p id="collection-private-hint" className="-mt-2 text-xs text-muted-foreground">
@@ -133,7 +168,7 @@ export function EditCollectionDialog({ collection, children }: EditCollectionDia
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Huỷ
             </Button>
-            <Button type="submit" disabled={!canSubmit}>
+            <Button type="submit" disabled={updateCollection.isPending}>
               {updateCollection.isPending ? <Spinner /> : <CheckIcon />}
               Lưu thay đổi
             </Button>

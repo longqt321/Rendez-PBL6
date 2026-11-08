@@ -12,6 +12,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +24,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { Item, ItemGroup } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ShareButton } from "@/components/shared/share-button"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { usePlace } from "@/features/places/hooks/use-place"
@@ -67,30 +70,51 @@ function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPla
     <div className="relative h-full">
       <PlaceCard place={place} />
       {canRemove ? (
-        <Button
-          variant="outline"
-          size="icon-sm"
-          className="absolute top-2 right-2 z-10 bg-background/90 backdrop-blur"
-          aria-label={`Bỏ ${place.name} khỏi bộ sưu tập`}
-          title="Bỏ khỏi bộ sưu tập"
-          disabled={setPlace.isPending}
-          onClick={handleRemove}
-        >
-          {setPlace.isPending ? <Spinner /> : <XIcon />}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="outline"
+                size="icon-sm"
+                className="absolute top-2 right-2 z-10 bg-background/90 backdrop-blur"
+                aria-label={`Bỏ ${place.name} khỏi bộ sưu tập`}
+                disabled={setPlace.isPending}
+                onClick={handleRemove}
+              />
+            }
+          >
+            {setPlace.isPending ? <Spinner /> : <XIcon />}
+          </TooltipTrigger>
+          <TooltipContent>Bỏ khỏi bộ sưu tập</TooltipContent>
+        </Tooltip>
       ) : null}
+    </div>
+  )
+}
+
+/** Trạng thái không tìm thấy bộ sưu tập — dùng chung cho thiếu `id` và lỗi tải. */
+function CollectionNotFound() {
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+      <Empty className="mt-8">
+        <EmptyHeader>
+          <EmptyTitle>Không tìm thấy bộ sưu tập</EmptyTitle>
+          <EmptyDescription>Bộ sưu tập có thể đã bị xoá hoặc link không đúng.</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     </div>
   )
 }
 
 /** Trang chi tiết bộ sưu tập — `/collections/:id`. */
 export function CollectionDetailPage() {
-  const { id } = useParams()
-  const collectionId = id ?? ""
+  const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { data: collection, isPending, isError } = useCollection(collectionId)
+  const { data: collection, isPending, isError } = useCollection(id ?? "")
   const deleteCollection = useDeleteCollection()
   const [confirming, setConfirming] = useState(false)
+
+  if (!id) return <CollectionNotFound />
 
   if (isPending) {
     return (
@@ -102,18 +126,9 @@ export function CollectionDetailPage() {
     )
   }
 
-  if (isError || !collection) {
-    return (
-      <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
-        <Empty className="mt-8">
-          <EmptyHeader>
-            <EmptyTitle>Không tìm thấy bộ sưu tập</EmptyTitle>
-            <EmptyDescription>Bộ sưu tập có thể đã bị xoá hoặc link không đúng.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      </div>
-    )
-  }
+  if (isError || !collection) return <CollectionNotFound />
+
+  const collectionId = collection.id
 
   function handleDelete() {
     deleteCollection.mutate(collectionId, {
@@ -139,64 +154,66 @@ export function CollectionDetailPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <header className="mt-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <h1 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-bold tracking-tight">
-            {collection.name}
-            {collection.isPrivate ? (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                <LockIcon className="size-3" aria-hidden="true" />
-                Riêng tư
-              </Badge>
+      <Card className="mt-4">
+        <CardContent className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <h1 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-bold tracking-tight">
+              {collection.name}
+              {collection.isPrivate ? (
+                <Badge variant="secondary" className="gap-1 text-xs">
+                  <LockIcon className="size-3" aria-hidden="true" />
+                  Riêng tư
+                </Badge>
+              ) : null}
+            </h1>
+            {collection.description ? (
+              <p className="text-sm whitespace-pre-line text-muted-foreground">
+                {collection.description}
+              </p>
             ) : null}
-          </h1>
-          {collection.description ? (
-            <p className="text-sm whitespace-pre-line text-muted-foreground">
-              {collection.description}
+            <p className="text-sm text-muted-foreground">
+              {collection.placeIds.length} địa điểm ·{" "}
+              {collection.isMine ? (
+                collection.owner.name
+              ) : (
+                <Link
+                  to={`/u/${collection.owner.handle}`}
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  {collection.owner.name}
+                </Link>
+              )}
             </p>
-          ) : null}
-          <p className="text-sm text-muted-foreground">
-            {collection.placeIds.length} địa điểm ·{" "}
-            {collection.isMine ? (
-              collection.owner.name
-            ) : (
-              <Link
-                to={`/u/${collection.owner.handle}`}
-                className="underline underline-offset-2 hover:text-foreground"
-              >
-                {collection.owner.name}
-              </Link>
-            )}
-          </p>
-        </div>
+          </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <CollectionLikeButton collection={collection} />
-          <ShareButton
-            title={`Bộ sưu tập “${collection.name}”`}
-            url={`/collections/${collection.id}`}
-          />
-          {collection.isMine ? (
-            <>
-              <EditCollectionDialog collection={collection}>
-                <Button variant="outline" size="sm">
-                  <PencilIcon />
-                  Sửa
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <CollectionLikeButton collection={collection} />
+            <ShareButton
+              title={`Bộ sưu tập “${collection.name}”`}
+              url={`/collections/${collection.id}`}
+            />
+            {collection.isMine ? (
+              <>
+                <EditCollectionDialog collection={collection}>
+                  <Button variant="outline" size="sm">
+                    <PencilIcon />
+                    Sửa
+                  </Button>
+                </EditCollectionDialog>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => setConfirming(true)}
+                >
+                  <Trash2Icon />
+                  Xoá
                 </Button>
-              </EditCollectionDialog>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setConfirming(true)}
-              >
-                <Trash2Icon />
-                Xoá
-              </Button>
-            </>
-          ) : null}
-        </div>
-      </header>
+              </>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
 
       {collection.placeIds.length === 0 ? (
         <Empty className="mt-8">
@@ -212,17 +229,17 @@ export function CollectionDetailPage() {
           </EmptyHeader>
         </Empty>
       ) : (
-        <ul className="mt-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ItemGroup className="mt-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {collection.placeIds.map((placeId) => (
-            <li key={placeId} className="h-full">
+            <Item key={placeId} role="listitem" className="h-full border-0 p-0 [&>*]:w-full">
               <CollectionPlaceItem
                 placeId={placeId}
                 canRemove={collection.isMine}
                 collectionId={collection.id}
               />
-            </li>
+            </Item>
           ))}
-        </ul>
+        </ItemGroup>
       )}
 
       <AlertDialog open={confirming} onOpenChange={setConfirming}>

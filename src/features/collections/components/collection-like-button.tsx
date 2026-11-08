@@ -1,6 +1,6 @@
 import { HeartIcon } from "lucide-react"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
+import { Toggle } from "@/components/ui/toggle"
 import { formatCount } from "@/lib/format"
 import { useSetCollectionLike } from "../hooks/use-collections"
 import type { Collection } from "../types/collection"
@@ -31,14 +31,14 @@ export function CollectionLikeButton({ collection }: CollectionLikeButtonProps) 
   }
 
   return (
-    <Button
+    <Toggle
       variant="outline"
       size="sm"
-      aria-pressed={collection.likedByMe}
+      pressed={collection.likedByMe}
       disabled={setLike.isPending}
-      onClick={() =>
+      onPressedChange={(pressed) =>
         setLike.mutate(
-          { liked: !collection.likedByMe },
+          { liked: pressed },
           {
             onError: () => toast.error("Không thả tim được, thử lại nhé"),
           },
@@ -48,6 +48,6 @@ export function CollectionLikeButton({ collection }: CollectionLikeButtonProps) 
       <HeartIcon className={collection.likedByMe ? "fill-current text-destructive" : undefined} />
       {collection.likedByMe ? "Đã thích" : "Thích"}
       <span className="text-xs text-muted-foreground">{formatCount(collection.likeCount)}</span>
-    </Button>
+    </Toggle>
   )
 }
