@@ -89,14 +89,14 @@ export function PostDetailPage() {
       </Breadcrumb>
 
       <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
-        <article className="overflow-hidden rounded-[0.25rem] border border-border bg-card shadow-(--shadow-soft)">
+        <article className="overflow-hidden rounded-surface border border-border bg-card shadow-(--shadow-soft)">
           <PostPreview post={post} footer={<PostActions post={post} />} />
         </article>
 
         <section
           id="binh-luan"
           aria-label={`Bình luận (${post.commentCount})`}
-          className="flex flex-col overflow-hidden rounded-[0.25rem] border border-border bg-card lg:sticky lg:top-20 lg:max-h-[calc(100dvh-7rem)]"
+          className="flex flex-col overflow-hidden rounded-surface border border-border bg-card lg:sticky lg:top-20 lg:max-h-[calc(100dvh-7rem)]"
         >
           <h2 className="flex items-center gap-2 border-b px-4 py-2.5 font-heading text-sm font-bold">
             <MessageCircleIcon className="size-4" aria-hidden="true" />

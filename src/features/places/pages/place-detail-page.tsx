@@ -15,8 +15,9 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SeedImage } from "@/components/shared/seed-image"
-import { formatCount } from "@/lib/format"
+import { formatCount, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
+import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
 import { usePlace } from "../hooks/use-place"
 import { usePlacePosts } from "../hooks/use-place-posts"
 import { usePlaceReviews } from "../hooks/use-place-reviews"
@@ -89,7 +90,7 @@ export function PlaceDetailPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="mt-4 overflow-hidden rounded-[0.25rem] border border-border bg-card shadow-(--shadow-soft)">
+      <div className="mt-4 overflow-hidden rounded-surface border border-border bg-card shadow-(--shadow-soft)">
         <SeedImage
           seed={place.imageSeed}
           height={280}
@@ -111,11 +112,11 @@ export function PlaceDetailPage() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1 font-bold text-foreground">
               <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
-              {place.rating.toFixed(1)}
+              {formatRating(place.rating)}
             </span>
             <span>{formatCount(place.reviewCount)} đánh giá</span>
-            <span aria-label={`Mức giá ${place.priceLevel} trên 3`} className="font-bold">
-              {"₫".repeat(place.priceLevel)}
+            <span aria-label={priceLevelAriaLabel(place.priceLevel)} className="font-bold">
+              {priceLevelLabel(place.priceLevel)}
             </span>
           </div>
 
@@ -223,12 +224,12 @@ export function PlaceDetailPage() {
                 <li key={post.id}>
                   <Link
                     to={`/post/${post.id}`}
-                    className="flex items-start gap-3 rounded-[0.25rem] border border-border/15 p-3 transition-colors hover:bg-muted"
+                    className="flex items-start gap-3 rounded-surface border border-border/15 p-3 transition-colors hover:bg-muted"
                   >
                     <SeedImage
                       seed={post.imageSeed}
                       height={120}
-                      className="w-20 shrink-0 rounded-[0.15rem]"
+                      className="w-20 shrink-0 rounded-thumb"
                       alt=""
                     />
                     <div className="min-w-0">

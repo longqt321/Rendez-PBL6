@@ -25,7 +25,7 @@ export function ProfilePostGrid({
         {Array.from({ length: 6 }).map((_, index) => (
           <li key={index}>
             <Skeleton
-              className="w-full rounded-[0.25rem]"
+              className="w-full rounded-surface"
               style={{ height: 260 + (index % 3) * 60 }}
             />
           </li>
@@ -54,7 +54,7 @@ export function ProfilePostGrid({
         <li key={post.id}>
           <Link
             to={`/post/${post.id}`}
-            className="block overflow-hidden rounded-[0.25rem] border border-border bg-card shadow-(--shadow-soft) transition-transform hover:-translate-y-0.5"
+            className="block overflow-hidden rounded-surface border border-border bg-card shadow-(--shadow-soft) transition-transform hover:-translate-y-0.5"
           >
             <SeedImage
               seed={post.imageSeed}

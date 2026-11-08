@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css"
 import { ExternalLinkIcon, MapPinIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
+import { formatCoordinate } from "@/lib/format"
 import type { Place } from "../types/place"
 
 interface PlaceMiniMapProps {
@@ -82,7 +83,7 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
-          Tọa độ: {place.lat.toFixed(4)}, {place.lng.toFixed(4)}
+          Tọa độ: {formatCoordinate(place.lat)}, {formatCoordinate(place.lng)}
         </span>
         <span>
           {place.address}, {place.city}

@@ -27,10 +27,7 @@ export function RatingStars({ value, onChange, size = "md", className }: RatingS
         const filled = star <= value
         const starNode = (
           <StarIcon
-            className={cn(
-              sizeClass,
-              filled ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40",
-            )}
+            className={cn(sizeClass, filled ? "fill-star text-star" : "text-muted-foreground/40")}
             aria-hidden="true"
           />
         )

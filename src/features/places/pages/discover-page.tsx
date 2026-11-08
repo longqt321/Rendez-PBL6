@@ -8,6 +8,7 @@ import {
   SearchXIcon,
   XIcon,
 } from "lucide-react"
+import { Alert, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -236,7 +237,7 @@ export function DiscoverPage() {
           )}
           Gần đây
           {isNearbyActive && coordinates ? (
-            <span className="size-1.5 animate-ping rounded-full bg-emerald-400"></span>
+            <span className="size-1.5 animate-ping rounded-full bg-primary"></span>
           ) : null}
         </Button>
 
@@ -277,8 +278,8 @@ export function DiscoverPage() {
 
       {/* Thông báo lỗi vị trí (nếu có) */}
       {locationError && isNearbyActive ? (
-        <div className="mt-3 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
-          <span>{locationError}</span>
+        <Alert className="mt-3 flex items-center justify-between gap-2 border-dashed">
+          <AlertTitle className="text-xs font-normal">{locationError}</AlertTitle>
           <Button
             size="sm"
             variant="ghost"
@@ -287,7 +288,7 @@ export function DiscoverPage() {
           >
             Đóng
           </Button>
-        </div>
+        </Alert>
       ) : null}
 
       {/* =========================================================================

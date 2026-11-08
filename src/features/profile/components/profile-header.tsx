@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Item, ItemContent, ItemGroup } from "@/components/ui/item"
 import { SeedImage } from "@/components/shared/seed-image"
-import { formatCount } from "@/lib/format"
+import { formatCount, formatDate } from "@/lib/format"
 import { useSetFollow } from "../hooks/use-set-follow"
 import type { UserProfile } from "../types/profile"
 
@@ -65,7 +65,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
             <MapPinIcon className="size-3.5" aria-hidden="true" />
             {profile.location}
           </span>
-          <span>Tham gia {new Date(profile.joinedAt).toLocaleDateString("vi-VN")}</span>
+          <span>Tham gia {formatDate(profile.joinedAt)}</span>
         </p>
 
         <ItemGroup className="mt-4 grid grid-cols-3 gap-2" role="list" aria-label="Thống kê">

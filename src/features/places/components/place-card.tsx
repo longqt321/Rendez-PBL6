@@ -2,9 +2,9 @@ import { MapPinIcon, NavigationIcon, StarIcon } from "lucide-react"
 import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { SeedImage } from "@/components/shared/seed-image"
-import { formatCount } from "@/lib/format"
+import { formatCount, formatDistance, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
-import { formatDistance } from "@/lib/format"
+import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
 import type { Place } from "../types/place"
 
 interface PlaceCardProps {
@@ -41,7 +41,7 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
 
         <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-sm font-bold">
           <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
-          {place.rating.toFixed(1)}
+          {formatRating(place.rating)}
         </span>
       </SeedImage>
 
@@ -70,8 +70,8 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
               </span>
             ) : null}
           </div>
-          <span aria-label={`Mức giá ${place.priceLevel} trên 3`} className="font-bold">
-            {"₫".repeat(place.priceLevel)}
+          <span aria-label={priceLevelAriaLabel(place.priceLevel)} className="font-bold">
+            {priceLevelLabel(place.priceLevel)}
           </span>
         </div>
       </div>

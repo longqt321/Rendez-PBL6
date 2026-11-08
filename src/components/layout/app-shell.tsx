@@ -71,7 +71,7 @@ function Brand() {
     <div className="flex items-center gap-2">
       <span
         aria-hidden="true"
-        className="grid size-8 place-items-center rounded-[0.2rem] border border-border bg-secondary text-sm font-bold text-secondary-foreground"
+        className="grid size-8 place-items-center rounded-control border border-border bg-secondary text-sm font-bold text-secondary-foreground"
       >
         Đ
       </span>

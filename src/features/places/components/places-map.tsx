@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SeedImage } from "@/components/shared/seed-image"
 import { CATEGORY_META } from "../lib/category-meta"
-import { formatDistance } from "@/lib/format"
+import { formatDistance, formatRating } from "@/lib/format"
 import { calculateDistanceKm } from "../lib/danang-districts"
+import { priceLevelLabel } from "../lib/price-level"
 import type { Place } from "../types/place"
 
 // Tọa độ mặc định: Trung tâm Thành phố Đà Nẵng (Khu vực Cầu Rồng / Sông Hàn)
@@ -69,14 +70,14 @@ function MapBoundsUpdater({
 
 /** Tạo icon custom HTML cho Marker quán ăn */
 function createMarkerIcon(place: Place, isSelected: boolean, distanceKm?: number) {
-  const priceIndicator = "₫".repeat(place.priceLevel)
+  const priceIndicator = priceLevelLabel(place.priceLevel)
   const bgClass = isSelected
     ? "bg-primary text-primary-foreground ring-4 ring-primary/30 scale-110 z-50"
     : "bg-card text-card-foreground border border-border shadow-md hover:scale-105 hover:bg-accent"
 
   const distanceHtml =
     distanceKm !== undefined
-      ? `<span class="ml-1 text-[10px] text-primary font-bold ${isSelected ? "text-primary-foreground" : ""}">${formatDistance(distanceKm)}</span>`
+      ? `<span class="ml-1 text-xs text-primary font-bold ${isSelected ? "text-primary-foreground" : ""}">${formatDistance(distanceKm)}</span>`
       : ""
 
   const html = `
@@ -84,7 +85,7 @@ function createMarkerIcon(place: Place, isSelected: boolean, distanceKm?: number
       <div class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${bgClass}">
         <span class="inline-block size-2 rounded-full bg-primary ${isSelected ? "bg-background" : ""}"></span>
         <span class="truncate max-w-[120px]">${place.name}</span>
-        <span class="text-[10px] opacity-75">${priceIndicator}</span>
+        <span class="text-xs opacity-75">${priceIndicator}</span>
         ${distanceHtml}
       </div>
       <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 ${isSelected ? "bg-primary" : "bg-card border-r border-b border-border"}"></div>
@@ -104,8 +105,8 @@ function createMarkerIcon(place: Place, isSelected: boolean, distanceKm?: number
 function createUserLocationIcon() {
   const html = `
     <div class="relative flex items-center justify-center">
-      <div class="size-6 rounded-full bg-blue-500/20 ring-4 ring-blue-500/30 flex items-center justify-center animate-pulse">
-        <div class="size-3.5 rounded-full bg-blue-600 border-2 border-white shadow-md"></div>
+      <div class="size-6 rounded-full bg-primary/20 ring-4 ring-primary/30 flex items-center justify-center animate-pulse">
+        <div class="size-3.5 rounded-full bg-primary border-2 border-background shadow-md"></div>
       </div>
     </div>
   `
@@ -179,7 +180,7 @@ export function PlacesMap({
           >
             <Popup closeButton={false}>
               <div className="flex items-center gap-1 p-1 text-xs font-semibold text-foreground">
-                <NavigationIcon className="size-3 text-blue-500" />
+                <NavigationIcon className="size-3 text-primary" />
                 Vị trí của bạn
               </div>
             </Popup>
@@ -219,14 +220,11 @@ export function PlacesMap({
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute top-2 left-2 flex gap-1">
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         {CATEGORY_META[place.category]?.label}
                       </Badge>
                       {place.district ? (
-                        <Badge
-                          variant="outline"
-                          className="bg-background/80 text-[10px] backdrop-blur"
-                        >
+                        <Badge variant="outline" className="bg-background/80 text-xs backdrop-blur">
                           {place.district}
                         </Badge>
                       ) : null}
@@ -240,10 +238,10 @@ export function PlacesMap({
                     <p className="line-clamp-1 text-xs text-muted-foreground">{place.address}</p>
 
                     <div className="flex items-center justify-between pt-1">
-                      <span className="flex items-center gap-1 text-xs font-semibold text-amber-500">
+                      <span className="flex items-center gap-1 text-xs font-semibold text-star">
                         <StarIcon className="size-3.5 fill-current" />
-                        {place.rating.toFixed(1)}
-                        <span className="text-[10px] font-normal text-muted-foreground">
+                        {formatRating(place.rating)}
+                        <span className="text-xs font-normal text-muted-foreground">
                           ({place.reviewCount})
                         </span>
                       </span>
@@ -256,7 +254,7 @@ export function PlacesMap({
                           </span>
                         ) : null}
                         <span className="text-xs font-medium text-muted-foreground">
-                          {"₫".repeat(place.priceLevel)}
+                          {priceLevelLabel(place.priceLevel)}
                         </span>
                       </div>
                     </div>

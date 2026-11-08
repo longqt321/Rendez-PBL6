@@ -26,14 +26,14 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
   return (
     <article
       className={cn(
-        "rounded-[0.25rem] border border-border bg-card p-3 shadow-(--shadow-soft)",
+        "rounded-surface border border-border bg-card p-3 shadow-(--shadow-soft)",
         !notification.read && "border-primary",
       )}
     >
       <header className="flex items-start gap-2">
         <span
           aria-hidden="true"
-          className="grid size-8 shrink-0 place-items-center rounded-[0.2rem] border border-border bg-secondary text-secondary-foreground"
+          className="grid size-8 shrink-0 place-items-center rounded-control border border-border bg-secondary text-secondary-foreground"
         >
           <SparklesIcon className="size-4" />
         </span>
@@ -69,10 +69,10 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
 
           return (
             <li key={place.id}>
-              <div className="flex items-center gap-2.5 rounded-[0.2rem] border border-border p-1.5 transition-colors hover:border-primary/50">
+              <div className="flex items-center gap-2.5 rounded-control border border-border p-1.5 transition-colors hover:border-primary/50">
                 <SeedImage
                   seed={place.imageSeed}
-                  className="size-12 shrink-0 rounded-[0.15rem]"
+                  className="size-12 shrink-0 rounded-thumb"
                   alt={`Ảnh minh hoạ ${place.name}`}
                 />
                 <div className="min-w-0 flex-1">
