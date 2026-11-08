@@ -18,7 +18,7 @@ Phiên bản đã cài thực tế (đọc từ `node_modules/*/package.json`), 
 | next-themes                           | 0.4.6          | Sáng/tối, gắn class `dark` lên `<html>`                                                |
 | react-router                          | 8.5.1          | Routing                                                                                |
 | @tanstack/react-query                 | 5.106.1        | Server state (mọi dữ liệu từ API)                                                      |
-| zustand                               | 5.1.0          | Client state toàn cục — **chưa dùng** (skin/theme đã có provider riêng)                |
+| zustand                               | 5.1.0          | Client state toàn cục — **chưa dùng**, giữ lại theo quyết định 2026-11-08 (BACKLOG)    |
 | zod                                   | 4.6.7          | Schema validation — dùng ở `settings-page`, `review-form`, dialog bộ sưu tập           |
 | react-hook-form / @hookform/resolvers | 7.91.0 / 7.0.3 | Form + cầu nối zod (xem `docs/CONVENTIONS.md` §8)                                      |
 | axios                                 | 1.21.0         | HTTP client                                                                            |

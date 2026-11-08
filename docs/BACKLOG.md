@@ -218,49 +218,38 @@ gzip) thay 3 hook tự viết; cài `alert`, `radio-group`, `collapsible`; 3 tok
 luận; `docs/CONVENTIONS.md`. Quét cơ học: 13 `rounded-[…]`, 5 `text-[10px]`, 7 bảng màu thô,
 4 `toFixed`/`toLocaleDateString`, 4 `"₫".repeat` → hết.
 
-Còn lại, **chưa làm**:
+Còn lại, cập nhật sau đợt chuẩn hoá thứ hai (2026-11-08):
 
-- [ ] **`Spinner` vẫn `aria-label="Loading"` tiếng Anh** (`src/components/ui/spinner.tsx:9`, template
-      shadcn). 29 chỗ dùng, 0 chỗ override. Không sửa tay file `ui/` → cần thống nhất: override
-      `aria-label="Đang tải"` ở nơi dùng, hay chấp nhận. Đây là việc lặp lại nhiều nhất trong danh
-      sách này.
-- [ ] **6 chỗ bọc `Spinner` trong `role="status"`** → trình đọc màn hình thông báo hai lần.
-      `Spinner` đã có `role="status"`.
-- [ ] **2 `title=` còn lại** (`discover-page.tsx`, `collection-detail-page.tsx`) → `Tooltip`.
-      `TooltipProvider` đã mount ở `app-provider.tsx` nhưng **0** `<Tooltip>` nào được dùng.
-- [ ] **`cn-toast` trong `src/components/ui/sonner.tsx:35` chưa xác định được định nghĩa.** Không có
-      trong `node_modules/shadcn/dist/tailwind.css`, không có trong bất kỳ transform nào của
-      registry. Cần kiểm tra CSS thật trong trình duyệt (devtools → computed style của `[data-sonner-toast]`)
-      trước khi kết luận là class chết.
-- [ ] **`src/components/ui/toggle.tsx` chỉ được dùng gián tiếp** qua `toggleVariants` ở
-      `toggle-group.tsx`. Sau đợt này `Toggle` đã được dùng trực tiếp (nút thích/lưu/theo dõi) —
-      kiểm tra lại `grep -rn "<Toggle"` để chắc không còn file chết.
-- [ ] **`src/components/layout/skin-toggle.tsx`** export `SkinToggle` nhưng **0 import** — file chết.
-      Xoá hoặc dùng lại thay cho `ThemeToggle` trong `SkinSwitch`.
-- [ ] **`design-showcase-page.tsx` render `<main>` lồng trong `<main>` của `AppShell`.**
-- [ ] **`AppShell` được copy 13 lần trong `routes.tsx`**; `grep Outlet src/` → 0. Nên chuyển sang
-      layout route + `Outlet`.
-- [ ] **Không có `errorElement` / `ErrorBoundary` nào** → một page throw là cả app trắng.
-- [ ] **`ICON_MAP` trong `app-shell.tsx:40-44` trùng `NAV_ITEMS.icon`** (`nav-items.ts`), khiến
-      `NAV_ITEMS.icon` thành dữ liệu chết.
-- [ ] **Fixture tác giả bị nhân bản ở 4 file:** `CURRENT_USER` trong `fixtures/posts.ts:5` **và**
-      `fixtures/comments.ts:5`; `AUTHORS` trong `fixtures/comments.ts:12` **và** `fixtures/reviews.ts:4`;
-      `ME` trong `fixtures/users.ts:96`. Nên gom về một chỗ.
-- [ ] **`NotificationKind` export nhưng không dùng** (`notification/types/notification.ts`).
-- [ ] **`DanangDistrict` type** trong `places/lib/danang-districts.ts` — kiểm tra còn dùng không.
-- [ ] **`InfiniteData` typing** trong `use-infinite-scroll` — kiểm tra lại sau khi đổi sang
+- [x] **`Spinner` `aria-label="Loading"` tiếng Anh** — đã override `aria-label` tiếng Việt ở
+      **21/21** chỗ dùng (settings đã có sẵn từ trước). Quy tắc ghi tại `CONVENTIONS.md` §9.
+- [x] **Bọc `Spinner` trong `role="status"`** — 0 chỗ còn lại (grep sạch).
+- [x] **2 `title=` còn lại** — không phải tooltip: 1 là prop `title` của `Section` (trang demo),
+      1 là prop `title` của `ShareButton`. Cả hai là dữ liệu component, không phải `title` HTML.
+- [x] **`cn-toast` trong `sonner.tsx:35`** — đã xác minh: `grep cn-toast dist/assets/*.css` → 0 kết
+      quả, tức class không được định nghĩa trong CSS đã build. Là class chết của template, vô hại.
+      Không sửa tay file `ui/`; nếu shadcn registry cập nhật sẽ tự hết.
+- [x] **`Toggle` chỉ dùng gián tiếp** — 6 file dùng trực tiếp (post-card, comment-item,
+      post-detail-page, discover-page, profile-header, collection-like-button).
+- [x] **`skin-toggle.tsx` file chết** — đã xoá.
+- [x] **`<main>` lồng trong `design-showcase-page`** — đã đổi thành `<div>`.
+- [x] **`AppShell` lặp 13 lần trong `routes.tsx`** — đã chuyển thành layout route + `<Outlet />`.
+- [x] **Không có `errorElement`** — đã thêm `RouteErrorPage` cho layout route.
+- [x] **`ICON_MAP` trùng `NAV_ITEMS.icon`** — đã xoá `ICON_MAP`.
+- [x] **Fixture tác giả nhân bản 3 nơi** — gộp về `fixtures/users.ts` làm nguồn duy nhất:
+      `CURRENT_USER`/`AUTHORS`/`AUTHOR_LIST` suy từ `MOCK_USERS`; `posts.ts`, `comments.ts`,
+      `server.ts` chỉ import (bỏ alias `COMMENT_USER`).
+- [x] **`NotificationKind` export không dùng** — đã xoá.
+- [x] **`DanangDistrict` type không dùng** — đã xoá.
+- [x] **`InfiniteData` typing trong `use-infinite-scroll`** — 0 tham chiếu còn lại sau khi đổi sang
       `useIntersectionObserver`.
-- [ ] **Asset không dùng:** `src/assets/images/hero.png`, `src/assets/icons/react.svg`,
-      `src/assets/icons/vite.svg` (0 import mỗi file); `src/assets/fonts/` chỉ có `.gitkeep`.
-- [ ] **`zustand` chưa dùng** — quyết định giữ hay bỏ (skin/theme đã có provider riêng, optimistic
-      update đã nằm trong React Query `onMutate`).
-- [ ] **`index.css` từng có comment sai** (`0.72rem ≈ 11.5px` nhưng giá trị là `0.8125rem`) và rule
-      `small` chết (`grep "<small"` → 0). **Đã xoá** trong đợt này; ghi lại vì tài liệu cũ nhắc tới.
-- [ ] **`docs/STACK.md:89` từng ghi `lib/seed-color.ts`** — file không tồn tại. **Đã sửa.**
-- [ ] **`docs/BACKLOG.md` từng ghi `zod`/`react-hook-form`/`@hookform/resolvers`/`sonner` là "chưa
-      dùng"** — cả bốn đã dùng. **Đã sửa ở `STACK.md`.**
-- [ ] **`docs/BACKLOG.md` từng nói `Badge` không co được xuống 16px** — **sai**, đã kiểm bằng
-      `twMerge('h-5 w-fit rounded-4xl px-2 py-0.5 text-xs','size-4 rounded-full p-0')` →
-      `'text-xs size-4 rounded-full p-0'`. Nếu muốn badge số 16px thì dùng được `Badge`.
-- [ ] **`scratch/size-parity.mjs` (D-017) chưa chạy lại** sau khi đổi bo góc sang token và chuyển
-      sang `Card`. Dự kiến **sẽ lệch** — cần cập nhật script theo bộ token mới thay vì coi là lỗi.
+- [x] **Asset không dùng** — đã xoá `hero.png`, `react.svg`, `vite.svg`, `src/assets/fonts/`
+      (0 tham chiếu trong src/index.html/vite.config; font thật dùng `@fontsource`).
+- [x] **`zustand` chưa dùng** — **quyết định: GIỮ** dependency (người dùng chọn giữ cho state toàn
+      cục sau này). Không đếm là nợ kỹ thuật; nếu 2 đợt nữa vẫn chưa dùng thì gỡ.
+- [x] **`index.css` comment sai + rule `small` chết** — đã xoá trong đợt trước.
+- [x] **`docs/STACK.md` ghi `lib/seed-color.ts`** — đã sửa.
+- [x] **BACKLOG ghi sai `zod`/`react-hook-form`/`resolvers`/`sonner` "chưa dùng"** — đã sửa.
+- [x] **`Badge` không co 16px** — đính chính: co được (twMerge kiểm chứng).
+- [ ] **`scratch/size-parity.mjs` (D-017)** — script **không còn trong repo** (find → 0 kết quả).
+      Nếu cần so sánh kích thước token cũ/mới, viết lại theo bộ token
+      `--radius-surface/control/thumb` thay vì coi kết quả lệch là lỗi.
