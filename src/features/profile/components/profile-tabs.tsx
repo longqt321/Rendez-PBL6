@@ -13,14 +13,17 @@ const POST_TABS: ProfileTab[] = ["posts", "pinned", "saved"]
 const TAB_VALUES = ["posts", "pinned", "saved", "collections"] as const
 type TabValue = (typeof TAB_VALUES)[number]
 
+/** `?tab=` là chuỗi tuỳ ý từ URL — chỉ nhận giá trị nằm trong danh sách tab. */
+function isTabValue(value: string | null): value is TabValue {
+  return TAB_VALUES.some((tab) => tab === value)
+}
+
 /** Tabs Bài đăng / Đã ghim / Đã lưu / Bộ sưu tập — đồng bộ với query `?tab=`. */
 export function ProfileTabs({ profile }: ProfileTabsProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const rawTab = searchParams.get("tab")
-  const tab =
-    TAB_VALUES.includes(rawTab as never) && (rawTab !== "saved" || profile.isMe)
-      ? (rawTab as TabValue)
-      : "posts"
+  const tab: TabValue =
+    isTabValue(rawTab) && (rawTab !== "saved" || profile.isMe) ? rawTab : "posts"
 
   return (
     <Tabs

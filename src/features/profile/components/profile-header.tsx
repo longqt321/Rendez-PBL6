@@ -3,6 +3,7 @@ import { MapPinIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Item, ItemContent, ItemGroup } from "@/components/ui/item"
+import { Toggle } from "@/components/ui/toggle"
 import { SeedImage } from "@/components/shared/seed-image"
 import { formatCount, formatDate } from "@/lib/format"
 import { useSetFollow } from "../hooks/use-set-follow"
@@ -45,14 +46,14 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
             </Button>
           ) : (
             <div className="flex items-center gap-2">
-              <Button
+              <Toggle
                 variant={profile.followedByMe ? "outline" : "default"}
-                aria-pressed={profile.followedByMe}
+                pressed={profile.followedByMe}
                 disabled={setFollow.isPending}
-                onClick={() => setFollow.mutate({ followed: !profile.followedByMe })}
+                onPressedChange={(pressed) => setFollow.mutate({ followed: pressed })}
               >
                 {profile.followedByMe ? "Đang theo dõi" : "Theo dõi"}
-              </Button>
+              </Toggle>
               <Button variant="outline">Nhắn tin</Button>
             </div>
           )}
@@ -68,7 +69,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
           <span>Tham gia {formatDate(profile.joinedAt)}</span>
         </p>
 
-        <ItemGroup className="mt-4 grid grid-cols-3 gap-2" role="list" aria-label="Thống kê">
+        <ItemGroup className="mt-4 grid grid-cols-3 gap-2" aria-label="Thống kê">
           <Item variant="muted" className="flex-col items-center gap-0.5 py-3">
             <ItemContent className="items-center">
               <span className="font-heading text-lg font-bold">

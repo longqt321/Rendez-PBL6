@@ -1,4 +1,5 @@
-import { Spinner } from "@/components/ui/spinner"
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ProfileHeader } from "../components/profile-header"
 import { ProfileTabs } from "../components/profile-tabs"
 import { useMe } from "../hooks/use-me"
@@ -7,14 +8,33 @@ import { useMe } from "../hooks/use-me"
 export function ProfilePage() {
   const { data: profile, isPending } = useMe()
 
-  if (isPending || !profile) {
+  if (isPending) {
     return (
-      <div
-        className="flex items-center justify-center py-24"
-        role="status"
-        aria-label="Đang tải hồ sơ"
-      >
-        <Spinner className="size-6" />
+      <div className="mx-auto w-full max-w-4xl">
+        <Skeleton className="h-[200px] w-full rounded-none" />
+        <div className="flex flex-col gap-3 px-4 pt-4 lg:px-6">
+          <Skeleton className="size-24 rounded-full" />
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-56" />
+          <div className="grid grid-cols-3 gap-2">
+            <Skeleton className="h-16" />
+            <Skeleton className="h-16" />
+            <Skeleton className="h-16" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="mx-auto max-w-md py-20">
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>Không tải được hồ sơ</EmptyTitle>
+            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       </div>
     )
   }

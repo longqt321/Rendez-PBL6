@@ -1,5 +1,5 @@
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { UserRoundXIcon } from "lucide-react"
 import { ProfileHeader } from "../components/profile-header"
 import { ProfileTabs } from "../components/profile-tabs"
@@ -15,12 +15,18 @@ export function UserProfilePage({ handle }: UserProfilePageProps) {
 
   if (isPending) {
     return (
-      <div
-        className="flex items-center justify-center py-24"
-        role="status"
-        aria-label="Đang tải hồ sơ"
-      >
-        <Spinner className="size-6" />
+      <div className="mx-auto w-full max-w-4xl">
+        <Skeleton className="h-[200px] w-full rounded-none" />
+        <div className="flex flex-col gap-3 px-4 pt-4 lg:px-6">
+          <Skeleton className="size-24 rounded-full" />
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-56" />
+          <div className="grid grid-cols-3 gap-2">
+            <Skeleton className="h-16" />
+            <Skeleton className="h-16" />
+            <Skeleton className="h-16" />
+          </div>
+        </div>
       </div>
     )
   }

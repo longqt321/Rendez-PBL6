@@ -1,5 +1,6 @@
 import { Link } from "react-router"
 import { CameraIcon } from "lucide-react"
+import { Card } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SeedImage } from "@/components/shared/seed-image"
@@ -54,14 +55,16 @@ export function ProfilePostGrid({
         <li key={post.id}>
           <Link
             to={`/post/${post.id}`}
-            className="block overflow-hidden rounded-surface border border-border bg-card shadow-(--shadow-soft) transition-transform hover:-translate-y-0.5"
+            className="block transition-transform hover:-translate-y-0.5"
           >
-            <SeedImage
-              seed={post.imageSeed}
-              height={post.imageHeight}
-              alt={`Ảnh bài đăng: ${post.caption.slice(0, 60)}`}
-            />
-            <p className="line-clamp-2 px-2.5 py-2 text-xs leading-snug">{post.caption}</p>
+            <Card size="sm" className="gap-0 py-0">
+              <SeedImage
+                seed={post.imageSeed}
+                height={post.imageHeight}
+                alt={`Ảnh bài đăng: ${post.caption.slice(0, 60)}`}
+              />
+              <p className="line-clamp-2 px-2.5 py-2 text-xs leading-snug">{post.caption}</p>
+            </Card>
           </Link>
         </li>
       ))}
