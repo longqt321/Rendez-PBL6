@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
+import { useRooms } from "@/features/rooms/hooks/use-rooms"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
 import { cn } from "@/lib/utils"
 import { FILTER_SHARED_PATHS, NAV_ITEMS, type NavItem } from "./nav-items"
@@ -150,6 +151,15 @@ function SkinSwitch() {
 
 function TopBar() {
   const { draft, setDraft, submit } = useSearchQuerySync()
+  const { activeCode, getRoom } = useRooms()
+  const location = useLocation()
+  const room = activeCode ? getRoom(activeCode) : undefined
+  /**
+   * Đang trong phòng lọc nhóm trên trang lọc: kết quả do `RoomFilter` của phòng
+   * quyết định nên tìm kiếm cá nhân không có tác dụng — ẩn ô tìm kiếm, đồng bộ
+   * với việc ẩn chips quận + popover Lọc trong `DiscoverToolbar`.
+   */
+  const isSearchBlocked = room !== undefined && FILTER_SHARED_PATHS.includes(location.pathname)
 
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -158,28 +168,34 @@ function TopBar() {
           <Brand />
         </div>
 
-        <form
-          role="search"
-          className="ml-auto w-full max-w-lg lg:ml-0 lg:max-w-xl"
-          onSubmit={(event) => {
-            event.preventDefault()
-            submit()
-          }}
-        >
-          <InputGroup className="h-10">
-            <InputGroupAddon>
-              <SearchIcon />
-            </InputGroupAddon>
-            <InputGroupInput
-              type="search"
-              name="q"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="Tìm quán ăn, địa điểm, bài viết…"
-              aria-label="Tìm kiếm"
-            />
-          </InputGroup>
-        </form>
+        {isSearchBlocked ? (
+          <p className="ml-auto text-xs text-muted-foreground">
+            Đang lọc theo phòng — tìm kiếm cá nhân tạm tắt
+          </p>
+        ) : (
+          <form
+            role="search"
+            className="ml-auto w-full max-w-lg lg:ml-0 lg:max-w-xl"
+            onSubmit={(event) => {
+              event.preventDefault()
+              submit()
+            }}
+          >
+            <InputGroup className="h-10">
+              <InputGroupAddon>
+                <SearchIcon />
+              </InputGroupAddon>
+              <InputGroupInput
+                type="search"
+                name="q"
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="Tìm quán ăn, địa điểm, bài viết…"
+                aria-label="Tìm kiếm"
+              />
+            </InputGroup>
+          </form>
+        )}
 
         <div className="ml-auto flex items-center gap-2">
           <UserMenu />

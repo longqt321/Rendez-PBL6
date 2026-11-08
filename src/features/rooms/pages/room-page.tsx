@@ -41,6 +41,20 @@ export function RoomPage() {
   } = useRooms()
   const room = getRoom(code)
 
+  /** Tham gia bằng tên nhập tay — báo đúng nguyên nhân khi không vào được. */
+  function handleJoin() {
+    const status = joinRoom(code, joinName)
+    if (status === "duplicate") {
+      toast.error("Tên này đã có người dùng trong phòng — chọn tên khác")
+      return
+    }
+    if (status === "not-found") {
+      toast.error("Không tìm thấy phòng này")
+      return
+    }
+    toast.success("Đã vào phòng — kết quả lọc dùng chung")
+  }
+
   if (!room) {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-8">
@@ -71,6 +85,7 @@ export function RoomPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-8">
+      <h1 className="sr-only">Phòng lọc nhóm {room.name}</h1>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -136,21 +151,11 @@ export function RoomPage() {
                   value={joinName}
                   onChange={(event) => setJoinName(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter" && joinName.trim()) {
-                      joinRoom(room.code, joinName)
-                      toast.success("Đã vào phòng — kết quả lọc dùng chung")
-                    }
+                    if (event.key === "Enter" && joinName.trim()) handleJoin()
                   }}
                   aria-label="Tên hiển thị của bạn"
                 />
-                <Button
-                  size="sm"
-                  disabled={!joinName.trim()}
-                  onClick={() => {
-                    joinRoom(room.code, joinName)
-                    toast.success("Đã vào phòng — kết quả lọc dùng chung")
-                  }}
-                >
+                <Button size="sm" disabled={!joinName.trim()} onClick={handleJoin}>
                   <UsersIcon aria-hidden="true" />
                   Tham gia
                 </Button>

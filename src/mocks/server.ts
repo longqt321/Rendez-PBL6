@@ -175,9 +175,11 @@ function listPublishedPlaces(params: {
       const haystack = normalizeText(
         [place.name, place.address, place.city, place.district ?? "", ...place.tags].join(" "),
       )
+      // Nhiều từ khoá include = phải có ĐỦ (AND) — "muốn có hải sản" + "muốn có
+      // bình dân" nghĩa là cả hai, không phải một trong hai.
       if (
         includeKeywords.length > 0 &&
-        !includeKeywords.some((keyword) => haystack.includes(keyword))
+        !includeKeywords.every((keyword) => haystack.includes(keyword))
       ) {
         return false
       }
@@ -470,6 +472,16 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
   const existing = db.reviews.find(
     (review) => review.placeId === placeId && review.author.id === CURRENT_USER.id,
   )
+  // Điểm trung bình là aggregate tăng dần (như backend thật với dữ liệu lớn):
+  // tạo mới → cộng vào trung bình có trọng số; ghi đè → trừ điểm cũ cộng điểm mới.
+  if (existing) {
+    place.rating = (place.rating * place.reviewCount - existing.rating + rating) / place.reviewCount
+  } else {
+    place.rating = (place.rating * place.reviewCount + rating) / (place.reviewCount + 1)
+    place.reviewCount += 1
+  }
+  // Hiển thị 1 chữ số thập phân (khớp `formatRating`).
+  place.rating = Math.round(place.rating * 10) / 10
   if (existing) {
     existing.rating = rating
     existing.content = content

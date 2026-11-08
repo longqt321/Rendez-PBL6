@@ -14,6 +14,7 @@ import {
 export function NotFoundPage() {
   return (
     <div className="flex min-h-[60dvh] items-center justify-center px-4 py-10">
+      <h1 className="sr-only">Không tìm thấy trang</h1>
       <Empty className="max-w-md">
         <EmptyHeader>
           <EmptyMedia variant="icon">

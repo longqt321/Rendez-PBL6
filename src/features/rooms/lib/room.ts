@@ -49,20 +49,33 @@ export function createRoom(name: string, code: string): Room {
   }
 }
 
+/**
+ * Id thành viên suy từ mã phòng + tên — cố định cho cùng một cặp (phòng, tên).
+ *
+ * Nhờ đó hook không cần đọc lại state sau khi ghi để lấy id (tránh race giữa
+ * các tab ghi localStorage): id tính được ngay trước khi ghi.
+ */
+export function memberIdFor(code: string, displayName: string): string {
+  return `member-${code}-${displayName.trim().toLowerCase()}`
+}
+
+/** Kết quả tham gia phòng. */
+export type JoinRoomResult = { status: "joined"; room: Room } | { status: "duplicate" }
+
 /** Thêm thành viên mới vào phòng (mock: tham gia bằng tên hiển thị). */
-export function joinRoom(room: Room, displayName: string): Room {
+export function joinRoom(room: Room, displayName: string, memberId: string): JoinRoomResult {
   const name = displayName.trim()
-  if (!name) return room
+  if (!name) return { status: "duplicate" }
   if (room.members.some((member) => member.displayName.toLowerCase() === name.toLowerCase())) {
-    return room
+    return { status: "duplicate" }
   }
   const member = {
-    id: crypto.randomUUID(),
+    id: memberId,
     displayName: name,
     isMe: false,
     joinedAt: new Date().toISOString(),
   }
-  return { ...room, members: [...room.members, member] }
+  return { status: "joined", room: { ...room, members: [...room.members, member] } }
 }
 
 /** Thêm đề xuất mới (mặc định trạng thái `open`). */

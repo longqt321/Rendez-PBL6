@@ -59,6 +59,7 @@ function SearchResults({ query }: { query: string }) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+      <h1 className="sr-only">Kết quả tìm kiếm</h1>
       <p className="text-sm text-muted-foreground">
         Kết quả cho <span className="font-semibold text-foreground">“{query}”</span>
       </p>

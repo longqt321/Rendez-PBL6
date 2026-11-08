@@ -13,14 +13,15 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { MAX_MEMBER_NAME_LENGTH, MAX_ROOM_NAME_LENGTH, ROOM_CODE_LENGTH } from "@/lib/constants"
+import type { JoinRoomStatus } from "../hooks/use-rooms"
 
 interface RoomJoinDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   /** Tạo phòng mới; trả về mã phòng vừa tạo. */
   onCreate: (name: string) => string
-  /** Tham gia phòng theo mã; trả `undefined` nếu mã không tồn tại. */
-  onJoin: (code: string, displayName: string) => string | undefined
+  /** Tham gia phòng theo mã; trả trạng thái để hiện toast đúng nguyên nhân. */
+  onJoin: (code: string, displayName: string) => JoinRoomStatus
 }
 
 /**
@@ -41,12 +42,16 @@ export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoi
   }
 
   function handleJoin() {
-    const joined = onJoin(code.trim().toUpperCase(), displayName)
-    if (!joined) {
+    const status = onJoin(code.trim().toUpperCase(), displayName)
+    if (status === "not-found") {
       toast.error("Không tìm thấy phòng với mã này")
       return
     }
-    toast.success(`Đã vào phòng ${joined}`)
+    if (status === "duplicate") {
+      toast.error("Tên này đã có người dùng trong phòng — chọn tên khác")
+      return
+    }
+    toast.success(`Đã vào phòng ${code.trim().toUpperCase()}`)
     onOpenChange(false)
   }
 

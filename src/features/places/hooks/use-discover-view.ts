@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { useUserLocation } from "@/hooks/use-user-location"
-import { useRooms } from "@/features/rooms/hooks/use-rooms"
+import { useRooms, type JoinRoomStatus } from "@/features/rooms/hooks/use-rooms"
 import type { Room } from "@/features/rooms/types/room"
 import { calculateDistanceKm } from "../lib/danang-districts"
 import type { Place } from "../types/place"
@@ -14,7 +14,7 @@ export interface DiscoverView {
   /** Tạo phòng và trả về mã phòng (dùng cho dialog mời). */
   createRoom: (name: string) => string
   /** Vào phòng theo mã; trả về mã nếu thành công. */
-  joinRoom: (code: string, displayName: string) => string | undefined
+  joinRoom: (code: string, displayName: string) => JoinRoomStatus
   leaveRoom: () => void
   coordinates: { lat: number; lng: number } | null
   isLocating: boolean
@@ -110,7 +110,7 @@ export function useDiscoverView(): DiscoverView {
     filters,
     room,
     createRoom: (name) => createRoom(name).code,
-    joinRoom: (code, displayName) => joinRoom(code, displayName || "Khách")?.code,
+    joinRoom: (code, displayName) => joinRoom(code, displayName || "Khách"),
     leaveRoom: () => {
       if (room) leaveRoom(room.code)
     },

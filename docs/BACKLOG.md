@@ -267,19 +267,12 @@ Còn lại, cập nhật sau đợt chuẩn hoá thứ hai (2026-11-08):
       giữa các thiết bị thật bắt buộc WebSocket/Supabase Realtime. Đợt này chỉ demo các tab cùng
       1 trình duyệt qua BroadcastChannel + localStorage.
 
-## Phát hiện 2026-11-09 (rà soát sâu đợt 3)
+## Phát hiện 2026-11-09 (rà soát sâu đợt 3) — đã xử lý
 
-- [ ] **Thiếu `<h1>` ở hầu hết trang** — chỉ `place-detail`, `profile-header`, `collection-detail`
-      có; `/discover`, `/map`, `/social`, `/search`, `/saved`, `/notification`, `/settings`,
-      `/rooms/:code`, `/not-found` không có. Cần quyết định kiểu tiêu đề (ẩn thị giác hay hiện)
-      trước khi thêm, tránh đổi thiết kế.
-- [ ] **Điểm đánh giá địa điểm không tính lại sau khi gửi review** — `upsertReview` trong
-      `mocks/server.ts` chỉ ghi `db.reviews`, không cập nhật `place.rating`/`reviewCount`; trang
-      chi tiết vẫn hiện số cũ đến khi backend thật tính.
-- [ ] **Ô tìm kiếm topbar khi đang trong phòng** — gõ không có tác dụng (kết quả do phòng quyết
-      định), bấm Enter lại sang `/search` không kèm bộ lọc phòng. Cần chọn: ẩn ô tìm kiếm khi ở
-      trong phòng, hay hiện gợi ý "đang lọc theo phòng".
-- [ ] **Nhiều từ khoá include đang là OR** — nhóm thêm "hải sản" + "bình dân" sẽ ra quán khớp
-      một trong hai. Nếu muốn AND thì đổi `some` → `every` trong `listPublishedPlaces`.
-- [ ] **Trùng tên khi tham gia phòng** — `joinRoom` coi tên đã tồn tại là cùng người (không tạo
-      thành viên mới). Với demo 1 máy là chấp nhận được; backend thật cần danh tính riêng.
+Cả 6 mục đã xử lý trong D-036 (thiếu `<h1>`, rating không tính lại, ô tìm kiếm topbar khi trong
+phòng, nhiều từ khoá include OR, trùng tên khi tham gia, race 2 tab join cùng lúc). Ghi lại để tra
+lịch sử; không còn việc mở ở đây.
+
+- [ ] **Điểm đánh giá hiển thị chưa thấy đổi trực quan khi test** — fixture `reviewCount` rất lớn
+      (1120–5210) nên 1 review mới chỉ đổi điểm ở chữ số thứ 2; aggregate đã đúng nhưng cần dữ
+      liệu nhỏ hơn để kiểm chứng bằng mắt. Không phải bug.

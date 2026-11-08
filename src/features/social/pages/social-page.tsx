@@ -17,6 +17,7 @@ export function SocialPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
+      <h1 className="sr-only">Cộng đồng — bài viết về Đà Nẵng</h1>
       <PostComposer />
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2">

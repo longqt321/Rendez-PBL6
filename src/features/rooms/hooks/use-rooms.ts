@@ -1,6 +1,9 @@
-import { useCallback, useState } from "react"
-import { useLocalStorage } from "@uidotdev/usehooks"
+import { useCallback } from "react"
+import { useLocalStorage, useSessionStorage } from "@uidotdev/usehooks"
 import type { Room } from "../types/room"
+
+/** Kết quả của `joinRoom` — UI đọc để hiện toast đúng nguyên nhân. */
+export type JoinRoomStatus = "joined" | "not-found" | "duplicate"
 import {
   addProposal,
   applyProposal,
@@ -9,6 +12,7 @@ import {
   generateRoomCode,
   joinRoom as joinRoomLib,
   leaveRoom as leaveRoomLib,
+  memberIdFor,
 } from "../lib/room"
 
 /** Toàn bộ phòng của máy này — key chia sẻ giữa các tab để demo "nhiều người". */
@@ -27,7 +31,11 @@ export interface UseRoomsResult {
   myMemberId: string
   getRoom: (code: string) => Room | undefined
   createRoom: (name: string) => Room
-  joinRoom: (code: string, displayName: string) => Room | undefined
+  /**
+   * Tham gia phòng. Trả `"duplicate"` khi tên đã có người dùng trong phòng,
+   * `"not-found"` khi mã sai — UI hiện toast tương ứng.
+   */
+  joinRoom: (code: string, displayName: string) => JoinRoomStatus
   /** Thêm đề xuất cho thành viên hiện tại. */
   addMyProposal: (
     code: string,
@@ -56,27 +64,17 @@ export function useRooms(): UseRoomsResult {
    * Phòng đang mở là trạng thái **của từng tab** (sessionStorage), không phải của
    * máy: dữ liệu phòng chia sẻ qua localStorage, nhưng mỗi tab là một người nên
    * tab mới mở link vẫn phải tham gia bằng tên trước khi thấy kết quả chung.
+   *
+   * `useSessionStorage` dùng `useSyncExternalStore` nên MỌI component gọi
+   * `useRooms()` trong cùng tab thấy cùng một giá trị — TopBar ẩn ô tìm kiếm
+   * ngay khi DiscoverToolbar tạo phòng.
    */
-  const [activeCode, setActiveCodeState] = useState<string>(
-    () => sessionStorage.getItem(ACTIVE_ROOM_KEY) ?? "",
-  )
-
-  const setActiveCode = useCallback((code: string) => {
-    sessionStorage.setItem(ACTIVE_ROOM_KEY, code)
-    setActiveCodeState(code)
-  }, [])
+  const [activeCode, setActiveCode] = useSessionStorage<string>(ACTIVE_ROOM_KEY, "")
   /**
    * Danh tính của tab này: `sessionStorage` tách riêng từng tab nên mở 2 tab là
    * 2 thành viên khác nhau — đúng kịch bản demo "nhóm bạn cùng lọc".
    */
-  const [myMemberId, setMyMemberId] = useState<string>(
-    () => sessionStorage.getItem(MY_MEMBER_KEY) ?? "u-me",
-  )
-
-  const rememberMember = useCallback((memberId: string) => {
-    sessionStorage.setItem(MY_MEMBER_KEY, memberId)
-    setMyMemberId(memberId)
-  }, [])
+  const [myMemberId, setMyMemberId] = useSessionStorage<string>(MY_MEMBER_KEY, "u-me")
 
   const updateRoom = useCallback(
     (code: string, updater: (room: Room) => Room) => {
@@ -95,28 +93,28 @@ export function useRooms(): UseRoomsResult {
       const room = buildRoom(name, code)
       setRooms((prev) => ({ ...prev, [code]: room }))
       setActiveCode(code)
-      // Người tạo phòng luôn là ME trong mock — tab mới tham gia bằng tên riêng.
-      rememberMember("u-me")
+      setMyMemberId("u-me")
       return room
     },
-    [setRooms, setActiveCode, rememberMember],
+    [setRooms, setActiveCode, setMyMemberId],
   )
 
   const joinRoom = useCallback(
-    (code: string, displayName: string): Room | undefined => {
+    (code: string, displayName: string): JoinRoomStatus => {
       const room = rooms[code]
-      if (!room) return undefined
-      const joined = joinRoomLib(room, displayName)
-      setRooms((prev) => ({ ...prev, [code]: joined }))
+      if (!room) return "not-found"
+      // Id thành viên suy từ (phòng, tên) — tính trước khi ghi nên không phụ
+      // thuộc việc đọc lại state (an toàn khi 2 tab ghi gần như cùng lúc).
+      const memberId = memberIdFor(code, displayName)
+      const result = joinRoomLib(room, displayName, memberId)
+      if (result.status === "duplicate") return "duplicate"
+      setRooms((prev) => ({ ...prev, [code]: result.room }))
       setActiveCode(code)
       // Ghi nhớ danh tính của tab này theo tên vừa tham gia.
-      const member = joined.members.find(
-        (candidate) => candidate.displayName.toLowerCase() === displayName.trim().toLowerCase(),
-      )
-      if (member) rememberMember(member.id)
-      return joined
+      setMyMemberId(memberId)
+      return "joined"
     },
-    [rooms, setRooms, setActiveCode, rememberMember],
+    [rooms, setRooms, setActiveCode, setMyMemberId],
   )
 
   const getRoom = useCallback((code: string) => rooms[code], [rooms])

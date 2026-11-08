@@ -161,6 +161,7 @@ export function NotificationPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
+      <h1 className="sr-only">Thông báo</h1>
       <header className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">
           {unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : "Bạn đã đọc hết thông báo."}

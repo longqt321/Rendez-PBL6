@@ -1775,3 +1775,38 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 - Ghi BACKLOG các mục cần quyết định sản phẩm: thiếu `<h1>` ở hầu hết trang, điểm đánh giá địa
   điểm không tính lại sau khi gửi review, ô tìm kiếm topbar khi đang trong phòng, ngữ nghĩa
   nhiều từ khoá include (OR hiện tại).
+
+## D-036 — Xử lý 6 mục BACKLOG đợt rà soát 3 theo chuẩn dự án
+
+### Quyết định
+
+- **Thiếu `<h1>`**: thêm `<h1 className="sr-only">` cho 10 trang (`/discover`, `/map`, `/social`,
+  `/search`, `/saved`, `/notification`, `/settings`, `/rooms/:code`, `/not-found`,
+  `/post/:id`). Chọn ẩn thị giác để không đổi thiết kế — tiêu đề hiện hữu đã có ở header trang.
+- **Rating sau review**: server tính aggregate khi `upsertReview` — tạo mới
+  `(rating*count + new)/(count+1)`, ghi đè `(rating*count - old + new)/count`, `reviewCount`
+  tương ứng, làm tròn 1 chữ số. `use-upsert-review` invalidate `["places"]` (prefix) để cả thẻ
+  discover cập nhật.
+- **Ô tìm kiếm topbar khi trong phòng**: ẩn ô tìm kiếm trên các path chia sẻ bộ lọc phòng
+  (`FILTER_SHARED_PATHS` = NAV_ITEMS có `sharesFilters`), thay bằng ghi chú "Đang lọc theo phòng —
+  tìm kiếm cá nhân tạm tắt". Lý do: kết quả do phòng quyết định, gõ vào ô chỉ gây hiểu nhầm.
+- **Nhiều từ khoá include = AND**: `some` → `every` trong `listPublishedPlaces`. Nhóm đề xuất
+  nhiều từ khoá là ràng buộc đồng thời, không phải "một trong hai".
+- **Trùng tên khi tham gia**: `joinRoom` báo lỗi thay vì coi là cùng người — toast "Tên này đã có
+  người dùng trong phòng — chọn tên khác" (cả dialog `/discover` và trang `/rooms/:code`).
+- **Race 2 tab join cùng lúc**: `memberIdFor(code, displayName)` sinh id cố định từ (phòng, tên)
+  — tính trước khi ghi, không đọc lại state, nên 2 tab join gần như đồng thời vẫn tạo đúng 2
+  thành viên.
+- **Refactor `useRooms`**: `activeCode` + `myMemberId` chuyển từ `useState` + sessionStorage thủ
+  công sang `useSessionStorage` của `@uidotdev/usehooks` (`useSyncExternalStore`) — mọi component
+  gọi `useRooms()` trong cùng tab thấy cùng giá trị tức thì (trước đó TopBar có state riêng nên
+  không ẩn được ô tìm kiếm).
+- **JoinRoomStatus**: hook trả `"joined" | "not-found" | "duplicate"` — UI hiện toast đúng nguyên
+  nhân; fix luôn bug cũ in `[object Object]` (toast nhận Room thay vì mã phòng).
+
+### Bằng chứng
+
+- `bun run typecheck` / `lint` / `build` / `prettier --check` — exit 0.
+- CDP: `room-flow` (2 tab join + đề xuất), `room-leave-check` (memberId deterministic), `room-ux`
+  (ẩn tìm kiếm + trùng tên bị chặn, thành viên vẫn 1), `review-rating-check` (2→3 review),
+  `map-flow` (giữ filter khi đổi tab), `mobile-360-check` (không tràn 360px) — 0 exception.

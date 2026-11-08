@@ -21,7 +21,9 @@ export function useUpsertReview(placeId: string) {
       })
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ["places", placeId, "reviews"] })
+      // Prefix `["places"]` làm mới cả trang chi tiết lẫn danh sách discover
+      // (thẻ quán hiện điểm đánh giá) — một nguồn dữ liệu, cùng cập nhật.
+      void queryClient.invalidateQueries({ queryKey: ["places"] })
     },
   })
 }
