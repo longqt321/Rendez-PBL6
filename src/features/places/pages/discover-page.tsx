@@ -12,10 +12,14 @@ import { Alert, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Field, FieldLabel, FieldTitle } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Spinner } from "@/components/ui/spinner"
+import { Toggle } from "@/components/ui/toggle"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { useUserLocation } from "@/hooks/use-user-location"
 import { CATEGORY_META } from "../lib/category-meta"
@@ -41,13 +45,18 @@ export function DiscoverPage() {
   const [category, setCategory] = useState<PlaceCategory | "all">("all")
   const [district, setDistrict] = useState<string | "all">("all")
   const [query, setQuery] = useState("")
+  /** Gõ tới đâu gọi API tới đó sẽ bắn một request mỗi ký tự — chờ 300ms mới lọc. */
+  const debouncedQuery = useDebouncedValue(query, 300)
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid")
   const [isNearbyActive, setIsNearbyActive] = useState(false)
 
   const { coordinates, isLocating, locationError, requestLocation, clearLocation, locationGate } =
     useUserLocation()
 
-  const filters = useMemo(() => ({ category, district, query }), [category, district, query])
+  const filters = useMemo(
+    () => ({ category, district, query: debouncedQuery }),
+    [category, district, debouncedQuery],
+  )
   const { data, isPending, isError, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useDiscoverPlaces(filters)
 
@@ -126,25 +135,33 @@ export function DiscoverPage() {
         <span className="mr-1 text-xs font-semibold whitespace-nowrap text-muted-foreground">
           Quận:
         </span>
-        <Button
+        <ToggleGroup
+          value={[district]}
+          onValueChange={(next) => {
+            const selected = next[0]
+            if (selected) setDistrict(selected)
+          }}
+          variant="outline"
           size="sm"
-          variant={district === "all" ? "default" : "outline"}
-          className="h-7 shrink-0 rounded-full px-3 text-xs"
-          onClick={() => setDistrict("all")}
+          aria-label="Lọc theo quận"
+          className="w-max shrink-0"
         >
-          Tất cả quận
-        </Button>
-        {DANANG_DISTRICTS.map((d) => (
-          <Button
-            key={d}
-            size="sm"
-            variant={district === d ? "default" : "outline"}
-            className="h-7 shrink-0 rounded-full px-3 text-xs"
-            onClick={() => setDistrict(d)}
+          <ToggleGroupItem
+            value="all"
+            className="h-7 shrink-0 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
           >
-            {d}
-          </Button>
-        ))}
+            Tất cả quận
+          </ToggleGroupItem>
+          {DANANG_DISTRICTS.map((d) => (
+            <ToggleGroupItem
+              key={d}
+              value={d}
+              className="h-7 shrink-0 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+            >
+              {d}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
 
       {/* =========================================================================
@@ -163,47 +180,54 @@ export function DiscoverPage() {
           </PopoverTrigger>
           <PopoverContent align="start" className="w-80">
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="discover-filter"
-                className="text-sm font-semibold text-muted-foreground"
-              >
-                Từ khoá
-              </label>
-              <InputGroup>
-                <InputGroupAddon>
-                  <ListFilterIcon />
-                </InputGroupAddon>
-                <InputGroupInput
-                  id="discover-filter"
-                  type="search"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Tên quán, món ăn, đường phố…"
-                  aria-label="Lọc theo từ khoá"
-                />
-              </InputGroup>
+              <Field>
+                <FieldLabel
+                  htmlFor="discover-filter"
+                  className="text-sm font-semibold text-muted-foreground"
+                >
+                  Từ khoá
+                </FieldLabel>
+                <InputGroup>
+                  <InputGroupAddon>
+                    <ListFilterIcon />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="discover-filter"
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Tên quán, món ăn, đường phố…"
+                    aria-label="Lọc theo từ khoá"
+                  />
+                </InputGroup>
+              </Field>
             </div>
 
             <div className="flex flex-col gap-2 pt-2">
-              <span className="text-sm font-semibold text-muted-foreground">Loại hình</span>
-              <div
-                role="group"
+              <FieldTitle className="text-sm font-semibold text-muted-foreground">
+                Loại hình
+              </FieldTitle>
+              <ToggleGroup
+                value={[category]}
+                onValueChange={(next) => {
+                  const selected = next[0] as PlaceCategory | "all" | undefined
+                  if (selected) setCategory(selected)
+                }}
+                variant="outline"
+                size="sm"
                 aria-label="Lọc theo loại hình"
-                className="flex flex-wrap items-center gap-1.5"
+                className="flex-wrap"
               >
                 {CATEGORY_TABS.map((tab) => (
-                  <Button
+                  <ToggleGroupItem
                     key={tab.value}
-                    size="sm"
-                    className="h-7 text-xs"
-                    variant={category === tab.value ? "default" : "outline"}
-                    aria-pressed={category === tab.value}
-                    onClick={() => setCategory(tab.value)}
+                    value={tab.value}
+                    className="h-7 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
                   >
                     {tab.label}
-                  </Button>
+                  </ToggleGroupItem>
                 ))}
-              </div>
+              </ToggleGroup>
             </div>
 
             {activeFilterCount > 0 ? (
@@ -220,26 +244,32 @@ export function DiscoverPage() {
         </Popover>
 
         {/* Nút bật chế độ "Gần đây" */}
-        <Button
-          size="sm"
-          variant={isNearbyActive ? "default" : "outline"}
-          className="h-8 gap-1.5 text-xs"
-          onClick={handleToggleNearby}
-          disabled={isLocating}
-          title="Tìm quán gần vị trí hiện tại của bạn"
-        >
-          {isLocating ? (
-            <Spinner className="size-3.5" />
-          ) : isNearbyActive ? (
-            <LocateFixedIcon className="size-3.5 text-primary-foreground" />
-          ) : (
-            <NavigationIcon className="size-3.5 text-primary" />
-          )}
-          Gần đây
-          {isNearbyActive && coordinates ? (
-            <span className="size-1.5 animate-ping rounded-full bg-primary"></span>
-          ) : null}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Toggle
+                size="sm"
+                pressed={isNearbyActive}
+                onPressedChange={handleToggleNearby}
+                disabled={isLocating}
+                className="h-8 gap-1.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+              />
+            }
+          >
+            {isLocating ? (
+              <Spinner className="size-3.5" />
+            ) : isNearbyActive ? (
+              <LocateFixedIcon className="size-3.5" />
+            ) : (
+              <NavigationIcon className="size-3.5 text-primary" />
+            )}
+            Gần đây
+            {isNearbyActive && coordinates ? (
+              <span className="size-1.5 animate-ping rounded-full bg-primary"></span>
+            ) : null}
+          </TooltipTrigger>
+          <TooltipContent>Tìm quán gần vị trí hiện tại của bạn</TooltipContent>
+        </Tooltip>
 
         <Badge variant="outline" className="h-6 px-2 text-xs font-normal text-muted-foreground">
           {sortedPlaces.length} địa điểm tại Đà Nẵng

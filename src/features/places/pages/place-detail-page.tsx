@@ -11,7 +11,9 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Item, ItemActions, ItemContent, ItemGroup, ItemMedia } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SeedImage } from "@/components/shared/seed-image"
@@ -50,11 +52,7 @@ export function PlaceDetailPage() {
 
   if (isPending) {
     return (
-      <div
-        className="flex items-center justify-center py-24"
-        role="status"
-        aria-label="Đang tải địa điểm"
-      >
+      <div className="flex items-center justify-center py-24">
         <Spinner className="size-6" />
       </div>
     )
@@ -90,15 +88,15 @@ export function PlaceDetailPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="mt-4 overflow-hidden rounded-surface border border-border bg-card shadow-(--shadow-soft)">
+      <Card className="mt-4 gap-0 p-0">
         <SeedImage
           seed={place.imageSeed}
           height={280}
-          className="w-full"
+          className="w-full rounded-t-xl"
           alt={`Ảnh minh hoạ ${place.name}`}
         />
 
-        <div className="flex flex-col gap-2 p-4">
+        <CardContent className="flex flex-col gap-2 p-4">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-heading text-xl font-bold tracking-tight">{place.name}</h1>
             <Badge variant="secondary">{categoryLabel(place.category)}</Badge>
@@ -142,8 +140,8 @@ export function PlaceDetailPage() {
               </Button>
             </CheckInDialog>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="reviews" className="mt-6">
         <TabsList>
@@ -157,7 +155,7 @@ export function PlaceDetailPage() {
         <TabsContent value="reviews" className="mt-4">
           <div className="flex flex-col gap-4">
             {reviewFormVisible ? (
-              <section className="rounded-md border bg-card p-4" aria-label="Form đánh giá">
+              <Card className="p-4" role="region" aria-label="Form đánh giá">
                 <ReviewForm
                   key={editingReview?.id ?? "new"}
                   placeId={placeId}
@@ -165,16 +163,20 @@ export function PlaceDetailPage() {
                   authorInitials={me?.initials ?? "Tôi"}
                   onDone={closeReviewForm}
                 />
-              </section>
+              </Card>
             ) : myReview ? (
-              <div className="flex items-center justify-between gap-3 rounded-md border bg-card p-4">
-                <p className="text-sm text-muted-foreground">
-                  Bạn đã đánh giá {myReview.rating}/5 sao cho địa điểm này.
-                </p>
-                <Button variant="outline" size="sm" onClick={() => setEditingReview(myReview)}>
-                  Sửa đánh giá
-                </Button>
-              </div>
+              <Item variant="outline" className="justify-between gap-3 p-4">
+                <ItemContent>
+                  <p className="text-sm text-muted-foreground">
+                    Bạn đã đánh giá {myReview.rating}/5 sao cho địa điểm này.
+                  </p>
+                </ItemContent>
+                <ItemActions>
+                  <Button variant="outline" size="sm" onClick={() => setEditingReview(myReview)}>
+                    Sửa đánh giá
+                  </Button>
+                </ItemActions>
+              </Item>
             ) : (
               <Button className="self-start" onClick={() => setShowReviewForm(true)}>
                 <StarIcon />
@@ -185,16 +187,15 @@ export function PlaceDetailPage() {
             {reviewsPending ? (
               <p className="py-8 text-center text-sm text-muted-foreground">Đang tải đánh giá…</p>
             ) : reviews && reviews.length > 0 ? (
-              <ul className="flex flex-col gap-3">
+              <ItemGroup className="gap-3">
                 {reviews.map((review) => (
-                  <li key={review.id}>
-                    <ReviewItem
-                      review={review}
-                      onEdit={review.isMine ? setEditingReview : undefined}
-                    />
-                  </li>
+                  <ReviewItem
+                    key={review.id}
+                    review={review}
+                    onEdit={review.isMine ? setEditingReview : undefined}
+                  />
                 ))}
-              </ul>
+              </ItemGroup>
             ) : (
               <Empty className="mt-2">
                 <EmptyHeader>
@@ -219,29 +220,26 @@ export function PlaceDetailPage() {
               </EmptyHeader>
             </Empty>
           ) : (
-            <ul className="flex flex-col gap-3">
+            <ItemGroup className="gap-3">
               {posts.map((post) => (
-                <li key={post.id}>
-                  <Link
-                    to={`/post/${post.id}`}
-                    className="flex items-start gap-3 rounded-surface border border-border/15 p-3 transition-colors hover:bg-muted"
-                  >
-                    <SeedImage
-                      seed={post.imageSeed}
-                      height={120}
-                      className="w-20 shrink-0 rounded-thumb"
-                      alt=""
-                    />
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">
-                        {post.author.name} · {post.commentCount} bình luận · {post.likeCount} thích
-                      </p>
-                      <p className="mt-1 line-clamp-3 text-sm leading-snug">{post.caption}</p>
-                    </div>
-                  </Link>
-                </li>
+                <Item
+                  key={post.id}
+                  variant="outline"
+                  render={<Link to={`/post/${post.id}`} />}
+                  className="items-start gap-3 rounded-surface p-3 hover:bg-muted"
+                >
+                  <ItemMedia className="w-20 shrink-0 overflow-hidden rounded-thumb">
+                    <SeedImage seed={post.imageSeed} height={120} className="w-full" alt="" />
+                  </ItemMedia>
+                  <ItemContent>
+                    <p className="text-xs text-muted-foreground">
+                      {post.author.name} · {post.commentCount} bình luận · {post.likeCount} thích
+                    </p>
+                    <p className="line-clamp-3 text-sm leading-snug">{post.caption}</p>
+                  </ItemContent>
+                </Item>
               ))}
-            </ul>
+            </ItemGroup>
           )}
         </TabsContent>
 

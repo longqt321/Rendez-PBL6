@@ -1,6 +1,7 @@
 import { MapPinIcon, NavigationIcon, StarIcon } from "lucide-react"
 import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import { SeedImage } from "@/components/shared/seed-image"
 import { formatCount, formatDistance, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
@@ -14,13 +15,13 @@ interface PlaceCardProps {
 
 export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-md border border-border bg-card shadow-(--shadow-soft) transition-shadow hover:shadow-(--shadow-raised)">
+    <Card className="group relative gap-0 p-0 shadow-(--shadow-soft) transition-shadow hover:shadow-(--shadow-raised)">
       {/* Chiều cao ảnh do server trả về (`imageHeight`) → lưới mobile có nhịp masonry. */}
       <SeedImage
         seed={place.imageSeed}
         height={place.imageHeight}
         alt={`Ảnh minh hoạ ${place.name}`}
-        className="w-full shrink-0"
+        className="w-full shrink-0 rounded-t-xl"
       >
         <div className="absolute top-2 left-2 flex flex-wrap gap-1">
           <Badge
@@ -45,7 +46,7 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
         </span>
       </SeedImage>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
+      <CardContent className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="font-heading text-base leading-tight font-bold">
           <Link
             to={`/discover/${place.id}`}
@@ -74,7 +75,7 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
             {priceLevelLabel(place.priceLevel)}
           </span>
         </div>
-      </div>
-    </article>
+      </CardContent>
+    </Card>
   )
 }

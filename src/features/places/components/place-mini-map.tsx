@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css"
 import { ExternalLinkIcon, MapPinIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { formatCoordinate } from "@/lib/format"
 import type { Place } from "../types/place"
 
@@ -11,14 +12,27 @@ interface PlaceMiniMapProps {
   place: Place
 }
 
+/**
+ * Pin của lucide `MapPin` dạng chuỗi SVG.
+ *
+ * Leaflet `divIcon` chỉ nhận chuỗi HTML nên không render JSX được ở đây; dựng
+ * chuỗi SVG thủ công (cùng cách `places-map.tsx` làm) thay vì kéo `react-dom/server`
+ * vào bundle trình duyệt. `currentColor` ăn theo `text-primary-foreground` của khung.
+ */
+const MAP_PIN_SVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+    stroke-linejoin="round" aria-hidden="true">
+    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+`
+
 function createDetailMarkerIcon() {
   const html = `
     <div class="relative flex items-center justify-center">
       <div class="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg ring-4 ring-primary/20 animate-bounce">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
+        ${MAP_PIN_SVG}
       </div>
     </div>
   `
@@ -37,10 +51,14 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
 
   if (!place.lat || !place.lng) {
     return (
-      <div className="flex h-56 w-full items-center justify-center rounded-lg border bg-muted text-sm text-muted-foreground">
-        <MapPinIcon className="mr-2 size-4" />
-        Chưa có tọa độ bản đồ cho địa điểm này
-      </div>
+      <Empty className="h-56 w-full flex-none border bg-muted">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <MapPinIcon />
+          </EmptyMedia>
+          <EmptyTitle>Chưa có tọa độ bản đồ cho địa điểm này</EmptyTitle>
+        </EmptyHeader>
+      </Empty>
     )
   }
 
@@ -68,17 +86,15 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
           <Marker position={position} icon={createDetailMarkerIcon()} />
         </MapContainer>
 
-        <a
-          href={googleMapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute right-3 bottom-3 z-[1000]"
+        <Button
+          size="sm"
+          variant="secondary"
+          className="absolute right-3 bottom-3 z-[1000] shadow-md backdrop-blur"
+          render={<a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" />}
         >
-          <Button size="sm" variant="secondary" className="shadow-md backdrop-blur">
-            <ExternalLinkIcon className="mr-1 size-3.5" />
-            Mở chỉ đường Google Maps
-          </Button>
-        </a>
+          <ExternalLinkIcon className="mr-1 size-3.5" />
+          Mở chỉ đường Google Maps
+        </Button>
       </div>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">

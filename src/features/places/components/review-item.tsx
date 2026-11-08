@@ -2,6 +2,7 @@ import { PencilIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Item } from "@/components/ui/item"
 import { formatRelativeTime } from "@/lib/format"
 import type { Review } from "../types/review"
 import { RatingStars } from "./rating-stars"
@@ -14,7 +15,12 @@ interface ReviewItemProps {
 /** Một đánh giá trong danh sách — chỉ hiển thị; nút sửa chỉ nhận khi `isMine`. */
 export function ReviewItem({ review, onEdit }: ReviewItemProps) {
   return (
-    <article className="flex flex-col gap-2 rounded-md border bg-card p-4">
+    <Item
+      variant="outline"
+      render={<article />}
+      role="listitem"
+      className="flex-col items-stretch gap-2 bg-card p-4"
+    >
       <header className="flex items-center gap-2">
         <Avatar size="lg">
           <AvatarFallback>{review.author.initials}</AvatarFallback>
@@ -37,6 +43,6 @@ export function ReviewItem({ review, onEdit }: ReviewItemProps) {
         </Badge>
       </div>
       <p className="text-sm whitespace-pre-line text-foreground">{review.content}</p>
-    </article>
+    </Item>
   )
 }

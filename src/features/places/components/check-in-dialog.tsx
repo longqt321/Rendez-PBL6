@@ -17,6 +17,9 @@ import { Spinner } from "@/components/ui/spinner"
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Textarea } from "@/components/ui/textarea"
 import { useCreatePost } from "@/features/social/hooks/use-create-post"
+import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item"
+import { MAX_CAPTION_LENGTH } from "@/lib/constants"
+import { formatNumber } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
 import { placePostsQueryKey } from "../hooks/use-place-posts"
 import type { Place } from "../types/place"
@@ -84,27 +87,35 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex items-center gap-2 rounded-md border bg-secondary px-3 py-2 text-sm">
-            <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />
-            <span className="flex-1 truncate font-semibold">{place.name}</span>
-            <Badge variant="outline" className="h-6 text-sm">
-              {categoryLabel(place.category)}
-            </Badge>
-          </div>
+          <Item variant="muted" size="sm" className="bg-secondary">
+            <ItemMedia variant="icon">
+              <MapPinIcon aria-hidden="true" />
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle className="font-semibold">{place.name}</ItemTitle>
+            </ItemContent>
+            <ItemActions>
+              <Badge variant="outline" className="h-6 text-sm">
+                {categoryLabel(place.category)}
+              </Badge>
+            </ItemActions>
+          </Item>
 
           <Field>
             <FieldLabel htmlFor="checkin-caption">Nội dung bài đăng</FieldLabel>
             <Textarea
               id="checkin-caption"
               value={caption}
-              onChange={(event) => setCaption(event.target.value.slice(0, 500))}
-              maxLength={500}
+              onChange={(event) => setCaption(event.target.value.slice(0, MAX_CAPTION_LENGTH))}
+              maxLength={MAX_CAPTION_LENGTH}
               rows={4}
               placeholder="Bạn vừa ăn gì ở đây? Không khí, giá cả, điểm đáng quay lại…"
               className="min-h-24 resize-none"
               autoFocus
             />
-            <FieldDescription>{caption.trim().length}/500 ký tự</FieldDescription>
+            <FieldDescription>
+              {formatNumber(caption.trim().length)}/{formatNumber(MAX_CAPTION_LENGTH)} ký tự
+            </FieldDescription>
           </Field>
 
           <DialogFooter>

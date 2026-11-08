@@ -68,7 +68,10 @@ function MapBoundsUpdater({
   return null
 }
 
-/** Tạo icon custom HTML cho Marker quán ăn */
+/**
+ * Tạo icon custom HTML cho Marker quán ăn.
+ * Leaflet `divIcon` chỉ nhận chuỗi HTML — không render JSX ở đây được.
+ */
 function createMarkerIcon(place: Place, isSelected: boolean, distanceKm?: number) {
   const priceIndicator = priceLevelLabel(place.priceLevel)
   const bgClass = isSelected
@@ -101,7 +104,7 @@ function createMarkerIcon(place: Place, isSelected: boolean, distanceKm?: number
   })
 }
 
-/** Marker hiển thị vị trí người dùng */
+/** Marker hiển thị vị trí người dùng — HTML chuỗi vì Leaflet `divIcon` yêu cầu. */
 function createUserLocationIcon() {
   const html = `
     <div class="relative flex items-center justify-center">
@@ -211,6 +214,7 @@ export function PlacesMap({
               }}
             >
               <Popup className="place-popup" closeButton={false}>
+                {/* Ngoại lệ có chủ đích: popup Leaflet tự quản khung/overflow nên dùng `div`, không bọc `Card` (ring + overflow-hidden phá layout popup). Xem docs/CONVENTIONS.md. */}
                 <div className="flex max-w-[260px] min-w-[220px] flex-col gap-2 p-1">
                   <div className="relative h-28 w-full overflow-hidden rounded-md bg-muted">
                     <SeedImage
