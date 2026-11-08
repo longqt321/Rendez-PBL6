@@ -253,3 +253,10 @@ Còn lại, cập nhật sau đợt chuẩn hoá thứ hai (2026-11-08):
 - [ ] **`scratch/size-parity.mjs` (D-017)** — script **không còn trong repo** (find → 0 kết quả).
       Nếu cần so sánh kích thước token cũ/mới, viết lại theo bộ token
       `--radius-surface/control/thumb` thay vì coi kết quả lệch là lỗi.
+
+## Bug phát hiện khi nghiên cứu đề xuất (2026-11-08)
+
+- [ ] **Placeholder trả lời bình luận hiển thị nguyên văn `@{replyTo.author.handle}`** — template
+      literal thiếu `$` tại `src/features/social/components/comment-composer.tsx:62-64`. Sửa 1 ký tự.
+- [ ] **Fixture thông báo hệ thống ghi "Khu vực Quận 1"** (`src/mocks/fixtures/notifications.ts:41`)
+      — Đà Nẵng không có Quận 1 (đó là TP.HCM). Sửa thành tên quận Đà Nẵng thực tế.
