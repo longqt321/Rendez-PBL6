@@ -1,7 +1,5 @@
 import {
-  BellIcon,
   BookmarkIcon,
-  CompassIcon,
   EyeIcon,
   HelpCircleIcon,
   LogOutIcon,
@@ -10,12 +8,12 @@ import {
   SearchIcon,
   SettingsIcon,
   UserIcon,
-  UsersIcon,
 } from "lucide-react"
-import { NavLink, Link } from "react-router"
+import { NavLink, Link, Outlet } from "react-router"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,20 +35,16 @@ import { cn } from "@/lib/utils"
 import { NAV_ITEMS } from "./nav-items"
 import { ThemeToggle } from "./theme-toggle"
 
-const ICON_MAP = {
-  "/discover": CompassIcon,
-  "/social": UsersIcon,
-  "/notification": BellIcon,
-} as const
-
 interface AppShellProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 /**
  * Layout global:
  * - PC: nav dọc bên trái, topbar (search + avatar) trên cùng.
  * - Mobile: topbar trên cùng, nav ngang cố định dưới cùng.
+ *
+ * Dùng làm layout route: không truyền `children` thì render `<Outlet />`.
  */
 export function AppShell({ children }: AppShellProps) {
   return (
@@ -59,7 +53,7 @@ export function AppShell({ children }: AppShellProps) {
       <div className="flex min-h-dvh flex-col lg:pl-56">
         <TopBar />
         {/* pb-20 chừa chỗ cho bottom nav trên mobile */}
-        <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+        <main className="flex-1 pb-20 lg:pb-0">{children ?? <Outlet />}</main>
       </div>
       <BottomNav />
     </div>
@@ -94,7 +88,7 @@ function SideNav() {
 
       <nav aria-label="Điều hướng chính" className="mt-8 flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
-          const Icon = ICON_MAP[item.to as keyof typeof ICON_MAP] ?? item.icon
+          const Icon = item.icon
           return (
             <NavLink
               key={item.to}
@@ -187,19 +181,20 @@ function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             aria-label="Mở menu người dùng"
-            className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <Avatar size="lg">
-              <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
-                MA
-              </AvatarFallback>
-            </Avatar>
-          </button>
+            className="size-10 rounded-full"
+          />
         }
-      />
+      >
+        <Avatar size="lg">
+          <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
+            MA
+          </AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuGroup>
           <DropdownMenuLabel>
@@ -275,7 +270,7 @@ function BottomNav() {
     >
       <ul className="mx-auto flex max-w-md items-stretch">
         {NAV_ITEMS.map((item) => {
-          const Icon = ICON_MAP[item.to as keyof typeof ICON_MAP] ?? item.icon
+          const Icon = item.icon
           return (
             <li key={item.to} className="flex-1">
               <NavLink
@@ -292,7 +287,10 @@ function BottomNav() {
                     <span className="relative">
                       <Icon className="size-5" aria-hidden="true" />
                       {item.to === "/notification" && unread > 0 ? (
-                        <span className="absolute -top-1 -right-1.5 size-2 rounded-full bg-primary ring-2 ring-background" />
+                        <span
+                          aria-hidden="true"
+                          className="absolute -top-1 -right-1.5 size-2 rounded-full bg-destructive ring-2 ring-background"
+                        />
                       ) : null}
                     </span>
                     <span>{item.label}</span>

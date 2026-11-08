@@ -14,114 +14,34 @@ import { SavedPage } from "@/features/saved/pages/saved-page"
 import { CollectionDetailPage } from "@/features/collections/pages/collection-detail-page"
 import { SettingsPage } from "@/features/settings/pages/settings-page"
 import { NotFoundPage } from "@/features/not-found/pages/not-found-page"
+import { RouteErrorPage } from "./route-error-page"
 
+/**
+ * `AppShell` là layout route duy nhất: mọi trang con render qua `<Outlet />`,
+ * lỗi ở bất kỳ route con nào được `errorElement` bắt lại.
+ */
 export const routes: RouteObject[] = [
   {
     path: "/",
     element: <Navigate to="/discover" replace />,
   },
   {
-    path: "/discover",
-    element: (
-      <AppShell>
-        <DiscoverPage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/social",
-    element: (
-      <AppShell>
-        <SocialPage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/post/:id",
-    element: (
-      <AppShell>
-        <PostDetailPage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/notification",
-    element: (
-      <AppShell>
-        <NotificationPage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/discover/:id",
-    element: (
-      <AppShell>
-        <PlaceDetailPage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/search",
-    element: (
-      <AppShell>
-        <SearchPage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/saved",
-    element: (
-      <AppShell>
-        <SavedPage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/collections/:id",
-    element: (
-      <AppShell>
-        <CollectionDetailPage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/profile",
-    element: (
-      <AppShell>
-        <ProfilePage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/u/:handle",
-    element: (
-      <AppShell>
-        <UserProfilePageRoute />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/settings",
-    element: (
-      <AppShell>
-        <SettingsPage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "/design",
-    element: (
-      <AppShell>
-        <DesignShowcasePage />
-      </AppShell>
-    ),
-  },
-  {
-    path: "*",
-    element: (
-      <AppShell>
-        <NotFoundPage />
-      </AppShell>
-    ),
+    element: <AppShell />,
+    errorElement: <RouteErrorPage />,
+    children: [
+      { path: "/discover", element: <DiscoverPage /> },
+      { path: "/social", element: <SocialPage /> },
+      { path: "/post/:id", element: <PostDetailPage /> },
+      { path: "/notification", element: <NotificationPage /> },
+      { path: "/discover/:id", element: <PlaceDetailPage /> },
+      { path: "/search", element: <SearchPage /> },
+      { path: "/saved", element: <SavedPage /> },
+      { path: "/collections/:id", element: <CollectionDetailPage /> },
+      { path: "/profile", element: <ProfilePage /> },
+      { path: "/u/:handle", element: <UserProfilePageRoute /> },
+      { path: "/settings", element: <SettingsPage /> },
+      { path: "/design", element: <DesignShowcasePage /> },
+      { path: "*", element: <NotFoundPage /> },
+    ],
   },
 ]

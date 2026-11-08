@@ -2,7 +2,9 @@ import { useState } from "react"
 import {
   ArrowRightIcon,
   CheckIcon,
+  ChevronDownIcon,
   HeartIcon,
+  InfoIcon,
   PaletteIcon,
   SparklesIcon,
   StarIcon,
@@ -11,6 +13,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { useSkin } from "@/app/providers/skin-context"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +25,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   Dialog,
   DialogClose,
@@ -32,11 +36,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { formatRating } from "@/lib/format"
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -57,7 +64,7 @@ export function DesignShowcasePage() {
   }
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-10 px-6 py-12">
+    <div className="mx-auto flex max-w-3xl flex-col gap-10 px-6 py-12">
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
@@ -76,22 +83,27 @@ export function DesignShowcasePage() {
           lần truy cập sau.
         </p>
         <div className="flex flex-wrap items-center gap-2">
-          {(
-            [
-              { value: "default", label: "Mặc định" },
-              { value: "retro", label: "Retro" },
-            ] as const
-          ).map((option) => (
-            <Button
-              key={option.value}
-              variant={skin === option.value ? "default" : "outline"}
-              aria-pressed={skin === option.value}
-              onClick={() => setSkin(option.value)}
-            >
-              {skin === option.value ? <CheckIcon /> : null}
-              {option.label}
-            </Button>
-          ))}
+          <ToggleGroup
+            variant="outline"
+            value={[skin]}
+            onValueChange={(values) => {
+              const next = values.at(-1)
+              if (next === "default" || next === "retro") setSkin(next)
+            }}
+            aria-label="Chọn kiểu hiển thị"
+          >
+            {(
+              [
+                { value: "default", label: "Mặc định" },
+                { value: "retro", label: "Retro" },
+              ] as const
+            ).map((option) => (
+              <ToggleGroupItem key={option.value} value={option.value}>
+                {skin === option.value ? <CheckIcon /> : null}
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </div>
       </Section>
 
@@ -166,12 +178,74 @@ export function DesignShowcasePage() {
       </Section>
 
       <Section title="Form field — input + label">
-        <div className="grid max-w-sm gap-2">
-          <Label htmlFor="demo-email">Email</Label>
+        <Field className="max-w-sm">
+          <FieldLabel htmlFor="demo-email">Email</FieldLabel>
           <Input id="demo-email" type="email" placeholder="ban@example.com" />
-          <p className="text-xs text-muted-foreground">
+          <FieldDescription>
             Input dùng @base-ui/react/input, đã có sẵn style focus và trạng thái lỗi.
-          </p>
+          </FieldDescription>
+        </Field>
+      </Section>
+
+      <Section title="RadioGroup — chọn một trong nhiều">
+        <RadioGroup defaultValue="comfortable" aria-label="Mật độ hiển thị" className="max-w-sm">
+          <Field orientation="horizontal">
+            <RadioGroupItem value="comfortable" id="density-comfortable" />
+            <FieldLabel htmlFor="density-comfortable" className="flex-1">
+              Thoáng
+            </FieldLabel>
+          </Field>
+          <Field orientation="horizontal">
+            <RadioGroupItem value="compact" id="density-compact" />
+            <FieldLabel htmlFor="density-compact" className="flex-1">
+              Gọn
+            </FieldLabel>
+          </Field>
+        </RadioGroup>
+      </Section>
+
+      <Section title="Alert — banner thông tin và lỗi">
+        <Alert>
+          <InfoIcon />
+          <AlertTitle>Dữ liệu minh hoạ</AlertTitle>
+          <AlertDescription>
+            Ứng dụng chưa kết nối backend, mọi nội dung đều lấy từ mock.
+          </AlertDescription>
+        </Alert>
+        <Alert variant="destructive">
+          <TriangleAlertIcon />
+          <AlertTitle>Không lưu được thay đổi</AlertTitle>
+          <AlertDescription>Kiểm tra kết nối mạng rồi thử lại.</AlertDescription>
+        </Alert>
+      </Section>
+
+      <Section title="Collapsible — nội dung ẩn">
+        <Collapsible>
+          <CollapsibleTrigger render={<Button variant="outline" />}>
+            Xem chi tiết
+            <ChevronDownIcon />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3 text-sm text-muted-foreground">
+            Collapsible giữ nội dung phụ gọn lại cho tới khi người dùng cần xem.
+          </CollapsibleContent>
+        </Collapsible>
+      </Section>
+
+      <Section title="Token bo góc và màu sao">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="grid size-16 place-items-center rounded-surface border border-border bg-muted text-xs text-muted-foreground">
+            surface
+          </div>
+          <div className="grid size-16 place-items-center rounded-control border border-border bg-muted text-xs text-muted-foreground">
+            control
+          </div>
+          <div className="grid size-16 place-items-center rounded-thumb border border-border bg-muted text-xs text-muted-foreground">
+            thumb
+          </div>
+        </div>
+        <div className="flex items-center gap-1 text-star">
+          <StarIcon className="size-4 fill-star" aria-hidden="true" />
+          <span className="text-sm font-medium">{formatRating(4.5)}</span>
         </div>
       </Section>
 
@@ -238,6 +312,6 @@ export function DesignShowcasePage() {
           </div>
         </div>
       </Section>
-    </main>
+    </div>
   )
 }
