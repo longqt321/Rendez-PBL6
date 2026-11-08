@@ -61,6 +61,9 @@ export const MAX_TRIP_DAYS = 30
 /** Số chặng tối đa trong một lịch trình ngày. */
 export const MAX_DAY_PLAN_STOPS = 20
 
+/** Nhãn nơi ở của chuyến đi ("Khách sạn ABC, Mỹ Khê"). */
+export const MAX_TRIP_BASE_LABEL_LENGTH = 120
+
 // ---------------------------------------------------------------------------
 // Chia hóa đơn
 // ---------------------------------------------------------------------------
