@@ -160,10 +160,7 @@ Còn lại, **chưa sửa** vì lý do ghi kèm:
       shadcn) trong khi toàn bộ UI tiếng Việt. Screen reader sẽ đọc "Loading" giữa câu tiếng Việt.
       Không sửa tay file `ui/` → cần override bằng `aria-label` ở nơi dùng, hoặc chấp nhận. Ảnh
       hưởng: 9 chỗ đang dùng `Spinner`.
-- [x] **Badge số thứ tự trong `place-suggestion-card.tsx`** — **đính chính**: `Badge` **co được**
-      xuống 16px. Đã kiểm bằng `twMerge('h-5 w-fit rounded-4xl px-2 py-0.5 text-xs',
-      'size-4 rounded-full p-0')` → `'text-xs size-4 rounded-full p-0'` (Tailwind merge bỏ `h-5`).
-      Ghi chú cũ nói "không co được" là **sai**.
+- [x] **Badge số thứ tự trong `place-suggestion-card.tsx`** — **đính chính**: `Badge` **co được** xuống 16px. Đã kiểm bằng `twMerge('h-5 w-fit rounded-4xl px-2 py-0.5 text-xs', 'size-4 rounded-full p-0')` → `'text-xs size-4 rounded-full p-0'` (Tailwind merge bỏ `h-5`). Ghi chú cũ nói "không co được" là **sai**.
 - [ ] **Chấm đỏ thông báo trên bottom nav mobile** (`app-shell.tsx`, `size-2 rounded-full`) không
       dùng `Badge` vì `Badge` luôn render số/chữ và có `h-5`; đây là dot thuần trang trí có
       `aria-hidden` ngầm định qua việc nav đã có nhãn. Giữ nguyên.

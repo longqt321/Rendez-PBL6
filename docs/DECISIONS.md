@@ -1348,12 +1348,12 @@ nào mang `data-slot="card"`.
 
 **(a) Thêm `@uidotdev/usehooks@2.4.1`** để xoá 3 hook tự viết.
 
-| Tiêu chí | Giá trị |
-| --- | --- |
-| License | MIT |
-| Peer deps | `react >=18`, `react-dom >=18` (React 19 thoả) |
-| Kích thước | 32.242 B raw / **6.752 B gzip** |
-| Hook dùng | `useGeolocation`, `useIntersectionObserver`, `useDebounce` |
+| Tiêu chí   | Giá trị                                                    |
+| ---------- | ---------------------------------------------------------- |
+| License    | MIT                                                        |
+| Peer deps  | `react >=18`, `react-dom >=18` (React 19 thoả)             |
+| Kích thước | 32.242 B raw / **6.752 B gzip**                            |
+| Hook dùng  | `useGeolocation`, `useIntersectionObserver`, `useDebounce` |
 
 Phương án đã xem và loại:
 
@@ -1377,11 +1377,11 @@ Phương án đã xem và loại:
 **(c) Ba bậc bo góc ngữ nghĩa, không dùng giá trị lẻ.** Thang Tailwind giữ nguyên; ngoài thang chỉ
 có 3 token khai trong `@theme inline`:
 
-| Token | Giá trị | Dùng cho |
-| --- | --- | --- |
-| `--radius-surface` | `0.25rem` (4px) | khối nội dung / panel phụ / khung ảnh lớn |
-| `--radius-control` | `0.2rem` (3.2px) | chip, ô nhỏ trong hàng, logo chữ |
-| `--radius-thumb` | `0.15rem` (2.4px) | ảnh thu nhỏ trong danh sách |
+| Token              | Giá trị           | Dùng cho                                  |
+| ------------------ | ----------------- | ----------------------------------------- |
+| `--radius-surface` | `0.25rem` (4px)   | khối nội dung / panel phụ / khung ảnh lớn |
+| `--radius-control` | `0.2rem` (3.2px)  | chip, ô nhỏ trong hàng, logo chữ          |
+| `--radius-thumb`   | `0.15rem` (2.4px) | ảnh thu nhỏ trong danh sách               |
 
 Phương án đã xem: _gộp hết về `rounded-md`_ — loại, `rounded-md` = `calc(0.625rem * 0.8)` = 8px,
 làm dày đáng kể các ô nhỏ trong hàng; _giữ giá trị lẻ_ — loại, không grep được, không đổi được
@@ -1409,7 +1409,7 @@ danh sách token, helper format, hằng số, quy tắc trợ năng và cổng g
   `text-[10px]`/`text-[11px]` → **0**; `toFixed`/`toLocaleString`/`toLocaleDateString` → **0**;
   `amber-`/`emerald-`/`blue-[0-9]`/`bg-white`/`text-white`/`border-white`/`bg-black` → **0**.
 - `bun pm view @uidotdev/usehooks` → `2.4.1`, `license: MIT`, `peerDependencies: react >=18,
-  react-dom >=18`; tarball 32.242 B.
+react-dom >=18`; tarball 32.242 B.
 - `grep -rn "aria-pressed" node_modules/@base-ui/react/toggle/Toggle.js` → dòng 75
   `'aria-pressed': pressed`, xác nhận `Toggle` thay được `Button + aria-pressed`.
 
