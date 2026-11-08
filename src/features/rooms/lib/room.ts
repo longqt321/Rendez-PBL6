@@ -1,5 +1,5 @@
 import { categoryLabel } from "@/features/places/lib/category-meta"
-import type { Place, PlaceCategory } from "@/features/places/types/place"
+import type { PlaceCategory } from "@/features/places/types/place"
 import type { Room, RoomFilter, RoomProposal } from "../types/room"
 
 /** Thành viên mặc định của người dùng hiện tại — app mock chỉ có 1 user ME. */
@@ -173,36 +173,4 @@ export function describeProposal(proposal: RoomProposal): string {
     return `＋ Mức giá tối đa: ${"₫".repeat(Number(proposal.value) || 3)}`
   }
   return `${sign} Từ khoá: ${proposal.value}`
-}
-
-/**
- * Địa điểm có thỏa bộ lọc chung của phòng không.
- *
- * Chạy client-side vì `GET /places` của mock chỉ nhận `category`/`district`/`q`
- * (xem D-030/BACKLOG): các ràng buộc còn lại lọc trên danh sách đã fetch.
- */
-export function matchesRoomFilter(place: Place, filter: RoomFilter): boolean {
-  if (filter.categories.length > 0 && !filter.categories.includes(place.category)) return false
-  if (filter.excludedCategories.includes(place.category)) return false
-  if (filter.districts.length > 0 && !filter.districts.includes(place.district ?? "")) return false
-  if (filter.excludedDistricts.includes(place.district ?? "")) return false
-  if (filter.priceMax !== undefined && place.priceLevel > filter.priceMax) return false
-
-  const haystack = [place.name.toLowerCase(), ...place.tags.map((tag) => tag.toLowerCase())]
-  if (
-    filter.includeKeywords.length > 0 &&
-    !filter.includeKeywords.some((keyword) =>
-      haystack.some((text) => text.includes(keyword.toLowerCase())),
-    )
-  ) {
-    return false
-  }
-  if (
-    filter.excludeKeywords.some((keyword) =>
-      haystack.some((text) => text.includes(keyword.toLowerCase())),
-    )
-  ) {
-    return false
-  }
-  return true
 }

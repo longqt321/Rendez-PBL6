@@ -1,7 +1,6 @@
 import { useMemo } from "react"
 import { useUserLocation } from "@/hooks/use-user-location"
 import { useRooms } from "@/features/rooms/hooks/use-rooms"
-import { matchesRoomFilter } from "@/features/rooms/lib/room"
 import type { Room } from "@/features/rooms/types/room"
 import { calculateDistanceKm } from "../lib/danang-districts"
 import type { Place } from "../types/place"
@@ -46,23 +45,34 @@ export function useDiscoverView(): DiscoverView {
   const room = activeCode ? getRoom(activeCode) : undefined
   const { coordinates, isLocating, locationError, requestLocation, clearLocation, locationGate } =
     useUserLocation()
-  // Server mock chỉ nhận category/district/q — lấy đại diện đầu tiên của phòng;
-  // các ràng buộc còn lại lọc client-side trên danh sách đã fetch.
+  // Phòng lọc nhóm gửi toàn bộ ràng buộc xuống server (server lọc trước khi phân
+  // trang) — client không tự lọc lại, tránh hai nguồn sự thật cho cùng một việc.
   const serverFilters = useMemo(
     () => ({
-      category: room ? (room.filter.categories[0] ?? ("all" as const)) : filters.category,
-      district: room ? (room.filter.districts[0] ?? ("all" as const)) : filters.district,
+      category: room ? ("all" as const) : filters.category,
+      district: room ? ("all" as const) : filters.district,
       query: room ? "" : filters.query,
+      room: room
+        ? {
+            categories: room.filter.categories,
+            excludedCategories: room.filter.excludedCategories,
+            districts: room.filter.districts,
+            excludedDistricts: room.filter.excludedDistricts,
+            includeKeywords: room.filter.includeKeywords,
+            excludeKeywords: room.filter.excludeKeywords,
+            priceMax: room.filter.priceMax,
+          }
+        : undefined,
     }),
     [room, filters.category, filters.district, filters.query],
   )
 
   const query = useDiscoverPlaces(serverFilters)
 
-  const rawPlaces = useMemo(() => {
-    const items = query.data?.pages.flatMap((page) => page.items) ?? []
-    return room ? items.filter((place) => matchesRoomFilter(place, room.filter)) : items
-  }, [query.data, room])
+  const rawPlaces = useMemo(
+    () => query.data?.pages.flatMap((page) => page.items) ?? [],
+    [query.data],
+  )
 
   // Xử lý tính khoảng cách và sắp xếp khi bật chế độ "Gần đây"
   const placesWithDistance = useMemo(() => {

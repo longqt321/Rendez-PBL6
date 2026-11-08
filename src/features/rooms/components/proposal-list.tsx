@@ -10,6 +10,7 @@ import {
   ItemGroup,
   ItemTitle,
 } from "@/components/ui/item"
+import { SectionHeading } from "@/components/shared/section-heading"
 import type { Room, RoomProposal } from "../types/room"
 import { describeProposal } from "../lib/room"
 
@@ -80,7 +81,9 @@ export function ProposalList({ room, onApply, onDismiss }: ProposalListProps) {
 
       {resolved.length > 0 ? (
         <div className="flex flex-col gap-2">
-          <h3 className="text-xs font-semibold text-muted-foreground">Đã xử lý</h3>
+          <SectionHeading as="h3" className="text-muted-foreground">
+            Đã xử lý
+          </SectionHeading>
           <ItemGroup className="gap-1.5">
             {resolved.map((proposal) => (
               <Item key={proposal.id} size="sm">

@@ -57,35 +57,11 @@ export function formatNumber(value: number): string {
   return numberFormat.format(value)
 }
 
-/**
- * Tiền đồng kiểu Việt Nam: `450000` → `450.000 đ`.
- *
- * Tiền là số nguyên đồng; không dùng cho số thập phân.
- */
-export function formatVnd(amount: number): string {
-  if (!Number.isFinite(amount)) return ""
-  return `${numberFormat.format(Math.round(amount))} đ`
-}
-
 /** Ngày tuyệt đối kiểu Việt Nam: `07/11/2026`. */
 export function formatDate(iso: string): string {
   const time = new Date(iso).getTime()
   if (Number.isNaN(time)) return ""
   return dateFormat.format(time)
-}
-
-/**
- * Giờ trong ngày từ số phút kể từ nửa đêm: `540` → `09:00`.
- *
- * Dùng cho lịch trình trong ngày, giờ lưu dạng số phút từ nửa đêm. Chuẩn hoá
- * modulo 1440 (cả chiều âm) để chặng qua nửa đêm không in `25:30`.
- */
-export function formatClock(minutes: number): string {
-  if (!Number.isFinite(minutes)) return ""
-  const normalized = ((Math.round(minutes) % 1440) + 1440) % 1440
-  const hours = Math.floor(normalized / 60)
-  const mins = normalized % 60
-  return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`
 }
 
 const ratingFormat = new Intl.NumberFormat("vi", {
@@ -117,4 +93,19 @@ const kmFormat = new Intl.NumberFormat("vi", { maximumFractionDigits: 1 })
 export function formatDistance(distanceKm: number): string {
   if (distanceKm < 1) return `${Math.round(distanceKm * 1000)} m`
   return `${kmFormat.format(distanceKm)} km`
+}
+
+/**
+ * Chữ cái đầu của tên để hiện trong `AvatarFallback`: "Nguyễn Yến" → "NY".
+ *
+ * Dùng cho tên phát sinh lúc chạy (thành viên phòng lọc nhập tay); tên có sẵn
+ * trong fixture đã kèm sẵn trường `initials` nên không đi qua hàm này.
+ */
+export function formatInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("")
 }

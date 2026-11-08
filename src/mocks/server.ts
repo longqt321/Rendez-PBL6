@@ -126,24 +126,60 @@ function listPublishedPlaces(params: {
   category?: string
   district?: string
   q?: string
+  /** Mức giá tối đa (1–3) — dùng cho phòng lọc nhóm. */
+  priceMax?: string
+  /** Danh sách loại hình/quán bị loại, phân tách bằng dấu phẩy. */
+  excludeCategory?: string
+  excludeDistrict?: string
+  /** Từ khoá phải xuất hiện (phân tách bằng dấu phẩy) — khớp name + tags. */
+  includeKeyword?: string
+  /** Từ khoá bị loại (phân tách bằng dấu phẩy) — khớp name + tags. */
+  excludeKeyword?: string
 }): Place[] {
   const published = db.places.filter((place) => place.publishedAt !== null)
   const query = normalizeText(params.q ?? "")
-  const category = params.category
-  const district = params.district
+  // `category`/`district` nhận một giá trị (discover) hoặc danh sách phân tách
+  // dấu phẩy (phòng lọc nhóm có thể chọn nhiều) — "all" nghĩa là không ràng buộc.
+  const categories = (params.category ?? "")
+    .split(",")
+    .filter((value) => value && value !== "all") as PlaceCategory[]
+  const districts = (params.district ?? "").split(",").filter((value) => value && value !== "all")
+  const priceMax = params.priceMax ? (Number(params.priceMax) as 1 | 2 | 3) : undefined
+  const excludedCategories = (params.excludeCategory ?? "")
+    .split(",")
+    .filter(Boolean) as PlaceCategory[]
+  const excludedDistricts = (params.excludeDistrict ?? "").split(",").filter(Boolean)
+  const includeKeywords = (params.includeKeyword ?? "")
+    .split(",")
+    .filter(Boolean)
+    .map(normalizeText)
+  const excludeKeywords = (params.excludeKeyword ?? "")
+    .split(",")
+    .filter(Boolean)
+    .map(normalizeText)
 
   return published
     .filter((place) => {
-      if (category && category !== "all" && place.category !== (category as PlaceCategory)) {
+      if (categories.length > 0 && !categories.includes(place.category)) {
         return false
       }
-      if (district && district !== "all" && place.district !== district) {
+      if (districts.length > 0 && !districts.includes(place.district ?? "")) {
         return false
       }
-      if (!query) return true
+      if (priceMax !== undefined && place.priceLevel > priceMax) return false
+      if (excludedCategories.includes(place.category)) return false
+      if (place.district && excludedDistricts.includes(place.district)) return false
       const haystack = normalizeText(
         [place.name, place.address, place.city, place.district ?? "", ...place.tags].join(" "),
       )
+      if (
+        includeKeywords.length > 0 &&
+        !includeKeywords.some((keyword) => haystack.includes(keyword))
+      ) {
+        return false
+      }
+      if (excludeKeywords.some((keyword) => haystack.includes(keyword))) return false
+      if (!query) return true
       return haystack.includes(query)
     })
     .map(toPlaceDto)
@@ -758,9 +794,28 @@ const routes: Route[] = [
     method: "get",
     pattern: /^\/places$/,
     handler: (config) => {
-      const { cursor, category, district, q } = query(config)
+      const {
+        cursor,
+        category,
+        district,
+        q,
+        priceMax,
+        excludeCategory,
+        excludeDistrict,
+        includeKeyword,
+        excludeKeyword,
+      } = query(config)
       return paginate(
-        listPublishedPlaces({ category, district, q }),
+        listPublishedPlaces({
+          category,
+          district,
+          q,
+          priceMax,
+          excludeCategory,
+          excludeDistrict,
+          includeKeyword,
+          excludeKeyword,
+        }),
         cursor ?? null,
         PLACES_PAGE_SIZE,
       )

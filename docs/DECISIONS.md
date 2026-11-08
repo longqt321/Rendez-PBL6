@@ -1588,7 +1588,9 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 - Xoá thêm phần Trip-only từ commit `229573f`: `MAX_TRIP_NAME_LENGTH`, `MAX_TRIP_DAYS`,
   `MAX_DAY_PLAN_STOPS`, `MUST_TRY_DISHES`/`MustTryDish`, `places/lib/travel.ts`
   (`estimateTravelMinutes`) — grep xác nhận không còn nơi nào dùng.
-- **Giữ lại** `formatClock`, `formatVnd` (format.ts) và `shareText` (share.ts) — dùng chung.
+- **Xoá luôn** `formatClock`, `formatVnd` (format.ts) và `shareText` (share.ts) — chỉ Trip dùng,
+  grep xác nhận 0 usage sau khi revert (đợt audit shadcn 2026-11-08). `shareLink` giữ lại
+  (ShareButton dùng).
 - Git history giữ nguyên; cần lấy lại thì xem commit `f8fe665`.
 
 ### Hệ quả
@@ -1619,9 +1621,12 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 - **Mô hình tương tác**: đề xuất rơi vào danh sách chung; **ai cũng áp dụng được** (không phân
   quyền — cùng lý do DX-9.4: nhóm bạn không cần admin). Áp dụng ghi vào `RoomFilter`, đề xuất
   chuyển `applied`; "Không muốn" tôn trọng tuyệt đối (loại hẳn), "Muốn có" là ràng buộc dương.
-- **Lọc**: `GET /places` chỉ nhận `category`/`district`/`q` → phòng gửi đại diện đầu tiên của
-  categories/districts lên server, phần còn lại (priceMax, keyword, exclude) lọc **client-side**
-  trên danh sách đã fetch. Giới hạn ghi BACKLOG.
+- **Lọc 100% server-side**: `GET /places` nhận thêm `priceMax`, `excludeCategory`,
+  `excludeDistrict`, `includeKeyword`, `excludeKeyword` (danh sách phân tách dấu phẩy) và
+  `category`/`district` cũng chấp nhận danh sách phân tách dấu phẩy — phòng gửi **toàn bộ**
+  ràng buộc lên server, server lọc trước khi phân trang. Client không tự lọc lại (một nghiệp vụ
+  một chỗ; lọc client-side sau phân trang sẽ sai số lượng trang). `discoverQueryKey` phải chứa
+  `filters.room` để đổi ràng buộc phòng luôn fetch lại thay vì trả cache.
 - Khi đang trong phòng: `/discover` ẩn bộ lọc cá nhân (quận chips + popover Lọc), hiện banner
   phòng. Rời phòng → trở lại lọc bình thường.
 - Component dùng: `Card`, `Badge`, `Avatar`, `Dialog`, `ToggleGroup`, `InputGroup`/`Input`,

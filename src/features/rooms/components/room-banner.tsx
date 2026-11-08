@@ -2,8 +2,15 @@ import { Link } from "react-router"
 import { LogOutIcon, UsersIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { categoryLabel } from "@/features/places/lib/category-meta"
-
 import type { Room } from "../types/room"
 
 interface RoomBannerProps {
@@ -27,27 +34,29 @@ function filterLabels(room: Room): string[] {
 }
 
 /**
- * Dải thông tin phòng lọc đang hoạt động, đặt đầu trang `/discover`.
+ * Dải thông tin phòng lọc đang hoạt động, đặt đầu trang `/discover` và `/map`.
  *
- * Cho người dùng biết màn hình đang bị lọc bởi phòng nào, ai đang trong phòng và
- * những ràng buộc nào đang áp dụng — tránh hiểu nhầm "app tự nhiên lọc mất quán".
+ * Dựng bằng `Card` (có sẵn `CardAction` cho cụm nút) — không tự dựng div bọc
+ * border/màu. Cho người dùng biết màn hình đang bị lọc bởi phòng nào, ai đang
+ * trong phòng và những ràng buộc nào đang áp dụng.
  */
 export function RoomBanner({ room, onLeave }: RoomBannerProps) {
   const labels = filterLabels(room)
 
   return (
-    <div className="mb-4 rounded-surface border border-primary/40 bg-primary/5 p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <UsersIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
-        <span className="text-sm font-semibold">{room.name}</span>
-        <Badge variant="secondary" className="font-mono text-xs">
-          {room.code}
-        </Badge>
-        <span className="text-xs text-muted-foreground">
-          {room.members.length} thành viên · đang lọc chung
-        </span>
-
-        <div className="ml-auto flex items-center gap-1.5">
+    <Card className="mb-4 gap-0 border-primary/40 bg-primary/5 py-0">
+      <CardHeader className="gap-1.5 px-4 py-3">
+        <CardTitle className="flex flex-wrap items-center gap-2 text-sm font-bold">
+          <UsersIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+          {room.name}
+          <Badge variant="secondary" className="font-mono text-xs">
+            {room.code}
+          </Badge>
+          <span className="text-xs font-normal text-muted-foreground">
+            {room.members.length} thành viên · đang lọc chung
+          </span>
+        </CardTitle>
+        <CardAction>
           <Button variant="outline" size="sm" render={<Link to={`/rooms/${room.code}`} />}>
             Mở phòng
           </Button>
@@ -55,22 +64,23 @@ export function RoomBanner({ room, onLeave }: RoomBannerProps) {
             <LogOutIcon aria-hidden="true" />
             Rời phòng
           </Button>
-        </div>
-      </div>
-
-      {labels.length > 0 ? (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {labels.map((label) => (
-            <Badge key={label} variant="outline" className="text-xs">
-              {label}
-            </Badge>
-          ))}
-        </div>
-      ) : (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Chưa có ràng buộc nào — mở phòng để mọi người cùng đề xuất.
-        </p>
-      )}
-    </div>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="px-4 pb-3">
+        {labels.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {labels.map((label) => (
+              <Badge key={label} variant="outline" className="text-xs">
+                {label}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <CardDescription className="text-xs">
+            Chưa có ràng buộc nào — mở phòng để mọi người cùng đề xuất.
+          </CardDescription>
+        )}
+      </CardContent>
+    </Card>
   )
 }

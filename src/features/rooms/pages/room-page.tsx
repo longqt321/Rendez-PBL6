@@ -17,20 +17,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import { SectionHeading } from "@/components/shared/section-heading"
+import { formatInitials } from "@/lib/format"
 import { ShareButton } from "@/components/shared/share-button"
 import { useRooms } from "../hooks/use-rooms"
 import { ProposalForm } from "../components/proposal-form"
 import { ProposalList } from "../components/proposal-list"
 import { describeProposal } from "../lib/room"
-
-/** Chữ cái đầu của tên — dùng cho avatar chữ khi chưa có ảnh. */
-function initials(displayName: string): string {
-  return displayName
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("")
-}
 
 /** Trang phòng lọc nhóm — `/rooms/:code`. */
 export function RoomPage() {
@@ -106,7 +99,7 @@ export function RoomPage() {
           <div className="flex items-center gap-1.5">
             {room.members.map((member) => (
               <Avatar key={member.id} size="sm" title={member.displayName}>
-                <AvatarFallback>{initials(member.displayName)}</AvatarFallback>
+                <AvatarFallback>{formatInitials(member.displayName)}</AvatarFallback>
               </Avatar>
             ))}
             <span className="ml-1 text-xs text-muted-foreground">
@@ -181,7 +174,7 @@ export function RoomPage() {
       </Card>
 
       <section className="mt-6">
-        <h2 className="text-base font-semibold">Đề xuất của cả nhóm</h2>
+        <SectionHeading>Đề xuất của cả nhóm</SectionHeading>
         <Separator className="my-3" />
         <ProposalList
           room={room}

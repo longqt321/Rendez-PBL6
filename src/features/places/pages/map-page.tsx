@@ -1,6 +1,7 @@
 import { SearchXIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Skeleton } from "@/components/ui/skeleton"
 import { PlacesMap } from "../components/places-map"
 import { DiscoverToolbar } from "../components/discover-toolbar"
 import { useDiscoverView } from "../hooks/use-discover-view"
@@ -21,9 +22,7 @@ export function MapPage() {
       <DiscoverToolbar view={view} mode="map" />
 
       {view.isPending ? (
-        <div className="mt-5 flex h-[60vh] items-center justify-center rounded-surface border border-dashed border-border">
-          <span className="text-sm text-muted-foreground">Đang tải bản đồ…</span>
-        </div>
+        <Skeleton className="mt-5 h-[70dvh] min-h-[420px] rounded-surface" />
       ) : view.isError ? (
         <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>
@@ -52,7 +51,7 @@ export function MapPage() {
           <PlacesMap
             places={view.sortedPlaces}
             userCoordinates={view.coordinates}
-            height="h-[calc(100vh-230px)] min-h-[500px]"
+            height="h-[70dvh] min-h-[420px]"
           />
         </div>
       )}
