@@ -49,6 +49,19 @@ export const MAX_COLLECTION_NAME_LENGTH = 80
 export const MAX_COLLECTION_DESCRIPTION_LENGTH = 400
 
 // ---------------------------------------------------------------------------
+// Phòng lọc nhóm
+// ---------------------------------------------------------------------------
+
+/** Tên phòng lọc nhóm. */
+export const MAX_ROOM_NAME_LENGTH = 60
+
+/** Độ dài mã phòng (chia sẻ cho bạn bè để vào cùng). */
+export const ROOM_CODE_LENGTH = 6
+
+/** Từ khoá đề xuất include/exclude. */
+export const MAX_ROOM_KEYWORD_LENGTH = 30
+
+// ---------------------------------------------------------------------------
 // Chia hóa đơn
 // ---------------------------------------------------------------------------
 

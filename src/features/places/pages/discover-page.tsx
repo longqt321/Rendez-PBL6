@@ -6,6 +6,7 @@ import {
   MapIcon,
   NavigationIcon,
   SearchXIcon,
+  UsersIcon,
   XIcon,
 } from "lucide-react"
 import { Alert, AlertTitle } from "@/components/ui/alert"
@@ -25,6 +26,10 @@ import { useUserLocation } from "@/hooks/use-user-location"
 import { CATEGORY_META } from "../lib/category-meta"
 import { calculateDistanceKm, DANANG_DISTRICTS } from "../lib/danang-districts"
 import { useDiscoverPlaces } from "../hooks/use-discover-places"
+import { useRooms } from "@/features/rooms/hooks/use-rooms"
+import { RoomBanner } from "@/features/rooms/components/room-banner"
+import { RoomJoinDialog } from "@/features/rooms/components/room-join-dialog"
+import { matchesRoomFilter } from "@/features/rooms/lib/room"
 import type { PlaceCategory } from "../types/place"
 import { PlaceCard } from "../components/place-card"
 import { PlaceCardSkeleton } from "../components/place-card-skeleton"
@@ -49,13 +54,36 @@ export function DiscoverPage() {
   const debouncedQuery = useDebouncedValue(query, 300)
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid")
   const [isNearbyActive, setIsNearbyActive] = useState(false)
+  const [joinOpen, setJoinOpen] = useState(false)
+
+  // Phòng lọc nhóm: đang trong phòng thì bộ lọc chung của phòng quyết định kết quả.
+  const { activeCode, getRoom, createRoom, joinRoom, leaveRoom } = useRooms()
+  const room = activeCode ? getRoom(activeCode) : undefined
+
+  // Server mock chỉ nhận category/district/q — lấy đại diện đầu tiên của phòng;
+  // các ràng buộc còn lại lọc client-side trên danh sách đã fetch.
+  const roomFilters = useMemo(
+    () =>
+      room
+        ? {
+            category: room.filter.categories[0] ?? ("all" as const),
+            district: room.filter.districts[0] ?? ("all" as const),
+            query: "",
+          }
+        : undefined,
+    [room],
+  )
+
+  const effectiveCategory = roomFilters?.category ?? category
+  const effectiveDistrict = roomFilters?.district ?? district
+  const effectiveQuery = roomFilters?.query ?? debouncedQuery
 
   const { coordinates, isLocating, locationError, requestLocation, clearLocation, locationGate } =
     useUserLocation()
 
   const filters = useMemo(
-    () => ({ category, district, query: debouncedQuery }),
-    [category, district, debouncedQuery],
+    () => ({ category: effectiveCategory, district: effectiveDistrict, query: effectiveQuery }),
+    [effectiveCategory, effectiveDistrict, effectiveQuery],
   )
   const { data, isPending, isError, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useDiscoverPlaces(filters)
@@ -66,8 +94,11 @@ export function DiscoverPage() {
     fetchNextPage,
   })
 
-  // Danh sách địa điểm gốc từ API
-  const rawPlaces = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data])
+  // Danh sách địa điểm gốc từ API, lọc thêm theo bộ lọc chung của phòng (nếu có)
+  const rawPlaces = useMemo(() => {
+    const items = data?.pages.flatMap((page) => page.items) ?? []
+    return room ? items.filter((place) => matchesRoomFilter(place, room.filter)) : items
+  }, [data, room])
 
   // Xử lý tính khoảng cách và sắp xếp khi bật chế độ "Gần đây"
   const placesWithDistance = useMemo(() => {
@@ -128,120 +159,139 @@ export function DiscoverPage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
       {locationGate}
+      {room ? (
+        <RoomBanner
+          room={room}
+          onLeave={() => {
+            leaveRoom(room.code)
+          }}
+        />
+      ) : null}
       {/* =========================================================================
           THANH CHỌN QUẬN ĐÀ NẴNG (Thanh chip cuộn ngang trên cùng)
+          — đang trong phòng lọc nhóm thì bộ lọc cá nhân bị ẩn để cả nhóm cùng nhìn 1 kết quả
          ========================================================================= */}
-      <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto pb-3">
-        <span className="mr-1 text-xs font-semibold whitespace-nowrap text-muted-foreground">
-          Quận:
-        </span>
-        <ToggleGroup
-          value={[district]}
-          onValueChange={(next) => {
-            const selected = next[0]
-            if (selected) setDistrict(selected)
-          }}
-          variant="outline"
-          size="sm"
-          aria-label="Lọc theo quận"
-          className="w-max shrink-0"
-        >
-          <ToggleGroupItem
-            value="all"
-            className="h-7 shrink-0 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+      {!room ? (
+        <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto pb-3">
+          <span className="mr-1 text-xs font-semibold whitespace-nowrap text-muted-foreground">
+            Quận:
+          </span>
+          <ToggleGroup
+            value={[district]}
+            onValueChange={(next) => {
+              const selected = next[0]
+              if (selected) setDistrict(selected)
+            }}
+            variant="outline"
+            size="sm"
+            aria-label="Lọc theo quận"
+            className="w-max shrink-0"
           >
-            Tất cả quận
-          </ToggleGroupItem>
-          {DANANG_DISTRICTS.map((d) => (
             <ToggleGroupItem
-              key={d}
-              value={d}
+              value="all"
               className="h-7 shrink-0 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
             >
-              {d}
+              Tất cả quận
             </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+            {DANANG_DISTRICTS.map((d) => (
+              <ToggleGroupItem
+                key={d}
+                value={d}
+                className="h-7 shrink-0 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+              >
+                {d}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </div>
+      ) : null}
 
       {/* =========================================================================
           TOOLBAR ĐIỀU KHIỂN: Lọc, Gần đây, Đếm số lượng, Chuyển đổi Lưới / Bản đồ
          ========================================================================= */}
       <div className="mt-2 flex flex-wrap items-center gap-2.5">
-        <Popover>
-          <PopoverTrigger render={<Button variant="outline" size="sm" />}>
-            <ListFilterIcon className="size-4" />
-            Lọc
-            {activeFilterCount > 0 ? (
-              <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-xs">
-                {activeFilterCount}
-              </Badge>
-            ) : null}
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-80">
-            <div className="flex flex-col gap-2">
-              <Field>
-                <FieldLabel
-                  htmlFor="discover-filter"
-                  className="text-sm font-semibold text-muted-foreground"
-                >
-                  Từ khoá
-                </FieldLabel>
-                <InputGroup>
-                  <InputGroupAddon>
-                    <ListFilterIcon />
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    id="discover-filter"
-                    type="search"
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Tên quán, món ăn, đường phố…"
-                    aria-label="Lọc theo từ khoá"
-                  />
-                </InputGroup>
-              </Field>
-            </div>
-
-            <div className="flex flex-col gap-2 pt-2">
-              <FieldTitle className="text-sm font-semibold text-muted-foreground">
-                Loại hình
-              </FieldTitle>
-              <ToggleGroup
-                value={[category]}
-                onValueChange={(next) => {
-                  const selected = next[0] as PlaceCategory | "all" | undefined
-                  if (selected) setCategory(selected)
-                }}
-                variant="outline"
-                size="sm"
-                aria-label="Lọc theo loại hình"
-                className="flex-wrap"
-              >
-                {CATEGORY_TABS.map((tab) => (
-                  <ToggleGroupItem
-                    key={tab.value}
-                    value={tab.value}
-                    className="h-7 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+        {!room ? (
+          <Popover>
+            <PopoverTrigger render={<Button variant="outline" size="sm" />}>
+              <ListFilterIcon className="size-4" />
+              Lọc
+              {activeFilterCount > 0 ? (
+                <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-xs">
+                  {activeFilterCount}
+                </Badge>
+              ) : null}
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-80">
+              <div className="flex flex-col gap-2">
+                <Field>
+                  <FieldLabel
+                    htmlFor="discover-filter"
+                    className="text-sm font-semibold text-muted-foreground"
                   >
-                    {tab.label}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </div>
+                    Từ khoá
+                  </FieldLabel>
+                  <InputGroup>
+                    <InputGroupAddon>
+                      <ListFilterIcon />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id="discover-filter"
+                      type="search"
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Tên quán, món ăn, đường phố…"
+                      aria-label="Lọc theo từ khoá"
+                    />
+                  </InputGroup>
+                </Field>
+              </div>
 
-            {activeFilterCount > 0 ? (
-              <Button
-                variant="ghost"
-                className="mt-2 justify-start text-xs text-muted-foreground"
-                onClick={handleResetAllFilters}
-              >
-                <XIcon className="mr-1 size-3.5" />
-                Xoá tất cả bộ lọc
-              </Button>
-            ) : null}
-          </PopoverContent>
-        </Popover>
+              <div className="flex flex-col gap-2 pt-2">
+                <FieldTitle className="text-sm font-semibold text-muted-foreground">
+                  Loại hình
+                </FieldTitle>
+                <ToggleGroup
+                  value={[category]}
+                  onValueChange={(next) => {
+                    const selected = next[0] as PlaceCategory | "all" | undefined
+                    if (selected) setCategory(selected)
+                  }}
+                  variant="outline"
+                  size="sm"
+                  aria-label="Lọc theo loại hình"
+                  className="flex-wrap"
+                >
+                  {CATEGORY_TABS.map((tab) => (
+                    <ToggleGroupItem
+                      key={tab.value}
+                      value={tab.value}
+                      className="h-7 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+                    >
+                      {tab.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </div>
+
+              {activeFilterCount > 0 ? (
+                <Button
+                  variant="ghost"
+                  className="mt-2 justify-start text-xs text-muted-foreground"
+                  onClick={handleResetAllFilters}
+                >
+                  <XIcon className="mr-1 size-3.5" />
+                  Xoá tất cả bộ lọc
+                </Button>
+              ) : null}
+            </PopoverContent>
+          </Popover>
+        ) : null}
+
+        {/* Nút đi cùng nhóm — tạo phòng lọc chung hoặc vào phòng theo mã */}
+        <Button variant="outline" size="sm" onClick={() => setJoinOpen(true)}>
+          <UsersIcon className="size-4" />
+          Đi cùng nhóm
+        </Button>
 
         {/* Nút bật chế độ "Gần đây" */}
         <Tooltip>
@@ -395,6 +445,13 @@ export function DiscoverPage() {
           </div>
         </>
       )}
+
+      <RoomJoinDialog
+        open={joinOpen}
+        onOpenChange={setJoinOpen}
+        onCreate={(name) => createRoom(name).code}
+        onJoin={(code, displayName) => joinRoom(code, displayName || "Khách")?.code}
+      />
     </div>
   )
 }

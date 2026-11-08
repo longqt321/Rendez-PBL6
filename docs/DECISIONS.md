@@ -1596,3 +1596,40 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 - `calendar` (react-day-picker + date-fns) và `dnd-kit` đã cài nhưng hiện **chưa có nơi dùng** —
   không gỡ (D-026/D-027 vẫn hợp lệ cho tính năng tương lai), ghi chú ở đây để không quên.
 - Docs thiết kế `docs/design/ke-hoach-thiet-ke.md` giữ làm tài liệu tham khảo, đánh dấu đã bỏ.
+
+## D-031 — "Phòng lọc nhóm": nhóm cùng lọc /discover với đề xuất include/exclude
+
+### Bối cảnh
+
+- User bỏ hướng Trip (D-030) và chốt hướng mới: **một nhóm bạn vào chung phòng để lọc màn hình
+  khám phá giống hệt nhau**, mỗi người tự đề xuất include/exclude thay vì giải quyết trong kênh chat.
+- Backend là mock in-memory per tab (D-011) — **đa thiết bị thật bắt buộc backend** (WebSocket/
+  Supabase Realtime), ghi BACKLOG. Đợt này demo bằng **các tab cùng 1 trình duyệt**.
+
+### Quyết định
+
+- Feature mới `src/features/rooms/`: `Room` (code 6 ký tự, members, proposals, filter chung),
+  `RoomProposal` (include/exclude × category/district/priceMax/keyword), `RoomFilter`.
+- **Đồng bộ chéo tab**: dữ liệu phòng ở `localStorage` (`danang-rooms-v1`), `useLocalStorage`
+  của `@uidotdev/usehooks` đã đăng ký `storage` event (verify trong source) nên tab khác tự cập
+  nhật. KHÔNG thêm BroadcastChannel — storage event đủ, tránh phức tạp thừa.
+- **Trạng thái "tôi" là của từng tab**: phòng đang mở + danh tính thành viên lưu `sessionStorage`
+  (`danang-room-active`, `danang-room-member-id`) — mỗi tab là một người, tab mới mở link phải
+  tham gia bằng tên.
+- **Mô hình tương tác**: đề xuất rơi vào danh sách chung; **ai cũng áp dụng được** (không phân
+  quyền — cùng lý do DX-9.4: nhóm bạn không cần admin). Áp dụng ghi vào `RoomFilter`, đề xuất
+  chuyển `applied`; "Không muốn" tôn trọng tuyệt đối (loại hẳn), "Muốn có" là ràng buộc dương.
+- **Lọc**: `GET /places` chỉ nhận `category`/`district`/`q` → phòng gửi đại diện đầu tiên của
+  categories/districts lên server, phần còn lại (priceMax, keyword, exclude) lọc **client-side**
+  trên danh sách đã fetch. Giới hạn ghi BACKLOG.
+- Khi đang trong phòng: `/discover` ẩn bộ lọc cá nhân (quận chips + popover Lọc), hiện banner
+  phòng. Rời phòng → trở lại lọc bình thường.
+- Component dùng: `Card`, `Badge`, `Avatar`, `Dialog`, `ToggleGroup`, `InputGroup`/`Input`,
+  `Item`, `Empty`, `Separator`, `Breadcrumb`, `Button`, `Field`.
+
+### Hệ quả
+
+- UI mock phải ghi rõ "dữ liệu minh hoạ, đồng bộ trong cùng trình duyệt" — không gây hiểu nhầm
+  là đã có realtime đa thiết bị.
+- `priceMax` chỉ có chiều include (exclude mức giá vô nghĩa) — nút "Không muốn" bị disable.
+- Mã phòng sinh từ bảng ký tự bỏ O/0/I/1 (`generateRoomCode`).
