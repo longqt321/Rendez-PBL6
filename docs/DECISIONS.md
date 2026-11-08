@@ -1423,3 +1423,140 @@ react-dom >=18`; tarball 32.242 B.
   quyền 2 lần hay không.
 - `cn-toast` trong `src/components/ui/sonner.tsx:35` chưa xác định được định nghĩa nằm ở đâu
   (không có trong `node_modules/shadcn/dist/tailwind.css`).
+
+---
+
+## D-026 — Dùng `Calendar` của shadcn (react-day-picker + date-fns) cho chọn ngày
+
+**Ngày:** 2026-11-08
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Gói "Lên kế hoạch chuyến đi" cần chọn **khoảng ngày** (ngày đến → ngày đi) và chọn **một ngày**
+cho từng chặng. Trước đây dự án không có component chọn ngày; phương án cũ trong
+`docs/design/ke-hoach-thiet-ke.md` là `<Input type="date">` native.
+
+Người dùng đã chốt (2026-11-08): **đồng ý cài thêm dependency để đồng bộ với shadcn**, thay vì
+dùng input native.
+
+### Quyết định
+
+Cài `calendar` từ registry base-nova:
+
+```bash
+bunx shadcn@4.23.0 add calendar --yes
+```
+
+Registry kéo theo 2 dependency: `react-day-picker@latest` (hiện `10.0.2`) và `date-fns`
+(hiện `4.4.0`). Không tự viết date picker.
+
+### Lý do
+
+- `Calendar` là component chính thức của shadcn cho base-nova — đúng quy ước "thiếu component thì
+  cài, không tự viết" ([CONVENTIONS.md §1](CONVENTIONS.md)).
+- Chọn khoảng ngày bằng lịch trực quan tốt hơn 2 ô `type="date"` trên mobile, đặc biệt khi cần
+  chặn ngày đi trước ngày đến và giới hạn 30 ngày.
+- `react-day-picker` là thư viện nền của chính shadcn Calendar, không phải lựa chọn thay thế.
+- `date-fns` là dependency bắt buộc của `react-day-picker@10` (khai báo `^4.1.0`), không phải
+  gói dư.
+
+### Phương án đã xem
+
+1. **`<Input type="date">` native** — không thêm gói, nhưng giao diện khác nhau giữa
+   Chrome/Safari/iOS, không chặn khoảng ngày ở mức UI, khó hiển thị "30 ngày tới".
+2. **Tự viết lịch bằng `div` + `Intl`** — vi phạm trực tiếp CONVENTIONS §1, và phải tự xử lý
+   bàn phím/a11y/lịch âm dương — không đáng.
+3. **`react-datepicker` hoặc `@mui/x-date-pickers`** — thêm gói ngoài hệ shadcn, không khớp
+   token/theme base-nova, phải viết lại style.
+4. **Chọn (1) rồi nâng cấp sau** — người dùng đã chốt muốn đồng bộ shadcn ngay.
+
+### Kích thước / license
+
+| Gói                | Version           | License | Unpacked                                                       |
+| ------------------ | ----------------- | ------- | -------------------------------------------------------------- |
+| `react-day-picker` | 10.0.2            | MIT     | 992 KB                                                         |
+| `date-fns`         | 4.4.0             | MIT     | 10,9 MB (tree-shakeable; bundle runtime chỉ gồm hàm được dùng) |
+| `@date-fns/tz`     | ^1.4.1 (kéo theo) | MIT     | nhỏ                                                            |
+
+`date-fns` lớn khi nhìn unpacked nhưng Vite chỉ đóng gói phần được import; `react-day-picker`
+chỉ dùng vài hàm format. Không ảnh hưởng bundle đáng kể.
+
+### Hệ quả
+
+- `src/components/ui/calendar.tsx` mới; **xoá dòng `"use client"`** sau khi sinh (quy ước dự án).
+- Ngày trong `Trip` vẫn lưu dạng chuỗi `YYYY-MM-DD` (local), không lưu `Date` — `Calendar` chỉ
+  là lớp chọn, chuyển đổi ở `features/trips/lib/trip.ts`.
+- Không dùng `date-fns` trực tiếp trong code nghiệp vụ; mọi format ngày vẫn qua `src/lib/format.ts`
+  (`formatDate`) để giữ "một nghiệp vụ một chỗ".
+
+### Chưa xác minh
+
+- Chưa render thử `Calendar` trong `Popover`/`Drawer` trên mobile 360px.
+- Chưa đo bundle tăng thực tế sau `vite build` (chỉ có số unpacked của npm).
+
+---
+
+## D-027 — Dùng `dnd-kit` cho kéo thả sắp thứ tự chặng
+
+**Ngày:** 2026-11-08
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Lịch trình ngày (`DayPlan`) và chặng trong chuyến đi (`TripDay.placeIds`) cần **sắp thứ tự đi**.
+Thiết kế cũ dùng `DropdownMenu` "Lên/Xuống" để tránh thêm thư viện kéo thả.
+
+Người dùng đã chốt (2026-11-08): **đồng ý cài thêm dependency** để có kéo thả thật.
+
+### Quyết định
+
+```bash
+bun add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+```
+
+Dùng `DndContext` + `SortableContext` + `useSortable` cho danh sách chặng; **giữ nút Lên/Xuống
+trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng (a11y + thiết bị không kéo
+được).
+
+### Lý do
+
+- `dnd-kit` là thư viện kéo thả phổ biến nhất cho React hiện đại, không phụ thuộc HTML5 drag &
+  drop (hoạt động cảm ứng tốt trên mobile), hỗ trợ bàn phím sẵn.
+- Kéo thả là tương tác tự nhiên cho "sắp thứ tự đi" — nút Lên/Xuống bắt người dùng bấm nhiều lần
+  với danh sách 6–10 chặng.
+- Giữ nút Lên/Xuống đảm bảo a11y và không phá vỡ luồng khi JS kéo thả lỗi.
+
+### Phương án đã xem
+
+1. **Chỉ nút Lên/Xuống** — không thêm gói, nhưng thao tác nặng khi danh sách dài (phương án cũ).
+2. **HTML5 Drag and Drop API** — không thêm gói, nhưng không hoạt động tốt trên cảm ứng, phải tự
+   xử lý touch, không có a11y.
+3. **`react-beautiful-dnd`** — đã ngừng bảo trì, không tương thích React 19.
+4. **`@hello-pangea/dnd`** — bản fork còn bảo trì, nhưng API nặng và không hỗ trợ tốt danh sách
+   dọc trong `ScrollArea` mobile.
+5. **Chọn `dnd-kit`** — nhẹ, module hoá, hỗ trợ React 19, cảm ứng + bàn phím.
+
+### Kích thước / license
+
+| Gói                  | Version | License | Unpacked |
+| -------------------- | ------- | ------- | -------- |
+| `@dnd-kit/core`      | 6.3.1   | MIT     | 1,07 MB  |
+| `@dnd-kit/sortable`  | 10.0.0  | MIT     | 234 KB   |
+| `@dnd-kit/utilities` | 3.2.2   | MIT     | 88 KB    |
+
+### Hệ quả
+
+- Chỉ dùng trong `features/trips` và `features/collections` (timeline); không lan sang nơi khác.
+- `useSortable` phải gắn `transform`/`transition` qua `CSS.Transform.toString` từ
+  `@dnd-kit/utilities`.
+- Danh sách vẫn render bằng `Item`/`ItemGroup`; `useSortable` chỉ bọc ngoài `Item`, không thay
+  component UI.
+- Không kéo thả giữa các ngày (chỉ trong một ngày) — tránh phức tạp `Droppable` chéo; chuyển quán
+  sang ngày khác làm bằng `DropdownMenu` "Chuyển sang ngày…".
+
+### Chưa xác minh
+
+- Chưa thử kéo thả trên thiết bị cảm ứng thật; chưa đo xung đột giữa kéo dọc và cuộn trang.
+- Chưa kiểm `@dnd-kit/sortable@10` tương thích `@dnd-kit/core@6` (registry khai báo vậy, nhưng
+  chưa chạy thử).

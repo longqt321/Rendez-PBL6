@@ -18,11 +18,13 @@
    `@uidotdev/usehooks`, đúng pattern [comment-thread.tsx:31](../../src/features/social/components/comment-thread.tsx#L31).
 4. **Không thêm thư viện kéo thả**: sắp thứ tự bằng `DropdownMenu` "Lên/Xuống". Kéo thả cần
    `dnd-kit` (dependency mới) → chỉ làm khi có quyết định riêng trong `docs/DECISIONS.md`.
-5. **Không thêm `calendar`/`date-picker`**: shadcn `Calendar` cần `react-day-picker` (dependency
-   mới). Dùng `<Input type="date">` và `<Input type="time">` — native, mobile-friendly, không
-   thêm gói nào.
-6. **Tiền là số nguyên đồng**, không số thực. Giờ trong ngày là **số phút từ nửa đêm**.
-7. **Một nghiệp vụ một chỗ**: ước lượng di chuyển, format giờ/tiền, chia sẻ text đều nằm ở
+5. **Chọn ngày bằng `Calendar` của shadcn** (`react-day-picker` + `date-fns` — đã cài theo
+   `docs/DECISIONS.md` D-026), không dùng `<Input type="date">` native.
+6. **Kéo thả bằng `dnd-kit`** (`@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities` — đã
+   cài theo D-027) cho sắp thứ tự chặng; **giữ nút Lên/Xuống trong `DropdownMenu`** làm phương án
+   bàn phím/a11y.
+7. **Tiền là số nguyên đồng**, không số thực. Giờ trong ngày là **số phút từ nửa đêm**.
+8. **Một nghiệp vụ một chỗ**: ước lượng di chuyển, format giờ/tiền, chia sẻ text đều nằm ở
    `src/lib/` hoặc `src/features/places/lib/`, không viết lại trong component.
 
 ## 1. Hạ tầng dùng chung (làm trước, 0,5 ngày)
@@ -161,10 +163,13 @@ Component dùng chung `TripFormDialog({ trip?, children })`:
   (cùng `useMediaQuery`). Nội dung form là **một component con** để không nhân đôi.
 - Form (zod):
   - `name`: 1–80 ký tự (`Input`).
-  - `startDate`, `endDate`: `Input type="date"`; refine `endDate >= startDate` và
-    `số ngày <= MAX_TRIP_DAYS`; lỗi hiện ở `FieldError` của `endDate`.
+  - `startDate`, `endDate`: `Calendar` trong `Popover` (desktop) / `Drawer` (mobile), chế độ
+    `mode="range"` — một lần chọn ra cả khoảng, không phải 2 ô rời. `PopoverTrigger` là
+    `Button variant="outline"` hiển thị `formatDate(startDate) – formatDate(endDate)`.
+    Chặn: `endDate >= startDate`, tối đa `MAX_TRIP_DAYS` ngày (`disabled` các ngày vượt).
+    Lỗi hiện ở `FieldError`.
   - `arrivalAt`, `departureAt`: `Input type="datetime-local"` (tuỳ chọn) — chỉ dùng để gắn nhãn
-    ngày, không dựng timeline giờ.
+    ngày, không dựng timeline giờ. Giữ native vì không cần lịch cho giờ.
   - `baseDistrict`: `ToggleGroup` một-trong-nhiều, 6 quận từ `DANANG_DISTRICTS` + item
     "Chưa chọn" (`value="none"`). Bọc trong `Field` + `FieldTitle` + `FieldDescription`.
   - `baseLabel`: `Input` tuỳ chọn ("Khách sạn ABC, Mỹ Khê").
@@ -203,19 +208,20 @@ Component dùng chung `TripFormDialog({ trip?, children })`:
 └──────────────────────────────────────────────────────────────┘
 ```
 
-| Khối                        | Component                                                                                                                                                           |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Điều hướng                  | `Breadcrumb` + `BreadcrumbList` + `BreadcrumbItem` + `BreadcrumbLink` + `BreadcrumbSeparator` + `BreadcrumbPage`                                                    |
-| Thẻ đầu trang               | `Card` + `CardContent` + `Badge` + `Button` + `DropdownMenu` + `ShareButton`                                                                                        |
-| Cảnh báo quán chưa xếp      | `Alert` + `AlertTitle` + `AlertAction` (`Button variant="outline" size="sm"`)                                                                                       |
-| Dải ngày                    | `ScrollArea` + `ScrollBar orientation="horizontal"` bọc `ToggleGroup` một-trong-nhiều; mỗi ngày là `ToggleGroupItem` chứa text 2 dòng + `Badge` đếm                 |
-| Thẻ ngày                    | `Card` + `CardHeader` + `CardTitle` + `CardDescription` + `CardAction` + `CardContent`                                                                              |
-| Mức chi                     | `Field` + `FieldTitle` + `ToggleGroup` (3 mức)                                                                                                                      |
-| Danh sách chặng             | `ItemGroup` + `Item variant="outline"` + `ItemMedia` + `ItemContent` + `ItemTitle` + `ItemDescription` + `ItemActions` (`DropdownMenu`: Lên / Xuống / Bỏ khỏi ngày) |
-| Dòng di chuyển giữa 2 chặng | `Item size="xs" variant="muted"` + `ItemMedia` (`NavigationIcon`) + `ItemDescription` "~10 phút di chuyển · 2,1 km (ước lượng)"                                     |
-| Ngày trống                  | `Empty` + `EmptyHeader` + `EmptyMedia` (`MapPinIcon`) + `EmptyTitle` + `EmptyDescription` + `EmptyContent` + `Button`                                               |
-| Cảnh báo vượt mức chi       | `Alert` + `AlertTitle` (mô tả, không chặn)                                                                                                                          |
-| Toast                       | `sonner` (`toast.success` / `toast.error`)                                                                                                                          |
+| Khối                        | Component                                                                                                                                                                                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Điều hướng                  | `Breadcrumb` + `BreadcrumbList` + `BreadcrumbItem` + `BreadcrumbLink` + `BreadcrumbSeparator` + `BreadcrumbPage`                                                                                                                                                                |
+| Thẻ đầu trang               | `Card` + `CardContent` + `Badge` + `Button` + `DropdownMenu` + `ShareButton`                                                                                                                                                                                                    |
+| Cảnh báo quán chưa xếp      | `Alert` + `AlertTitle` + `AlertAction` (`Button variant="outline" size="sm"`)                                                                                                                                                                                                   |
+| Dải ngày                    | `ScrollArea` + `ScrollBar orientation="horizontal"` bọc `ToggleGroup` một-trong-nhiều; mỗi ngày là `ToggleGroupItem` chứa text 2 dòng + `Badge` đếm                                                                                                                             |
+| Thẻ ngày                    | `Card` + `CardHeader` + `CardTitle` + `CardDescription` + `CardAction` + `CardContent`                                                                                                                                                                                          |
+| Mức chi                     | `Field` + `FieldTitle` + `ToggleGroup` (3 mức)                                                                                                                                                                                                                                  |
+| Danh sách chặng             | `DndContext` + `SortableContext` (`@dnd-kit/core` + `@dnd-kit/sortable`); mỗi chặng `Item variant="outline"` bọc `useSortable`, tay cầm `ItemMedia` chứa `GripVerticalIcon`; transform qua `CSS.Transform.toString` (`@dnd-kit/utilities`); thả xong `arrayMove` đổi `placeIds` |
+| Sắp thứ tự dự phòng         | `ItemActions` + `DropdownMenu`: Lên / Xuống / Bỏ khỏi ngày — phương án bàn phím + a11y, giữ song song (D-027)                                                                                                                                                                   |
+| Dòng di chuyển giữa 2 chặng | `Item size="xs" variant="muted"` + `ItemMedia` (`NavigationIcon`) + `ItemDescription` "~10 phút di chuyển · 2,1 km (ước lượng)"                                                                                                                                                 |
+| Ngày trống                  | `Empty` + `EmptyHeader` + `EmptyMedia` (`MapPinIcon`) + `EmptyTitle` + `EmptyDescription` + `EmptyContent` + `Button`                                                                                                                                                           |
+| Cảnh báo vượt mức chi       | `Alert` + `AlertTitle` (mô tả, không chặn)                                                                                                                                                                                                                                      |
+| Toast                       | `sonner` (`toast.success` / `toast.error`)                                                                                                                                                                                                                                      |
 
 Ảnh thu nhỏ trong `ItemMedia`: `SeedImage` với `height={48}` + `className="size-12 rounded-thumb"`.
 
@@ -389,7 +395,7 @@ trong `Card` đầu trang:
 | Giờ bắt đầu       | `ItemMedia` chứa `Input type="time"` (`className="w-24"`, `aria-label="Giờ bắt đầu chặng N"`) — chỉ chủ sở hữu sửa được, người xem thấy text `formatClock` |
 | Nội dung chặng    | `ItemContent` + `ItemTitle` (Link tới `/discover/:id`) + `ItemDescription` (quận · thời lượng · ghi chú)                                                   |
 | Thời lượng        | `ItemActions` + `DropdownMenu` + `DropdownMenuRadioGroup` + `DropdownMenuRadioItem` (15/30/45/60/90/120 phút)                                              |
-| Sắp thứ tự / bỏ   | Cùng `DropdownMenu`: Lên, Xuống, `DropdownMenuSeparator`, "Bỏ khỏi lịch trình"                                                                             |
+| Sắp thứ tự / bỏ   | `DndContext` + `useSortable` (kéo thả, D-027) + `DropdownMenu`: Lên, Xuống, `DropdownMenuSeparator`, "Bỏ khỏi lịch trình" (dự phòng bàn phím)              |
 | Dòng di chuyển    | `Item size="xs" variant="muted"` + `ItemMedia` (`NavigationIcon`) + `ItemDescription`                                                                      |
 | Tổng kết          | `ItemDescription` cuối `ItemGroup`                                                                                                                         |
 | Rỗng              | `Empty` + `EmptyMedia` (`CalendarClockIcon`) + `EmptyTitle` "Chưa có lịch trình" + `EmptyContent` + `Button` "Sắp giờ gợi ý"                               |
@@ -582,10 +588,10 @@ interface Bill {
 | Chia tiền             | `Card`, `FieldGroup`/`Field`/`FieldLabel`/`FieldDescription`/`FieldError`, `InputGroup` (+Input/Button/Text/Addon), `Input`, `RadioGroup`/`RadioGroupItem`, `Label`, `ItemGroup`/`Item`, `Button`, `Empty`, `DropdownMenu`                                                                                  |
 | Toàn cục              | `sonner` (toast), `Tooltip`, `Spinner`, `Skeleton`, `Separator`, `Badge`                                                                                                                                                                                                                                    |
 
-**Không dùng / không cần cài thêm:** `calendar`, `date-picker`, `select`, `checkbox`, `slider`,
+**Không dùng / không cần cài thêm:** `select`, `checkbox`, `slider`,
 `progress`, `command`, `form`, `sheet`, `table`, `pagination`, `chart`, `carousel`, `sidebar`.
-Lý do: native input đủ cho ngày/giờ; `ToggleGroup`/`RadioGroup` đủ cho lựa chọn; không có nhu cầu
-bảng/phân trang.
+Lý do: `ToggleGroup`/`RadioGroup` đủ cho lựa chọn; không có nhu cầu bảng/phân trang. `calendar`
+và `dnd-kit` **đã cài** (D-026, D-027).
 
 ## 7. Thứ tự thực hiện & kế hoạch file
 
@@ -604,9 +610,9 @@ Tổng ~10 ngày cho 1 dev. Không có dependency mới, không sửa `src/mocks
 ## 8. Chưa xác minh
 
 - Chưa chạy app; kích thước thật của dải ngày, timeline và form trên mobile 360px chưa đo.
-- `Input type="date"`/`type="time"` hiển thị khác nhau giữa Chrome/Safari/iOS — chưa thử trên
-  thiết bị thật; nếu Safari iOS không ổn, phương án dự phòng là 2 `Input` số (ngày/tháng) hoặc
-  cài `calendar` + `react-day-picker` (phải ghi `DECISIONS.md` trước).
+- `Calendar` trong `Popover`/`Drawer` trên mobile 360px chưa render thử; `react-day-picker@10`
+  mới phát hành, chưa kiểm tương thích với ví dụ của base-nova ngoài registry.
+- Kéo thả `dnd-kit` chưa thử trên thiết bị cảm ứng thật; xung đột kéo dọc vs cuộn trang chưa đo.
 - `useLocalStorage` của `@uidotdev/usehooks` xử lý JSON và lỗi parse như thế nào chưa đọc hết
   source; nếu nó ném lỗi khi dữ liệu hỏng thì cần bọc try/catch hoặc tự viết helper.
 - Heuristic giờ ăn theo `PlaceCategory` và ước lượng 20 km/h × 1,5 là suy luận, chưa đối chiếu
