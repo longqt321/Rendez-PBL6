@@ -27,12 +27,11 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 - [ ] **Chưa có CI.** Không có `.github/workflows`. Nên chạy `typecheck` + `lint` + `format:check` + `build`
       trên mỗi PR.
 - [ ] **Chưa có pre-commit hook.** Husky + lint-staged để chặn commit lỗi.
-- [ ] **Dependency còn chưa dùng:** `zustand`, `zod`, `react-hook-form`, `@hookform/resolvers`, `sonner`.
-      Quyết định: giữ (nếu sắp dùng) hay bỏ. (`react-router`, `axios`, `@tanstack/react-query`,
-      `lucide-react` đã dùng.)
-- [ ] **`src/App.tsx` vẫn là template Vite** (logo, counter, link docs/social). Cần thay bằng UI thật.
-      Khi thay thì xóa luôn `src/App.css` và `src/assets/{hero.png,react.svg,vite.svg}`.
-- [ ] **`index.html`:** `lang="en"` và `<title>frontend</title>` vẫn là placeholder.
+- [ ] **Dependency còn chưa dùng:** `zustand`. Quyết định: giữ (nếu sắp dùng) hay bỏ.
+      (`zod`, `react-hook-form`, `@hookform/resolvers`, `sonner` đã dùng — xem `docs/STACK.md`.)
+- [ ] **Asset template Vite còn sót:** `src/assets/images/hero.png`, `src/assets/icons/react.svg`,
+      `src/assets/icons/vite.svg` — 0 import. (`index.html` đã là `lang="vi"` +
+      `<title>Đà Nẵng Ăn &amp; Đi</title>`, không còn là placeholder.)
 
 ## Ưu tiên trung bình
 
@@ -161,18 +160,18 @@ Còn lại, **chưa sửa** vì lý do ghi kèm:
       shadcn) trong khi toàn bộ UI tiếng Việt. Screen reader sẽ đọc "Loading" giữa câu tiếng Việt.
       Không sửa tay file `ui/` → cần override bằng `aria-label` ở nơi dùng, hoặc chấp nhận. Ảnh
       hưởng: 9 chỗ đang dùng `Spinner`.
-- [ ] **Badge số thứ tự trong `place-suggestion-card.tsx`** vẫn tự vẽ bằng `<span>` với
-      `grid size-4 rounded-full bg-foreground`. `Badge` có `h-5` cố định + `text-xs` → to hơn
-      badge hiện tại (16px) và làm lệch hàng tiêu đề. Giữ nguyên có chủ ý; nếu muốn dùng `Badge`
-      thì phải đo lại chiều cao hàng.
+- [x] **Badge số thứ tự trong `place-suggestion-card.tsx`** — **đính chính**: `Badge` **co được**
+      xuống 16px. Đã kiểm bằng `twMerge('h-5 w-fit rounded-4xl px-2 py-0.5 text-xs',
+      'size-4 rounded-full p-0')` → `'text-xs size-4 rounded-full p-0'` (Tailwind merge bỏ `h-5`).
+      Ghi chú cũ nói "không co được" là **sai**.
 - [ ] **Chấm đỏ thông báo trên bottom nav mobile** (`app-shell.tsx`, `size-2 rounded-full`) không
       dùng `Badge` vì `Badge` luôn render số/chữ và có `h-5`; đây là dot thuần trang trí có
       `aria-hidden` ngầm định qua việc nav đã có nhãn. Giữ nguyên.
 - [ ] **`Item` trong `post-composer` dùng `render={<button/>}`** — `Item` mặc định `flex-wrap` +
       `px-3 py-2.5`; đã override `px-1.5 py-1` để khớp khu vực gợi ý nhỏ. Nếu sau này cần
       `ItemSeparator` giữa các gợi ý thì phải bỏ `gap-1`.
-- [ ] **`/search` tab "Người" vẫn lọc trên `MOCK_USERS` phía client** (đã có trong BACKLOG cũ) —
-      vi phạm L-001 khi có backend thật; cần `GET /users?q=`.
+- [x] **`/search` tab "Người" lọc trên `MOCK_USERS` phía client** — **đã giải quyết**: mock server có
+      `GET /users?q=` trả `Page<...>`; trang `/search` gọi endpoint đó thay vì lọc client.
 
 ## Audit shadcn/convention — tính năng Bộ sưu tập (2026-11-08)
 
@@ -211,3 +210,60 @@ sẻ dùng Web Share API + clipboard fallback, và dialog check-in từ trang qu
       việc), không chạy được trong CI. Nếu muốn hồi quy tự động thì phải chuyển vào `e2e/` và thêm
       script npm.
 - [ ] **`Spinner` vẫn có `aria-label="Loading"` tiếng Anh** — vấn đề cũ, xem mục audit 2026-11-07.
+
+## Chuẩn hoá toàn dự án về component có sẵn (2026-11-08) — D-025
+
+Đã làm xong trong đợt này (ghi lại để không tìm lại): thêm `@uidotdev/usehooks@2.4.1` (MIT, 6.7 kB
+gzip) thay 3 hook tự viết; cài `alert`, `radio-group`, `collapsible`; 3 token bo góc ngữ nghĩa
+`--radius-surface/control/thumb` + token `--star`; `src/lib/constants.ts` (giới hạn ký tự + toạ độ
+Đà Nẵng dùng chung client/server); `src/lib/format.ts` mở rộng (`formatRating`, `formatDate`,
+`formatDistance`, `formatCoordinate`); `places/lib/price-level.ts`; `Comment.isMine` do server kết
+luận; `docs/CONVENTIONS.md`. Quét cơ học: 13 `rounded-[…]`, 5 `text-[10px]`, 7 bảng màu thô,
+4 `toFixed`/`toLocaleDateString`, 4 `"₫".repeat` → hết.
+
+Còn lại, **chưa làm**:
+
+- [ ] **`Spinner` vẫn `aria-label="Loading"` tiếng Anh** (`src/components/ui/spinner.tsx:9`, template
+      shadcn). 29 chỗ dùng, 0 chỗ override. Không sửa tay file `ui/` → cần thống nhất: override
+      `aria-label="Đang tải"` ở nơi dùng, hay chấp nhận. Đây là việc lặp lại nhiều nhất trong danh
+      sách này.
+- [ ] **6 chỗ bọc `Spinner` trong `role="status"`** → trình đọc màn hình thông báo hai lần.
+      `Spinner` đã có `role="status"`.
+- [ ] **2 `title=` còn lại** (`discover-page.tsx`, `collection-detail-page.tsx`) → `Tooltip`.
+      `TooltipProvider` đã mount ở `app-provider.tsx` nhưng **0** `<Tooltip>` nào được dùng.
+- [ ] **`cn-toast` trong `src/components/ui/sonner.tsx:35` chưa xác định được định nghĩa.** Không có
+      trong `node_modules/shadcn/dist/tailwind.css`, không có trong bất kỳ transform nào của
+      registry. Cần kiểm tra CSS thật trong trình duyệt (devtools → computed style của `[data-sonner-toast]`)
+      trước khi kết luận là class chết.
+- [ ] **`src/components/ui/toggle.tsx` chỉ được dùng gián tiếp** qua `toggleVariants` ở
+      `toggle-group.tsx`. Sau đợt này `Toggle` đã được dùng trực tiếp (nút thích/lưu/theo dõi) —
+      kiểm tra lại `grep -rn "<Toggle"` để chắc không còn file chết.
+- [ ] **`src/components/layout/skin-toggle.tsx`** export `SkinToggle` nhưng **0 import** — file chết.
+      Xoá hoặc dùng lại thay cho `ThemeToggle` trong `SkinSwitch`.
+- [ ] **`design-showcase-page.tsx` render `<main>` lồng trong `<main>` của `AppShell`.**
+- [ ] **`AppShell` được copy 13 lần trong `routes.tsx`**; `grep Outlet src/` → 0. Nên chuyển sang
+      layout route + `Outlet`.
+- [ ] **Không có `errorElement` / `ErrorBoundary` nào** → một page throw là cả app trắng.
+- [ ] **`ICON_MAP` trong `app-shell.tsx:40-44` trùng `NAV_ITEMS.icon`** (`nav-items.ts`), khiến
+      `NAV_ITEMS.icon` thành dữ liệu chết.
+- [ ] **Fixture tác giả bị nhân bản ở 4 file:** `CURRENT_USER` trong `fixtures/posts.ts:5` **và**
+      `fixtures/comments.ts:5`; `AUTHORS` trong `fixtures/comments.ts:12` **và** `fixtures/reviews.ts:4`;
+      `ME` trong `fixtures/users.ts:96`. Nên gom về một chỗ.
+- [ ] **`NotificationKind` export nhưng không dùng** (`notification/types/notification.ts`).
+- [ ] **`DanangDistrict` type** trong `places/lib/danang-districts.ts` — kiểm tra còn dùng không.
+- [ ] **`InfiniteData` typing** trong `use-infinite-scroll` — kiểm tra lại sau khi đổi sang
+      `useIntersectionObserver`.
+- [ ] **Asset không dùng:** `src/assets/images/hero.png`, `src/assets/icons/react.svg`,
+      `src/assets/icons/vite.svg` (0 import mỗi file); `src/assets/fonts/` chỉ có `.gitkeep`.
+- [ ] **`zustand` chưa dùng** — quyết định giữ hay bỏ (skin/theme đã có provider riêng, optimistic
+      update đã nằm trong React Query `onMutate`).
+- [ ] **`index.css` từng có comment sai** (`0.72rem ≈ 11.5px` nhưng giá trị là `0.8125rem`) và rule
+      `small` chết (`grep "<small"` → 0). **Đã xoá** trong đợt này; ghi lại vì tài liệu cũ nhắc tới.
+- [ ] **`docs/STACK.md:89` từng ghi `lib/seed-color.ts`** — file không tồn tại. **Đã sửa.**
+- [ ] **`docs/BACKLOG.md` từng ghi `zod`/`react-hook-form`/`@hookform/resolvers`/`sonner` là "chưa
+      dùng"** — cả bốn đã dùng. **Đã sửa ở `STACK.md`.**
+- [ ] **`docs/BACKLOG.md` từng nói `Badge` không co được xuống 16px** — **sai**, đã kiểm bằng
+      `twMerge('h-5 w-fit rounded-4xl px-2 py-0.5 text-xs','size-4 rounded-full p-0')` →
+      `'text-xs size-4 rounded-full p-0'`. Nếu muốn badge số 16px thì dùng được `Badge`.
+- [ ] **`scratch/size-parity.mjs` (D-017) chưa chạy lại** sau khi đổi bo góc sang token và chuyển
+      sang `Card`. Dự kiến **sẽ lệch** — cần cập nhật script theo bộ token mới thay vì coi là lỗi.

@@ -1026,6 +1026,13 @@ không đụng topbar/side nav/bottom nav):
 | Nút Lọc / chip / popover           | `size="sm"` / `size="xs"` | mặc định / `size="sm"`, label 14px                                         |
 | Bo góc lẻ `rounded-[0.15/0.25rem]` | 2.4 / 4px                 | `rounded-md` (8px, D-017)                                                  |
 
+> **Đính chính (2026-11-08):** lần quét của D-018 (commit `36e5e85`) **bỏ sót 5 file** —
+> `post-detail-page.tsx`, `place-suggestion-card.tsx`, `profile-post-grid.tsx`, `search-page.tsx`,
+> `place-detail-page.tsx` vẫn còn `rounded-[0.15/0.25rem]`. Việc gộp về `rounded-md` cũng bị đảo
+> ngược ở D-025: các giá trị lẻ được **giữ nguyên độ lớn** nhưng đổi thành token ngữ nghĩa
+> `rounded-surface` / `rounded-control` / `rounded-thumb`, vì `rounded-md` (8px) làm dày rõ rệt các
+> ô nhỏ trong hàng. Xem D-025 mục (c).
+
 ### Phương án đã xem
 
 - _Đổi `--radius` chung hoặc font-size gốc `html`_ — loại: ảnh hưởng mọi route kể cả nav.
@@ -1313,3 +1320,106 @@ xong ở D-022.
 - Bảng chia sẻ hệ điều hành thật (`navigator.share`) trên điện thoại thật.
 - Hộp thoại xin quyền clipboard của Safari/Firefox.
 - Kéo thả sắp xếp địa điểm trong bộ sưu tập (chưa làm).
+
+## D-025: Chuẩn hoá toàn dự án về component có sẵn, token ngữ nghĩa và helper dùng chung
+
+**Ngày:** 2026-11-08
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Audit trước đó (`audit-shadcn-2026-11-08.md`) chỉ ra bốn loại lệch chuẩn lặp lại khắp `src/`:
+
+1. **Tự chế lại component đã cài.** 9 khối "card" là `div` + `rounded-* border bg-card shadow-*`; hàng
+   thông báo/gợi ý là `div` + `flex`; banner cảnh báo là `div` + bảng màu `amber`; 9 nút bật/tắt là
+   `Button` + `aria-pressed`; form dùng `<label>` thô.
+2. **Giá trị thị giác viết trực tiếp.** 13 chỗ `rounded-[0.25/0.2/0.15rem]`, 5 chỗ `text-[10px]`,
+   7 chỗ bảng màu thô (`amber-*`, `emerald-*`, `blue-*`, `border-white`).
+3. **Số liệu tự format.** `toFixed(1)` cho điểm đánh giá, `toLocaleDateString` cho ngày,
+   `"₫".repeat(priceLevel)` lặp 4 nơi.
+4. **Hook tự viết.** `use-user-location` (geolocation + watch), `use-infinite-scroll`
+   (`addEventListener("scroll")`), `use-debounced-value` (`setTimeout`).
+
+Hệ quả: cùng một khái niệm có nhiều cách render khác nhau, sửa một chỗ không lan sang chỗ khác.
+`[data-skin="retro"] [data-slot="card"]` trong `index.css` là **code chết** vì không có feature card
+nào mang `data-slot="card"`.
+
+### Quyết định
+
+**(a) Thêm `@uidotdev/usehooks@2.4.1`** để xoá 3 hook tự viết.
+
+| Tiêu chí | Giá trị |
+| --- | --- |
+| License | MIT |
+| Peer deps | `react >=18`, `react-dom >=18` (React 19 thoả) |
+| Kích thước | 32.242 B raw / **6.752 B gzip** |
+| Hook dùng | `useGeolocation`, `useIntersectionObserver`, `useDebounce` |
+
+Phương án đã xem và loại:
+
+- `react-use@17.6.1` — **Unlicense**, 453.840 B raw (67× lớn hơn), không có `useGeolocation` đúng
+  semantics cần (không tách `watchPosition`), repo ít cập nhật.
+- `use-debounce` + `react-intersection-observer` — 2 package thay vì 1, vẫn phải tự viết geolocation.
+- `@reactuses/core` — kéo peer `qrcode ^1.5` không dùng đến.
+- Giữ hook tự viết — loại: `useGeolocation` của bộ này xử lý sẵn `getCurrentPosition` +
+  `watchPosition` + `clearWatch` + phân loại `error.code`, tức là đúng phần dễ sai nhất.
+
+`useGeolocation` đăng ký watcher **ngay khi mount**, nên không gọi trực tiếp trong `useUserLocation`
+(sẽ hỏi quyền vị trí lúc mở `/discover`). Tách `GeolocationWatcher` ở
+`src/hooks/geolocation-watcher.tsx`, chỉ mount sau khi người dùng bấm "Gần đây"; hook trả
+`locationGate` và trang phải render nó.
+
+**(b) `Card` là container chuẩn cho mọi khối "thẻ".** Chấp nhận thay đổi thị giác nhỏ (bán kính
+`rounded-xl` = 14px thay vì 4px, có `ring-1 ring-foreground/10` thay vì `border`) để đổi lấy việc
+`[data-skin="retro"] [data-slot="card"]` hoạt động trở lại và mọi thẻ có cùng cấu trúc
+`CardHeader`/`CardContent`/`CardFooter`.
+
+**(c) Ba bậc bo góc ngữ nghĩa, không dùng giá trị lẻ.** Thang Tailwind giữ nguyên; ngoài thang chỉ
+có 3 token khai trong `@theme inline`:
+
+| Token | Giá trị | Dùng cho |
+| --- | --- | --- |
+| `--radius-surface` | `0.25rem` (4px) | khối nội dung / panel phụ / khung ảnh lớn |
+| `--radius-control` | `0.2rem` (3.2px) | chip, ô nhỏ trong hàng, logo chữ |
+| `--radius-thumb` | `0.15rem` (2.4px) | ảnh thu nhỏ trong danh sách |
+
+Phương án đã xem: _gộp hết về `rounded-md`_ — loại, `rounded-md` = `calc(0.625rem * 0.8)` = 8px,
+làm dày đáng kể các ô nhỏ trong hàng; _giữ giá trị lẻ_ — loại, không grep được, không đổi được
+một chỗ.
+
+**(d) Token `--star` cho điểm đánh giá.** Trước đây `amber-400`/`amber-500` viết trực tiếp ở 2 nơi
+(`rating-stars.tsx`, `places-map.tsx`). Thêm `--star` vào **cả 4 khối skin** (`:root`, `.dark`,
+`[data-skin="retro"]`, `[data-skin="retro"].dark`) và map `--color-star` để `text-star`/`fill-star`
+hoạt động.
+
+**(e) `Comment.isMine` do server kết luận.** Trước đây `comment-thread-panel.tsx` truyền
+`isMe` = hằng `true`, khiến menu "Xoá bình luận" hiện trên bình luận của người khác. Quyền xoá là
+kết luận của server (giống `PlaceSummary.isPublished`), client chỉ hiển thị. Server cũng chặn
+`DELETE /comments/:id` khi không phải chủ.
+
+**(f) `docs/CONVENTIONS.md` là nguồn quy ước duy nhất.** Bảng thay thế "đang tự viết → dùng gì",
+danh sách token, helper format, hằng số, quy tắc trợ năng và cổng grep kiểm tra.
+
+### Đã xác minh
+
+- `bunx tsc -p tsconfig.app.json --noEmit --incremental false` → exit 0 (chạy sau mỗi lần quét).
+- `bunx eslint src` → exit 0.
+- `bunx prettier --check` trên các file đã sửa → pass.
+- Grep sau khi quét: `rounded-[` trong `src/features` + `src/components/layout` → **0**;
+  `text-[10px]`/`text-[11px]` → **0**; `toFixed`/`toLocaleString`/`toLocaleDateString` → **0**;
+  `amber-`/`emerald-`/`blue-[0-9]`/`bg-white`/`text-white`/`border-white`/`bg-black` → **0**.
+- `bun pm view @uidotdev/usehooks` → `2.4.1`, `license: MIT`, `peerDependencies: react >=18,
+  react-dom >=18`; tarball 32.242 B.
+- `grep -rn "aria-pressed" node_modules/@base-ui/react/toggle/Toggle.js` → dòng 75
+  `'aria-pressed': pressed`, xác nhận `Toggle` thay được `Button + aria-pressed`.
+
+### Chưa xác minh
+
+- Ảnh hưởng thị giác thực tế của việc chuyển 9 khối sang `Card` (bán kính 4px → 14px, viền → ring):
+  chưa chụp ảnh so sánh trước/sau.
+- `scratch/size-parity.mjs` (D-017) chưa chạy lại sau khi đổi bo góc — dự kiến **sẽ lệch** vì bán
+  kính thay đổi có chủ đích, cần cập nhật script thay vì coi là lỗi.
+- `useGeolocation` có gọi cả `getCurrentPosition` và `watchPosition`; chưa đo xem Chrome có hỏi
+  quyền 2 lần hay không.
+- `cn-toast` trong `src/components/ui/sonner.tsx:35` chưa xác định được định nghĩa nằm ở đâu
+  (không có trong `node_modules/shadcn/dist/tailwind.css`).

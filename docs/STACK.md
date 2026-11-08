@@ -18,12 +18,13 @@ Phiên bản đã cài thực tế (đọc từ `node_modules/*/package.json`), 
 | next-themes                           | 0.4.6          | Sáng/tối, gắn class `dark` lên `<html>`                 |
 | react-router                          | 8.5.1          | Routing                                                 |
 | @tanstack/react-query                 | 5.106.1        | Server state (mọi dữ liệu từ API)                       |
-| zustand                               | 5.1.0          | Client state toàn cục — **chưa dùng** (chưa có nhu cầu) |
-| zod                                   | 4.6.7          | Schema validation — **chưa dùng**                       |
-| react-hook-form / @hookform/resolvers | 7.91.0 / 7.0.3 | Form — **chưa dùng**                                    |
+| zustand                               | 5.1.0          | Client state toàn cục — **chưa dùng** (skin/theme đã có provider riêng) |
+| zod                                   | 4.6.7          | Schema validation — dùng ở `settings-page`, `review-form`, dialog bộ sưu tập |
+| react-hook-form / @hookform/resolvers | 7.91.0 / 7.0.3 | Form + cầu nối zod (xem `docs/CONVENTIONS.md` §8)       |
 | axios                                 | 1.21.0         | HTTP client                                             |
-| sonner                                | 2.0.8          | Toast — **chưa dùng**                                   |
+| sonner                                | 2.0.8          | Toast — dùng qua `toast()` và `<Toaster>` ở `app-provider` |
 | lucide-react                          | 1.70.0         | Icon                                                    |
+| @uidotdev/usehooks                    | 2.4.1          | `useGeolocation`, `useIntersectionObserver`, `useDebounce` — thay hook tự viết (D-025) |
 
 ## Runtime
 
@@ -82,11 +83,13 @@ src/
 │   ├── settings/           # /settings: pages (RHF + zod)
 │   └── notification/       # /notification: api, components, hooks, pages, types
 │
-├── hooks/                  # hook dùng chung (use-infinite-scroll, use-debounced-value)
+├── hooks/                  # hook dùng chung: use-infinite-scroll, use-debounced-value,
+│                           #   use-user-location (+ geolocation-watcher.tsx)
 ├── lib/                    # tiện ích & cấu hình thư viện dùng chung
 │   ├── axios.ts            # axios instance + adapter mock (TODO: bỏ khi có backend)
-│   ├── format.ts           # formatRelativeTime, formatCount
-│   ├── seed-color.ts       # gradient ổn định từ seed
+│   ├── constants.ts        # giới hạn ký tự + toạ độ Đà Nẵng (client & mock server dùng chung)
+│   ├── format.ts           # formatCount/Number/Rating/Date/RelativeTime/Distance/Coordinate
+│   ├── share.ts            # Web Share API + fallback clipboard
 │   └── utils.ts            # cn()
 │
 ├── mocks/                  # SERVER GIẢ LẬP — xoá khi có backend thật
