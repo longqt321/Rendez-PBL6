@@ -22,7 +22,7 @@ export function ProfileCollectionGrid({ handle, isMe }: ProfileCollectionGridPro
   if (isPending) {
     return (
       <p className="py-10 text-center text-sm text-muted-foreground">
-        <Spinner /> Đang tải bộ sưu tập…
+        <Spinner aria-label="Đang tải bộ sưu tập" /> Đang tải bộ sưu tập…
       </p>
     )
   }

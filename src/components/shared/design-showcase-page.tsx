@@ -133,7 +133,7 @@ export function DesignShowcasePage() {
             <HeartIcon />
           </Button>
           <Button disabled>
-            <Spinner />
+            <Spinner aria-label="Đang tải (demo)" />
             Đang tải
           </Button>
         </div>
@@ -295,7 +295,7 @@ export function DesignShowcasePage() {
       <Section title="Skeleton + animation — tw-animate-css">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={simulateLoading} disabled={loading}>
-            {loading ? <Spinner /> : null}
+            {loading ? <Spinner aria-label="Đang mô phỏng tải (demo)" /> : null}
             Mô phỏng tải
           </Button>
           <div className="flex flex-1 flex-col gap-2">

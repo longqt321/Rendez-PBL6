@@ -169,7 +169,11 @@ export function EditCollectionDialog({ collection, children }: EditCollectionDia
               Huỷ
             </Button>
             <Button type="submit" disabled={updateCollection.isPending}>
-              {updateCollection.isPending ? <Spinner /> : <CheckIcon />}
+              {updateCollection.isPending ? (
+                <Spinner aria-label="Đang lưu bộ sưu tập" />
+              ) : (
+                <CheckIcon />
+              )}
               Lưu thay đổi
             </Button>
           </DialogFooter>

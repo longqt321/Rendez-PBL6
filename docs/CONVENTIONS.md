@@ -137,7 +137,11 @@ Không bao giờ spread `{...form.register("x")}` vào `Switch`, `RadioGroup`, `
 ## 9. Trợ năng
 
 - Mọi nút chỉ có icon phải có `aria-label` tiếng Việt.
-- `Spinner` đã có `role="status"` + `aria-label`; **không** bọc thêm `role="status"`.
+- `Spinner` đã có `role="status"`; **không** bọc thêm `role="status"` (đọc hai lần).
+- `Spinner` hardcode `aria-label="Loading"` tiếng Anh (template shadcn, không sửa tay file
+  `ui/`) → **mọi nơi dùng phải truyền `aria-label` tiếng Việt** mô tả đúng ngữ cảnh:
+  `aria-label="Đang tải bình luận"`, `aria-label="Đang đăng bài"`, `aria-label="Đang lưu đánh giá"`.
+  Prop truyền vào ghi đè nhãn mặc định vì `Spinner` spread `{...props}` sau nhãn gốc.
 - `ItemGroup` đã có `role="list"`; **không** thêm `role="list"` lần nữa.
 - Icon trang trí: `aria-hidden="true"`.
 - Vùng cuộn có `tabIndex={0}` và `aria-label`.

@@ -1,7 +1,5 @@
 import type { PlaceSuggestion } from "@/features/places/types/place"
 
-export type NotificationKind = "place-suggestion" | "like" | "comment" | "follow" | "system"
-
 interface NotificationBase {
   id: string
   createdAt: string

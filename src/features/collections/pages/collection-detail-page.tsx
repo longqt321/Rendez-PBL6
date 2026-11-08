@@ -50,7 +50,7 @@ function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPla
   if (isPending) {
     return (
       <div className="flex h-72 items-center justify-center rounded-md border bg-card text-sm text-muted-foreground">
-        <Spinner /> Đang tải…
+        <Spinner aria-label="Đang tải địa điểm" /> Đang tải…
       </div>
     )
   }
@@ -83,7 +83,7 @@ function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPla
               />
             }
           >
-            {setPlace.isPending ? <Spinner /> : <XIcon />}
+            {setPlace.isPending ? <Spinner aria-label="Đang bỏ địa điểm" /> : <XIcon />}
           </TooltipTrigger>
           <TooltipContent>Bỏ khỏi bộ sưu tập</TooltipContent>
         </Tooltip>
@@ -120,7 +120,7 @@ export function CollectionDetailPage() {
     return (
       <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
         <p className="py-16 text-center text-sm text-muted-foreground">
-          <Spinner /> Đang tải bộ sưu tập…
+          <Spinner aria-label="Đang tải bộ sưu tập" /> Đang tải bộ sưu tập…
         </p>
       </div>
     )
@@ -258,7 +258,11 @@ export function CollectionDetailPage() {
               onClick={handleDelete}
               disabled={deleteCollection.isPending}
             >
-              {deleteCollection.isPending ? <Spinner /> : <Trash2Icon />}
+              {deleteCollection.isPending ? (
+                <Spinner aria-label="Đang xoá bộ sưu tập" />
+              ) : (
+                <Trash2Icon />
+              )}
               Xoá bộ sưu tập
             </AlertDialogAction>
           </AlertDialogFooter>

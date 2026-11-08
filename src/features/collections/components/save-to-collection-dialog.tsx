@@ -115,7 +115,7 @@ export function SaveToCollectionDialog({
         <div className="max-h-64 overflow-y-auto">
           {isPending ? (
             <p className="py-4 text-center text-sm text-muted-foreground">
-              <Spinner /> Đang tải bộ sưu tập…
+              <Spinner aria-label="Đang tải bộ sưu tập" /> Đang tải bộ sưu tập…
             </p>
           ) : collections && collections.length > 0 ? (
             <ItemGroup className="gap-1 p-0">
@@ -190,7 +190,11 @@ export function SaveToCollectionDialog({
                 disabled={newName.trim().length === 0 || createCollection.isPending}
                 onClick={handleCreate}
               >
-                {createCollection.isPending ? <Spinner /> : <PlusIcon />}
+                {createCollection.isPending ? (
+                  <Spinner aria-label="Đang tạo bộ sưu tập" />
+                ) : (
+                  <PlusIcon />
+                )}
                 Tạo
               </Button>
             </div>

@@ -80,7 +80,11 @@ export function CommentComposer({ postId, replyTo, onCancelReply }: CommentCompo
           disabled={createComment.isPending || body.trim().length === 0}
           onClick={handleSubmit}
         >
-          {createComment.isPending ? <Spinner /> : <SendIcon aria-hidden="true" />}
+          {createComment.isPending ? (
+            <Spinner aria-label="Đang gửi bình luận" />
+          ) : (
+            <SendIcon aria-hidden="true" />
+          )}
         </Button>
       </div>
     </div>

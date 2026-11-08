@@ -132,7 +132,7 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
               Huỷ
             </Button>
             <Button type="submit" disabled={!canSubmit}>
-              {createPost.isPending ? <Spinner /> : <CameraIcon />}
+              {createPost.isPending ? <Spinner aria-label="Đang đăng check-in" /> : <CameraIcon />}
               Đăng check-in
             </Button>
           </DialogFooter>

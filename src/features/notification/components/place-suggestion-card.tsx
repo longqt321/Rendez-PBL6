@@ -120,7 +120,7 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
                       updatePlace.mutate({ postId: notification.postId, placeId: place.id })
                     }
                   >
-                    {isPending ? <Spinner /> : <CheckIcon />}
+                    {isPending ? <Spinner aria-label="Đang gắn địa điểm" /> : <CheckIcon />}
                     {isChosen ? "Đã gắn" : "Chọn"}
                   </Button>
                 </ItemActions>

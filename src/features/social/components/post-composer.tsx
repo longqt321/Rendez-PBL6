@@ -158,7 +158,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
             render={<Button type="button" variant="ghost" />}
             disabled={!canSuggest}
           >
-            {isFetching ? <Spinner /> : <MapPinIcon />}
+            {isFetching ? <Spinner aria-label="Đang tìm gợi ý địa điểm" /> : <MapPinIcon />}
             Gắn địa điểm
             {suggestions.length > 0 ? (
               <Badge variant="secondary" className="ml-1">
@@ -181,7 +181,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
           </span>
 
           <Button type="submit" disabled={!canSubmit}>
-            {createPost.isPending ? <Spinner /> : null}
+            {createPost.isPending ? <Spinner aria-label="Đang đăng bài" /> : null}
             Đăng
           </Button>
         </div>

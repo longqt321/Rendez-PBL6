@@ -171,7 +171,11 @@ export function NotificationPage() {
           onClick={() => markAllRead.mutate()}
           disabled={unreadCount === 0 || markAllRead.isPending}
         >
-          {markAllRead.isPending ? <Spinner /> : <CheckCheckIcon />}
+          {markAllRead.isPending ? (
+            <Spinner aria-label="Đang đánh dấu đã đọc" />
+          ) : (
+            <CheckCheckIcon />
+          )}
           Đọc tất cả
         </Button>
       </header>

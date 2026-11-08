@@ -107,7 +107,7 @@ export function ReviewForm({ placeId, myReview, authorInitials, onDone }: Review
             </Button>
           ) : null}
           <Button type="submit" disabled={upsert.isPending}>
-            {upsert.isPending ? <Spinner /> : <SendIcon />}
+            {upsert.isPending ? <Spinner aria-label="Đang lưu đánh giá" /> : <SendIcon />}
             {myReview ? "Cập nhật" : "Gửi đánh giá"}
           </Button>
         </div>

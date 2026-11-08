@@ -257,7 +257,7 @@ export function DiscoverPage() {
             }
           >
             {isLocating ? (
-              <Spinner className="size-3.5" />
+              <Spinner className="size-3.5" aria-label="Đang xác định vị trí" />
             ) : isNearbyActive ? (
               <LocateFixedIcon className="size-3.5" />
             ) : (
@@ -277,7 +277,7 @@ export function DiscoverPage() {
 
         {isFetchingNextPage ? (
           <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Spinner className="size-3.5" />
+            <Spinner className="size-3.5" aria-label="Đang tải thêm địa điểm" />
             Đang tải…
           </span>
         ) : null}
@@ -386,7 +386,7 @@ export function DiscoverPage() {
                 onClick={() => void fetchNextPage()}
                 disabled={isFetchingNextPage}
               >
-                {isFetchingNextPage ? <Spinner /> : null}
+                {isFetchingNextPage ? <Spinner aria-label="Đang tải thêm địa điểm" /> : null}
                 {isFetchingNextPage ? "Đang tải…" : "Tải thêm"}
               </Button>
             ) : (

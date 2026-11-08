@@ -53,7 +53,7 @@ export function PlaceDetailPage() {
   if (isPending) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Spinner className="size-6" />
+        <Spinner className="size-6" aria-label="Đang tải thông tin địa điểm" />
       </div>
     )
   }

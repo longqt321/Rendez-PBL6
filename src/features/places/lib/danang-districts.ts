@@ -7,8 +7,6 @@ export const DANANG_DISTRICTS = [
   "Liên Chiểu",
 ] as const
 
-export type DanangDistrict = (typeof DANANG_DISTRICTS)[number]
-
 /**
  * Khoảng cách đường chim bay giữa hai toạ độ (km) — công thức Haversine.
  *
