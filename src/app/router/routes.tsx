@@ -12,7 +12,6 @@ import { PlaceDetailPage } from "@/features/places/pages/place-detail-page"
 import { SearchPage } from "@/features/search/pages/search-page"
 import { SavedPage } from "@/features/saved/pages/saved-page"
 import { CollectionDetailPage } from "@/features/collections/pages/collection-detail-page"
-import { TripDetailPage } from "@/features/trips/pages/trip-detail-page"
 import { SettingsPage } from "@/features/settings/pages/settings-page"
 import { NotFoundPage } from "@/features/not-found/pages/not-found-page"
 import { RouteErrorPage } from "./route-error-page"
@@ -38,7 +37,6 @@ export const routes: RouteObject[] = [
       { path: "/search", element: <SearchPage /> },
       { path: "/saved", element: <SavedPage /> },
       { path: "/collections/:id", element: <CollectionDetailPage /> },
-      { path: "/trips/:id", element: <TripDetailPage /> },
       { path: "/profile", element: <ProfilePage /> },
       { path: "/u/:handle", element: <UserProfilePageRoute /> },
       { path: "/settings", element: <SettingsPage /> },

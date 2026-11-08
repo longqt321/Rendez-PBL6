@@ -49,22 +49,6 @@ export const MAX_COLLECTION_NAME_LENGTH = 80
 export const MAX_COLLECTION_DESCRIPTION_LENGTH = 400
 
 // ---------------------------------------------------------------------------
-// Chuyến đi & lịch trình ngày
-// ---------------------------------------------------------------------------
-
-/** Tên chuyến đi. */
-export const MAX_TRIP_NAME_LENGTH = 80
-
-/** Số ngày tối đa của một chuyến đi — chặn ở form tạo/chỉnh. */
-export const MAX_TRIP_DAYS = 30
-
-/** Số chặng tối đa trong một lịch trình ngày. */
-export const MAX_DAY_PLAN_STOPS = 20
-
-/** Nhãn nơi ở của chuyến đi ("Khách sạn ABC, Mỹ Khê"). */
-export const MAX_TRIP_BASE_LABEL_LENGTH = 120
-
-// ---------------------------------------------------------------------------
 // Chia hóa đơn
 // ---------------------------------------------------------------------------
 
@@ -73,30 +57,3 @@ export const MAX_BILL_AMOUNT = 100_000_000
 
 /** Số người tối đa khi chia bill. */
 export const MAX_BILL_PEOPLE = 20
-
-// ---------------------------------------------------------------------------
-// Món phải thử Đà Nẵng — danh sách curated tĩnh, khớp `tags` trong fixture
-// ---------------------------------------------------------------------------
-
-/** Một món đặc trưng cần thử: `tag` phải trùng chính xác một tag của `Place`. */
-export interface MustTryDish {
-  label: string
-  tag: string
-}
-
-/**
- * Món phải thử khi đến Đà Nẵng — danh sách do con người curated, KHÔNG sinh tự động
- * từ tần suất tag. Mỗi `tag` đã được đối chiếu có thật trong `src/mocks/fixtures/places.ts`.
- */
-export const MUST_TRY_DISHES: MustTryDish[] = [
-  { label: "Mì Quảng", tag: "mì quảng" },
-  { label: "Bánh xèo", tag: "bánh xèo" },
-  { label: "Bún chả cá", tag: "bún chả cá" },
-  { label: "Bánh tráng thịt heo", tag: "bánh tráng thịt heo" },
-  { label: "Cà phê muối", tag: "cà phê muối" },
-  { label: "Bánh canh cá nục", tag: "bánh canh cá nục" },
-  { label: "Bê thui", tag: "bê thui" },
-  { label: "Gà nướng lu", tag: "gà nướng lu" },
-  { label: "Ốc hút", tag: "ốc hút" },
-  { label: "Hải sản", tag: "hải sản tươi sống" },
-]

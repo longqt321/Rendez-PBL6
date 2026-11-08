@@ -1,3 +1,8 @@
+> [!CAUTION]
+> **ĐÃ BỎ (2026-11-08, D-030):** toàn bộ gói "Lên kế hoạch chuyến đi Đà Nẵng" trong tài liệu này
+> không được triển khai nữa — user quyết định bỏ hướng Trip để chuyển sang "Phòng lọc nhóm"
+> (nhóm cùng lọc /discover). Tài liệu giữ nguyên làm tham khảo; commit `f8fe665` là mã nguồn cuối.
+
 # KẾ HOẠCH THIẾT KẾ — Gói "Lên kế hoạch chuyến đi Đà Nẵng"
 
 > Thiết kế chi tiết cho 5 hạng mục đã chốt ở

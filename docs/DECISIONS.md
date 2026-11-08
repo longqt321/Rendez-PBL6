@@ -1571,3 +1571,28 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 - Chưa thử kéo thả trên thiết bị cảm ứng thật; chưa đo xung đột giữa kéo dọc và cuộn trang.
 - Chưa kiểm `@dnd-kit/sortable@10` tương thích `@dnd-kit/core@6` (registry khai báo vậy, nhưng
   chưa chạy thử).
+
+## D-030 — Bỏ feature "Chuyến đi" (Trip), chuyển hướng sang "Phòng lọc nhóm"
+
+### Bối cảnh
+
+- Bước 2 gói "Lên kế hoạch chuyến đi" (commit `f8fe665`) đã hoàn tất nhưng user quyết định
+  **bỏ hẳn hướng Trip**: ưu tiên chuyển sang tính năng nhóm cùng lọc (xem D-031).
+- Lý do: "Chuyến đi" nên là chức năng ngang hàng discover/social, nhưng trọng tâm thật sự của
+  user là **nhóm người cùng lên kế hoạch trong 1 ngày**, không phải quản lý chuyến nhiều ngày.
+
+### Quyết định
+
+- Revert commit `f8fe665` bằng `git revert --no-commit` (KHÔNG `git reset --hard`): xoá
+  `src/features/trips/**`, route `/trips/:id`, tab "Chuyến đi" trong `/saved`.
+- Xoá thêm phần Trip-only từ commit `229573f`: `MAX_TRIP_NAME_LENGTH`, `MAX_TRIP_DAYS`,
+  `MAX_DAY_PLAN_STOPS`, `MUST_TRY_DISHES`/`MustTryDish`, `places/lib/travel.ts`
+  (`estimateTravelMinutes`) — grep xác nhận không còn nơi nào dùng.
+- **Giữ lại** `formatClock`, `formatVnd` (format.ts) và `shareText` (share.ts) — dùng chung.
+- Git history giữ nguyên; cần lấy lại thì xem commit `f8fe665`.
+
+### Hệ quả
+
+- `calendar` (react-day-picker + date-fns) và `dnd-kit` đã cài nhưng hiện **chưa có nơi dùng** —
+  không gỡ (D-026/D-027 vẫn hợp lệ cho tính năng tương lai), ghi chú ở đây để không quên.
+- Docs thiết kế `docs/design/ke-hoach-thiet-ke.md` giữ làm tài liệu tham khảo, đánh dấu đã bỏ.

@@ -260,3 +260,13 @@ Còn lại, cập nhật sau đợt chuẩn hoá thứ hai (2026-11-08):
       literal thiếu `$` tại `src/features/social/components/comment-composer.tsx:62-64`. Sửa 1 ký tự.
 - [ ] **Fixture thông báo hệ thống ghi "Khu vực Quận 1"** (`src/mocks/fixtures/notifications.ts:41`)
       — Đà Nẵng không có Quận 1 (đó là TP.HCM). Sửa thành tên quận Đà Nẵng thực tế.
+
+## Phát hiện 2026-11-08 (bỏ Trip, chuyển Phòng lọc nhóm)
+
+- [ ] **Backend thật cho đa thiết bị (Phòng lọc nhóm)** — mock là db in-memory per tab; đồng bộ
+      giữa các thiết bị thật bắt buộc WebSocket/Supabase Realtime. Đợt này chỉ demo các tab cùng
+      1 trình duyệt qua BroadcastChannel + localStorage.
+- [ ] **`GET /places` nhận thêm `priceMax`/tag/keyword** — hiện chỉ lọc `category`/`district`/`q`
+      (server.ts `listPublishedPlaces`); filter nhóm về mức giá/tag phải lọc client-side.
+- [ ] **`calendar` + `dnd-kit` đã cài chưa có nơi dùng** sau khi bỏ Trip — gỡ hoặc chờ tính năng
+      mới dùng lại; quyết định khi Phòng lọc nhóm hoàn thiện.
