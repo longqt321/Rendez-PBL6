@@ -95,7 +95,7 @@ export const MUST_TRY_DISHES: { label: string; tag: string }[] = [
   { label: "Bê thui", tag: "bê thui" },
   { label: "Gà nướng lu", tag: "gà nướng lu" },
   { label: "Ốc hút", tag: "ốc hút" },
-  { label: "Hải sản", tag: "hải sản" },
+  { label: "Hải sản", tag: "hải sản tươi sống" }, // fixture chỉ có tag này, không có "hải sản"
 ]
 ```
 
