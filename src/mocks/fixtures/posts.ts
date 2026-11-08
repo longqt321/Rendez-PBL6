@@ -1,21 +1,5 @@
-import type { Author } from "@/features/social/types/post"
 import type { MockPost } from "../types"
-
-/** Người dùng đang đăng nhập, phía server dùng khi tạo bài mới. */
-export const CURRENT_USER: Author = {
-  id: "u-me",
-  name: "Minh Anh",
-  handle: "minhanh.eats",
-  initials: "MA",
-}
-
-const AUTHORS: Author[] = [
-  { id: "u-1", name: "Trần Bảo", handle: "bao.an.day", initials: "TB" },
-  { id: "u-2", name: "Lê Thu Hà", handle: "thuha.foodmap", initials: "TH" },
-  { id: "u-3", name: "Phạm Quốc", handle: "quoc.around", initials: "PQ" },
-  { id: "u-4", name: "Nguyễn Yến", handle: "yen.danang", initials: "NY" },
-  { id: "u-5", name: "Đỗ Khánh", handle: "khanh.brunch", initials: "ĐK" },
-]
+import { AUTHOR_LIST as AUTHORS } from "./users"
 
 /**
  * Feed /social. Độc lập hoàn toàn với /discover: có bài gắn địa điểm đã lên

@@ -9,11 +9,11 @@ import type { Comment, CommentSort } from "@/features/social/types/comment"
 import type { Page } from "@/types/api"
 import { MOCK_NOTIFICATIONS } from "./fixtures/notifications"
 import { MOCK_PLACES, type MockPlace } from "./fixtures/places"
-import { CURRENT_USER, MOCK_POSTS } from "./fixtures/posts"
-import { CURRENT_USER as COMMENT_USER, MOCK_COMMENTS } from "./fixtures/comments"
+import { MOCK_POSTS } from "./fixtures/posts"
+import { MOCK_COMMENTS } from "./fixtures/comments"
 import { MOCK_REVIEWS } from "./fixtures/reviews"
 import { MOCK_COLLECTIONS } from "./fixtures/collections"
-import { ME, MOCK_USERS } from "./fixtures/users"
+import { CURRENT_USER, ME, MOCK_USERS } from "./fixtures/users"
 import { rankPlaceSuggestions } from "./ranking"
 import { normalizeText } from "./text"
 import {
@@ -266,7 +266,7 @@ function toCommentDto(comment: MockComment): Comment {
     createdAt: comment.createdAt,
     likeCount: comment.likeCount,
     likedByMe: comment.likedByMe,
-    isMine: comment.author.id === COMMENT_USER.id,
+    isMine: comment.author.id === CURRENT_USER.id,
     parentId: comment.parentId,
     replyTo:
       comment.parentId === null || parentHandle === null
@@ -283,7 +283,7 @@ function toReviewDto(review: MockReview): Review {
     rating: review.rating,
     content: review.content,
     createdAt: review.createdAt,
-    isMine: review.author.id === COMMENT_USER.id,
+    isMine: review.author.id === CURRENT_USER.id,
   }
 }
 
@@ -393,7 +393,7 @@ function createComment(postId: string, body: { body?: string; parentId?: string 
   const comment: MockComment = {
     id: `c-new-${commentSeq}`,
     postId,
-    author: COMMENT_USER,
+    author: CURRENT_USER,
     body: text,
     createdAt: new Date().toISOString(),
     likeCount: 0,
@@ -429,7 +429,7 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
   }
 
   const existing = db.reviews.find(
-    (review) => review.placeId === placeId && review.author.id === COMMENT_USER.id,
+    (review) => review.placeId === placeId && review.author.id === CURRENT_USER.id,
   )
   if (existing) {
     existing.rating = rating
@@ -442,7 +442,7 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
   const review: MockReview = {
     id: `r-new-${reviewSeq}`,
     placeId,
-    author: COMMENT_USER,
+    author: CURRENT_USER,
     rating,
     content,
     createdAt: new Date().toISOString(),
@@ -943,7 +943,7 @@ const routes: Route[] = [
       const comment = findComment(commentId)
       if (!comment || comment.deleted) notFound(config, "Không tìm thấy bình luận")
       // Chỉ tác giả mới xoá được — trước đây thiếu kiểm tra này nên ai cũng xoá được.
-      if (comment.author.id !== COMMENT_USER.id) {
+      if (comment.author.id !== CURRENT_USER.id) {
         forbidden(config, "Không phải bình luận của bạn")
       }
       deleteCommentSoft(commentId)

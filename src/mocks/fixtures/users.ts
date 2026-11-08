@@ -1,4 +1,5 @@
 import type { UserProfile } from "@/features/profile/types/profile"
+import type { Author } from "@/features/social/types/post"
 
 /**
  * Hồ sơ mẫu. `me` khớp `CURRENT_USER` trong fixtures/posts.ts — cùng id/handle.
@@ -92,5 +93,27 @@ export const MOCK_USERS: Record<string, UserProfile> = {
   },
 }
 
-/** Người dùng đang đăng nhập — khớp CURRENT_USER ở fixtures/posts.ts. */
+/** Người dùng đang đăng nhập. */
 export const ME = MOCK_USERS["u-me"]
+
+/**
+ * Tác giả dạng rút gọn cho bài đăng / bình luận.
+ *
+ * `Author` là tập con các trường của `UserProfile`, nên suy thẳng từ `MOCK_USERS`
+ * thay vì khai báo lại. Trước đây `fixtures/posts.ts` và `fixtures/comments.ts`
+ * mỗi file tự định nghĩa một bản `CURRENT_USER`/`AUTHORS` giống hệt — sửa một
+ * chỗ là lệch ba chỗ.
+ */
+export const CURRENT_USER: Author = ME
+
+/** Tác giả mẫu (trừ chính mình), tra theo id. */
+export const AUTHORS: Record<string, Author> = {
+  "u-1": MOCK_USERS["u-1"],
+  "u-2": MOCK_USERS["u-2"],
+  "u-3": MOCK_USERS["u-3"],
+  "u-4": MOCK_USERS["u-4"],
+  "u-5": MOCK_USERS["u-5"],
+}
+
+/** Dạng mảng, giữ đúng thứ tự u-1 → u-5, để seed bài đăng theo chỉ số. */
+export const AUTHOR_LIST: Author[] = Object.values(AUTHORS)
