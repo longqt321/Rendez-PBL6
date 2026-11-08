@@ -12,6 +12,7 @@ import {
 import { NavLink, Link, Outlet, useLocation } from "react-router"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { PageLoading } from "@/components/shared/page-loading"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,7 +34,6 @@ import { useUnreadNotificationCount } from "@/features/notification/hooks/use-no
 import { useRooms } from "@/features/rooms/hooks/use-rooms"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
 import { cn } from "@/lib/utils"
-import { PageLoading } from "@/components/shared/page-loading"
 import { FILTER_SHARED_PATHS, NAV_ITEMS, type NavItem } from "./nav-items"
 
 /** Tiêu đề theo path — một nguồn duy nhất, khớp các route ở `routes.tsx`. */
@@ -51,6 +51,8 @@ const PAGE_TITLES: [RegExp, string][] = [
   [/^\/saved$/, "Đã lưu"],
   [/^\/profile$/, "Trang cá nhân"],
   [/^\/settings$/, "Cài đặt"],
+  // Catch-all cuối cùng: mọi path còn lại là route 404.
+  [/^.*$/, "Không tìm thấy trang"],
 ]
 
 /** Tiêu đề tab trình duyệt cho path hiện tại; `undefined` → giữ tiêu đề mặc định. */

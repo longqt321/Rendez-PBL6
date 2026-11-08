@@ -4,7 +4,7 @@ import type { Place, PlaceCategory } from "../types/place"
 
 export interface DiscoverFilters {
   category: PlaceCategory | "all"
-  /** `"all"` = không lọc quận (giá trị gửi lên server là chuỗi rỗng). */
+  /** `"all"` = không lọc quận (khi gọi API thì bỏ trống tham số). */
   district?: string
   query: string
   /**

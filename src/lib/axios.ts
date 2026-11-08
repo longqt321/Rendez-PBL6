@@ -4,8 +4,8 @@ import { env } from "@/lib/env"
 /**
  * Lỗi API đã chuẩn hoá — UI chỉ cần đọc `message`/`status`.
  *
- * Khi backend thật trả `{ message, code }` (xem hợp đồng D-011) interceptor bên
- * dưới bọc lại thành `ApiError`; lỗi mạng (timeout, mất kết nối) có `status = 0`.
+ * Backend trả `{ message }` hoặc `{ detail }` (FastAPI) đều được nhận; lỗi mạng
+ * (timeout, mất kết nối) có `status = 0`.
  */
 export class ApiError extends Error {
   readonly status: number
@@ -17,6 +17,30 @@ export class ApiError extends Error {
     this.status = status
     this.code = code
   }
+}
+
+/**
+ * Chuyển mọi lỗi axios thành `ApiError` (hoặc giữ nguyên `Error` khác).
+ * Tách khỏi interceptor để test được mà không cần gọi mạng.
+ */
+export function toApiError(error: unknown): Error {
+  if (!axios.isAxiosError(error)) {
+    return error instanceof Error ? error : new Error("Lỗi không xác định")
+  }
+
+  const status = error.response?.status ?? 0
+  const body = error.response?.data as
+    { message?: unknown; detail?: unknown; code?: unknown } | undefined
+  const serverMessage = [body?.message, body?.detail].find(
+    (value): value is string => typeof value === "string" && value.length > 0,
+  )
+  const message =
+    serverMessage ??
+    (status === 0
+      ? "Không kết nối được máy chủ — kiểm tra mạng rồi thử lại."
+      : "Máy chủ trả lỗi — thử lại sau.")
+  const code = typeof body?.code === "string" ? body.code : undefined
+  return new ApiError(message, status, code)
 }
 
 /**
@@ -37,19 +61,5 @@ export const api = axios.create({
 
 api.interceptors.response.use(
   (response) => response,
-  (error: unknown) => {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status ?? 0
-      const body = error.response?.data as { message?: unknown; code?: unknown } | undefined
-      const message =
-        typeof body?.message === "string" && body.message.length > 0
-          ? body.message
-          : status === 0
-            ? "Không kết nối được máy chủ — kiểm tra mạng rồi thử lại."
-            : "Máy chủ trả lỗi — thử lại sau."
-      const code = typeof body?.code === "string" ? body.code : undefined
-      return Promise.reject(new ApiError(message, status, code))
-    }
-    return Promise.reject(error instanceof Error ? error : new Error("Lỗi không xác định"))
-  },
+  (error: unknown) => Promise.reject(toApiError(error)),
 )

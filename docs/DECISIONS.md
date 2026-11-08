@@ -1822,7 +1822,8 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
   chunk `server-*`). `VITE_ENABLE_MOCKS=false` tắt mock cả ở dev khi backend chạy local.
 - **`ApiError`** — interceptor chuẩn hoá lỗi (`status`, `code`, `message` tiếng Việt); lỗi mạng
   `status = 0`. UI không phải biết axios. Timeout 10s.
-- **`vite.config.ts`** — `server.proxy` `/api` → `VITE_PROXY_TARGET`; `build.sourcemap: true`.
+- **`vite.config.ts`** — `server.proxy` `/api` → `VITE_PROXY_TARGET`; `build.sourcemap: "hidden"`
+  (map sinh để upload dịch vụ lỗi, không tham chiếu trong bundle).
 
 ### Bundle & route
 
@@ -1842,7 +1843,7 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 - **ESLint type-aware** (`recommendedTypeChecked` + `projectService`). Sửa 18 lỗi thật: floating
   promise (`navigate`, `requestLocation`), `no-misused-promises` ở `onSubmit`, `any` từ base-ui
   (`RatingStars`, `Tabs`), `String(object)` ở mock query, `parseBody` generic tường minh.
-- **Vitest + Testing Library** (jsdom): 29 test — `lib/format`, `rooms/lib/room` (join/duplicate/
+- **Vitest + Testing Library** (jsdom): 34 test — `lib/format`, `rooms/lib/room` (join/duplicate/
   apply/dismiss/leave), bất biến `NAV_ITEMS`/`FILTER_SHARED_PATHS`, component `RatingStars`.
 - **CI** `.github/workflows/ci.yml`: typecheck → lint → format:check → test → build.
 - **Pre-commit** husky + lint-staged (prettier + eslint trên file staged).

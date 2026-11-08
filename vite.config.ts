@@ -26,8 +26,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      // Có sourcemap để đọc lỗi production; backend thật không ảnh hưởng.
-      sourcemap: true,
+      // Sourcemap "hidden": file .map vẫn sinh để upload lên dịch vụ lỗi sau này
+      // nhưng không tham chiếu trong bundle → trình duyệt không tải/công khai mã nguồn.
+      sourcemap: "hidden",
     },
     test: {
       environment: "jsdom",
