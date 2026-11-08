@@ -1429,10 +1429,15 @@ react-dom >=18`; tarball 32.242 B.
 ## D-026 — Dùng `Calendar` của shadcn (react-day-picker + date-fns) cho chọn ngày
 
 **Ngày:** 2026-11-08
-**Trạng thái:** Chờ cài đặt — `bunx shadcn add calendar` treo vì mạng (2 lần: 2026-11-08 16:37 và
-16:46, không có output, bị kill sau ~90–110 giây). Dependency `react-day-picker` + `date-fns` đã
-được cài theo lần đầu rồi **đã gỡ** vì không còn gì import. Quyết định dùng `Calendar` vẫn đứng;
-thực hiện lại bằng chính tool khi mạng ổn — **không tự tạo file** (L-008).
+**Trạng thái:** Đã áp dụng
+
+**Diễn biến cài đặt:** 2 lần đầu `bunx shadcn add calendar --yes` treo im lặng (~90–110 giây,
+không output). Nguyên nhân thật: **không phải mạng** — CLI đang chờ prompt tương tác
+`? The file button.tsx already exists. Would you like to overwrite? › (y/N)` (calendar khai báo
+`registryDependencies: ["button"]`, còn `--yes` không tự trả lời prompt ghi đè). Lần 3 chạy với
+stdin nạp sẵn `n` → thành công: tạo `calendar.tsx`, **giữ nguyên `button.tsx`** (skipped).
+Bài học ghi ở `docs/LESSONS.md` L-008 (đừng tự tạo file khi tool treo) và L-009 (tool "treo" có
+thể là đang chờ prompt — kiểm tra stdin trước khi kết luận).
 
 ### Bối cảnh
 
@@ -1498,8 +1503,8 @@ chỉ dùng vài hàm format. Không ảnh hưởng bundle đáng kể.
 
 - Chưa render thử `Calendar` trong `Popover`/`Drawer` trên mobile 360px.
 - Chưa đo bundle tăng thực tế sau `vite build` (chỉ có số unpacked của npm).
-- Nguyên nhân treo của `shadcn add` chưa xác định được (tool treo im lặng, không log lỗi; bước
-  `view` trước đó lại fetch được registry).
+- `calendar.tsx` sinh ra không có `"use client"` (shadcn 4.23 base-nova không chèn) — quy ước
+  "xoá use client" không cần áp dụng cho file này.
 
 ---
 

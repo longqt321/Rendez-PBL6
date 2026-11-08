@@ -417,3 +417,36 @@ add` hay update sẽ không biết nó là "lạ" hay "của tool", diff với r
 - `git log --diff-filter=A -- src/components/ui/` — mọi file trong thư mục này phải có commit do
   lệnh tool sinh ra; không commit nào "tạo file tay" cho thư mục này.
 - Khi báo "đã cài X", phải kèm output thật của tool (dòng "created …/X.tsx" hoặc tương đương).
+
+---
+
+## L-009 — Tool "treo" có thể là đang chờ prompt tương tác: kiểm tra stdin trước khi kết luận
+
+**Ngày:** 2026-11-08
+**Lỗi người dùng chỉ ra:**
+
+> "nó báo running là do phải lựa chọn: `? The file button.tsx already exists. Would you like to
+overwrite? › (y/N)`"
+
+**Đã làm sai gì:**
+
+`bunx shadcn add calendar --yes` đứng im ~2 phút, tôi kết luận "treo vì mạng" (kể cả sau khi đã
+gặp lỗi ECONNRESET thật ở một lệnh `npm view` khác cùng lúc). Thực tế: `calendar` khai báo
+`registryDependencies: ["button"]`, CLI hỏi ghi đè `button.tsx` và `--yes` **không** tự trả lời
+prompt này — tiến trình chỉ đang chờ stdin. Kết luận sai khiến tôi gần đi nhầm hướng (và đã ghi
+"treo vì mạng" vào D-026).
+
+**Quy tắc rút ra:**
+
+1. Tiến trình "RUNNING" quá lâu ≠ treo. Trước khi kết luận, kiểm tra: (1) nó có hỏi gì không —
+   chạy lại với stdin nạp sẵn (`printf 'n\n' | cmd`) hoặc chạy foreground để nhìn prompt; (2) CPU
+   của tiến trình có còn hoạt động không.
+2. `--yes` / `--force` của CLI không nhất thiết bao phủ mọi prompt — đọc output dở dang (kể cả khi
+   bị kill, buffer có thể đã in ra) trước khi chẩn đoán.
+3. Khi có prompt ghi đè file đã tuỳ biến (`button.tsx`), trả lời **N** trừ khi người dùng yêu cầu
+   ghi đè — file trong `src/components/ui/` có thể đã được dự án chỉnh sửa.
+
+**Cách kiểm tra bằng máy:**
+
+- Chạy CLI tương tác trong agent: luôn bọc `printf 'n\nn\nn\n' | <cmd>` (hoặc dùng cờ non-interactive
+  thật của CLI nếu có) và kiểm tra output có dòng `?` (prompt) trước khi kết luận treo.

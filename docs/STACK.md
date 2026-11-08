@@ -25,6 +25,8 @@ Phiên bản đã cài thực tế (đọc từ `node_modules/*/package.json`), 
 | sonner                                | 2.0.8                  | Toast — dùng qua `toast()` và `<Toaster>` ở `app-provider`                                                                 |
 | lucide-react                          | 1.70.0                 | Icon                                                                                                                       |
 | @uidotdev/usehooks                    | 2.4.1                  | `useGeolocation`, `useIntersectionObserver`, `useDebounce`, `useLocalStorage`, `useMediaQuery` — thay hook tự viết (D-025) |
+| react-day-picker                      | 10.0.2                 | Lịch chọn ngày — nền của `Calendar` shadcn (D-026)                                                                         |
+| date-fns                              | 4.4.0                  | Dependency bắt buộc của `react-day-picker`; không dùng trực tiếp trong nghiệp vụ                                           |
 | @dnd-kit/core / sortable / utilities  | 6.3.1 / 10.0.0 / 3.2.2 | Kéo thả sắp thứ tự chặng (D-027)                                                                                           |
 
 ## Runtime
