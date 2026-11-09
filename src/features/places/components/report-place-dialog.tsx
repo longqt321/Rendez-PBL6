@@ -63,7 +63,10 @@ export function ReportPlaceDialog({ place, children }: ReportPlaceDialogProps) {
     defaultValues: { reason: "closed", detail: "" },
   })
   const createReport = useCreatePlaceReport(place.id)
+  const reason = useWatch({ control: form.control, name: "reason" })
   const detail = useWatch({ control: form.control, name: "detail" })
+  // "Lý do khác" bắt buộc mô tả (schema refine) — nhãn phải khớp với ràng buộc.
+  const detailRequired = reason === "other"
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
@@ -136,7 +139,9 @@ export function ReportPlaceDialog({ place, children }: ReportPlaceDialogProps) {
           </Field>
 
           <Field data-invalid={!!form.formState.errors.detail}>
-            <FieldLabel htmlFor="report-detail">Ghi chú thêm (không bắt buộc)</FieldLabel>
+            <FieldLabel htmlFor="report-detail">
+              Ghi chú thêm {detailRequired ? "(bắt buộc)" : "(không bắt buộc)"}
+            </FieldLabel>
             <Textarea
               id="report-detail"
               {...form.register("detail")}
