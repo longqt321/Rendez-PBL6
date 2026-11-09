@@ -88,8 +88,12 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/banh-xeo-ba-duong-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/banh-xeo-ba-duong"
+      "images": [
+        "images/venues/banh-xeo-ba-duong-1.jpg",
+        "images/venues/banh-xeo-ba-duong-gm-1.jpg",
+        "images/venues/banh-xeo-ba-duong-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20x%C3%A8o%20B%C3%A0%20D%C6%B0%E1%BB%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "mi-quang-ba-mua",
@@ -137,8 +141,12 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/mi-quang-1a-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/mi-quang-1a"
+      "images": [
+        "images/venues/mi-quang-1a-1.jpg",
+        "images/venues/mi-quang-1a-gm-1.jpg",
+        "images/venues/mi-quang-1a-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/M%C3%AC%20Qu%E1%BA%A3ng%201A%201A%20H%E1%BA%A3i%20Ph%C3%B2ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "mi-quang-ech-bep-trang",
@@ -156,14 +164,18 @@
       "description": "Mì Quảng ếch.",
       "sources": ["canvashotel.com.vn", "openstreetmap.org"],
       "notes": "OSM ghi tên 'Mì Quảng Ếch' tại đúng số nhà 441 Ông Ích Khiêm.",
-      "image": "images/mi-quang.jpg",
+      "image": "images/venues/mi-quang-ech-bep-trang-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/mi-quang-ech-bep-trang-gm-1.jpg",
+        "images/venues/mi-quang-ech-bep-trang-gm-2.jpg",
+        "images/venues/mi-quang-ech-bep-trang-gm-3.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/M%C3%AC%20Qu%E1%BA%A3ng%20%E1%BA%BEch%20B%E1%BA%BFp%20Trang%20441%20%C3%94ng%20%C3%8Dch%20Khi%C3%AAm%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "dac-san-tran",
@@ -186,8 +198,12 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/dac-san-tran-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/dac-san-tran"
+      "images": [
+        "images/venues/dac-san-tran-1.jpg",
+        "images/venues/dac-san-tran-gm-1.jpg",
+        "images/venues/dac-san-tran-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/Qu%C3%A1n%20%C4%90%E1%BA%B7c%20s%E1%BA%A3n%20Tr%E1%BA%A7n%204%20L%C3%AA%20Du%E1%BA%A9n%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "quan-mau",
@@ -204,14 +220,19 @@
       "openingHours": null,
       "description": "Bánh tráng thịt heo.",
       "sources": ["canvashotel.com.vn", "openstreetmap.org"],
-      "image": "images/banh-trang-thit-heo.jpg",
+      "image": "images/venues/quan-mau-gm-1.png",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/quan-mau-gm-1.png",
+        "images/venues/quan-mau-gm-2.jpg",
+        "images/venues/quan-mau-gm-3.jpg",
+        "images/venues/quan-mau-gm-4.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/Qu%C3%A1n%20M%E1%BA%ADu%2035%20%C4%90%E1%BB%97%20Th%C3%BAc%20T%E1%BB%8Bnh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "bun-mam-van",
@@ -229,14 +250,19 @@
       "description": "Bún mắm nêm.",
       "sources": ["canvashotel.com.vn", "openstreetmap.org"],
       "notes": "Nguồn báo chí ghi K142/18 Trần Nhân Tông; OSM ghi Trần Kế Xương — cần xác minh địa chỉ.",
-      "image": "images/bun-mam.jpg",
+      "image": "images/venues/bun-mam-van-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/bun-mam-van-gm-1.jpg",
+        "images/venues/bun-mam-van-gm-2.jpg",
+        "images/venues/bun-mam-van-gm-3.jpg",
+        "images/venues/bun-mam-van-gm-4.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%BAn%20m%E1%BA%AFm%20n%C3%AAm%20V%C3%A2n%20K23%2F14%20Tr%E1%BA%A7n%20K%E1%BA%BF%20X%C6%B0%C6%A1ng%20(OSM)%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "bun-cha-ca-ba-lu",
@@ -259,8 +285,12 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/bun-cha-ca-ba-lu-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/bun-cha-ca-ba-lu"
+      "images": [
+        "images/venues/bun-cha-ca-ba-lu-1.jpg",
+        "images/venues/bun-cha-ca-ba-lu-gm-1.jpg",
+        "images/venues/bun-cha-ca-ba-lu-gm-2.png"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%BAn%20ch%E1%BA%A3%20c%C3%A1%20B%C3%A0%20L%E1%BB%AF%20319%20H%C3%B9ng%20V%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "banh-trang-kep-di-hoa",
@@ -283,8 +313,15 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/banh-trang-kep-di-hoa-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/banh-trang-kep-di-hoa"
+      "images": [
+        "images/venues/banh-trang-kep-di-hoa-1.jpg",
+        "images/venues/banh-trang-kep-di-hoa-gm-1.png",
+        "images/venues/banh-trang-kep-di-hoa-gm-2.jpg",
+        "images/venues/banh-trang-kep-di-hoa-gm-3.jpg",
+        "images/venues/banh-trang-kep-di-hoa-gm-4.jpg",
+        "images/venues/banh-trang-kep-di-hoa-gm-5.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20tr%C3%A1ng%20k%E1%BA%B9p%20D%C3%AC%20Hoa%2062%2F2A%20L%C3%AA%20%C4%90%C3%ACnh%20D%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "hai-san-nam-danh",
@@ -307,8 +344,14 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/hai-san-nam-danh-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/hai-san-nam-danh"
+      "images": [
+        "images/venues/hai-san-nam-danh-1.jpg",
+        "images/venues/hai-san-nam-danh-gm-1.jpg",
+        "images/venues/hai-san-nam-danh-gm-2.jpg",
+        "images/venues/hai-san-nam-danh-gm-3.jpg",
+        "images/venues/hai-san-nam-danh-gm-4.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20N%C4%83m%20%C4%90%E1%BA%A3nh%20K139%2FH59%2F38%20Tr%E1%BA%A7n%20Quang%20Kh%E1%BA%A3i%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "hai-san-nam-ranh",
@@ -326,14 +369,17 @@
       "description": "Hải sản giá phải chăng, không gian rộng.",
       "sources": ["hellodanang.vn", "openstreetmap.org"],
       "notes": "Nguồn ghi quận Ngũ Hành Sơn; toạ độ OSM khu Mỹ Khê — cần xác minh.",
-      "image": "images/hai-san.jpg",
+      "image": "images/venues/hai-san-nam-ranh-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/hai-san-nam-ranh-gm-1.jpg",
+        "images/venues/hai-san-nam-ranh-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20N%C4%83m%20R%E1%BA%A3nh%2001%20Ch%C6%B0%C6%A1ng%20D%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "hai-san-be-man",
@@ -356,8 +402,12 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/hai-san-be-man-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/hai-san-be-man"
+      "images": [
+        "images/venues/hai-san-be-man-1.jpg",
+        "images/venues/hai-san-be-man-gm-1.png",
+        "images/venues/hai-san-be-man-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20B%C3%A9%20M%E1%BA%B7n%20L%C3%B4%208%20V%C3%B5%20Nguy%C3%AAn%20Gi%C3%A1p%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "hai-san-moc-quan",
@@ -374,14 +424,17 @@
       "openingHours": null,
       "description": "Hải sản phong cách mộc mạc.",
       "sources": ["luhanhvietnam.com.vn", "openstreetmap.org"],
-      "image": "images/hai-san.jpg",
+      "image": "images/venues/hai-san-moc-quan-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/hai-san-moc-quan-gm-1.jpg",
+        "images/venues/hai-san-moc-quan-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20M%E1%BB%99c%20Qu%C3%A1n%2026%20T%C3%B4%20Hi%E1%BA%BFn%20Th%C3%A0nh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "hai-san-be-anh",
@@ -422,14 +475,17 @@
       "openingHours": null,
       "description": "Hải sản hơn 30 năm, mặt tiền biển Mỹ Khê.",
       "sources": ["pasgo.vn", "openstreetmap.org"],
-      "image": "images/hai-san.jpg",
+      "image": "images/venues/my-hanh-seafood-gm-1.png",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/my-hanh-seafood-gm-1.png",
+        "images/venues/my-hanh-seafood-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/Nh%C3%A0%20h%C3%A0ng%20h%E1%BA%A3i%20s%E1%BA%A3n%20M%E1%BB%B9%20H%E1%BA%A1nh%2018%20V%C3%B5%20Nguy%C3%AAn%20Gi%C3%A1p%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "reply-1988-cafe",
@@ -446,14 +502,17 @@
       "openingHours": null,
       "description": "Cafe vintage lấy cảm hứng từ phim Reply 1988.",
       "sources": ["klook.com", "openstreetmap.org"],
-      "image": "images/cafe.jpg",
+      "image": "images/venues/reply-1988-cafe-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/reply-1988-cafe-gm-1.jpg",
+        "images/venues/reply-1988-cafe-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/Reply%201988%20Caf%C3%A9%2020%20L%C3%AA%20H%E1%BB%93ng%20Phong%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "noi-cafe",
@@ -470,14 +529,14 @@
       "openingHours": null,
       "description": "Cafe hoài niệm trong hẻm.",
       "sources": ["hoabinhtourist.com", "openstreetmap.org"],
-      "image": "images/cafe.jpg",
+      "image": "images/venues/noi-cafe-gm-1.png",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": ["images/venues/noi-cafe-gm-1.png", "images/venues/noi-cafe-gm-2.jpg"],
+      "venuePageUrl": "https://www.google.com/maps/search/N%E1%BB%91i%20Caf%C3%A9%20113%2F18%20Nguy%E1%BB%85n%20Ch%C3%AD%20Thanh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "boulevard-gelato-coffee",
@@ -494,14 +553,18 @@
       "openingHours": null,
       "description": "Cafe kết hợp gelato, phong cách châu Âu.",
       "sources": ["hoabinhtourist.com", "openstreetmap.org"],
-      "image": "images/cafe.jpg",
+      "image": "images/venues/boulevard-gelato-coffee-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/boulevard-gelato-coffee-gm-1.jpg",
+        "images/venues/boulevard-gelato-coffee-gm-2.jpg",
+        "images/venues/boulevard-gelato-coffee-gm-3.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/Boulevard%20Gelato%20%26%20Coffee%2077%20Tr%E1%BA%A7n%20Qu%E1%BB%91c%20To%E1%BA%A3n%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "banh-mi-ong-ty",
@@ -524,8 +587,12 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/banh-mi-ong-ty-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/banh-mi-ong-ty"
+      "images": [
+        "images/venues/banh-mi-ong-ty-1.jpg",
+        "images/venues/banh-mi-ong-ty-gm-1.jpg",
+        "images/venues/banh-mi-ong-ty-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20m%C3%AC%20%C3%94ng%20T%C3%BD%20272%20H%C3%B9ng%20V%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "che-sau-lien",
@@ -543,14 +610,14 @@
       "description": "Chè sầu riêng trứ danh.",
       "sources": ["canvashotel.com.vn"],
       "notes": "OSM ghi 'Chè Thái Liên' tại cùng số nhà — cần xác minh tên.",
-      "image": "images/che.jpg",
+      "image": "images/venues/che-sau-lien-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": ["images/venues/che-sau-lien-gm-1.jpg", "images/venues/che-sau-lien-gm-2.jpg"],
+      "venuePageUrl": "https://www.google.com/maps/search/Ch%C3%A8%20S%E1%BA%A7u%20Li%C3%AAn%20189%20Ho%C3%A0ng%20Di%E1%BB%87u%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "bun-cha-ca-ong-ta",
@@ -591,14 +658,17 @@
       "openingHours": null,
       "description": "Gỏi cá Nam Ô.",
       "sources": ["sunparadiseland.com"],
-      "image": "images/goi-ca.jpg",
+      "image": "images/venues/goi-ca-nam-o-tan-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/goi-ca-nam-o-tan-gm-1.jpg",
+        "images/venues/goi-ca-nam-o-tan-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/G%E1%BB%8Fi%20c%C3%A1%20Nam%20%C3%94%20T%E1%BA%A5n%20464%20%C4%90i%E1%BB%87n%20Bi%C3%AAn%20Ph%E1%BB%A7%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "com-ga-a-hai",
@@ -615,14 +685,14 @@
       "openingHours": null,
       "description": "Cơm gà.",
       "sources": ["canvashotel.com.vn"],
-      "image": "images/com-ga.jpg",
+      "image": "images/venues/com-ga-a-hai-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": ["images/venues/com-ga-a-hai-gm-1.jpg", "images/venues/com-ga-a-hai-gm-2.jpg"],
+      "venuePageUrl": "https://www.google.com/maps/search/C%C6%A1m%20g%C3%A0%20A%20H%E1%BA%A3i%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "banh-xeo-nam-hien",
@@ -639,14 +709,19 @@
       "openingHours": null,
       "description": "Bánh xèo tôm nhảy.",
       "sources": ["canvashotel.com.vn"],
-      "image": "images/banh-xeo.jpg",
+      "image": "images/venues/banh-xeo-nam-hien-gm-1.png",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/banh-xeo-nam-hien-gm-1.png",
+        "images/venues/banh-xeo-nam-hien-gm-2.jpg",
+        "images/venues/banh-xeo-nam-hien-gm-3.jpg",
+        "images/venues/banh-xeo-nam-hien-gm-4.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20x%C3%A8o%20t%C3%B4m%20nh%E1%BA%A3y%20N%C4%83m%20Hi%E1%BB%81n%2046%20Phan%20Ch%C3%A2u%20Trinh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "hai-san-ba-tam",
@@ -663,14 +738,14 @@
       "openingHours": null,
       "description": "Chip chip hấp sả, cá đuối nướng; quán trong hẻm.",
       "sources": ["aeonmall-vietnam.com"],
-      "image": "images/hai-san.jpg",
+      "image": "images/venues/hai-san-ba-tam-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": ["images/venues/hai-san-ba-tam-gm-1.jpg", "images/venues/hai-san-ba-tam-gm-2.jpg"],
+      "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20B%C3%A0%20T%C3%A1m%20596%2F14%20Ho%C3%A0ng%20Di%E1%BB%87u%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "com-ga-ba-buoi",
@@ -687,14 +762,20 @@
       "openingHours": null,
       "description": "Cơm gà.",
       "sources": ["canvashotel.com.vn"],
-      "image": "images/com-ga.jpg",
+      "image": "images/venues/com-ga-ba-buoi-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/com-ga-ba-buoi-gm-1.jpg",
+        "images/venues/com-ga-ba-buoi-gm-2.jpg",
+        "images/venues/com-ga-ba-buoi-gm-3.jpg",
+        "images/venues/com-ga-ba-buoi-gm-4.jpg",
+        "images/venues/com-ga-ba-buoi-gm-5.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/C%C6%A1m%20g%C3%A0%20B%C3%A0%20Bu%E1%BB%99i%2026%20Ng%C3%B4%20Gia%20T%E1%BB%B1%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "banh-mi-ba-dao",
@@ -717,8 +798,12 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/banh-mi-ba-dao-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/banh-mi-ba-dao"
+      "images": [
+        "images/venues/banh-mi-ba-dao-1.jpg",
+        "images/venues/banh-mi-ba-dao-gm-1.jpg",
+        "images/venues/banh-mi-ba-dao-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20m%C3%AC%20B%C3%A0%20%C4%90%C3%A0o%2059%20An%20Th%C6%B0%E1%BB%A3ng%202%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "p-coffee",
@@ -735,14 +820,18 @@
       "openingHours": null,
       "description": "Phong cách tối giản, có khu vườn.",
       "sources": ["ghiendanang.com"],
-      "image": "images/cafe.jpg",
+      "image": "images/venues/p-coffee-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/p-coffee-gm-1.jpg",
+        "images/venues/p-coffee-gm-2.png",
+        "images/venues/p-coffee-gm-3.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/P%20Coffee%2053%20Nguy%E1%BB%85n%20V%C4%83n%20Linh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "wonderlust-coffee",
@@ -759,14 +848,19 @@
       "openingHours": null,
       "description": "Tổ hợp cafe kết hợp mua sắm, giếng trời.",
       "sources": ["klook.com"],
-      "image": "images/cafe.jpg",
+      "image": "images/venues/wonderlust-coffee-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/wonderlust-coffee-gm-1.jpg",
+        "images/venues/wonderlust-coffee-gm-2.jpg",
+        "images/venues/wonderlust-coffee-gm-3.jpg",
+        "images/venues/wonderlust-coffee-gm-4.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/Wonderlust%20Coffee%20%26%20Store%2096%20Tr%E1%BA%A7n%20Ph%C3%BA%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "wind-garden-coffee",
@@ -783,14 +877,18 @@
       "openingHours": null,
       "description": "Cafe sân vườn với hồ cá.",
       "sources": ["vietair.com.vn"],
-      "image": "images/cafe.jpg",
+      "image": "images/venues/wind-garden-coffee-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/wind-garden-coffee-gm-1.jpg",
+        "images/venues/wind-garden-coffee-gm-2.jpg",
+        "images/venues/wind-garden-coffee-gm-3.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/Wind%20Garden%20Coffee%2072%20L%C3%AA%20M%E1%BA%A1nh%20Trinh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "dau-ngot-cafe",
@@ -813,8 +911,15 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/dau-ngot-cafe-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/dau-ngot-cafe"
+      "images": [
+        "images/venues/dau-ngot-cafe-1.jpg",
+        "images/venues/dau-ngot-cafe-gm-1.jpg",
+        "images/venues/dau-ngot-cafe-gm-2.jpg",
+        "images/venues/dau-ngot-cafe-gm-3.jpg",
+        "images/venues/dau-ngot-cafe-gm-4.jpg",
+        "images/venues/dau-ngot-cafe-gm-5.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/D%C3%A2u%20Ng%E1%BB%8Dt%20Caf%C3%A9%2092%20D%C6%B0%C6%A1ng%20%C4%90%C3%ACnh%20Ngh%E1%BB%87%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "mirko-coffee",
@@ -831,14 +936,14 @@
       "openingHours": null,
       "description": "Phong cách trang trại Bắc Âu, sát vịnh Sơn Trà.",
       "sources": ["ghiendanang.com"],
-      "image": "images/cafe.jpg",
+      "image": "images/venues/mirko-coffee-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": ["images/venues/mirko-coffee-gm-1.jpg", "images/venues/mirko-coffee-gm-2.jpg"],
+      "venuePageUrl": "https://www.google.com/maps/search/MIRKO%20Coffee%20%26%20Chill%20Beer%20100%20Nguy%E1%BB%85n%20H%E1%BB%AFu%20An%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "hai-san-ba-ro",
@@ -861,8 +966,12 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/hai-san-ba-ro-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/hai-san-ba-ro"
+      "images": [
+        "images/venues/hai-san-ba-ro-1.jpg",
+        "images/venues/hai-san-ba-ro-gm-1.jpg",
+        "images/venues/hai-san-ba-ro-gm-2.png"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20B%C3%A0%20R%C3%B4%20115%20L%C3%BD%20T%E1%BB%AD%20T%E1%BA%A5n%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "banh-mi-ba-lan",
@@ -879,14 +988,14 @@
       "openingHours": null,
       "description": "Bánh mì truyền thống hơn 30 năm; pate, chả, muối tiêu Sa Huỳnh.",
       "sources": ["mia.vn"],
-      "image": "images/banh-mi.jpg",
+      "image": "images/venues/banh-mi-ba-lan-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": ["images/venues/banh-mi-ba-lan-gm-1.jpg", "images/venues/banh-mi-ba-lan-gm-2.jpg"],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20m%C3%AC%20B%C3%A0%20Lan%2062%20Tr%C6%B0ng%20N%E1%BB%AF%20V%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "son-tra-marina",
@@ -903,14 +1012,19 @@
       "openingHours": null,
       "description": "Cafe view biển tông xanh-trắng.",
       "sources": ["vietair.com.vn"],
-      "image": "images/cafe.jpg",
+      "image": "images/venues/son-tra-marina-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/son-tra-marina-gm-1.jpg",
+        "images/venues/son-tra-marina-gm-2.jpg",
+        "images/venues/son-tra-marina-gm-3.jpg",
+        "images/venues/son-tra-marina-gm-4.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/S%C6%A1n%20Tr%C3%A0%20Marina%20%C4%90%C6%B0%E1%BB%9Dng%20H%E1%BB%93%20Xanh%2C%20Th%E1%BB%8D%20Quang%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "banh-mi-co-huong",
@@ -934,8 +1048,15 @@
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "imageKind": "venue",
-      "images": ["images/venues/banh-mi-co-huong-1.jpg"],
-      "venuePageUrl": "https://www.foody.vn/da-nang/banh-mi-co-huong"
+      "images": [
+        "images/venues/banh-mi-co-huong-1.jpg",
+        "images/venues/banh-mi-co-huong-gm-1.jpg",
+        "images/venues/banh-mi-co-huong-gm-2.jpg",
+        "images/venues/banh-mi-co-huong-gm-3.jpg",
+        "images/venues/banh-mi-co-huong-gm-4.jpg",
+        "images/venues/banh-mi-co-huong-gm-5.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20m%C3%AC%20C%C3%B4%20H%C6%B0%C6%A1ng%201%20L%C3%AA%20Th%C3%A1nh%20T%C3%B4n%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "goi-ca-thanh-huong",
@@ -952,14 +1073,17 @@
       "openingHours": null,
       "description": "Gỏi cá Nam Ô.",
       "sources": ["sunparadiseland.com"],
-      "image": "images/goi-ca.jpg",
+      "image": "images/venues/goi-ca-thanh-huong-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/goi-ca-thanh-huong-gm-1.jpg",
+        "images/venues/goi-ca-thanh-huong-gm-2.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/G%E1%BB%8Fi%20c%C3%A1%20Thanh%20H%C6%B0%C6%A1ng%201029%20Nguy%E1%BB%85n%20L%C6%B0%C6%A1ng%20B%E1%BA%B1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "bun-mam-ba-hang",
@@ -976,14 +1100,20 @@
       "openingHours": null,
       "description": "Bún mắm nêm.",
       "sources": ["canvashotel.com.vn"],
-      "image": "images/bun-mam.jpg",
+      "image": "images/venues/bun-mam-ba-hang-gm-1.png",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": [
+        "images/venues/bun-mam-ba-hang-gm-1.png",
+        "images/venues/bun-mam-ba-hang-gm-2.jpg",
+        "images/venues/bun-mam-ba-hang-gm-3.jpg",
+        "images/venues/bun-mam-ba-hang-gm-4.jpg",
+        "images/venues/bun-mam-ba-hang-gm-5.jpg"
+      ],
+      "venuePageUrl": "https://www.google.com/maps/search/B%C3%BAn%20m%E1%BA%AFm%20n%C3%AAm%20B%C3%A0%20H%E1%BA%B1ng%20K227%2F57%20Tr%E1%BA%A7n%20Ph%C3%BA%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "kem-bo-co-van",
@@ -1000,14 +1130,14 @@
       "openingHours": null,
       "description": "Kem bơ nổi tiếng ở chợ Bắc Mỹ An.",
       "sources": ["canvashotel.com.vn"],
-      "image": "images/com-ga.jpg",
+      "image": "images/venues/kem-bo-co-van-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": ["images/venues/kem-bo-co-van-gm-1.jpg", "images/venues/kem-bo-co-van-gm-2.jpg"],
+      "venuePageUrl": "https://www.google.com/maps/search/Kem%20b%C6%A1%20C%C3%B4%20V%C3%A2n%20Ch%E1%BB%A3%20B%E1%BA%AFc%20M%E1%BB%B9%20An%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "ibasho-coffee",
@@ -1024,14 +1154,14 @@
       "openingHours": null,
       "description": "Phong cách Japandi, kết hợp apartment.",
       "sources": ["vietair.com.vn"],
-      "image": "images/cafe.jpg",
+      "image": "images/venues/ibasho-coffee-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
-      "imageKind": "dish",
-      "images": [],
-      "venuePageUrl": null
+      "imageKind": "venue",
+      "images": ["images/venues/ibasho-coffee-gm-1.jpg", "images/venues/ibasho-coffee-gm-2.jpg"],
+      "venuePageUrl": "https://www.google.com/maps/search/Ibasho%20Coffee%20%26%20Apartment%2065%20An%20Th%C6%B0%20%C4%90%E1%BA%A1o%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
       "id": "gmccoffee-729406399",
