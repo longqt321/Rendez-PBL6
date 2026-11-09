@@ -2071,3 +2071,39 @@ bấm không có tác dụng.
 - `bun run typecheck`/`lint`/`test` (65 test)/`format:check` exit 0.
 - `bun run e2e`: 8/8 pass, gồm 2 test mới (`settings.spec.ts` — lưu + validate) và
   `saved-places.spec.ts` (tab Địa điểm có ≥1 card).
+
+## D-044 — Đăng xuất: phiên mock + trạng thái chưa đăng nhập
+
+**Ngày:** 2026-11-09
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Mục "Đăng xuất" trong menu avatar chỉ là UI, bấm không có tác dụng. Mock server luôn trả
+`db.me` cho `GET /me` nên không có cách nào thấy giao diện ở trạng thái chưa đăng nhập ngoài
+việc restart dev server với `VITE_DEV_BYPASS_AUTH=false`.
+
+### Quyết định
+
+1. Mock giữ cờ phiên `db.authenticated` (khởi tạo bằng `env.devBypassAuth`). `GET /me` và
+   `PATCH /me` trả 401 khi phiên tắt.
+2. Thêm `DELETE /session` (đăng xuất) và `POST /session` (đăng nhập lại, **chỉ ở dev** — mock
+   không có form đăng nhập thật). Cả hai là hợp đồng giả lập; khi backend thật sẵn sàng, backend
+   quyết định endpoint và luồng đăng nhập.
+3. `useLogout` gọi API rồi `queryClient.clear()` — mọi query active refetch, `GET /me` 401 nên
+   UI về trạng thái khách; điều hướng về `/`. `useLogin` ghi cache `["me"]` từ response.
+4. Menu avatar: khi có `me` hiện tên/handle/lối tắt như cũ; khi không có hiện mục "Đăng nhập"
+   (chỉ render ở dev, `env.enableMocks`). Avatar dùng `me.initials` thay cho "MA" cứng.
+5. `query-provider`: 401 không retry (giống 404) — phiên không tự khôi phục.
+
+### Lý do
+
+- Trạng thái chưa đăng nhập phải quan sát được khi test độc lập với backend; đăng xuất là cách
+  tự nhiên nhất, không cần restart server.
+- Không thêm màn hình đăng nhập giả: ngoài phạm vi, và `POST /session` chỉ để test vòng
+  đăng xuất → đăng nhập mà không mất dữ liệu mock trong bộ nhớ.
+
+### Bằng chứng
+
+- `bun run typecheck`/`lint` exit 0; `bun run test` 67/67 pass (thêm `use-logout.test.ts` 2 test).
+- `bun run e2e` 9/9 pass (thêm `logout.spec.ts`: đăng xuất → menu hiện "Đăng nhập" → đăng nhập lại).

@@ -29,6 +29,14 @@ export function isNotFoundError(error: unknown): boolean {
 }
 
 /**
+ * Lỗi 401 từ server — chưa đăng nhập. Không retry: phiên không tự khôi phục,
+ * thử lại cũng chỉ 401; UI dùng để hiện trạng thái "chưa đăng nhập".
+ */
+export function isUnauthorizedError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 401
+}
+
+/**
  * Chuyển mọi lỗi axios thành `ApiError` (hoặc giữ nguyên `Error` khác).
  * Tách khỏi interceptor để test được mà không cần gọi mạng.
  */

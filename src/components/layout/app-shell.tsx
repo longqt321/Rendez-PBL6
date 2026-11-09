@@ -2,6 +2,7 @@ import { Suspense, useEffect, useRef } from "react"
 import {
   BookmarkIcon,
   HelpCircleIcon,
+  LogInIcon,
   LogOutIcon,
   MapPinIcon,
   PaletteIcon,
@@ -9,7 +10,7 @@ import {
   SettingsIcon,
   UserIcon,
 } from "lucide-react"
-import { NavLink, Link, Outlet, useLocation } from "react-router"
+import { NavLink, Link, Outlet, useLocation, useNavigate } from "react-router"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { PageLoading } from "@/components/shared/page-loading"
@@ -31,6 +32,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
+import { useLogin } from "@/features/auth/hooks/use-login"
+import { useLogout } from "@/features/auth/hooks/use-logout"
+import { useMe } from "@/features/profile/hooks/use-me"
 import { useRooms } from "@/features/rooms/hooks/use-rooms"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
 import { env } from "@/lib/env"
@@ -280,6 +284,24 @@ function TopBar() {
 
 function UserMenu() {
   const { skin, setSkin } = useSkin()
+  const { data: me } = useMe()
+  const { mutate: logout, isPending: isLoggingOut } = useLogout()
+  const { mutate: login, isPending: isLoggingIn } = useLogin()
+  const navigate = useNavigate()
+
+  /** Đăng xuất: gọi server, xoá cache rồi về trang chủ (nơi hiển thị trạng thái khách). */
+  const handleLogout = () => {
+    logout(undefined, {
+      onSuccess: () => {
+        void navigate("/")
+      },
+    })
+  }
+
+  /** Đăng nhập lại phiên mock ở dev — không có form đăng nhập thật. */
+  const handleLogin = () => {
+    login()
+  }
 
   return (
     <DropdownMenu>
@@ -295,65 +317,78 @@ function UserMenu() {
       >
         <Avatar size="lg">
           <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
-            MA
+            {me?.initials ?? <UserIcon className="size-4" />}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>
-            <span className="block text-sm font-semibold">Minh Anh</span>
-            <span className="block text-xs font-normal text-muted-foreground">@minhanh.eats</span>
-            <Link
-              to="/profile"
-              className="mt-1 block text-xs font-medium text-foreground underline underline-offset-2"
-            >
-              Xem trang cá nhân →
-            </Link>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem render={<Link to="/profile" />}>
-            <UserIcon />
-            Trang cá nhân
+        {me ? (
+          <>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>
+                <span className="block text-sm font-semibold">{me.name}</span>
+                <span className="block text-xs font-normal text-muted-foreground">
+                  @{me.handle}
+                </span>
+                <Link
+                  to="/profile"
+                  className="mt-1 block text-xs font-medium text-foreground underline underline-offset-2"
+                >
+                  Xem trang cá nhân →
+                </Link>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem render={<Link to="/profile" />}>
+                <UserIcon />
+                Trang cá nhân
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/saved" />}>
+                <BookmarkIcon />
+                Bài đăng đã lưu
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/profile?tab=pinned" />}>
+                <MapPinIcon />
+                Địa điểm đã ghim
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link to="/settings" />}>
+              <SettingsIcon />
+              Cài đặt
+            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <PaletteIcon />
+                Giao diện
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup
+                  value={skin}
+                  onValueChange={(value) => setSkin(value as typeof skin)}
+                >
+                  <DropdownMenuRadioItem value="default">Mặc định</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="retro">Retro</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuItem>
+              <HelpCircleIcon />
+              Trợ giúp
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" disabled={isLoggingOut} onClick={handleLogout}>
+              <LogOutIcon />
+              {isLoggingOut ? "Đang đăng xuất…" : "Đăng xuất"}
+            </DropdownMenuItem>
+          </>
+        ) : env.enableMocks ? (
+          // Chỉ có ở dev: mock không có form đăng nhập thật, cần đường quay lại
+          // phiên sau khi đăng xuất. Prod để backend/route đăng nhập đảm nhận.
+          <DropdownMenuItem disabled={isLoggingIn} onClick={handleLogin}>
+            <LogInIcon />
+            {isLoggingIn ? "Đang đăng nhập…" : "Đăng nhập"}
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link to="/saved" />}>
-            <BookmarkIcon />
-            Bài đăng đã lưu
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link to="/profile?tab=pinned" />}>
-            <MapPinIcon />
-            Địa điểm đã ghim
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link to="/settings" />}>
-          <SettingsIcon />
-          Cài đặt
-        </DropdownMenuItem>
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <PaletteIcon />
-            Giao diện
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup
-              value={skin}
-              onValueChange={(value) => setSkin(value as typeof skin)}
-            >
-              <DropdownMenuRadioItem value="default">Mặc định</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="retro">Retro</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
-        <DropdownMenuItem>
-          <HelpCircleIcon />
-          Trợ giúp
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">
-          <LogOutIcon />
-          Đăng xuất
-        </DropdownMenuItem>
+        ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
   )

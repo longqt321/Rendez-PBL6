@@ -62,6 +62,12 @@ const db = {
   users: { ...MOCK_USERS },
   /** Hồ sơ người dùng hiện tại — PATCH /me sửa bản sao này, không đụng fixture. */
   me: { ...ME },
+  /**
+   * Phiên đăng nhập của mock server. Bật sẵn khi dev bypass auth; `DELETE /session`
+   * (đăng xuất) tắt đi, `POST /session` (đăng nhập lại) bật lại. Reset khi tải
+   * lại trang — mock là bộ nhớ tạm nên không có "phiên thật" để khôi phục.
+   */
+  authenticated: env.devBypassAuth,
 }
 
 /** Bài đã được server gửi thông báo đề xuất — tránh sinh trùng. */
@@ -1208,16 +1214,43 @@ const routes: Route[] = [
     method: "get",
     pattern: /^\/me$/,
     handler: (config) => {
-      // Dev có thể tắt bypass auth (`VITE_DEV_BYPASS_AUTH=false`) để thấy đúng
-      // trạng thái chưa đăng nhập; prod không nạp file này nên luôn đi backend.
-      if (!env.devBypassAuth) unauthorized(config, "Chưa đăng nhập")
+      // Dev có thể tắt bypass auth (`VITE_DEV_BYPASS_AUTH=false`) hoặc đăng xuất
+      // (`DELETE /session`) để thấy đúng trạng thái chưa đăng nhập; prod không
+      // nạp file này nên luôn đi backend.
+      if (!db.authenticated) unauthorized(config, "Chưa đăng nhập")
       return { ...db.me }
     },
   },
   {
     method: "patch",
     pattern: /^\/me$/,
-    handler: (config) => updateMe(config),
+    handler: (config) => {
+      if (!db.authenticated) unauthorized(config, "Chưa đăng nhập")
+      return updateMe(config)
+    },
+  },
+  {
+    /** Đăng xuất: tắt phiên mock. Client xoá cache và quay về trạng thái chưa đăng nhập. */
+    method: "delete",
+    pattern: /^\/session$/,
+    handler: (config) => {
+      if (!db.authenticated) unauthorized(config, "Chưa đăng nhập")
+      db.authenticated = false
+      return { loggedOut: true }
+    },
+  },
+  {
+    /**
+     * Đăng nhập lại ở dev (không có form đăng nhập thật): bật phiên mock với
+     * `db.me`. Có để test luồng đăng xuất → đăng nhập mà không phải tải lại trang.
+     */
+    method: "post",
+    pattern: /^\/session$/,
+    handler: (config) => {
+      if (scenario.unauthorized) unauthorized(config, "Chưa đăng nhập")
+      db.authenticated = true
+      return { ...db.me }
+    },
   },
   {
     method: "get",

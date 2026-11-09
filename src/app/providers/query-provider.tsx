@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { ReactNode } from "react"
-import { isNotFoundError } from "@/lib/axios"
+import { isNotFoundError, isUnauthorizedError } from "@/lib/axios"
 
 /**
- * Lỗi 404 không retry: tài nguyên không tồn tại thì thử lại cũng chỉ 404 nữa.
+ * Lỗi 404/401 không retry: 404 là tài nguyên không tồn tại, 401 là chưa đăng
+ * nhập — thử lại cũng chỉ nhận cùng kết quả.
  *
  * Trước đây mọi lỗi đều retry 3 lần (mặc định của TanStack Query) nên trang
  * "không tìm thấy" phải chờ ~7s mới hiển thị — người dùng thấy màn hình loading
@@ -14,7 +15,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-        if (isNotFoundError(error)) return false
+        if (isNotFoundError(error) || isUnauthorizedError(error)) return false
         return failureCount < 3
       },
     },
