@@ -52,7 +52,7 @@ describe("ReportPlaceDialog", () => {
     expect(await screen.findByText("Mô tả cụ thể lý do báo cáo")).toBeInTheDocument()
   })
 
-  it("gửi báo cáo 'đóng cửa' thành công → dialog đóng, form reset", async () => {
+  it("gửi báo cáo 'đóng cửa' thành công → dialog đóng", async () => {
     const user = userEvent.setup()
     renderDialog()
 

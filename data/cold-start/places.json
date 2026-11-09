@@ -64,6 +64,9 @@
       "nem-lui": 2,
       "banh-khoai": 1,
       "tau": 1
+    },
+    "byStatus": {
+      "unknown": 1701
     }
   },
   "places": [

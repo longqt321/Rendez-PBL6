@@ -502,10 +502,14 @@ function createPlaceReport(config: InternalAxiosRequestConfig, placeId: string):
     reporterId: CURRENT_USER.id,
   }
   db.reports.push(report)
-  // `reporterId` là chi tiết nội bộ — không đưa vào hợp đồng API.
-  const { reporterId: _reporterId, ...dto } = report
-  void _reporterId
-  return dto
+  // `reporterId` là chi tiết nội bộ — hợp đồng API không có tác giả báo cáo.
+  return {
+    id: report.id,
+    placeId: report.placeId,
+    reason: report.reason,
+    detail: report.detail,
+    createdAt: report.createdAt,
+  }
 }
 
 function createReview(config: InternalAxiosRequestConfig, placeId: string): Review {

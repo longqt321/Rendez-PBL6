@@ -29,7 +29,3 @@ export const REPORT_REASON_META: Record<PlaceReportReason, ReportReasonMeta> = {
     description: "Mô tả cụ thể ở phần ghi chú bên dưới.",
   },
 }
-
-export function reportReasonLabel(reason: PlaceReportReason): string {
-  return REPORT_REASON_META[reason].label
-}
