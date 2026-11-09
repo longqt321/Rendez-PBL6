@@ -2107,3 +2107,42 @@ việc restart dev server với `VITE_DEV_BYPASS_AUTH=false`.
 
 - `bun run typecheck`/`lint` exit 0; `bun run test` 67/67 pass (thêm `use-logout.test.ts` 2 test).
 - `bun run e2e` 9/9 pass (thêm `logout.spec.ts`: đăng xuất → menu hiện "Đăng nhập" → đăng nhập lại).
+
+## D-045 — Rà soát "chắp vá/hack" đợt đăng xuất + tab Địa điểm: 6 lỗi đã sửa
+
+**Ngày:** 2026-11-09
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Người dùng yêu cầu tự rà soát 2 commit gần nhất (`d06a45b`, `5514de4`) để tìm "chắp vá", "sửa tạm",
+"hack". Rà bằng diff + script CDP hover thật, phát hiện 6 vấn đề.
+
+### Các lỗi và cách sửa
+
+1. **Tooltip trên nút `disabled` không bao giờ hiện** (CDP xác nhận `tooltip visible: false`) —
+   nút disabled không phát pointer event. Sửa: `TooltipTrigger` bọc `span tabIndex={0}` quanh nút;
+   thêm `e2e/profile.spec.ts` khoá hành vi.
+2. **`e2e/logout.spec.ts` dùng `waitForTimeout(300)`** — sleep cứng để qua mặt animation. Sửa:
+   chờ tín hiệu trạng thái thật (avatar đổi sang icon khách / chữ initials) thay cho sleep.
+3. **`UserMenu` coi mọi trạng thái "không có `me`" là chưa đăng nhập** — đang loading hiện
+   "Đăng nhập" nhấp nháy; lỗi 500/mạng cũng hiện "Đăng nhập" dù phiên còn. Sửa: phân biệt
+   `isPending` (mục "Đang tải hồ sơ…"), 401 (`isUnauthorizedError` → "Đăng nhập"), lỗi khác
+   (mục "Không tải được hồ sơ — thử lại").
+4. **`GET /places/saved` bỏ qua `next`** — mock trả tất cả nên chạy được, backend thật phân trang
+   sẽ cắt mất dữ liệu âm thầm. Sửa: mock phân trang bằng `paginate` (PLACES_PAGE_SIZE), client
+   chuyển sang `useInfiniteQuery` + sentinel `useInfiniteScroll` (cùng cơ chế feed bài đăng).
+5. **Key invalidate trùng literal** `["places","saved"]` — dùng lại `savedPlacesQueryKey` đã export.
+6. **Comment test gợi ý lệ thuộc thứ tự test** — sửa thành mô tả đúng (test tự đăng nhập lại,
+   độc lập thứ tự).
+
+### Không sửa ngay (ghi BACKLOG)
+
+- Mock chỉ chặn `/me` khi chưa đăng nhập; các endpoint cá nhân khác vẫn trả dữ liệu — cần UI
+  "yêu cầu đăng nhập" dùng chung trước khi gate (làm nửa vời sẽ hiện lỗi chung chung).
+
+### Bằng chứng
+
+- `bun run typecheck`/`lint`/`test` (67/67) exit 0.
+- `bun run e2e` 10/10 pass; chạy lặp `--repeat-each=2` (20 test) pass — xác nhận không còn flaky.
+- CDP hover: `tooltip visible: true` sau khi sửa.

@@ -35,6 +35,8 @@ import { useUnreadNotificationCount } from "@/features/notification/hooks/use-no
 import { useLogin } from "@/features/auth/hooks/use-login"
 import { useLogout } from "@/features/auth/hooks/use-logout"
 import { useMe } from "@/features/profile/hooks/use-me"
+import { isUnauthorizedError } from "@/lib/axios"
+import { Spinner } from "@/components/ui/spinner"
 import { useRooms } from "@/features/rooms/hooks/use-rooms"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
 import { env } from "@/lib/env"
@@ -284,7 +286,7 @@ function TopBar() {
 
 function UserMenu() {
   const { skin, setSkin } = useSkin()
-  const { data: me } = useMe()
+  const { data: me, isPending, error, refetch } = useMe()
   const { mutate: logout, isPending: isLoggingOut } = useLogout()
   const { mutate: login, isPending: isLoggingIn } = useLogin()
   const navigate = useNavigate()
@@ -322,7 +324,12 @@ function UserMenu() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
-        {me ? (
+        {isPending ? (
+          <DropdownMenuItem disabled>
+            <Spinner />
+            Đang tải hồ sơ…
+          </DropdownMenuItem>
+        ) : me ? (
           <>
             <DropdownMenuGroup>
               <DropdownMenuLabel>
@@ -381,14 +388,23 @@ function UserMenu() {
               {isLoggingOut ? "Đang đăng xuất…" : "Đăng xuất"}
             </DropdownMenuItem>
           </>
-        ) : env.enableMocks ? (
-          // Chỉ có ở dev: mock không có form đăng nhập thật, cần đường quay lại
-          // phiên sau khi đăng xuất. Prod để backend/route đăng nhập đảm nhận.
-          <DropdownMenuItem disabled={isLoggingIn} onClick={handleLogin}>
-            <LogInIcon />
-            {isLoggingIn ? "Đang đăng nhập…" : "Đăng nhập"}
+        ) : isUnauthorizedError(error) ? (
+          env.enableMocks ? (
+            // Chỉ có ở dev: mock không có form đăng nhập thật, cần đường quay lại
+            // phiên sau khi đăng xuất. Prod để backend/route đăng nhập đảm nhận.
+            <DropdownMenuItem disabled={isLoggingIn} onClick={handleLogin}>
+              <LogInIcon />
+              {isLoggingIn ? "Đang đăng nhập…" : "Đăng nhập"}
+            </DropdownMenuItem>
+          ) : null
+        ) : (
+          // Lỗi khác 401 (mạng, 5xx): người dùng vẫn có thể đã đăng nhập — không
+          // được hiện "Đăng nhập" như thể phiên đã mất.
+          <DropdownMenuItem onClick={() => void refetch()}>
+            <UserIcon />
+            Không tải được hồ sơ — thử lại
           </DropdownMenuItem>
-        ) : null}
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -450,3 +450,26 @@ prompt này — tiến trình chỉ đang chờ stdin. Kết luận sai khiến 
 
 - Chạy CLI tương tác trong agent: luôn bọc `printf 'n\nn\nn\n' | <cmd>` (hoặc dùng cờ non-interactive
   thật của CLI nếu có) và kiểm tra output có dòng `?` (prompt) trước khi kết luận treo.
+
+## L-010 — Tooltip trên nút `disabled` không bao giờ hiện
+
+**Ngày:** 2026-11-09
+**Phát hiện khi:** tự rà soát "chắp vá / sửa tạm" theo yêu cầu người dùng.
+
+**Đã làm sai gì:**
+
+Nút "Nhắn tin" (chưa có backend) được tắt kèm `Tooltip` giải thích, nhưng `TooltipTrigger`
+render trực tiếp lên `Button disabled`. Nút disabled không phát pointer event nên tooltip
+không bao giờ hiện — giải thích cho người dùng thành dead code. Chỉ phát hiện khi hover thử
+bằng script CDP (`tooltip visible: false`), không thấy qua code review thường.
+
+**Quy tắc rút ra:**
+
+1. Tooltip trên phần tử disabled phải bọc một phần tử nhận hover/focus ở ngoài
+   (`TooltipTrigger render={<span tabIndex={0} />}` bọc nút bên trong).
+2. UI "tắt kèm giải thích" cần một e2e khoá hành vi (`e2e/profile.spec.ts`) — không có test
+   thì lỗi kiểu này sống sót qua mọi lần chạy test thường.
+
+**Cách kiểm tra bằng máy:**
+
+- Hover phần tử disabled rồi assert tooltip visible (script CDP hoặc Playwright).

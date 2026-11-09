@@ -9,6 +9,7 @@ import {
 } from "../api/collections"
 import type { CreateCollectionInput, UpdateCollectionInput } from "../api/collections"
 import type { Collection, CollectionSummary } from "../types/collection"
+import { savedPlacesQueryKey } from "@/features/saved/hooks/use-saved-places"
 
 /** Danh sách rút gọn của tôi — dùng ở tab Bộ sưu tập và menu "Lưu vào bộ sưu tập". */
 export function collectionsQueryKey(placeId?: string) {
@@ -82,7 +83,7 @@ export function useSetCollectionPlace() {
       queryClient.setQueryData<Collection>(["collections", collection.id], collection)
       void queryClient.invalidateQueries({ queryKey: collectionsQueryKey() })
       // Thêm/bớt địa điểm khỏi bộ sưu tập đổi luôn tab "Địa điểm" ở /saved.
-      void queryClient.invalidateQueries({ queryKey: ["places", "saved"] })
+      void queryClient.invalidateQueries({ queryKey: savedPlacesQueryKey })
     },
   })
 }

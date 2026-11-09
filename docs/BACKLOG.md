@@ -86,6 +86,9 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 - [x] **Nút "Đăng xuất" chưa có hành vi.** Đã làm 2026-11-09: `DELETE /session` (mock tắt phiên →
       `GET /me` 401), `useLogout` xoá cache + về trang chủ; menu đổi thành "Đăng nhập" (chỉ ở dev,
       `POST /session` đăng nhập lại). Prod để backend/route đăng nhập đảm nhận.
+- [ ] **Mock chỉ chặn `/me` khi chưa đăng nhập.** `GET /places/saved`, `/collections`, `/notifications`,
+      `GET /posts?filter=saved` vẫn trả dữ liệu của `CURRENT_USER` sau khi đăng xuất — backend thật sẽ 401. Cần UI "yêu cầu đăng nhập" dùng chung (ErrorState/Empty riêng) rồi mới gate các endpoint này;
+      làm nửa vời sẽ khiến trang hiện lỗi chung chung.
 - [ ] **`runPlaceDetection` là nút bấm tay, không tự chạy.** Đúng cho mục đích demo, nhưng khi có
       backend thì đây phải là job phía server.
 - [ ] **Chưa có test tự động.** Toàn bộ kiểm chứng là script CDP trong `scratch/`, không nằm trong

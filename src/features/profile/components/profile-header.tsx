@@ -56,15 +56,17 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
                 {profile.followedByMe ? "Đang theo dõi" : "Theo dõi"}
               </Toggle>
               {/* Nhắn tin cần backend (WebSocket + lưu hội thoại) — chưa có hợp đồng API,
-                  nên tắt nút kèm giải thích thay vì để nút bấm không có tác dụng. */}
+                  nên tắt nút kèm giải thích thay vì để nút bấm không có tác dụng.
+                  Nút `disabled` không nhận pointer event nên Tooltip phải bọc span
+                  focusable — bọc trực tiếp lên Button thì tooltip không bao giờ hiện. */}
               <Tooltip>
                 <TooltipTrigger
-                  render={
-                    <Button variant="outline" disabled>
-                      Nhắn tin
-                    </Button>
-                  }
-                />
+                  render={<span className="inline-flex" tabIndex={0} aria-disabled="true" />}
+                >
+                  <Button variant="outline" disabled>
+                    Nhắn tin
+                  </Button>
+                </TooltipTrigger>
                 <TooltipContent>Tính năng nhắn tin sẽ mở khi backend hoàn thiện</TooltipContent>
               </Tooltip>
             </div>

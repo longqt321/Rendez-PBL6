@@ -3,7 +3,9 @@ import { BookmarkIcon, FolderPlusIcon, MapPinIcon } from "lucide-react"
 import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { useSavedPlaces } from "../hooks/use-saved-places"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { usePosts } from "@/features/social/hooks/use-posts"
@@ -31,11 +33,20 @@ export function SavedPage() {
     refetch: refetchCollections,
   } = useCollections()
   const {
-    data: savedPlaces,
+    places: savedPlaces,
     isPending: savedPlacesPending,
     isError: savedPlacesError,
     refetch: refetchSavedPlaces,
+    hasNextPage: savedPlacesHasNextPage,
+    isFetchingNextPage: savedPlacesFetchingNextPage,
+    fetchNextPage: fetchNextSavedPlaces,
   } = useSavedPlaces()
+
+  const savedPlacesSentinelRef = useInfiniteScroll({
+    hasNextPage: savedPlacesHasNextPage,
+    isFetchingNextPage: savedPlacesFetchingNextPage,
+    fetchNextPage: () => void fetchNextSavedPlaces(),
+  })
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
@@ -96,14 +107,23 @@ export function SavedPage() {
               title="Không tải được địa điểm đã lưu"
               onRetry={() => void refetchSavedPlaces()}
             />
-          ) : savedPlaces && savedPlaces.length > 0 ? (
-            <ul className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {savedPlaces.map((place) => (
-                <li key={place.id}>
-                  <PlaceCard place={place} />
-                </li>
-              ))}
-            </ul>
+          ) : savedPlaces.length > 0 ? (
+            <>
+              <ul className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {savedPlaces.map((place) => (
+                  <li key={place.id}>
+                    <PlaceCard place={place} />
+                  </li>
+                ))}
+              </ul>
+              <div ref={savedPlacesSentinelRef} aria-hidden="true" className="h-px w-full" />
+              {savedPlacesHasNextPage ? (
+                <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                  <Spinner aria-label="Đang tải thêm địa điểm" className="size-3" />
+                  Đang tải thêm địa điểm…
+                </p>
+              ) : null}
+            </>
           ) : (
             <Empty className="mt-2">
               <EmptyHeader>

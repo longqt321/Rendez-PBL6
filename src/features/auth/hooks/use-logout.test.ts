@@ -21,7 +21,8 @@ describe("useLogout", () => {
     await waitForQuery(() => expect(me.current.isError).toBe(true))
     expect(me.current.error?.message).toContain("Chưa đăng nhập")
 
-    // Trả phiên về trạng thái ban đầu cho các test sau trong file.
+    // Đăng nhập lại ngay trong test: vừa kiểm vòng đời phiên, vừa trả mock về
+    // trạng thái ban đầu để test khác không phụ thuộc thứ tự chạy.
     const { result: login } = renderWithQuery(() => useLogin(), client)
     login.current.mutate()
     await waitFor(() => expect(login.current.isSuccess).toBe(true))

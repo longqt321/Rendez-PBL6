@@ -3,12 +3,19 @@ import type { Page } from "@/types/api"
 import type { Place } from "@/features/places/types/place"
 
 /**
- * `GET /places/saved` — địa điểm đã lưu của người dùng hiện tại.
+ * `GET /places/saved` — địa điểm đã lưu của người dùng hiện tại, phân trang
+ * theo cursor.
  *
  * "Đã lưu" nghĩa là địa điểm nằm trong ít nhất một bộ sưu tập của chính mình;
- * server gộp và loại trùng, client chỉ render.
+ * server gộp và loại trùng, client chỉ chuyền lại `cursor` server trả về.
  */
-export async function getSavedPlaces(signal?: AbortSignal): Promise<Place[]> {
-  const { data } = await api.get<Page<Place>>("/places/saved", { signal })
-  return data.items
+export async function getSavedPlaces(
+  cursor: string | null,
+  signal?: AbortSignal,
+): Promise<Page<Place>> {
+  const { data } = await api.get<Page<Place>>("/places/saved", {
+    params: { cursor: cursor ?? undefined },
+    signal,
+  })
+  return data
 }

@@ -2,8 +2,9 @@ import { expect, test } from "@playwright/test"
 
 /**
  * Đăng xuất ở dev (mock): server tắt phiên → `GET /me` trả 401 → menu người
- * dùng đổi thành nút "Đăng nhập"; mock giữ dữ liệu trong bộ nhớ nên reload
- * trang sẽ đăng nhập lại — test chỉ kiểm trong cùng phiên.
+ * dùng đổi thành "Đăng nhập"; mock giữ dữ liệu trong bộ nhớ nên tải lại trang
+ * sẽ đăng nhập lại — test chỉ kiểm trong cùng phiên, không `page.goto` lại
+ * giữa chừng (reload reset phiên mock).
  */
 test("đăng xuất rồi đăng nhập lại qua menu người dùng", async ({ page }) => {
   await page.goto("/")
@@ -11,18 +12,20 @@ test("đăng xuất rồi đăng nhập lại qua menu người dùng", async ({
   const menuButton = page.getByRole("button", { name: "Mở menu người dùng" })
   await menuButton.click()
   await page.getByRole("menuitem", { name: "Đăng xuất" }).click()
-  await expect(page.getByRole("menuitem", { name: "Đăng xuất" })).toBeHidden()
-  // Chờ menu đóng xong (Base UI có transition) — click ngay bị nuốt.
-  await page.waitForTimeout(300)
+  await expect(page.getByRole("menu")).toBeHidden()
 
-  // Sau đăng xuất, mở lại menu → chỉ còn mục đăng nhập.
+  // Avatar đổi sang icon khách khi `GET /me` trả 401 — tín hiệu trạng thái thật,
+  // dùng thay cho sleep chờ animation đóng menu.
+  await expect(menuButton.locator("svg.lucide-user")).toBeVisible()
+
   await menuButton.click()
   await expect(page.getByRole("menuitem", { name: "Đăng nhập" })).toBeVisible()
 
-  // Đăng nhập lại: menu trở về trạng thái đã đăng nhập.
+  // Đăng nhập lại: avatar trở về chữ cái đầu của hồ sơ.
   await page.getByRole("menuitem", { name: "Đăng nhập" }).click()
-  await expect(page.getByRole("menuitem", { name: "Đăng nhập" })).toBeHidden()
-  await page.waitForTimeout(300)
+  await expect(page.getByRole("menu")).toBeHidden()
+  await expect(menuButton).toContainText("MA")
+
   await menuButton.click()
   await expect(page.getByRole("menuitem", { name: "Đăng xuất" })).toBeVisible()
 })

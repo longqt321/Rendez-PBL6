@@ -998,7 +998,8 @@ const routes: Route[] = [
     method: "get",
     // Đứng trước `/places/:id` — nếu không `:id` sẽ nuốt cả "saved".
     pattern: /^\/places\/saved$/,
-    handler: () => {
+    handler: (config) => {
+      const { cursor } = query(config)
       // "Đã lưu" = nằm trong ít nhất một bộ sưu tập của chính mình; gộp + loại trùng.
       const savedIds = new Set(
         db.collections
@@ -1008,7 +1009,7 @@ const routes: Route[] = [
       const items = db.places
         .filter((place) => savedIds.has(place.id) && isPubliclyVisible(place))
         .map(toPlaceDto)
-      return { items, next: null } satisfies Page<Place>
+      return paginate(items, cursor ?? null, PLACES_PAGE_SIZE)
     },
   },
   {
