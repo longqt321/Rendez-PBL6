@@ -78,10 +78,11 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 - [ ] **Search bar ở topbar chưa hoạt động.** Chỉ `preventDefault()`, chưa nối vào `/search`.
       Cần thống nhất: search toàn cục hay search theo trang? (Trang `/search` riêng đã có —
       `features/search`.)
-- [ ] **`/notification` chưa có infinite scroll.** Danh sách thông báo render toàn bộ. Hiện chỉ có
-      4 mục nên chưa cần, nhưng khi nối backend phải phân trang.
-- [ ] **`/social` chưa có infinite scroll.** Feed render toàn bộ 10 bài. Yêu cầu ban đầu chỉ nói
-      infinity scroll cho `/discover` và `/social` — `/social` hiện chưa làm.
+- [x] **`/notification` chưa có infinite scroll.** Đã làm 2026-11-09: `useNotifications` dùng
+      `useInfiniteQuery`, sentinel ở tab "Tất cả", mock phân trang 20 mục/trang.
+- [x] **`/social` chưa có infinite scroll.** Đã làm 2026-11-09: `usePosts` dùng `useInfiniteQuery`
+      (mock 5 bài/trang), sentinel + "Đang tải thêm" ở cuối feed; `/saved` và `/search` dùng chung
+      hook nên cũng phân trang theo. `patchPostInCache` đã xử lý `InfiniteData`.
 - [ ] **Nút "Đăng xuất" chưa có hành vi.** Chỉ là UI (menu avatar đã có đầy đủ link điều hướng).
 - [ ] **`runPlaceDetection` là nút bấm tay, không tự chạy.** Đúng cho mục đích demo, nhưng khi có
       backend thì đây phải là job phía server.
@@ -114,10 +115,8 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 topbar search ghi `?q=`; `/search` đọc/ghi `?q=` với debounce 300 ms; tab Thông báo có `TabsContent`;
 hàng thông báo bấm được và gọi `useMarkNotificationRead`; 404 render trong `AppShell`.
 
-- [ ] **`/profile` luôn rỗng.** `MOCK_POSTS` chỉ có bài của `AUTHORS[0..4]` (`u-1`…`u-5`), **không có
-      bài nào của `u-me`** → tab Bài đăng của `/profile` luôn hiện "Chưa có bài đăng nào". Không phải
-      lỗi UI; nếu muốn trang cá nhân có nội dung để xem thì phải thêm fixture bài của `u-me`.
-      (Test CDP phải dùng `/u/bao.an.day` thay vì `/profile`.)
+- [x] **`/profile` luôn rỗng.** Đã thêm `post-11`/`post-12` của `u-me` (2026-11-09) → tab Bài đăng
+      của `/profile` có nội dung ngay từ lần chạy đầu.
 - [ ] **`/post/:id` chưa có nút chia sẻ / báo cáo / sửa-xoá.** Trang chi tiết mới có thích, lưu,
       bình luận. Cần chốt hành vi trước khi thêm (xoá bài có xác nhận? sửa caption?).
 - [ ] **`markNotificationRead` chưa optimistic.** Bấm thông báo → chờ `PATCH` xong mới
@@ -177,9 +176,10 @@ sẻ dùng Web Share API + clipboard fallback, và dialog check-in từ trang qu
 - [ ] **Kéo thả sắp xếp địa điểm trong bộ sưu tập.** Hiện chỉ có nút xoá từng địa điểm. Muốn kéo thả
       thì phải chọn thư viện DnD (thêm dependency → cần một mục DECISIONS) hoặc tự viết pointer
       handling. Chưa làm vì nút xoá đã đủ cho nhu cầu "dọn bộ sưu tập".
-- [ ] **`p-28`–`p-30` cố ý để `publishedAt: null`.** Đây là ứng viên cho job đề xuất địa điểm phía
-      server (`syncPlaceSuggestions`). Đừng publish chúng khi chỉnh dữ liệu mẫu, nếu không luồng
-      "Đề xuất thêm địa điểm" sẽ hết ứng viên và `app-check.mjs` fail.
+- [ ] **Một địa điểm cố ý để `publishedAt: null`** — nay là `banh-cuon-11361296208` (danh sách
+      `UNPUBLISHED_IDS` trong `src/mocks/fixtures/cold-start-places.ts`). Đây là ứng viên cho job đề
+      xuất địa điểm phía server (`syncPlaceSuggestions`). Đừng publish nó khi chỉnh dữ liệu mẫu,
+      nếu không luồng "Đề xuất thêm địa điểm" sẽ hết ứng viên.
 - [ ] **Nút "Nhắn tin" trên `/u/:handle` vẫn không có handler** (tồn tại từ trước, không thuộc nhóm
       này). Cần chốt hành vi (mở chat thật? disable kèm tooltip?) trước khi làm.
 - [ ] **`app-check.mjs` và các script CDP khác nằm ngoài repo** (thư mục artifact của phiên làm
@@ -235,10 +235,9 @@ Còn lại, cập nhật sau đợt chuẩn hoá thứ hai (2026-11-08):
 
 ## Bug phát hiện khi nghiên cứu đề xuất (2026-11-08)
 
-- [ ] **Placeholder trả lời bình luận hiển thị nguyên văn `@{replyTo.author.handle}`** — template
-      literal thiếu `$` tại `src/features/social/components/comment-composer.tsx:62-64`. Sửa 1 ký tự.
-- [ ] **Fixture thông báo hệ thống ghi "Khu vực Quận 1"** (`src/mocks/fixtures/notifications.ts:41`)
-      — Đà Nẵng không có Quận 1 (đó là TP.HCM). Sửa thành tên quận Đà Nẵng thực tế.
+- [x] **Placeholder trả lời bình luận hiển thị nguyên văn `@{replyTo.author.handle}`** — đã sửa
+      2026-11-09 (thêm `${}` trong template literal).
+- [x] **Fixture thông báo hệ thống ghi "Khu vực Quận 1"** — đã sửa 2026-11-09 thành "Quận Sơn Trà".
 
 ## Phát hiện 2026-11-08 (bỏ Trip, chuyển Phòng lọc nhóm)
 

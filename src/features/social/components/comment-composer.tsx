@@ -60,7 +60,7 @@ export function CommentComposer({ postId, replyTo, onCancelReply }: CommentCompo
           value={body}
           onChange={(event) => setBody(event.target.value)}
           placeholder={
-            replyTo !== null ? `Trả lời @{replyTo.author.handle}…` : "Viết bình luận của bạn…"
+            replyTo !== null ? `Trả lời @${replyTo.author.handle}…` : "Viết bình luận của bạn…"
           }
           aria-label="Nội dung bình luận"
           maxLength={MAX_CAPTION_LENGTH}

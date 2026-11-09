@@ -3,7 +3,9 @@ import { SparklesIcon, UsersIcon } from "lucide-react"
 import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { usePosts } from "../hooks/use-posts"
 import type { PostFeedFilter } from "../types/post"
 import { PostCard } from "../components/post-card"
@@ -11,9 +13,14 @@ import { PostComposer } from "../components/post-composer"
 
 export function SocialPage() {
   const [filter, setFilter] = useState<PostFeedFilter>("all")
-  const { data, isPending, isError, refetch } = usePosts({ filter })
+  const { posts, isPending, isError, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    usePosts({ filter })
 
-  const posts = data?.items ?? []
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage: () => void fetchNextPage(),
+  })
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
@@ -78,10 +85,22 @@ export function SocialPage() {
       )}
 
       {posts.length > 0 ? (
-        <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-          <SparklesIcon className="size-3" aria-hidden="true" />
-          Đề xuất địa điểm do hệ thống tạo, bạn xem ở trang Thông báo.
-        </p>
+        <>
+          <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
+          <div className="mt-6 flex justify-center">
+            {hasNextPage ? (
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Spinner aria-label="Đang tải thêm bài đăng" className="size-3" />
+                Đang tải thêm bài đăng…
+              </p>
+            ) : (
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <SparklesIcon className="size-3" aria-hidden="true" />
+                Đề xuất địa điểm do hệ thống tạo, bạn xem ở trang Thông báo.
+              </p>
+            )}
+          </div>
+        </>
       ) : null}
     </div>
   )

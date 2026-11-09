@@ -17,12 +17,11 @@ import { CollectionCard } from "@/features/collections/components/collection-car
  */
 export function SavedPage() {
   const {
-    data: postsData,
+    posts: savedPosts,
     isPending,
     isError: postsError,
     refetch: refetchPosts,
   } = usePosts({ filter: "saved" })
-  const savedPosts = postsData?.items ?? []
   const {
     data: collections,
     isPending: collectionsPending,

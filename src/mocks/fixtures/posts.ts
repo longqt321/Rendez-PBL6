@@ -1,5 +1,5 @@
 import type { MockPost } from "../types"
-import { AUTHOR_LIST as AUTHORS } from "./users"
+import { AUTHOR_LIST as AUTHORS, CURRENT_USER } from "./users"
 
 /**
  * Feed /social. Độc lập hoàn toàn với /discover: có bài gắn địa điểm đã lên
@@ -152,5 +152,34 @@ export const MOCK_POSTS: MockPost[] = [
     commentCount: 27,
     likedByMe: true,
     savedByMe: false,
+  },
+  // ---- Bài của chính người dùng (u-me) — để /profile có nội dung ngay từ đầu ----
+  {
+    id: "post-11",
+    author: CURRENT_USER,
+    caption:
+      "Sáng nay ghé Bánh mì Ông Tý, vỏ giòn, pate béo, thịt nguội cắt dày. Đứng ăn ngay vỉa hè mới đúng vị.",
+    imageSeed: "post-banhmi-ong-ty",
+    imageHeight: 380,
+    createdAt: "2026-11-08T07:15:00+07:00",
+    placeId: "banh-mi-ong-ty",
+    likeCount: 46,
+    commentCount: 4,
+    likedByMe: false,
+    savedByMe: false,
+  },
+  {
+    id: "post-12",
+    author: CURRENT_USER,
+    caption:
+      "Chiều mưa ngồi Nối Café trong hẻm Nguyễn Chí Thanh, yên tĩnh, nhạc nhỏ, cà phê sữa đá đúng gu. Sẽ quay lại để làm việc.",
+    imageSeed: "post-noi-cafe",
+    imageHeight: 420,
+    createdAt: "2026-11-08T16:40:00+07:00",
+    placeId: "noi-cafe",
+    likeCount: 31,
+    commentCount: 2,
+    likedByMe: false,
+    savedByMe: true,
   },
 ]

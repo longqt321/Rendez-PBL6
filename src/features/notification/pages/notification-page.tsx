@@ -25,6 +25,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { SectionHeading } from "@/components/shared/section-heading"
 import { formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -147,10 +148,23 @@ function SystemRow({ notification }: { notification: SystemNotification }) {
 }
 
 export function NotificationPage() {
-  const { data, isPending, isError, refetch } = useNotifications()
+  const {
+    notifications,
+    isPending,
+    isError,
+    refetch,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useNotifications()
   const markAllRead = useMarkAllNotificationsRead()
 
-  const notifications = data?.items ?? []
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage: () => void fetchNextPage(),
+  })
+
   const unreadCount = notifications.filter((notification) => !notification.read).length
   const suggestions = notifications.filter(
     (notification): notification is Extract<AppNotification, { kind: "place-suggestion" }> =>
@@ -207,6 +221,13 @@ export function NotificationPage() {
               <SuggestionSection suggestions={suggestions} />
               <OtherActivitySection notifications={others} />
             </div>
+            <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
+            {hasNextPage ? (
+              <p className="mt-6 flex justify-center text-xs text-muted-foreground">
+                <Spinner aria-label="Đang tải thêm thông báo" className="size-3" />
+                <span className="ml-1.5">Đang tải thêm…</span>
+              </p>
+            ) : null}
           </TabsContent>
 
           <TabsContent value="suggestions" className="mt-3">

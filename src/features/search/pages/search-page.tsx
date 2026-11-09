@@ -55,7 +55,7 @@ function SearchResults({ query }: { query: string }) {
   })
   // `q` được lọc server-side (GET /posts?q=); lọc client chỉ giữ bài có gắn địa điểm.
   const {
-    data: postsData,
+    posts: allPosts,
     isPending: postsPending,
     isError: postsError,
     refetch: refetchPosts,
@@ -63,7 +63,7 @@ function SearchResults({ query }: { query: string }) {
   const { data: me } = useMe()
 
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
-  const posts = postsData?.items.filter((post) => post.placeId !== null) ?? []
+  const posts = allPosts.filter((post) => post.placeId !== null)
   const people = Object.values(MOCK_USERS).filter((user) =>
     `${user.name} ${user.handle}`.toLowerCase().includes(query.toLowerCase()),
   )

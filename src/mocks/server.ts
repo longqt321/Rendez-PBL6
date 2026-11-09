@@ -40,6 +40,7 @@ import type { MockCollection, MockComment, MockPost, MockReport, MockReview } fr
  */
 
 const PLACES_PAGE_SIZE = 9
+const POSTS_PAGE_SIZE = 5
 const NOTIFICATIONS_PAGE_SIZE = 20
 
 /** Lý do báo cáo hợp lệ — tra cứu O(1) thay vì so khớp mảng. */
@@ -991,7 +992,7 @@ const routes: Route[] = [
     method: "get",
     pattern: /^\/posts$/,
     handler: (config) => {
-      const { filter = "all", q } = query(config)
+      const { filter = "all", q, cursor } = query(config)
       const needle = typeof q === "string" ? normalizeText(q.trim()) : ""
       const items = db.posts.filter((post) => {
         if (filter === "unplaced" && post.placeId !== null) return false
@@ -1000,7 +1001,7 @@ const routes: Route[] = [
         if (needle.length > 0 && !normalizeText(post.caption).includes(needle)) return false
         return true
       })
-      return { items: items.map(toPostDto), next: null } satisfies Page<Post>
+      return paginate(items.map(toPostDto), cursor ?? null, POSTS_PAGE_SIZE)
     },
   },
   {

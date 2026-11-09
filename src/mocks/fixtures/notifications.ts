@@ -38,7 +38,7 @@ export const MOCK_NOTIFICATIONS: AppNotification[] = [
     id: "notif-04",
     kind: "system",
     title: "Bản đồ địa điểm vừa được cập nhật",
-    body: "Khu vực Quận 1 có thêm 12 địa điểm mới. Xem ở trang Khám phá.",
+    body: "Khu vực Quận Sơn Trà có thêm 12 địa điểm mới. Xem ở trang Khám phá.",
     createdAt: "2026-11-06T10:00:00+07:00",
     read: true,
   },
