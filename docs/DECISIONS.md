@@ -1860,3 +1860,31 @@ không có lưới an toàn thì bước nối backend rất rủi ro.
 - `typecheck` / `lint` / `format:check` / `test` (29 pass) / `build` — exit 0.
 - CDP smoke: `room-flow` (2 tab, join, đề xuất, áp dụng, tab A thấy kết quả), `map-flow` (giữ
   filter discover ↔ map), `review-rating-check` (2 → 3 review) — 0 exception.
+
+## D-038 — Sửa lỗi trạng thái lỗi/đang tải phát hiện khi kiểm bản production
+
+Kiểm bản build thật (`vite preview`, mock tắt, API trả 502) cho thấy lớp lỗi **"trạng thái lỗi bị
+xử lý như trạng thái rỗng"** — chỉ lộ ra khi API không trả dữ liệu, tức đúng lúc nối backend.
+
+### Lỗi và cách sửa
+
+- **`/settings` kẹt spinner vĩnh viễn**: điều kiện `if (isPending || !me)` gộp cả trường hợp lỗi
+  (`isPending = false`, `me = undefined`) → không bao giờ thoát spinner, không có thông báo. Tách
+  nhánh `isPending` và `isError || !me` (Empty + nút "Thử lại" gọi `refetch`).
+- **Lỗi mạng bị báo thành 404** (`place-detail`, `collection-detail`, `post-detail`): `isError ||
+!place` dùng chung một thông điệp "không tìm thấy / đã bị xoá" → người dùng tưởng dữ liệu mất.
+  Thêm [`isNotFoundError`](file:///home/longtran/Projects/frontend/src/lib/axios.ts) (ApiError 404)
+  để phân biệt: 404 → "không tìm thấy" (không có nút thử lại); lỗi khác → "không tải được" +
+  "Thử lại".
+- **Lỗi bị hiển thị thành rỗng** (`/saved`, `/search`, lưới bài đăng ở trang cá nhân): API lỗi thì
+  hiện "Chưa lưu bài nào" / "Không có kết quả" — sai và không có đường thoát. Thêm nhánh `isError`
+  - nút thử lại (`ProfilePostGrid` nhận thêm `isError`/`onRetry`).
+- **Thiếu `<h1>` ở nhánh lỗi/đang tải**: `settings`, `profile`, `place-detail`, `collection-detail`,
+  `post-detail`, `room-page` (không tìm thấy phòng). Mọi trạng thái giờ đều có `<h1>` (ẩn thị giác).
+
+### Bằng chứng
+
+- `bun run test` 35 test pass (thêm test `isNotFoundError`); typecheck/lint/format/build exit 0.
+- CDP trên `vite preview` (mock tắt, 502): 13/13 route có `<h1>`, không route nào kẹt spinner;
+  `/discover/p-01` và `/collections/c-01` hiện "Không tải được … Kiểm tra kết nối rồi thử lại" +
+  nút "Thử lại"; 0 exception. Trước khi sửa: 6 route trắng trang/thiếu h1, `/settings` kẹt spinner.

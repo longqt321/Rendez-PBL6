@@ -25,6 +25,7 @@ import { usePlace } from "../hooks/use-place"
 import { usePlacePosts } from "../hooks/use-place-posts"
 import { usePlaceReviews } from "../hooks/use-place-reviews"
 import { useMe } from "@/features/profile/hooks/use-me"
+import { isNotFoundError } from "@/lib/axios"
 import { ReviewForm } from "../components/review-form"
 import { ReviewItem } from "../components/review-item"
 import type { Review } from "../types/review"
@@ -36,7 +37,7 @@ import { CheckInDialog } from "../components/check-in-dialog"
 export function PlaceDetailPage() {
   const { id } = useParams()
   const placeId = id ?? ""
-  const { data: place, isPending, isError } = usePlace(placeId)
+  const { data: place, isPending, isError, error, refetch } = usePlace(placeId)
   const { data: postsData, isPending: postsPending } = usePlacePosts(placeId)
   const posts = postsData?.pages.flatMap((page) => page.items) ?? []
   const { data: reviews, isPending: reviewsPending } = usePlaceReviews(placeId)
@@ -53,23 +54,40 @@ export function PlaceDetailPage() {
 
   if (isPending) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Spinner className="size-6" aria-label="Đang tải thông tin địa điểm" />
+      <div className="mx-auto w-full max-w-4xl px-4 py-6 lg:px-8 lg:py-8">
+        <h1 className="sr-only">Chi tiết địa điểm</h1>
+        <div className="flex items-center justify-center py-24">
+          <Spinner className="size-6" aria-label="Đang tải thông tin địa điểm" />
+        </div>
       </div>
     )
   }
 
   if (isError || !place) {
+    // 404 = địa điểm không tồn tại (thử lại vô ích); lỗi khác (mạng/5xx) = thử lại được.
+    const notFound = isNotFoundError(error) || (!isError && !place)
     return (
-      <div className="mx-auto max-w-md py-20">
+      <div className="mx-auto max-w-md px-4 py-20">
+        <h1 className="sr-only">{notFound ? "Không tìm thấy địa điểm" : "Lỗi tải địa điểm"}</h1>
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <MapPinIcon />
             </EmptyMedia>
-            <EmptyTitle>Không tìm thấy địa điểm</EmptyTitle>
-            <EmptyDescription>Địa điểm này chưa được đăng hoặc không tồn tại.</EmptyDescription>
+            <EmptyTitle>
+              {notFound ? "Không tìm thấy địa điểm" : "Không tải được địa điểm"}
+            </EmptyTitle>
+            <EmptyDescription>
+              {notFound
+                ? "Địa điểm này chưa được đăng hoặc không tồn tại."
+                : "Kiểm tra kết nối rồi thử lại."}
+            </EmptyDescription>
           </EmptyHeader>
+          {notFound ? null : (
+            <Button variant="outline" onClick={() => void refetch()}>
+              Thử lại
+            </Button>
+          )}
         </Empty>
       </div>
     )

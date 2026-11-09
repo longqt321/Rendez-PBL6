@@ -20,6 +20,14 @@ export class ApiError extends Error {
 }
 
 /**
+ * Lỗi 404 từ server — tài nguyên không tồn tại (khác lỗi mạng/5xx, nơi thử lại
+ * có ích). Trang chi tiết dùng để chọn "không tìm thấy" hay "không tải được".
+ */
+export function isNotFoundError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404
+}
+
+/**
  * Chuyển mọi lỗi axios thành `ApiError` (hoặc giữ nguyên `Error` khác).
  * Tách khỏi interceptor để test được mà không cần gọi mạng.
  */

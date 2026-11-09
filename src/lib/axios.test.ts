@@ -1,6 +1,6 @@
 import { AxiosError, AxiosHeaders } from "axios"
 import { describe, expect, it } from "vitest"
-import { ApiError, toApiError } from "./axios"
+import { ApiError, isNotFoundError, toApiError } from "./axios"
 
 /**
  * Lưu ý: import `./axios` ở môi trường test sẽ nạp cả mock adapter (dev) —
@@ -46,5 +46,14 @@ describe("toApiError", () => {
     const original = new Error("lỗi khác")
     expect(toApiError(original)).toBe(original)
     expect(toApiError("chuỗi lạ").message).toBe("Lỗi không xác định")
+  })
+})
+
+describe("isNotFoundError", () => {
+  it("chỉ đúng với ApiError 404", () => {
+    expect(isNotFoundError(toApiError(axiosErrorWith(404, { detail: "x" })))).toBe(true)
+    expect(isNotFoundError(toApiError(axiosErrorWith(500, { detail: "x" })))).toBe(false)
+    expect(isNotFoundError(toApiError(new AxiosError("Network Error", "ERR_NETWORK")))).toBe(false)
+    expect(isNotFoundError(new Error("lỗi thường"))).toBe(false)
   })
 })

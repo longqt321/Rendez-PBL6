@@ -28,6 +28,7 @@ import { Item, ItemGroup } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ShareButton } from "@/components/shared/share-button"
+import { isNotFoundError } from "@/lib/axios"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { usePlace } from "@/features/places/hooks/use-place"
 import { useCollection } from "../hooks/use-collection"
@@ -92,10 +93,11 @@ function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPla
   )
 }
 
-/** Trạng thái không tìm thấy bộ sưu tập — dùng chung cho thiếu `id` và lỗi tải. */
+/** Trạng thái không tìm thấy bộ sưu tập — dùng khi URL thiếu `id`. */
 function CollectionNotFound() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+      <h1 className="sr-only">Không tìm thấy bộ sưu tập</h1>
       <Empty className="mt-8">
         <EmptyHeader>
           <EmptyTitle>Không tìm thấy bộ sưu tập</EmptyTitle>
@@ -110,7 +112,7 @@ function CollectionNotFound() {
 export function CollectionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { data: collection, isPending, isError } = useCollection(id ?? "")
+  const { data: collection, isPending, isError, error, refetch } = useCollection(id ?? "")
   const deleteCollection = useDeleteCollection()
   const [confirming, setConfirming] = useState(false)
 
@@ -119,6 +121,7 @@ export function CollectionDetailPage() {
   if (isPending) {
     return (
       <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+        <h1 className="sr-only">Chi tiết bộ sưu tập</h1>
         <p className="py-16 text-center text-sm text-muted-foreground">
           <Spinner aria-label="Đang tải bộ sưu tập" /> Đang tải bộ sưu tập…
         </p>
@@ -126,7 +129,32 @@ export function CollectionDetailPage() {
     )
   }
 
-  if (isError || !collection) return <CollectionNotFound />
+  if (isError || !collection) {
+    // 404 = bộ sưu tập không tồn tại; lỗi khác (mạng/5xx) = thử lại được.
+    const notFound = isNotFoundError(error) || (!isError && !collection)
+    return (
+      <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+        <h1 className="sr-only">{notFound ? "Không tìm thấy bộ sưu tập" : "Lỗi tải bộ sưu tập"}</h1>
+        <Empty className="mt-8 border border-dashed border-border">
+          <EmptyHeader>
+            <EmptyTitle>
+              {notFound ? "Không tìm thấy bộ sưu tập" : "Không tải được bộ sưu tập"}
+            </EmptyTitle>
+            <EmptyDescription>
+              {notFound
+                ? "Bộ sưu tập có thể đã bị xoá hoặc link không đúng."
+                : "Kiểm tra kết nối rồi thử lại."}
+            </EmptyDescription>
+          </EmptyHeader>
+          {notFound ? null : (
+            <Button variant="outline" onClick={() => void refetch()}>
+              Thử lại
+            </Button>
+          )}
+        </Empty>
+      </div>
+    )
+  }
 
   const collectionId = collection.id
 

@@ -3,6 +3,7 @@ import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import {
   Field,
   FieldContent,
@@ -41,7 +42,7 @@ type SettingsForm = z.infer<typeof settingsSchema>
 
 /** Trang cài đặt — `/settings`. Dùng RHF + zod (đúng kế hoạch, form nhiều trường). */
 export function SettingsPage() {
-  const { data: me, isPending } = useMe()
+  const { data: me, isPending, isError, refetch } = useMe()
 
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
@@ -55,10 +56,30 @@ export function SettingsPage() {
       : undefined,
   })
 
-  if (isPending || !me) {
+  if (isPending) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Spinner className="size-6" aria-label="Đang tải cài đặt" />
+      <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
+        <h1 className="sr-only">Cài đặt</h1>
+        <div className="flex items-center justify-center py-24">
+          <Spinner className="size-6" aria-label="Đang tải cài đặt" />
+        </div>
+      </div>
+    )
+  }
+
+  if (isError || !me) {
+    return (
+      <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
+        <h1 className="sr-only">Cài đặt</h1>
+        <Empty className="mt-10 border border-dashed border-border">
+          <EmptyHeader>
+            <EmptyTitle>Không tải được cài đặt</EmptyTitle>
+            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+          </EmptyHeader>
+          <Button variant="outline" onClick={() => void refetch()}>
+            Thử lại
+          </Button>
+        </Empty>
       </div>
     )
   }

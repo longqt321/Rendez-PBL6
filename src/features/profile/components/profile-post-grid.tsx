@@ -1,6 +1,7 @@
 import { Link } from "react-router"
 import { CameraIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -16,6 +17,9 @@ const POST_SKELETON_HEIGHTS = ["h-65", "h-80", "h-95"] as const
 interface ProfilePostGridProps {
   posts: Post[]
   isPending: boolean
+  /** Lỗi tải — hiện thông báo + nút thử lại thay vì "chưa có bài" (gây hiểu nhầm). */
+  isError?: boolean
+  onRetry?: () => void
   emptyTitle: string
   emptyDescription: string
 }
@@ -24,6 +28,8 @@ interface ProfilePostGridProps {
 export function ProfilePostGrid({
   posts,
   isPending,
+  isError = false,
+  onRetry,
   emptyTitle,
   emptyDescription,
 }: ProfilePostGridProps) {
@@ -36,6 +42,22 @@ export function ProfilePostGrid({
           </li>
         ))}
       </ul>
+    )
+  }
+
+  if (isError) {
+    return (
+      <Empty className="mt-6">
+        <EmptyHeader>
+          <EmptyTitle>Không tải được bài đăng</EmptyTitle>
+          <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+        </EmptyHeader>
+        {onRetry ? (
+          <Button variant="outline" onClick={onRetry}>
+            Thử lại
+          </Button>
+        ) : null}
+      </Empty>
     )
   }
 

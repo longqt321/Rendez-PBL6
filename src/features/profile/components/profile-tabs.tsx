@@ -51,7 +51,7 @@ export function ProfileTabs({ profile }: ProfileTabsProps) {
 }
 
 function ProfileTabContent({ profile, tab }: { profile: UserProfile; tab: ProfileTab }) {
-  const { data, isPending } = useProfilePosts(profile.handle, tab)
+  const { data, isPending, isError, refetch } = useProfilePosts(profile.handle, tab)
   const posts = data?.pages.flatMap((page) => page.items) ?? []
 
   const copy = {
@@ -73,6 +73,8 @@ function ProfileTabContent({ profile, tab }: { profile: UserProfile; tab: Profil
     <ProfilePostGrid
       posts={posts}
       isPending={isPending}
+      isError={isError}
+      onRetry={() => void refetch()}
       emptyTitle={copy.title}
       emptyDescription={copy.description}
     />

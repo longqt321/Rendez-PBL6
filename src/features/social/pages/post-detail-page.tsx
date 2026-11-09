@@ -25,6 +25,7 @@ import { SectionHeading } from "@/components/shared/section-heading"
 import { formatCount } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { Post } from "../types/post"
+import { isNotFoundError } from "@/lib/axios"
 import { usePost } from "../hooks/use-post"
 import { useSetPostLiked } from "../hooks/use-set-post-liked"
 import { useSetPostSaved } from "../hooks/use-set-post-saved"
@@ -40,12 +41,13 @@ import { PostPreview } from "../components/post-preview"
 export function PostDetailPage() {
   const { id } = useParams()
   const postId = id ?? ""
-  const { data: post, isPending, isError } = usePost(postId)
+  const { data: post, isPending, isError, error, refetch } = usePost(postId)
   const commentsRef = useRef<HTMLDivElement>(null)
 
   if (isPending) {
     return (
       <div className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8 lg:py-8">
+        <h1 className="sr-only">Chi tiết bài đăng</h1>
         <Skeleton className="h-4 w-44" />
         <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
           <div className="flex flex-col gap-3 rounded-surface border border-border/20 p-4">
@@ -64,20 +66,33 @@ export function PostDetailPage() {
   }
 
   if (isError || !post) {
+    // 404 = bài đăng không tồn tại; lỗi khác (mạng/5xx) = thử lại được.
+    const notFound = isNotFoundError(error) || (!isError && !post)
     return (
       <div className="mx-auto max-w-md px-4 py-20">
+        <h1 className="sr-only">{notFound ? "Không tìm thấy bài đăng" : "Lỗi tải bài đăng"}</h1>
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <ImageOffIcon />
             </EmptyMedia>
-            <EmptyTitle>Không tìm thấy bài đăng</EmptyTitle>
+            <EmptyTitle>
+              {notFound ? "Không tìm thấy bài đăng" : "Không tải được bài đăng"}
+            </EmptyTitle>
             <EmptyDescription>
-              Bài đăng này không tồn tại hoặc đã bị xoá khỏi cộng đồng.
+              {notFound
+                ? "Bài đăng này không tồn tại hoặc đã bị xoá khỏi cộng đồng."
+                : "Kiểm tra kết nối rồi thử lại."}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button render={<Link to="/social" />}>Về trang Cộng đồng</Button>
+            {notFound ? (
+              <Button render={<Link to="/social" />}>Về trang Cộng đồng</Button>
+            ) : (
+              <Button variant="outline" onClick={() => void refetch()}>
+                Thử lại
+              </Button>
+            )}
           </EmptyContent>
         </Empty>
       </div>

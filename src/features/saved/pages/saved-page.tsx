@@ -1,5 +1,6 @@
 import { Link } from "react-router"
 import { BookmarkIcon, FolderPlusIcon, MapPinIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -15,9 +16,19 @@ import { CollectionCard } from "@/features/collections/components/collection-car
  * tập" là danh sách bộ sưu tập của người dùng (xem chi tiết tại /collections/:id).
  */
 export function SavedPage() {
-  const { data: postsData, isPending } = usePosts({ filter: "saved" })
+  const {
+    data: postsData,
+    isPending,
+    isError: postsError,
+    refetch: refetchPosts,
+  } = usePosts({ filter: "saved" })
   const savedPosts = postsData?.items ?? []
-  const { data: collections, isPending: collectionsPending } = useCollections()
+  const {
+    data: collections,
+    isPending: collectionsPending,
+    isError: collectionsError,
+    refetch: refetchCollections,
+  } = useCollections()
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
@@ -36,6 +47,16 @@ export function SavedPage() {
                 <Skeleton key={index} className="h-64 w-full rounded-md" />
               ))}
             </div>
+          ) : postsError ? (
+            <Empty className="mt-2">
+              <EmptyHeader>
+                <EmptyTitle>Không tải được bài đã lưu</EmptyTitle>
+                <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+              </EmptyHeader>
+              <Button variant="outline" onClick={() => void refetchPosts()}>
+                Thử lại
+              </Button>
+            </Empty>
           ) : savedPosts.length === 0 ? (
             <Empty className="mt-2">
               <EmptyHeader>
@@ -84,6 +105,16 @@ export function SavedPage() {
                 <Skeleton key={index} className="h-40 w-full rounded-md" />
               ))}
             </div>
+          ) : collectionsError ? (
+            <Empty className="mt-2">
+              <EmptyHeader>
+                <EmptyTitle>Không tải được bộ sưu tập</EmptyTitle>
+                <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+              </EmptyHeader>
+              <Button variant="outline" onClick={() => void refetchCollections()}>
+                Thử lại
+              </Button>
+            </Empty>
           ) : collections && collections.length > 0 ? (
             <ul className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {collections.map((collection) => (

@@ -1,6 +1,7 @@
 import { Link, Navigate, useSearchParams } from "react-router"
 import { SearchXIcon, UsersIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import {
   Item,
@@ -43,12 +44,22 @@ export function SearchPage() {
 }
 
 function SearchResults({ query }: { query: string }) {
-  const { data: placesData, isPending: placesPending } = useDiscoverPlaces({
+  const {
+    data: placesData,
+    isPending: placesPending,
+    isError: placesError,
+    refetch: refetchPlaces,
+  } = useDiscoverPlaces({
     category: "all",
     query,
   })
   // `q` được lọc server-side (GET /posts?q=); lọc client chỉ giữ bài có gắn địa điểm.
-  const { data: postsData, isPending: postsPending } = usePosts({ filter: "all", q: query })
+  const {
+    data: postsData,
+    isPending: postsPending,
+    isError: postsError,
+    refetch: refetchPosts,
+  } = usePosts({ filter: "all", q: query })
   const { data: me } = useMe()
 
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
@@ -80,6 +91,16 @@ function SearchResults({ query }: { query: string }) {
                 </li>
               ))}
             </ul>
+          ) : placesError ? (
+            <Empty className="mt-2">
+              <EmptyHeader>
+                <EmptyTitle>Không tải được kết quả địa điểm</EmptyTitle>
+                <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+              </EmptyHeader>
+              <Button variant="outline" onClick={() => void refetchPlaces()}>
+                Thử lại
+              </Button>
+            </Empty>
           ) : places.length === 0 ? (
             <SearchEmptyBlock label="địa điểm" />
           ) : (
@@ -100,6 +121,16 @@ function SearchResults({ query }: { query: string }) {
                 <Skeleton key={index} className="h-64 w-full rounded-md" />
               ))}
             </div>
+          ) : postsError ? (
+            <Empty className="mt-2">
+              <EmptyHeader>
+                <EmptyTitle>Không tải được kết quả bài đăng</EmptyTitle>
+                <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
+              </EmptyHeader>
+              <Button variant="outline" onClick={() => void refetchPosts()}>
+                Thử lại
+              </Button>
+            </Empty>
           ) : posts.length === 0 ? (
             <SearchEmptyBlock label="bài đăng" />
           ) : (
