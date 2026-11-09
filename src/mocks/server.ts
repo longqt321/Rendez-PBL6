@@ -41,6 +41,9 @@ import type { MockCollection, MockComment, MockPost, MockReport, MockReview } fr
 const PLACES_PAGE_SIZE = 9
 const NOTIFICATIONS_PAGE_SIZE = 20
 
+/** Lý do báo cáo hợp lệ — tra cứu O(1) thay vì so khớp mảng. */
+const VALID_REPORT_REASONS: ReadonlySet<string> = new Set(PLACE_REPORT_REASONS)
+
 /** "Database" trong bộ nhớ của server. Reset khi tải lại trang. */
 const db = {
   places: MOCK_PLACES.map((place) => ({ ...place })),
@@ -128,6 +131,11 @@ function paginate<T>(items: T[], cursor: string | null, pageSize: number): Page<
   return { items: slice, next: nextOffset < items.length ? String(nextOffset) : null }
 }
 
+/** Quy tắc hiển thị công khai: đã duyệt và chưa bị xác nhận đóng cửa. */
+function isPubliclyVisible(place: MockPlace): boolean {
+  return place.publishedAt !== null && place.status !== "closed"
+}
+
 function listPublishedPlaces(params: {
   category?: string
   district?: string
@@ -142,9 +150,7 @@ function listPublishedPlaces(params: {
   /** Từ khoá bị loại (phân tách bằng dấu phẩy) — khớp name + tags. */
   excludeKeyword?: string
 }): Place[] {
-  const published = db.places.filter(
-    (place) => place.publishedAt !== null && place.status !== "closed",
-  )
+  const published = db.places.filter(isPubliclyVisible)
   const query = normalizeText(params.q ?? "")
   // `category`/`district` nhận một giá trị (discover) hoặc danh sách phân tách
   // dấu phẩy (phòng lọc nhóm có thể chọn nhiều) — "all" nghĩa là không ràng buộc.
@@ -205,9 +211,7 @@ function listPublishedPlaces(params: {
  */
 function suggestPlacesForCaption(caption: string, limit: number): PlaceSuggestion[] {
   if (caption.trim().length < 8) return []
-  const candidates = db.places.filter(
-    (place) => place.publishedAt !== null && place.status !== "closed",
-  )
+  const candidates = db.places.filter(isPubliclyVisible)
   return rankPlaceSuggestions(caption, candidates, limit).map((item) => ({
     place: toPlaceSummary(item.place),
     reason: item.reason,
@@ -470,7 +474,7 @@ function createPlaceReport(config: InternalAxiosRequestConfig, placeId: string):
 
   const body = parseBody<{ reason?: unknown; detail?: unknown }>(config)
   const reason = body.reason
-  if (typeof reason !== "string" || !PLACE_REPORT_REASONS.includes(reason as PlaceReportReason)) {
+  if (typeof reason !== "string" || !VALID_REPORT_REASONS.has(reason)) {
     badRequest(config, "Lý do báo cáo không hợp lệ")
   }
   const detail = typeof body.detail === "string" ? body.detail.trim() : ""

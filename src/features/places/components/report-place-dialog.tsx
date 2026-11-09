@@ -110,9 +110,9 @@ export function ReportPlaceDialog({ place, children }: ReportPlaceDialogProps) {
               control={form.control}
               name="reason"
               render={({ field }) => (
-                <RadioGroup
+                <RadioGroup<PlaceReportReason>
                   value={field.value}
-                  onValueChange={(next) => field.onChange(next as PlaceReportReason)}
+                  onValueChange={field.onChange}
                   aria-label="Chọn lý do báo cáo"
                   className="gap-2"
                 >
