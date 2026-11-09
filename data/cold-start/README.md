@@ -20,6 +20,7 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
 ## Cách hiểu các trường
 
 - `tier`: `curated` (có nguồn báo chí từng quán) / `osm` (POI OSM).
+- `status`: `open` / `closed` / `unknown` — **hiện 100% là `unknown`** (chưa xác minh quán còn hoạt động). Chỉ đổi thành `closed` khi có bằng chứng (báo cáo người dùng đã duyệt).
 - `imageKind`: `venue` (ảnh thật quán) / `dish` (ảnh món đại diện).
 - `category`: phân loại theo tên quán + tag cuisine OSM.
 - `verified`: luôn `false` — phải xác minh trước khi dùng production.
@@ -27,7 +28,7 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
 
 ## Việc còn lại
 
-1. Ảnh món Unsplash: đã thay 4 ảnh (steak/pizza/burger/bread), còn lại do giới hạn 50 request/giờ của demo key — chạy lại `unsplash-v2.mjs` khi quota reset (script có cache).
+1. Xác minh `status` cho từng quán (hiện 100% `unknown`) — frontend đã có nút "Báo cáo" gửi lên hàng chờ kiểm duyệt, backend duyệt xong mới đổi `status`.
 2. Xác minh giờ mở cửa/SĐT (chỉ ~5% POI có tag).
 3. Xác minh tên/quán còn tồn tại (OSM có thể cũ).
 4. Giấy phép ảnh quán (Foody/Google Maps) — cần xin phép trước khi phát hành công khai.

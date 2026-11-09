@@ -42,6 +42,9 @@ export const PLACE_SUGGESTION_MIN_CHARS = 8
 /** Nội dung đánh giá địa điểm. */
 export const MAX_REVIEW_CONTENT_LENGTH = 1000
 
+/** Ghi chú khi báo cáo địa điểm (đóng cửa, sai thông tin…). */
+export const MAX_REPORT_DETAIL_LENGTH = 300
+
 /** Tên bộ sưu tập. */
 export const MAX_COLLECTION_NAME_LENGTH = 80
 

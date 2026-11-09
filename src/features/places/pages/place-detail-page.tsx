@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useParams } from "react-router"
-import { CameraIcon, MapPinIcon, StarIcon, FolderPlusIcon } from "lucide-react"
+import { CameraIcon, FlagIcon, MapPinIcon, StarIcon, FolderPlusIcon } from "lucide-react"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -33,6 +33,7 @@ import type { Review } from "../types/review"
 import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
 import { PlaceMiniMap } from "../components/place-mini-map"
 import { CheckInDialog } from "../components/check-in-dialog"
+import { ReportPlaceDialog } from "../components/report-place-dialog"
 
 /** Trang chi tiết địa điểm — `/discover/:id`. */
 export function PlaceDetailPage() {
@@ -106,6 +107,7 @@ export function PlaceDetailPage() {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-heading text-xl font-bold tracking-tight">{place.name}</h1>
             <Badge variant="secondary">{categoryLabel(place.category)}</Badge>
+            {place.status === "closed" ? <Badge variant="destructive">Đã đóng cửa</Badge> : null}
           </div>
 
           <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
@@ -145,6 +147,12 @@ export function PlaceDetailPage() {
                 Đăng bài check-in tại đây
               </Button>
             </CheckInDialog>
+            <ReportPlaceDialog place={place}>
+              <Button variant="ghost" className="text-muted-foreground">
+                <FlagIcon />
+                Báo cáo
+              </Button>
+            </ReportPlaceDialog>
           </div>
         </CardContent>
       </Card>

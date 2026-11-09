@@ -114,6 +114,8 @@ export const MOCK_PLACES: MockPlace[] = [
     imageHeight: 290,
     lat: 16.0662,
     lng: 108.2208,
+    // Dữ liệu demo duy nhất có trạng thái xác minh — để thấy UI "Đã đóng cửa".
+    status: "closed",
     publishedAt: "2026-10-12T08:00:00+07:00",
   },
   {

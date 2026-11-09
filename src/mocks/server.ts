@@ -2,6 +2,8 @@ import { AxiosError, AxiosHeaders, CanceledError } from "axios"
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from "axios"
 import type { AppNotification } from "@/features/notification/types/notification"
 import type { Place, PlaceCategory, PlaceSuggestion } from "@/features/places/types/place"
+import type { PlaceReport, PlaceReportReason } from "@/features/places/types/place-report"
+import { PLACE_REPORT_REASONS } from "@/features/places/types/place-report"
 import type { Review } from "@/features/places/types/review"
 import type { Collection, CollectionSummary } from "@/features/collections/types/collection"
 import type { Post } from "@/features/social/types/post"
@@ -20,10 +22,11 @@ import {
   MAX_CAPTION_LENGTH,
   MAX_COLLECTION_DESCRIPTION_LENGTH,
   MAX_COLLECTION_NAME_LENGTH,
+  MAX_REPORT_DETAIL_LENGTH,
   MAX_REVIEW_CONTENT_LENGTH,
   MIN_CAPTION_LENGTH,
 } from "@/lib/constants"
-import type { MockCollection, MockComment, MockPost, MockReview } from "./types"
+import type { MockCollection, MockComment, MockPost, MockReport, MockReview } from "./types"
 
 /**
  * SERVER GIẢ LẬP — không phải code frontend.
@@ -46,6 +49,7 @@ const db = {
   comments: MOCK_COMMENTS.map((comment) => ({ ...comment, deleted: false })),
   reviews: MOCK_REVIEWS.map((review) => ({ ...review })),
   collections: MOCK_COLLECTIONS.map((collection) => ({ ...collection })),
+  reports: [] as MockReport[],
   users: { ...MOCK_USERS },
 }
 
@@ -57,6 +61,7 @@ let notificationSeq = 0
 let commentSeq = 0
 let reviewSeq = 0
 let collectionSeq = 0
+let reportSeq = 0
 
 // ---------------------------------------------------------------------------
 // Serialize: chuyển bản ghi nội bộ thành đúng hợp đồng API
@@ -78,6 +83,7 @@ function toPlaceDto(place: MockPlace): Place {
     imageHeight: place.imageHeight,
     lat: place.lat,
     lng: place.lng,
+    status: place.status,
   }
 }
 
@@ -136,7 +142,9 @@ function listPublishedPlaces(params: {
   /** Từ khoá bị loại (phân tách bằng dấu phẩy) — khớp name + tags. */
   excludeKeyword?: string
 }): Place[] {
-  const published = db.places.filter((place) => place.publishedAt !== null)
+  const published = db.places.filter(
+    (place) => place.publishedAt !== null && place.status !== "closed",
+  )
   const query = normalizeText(params.q ?? "")
   // `category`/`district` nhận một giá trị (discover) hoặc danh sách phân tách
   // dấu phẩy (phòng lọc nhóm có thể chọn nhiều) — "all" nghĩa là không ràng buộc.
@@ -197,7 +205,9 @@ function listPublishedPlaces(params: {
  */
 function suggestPlacesForCaption(caption: string, limit: number): PlaceSuggestion[] {
   if (caption.trim().length < 8) return []
-  const candidates = db.places.filter((place) => place.publishedAt !== null)
+  const candidates = db.places.filter(
+    (place) => place.publishedAt !== null && place.status !== "closed",
+  )
   return rankPlaceSuggestions(caption, candidates, limit).map((item) => ({
     place: toPlaceSummary(item.place),
     reason: item.reason,
@@ -454,6 +464,50 @@ function createComment(postId: string, body: { body?: string; parentId?: string 
  * Form đánh giá chỉ nhận text + số sao (không có ảnh/file), nên body chỉ có
  * `rating` và `content` — server cũng từ chối mọi trường đính kèm.
  */
+function createPlaceReport(config: InternalAxiosRequestConfig, placeId: string): PlaceReport {
+  const place = findPlace(placeId)
+  if (!place || place.publishedAt === null) notFound(config, "Không tìm thấy địa điểm")
+
+  const body = parseBody<{ reason?: unknown; detail?: unknown }>(config)
+  const reason = body.reason
+  if (typeof reason !== "string" || !PLACE_REPORT_REASONS.includes(reason as PlaceReportReason)) {
+    badRequest(config, "Lý do báo cáo không hợp lệ")
+  }
+  const detail = typeof body.detail === "string" ? body.detail.trim() : ""
+  if (reason === "other" && detail.length === 0) {
+    badRequest(config, "Lý do khác cần mô tả cụ thể")
+  }
+  if (detail.length > MAX_REPORT_DETAIL_LENGTH) {
+    badRequest(config, `Ghi chú tối đa ${MAX_REPORT_DETAIL_LENGTH} ký tự`)
+  }
+
+  // Một người một lý do một lần cho mỗi địa điểm — báo cáo lặp là nhiễu.
+  const duplicate = db.reports.find(
+    (report) =>
+      report.placeId === placeId &&
+      report.reason === reason &&
+      report.reporterId === CURRENT_USER.id,
+  )
+  if (duplicate) {
+    badRequest(config, "Bạn đã gửi báo cáo với lý do này cho địa điểm này rồi")
+  }
+
+  reportSeq += 1
+  const report: MockReport = {
+    id: `report-new-${reportSeq}`,
+    placeId,
+    reason: reason as PlaceReportReason,
+    detail: detail.length > 0 ? detail : null,
+    createdAt: new Date().toISOString(),
+    reporterId: CURRENT_USER.id,
+  }
+  db.reports.push(report)
+  // `reporterId` là chi tiết nội bộ — không đưa vào hợp đồng API.
+  const { reporterId: _reporterId, ...dto } = report
+  void _reporterId
+  return dto
+}
+
 function createReview(config: InternalAxiosRequestConfig, placeId: string): Review {
   const place = findPlace(placeId)
   if (!place || place.publishedAt === null) notFound(config, "Không tìm thấy địa điểm")
@@ -859,6 +913,11 @@ const routes: Route[] = [
     method: "post",
     pattern: /^\/places\/([^/]+)\/reviews$/,
     handler: (config, [placeId]) => createReview(config, placeId),
+  },
+  {
+    method: "post",
+    pattern: /^\/places\/([^/]+)\/reports$/,
+    handler: (config, [placeId]) => createPlaceReport(config, placeId),
   },
   {
     method: "get",

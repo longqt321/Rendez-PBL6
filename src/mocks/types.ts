@@ -1,4 +1,5 @@
 import type { Author, Post } from "@/features/social/types/post"
+import type { PlaceReport } from "@/features/places/types/place-report"
 
 /**
  * Bản ghi bài đăng trong "database" của server giả lập.
@@ -51,6 +52,14 @@ export interface MockReview {
 
 /** Dữ liệu seed cho đánh giá. */
 export type MockReviewSeed = MockReview
+
+/**
+ * Bản ghi báo cáo địa điểm trong "database" của server giả lập.
+ *
+ * Server chỉ lưu `reporterId`; hợp đồng API (`PlaceReport`) không có tác giả —
+ * báo cáo là dữ liệu kiểm duyệt, client không cần biết ai gửi. Chi tiết nội bộ.
+ */
+export type MockReport = PlaceReport & { reporterId: string }
 
 /**
  * Bộ sưu tập địa điểm của người dùng trong "database" của server giả lập.

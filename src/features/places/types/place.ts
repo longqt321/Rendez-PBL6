@@ -1,5 +1,11 @@
 export type PlaceCategory = "cafe" | "restaurant" | "street-food" | "bakery" | "dessert" | "bar"
 
+/**
+ * Trạng thái hoạt động của địa điểm — server kết luận (từ báo cáo đã duyệt),
+ * client chỉ hiển thị, không tự suy ra.
+ */
+export type PlaceStatus = "open" | "closed" | "unknown"
+
 /** Địa điểm đầy đủ — dùng cho lưới /discover. */
 export interface Place {
   id: string
@@ -20,6 +26,8 @@ export interface Place {
   lat?: number
   /** Kinh độ toạ độ địa lý (WGS84) */
   lng?: number
+  /** Quán còn hoạt động hay không — thiếu/không rõ thì server không gửi trường này. */
+  status?: PlaceStatus
 }
 
 /**
