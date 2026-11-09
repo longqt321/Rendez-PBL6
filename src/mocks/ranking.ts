@@ -1,5 +1,5 @@
 import type { PlaceCategory } from "@/features/places/types/place"
-import type { MockPlace } from "./fixtures/places"
+import type { MockPlace } from "./fixtures/cold-start-places"
 import { normalizeText } from "./text"
 
 /**

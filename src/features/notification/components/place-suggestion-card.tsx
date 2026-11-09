@@ -83,8 +83,9 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
                 <ItemMedia variant="image">
                   <SeedImage
                     seed={place.imageSeed}
+                    src={place.imageUrl}
                     className="size-full"
-                    alt={`Ảnh minh hoạ ${place.name}`}
+                    alt={`Ảnh ${place.name}`}
                   />
                 </ItemMedia>
                 <ItemContent className="gap-0.5">

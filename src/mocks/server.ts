@@ -10,7 +10,7 @@ import type { Post } from "@/features/social/types/post"
 import type { Comment, CommentSort } from "@/features/social/types/comment"
 import type { Page } from "@/types/api"
 import { MOCK_NOTIFICATIONS } from "./fixtures/notifications"
-import { MOCK_PLACES, type MockPlace } from "./fixtures/places"
+import { MOCK_PLACES, type MockPlace } from "./fixtures/cold-start-places"
 import { MOCK_POSTS } from "./fixtures/posts"
 import { MOCK_COMMENTS } from "./fixtures/comments"
 import { MOCK_REVIEWS } from "./fixtures/reviews"
@@ -18,6 +18,7 @@ import { MOCK_COLLECTIONS } from "./fixtures/collections"
 import { CURRENT_USER, ME, MOCK_USERS } from "./fixtures/users"
 import { rankPlaceSuggestions } from "./ranking"
 import { normalizeText } from "./text"
+import { env } from "@/lib/env"
 import {
   MAX_CAPTION_LENGTH,
   MAX_COLLECTION_DESCRIPTION_LENGTH,
@@ -83,6 +84,7 @@ function toPlaceDto(place: MockPlace): Place {
     reviewCount: place.reviewCount,
     priceLevel: place.priceLevel,
     imageSeed: place.imageSeed,
+    imageUrl: place.imageUrl,
     imageHeight: place.imageHeight,
     lat: place.lat,
     lng: place.lng,
@@ -102,6 +104,7 @@ function toPlaceSummary(place: MockPlace) {
     district: place.district,
     category: place.category,
     imageSeed: place.imageSeed,
+    imageUrl: place.imageUrl,
     isPublished: place.publishedAt !== null,
     lat: place.lat,
     lng: place.lng,
@@ -835,6 +838,16 @@ function forbidden(config: InternalAxiosRequestConfig, message: string): never {
   })
 }
 
+function unauthorized(config: InternalAxiosRequestConfig, message: string): never {
+  throw new AxiosError(message, "ERR_BAD_REQUEST", config, undefined, {
+    data: { detail: message },
+    status: 401,
+    statusText: "Unauthorized",
+    headers: new AxiosHeaders({ "content-type": "application/json" }),
+    config,
+  })
+}
+
 function parseBody<T>(config: InternalAxiosRequestConfig): T {
   const raw: unknown = config.data
   if (typeof raw !== "string" || raw.length === 0) return {} as T
@@ -1101,7 +1114,12 @@ const routes: Route[] = [
   {
     method: "get",
     pattern: /^\/me$/,
-    handler: () => ({ ...ME }),
+    handler: (config) => {
+      // Dev có thể tắt bypass auth (`VITE_DEV_BYPASS_AUTH=false`) để thấy đúng
+      // trạng thái chưa đăng nhập; prod không nạp file này nên luôn đi backend.
+      if (!env.devBypassAuth) unauthorized(config, "Chưa đăng nhập")
+      return { ...ME }
+    },
   },
   {
     method: "get",

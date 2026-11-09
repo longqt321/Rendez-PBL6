@@ -221,6 +221,7 @@ export function PlacesMap({
                   <div className="relative h-28 w-full overflow-hidden rounded-md bg-muted">
                     <SeedImage
                       seed={place.imageSeed}
+                      src={place.imageUrl}
                       height={112}
                       alt={place.name}
                       className="h-full w-full object-cover"

@@ -16,7 +16,7 @@ export const MOCK_REVIEWS: MockReviewSeed[] = [
   // ---- p-01 (Bánh Xèo Bà Dưỡng) ----
   {
     id: "r-01-1",
-    placeId: "p-01",
+    placeId: "banh-xeo-ba-duong",
     author: AUTHORS["u-2"],
     rating: 5,
     content:
@@ -25,7 +25,7 @@ export const MOCK_REVIEWS: MockReviewSeed[] = [
   },
   {
     id: "r-01-2",
-    placeId: "p-01",
+    placeId: "banh-xeo-ba-duong",
     author: AUTHORS["u-4"],
     rating: 4,
     content:
@@ -35,7 +35,7 @@ export const MOCK_REVIEWS: MockReviewSeed[] = [
   // ---- p-02 (Mì Quảng Bà Mua) ----
   {
     id: "r-02-1",
-    placeId: "p-02",
+    placeId: "mi-quang-ba-mua",
     author: AUTHORS["u-1"],
     rating: 5,
     content:
@@ -45,11 +45,11 @@ export const MOCK_REVIEWS: MockReviewSeed[] = [
   // ---- p-03 (Cà phê Út Tịch) ----
   {
     id: "r-03-1",
-    placeId: "p-03",
+    placeId: "reply-1988-cafe",
     author: AUTHORS["u-3"],
     rating: 4,
     content:
-      "Quán cà phê mang phong cách phố cổ ngay mặt đường Bạch Đằng, view nhìn thẳng ra cầu sông Hàn gió mát rượi.",
+      "Quán cà phê phong cách hoài niệm Hàn Quốc, bàn gỗ và đồ trang trí cũ rất có gu. Không gian yên tĩnh, hợp ngồi làm việc buổi sáng.",
     createdAt: "2026-11-01T08:20:00+07:00",
   },
 ]

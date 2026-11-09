@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Ảnh cold-start được chép từ data/cold-start/images (xem scripts/copy-cold-start-images.mjs)
+public/data/cold-start
+
 # Env files (chỉ commit .env.example)
 .env
 .env.*

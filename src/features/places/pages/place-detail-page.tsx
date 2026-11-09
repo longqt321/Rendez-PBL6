@@ -98,9 +98,10 @@ export function PlaceDetailPage() {
       <Card className="mt-4 gap-0 p-0">
         <SeedImage
           seed={place.imageSeed}
+          src={place.imageUrl}
           height={280}
           className="w-full rounded-t-xl"
-          alt={`Ảnh minh hoạ ${place.name}`}
+          alt={`Ảnh ${place.name}`}
         />
 
         <CardContent className="flex flex-col gap-2 p-4">
@@ -116,11 +117,17 @@ export function PlaceDetailPage() {
           </p>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1 font-bold text-foreground">
-              <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
-              {formatRating(place.rating)}
-            </span>
-            <span>{formatCount(place.reviewCount)} đánh giá</span>
+            {place.reviewCount > 0 ? (
+              <>
+                <span className="flex items-center gap-1 font-bold text-foreground">
+                  <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
+                  {formatRating(place.rating)}
+                </span>
+                <span>{formatCount(place.reviewCount)} đánh giá</span>
+              </>
+            ) : (
+              <span>Chưa có đánh giá</span>
+            )}
             <span aria-label={priceLevelAriaLabel(place.priceLevel)} className="font-bold">
               {priceLevelLabel(place.priceLevel)}
             </span>

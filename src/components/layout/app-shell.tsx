@@ -33,6 +33,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
 import { useRooms } from "@/features/rooms/hooks/use-rooms"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
+import { env } from "@/lib/env"
 import { cn } from "@/lib/utils"
 import { FILTER_SHARED_PATHS, NAV_ITEMS, type NavItem } from "./nav-items"
 
@@ -201,9 +202,12 @@ function SideNav() {
 
       <div className="mt-auto flex flex-col gap-3 border-t border-dashed border-border pt-4">
         <SkinSwitch />
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          Dữ liệu minh hoạ. Chưa kết nối backend.
-        </p>
+        {/* Chỉ hiện khi mock server đang phục dữ liệu — prod gọi backend thật. */}
+        {env.enableMocks ? (
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Dữ liệu minh hoạ. Chưa kết nối backend.
+          </p>
+        ) : null}
       </div>
     </aside>
   )

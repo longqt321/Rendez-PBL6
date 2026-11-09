@@ -19,8 +19,9 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
       {/* Chiều cao ảnh do server trả về (`imageHeight`) → lưới mobile có nhịp masonry. */}
       <SeedImage
         seed={place.imageSeed}
+        src={place.imageUrl}
         height={place.imageHeight}
-        alt={`Ảnh minh hoạ ${place.name}`}
+        alt={`Ảnh ${place.name}`}
         className="w-full shrink-0 rounded-t-xl"
       >
         <div className="absolute top-2 left-2 flex flex-wrap gap-1">
@@ -40,10 +41,12 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
           ) : null}
         </div>
 
-        <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-sm font-bold">
-          <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
-          {formatRating(place.rating)}
-        </span>
+        {place.reviewCount > 0 ? (
+          <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-sm font-bold">
+            <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
+            {formatRating(place.rating)}
+          </span>
+        ) : null}
       </SeedImage>
 
       <CardContent className="flex flex-1 flex-col gap-2 p-4">
@@ -63,7 +66,11 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
 
         <div className="mt-auto flex items-center justify-between pt-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <span>{formatCount(place.reviewCount)} đánh giá</span>
+            <span>
+              {place.reviewCount > 0
+                ? `${formatCount(place.reviewCount)} đánh giá`
+                : "Chưa có đánh giá"}
+            </span>
             {distanceKm !== undefined ? (
               <span className="flex items-center gap-0.5 text-xs font-semibold text-primary">
                 <NavigationIcon className="size-3" />

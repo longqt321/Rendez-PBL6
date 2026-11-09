@@ -19,6 +19,12 @@ const envSchema = z.object({
    * (dùng khi backend đã chạy local).
    */
   VITE_ENABLE_MOCKS: z.enum(["true", "false"]).optional(),
+  /**
+   * Bỏ qua bước đăng nhập ở dev — mock server tự trả user giả cho `GET /me`.
+   * Chỉ có ý nghĩa khi mock bật; đặt `VITE_DEV_BYPASS_AUTH=false` để thấy đúng
+   * trạng thái "chưa đăng nhập" khi backend chưa chạy.
+   */
+  VITE_DEV_BYPASS_AUTH: z.enum(["true", "false"]).optional(),
 })
 
 const parsed = envSchema.safeParse(import.meta.env)
@@ -33,7 +39,11 @@ const raw = parsed.data
 /** Bật mock: chỉ ở dev; cờ `false` tắt hẳn (khi backend đã chạy local). */
 const enableMocks = import.meta.env.DEV && raw.VITE_ENABLE_MOCKS !== "false"
 
+/** Tự đăng nhập user giả ở dev (mock phải bật); cờ `false` tắt để test 401. */
+const devBypassAuth = enableMocks && raw.VITE_DEV_BYPASS_AUTH !== "false"
+
 export const env = {
   apiBaseUrl: raw.VITE_API_BASE_URL,
   enableMocks,
+  devBypassAuth,
 } as const

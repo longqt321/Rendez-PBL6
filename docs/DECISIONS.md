@@ -1915,3 +1915,41 @@ viết logic TS thuần thay vì gọi package. Rà toàn bộ code mới viết
 - `bun run typecheck`/`lint`/`format:check`/`build` exit 0; `bun run test` 39 test pass (6 file).
 - `grep "Thử lại"` chỉ còn trong `error-state.tsx`, `route-error-page.tsx` (ErrorBoundary riêng)
   và thông điệp bình luận khác ngữ cảnh.
+
+## D-040 — Tách DEV/PROD và thay mock bịa bằng cold-start thật
+
+**Ngày:** 2026-11-09
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Trước đây `/discover` chạy trên 30 địa điểm bịa tay trong `src/mocks/fixtures/places.ts`; mock server
+luôn bật ở dev và không có cơ chế "chưa đăng nhập". Đã có bộ cold-start THẬT
+(`data/cold-start/places.json`, 1.701 địa điểm) nhưng chưa nối vào frontend.
+
+### Quyết định
+
+1. **DEV = mock + tự đăng nhập; PROD = backend thật.** `env.enableMocks` chỉ bật khi
+   `import.meta.env.DEV` và `VITE_ENABLE_MOCKS !== "false"`; `env.devBypassAuth` bật mặc định ở dev,
+   tắt bằng `VITE_DEV_BYPASS_AUTH=false` để mock trả 401 cho `GET /me`. Banner "Dữ liệu minh hoạ"
+   chỉ hiện khi `env.enableMocks`.
+2. **Cold-start thay mock bịa.** `src/mocks/fixtures/cold-start-places.ts` map 1.701 bản ghi dataset
+   sang `MockPlace`; `MOCK_PLACES` re-export từ đó. Trường dataset không có để trung tính
+   (`rating=0`, `reviewCount=0`, `tags=[]`, `priceLevel=1`) — không bịa số liệu.
+3. **Ảnh thật.** Thêm `imageUrl` vào `Place`/`PlaceSummary`; `SeedImage` nhận `src` và chỉ fallback
+   picsum khi thiếu. Script `scripts/copy-cold-start-images.mjs` chép ảnh sang
+   `public/data/cold-start/images` ở `predev`/`prebuild`; bản sao nằm trong `.gitignore`.
+4. **Map 36 loại hình dataset → 6 nhóm frontend** trong adapter; loại lạ rơi về `restaurant`.
+
+### Lý do
+
+- Mock chỉ nạp qua dynamic import ở dev nên bundle production không chứa dataset (đã kiểm: tên quán
+  không xuất hiện trong `dist/assets`).
+- Ảnh nằm ở `public/` để prod hiển thị được khi chưa có backend; không commit bản sao 44MB.
+- Adapter nằm trong `src/mocks/` vì là nghiệp vụ phía server — xoá cùng mock khi backend xong.
+
+### Bằng chứng
+
+- `bun run typecheck`/`lint`/`format:check`/`test` (42 test)/`build` đều pass.
+- UI check CDP: `/discover` hiện 9 quán thật với ảnh `/data/cold-start/images/venues/...`;
+  chi tiết `banh-xeo-ba-duong` dùng ảnh quán thật; `VITE_ENABLE_MOCKS=false` → 0 quán, không banner.

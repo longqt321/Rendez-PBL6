@@ -6,7 +6,8 @@ import { ReportPlaceDialog } from "./report-place-dialog"
 import type { Place } from "../types/place"
 
 const PLACE: Place = {
-  id: "p-01",
+  // Id có thật trong bộ cold-start — mock server chỉ nhận báo cáo cho địa điểm đã duyệt.
+  id: "banh-xeo-ba-duong",
   name: "Bánh Xèo Bà Dưỡng",
   address: "K280/23 Hoàng Diệu",
   city: "Đà Nẵng",
