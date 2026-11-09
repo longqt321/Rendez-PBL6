@@ -1,4 +1,5 @@
 import axios from "axios"
+import { checkApiContract } from "@/lib/api-contracts"
 import { env } from "@/lib/env"
 
 /**
@@ -71,3 +72,20 @@ api.interceptors.response.use(
   (response) => response,
   (error: unknown) => Promise.reject(toApiError(error)),
 )
+
+/**
+ * Contract test response khi mock bật: đối chiếu `response.data` với schema zod
+ * của endpoint. Lệch hợp đồng chỉ `console.error` — không throw, không làm vỡ UI.
+ * Chỉ đăng ký khi mock bật (dev) để production không chịu chi phí kiểm tra.
+ */
+if (env.enableMocks) {
+  api.interceptors.response.use((response) => {
+    const method = (response.config.method ?? "get").toUpperCase()
+    const url = response.config.url ?? ""
+    const message = checkApiContract(method, url, response.data)
+    if (message) {
+      console.error(`[API contract] ${method} ${url.split("?")[0]}: ${message}`)
+    }
+    return response
+  })
+}

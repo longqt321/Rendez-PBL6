@@ -1,0 +1,104 @@
+import { describe, expect, it } from "vitest"
+import { checkApiContract, findContract } from "./api-contracts"
+import { placeSchema } from "@/features/places/types/place.schema"
+import { postSchema } from "@/features/social/types/post.schema"
+import { pageSchema } from "@/types/api-schema"
+
+/** Response hợp lệ phải qua được safeParse — không sinh thông điệp lỗi. */
+describe("checkApiContract", () => {
+  it("response hợp lệ → không lỗi", () => {
+    const place = {
+      id: "p1",
+      name: "Cà phê A",
+      address: "12 Bạch Đằng",
+      city: "Đà Nẵng",
+      category: "cafe",
+      tags: ["view-đẹp"],
+      rating: 4.5,
+      reviewCount: 12,
+      priceLevel: 2,
+      imageSeed: "seed",
+      imageHeight: 320,
+    }
+    expect(checkApiContract("GET", "/places/p1", place)).toBeNull()
+    expect(
+      checkApiContract("GET", "/places", {
+        items: [place],
+        next: null,
+      }),
+    ).toBeNull()
+  })
+
+  it("response thiếu field → safeParse fail với thông điệp zod", () => {
+    const message = checkApiContract("GET", "/posts", {
+      items: [{ id: "post-1" }],
+      next: null,
+    })
+    expect(message).not.toBeNull()
+    expect(message).toMatch(/required|Invalid input/i)
+  })
+
+  it("field sai kiểu → fail", () => {
+    const message = checkApiContract("GET", "/places/p1", {
+      id: "p1",
+      name: "Cà phê A",
+      address: "12 Bạch Đằng",
+      city: "Đà Nẵng",
+      category: "cafe",
+      tags: [],
+      rating: "không phải số",
+      reviewCount: 12,
+      priceLevel: 2,
+      imageSeed: "seed",
+      imageHeight: 320,
+    })
+    expect(message).not.toBeNull()
+  })
+
+  it("path không có hợp đồng → bỏ qua", () => {
+    expect(checkApiContract("GET", "/khong-ton-tai", { batKy: true })).toBeNull()
+  })
+
+  it("phân biệt method trên cùng path", () => {
+    expect(findContract("GET", "/places")?.schema).toBeDefined()
+    expect(findContract("PATCH", "/notifications")).toBeDefined()
+    // PATCH /notifications trả mảng, không phải Page.
+    const contract = findContract("PATCH", "/notifications")
+    const systemNotification = {
+      kind: "system",
+      id: "n1",
+      createdAt: "",
+      read: false,
+      title: "t",
+      body: "b",
+    }
+    expect(contract?.schema.safeParse([systemNotification]).success).toBe(true)
+    expect(contract?.schema.safeParse({ items: [], next: null }).success).toBe(false)
+  })
+})
+
+/** Schema suy từ type phải khớp: pageSchema(Post) parse được Post thật. */
+describe("schema khớp type domain", () => {
+  it("pageSchema(postSchema) khớp Page<Post>", () => {
+    const page = pageSchema(postSchema)
+    expect(page.safeParse({ items: [], next: "cursor-1" }).success).toBe(true)
+    expect(page.safeParse({ items: [], next: 1 }).success).toBe(false)
+  })
+
+  it("placeSchema từ chối priceLevel ngoài 1|2|3", () => {
+    const result = placeSchema.safeParse({
+      id: "p1",
+      name: "x",
+      address: "x",
+      city: "x",
+      category: "cafe",
+      tags: [],
+      rating: 1,
+      reviewCount: 0,
+      priceLevel: 4,
+      imageSeed: "x",
+      imageHeight: 100,
+    })
+    expect(result.success).toBe(false)
+  })
+})

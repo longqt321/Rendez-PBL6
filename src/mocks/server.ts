@@ -17,6 +17,7 @@ import { MOCK_REVIEWS } from "./fixtures/reviews"
 import { MOCK_COLLECTIONS } from "./fixtures/collections"
 import { CURRENT_USER, ME, MOCK_USERS } from "./fixtures/users"
 import { rankPlaceSuggestions } from "./ranking"
+import { resolveScenario } from "./scenarios"
 import { normalizeText } from "./text"
 import { env } from "@/lib/env"
 import {
@@ -776,6 +777,26 @@ function setFollow(handle: string, followed: boolean) {
 
 const RESPONSE_DELAY_MS = 320
 
+/**
+ * Kịch bản lỗi đọc MỘT LẦN lúc khởi tạo module (`VITE_MOCK_SCENARIO`).
+ * Đổi giá trị cần restart dev server — đủ dùng cho việc thử UI, và tránh phải
+ * đọc biến môi trường trên mỗi request.
+ */
+const scenario = resolveScenario(env.mockScenario)
+
+/** Route GET trả danh sách — dùng để áp kịch bản `empty`. */
+const LIST_ROUTES: readonly RegExp[] = [
+  /^\/places$/,
+  /^\/posts$/,
+  /^\/notifications$/,
+  /^\/users$/,
+  /^\/users\/[^/]+\/posts$/,
+  /^\/users\/[^/]+\/collections$/,
+  /^\/collections$/,
+  /^\/places\/[^/]+\/reviews$/,
+  /^\/places\/[^/]+\/posts$/,
+]
+
 function wait(ms: number, config: InternalAxiosRequestConfig): Promise<void> {
   return new Promise((resolve, reject) => {
     const signal = config.signal
@@ -847,6 +868,22 @@ function unauthorized(config: InternalAxiosRequestConfig, message: string): neve
     headers: new AxiosHeaders({ "content-type": "application/json" }),
     config,
   })
+}
+
+/** Lỗi máy chủ 500 — dùng cho kịch bản `server-error`. */
+function serverError(config: InternalAxiosRequestConfig, message: string): never {
+  throw new AxiosError(message, "ERR_BAD_RESPONSE", config, undefined, {
+    data: { detail: message },
+    status: 500,
+    statusText: "Internal Server Error",
+    headers: new AxiosHeaders({ "content-type": "application/json" }),
+    config,
+  })
+}
+
+/** Lỗi mạng (status 0, không response) — dùng cho kịch bản `offline`. */
+function networkError(config: InternalAxiosRequestConfig, message: string): never {
+  throw new AxiosError(message, AxiosError.ERR_NETWORK, config)
 }
 
 function parseBody<T>(config: InternalAxiosRequestConfig): T {
@@ -1224,10 +1261,23 @@ const routes: Route[] = [
 ]
 
 export const mockAdapter: AxiosAdapter = async (config) => {
-  await wait(RESPONSE_DELAY_MS, config)
+  // Delay gồm cả kịch bản `slow` — giữ nguyên cơ chế cancel signal của `wait`.
+  await wait(RESPONSE_DELAY_MS + scenario.delayMs, config)
 
   const method = (config.method ?? "get").toLowerCase()
   const path = (config.url ?? "").split("?")[0].replace(/\/$/, "") || "/"
+
+  // Kịch bản `offline`: mọi method đều lỗi mạng (status 0, không response).
+  if (scenario.offline) networkError(config, "Không có kết nối mạng (kịch bản offline)")
+
+  // Các kịch bản còn lại chỉ áp dụng cho GET — mutation vẫn hoạt động bình thường.
+  if (method === "get") {
+    if (scenario.serverError) serverError(config, "Lỗi máy chủ (kịch bản server-error)")
+    if (scenario.unauthorized && path === "/me") unauthorized(config, "Chưa đăng nhập")
+    if (scenario.emptyLists && LIST_ROUTES.some((pattern) => pattern.test(path))) {
+      return ok(config, { items: [], next: null })
+    }
+  }
 
   for (const route of routes) {
     if (route.method !== method) continue

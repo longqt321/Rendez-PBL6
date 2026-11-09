@@ -25,6 +25,15 @@ const envSchema = z.object({
    * trạng thái "chưa đăng nhập" khi backend chưa chạy.
    */
   VITE_DEV_BYPASS_AUTH: z.enum(["true", "false"]).optional(),
+  /**
+   * Kịch bản lỗi của mock server (`src/mocks/scenarios.ts`): `slow` (trễ thêm),
+   * `empty` (danh sách rỗng), `server-error` (GET trả 500), `unauthorized`
+   * (GET /me trả 401), `offline` (mọi request lỗi mạng). Chỉ có ý nghĩa khi mock
+   * bật; đổi giá trị cần restart dev server.
+   */
+  VITE_MOCK_SCENARIO: z
+    .enum(["ok", "slow", "empty", "server-error", "unauthorized", "offline"])
+    .optional(),
 })
 
 const parsed = envSchema.safeParse(import.meta.env)
@@ -46,4 +55,6 @@ export const env = {
   apiBaseUrl: raw.VITE_API_BASE_URL,
   enableMocks,
   devBypassAuth,
+  /** Kịch bản lỗi của mock server — chỉ có ý nghĩa khi `enableMocks`. */
+  mockScenario: raw.VITE_MOCK_SCENARIO ?? "ok",
 } as const

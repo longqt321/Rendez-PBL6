@@ -1953,3 +1953,85 @@ luôn bật ở dev và không có cơ chế "chưa đăng nhập". Đã có b�
 - `bun run typecheck`/`lint`/`format:check`/`test` (42 test)/`build` đều pass.
 - UI check CDP: `/discover` hiện 9 quán thật với ảnh `/data/cold-start/images/venues/...`;
   chi tiết `banh-xeo-ba-duong` dùng ảnh quán thật; `VITE_ENABLE_MOCKS=false` → 0 quán, không banner.
+
+## D-041 — Kịch bản lỗi của mock qua biến môi trường `VITE_MOCK_SCENARIO`
+
+**Ngày:** 2026-11-09
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+D-011 ghi rõ "Chưa kiểm hành vi lỗi mạng thật": adapter mock chỉ trả 200 (và 404 khi sai route).
+UI có ErrorState, retry, trạng thái 401 nhưng không có cách nào làm server trả lỗi để xem thực tế.
+Cần chèn lỗi mà không sửa code, không thêm dependency.
+
+### Quyết định
+
+1. **Chọn kịch bản bằng biến môi trường, không phải query param hay UI toggle.** `VITE_MOCK_SCENARIO`
+   nhận `ok | slow | empty | server-error | unauthorized | offline`, validate bằng zod trong
+   `src/lib/env.ts` (`env.mockScenario`, mặc định `ok`). Sai giá trị → app fail fast lúc khởi động
+   như các biến env khác.
+2. **Phạm vi áp dụng:** `slow`, `empty`, `server-error`, `unauthorized` chỉ áp dụng cho **GET** —
+   mutation (POST/PATCH/DELETE) vẫn hoạt động để luồng đăng bài/đánh giá/bộ sưu tập test được.
+   `offline` áp dụng cho **mọi method** (AxiosError network, status 0, không response).
+3. **Đọc một lần lúc khởi tạo module** (`src/mocks/scenarios.ts` → `resolveScenario(env.mockScenario)`
+   trong `server.ts`). Đổi kịch bản cần restart dev server. Đơn giản và đủ dùng: kịch bản lỗi là
+   việc đặt trước khi thử UI, không cần đổi nóng; tránh đọc env mỗi request.
+4. `empty` trả `{ items: [], next: null }` ngay cho các route danh sách (`/places`, `/posts`,
+   `/notifications`, `/users`, `/users/:handle/posts`, `/users/:handle/collections`, `/collections`,
+   `/places/:id/reviews`, `/places/:id/posts`) — bỏ qua handler, không đụng "database" trong bộ nhớ.
+5. Giá trị lạ rơi về `ok` thay vì crash — sai cấu hình mock không được làm gãy dev server.
+
+### Phương án đã xem
+
+| Phương án                                 | Kết quả                                                                              |
+| ----------------------------------------- | ------------------------------------------------------------------------------------ |
+| Query param `?__scenario=` trên URL       | Loại — phải đụng tay vào mọi lời gọi api; dễ lộ vào production                       |
+| Nút bật/tắt lỗi trong UI (dev-only panel) | Loại — tạo UI mới chỉ để test, vi phạm "không overengineering"                       |
+| Chèn lỗi qua hàm debug gọi từ console     | Loại — không tái lập được khi reload trang; khó chia sẻ cho người khác               |
+| Biến môi trường (đã chọn)                 | Đặt trước khi chạy, không đổi code, không vào bundle production (mock chỉ nạp ở dev) |
+
+### Hệ quả
+
+- Đổi kịch bản cần **restart dev server** (ghi chú trong `.env.example` và comment trong code).
+- `slow` cộng thêm 3000 ms vào delay hiện có (320 ms) — vẫn giữ cơ chế cancel signal của `wait()`,
+  nên huỷ request khi đổi bộ lọc nhanh vẫn hoạt động.
+- `unauthorized` trả 401 cho `GET /me` — kết hợp `VITE_DEV_BYPASS_AUTH=false` không cần thiết nữa,
+  nhưng vẫn giữ hai cơ chế độc lập (bypass auth là cấu hình, scenario là kịch bản lỗi).
+
+### Bằng chứng
+
+- `bun run typecheck` / `lint` / `test` / `format` đều pass (xem báo cáo tác vụ).
+- `src/mocks/scenarios.test.ts`: 7 test cho `resolveScenario` (6 giá trị + giá trị lạ → `ok`).
+
+## D-042 — Thêm E2E Playwright chạy được trên mock lẫn backend
+
+**Ngày:** 2026-11-09
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Đã có kiểm thử thủ công bằng script CDP ngoài repo (D-040) nhưng không chạy lại được tự động
+khi sửa code. Cần hồi quy tự động chạy được trên mock (dev) lẫn backend thật khi backend xong.
+
+### Quyết định
+
+1. Cài `@playwright/test` làm devDependency; test đặt trong `e2e/`, cấu hình ở `playwright.config.ts`
+   (`testDir: "./e2e"`, baseURL từ `E2E_BASE_URL`, mặc định `http://localhost:5199`).
+2. Project `mock` mặc định (mock bật ở dev). Project backend **chưa tạo** vì backend chưa có,
+   nhưng cấu hình đọc env nên thêm project sau chỉ cần env mới — không sửa cấu hình.
+3. `webServer` tự chạy `bun run dev --port 5199 --strictPort`, `reuseExistingServer: true`.
+4. `vitest` chỉ pick `src/**/*.test.*` nên `e2e/` không bị nhầm; ESLint thêm block cho `e2e/`.
+
+### Phương án đã xem
+
+- Script CDP ngoài repo: không chạy được trong CI, không có assertion/retry.
+- Cypress: nặng hơn, thêm runner riêng trong khi Playwright đủ dùng.
+
+### Kích thước / License
+
+~1 devDependency (`@playwright/test`, MIT) + browser binary Chromium (~170 MB, tải 1 lần).
+
+### Bằng chứng
+
+- `bun run e2e`: 4 spec pass trên mock (xem báo cáo kèm lệnh).
