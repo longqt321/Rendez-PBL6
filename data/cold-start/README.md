@@ -1,31 +1,32 @@
 # Cold-start data — quán ăn & cafe Đà Nẵng
 
-Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc lập với frontend/backend — chỉ là dữ liệu.
+Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc lập với frontend/backend.
+
+## Quy mô (thu thập 2026-11-09)
+
+- **1.701 địa điểm**: 40 mục tuyển chọn từ báo chí ẩm thực (`tier: "curated"`) + 1.661 POI có tên thật trên OpenStreetMap trong địa giới TP Đà Nẵng (`tier: "osm"`).
+- **Phủ 15 phường/xã** (đơn vị hành chính theo OSM 2025): Hải Châu 447, Ngũ Hành Sơn 317, An Hải 291, Thanh Khê 202, Hòa Cường 150, Sơn Trà 66, Hòa Khánh 65, Liên Chiểu 42, Cẩm Lệ 31, An Khê 30, Hải Vân 29, Bà Nà 16, Hòa Xuân 10, Hòa Vang 3, Vĩnh Lộc 2.
+- **1.698/1.701 có ảnh** — ảnh món đại diện theo nhóm (imageKind: `dish`) hoặc **ảnh thật của quán** (imageKind: `venue`, 12 quán nổi tiếng).
+- Toạ độ 100% từ OSM (chính xác theo POI), 0 mục `unknown`.
 
 ## File
 
-- `places.json` — nguồn chính (40 địa điểm + meta + provenance).
-- `places.csv` — bản phẳng để mở Excel/Sheets review.
-- `images/` — 12 ảnh món đại diện (Commons, giấy phép mở) — **không phải ảnh quán**.
-- `CREDITS.md` / `CREDITS.json` — nguồn và giấy phép ảnh.
+- `places.json` — nguồn chính.
+- `places.csv` — bản phẳng để review.
+- `images/` — ảnh món đại diện (Commons/Openverse).
+- `images/venues/` — **ảnh thật của 12 quán nổi tiếng** (nguồn Foody.vn).
+- `CREDITS.md` / `CREDITS.json` / `venue-images.json` — nguồn + giấy phép.
 
-## Cách hiểu các trường quan trọng
+## Cách hiểu các trường
 
-- `geoPrecision`: `poi` (khớp POI OSM có tên đúng — tin cậy nhất) > `address` (khớp số nhà) > `street` (tâm đường, xấp xỉ) > `unknown` (chưa có toạ độ).
-- `verified`: luôn `false` — **phải xác minh lại** (gọi quán/kiểm Google Maps) trước khi dùng production.
-- `sources`: trang báo chí/nơi lấy thông tin tên + địa chỉ.
-- `notes`: khác biệt giữa nguồn báo chí và OSM, cần phân xử.
-- Giờ mở cửa/SĐT chỉ có khi OSM có tag — không bịa.
+- `tier`: `curated` (có nguồn báo chí từng quán) / `osm` (POI OSM).
+- `imageKind`: `venue` (ảnh thật quán) / `dish` (ảnh món đại diện).
+- `category`: phân loại theo tên quán + tag cuisine OSM.
+- `verified`: luôn `false` — phải xác minh trước khi dùng production.
+- `sources` (curated): trang báo chí nơi lấy thông tin.
 
-## Nguồn dữ liệu
+## Việc còn lại
 
-- Danh sách quán: tổng hợp từ các bài tổng hợp ẩm thực Đà Nẵng (tourism.danang.vn, hellodanang.vn, ghiendanang.com, cattour.vn, mia.vn, pasgo.vn…).
-- Toạ độ: OpenStreetMap qua Overpass API + Nominatim (ODbL 1.0).
-- Ảnh: Wikimedia Commons (chi tiết trong CREDITS.md).
-
-## Việc còn lại (xác minh)
-
-1. Xác minh 17 mục `geoPrecision: street` bằng Google Maps/FOODY, sửa toạ độ.
-2. Bổ sung toạ độ cho 3 mục `unknown` (Bà Hằng, Kem bơ Cô Vân, Ibasho).
-3. Xác minh giờ mở cửa + SĐT thực tế (gọi hoặc kiểm fanpage).
-4. Chụp/lấy ảnh thật của từng quán (ảnh hiện tại chỉ là món đại diện).
+1. Ảnh thật cho 28 quán curated còn lại — cần Google Places API key (xem chat) hoặc chụp/xin từ fanpage.
+2. Xác minh giờ mở cửa/SĐT (chỉ 5 quán OSM có tag).
+3. Xác minh tên/quán còn tồn tại (OSM có thể cũ).
