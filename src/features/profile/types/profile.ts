@@ -18,6 +18,8 @@ export interface UserProfile {
   followingCount: number
   followedByMe: boolean
   isMe: boolean
+  /** Hồ sơ riêng tư: chỉ người theo dõi xem được bài đăng. */
+  privateProfile: boolean
 }
 
 /** Tab trang cá nhân — server lọc theo tab, client chỉ gửi tham số. */

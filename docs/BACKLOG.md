@@ -96,10 +96,12 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 
 ## Phát hiện khi làm Bình luận + Profile (2026-11-07)
 
-- [ ] **`PATCH /me` chưa có route mock.** `/settings` chỉ cập nhật cache + toast minh hoạ; cần
-      `PATCH /me` ở mock (và backend) để lưu thật tên/bio/địa điểm/riêng tư.
-- [ ] **Lưu/bỏ lưu địa điểm chưa có endpoint.** Nút lưu ở `PlaceCard`/`/discover/:id` chưa nối;
-      cần `PATCH /places/:id/save` (hoặc tương đương) + tab "Đã lưu" ở `/profile`.
+- [x] **`PATCH /me` chưa có route mock.** Đã làm 2026-11-09: route mock + `useUpdateMe` (ghi cache
+      `["me"]`), form `/settings` lưu thật; thêm `privateProfile` vào `UserProfile` + schema zod.
+      Backend thật chỉ cần implement đúng hợp đồng `PATCH /me` (4 trường) là chạy.
+- [x] **Lưu/bỏ lưu địa điểm chưa có endpoint.** Đã làm 2026-11-09: `GET /places/saved` (gộp địa điểm
+      trong bộ sưu tập của tôi) + tab "Địa điểm" ở `/saved`. Nút lưu vẫn đi qua bộ sưu tập
+      (`SaveToCollectionDialog`) — không cần endpoint `PATCH /places/:id/save` riêng.
 - [ ] **Tab "Người" ở `/search` lọc trên `MOCK_USERS` phía client.** Vi phạm nguyên tắc "mọi lọc
       ở server" khi có backend — cần `GET /users?q=`.
 - [ ] **`Menu.GroupLabel` của base-ui bắt buộc nằm trong `Menu.Group`.** Template shadcn
@@ -180,8 +182,9 @@ sẻ dùng Web Share API + clipboard fallback, và dialog check-in từ trang qu
       `UNPUBLISHED_IDS` trong `src/mocks/fixtures/cold-start-places.ts`). Đây là ứng viên cho job đề
       xuất địa điểm phía server (`syncPlaceSuggestions`). Đừng publish nó khi chỉnh dữ liệu mẫu,
       nếu không luồng "Đề xuất thêm địa điểm" sẽ hết ứng viên.
-- [ ] **Nút "Nhắn tin" trên `/u/:handle` vẫn không có handler** (tồn tại từ trước, không thuộc nhóm
-      này). Cần chốt hành vi (mở chat thật? disable kèm tooltip?) trước khi làm.
+- [x] **Nút "Nhắn tin" trên `/u/:handle` vẫn không có handler** — đã chốt 2026-11-09: tắt nút
+      (`disabled`) + `Tooltip` giải thích "sẽ mở khi backend hoàn thiện". Cần backend (WebSocket +
+      lưu hội thoại) mới bật lại.
 - [ ] **`app-check.mjs` và các script CDP khác nằm ngoài repo** (thư mục artifact của phiên làm
       việc), không chạy được trong CI. Nếu muốn hồi quy tự động thì phải chuyển vào `e2e/` và thêm
       script npm.

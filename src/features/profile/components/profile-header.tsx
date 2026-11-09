@@ -3,6 +3,7 @@ import { MapPinIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Item, ItemContent, ItemGroup } from "@/components/ui/item"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Toggle } from "@/components/ui/toggle"
 import { SeedImage } from "@/components/shared/seed-image"
 import { formatCount, formatDate } from "@/lib/format"
@@ -54,7 +55,18 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               >
                 {profile.followedByMe ? "Đang theo dõi" : "Theo dõi"}
               </Toggle>
-              <Button variant="outline">Nhắn tin</Button>
+              {/* Nhắn tin cần backend (WebSocket + lưu hội thoại) — chưa có hợp đồng API,
+                  nên tắt nút kèm giải thích thay vì để nút bấm không có tác dụng. */}
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button variant="outline" disabled>
+                      Nhắn tin
+                    </Button>
+                  }
+                />
+                <TooltipContent>Tính năng nhắn tin sẽ mở khi backend hoàn thiện</TooltipContent>
+              </Tooltip>
             </div>
           )}
         </div>

@@ -2035,3 +2035,39 @@ khi sửa code. Cần hồi quy tự động chạy được trên mock (dev) l�
 ### Bằng chứng
 
 - `bun run e2e`: 4 spec pass trên mock (xem báo cáo kèm lệnh).
+
+## D-043 — Hoàn thiện 3 luồng bị treo: PATCH /me, địa điểm đã lưu, nút Nhắn tin
+
+**Ngày:** 2026-11-09
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Ba mục trong BACKLOG tồn tại từ 2026-11-07: `/settings` chỉ hiện toast minh hoạ (không có
+`PATCH /me`), tab "Địa điểm" ở `/saved` luôn rỗng (không có endpoint lưu địa điểm), nút "Nhắn tin"
+bấm không có tác dụng.
+
+### Quyết định
+
+1. **`PATCH /me`**: thêm `privateProfile: boolean` vào `UserProfile` (trước đây form đặt cứng
+   `false`); body chỉ nhận 4 trường (`name`, `bio`, `location`, `privateProfile`) — validate dùng
+   chung `lib/constants` với form. Mock giữ hồ sơ hiện tại trong `db.me` (bản sao riêng, không đụng
+   fixture). `useUpdateMe` ghi thẳng cache `["me"]` từ response.
+2. **"Đã lưu địa điểm" = nằm trong bộ sưu tập của tôi**: thêm `GET /places/saved` (gộp các
+   `placeIds` từ bộ sưu tập của người dùng, loại trùng, chỉ trả địa điểm công khai) thay vì tạo
+   trạng thái "lưu" riêng cho địa điểm. Tab "Địa điểm" ở `/saved` dùng nó; mutation
+   `useSetCollectionPlace` invalidate `["places", "saved"]`.
+3. **Nút "Nhắn tin"**: `disabled` + `Tooltip` "sẽ mở khi backend hoàn thiện" — nút bấm không tác
+   dụng là lừa người dùng; bật lại khi có hợp đồng chat.
+
+### Lý do
+
+- "Lưu địa điểm" tái dùng bộ sưu tập (nghiệp vụ đã có) thay vì thêm nguồn sự thật thứ hai cho
+  trạng thái lưu — đúng "một nghiệp vụ một chỗ".
+- `privateProfile` thuộc hợp đồng hồ sơ (server quyết định ai xem được), không phải state client.
+
+### Bằng chứng
+
+- `bun run typecheck`/`lint`/`test` (65 test)/`format:check` exit 0.
+- `bun run e2e`: 8/8 pass, gồm 2 test mới (`settings.spec.ts` — lưu + validate) và
+  `saved-places.spec.ts` (tab Địa điểm có ≥1 card).

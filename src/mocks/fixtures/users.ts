@@ -20,6 +20,7 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     followingCount: 64,
     followedByMe: false,
     isMe: true,
+    privateProfile: false,
   },
   "u-1": {
     id: "u-1",
@@ -34,6 +35,7 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     followingCount: 87,
     followedByMe: true,
     isMe: false,
+    privateProfile: false,
   },
   "u-2": {
     id: "u-2",
@@ -48,6 +50,7 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     followingCount: 122,
     followedByMe: false,
     isMe: false,
+    privateProfile: false,
   },
   "u-3": {
     id: "u-3",
@@ -62,6 +65,7 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     followingCount: 45,
     followedByMe: false,
     isMe: false,
+    privateProfile: false,
   },
   "u-4": {
     id: "u-4",
@@ -76,6 +80,7 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     followingCount: 210,
     followedByMe: false,
     isMe: false,
+    privateProfile: false,
   },
   "u-5": {
     id: "u-5",
@@ -90,6 +95,7 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     followingCount: 98,
     followedByMe: false,
     isMe: false,
+    privateProfile: false,
   },
 }
 

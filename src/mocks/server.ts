@@ -24,6 +24,9 @@ import {
   MAX_CAPTION_LENGTH,
   MAX_COLLECTION_DESCRIPTION_LENGTH,
   MAX_COLLECTION_NAME_LENGTH,
+  MAX_PROFILE_BIO_LENGTH,
+  MAX_PROFILE_LOCATION_LENGTH,
+  MAX_PROFILE_NAME_LENGTH,
   MAX_REPORT_DETAIL_LENGTH,
   MAX_REVIEW_CONTENT_LENGTH,
   MIN_CAPTION_LENGTH,
@@ -57,6 +60,8 @@ const db = {
   collections: MOCK_COLLECTIONS.map((collection) => ({ ...collection })),
   reports: [] as MockReport[],
   users: { ...MOCK_USERS },
+  /** Hồ sơ người dùng hiện tại — PATCH /me sửa bản sao này, không đụng fixture. */
+  me: { ...ME },
 }
 
 /** Bài đã được server gửi thông báo đề xuất — tránh sinh trùng. */
@@ -902,6 +907,39 @@ function query(config: InternalAxiosRequestConfig): Record<string, string> {
   return result
 }
 
+/**
+ * `PATCH /me` — cập nhật hồ sơ.
+ *
+ * Validate trùng quy tắc của form `/settings` (dùng chung `lib/constants`).
+ * Chỉ nhận đúng 4 trường trong hợp đồng; trường lạ bị bỏ qua để client không
+ * thể ghi đè dữ liệu server không cho sửa.
+ */
+function updateMe(config: InternalAxiosRequestConfig): typeof db.me {
+  const body = parseBody<Record<string, unknown>>(config)
+  const name = typeof body.name === "string" ? body.name.trim() : ""
+  const bio = typeof body.bio === "string" ? body.bio.trim() : ""
+  const location = typeof body.location === "string" ? body.location.trim() : ""
+  const privateProfile = body.privateProfile
+
+  if (name.length < 2) badRequest(config, "Tên cần ít nhất 2 ký tự")
+  if (name.length > MAX_PROFILE_NAME_LENGTH) {
+    badRequest(config, `Tên tối đa ${MAX_PROFILE_NAME_LENGTH} ký tự`)
+  }
+  if (bio.length > MAX_PROFILE_BIO_LENGTH) {
+    badRequest(config, `Giới thiệu tối đa ${MAX_PROFILE_BIO_LENGTH} ký tự`)
+  }
+  if (location.length > MAX_PROFILE_LOCATION_LENGTH) {
+    badRequest(config, `Địa điểm tối đa ${MAX_PROFILE_LOCATION_LENGTH} ký tự`)
+  }
+  if (typeof privateProfile !== "boolean") {
+    badRequest(config, "Trường riêng tư phải là boolean")
+  }
+
+  db.me = { ...db.me, name, bio, location, privateProfile }
+  db.users[db.me.id] = { ...db.me }
+  return { ...db.me }
+}
+
 type Handler = (config: InternalAxiosRequestConfig, params: string[]) => unknown
 
 interface Route {
@@ -948,6 +986,23 @@ const routes: Route[] = [
         cursor ?? null,
         PLACES_PAGE_SIZE,
       )
+    },
+  },
+  {
+    method: "get",
+    // Đứng trước `/places/:id` — nếu không `:id` sẽ nuốt cả "saved".
+    pattern: /^\/places\/saved$/,
+    handler: () => {
+      // "Đã lưu" = nằm trong ít nhất một bộ sưu tập của chính mình; gộp + loại trùng.
+      const savedIds = new Set(
+        db.collections
+          .filter((collection) => collection.owner.id === CURRENT_USER.id)
+          .flatMap((collection) => collection.placeIds),
+      )
+      const items = db.places
+        .filter((place) => savedIds.has(place.id) && isPubliclyVisible(place))
+        .map(toPlaceDto)
+      return { items, next: null } satisfies Page<Place>
     },
   },
   {
@@ -1156,8 +1211,13 @@ const routes: Route[] = [
       // Dev có thể tắt bypass auth (`VITE_DEV_BYPASS_AUTH=false`) để thấy đúng
       // trạng thái chưa đăng nhập; prod không nạp file này nên luôn đi backend.
       if (!env.devBypassAuth) unauthorized(config, "Chưa đăng nhập")
-      return { ...ME }
+      return { ...db.me }
     },
+  },
+  {
+    method: "patch",
+    pattern: /^\/me$/,
+    handler: (config) => updateMe(config),
   },
   {
     method: "get",
@@ -1165,13 +1225,13 @@ const routes: Route[] = [
     handler: (config) => {
       const { q } = query(config)
       const needle = typeof q === "string" ? normalizeText(q.trim()) : ""
-      const items = Object.values(MOCK_USERS).filter((user) => {
+      const items = Object.values(db.users).filter((user) => {
         if (needle.length === 0) return true
         return (
           normalizeText(user.name).includes(needle) || normalizeText(user.handle).includes(needle)
         )
       })
-      return { items, next: null } satisfies Page<(typeof MOCK_USERS)[string]>
+      return { items, next: null } satisfies Page<(typeof db.users)[string]>
     },
   },
   {

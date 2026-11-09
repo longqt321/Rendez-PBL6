@@ -81,6 +81,8 @@ export function useSetCollectionPlace() {
     onSuccess: (collection) => {
       queryClient.setQueryData<Collection>(["collections", collection.id], collection)
       void queryClient.invalidateQueries({ queryKey: collectionsQueryKey() })
+      // Thêm/bớt địa điểm khỏi bộ sưu tập đổi luôn tab "Địa điểm" ở /saved.
+      void queryClient.invalidateQueries({ queryKey: ["places", "saved"] })
     },
   })
 }

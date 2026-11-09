@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { useMe } from "@/features/profile/hooks/use-me"
+import { useUpdateMe } from "@/features/profile/hooks/use-update-me"
 import { Spinner } from "@/components/ui/spinner"
 import {
   MAX_PROFILE_BIO_LENGTH,
@@ -43,6 +44,7 @@ type SettingsForm = z.infer<typeof settingsSchema>
 /** Trang cài đặt — `/settings`. Dùng RHF + zod (đúng kế hoạch, form nhiều trường). */
 export function SettingsPage() {
   const { data: me, isPending, isError, refetch } = useMe()
+  const updateMe = useUpdateMe()
 
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
@@ -51,7 +53,7 @@ export function SettingsPage() {
           name: me.name,
           bio: me.bio,
           location: me.location,
-          privateProfile: false,
+          privateProfile: me.privateProfile,
         }
       : undefined,
   })
@@ -81,9 +83,10 @@ export function SettingsPage() {
   }
 
   const onSubmit = (values: SettingsForm) => {
-    // PATCH /me chưa có ở mock server — ghi BACKLOG, không tự bịa route.
-    toast.info("Đã lưu cài đặt (chế độ minh hoạ — chưa lưu server).")
-    void values
+    updateMe.mutate(values, {
+      onSuccess: () => toast.success("Đã lưu thay đổi hồ sơ."),
+      onError: (error) => toast.error(error.message),
+    })
   }
 
   return (
@@ -160,7 +163,7 @@ export function SettingsPage() {
             <Button type="button" variant="outline" onClick={() => form.reset()}>
               Đặt lại
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
+            <Button type="submit" disabled={form.formState.isSubmitting || updateMe.isPending}>
               Lưu thay đổi
             </Button>
           </div>

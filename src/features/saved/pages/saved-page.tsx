@@ -4,6 +4,8 @@ import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useSavedPlaces } from "../hooks/use-saved-places"
+import { PlaceCard } from "@/features/places/components/place-card"
 import { usePosts } from "@/features/social/hooks/use-posts"
 import { PostCard } from "@/features/social/components/post-card"
 import { useCollections } from "@/features/collections/hooks/use-collection"
@@ -28,6 +30,12 @@ export function SavedPage() {
     isError: collectionsError,
     refetch: refetchCollections,
   } = useCollections()
+  const {
+    data: savedPlaces,
+    isPending: savedPlacesPending,
+    isError: savedPlacesError,
+    refetch: refetchSavedPlaces,
+  } = useSavedPlaces()
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
@@ -76,21 +84,43 @@ export function SavedPage() {
         </TabsContent>
 
         <TabsContent value="places" className="mt-4">
-          <Empty className="mt-2">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <MapPinIcon />
-              </EmptyMedia>
-              <EmptyTitle>Chưa lưu địa điểm nào</EmptyTitle>
-              <EmptyDescription>
-                Dùng nút “Lưu vào bộ sưu tập” trên trang địa điểm để lưu. Xem{" "}
-                <Link to="/discover" className="underline underline-offset-2">
-                  Khám phá
-                </Link>{" "}
-                để tìm địa điểm mới.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
+          {savedPlacesPending ? (
+            <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} className="h-64 w-full rounded-md" />
+              ))}
+            </div>
+          ) : savedPlacesError ? (
+            <ErrorState
+              variant="plain"
+              title="Không tải được địa điểm đã lưu"
+              onRetry={() => void refetchSavedPlaces()}
+            />
+          ) : savedPlaces && savedPlaces.length > 0 ? (
+            <ul className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {savedPlaces.map((place) => (
+                <li key={place.id}>
+                  <PlaceCard place={place} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Empty className="mt-2">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <MapPinIcon />
+                </EmptyMedia>
+                <EmptyTitle>Chưa lưu địa điểm nào</EmptyTitle>
+                <EmptyDescription>
+                  Dùng nút “Lưu vào bộ sưu tập” trên trang địa điểm để lưu. Xem{" "}
+                  <Link to="/discover" className="underline underline-offset-2">
+                    Khám phá
+                  </Link>{" "}
+                  để tìm địa điểm mới.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
         </TabsContent>
 
         <TabsContent value="collections" className="mt-4">

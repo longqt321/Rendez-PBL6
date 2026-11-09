@@ -16,9 +16,16 @@ export function createTestQueryClient(): QueryClient {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } })
 }
 
-/** Render một hook bên trong QueryClientProvider. */
-export function renderWithQuery<TResult>(callback: () => TResult): RenderHookResult<TResult, void> {
-  const client = createTestQueryClient()
+/**
+ * Render một hook bên trong QueryClientProvider.
+ *
+ * Truyền `client` khi cần chia sẻ cache giữa nhiều hook (ví dụ mutation ghi cache
+ * rồi query đọc lại); bỏ trống thì mỗi lần gọi có client riêng.
+ */
+export function renderWithQuery<TResult>(
+  callback: () => TResult,
+  client: QueryClient = createTestQueryClient(),
+): RenderHookResult<TResult, void> {
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
   )
