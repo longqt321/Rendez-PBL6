@@ -58,10 +58,13 @@ const CATEGORY_MAP: Record<string, PlaceCategory> = {
   "banh-beo": "street-food",
   "banh-cen": "street-food",
   "nem-lui": "street-food",
+  banh: "bakery",
+  // Các nhóm còn lại (hai-san, lau, pho, bun, com, quan-an, viet-nam, nhat,
+  // thai, han, y, an, goi-ca, chay, banh-canh, bun-mam, khac…) → restaurant.
 }
 
 /** Địa điểm chưa duyệt lên /discover — giữ 1 mục để demo trạng thái `isPublished: false`. */
-const UNPUBLISHED_IDS = new Set(["banh-cuon-11361296208"])
+const UNPUBLISHED_IDS = new Set(["ram-cuon-cai-di-hoa-6152681085"])
 
 /** Ngày duyệt mặc định cho dữ liệu cold-start (mock server, không thuộc dataset). */
 const PUBLISHED_AT = "2026-11-09T08:00:00+07:00"

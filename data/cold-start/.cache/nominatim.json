@@ -1,0 +1,786 @@
+{
+  "135 Đặng Vũ Hỷ": {
+    "lat": 16.058461,
+    "lng": 108.2401559,
+    "displayName": "Đường Đặng Vũ Hỷ, Tổ dân phố Mỹ Quang, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam"
+  },
+  "422 Thăng Long": {
+    "lat": 16.0298961,
+    "lng": 108.2291598,
+    "displayName": "Đường Thăng Long, Tổ dân phố 54, Phường Hòa Cường, Thành phố Đà Nẵng, 50219, Việt Nam"
+  },
+  "45 Trần Ngọc Sương, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0061236,
+    "lng": 108.1932967,
+    "displayName": "Trần Ngọc Sương, Tổ dân phố 22, Phường Cẩm Lệ, Hội An, Thành phố Đà Nẵng, 50712, Việt Nam"
+  },
+  "109 Thành Thái, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0209559,
+    "lng": 108.2085932,
+    "displayName": "Đường Thành Thái, Tổ dân phố 9, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam"
+  },
+  "238 Nguyễn Phước Lan, Hoà Xuân, Đà Nẵng": {
+    "lat": 16.0210063,
+    "lng": 108.2269449,
+    "displayName": "Đường Nguyễn Phước Lan, Tổ dân phố Trung Lương 10, Phường Hòa Xuân, Thành phố Đà Nẵng, 50707, Việt Nam"
+  },
+  "3/12 Phan Thành Tài, Đà Nẵng": {
+    "lat": 15.5703527,
+    "lng": 108.471032,
+    "displayName": "Phan Thành Tài, Phường Bàn Thạch, Tam Kỳ, Thành phố Đà Nẵng, 51121, Việt Nam"
+  },
+  "495 Cách Mạng Tháng 8, Hoà Thọ Đông, Cẩm Lệ": {
+    "lat": 16.0116425,
+    "lng": 108.1934901,
+    "displayName": "Kiệt 523 Đường Cách Mạng Tháng 8, Hòa Thọ Đông, Tổ dân phố 20, Phường Cẩm Lệ, Hội An, Thành phố Đà Nẵng, 50712, Việt Nam"
+  },
+  "91 Cách Mạng Tháng Tám, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.01499,
+    "lng": 108.2003808,
+    "displayName": "Đường Cách Mạng Tháng Tám, Tổ dân phố 13, Phường Cẩm Lệ, Hội An, Thành phố Đà Nẵng, 50712, Việt Nam"
+  },
+  "62 Nguyễn Hữu Tiến, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0069139,
+    "lng": 108.1969546,
+    "displayName": "Đường Nguyễn Hữu Tiến, Tổ dân phố 22, Phường Cẩm Lệ, Hội An, Thành phố Đà Nẵng, 50712, Việt Nam"
+  },
+  "669 Trường Chinh, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0188307,
+    "lng": 108.1939776,
+    "displayName": "669, Đường Trường Chinh, Tổ dân phố Đông Phước 1, Phường An Khê, Hội An, Thành phố Đà Nẵng, 51000, Việt Nam"
+  },
+  "01 Phạm Như Xương": {
+    "lat": 16.0589055,
+    "lng": 108.1553384,
+    "displayName": "1/108/3 Phạm Như Xương, Hòa Khánh Nam, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam"
+  },
+  "480 Tôn Đức Thắng": {
+    "lat": 15.8928214,
+    "lng": 108.3199058,
+    "displayName": "Tôn Đức Thắng, Phường Hội An Tây, Hội An, Thành phố Đà Nẵng, 51321, Việt Nam"
+  },
+  "49 Ngô Thì Nhậm": {
+    "lat": 15.5590749,
+    "lng": 108.5057615,
+    "displayName": "Ngô Thì Nhậm, Phường Hương Trà, Tam Kỳ, Thành phố Đà Nẵng, 51122, Việt Nam"
+  },
+  "160 Nguyễn Chánh, Liên Chiểu": {
+    "lat": 16.0823019,
+    "lng": 108.150361,
+    "displayName": "Đường Nguyễn Chánh, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam"
+  },
+  "Số 36 Ngô Thì Nhậm": {
+    "lat": 15.5590749,
+    "lng": 108.5057615,
+    "displayName": "Ngô Thì Nhậm, Phường Hương Trà, Tam Kỳ, Thành phố Đà Nẵng, 51122, Việt Nam"
+  },
+  "214 Âu Cơ, Liên Chiểu": {
+    "lat": 16.0730409,
+    "lng": 108.1348203,
+    "displayName": "Đường Âu Cơ, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam"
+  },
+  "19 Ngô Thì Nhậm": {
+    "lat": 15.5590749,
+    "lng": 108.5057615,
+    "displayName": "Ngô Thì Nhậm, Phường Hương Trà, Tam Kỳ, Thành phố Đà Nẵng, 51122, Việt Nam"
+  },
+  "21 Ngô Thì Nhậm": {
+    "lat": 15.5590749,
+    "lng": 108.5057615,
+    "displayName": "Ngô Thì Nhậm, Phường Hương Trà, Tam Kỳ, Thành phố Đà Nẵng, 51122, Việt Nam"
+  },
+  "29 Ngô Thì Nhậm": {
+    "lat": 15.5590749,
+    "lng": 108.5057615,
+    "displayName": "Ngô Thì Nhậm, Phường Hương Trà, Tam Kỳ, Thành phố Đà Nẵng, 51122, Việt Nam"
+  },
+  "63 Nguyễn Lương Bằng, Liên Chiểu": {
+    "lat": 16.0818941,
+    "lng": 108.1463534,
+    "displayName": "Đường Nguyễn Lương Bằng, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam"
+  },
+  "16 Lê Doãn": {
+    "lat": 16.0674211,
+    "lng": 108.1533919,
+    "displayName": "Đường Lê Doãn Nhạ, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam"
+  },
+  "187 Lý Thái Tông, Đà Nẵng": {
+    "lat": 16.0757133,
+    "lng": 108.1761402,
+    "displayName": "Đường Lý Thái Tông, Tổ dân phố 71 Thanh Khê Tây, Phường Thanh Khê, Thành phố Đà Nẵng, 50316, Việt Nam"
+  },
+  "29 Xô Viết Nghệ Tĩnh, Đà Nẵng": {
+    "lat": 16.0315147,
+    "lng": 108.2116045,
+    "displayName": "Đường Xô Viết Nghệ Tĩnh, Tổ dân phố 4, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam"
+  },
+  "46 Ninh Tốn, Đà Nẵng": {
+    "lat": 16.0688081,
+    "lng": 108.1469506,
+    "displayName": "Đường Ninh Tốn, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam"
+  },
+  "85 Ngũ Hành Sơn, Tp. Đà Nẵng": {
+    "lat": 16.0461105,
+    "lng": 108.239349,
+    "displayName": "85, Ngũ Hành Sơn, Phường Ngũ Hành Sơn, Thành phố Đà Nẵng, 02363, Việt Nam"
+  },
+  "206 Lê Thanh Nghị, Tp. Đà Nẵng": {
+    "lat": 16.0424708,
+    "lng": 108.2175454,
+    "displayName": "Đường Lê Thanh Nghị, Tổ dân phố 35, Phường Hòa Cường, Thành phố Đà Nẵng, 50219, Việt Nam"
+  },
+  "191 Hoàng Diệu, Hải Châu, Đà Nẵng": {
+    "lat": 16.0588547,
+    "lng": 108.2164395,
+    "displayName": "Kiệt 280 Hoàng Diệu, Tổ dân phố 49 Bình Hiên, Phường Hải Châu, Thành phố Đà Nẵng, 50206, Việt Nam"
+  },
+  "121 An Dương Vương, Ngũ Hành Sơn, Đà Nẵng": {
+    "lat": 16.043583,
+    "lng": 108.2375688,
+    "displayName": "Đường An Dương Vương, Phường Ngũ Hành Sơn, Thành phố Đà Nẵng, 50510, Việt Nam"
+  },
+  "83/2 Trần Phú, Đà Nẵng": {
+    "lat": 16.0664573,
+    "lng": 108.2236852,
+    "displayName": "Trần Phú, Tổ dân phố 32 Hải Châu, Phường Hải Châu, Thành phố Đà Nẵng, 50206, Việt Nam"
+  },
+  "357 Nguyễn Tất Thành, Đà Nẵng": {
+    "lat": 16.1104518,
+    "lng": 108.132495,
+    "displayName": "Nguyễn Tất Thành, Tổ dân phố Xuân Thiều 6, Phường Hải Vân, Thành phố Đà Nẵng, 50611, Việt Nam"
+  },
+  "214 Lương Nhữ Hộc, Đà Nẵng": {
+    "lat": 16.0355695,
+    "lng": 108.2114135,
+    "displayName": "Đường Lương Nhữ Hộc, Tổ dân phố 1, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam"
+  },
+  "96 Ngô Tất Tố, Đà Nẵng": {
+    "lat": 15.5791716,
+    "lng": 108.4803537,
+    "displayName": "Ngô Tất Tố, Phường Bàn Thạch, Tam Kỳ, Thành phố Đà Nẵng, 51121, Việt Nam"
+  },
+  "10 Nguyễn Tri Phương, Đà Nẵng": {
+    "lat": 15.8712414,
+    "lng": 108.344593,
+    "displayName": "Nguyễn Tri Phương, Phố cổ Hội An, Phường Hội An, Hội An, Thành phố Đà Nẵng, 51319, Việt Nam"
+  },
+  "Lô 422 Ngô Thì Sĩ, Ngũ Hành Sơn, Đà Nẵng": {
+    "lat": 16.010798,
+    "lng": 108.253178,
+    "displayName": "Phường Ngũ Hành Sơn, Hội An, Thành phố Đà Nẵng, 50510, Việt Nam"
+  },
+  "36/36 Lê Duẩn, Đà Nẵng": {
+    "lat": 15.8837792,
+    "lng": 108.3288063,
+    "displayName": "Lê Duẩn, Phường Hội An Tây, Hội An, Thành phố Đà Nẵng, 51321, Việt Nam"
+  },
+  "334 Đường 2/9, Hoà Cường, Đà Nẵng": {
+    "lat": 16.0495153,
+    "lng": 108.2223552,
+    "displayName": "Cầu vượt Đường 2 Tháng 9, Tổ dân phố 4, Phường Hòa Cường, Thành phố Đà Nẵng, 50219, Việt Nam"
+  },
+  "111 Nguyễn Hữu Thọ, Đà Nẵng": {
+    "lat": 16.0191879,
+    "lng": 108.2115565,
+    "displayName": "Nguyễn Hữu Thọ, Tổ dân phố 11, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam"
+  },
+  "301/34 Nguyễn Tri Phương, Đà Nẵng": {
+    "lat": 15.8712414,
+    "lng": 108.344593,
+    "displayName": "Nguyễn Tri Phương, Phố cổ Hội An, Phường Hội An, Hội An, Thành phố Đà Nẵng, 51319, Việt Nam"
+  },
+  "113 Thích Thiện Chiếu, Đà Nẵng": {
+    "lat": 16.1079974,
+    "lng": 108.2583669,
+    "displayName": "Đường Thích Thiện Chiếu, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam"
+  },
+  "140 Xô Viết Nghệ Tĩnh, Đà Nẵng": {
+    "lat": 16.0314339,
+    "lng": 108.2108075,
+    "displayName": "Đường Xô Viết Nghệ Tĩnh, Tổ dân phố 3, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam"
+  },
+  "24-26 Lê Hồng Phong, Đà Nẵng": {
+    "lat": 15.8909534,
+    "lng": 108.3240926,
+    "displayName": "Lê Hồng Phong, Trà Quế, Phường Hội An Tây, Hội An, Thành phố Đà Nẵng, 51321, Việt Nam"
+  },
+  "84 Đoàn Hữu Trưng, An Khê, Đà Nẵng": {
+    "lat": 16.0510279,
+    "lng": 108.1790073,
+    "displayName": "Đường Đoàn Hữu Trưng, Tổ dân phố Bình Thuận 5, Phường An Khê, Thành phố Đà Nẵng, 50309, Việt Nam"
+  },
+  "211 Lê Trọng Tấn, An Khê, Đà Nẵng": {
+    "lat": 16.0334737,
+    "lng": 108.1802693,
+    "displayName": "Đường Lê Trọng Tấn, Tổ dân phố Phước Trường 2, Phường An Khê, Thành phố Đà Nẵng, 50309, Việt Nam"
+  },
+  "366 Nguyễn Đình Tựu, An Khê, Thanh Khê, Đà Nẵng": {
+    "lat": 16.0524124,
+    "lng": 108.1863959,
+    "displayName": "Đường Nguyễn Đình Tựu, Tổ dân phố Phần Lăng 2, Phường An Khê, Thành phố Đà Nẵng, 50309, Việt Nam"
+  },
+  "160 Hà Huy Tập, Đà Nẵng": {
+    "lat": 15.5704905,
+    "lng": 108.463903,
+    "displayName": "Hà Huy Tập, Phường Bàn Thạch, Tam Kỳ, Thành phố Đà Nẵng, 51121, Việt Nam"
+  },
+  "290 Đường 2 Tháng 9, Đà Nẵng": {
+    "lat": 16.0408952,
+    "lng": 108.2234325,
+    "displayName": "Đường 2 Tháng 9, Tổ dân phố 43, Phường Hòa Cường, Thành phố Đà Nẵng, 50219, Việt Nam"
+  },
+  "100 Hoàng Văn Thụ, Đà Nẵng": {
+    "lat": 15.8766684,
+    "lng": 108.3300432,
+    "displayName": "Hoàng Văn Thụ, Hoi An Old Town, Phường Hội An, Hội An, Thành phố Đà Nẵng, 51319, Việt Nam"
+  },
+  "227/85 Nguyễn Văn Thoại, Đà Nẵng": {
+    "lat": 16.0545708,
+    "lng": 108.2403862,
+    "displayName": "Đường Nguyễn Văn Thoại, Tổ dân phố An Cư 4, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam"
+  },
+  "238 Kinh Dương Vương, Đà Nẵng": {
+    "lat": 16.0805523,
+    "lng": 108.1606379,
+    "displayName": "Đường Kinh Dương Vương, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam"
+  },
+  "134 Phan Châu Trinh, Hải Châu, Đà Nẵng": {
+    "lat": 16.0572265,
+    "lng": 108.218891,
+    "displayName": "Đường Phan Châu Trinh, Tổ dân phố 49 Bình Hiên, Phường Hải Châu, Thành phố Đà Nẵng, 50206, Việt Nam"
+  },
+  "53 Nguyễn Hữu An, Đà Nẵng": {
+    "lat": 16.1009915,
+    "lng": 108.2290062,
+    "displayName": "Đường Nguyễn Hữu An, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam"
+  },
+  "12 Lê Đức Thọ, Sơn Trà, Đà Nẵng": {
+    "lat": 16.1031308,
+    "lng": 108.2564904,
+    "displayName": "Đường Lê Đức Thọ, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam"
+  },
+  "27 Dương Thạc, Sơn Trà, Đà Nẵng": {
+    "lat": 16.1037235,
+    "lng": 108.2617333,
+    "displayName": "Đường Dương Thạc, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam"
+  },
+  "146 Võ Nguyên Giáp, Phước Mỹ, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0813654,
+    "lng": 108.2472222,
+    "displayName": "Đường Võ Nguyên Giáp, Tổ dân phố Mỹ Thạnh, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam"
+  },
+  "264 Nguyễn Phước Lan, Hoà Xuân, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0210063,
+    "lng": 108.2269449,
+    "displayName": "Đường Nguyễn Phước Lan, Tổ dân phố Trung Lương 10, Phường Hòa Xuân, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "349 Lê Quảng Chí, P. Hoà Xuân, Quận Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0160211,
+    "lng": 108.2236902,
+    "displayName": "Đường Lê Quảng Chí, Tổ dân phố Trung Lương 8, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "329 Văn Tiến Dũng, P. Hòa Xuân, Quận Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0012511,
+    "lng": 108.2130816,
+    "displayName": "Đường Văn Tiến Dũng, Tổ dân phố Trung Lương 1, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "118 Võ Chí Công, Phường Hòa Xuân, Quận Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0025713,
+    "lng": 108.2270526,
+    "displayName": "Võ Chí Công, Tổ dân phố Trung Lương 4, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "123 Nguyễn Phước Lan, phường Hòa Xuân, quận Cẩm Lệ": {
+    "lat": 16.0172844,
+    "lng": 108.2322986,
+    "displayName": "Đường Nguyễn Phước Lan, Tổ dân phố Trung Lương 11, Phường Hòa Xuân, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "05 Lê Quang Hòa, phường Hòa Xuân, quận Cẩm Lệ, thành phố Đà Nẵng": {
+    "lat": 16.0226669,
+    "lng": 108.2284138,
+    "displayName": "Đường Lê Quang Hòa, Tổ dân phố Trung Lương 10, Phường Hòa Xuân, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "147 Trần Nguyên Đán, Hoà Minh, Liên Chiểu": {
+    "lat": 15.5790843,
+    "lng": 108.4772944,
+    "displayName": "Trần Nguyên Đán, Phường Bàn Thạch, Tam Kỳ, Thành phố Đà Nẵng, 51121, Việt Nam",
+    "precision": "street"
+  },
+  "53 Phạm Ngọc Thạch, Liên Hương": {
+    "lat": 15.8902245,
+    "lng": 108.3206625,
+    "displayName": "Phạm Ngọc Thạch, Phường Hội An Tây, Hội An, Thành phố Đà Nẵng, 51321, Việt Nam",
+    "precision": "street"
+  },
+  "38 Ngô Văn Sở, phường Hòa Khánh, quận Liên Chiểu": {
+    "lat": 16.0685075,
+    "lng": 108.1497723,
+    "displayName": "Ngô Văn Sở, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam",
+    "precision": "address"
+  },
+  "27 Nam Cao, P. Hoà Khánh Nam, Quận Liên Chiểu": {
+    "lat": 16.0658664,
+    "lng": 108.1505863,
+    "displayName": "Nam Cao, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam",
+    "precision": "street"
+  },
+  "186 Tô Hiệu, P. Hoà Minh, Quận Liên Chiểu": {
+    "lat": 16.0638315,
+    "lng": 108.1668618,
+    "displayName": "186, Đường Tô Hiệu, Hòa Minh, Phường Hòa Khánh, Thành phố Đà Nẵng, 84236, Việt Nam",
+    "precision": "address"
+  },
+  "65/86 Phạm Như Xương, P. Hoà Khánh Nam, Quận Liên Chiểu": {
+    "lat": 16.0607553,
+    "lng": 108.152594,
+    "displayName": "Kiệt 109/116 Phạm Như Xương, Hòa Khánh Nam, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam",
+    "precision": "address"
+  },
+  "70 Nguyễn Huy Tưởng, P. Hòa Minh, Quận Liên Chiểu": {
+    "lat": 16.0547121,
+    "lng": 108.1698412,
+    "displayName": "Kiệt 27 Ngõ B Đường Nguyễn Huy Tưởng, Hòa Minh, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam",
+    "precision": "address"
+  },
+  "54 Nguyễn Chánh, P. Hòa Khánh Bắc, Quận Liên Chiểu": {
+    "lat": 16.0823019,
+    "lng": 108.150361,
+    "displayName": "Đường Nguyễn Chánh, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam",
+    "precision": "address"
+  },
+  "77 Nguyễn Chánh, P. Hòa Khánh Bắc, Quận Liên Chiểu": {
+    "lat": 16.0822972,
+    "lng": 108.150608,
+    "displayName": "Đường Nguyễn Chánh, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam",
+    "precision": "address"
+  },
+  "166 Phạm Hùng, Xã Hòa Châu": {
+    "lat": 15.9953192,
+    "lng": 108.2073631,
+    "displayName": "Đường Phạm Hùng, Tổ dân phố Bàu Cầu 1, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "street"
+  },
+  "318 Kinh Dương Vương, Liên Chiểu, Đà Nẵng": {
+    "lat": 16.0805523,
+    "lng": 108.1606379,
+    "displayName": "Đường Kinh Dương Vương, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam",
+    "precision": "street"
+  },
+  "80,82 Xô Viết Nghệ Tĩnh, Đà Nẵng": {
+    "lat": 16.068501,
+    "lng": 108.2240242,
+    "displayName": "Thành phố Đà Nẵng, Việt Nam",
+    "precision": "street"
+  },
+  "43 Trần Tấn Mới, P. Hòa Thuận Tây, Q. Hải Châu, Tp. Đà Nẵng": {
+    "lat": 16.0416665,
+    "lng": 108.2081224,
+    "displayName": "Đường Trần Tấn Mới, Tổ dân phố 25, Phường Hòa Cường, Thành phố Đà Nẵng, 50219, Việt Nam",
+    "precision": "street"
+  },
+  "298/21 Cách Mạng Tháng 8, Quận Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.017914,
+    "lng": 108.2027871,
+    "displayName": "Kiệt 298 Đường Cách Mạng Tháng 8, Tổ dân phố 13, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam",
+    "precision": "street"
+  },
+  "25 Phạm Hồng Thái, Hải Châu 1, Hải Châu, Đà Nẵng": {
+    "lat": 15.878305,
+    "lng": 108.3355014,
+    "displayName": "Phạm Hồng Thái, Phường Hội An, Hội An, Thành phố Đà Nẵng, 51319, Việt Nam",
+    "precision": "street"
+  },
+  "1059 Nguyễn Tất Thành, Quận Thanh Khê, TP Đà Nẵng": {
+    "lat": 16.1104518,
+    "lng": 108.132495,
+    "displayName": "Nguyễn Tất Thành, Tổ dân phố Xuân Thiều 6, Phường Hải Vân, Thành phố Đà Nẵng, 50611, Việt Nam",
+    "precision": "street"
+  },
+  "124 Yên Khê 1, Thanh Khê Đông, Thanh Khê, Đà Nẵng": {
+    "lat": 16.0711102,
+    "lng": 108.181892,
+    "displayName": "Đường Yên Khê 1, Tổ dân phố 71 Thanh Khê Tây, Phường Thanh Khê, Thành phố Đà Nẵng, 50316, Việt Nam",
+    "precision": "street"
+  },
+  "150 Bạch Đằng, phường Hải Châu 1, quận Hải Châu, TP. Đà Nẵng": {
+    "lat": 15.8760017,
+    "lng": 108.3298478,
+    "displayName": "Bạch Đằng, Hoi An Old Town, Phường Hội An, Hội An, Thành phố Đà Nẵng, 51319, Việt Nam",
+    "precision": "street"
+  },
+  "02 Phạm Như Xương, P. Hoà Khánh Nam, Quận Liên Chiểu, Đà Nẵng": {
+    "lat": 16.0607553,
+    "lng": 108.152594,
+    "displayName": "Kiệt 109/116 Phạm Như Xương, Hòa Khánh Nam, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam",
+    "precision": "address"
+  },
+  "15 Mỹ Khê 3, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0611938,
+    "lng": 108.2390339,
+    "displayName": "Tamarind Coffee, 15, Đường Mỹ Khê 3, Tổ dân phố Mỹ Quang, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "street"
+  },
+  "38/21 Lê Hữu Trác, Sơn Trà, Đà Nẵng": {
+    "lat": 15.4429333,
+    "lng": 107.7971687,
+    "displayName": "Lê Hữu Trác, Xã Khâm Đức, Thành phố Đà Nẵng, Việt Nam",
+    "precision": "street"
+  },
+  "77 Thạch Lam, An Hải, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0565444,
+    "lng": 108.2446766,
+    "displayName": "Art Coffee, 77, Đường Thạch Lam, Tổ dân phố Mỹ Tân, Phường Ngũ Hành Sơn, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "address"
+  },
+  "60 An Thượng 29, Phường Mỹ An, Ngũ Hành Sơn, Đà Nẵng": {
+    "lat": 16.0518473,
+    "lng": 108.244955,
+    "displayName": "Đường An Thượng 29, Phường Ngũ Hành Sơn, Thành phố Đà Nẵng, 50510, Việt Nam",
+    "precision": "street"
+  },
+  "45 Nguyễn Sáng, Mân Thái, Sơn Trà, Đà Nẵng": {
+    "lat": 16.086727,
+    "lng": 108.2464794,
+    "displayName": "Đường Nguyễn Sáng, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam",
+    "precision": "street"
+  },
+  "113 Hà Kỳ Ngộ, Phước Mỹ, Sơn Trà, Đà Nẵng": {
+    "lat": 16.081459,
+    "lng": 108.2439388,
+    "displayName": "Đường Hà Kỳ Ngộ, Tổ dân phố An Hòa 7, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "street"
+  },
+  "78 Võ Nguyên Giáp, Phường Mân Thái, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0456769,
+    "lng": 108.2492441,
+    "displayName": "Võ Nguyên Giáp, Phường Ngũ Hành Sơn, Thành phố Đà Nẵng, 50510, Việt Nam",
+    "precision": "street"
+  },
+  "Số 02 Nguyễn Phước Lan, Hoà Xuân, Cẩm Lệ, Đà Nẵng": null,
+  "Số 300 Nguyễn Phước Lan, Hoà Xuân, Cẩm Lệ, Đà Nẵng": null,
+  "H2/20 K33 Nam Cao": null,
+  "471 Tô Đức Thắng, Hoà Khánh": null,
+  "01-03-05-07 Đặng Dung, Quận Liên Chiểu": null,
+  "Lô 15 Nguyễn Sinh Sắc": null,
+  "Lô 26-D10 Nguyễn Sinh Sắc, Liên Chiểu": null,
+  "K44/36 Điện Biên Phủ, Chính Gián, Đà Nẵng": null,
+  "23 An Nhơn 7, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0690564,
+    "lng": 108.233873,
+    "displayName": "Đường An Nhơn 7, Tổ dân phố An Nhơn 2, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "street"
+  },
+  "139/59/38 Trần Quang Khải, Thọ Quang, Sơn Trà, Đà Nẵng": {
+    "lat": 16.1044234,
+    "lng": 108.2535985,
+    "displayName": "Hải sản Năm Đảnh, K139/H59/38, Đường Thành Vinh 2, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam",
+    "precision": "venue"
+  },
+  "Số 1A Võ Nguyên Giáp, Phước Mỹ, Sơn Trà, Đà Nẵng": null,
+  "Lô 02-03 đối diện 118 Phạm Văn Đồng, phường An Hải, Sơn Trà, Đà Nẵng": null,
+  "Đối diện 16 Hoàng Sa, Mân Thái, Sơn Trà, Đà Nẵng": null,
+  "02 Trần Phước Thành, phường Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0238545,
+    "lng": 108.2124662,
+    "displayName": "Đường Trần Phước Thành, Tổ dân phố 5, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam",
+    "precision": "address"
+  },
+  "42 Đỗ Đăng Tuyển, quận Cẩm Lệ, Đà Nẵng": {
+    "lat": 15.8823917,
+    "lng": 108.3491074,
+    "displayName": "Đỗ Đăng Tuyển, Phường Hội An Đông, Hội An, Thành phố Đà Nẵng, 51320, Việt Nam",
+    "precision": "street"
+  },
+  "106 Ông Ích Đường, TP Đà Nẵng": {
+    "lat": 15.572262,
+    "lng": 108.46425,
+    "displayName": "Ông Ích Đường, Phường Bàn Thạch, Tam Kỳ, Thành phố Đà Nẵng, 51121, Việt Nam",
+    "precision": "address"
+  },
+  "214 Thanh Hoá, Hoà Xuân, Cẩm Lệ": {
+    "lat": 15.9929766,
+    "lng": 108.2123769,
+    "displayName": "Tiệm Thú Cưng Đà Nẵng, 77, Đường Hồ Tỵ, Tổ dân phố Lỗ Giáng 4, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "406 Thăng Long, Quận Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0298961,
+    "lng": 108.2291598,
+    "displayName": "Đường Thăng Long, Tổ dân phố 54, Phường Hòa Cường, Thành phố Đà Nẵng, 50219, Việt Nam",
+    "precision": "street"
+  },
+  "16 Trần Lê, gần chợ Hoà Xuân, Cẩm Lệ": {
+    "lat": 16.0611797,
+    "lng": 108.1870793,
+    "displayName": "Kiệt 27 Trần Xuân Lê, Tổ dân phố 60 Hòa Khê, Phường Thanh Khê, Thành phố Đà Nẵng, 50316, Việt Nam",
+    "precision": "street"
+  },
+  "53 Trần Văn Trà, Hoà Xuân, Đà Nẵng": {
+    "lat": 16.0019995,
+    "lng": 108.2103936,
+    "displayName": "Đường Trần Văn Trà, Tổ dân phố Cẩm Nam 3, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "171 Trịnh Đình Thảo, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0259254,
+    "lng": 108.2120353,
+    "displayName": "Đường Trịnh Đình Thảo, Tổ dân phố 3, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam",
+    "precision": "address"
+  },
+  "52/8 Ông Ích Đường, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0156762,
+    "lng": 108.204372,
+    "displayName": "Kiệt 66 Ông Ích Đường, Tổ dân phố 15, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam",
+    "precision": "address"
+  },
+  "06 Đặng Văn Ngữ, chợ Cẩm Lệ, Đà Nẵng": {
+    "lat": 15.573201,
+    "lng": 108.4654511,
+    "displayName": "Đặng Văn Ngữ, Phường Bàn Thạch, Tam Kỳ, Thành phố Đà Nẵng, 51121, Việt Nam",
+    "precision": "street"
+  },
+  "222 Lê Quảng Chí, Hòa Xuân, Cẩm Lệ": {
+    "lat": 16.0160211,
+    "lng": 108.2236902,
+    "displayName": "Đường Lê Quảng Chí, Tổ dân phố Trung Lương 8, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "336 Thăng Long, Cẩm Lệ, Đà Nẵng": {
+    "lat": 15.9945984,
+    "lng": 108.1819724,
+    "displayName": "Đường Thăng Long, Hòa Thọ Tây, Tổ dân phố 31, Phường Cẩm Lệ, Hòa Phong, Thành phố Đà Nẵng, 50712, Việt Nam",
+    "precision": "address"
+  },
+  "38 Phan Triêm, Hòa Xuân, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0038155,
+    "lng": 108.223198,
+    "displayName": "Phan Triêm, Tổ dân phố Trung Lương 3, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "44 Bùi Thiện Ngộ, Hoà Xuân, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0054942,
+    "lng": 108.2237106,
+    "displayName": "Bùi Thiện Ngộ, Tổ dân phố Diên Hồng, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "210 Bùi Thiện Ngộ, P. Hòa Xuân, Q. Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0054942,
+    "lng": 108.2237106,
+    "displayName": "Bùi Thiện Ngộ, Tổ dân phố Diên Hồng, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "105 Phạm Thế Hiển, Khuê Trung, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0338362,
+    "lng": 108.2122055,
+    "displayName": "Đường Phạm Thế Hiển, Tổ dân phố 1, Phường Cẩm Lệ, Thành phố Đà Nẵng, 50712, Việt Nam",
+    "precision": "street"
+  },
+  "16 Thanh Lương 2, phường Hoà Xuân, quận Cẩm Lệ": {
+    "lat": 16.0121743,
+    "lng": 108.2221491,
+    "displayName": "Đường Thanh Lương 17, Tổ dân phố Thanh Lương 2, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "address"
+  },
+  "158 Phạm Tứ, P. Khuê Trung, Quận Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0167119,
+    "lng": 108.2085844,
+    "displayName": "Đường Phạm Tứ, Tổ dân phố 11, Phường Cẩm Lệ, Hội An, Thành phố Đà Nẵng, 50712, Việt Nam",
+    "precision": "street"
+  },
+  "333 Nguyễn Phước Lan, Quận Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0172844,
+    "lng": 108.2322986,
+    "displayName": "Đường Nguyễn Phước Lan, Tổ dân phố Trung Lương 11, Phường Hòa Xuân, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "street"
+  },
+  "Lô 5C Thăng Long, P. Hòa Thọ Đông, Quận Cẩm Lệ, Đà Nẵng": null,
+  "119 Nguyễn Đình Tứ, Cẩm Lệ, Đà Nẵng": {
+    "lat": 16.0487679,
+    "lng": 108.1735367,
+    "displayName": "Hẻm 139 Đường Nguyễn Đình Tứ, Tổ dân phố Hòa Phước 2, Phường An Khê, Thành phố Đà Nẵng, 50309, Việt Nam",
+    "precision": "street"
+  },
+  "379A-B Nguyễn Huệ, Liên Chiểu": {
+    "lat": 16.0672242,
+    "lng": 108.1767731,
+    "displayName": "Kiệt 5 Nguyễn Văn Huề, Tổ dân phố 69 Thanh Khê Tây, Phường Thanh Khê, Thành phố Đà Nẵng, 50316, Việt Nam",
+    "precision": "street"
+  },
+  "211 Nguyễn Huệ, Liên Chiểu": {
+    "lat": 16.0679431,
+    "lng": 108.1760209,
+    "displayName": "Kiệt 23 Nguyễn Văn Huề, Tổ dân phố 68 Thanh Khê Tây, Phường Thanh Khê, Thành phố Đà Nẵng, 50316, Việt Nam",
+    "precision": "street"
+  },
+  "1555 Nguyễn Tất Thành, Đà Nẵng": {
+    "lat": 16.1104518,
+    "lng": 108.132495,
+    "displayName": "Nguyễn Tất Thành, Tổ dân phố Xuân Thiều 6, Phường Hải Vân, Thành phố Đà Nẵng, 50611, Việt Nam",
+    "precision": "address"
+  },
+  "17 Phạm Như Xương, Liên Chiểu": {
+    "lat": 16.0666313,
+    "lng": 108.1461383,
+    "displayName": "Đường Phạm Như Xương, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam",
+    "precision": "address"
+  },
+  "08 Lê Doãn Nhạ, Liên Chiểu": {
+    "lat": 16.0674211,
+    "lng": 108.1533919,
+    "displayName": "Đường Lê Doãn Nhạ, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam",
+    "precision": "address"
+  },
+  "1029 Nguyễn Lương Bằng, Liên Chiểu": {
+    "lat": 16.084908,
+    "lng": 108.139936,
+    "displayName": "Đường Nguyễn Lương Bằng, Khu công nghiệp Hòa Khánh, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam",
+    "precision": "address"
+  },
+  "316 Nguyễn Lương Bằng, Liên Chiểu": {
+    "lat": 16.0818941,
+    "lng": 108.1463534,
+    "displayName": "Đường Nguyễn Lương Bằng, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam",
+    "precision": "address"
+  },
+  "110 Nguyễn Lương Bằng, Hòa Khánh, Liên Chiểu": {
+    "lat": 16.0818941,
+    "lng": 108.1463534,
+    "displayName": "Đường Nguyễn Lương Bằng, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam",
+    "precision": "address"
+  },
+  "10 Hồ Tùng Mậu, phường Hòa Khánh, Liên Chiểu": {
+    "lat": 16.0769174,
+    "lng": 108.1597193,
+    "displayName": "Hồ Tùng Mậu, Phường Hòa Khánh, Thành phố Đà Nẵng, 50613, Việt Nam",
+    "precision": "address"
+  },
+  "54 Ngô Thì Nhậm, Hòa Khánh Nam, Liên Chiểu": {
+    "lat": 15.5590749,
+    "lng": 108.5057615,
+    "displayName": "Ngô Thì Nhậm, Phường Hương Trà, Tam Kỳ, Thành phố Đà Nẵng, 51122, Việt Nam",
+    "precision": "street"
+  },
+  "155 Lạc Long Quân, Hòa Khánh, Liên Chiểu": {
+    "lat": 16.0720444,
+    "lng": 108.1424099,
+    "displayName": "KIẾN GỖ coffee SHOP, 155, Đường Lạc Long Quân, Khu công nghiệp Hòa Khánh, Hòa Khánh Bắc, Phường Liên Chiểu, Thành phố Đà Nẵng, 50612, Việt Nam",
+    "precision": "address"
+  },
+  "78 Phạm Hùng, Hòa Châu, Hòa Vang, Đà Nẵng": {
+    "lat": 16.0024025,
+    "lng": 108.2070493,
+    "displayName": "Đường Phạm Hùng, Tổ dân phố Cẩm Nam 1, Phường Hòa Xuân, Hội An, Thành phố Đà Nẵng, 50707, Việt Nam",
+    "precision": "street"
+  },
+  "Số 152 Huỳnh Xuân Nhị, Hòa Phước, Hòa Vang": null,
+  "106D-8 Vũ Miên, Hòa Vang": null,
+  "106 Vân Đồn, Sơn Trà, Đà Nẵng": {
+    "lat": 16.096657,
+    "lng": 108.2400995,
+    "displayName": "Đường Vân Đồn, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam",
+    "precision": "address"
+  },
+  "9 Nguyễn Thế Lộc, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0787634,
+    "lng": 108.2305575,
+    "displayName": "Đường Nguyễn Thế Lộc, Tổ dân phố An Tân 1, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "address"
+  },
+  "32 Phan Huy Chú, An Hải, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0539082,
+    "lng": 108.2336075,
+    "displayName": "Phan Huy Chú, Tổ dân phố An Trung 2, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "address"
+  },
+  "158 Chính Hữu, Sơn Trà, Đà Nẵng": {
+    "lat": 16.078063,
+    "lng": 108.2397556,
+    "displayName": "Đường Chính Hữu, Tổ dân phố An Cư 1, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "street"
+  },
+  "343 Hồ Nghinh, Sơn Trà, Đà Nẵng": {
+    "lat": 15.5829723,
+    "lng": 108.4752931,
+    "displayName": "Hồ Nghinh, Phường Bàn Thạch, Tam Kỳ, Thành phố Đà Nẵng, 51121, Việt Nam",
+    "precision": "street"
+  },
+  "026 Ngũ Chỉ Sơn, Sơn Trà, Đà Nẵng": null,
+  "294 Đình Nghệ, An Hải Bắc, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0688168,
+    "lng": 108.2426835,
+    "displayName": "Đường Dương Đình Nghệ, Tổ dân phố Mỹ Thạnh, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "street"
+  },
+  "115 Lý Tử Tấn, Thọ Quang, Sơn Trà, Đà Nẵng": {
+    "lat": 16.1066174,
+    "lng": 108.2576592,
+    "displayName": "Đường Lý Từ Tấn, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam",
+    "precision": "street"
+  },
+  "Số 2 Nguyễn Xuân Khoát, An Hải, Sơn Trà, Đà Nẵng": {
+    "lat": 16.069861,
+    "lng": 108.2367037,
+    "displayName": "Đường Nguyễn Xuân Khoát, Tổ dân phố An Nhơn 2, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "address"
+  },
+  "56 Hoàng Bích Sơn, An Hải, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0753828,
+    "lng": 108.2409602,
+    "displayName": "Bao An Macrobiotic, 56, Đường Hoàng Bích Sơn, Tổ dân phố An Cư 1, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "address"
+  },
+  "11 Trần Nhật Duật, Thọ Quang, Sơn Trà, Đà Nẵng": {
+    "lat": 15.585076,
+    "lng": 108.4754418,
+    "displayName": "Trần Nhật Duật, Phường Bàn Thạch, Tam Kỳ, Thành phố Đà Nẵng, 51121, Việt Nam",
+    "precision": "street"
+  },
+  "71 Vân Đồn, Sơn Trà, Đà Nẵng": {
+    "lat": 16.096657,
+    "lng": 108.2400995,
+    "displayName": "Đường Vân Đồn, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam",
+    "precision": "address"
+  },
+  "185 Đặng Vũ Hy, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0554596,
+    "lng": 108.2411318,
+    "displayName": "Da Nang Local Tours, 142/23, Đường Đặng Vũ Hỷ, Tổ dân phố Mỹ Quang, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "address"
+  },
+  "72 Lê Mạnh Trinh, Sơn Trà, Đà Nẵng": {
+    "lat": 16.074573,
+    "lng": 108.2435878,
+    "displayName": "Đường Lê Mạnh Trinh, Tổ dân phố Mỹ Thạnh, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "street"
+  },
+  "92 Đình Nghệ, An Hải, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0698124,
+    "lng": 108.2354444,
+    "displayName": "Đường Dương Đình Nghệ, Tổ dân phố An Nhơn 2, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "address"
+  },
+  "37-39 Phạm Quang Ảnh, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0583218,
+    "lng": 108.2361347,
+    "displayName": "Đường Phạm Quang Ảnh, Tổ dân phố An Trung Đông 1, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "street"
+  },
+  "Đối diện 108 Trần Duy Chiến, Sơn Trà, Đà Nẵng": null,
+  "217 Nguyễn Văn Thoại, Phước Mỹ, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0545708,
+    "lng": 108.2403862,
+    "displayName": "Đường Nguyễn Văn Thoại, Tổ dân phố An Cư 4, Phường An Hải, Thành phố Đà Nẵng, 50413, Việt Nam",
+    "precision": "street"
+  },
+  "90 Bùi Dương Lịch, Nại Hiên Đông, Sơn Trà, Đà Nẵng": {
+    "lat": 16.0892841,
+    "lng": 108.2295193,
+    "displayName": "Đường Bùi Dương Lịch, Phường Sơn Trà, Thành phố Đà Nẵng, 50414, Việt Nam",
+    "precision": "street"
+  }
+}

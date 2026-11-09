@@ -262,3 +262,14 @@ lịch sử; không còn việc mở ở đây.
 - [ ] **Điểm đánh giá hiển thị chưa thấy đổi trực quan khi test** — fixture `reviewCount` rất lớn
       (1120–5210) nên 1 review mới chỉ đổi điểm ở chữ số thứ 2; aggregate đã đúng nhưng cần dữ
       liệu nhỏ hơn để kiểm chứng bằng mắt. Không phải bug.
+
+## Phát hiện 2026-11-10 (tái sinh cold-start D-046)
+
+- [ ] **Quận còn quá ít địa điểm** — Hải Vân 1, Hòa Xuân 7, An Khê 7, Hòa Khánh 10,
+      Liên Chiểu 10. Nguồn web công khai (tinyfish + Nominatim) chỉ trả về ít ứng viên
+      đạt chuẩn (địa chỉ số nhà + đường + geocode thành công); 50 ứng viên bị loại do
+      geocode miss, có thể retry với nguồn khác (Google Maps không key, Foursquare…).
+- [ ] **Ảnh venue thật** — hiện 458/492 dùng ảnh món đại diện theo nhóm (Commons);
+      chỉ 35 ảnh venue thật. Cần nguồn ảnh quán thật (Google Places API key hoặc
+      thu thập thủ công) để thay `imageKind: "dish"` bằng ảnh quán.
+- [ ] **Ảnh lặp tối đa 9 lần** — pool 194 ảnh / 492 place; thêm ảnh sẽ giảm lặp.

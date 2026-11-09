@@ -2146,3 +2146,56 @@ Người dùng yêu cầu tự rà soát 2 commit gần nhất (`d06a45b`, `5514
 - `bun run typecheck`/`lint`/`test` (67/67) exit 0.
 - `bun run e2e` 10/10 pass; chạy lặp `--repeat-each=2` (20 test) pass — xác nhận không còn flaky.
 - CDP hover: `tooltip visible: true` sau khi sửa.
+
+## D-046 — Tái sinh cold-start: chỉ giữ địa điểm đủ địa chỉ, bổ sung quán nổi tiếng
+
+**Ngày:** 2026-11-09
+**Trạng thái:** Đã áp dụng (2026-11-10)
+
+**Bằng chứng:** `validate.mjs` exit 0 (492 địa điểm, 492/492 có ảnh, 194 ảnh distinct,
+lặp tối đa 9); `bun run typecheck` + `bun run test` (67/67) + `bun run lint` + `bun run e2e`
+(10/10) đều pass trên dataset mới.
+
+**Kết quả cuối (2026-11-10):**
+
+- Dataset: 1.701 → **492** địa điểm, 100% có địa chỉ số nhà + tên đường + toạ độ.
+- Ảnh: 68 → **194** ảnh distinct (265 ảnh món Wikimedia Commons trong `images/dishes/`,
+  35 ảnh venue); ảnh dùng chung cũ (`cafe.jpg`, `com-ga.jpg`…) đã xoá khỏi dataset.
+- Phân bố: Hải Châu 127, Ngũ Hành Sơn 95, An Hải 95, Thanh Khê 49, Hòa Cường 40,
+  Sơn Trà 33, Cẩm Lệ 18, Liên Chiểu 10, Hòa Khánh 10, Hòa Xuân 7, An Khê 7, Hải Vân 1.
+- Quán nổi tiếng bổ sung: Trạm 247, iCoffee, Zone Six, 43 Factory, MIRKO, Wind Garden…
+  (tier `curated-v2`, 52 mục).
+- Định nghĩa trùng lặp đổi: cùng tên chỉ là trùng khi cách nhau < 120m (chi nhánh
+  khác nhau giữ lại — ví dụ Highlands Coffee 3 CN).
+- Giới hạn nguồn: Bà Nà (venue trong khu du lịch, không có số nhà) = 0; Hải Vân 1,
+  Hòa Xuân 7 — nguồn web công khai chỉ trả về ít ứng viên đạt chuẩn (đã ghi BACKLOG).
+
+**Chưa giải quyết:** 50 ứng viên nghiên cứu bị loại do geocode miss (có thể retry sau);
+ảnh Commons là ảnh món đại diện theo nhóm, không phải ảnh quán thật.
+
+### Bối cảnh
+
+Bộ 1.701 địa điểm có 3 vấn đề người dùng chỉ ra: (1) 929/939 quán cafe dùng chung một ảnh
+`images/cafe.jpg` nên nhìn như "không có ảnh"; (2) **1.185/1.701 không có địa chỉ** (POI OSM
+không có tag `addr:*`), nhiều quán chỉ hiện tới quận; (3) 319 quán tên generic "Cafe..." là quán
+nhà dân, không nổi tiếng, trong khi quán giới trẻ (Trạm 247, iCoffee, Zone Six, 43 Factory) không
+có trong data; (4) phân bố lệch: Hải Châu 447 vs Cẩm Lệ 31, Hòa Xuân 10.
+
+### Quyết định (người dùng chốt)
+
+1. **Bỏ hẳn** địa điểm không có địa chỉ số nhà + tên đường — "giữ lại chỉ gây loãng".
+2. Chấp nhận dataset nhỏ hơn nhưng **phân bố đều giữa các quận**; quận ít thì tìm thêm.
+3. Nguồn bổ sung: **tinyfish search** (ưu tiên TikTok/Facebook/Threads), query đơn giản 2–4 từ,
+   không nhồi nhiều từ khoá; mỗi quán phải có địa chỉ nguyên văn trong snippet + `sourceUrl`.
+4. Không có Google Places API key — geocode bằng Nominatim (miễn phí, 1 req/s).
+5. Ảnh: đa dạng hoá bằng Openverse (CC0), giữ `imageKind: "dish"` — không bịa ảnh quán.
+
+### Quy trình (script trong `scripts/cold-start/`)
+
+- `enrich-osm.mjs` — lấy tag `addr:*`/`phone`/`opening_hours` từ OSM API (Overpass bị chặn).
+  Kết quả: chỉ lấp thêm 13 địa chỉ → xác nhận OSM thật sự thiếu dữ liệu, việc lọc là đúng.
+- `geocode-nominatim.mjs` — geocode ứng viên nghiên cứu, cache trong `.cache/nominatim.json`.
+- `fix-districts.mjs` — sửa nhãn quận theo `display_name` Nominatim (agent gán theo cảm nhận).
+- `rebuild.mjs` — lọc mục đạt chuẩn, gộp ứng viên, loại trùng tên/toạ độ, sinh `places.csv`.
+- `diversify-images.mjs` — tải ảnh CC0 theo phân loại, gán vòng tròn (tối đa 8 lần/ảnh).
+- `validate.mjs` — kiểm schema/địa chỉ/toạ độ/ảnh/trùng lặp, exit 1 nếu sai (dùng được trong CI).

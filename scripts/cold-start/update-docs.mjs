@@ -1,0 +1,130 @@
+#!/usr/bin/env node
+/**
+ * Pha E — sinh lại README.md + CREDITS cho dataset sau tái sinh.
+ *
+ * README: quy mô, phân bố theo quận, cách hiểu trường, việc còn lại.
+ * CREDITS: ảnh thật của quán (giữ nguyên bảng cũ) + bảng ảnh món mới từ Commons.
+ *
+ * Chạy: node scripts/cold-start/update-docs.mjs
+ */
+import { readFile, writeFile } from "node:fs/promises"
+import { existsSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
+const dataDir = join(root, "data/cold-start")
+const data = JSON.parse(await readFile(join(dataDir, "places.json"), "utf8"))
+const places = data.places
+
+const byDistrict = {}
+const byCategory = {}
+const byTier = {}
+for (const p of places) {
+  byDistrict[p.district] = (byDistrict[p.district] ?? 0) + 1
+  byCategory[p.category] = (byCategory[p.category] ?? 0) + 1
+  byTier[p.tier] = (byTier[p.tier] ?? 0) + 1
+}
+
+const images = places.map((p) => p.image).filter(Boolean)
+const distinctImages = new Set(images).size
+const venueImages = places.filter((p) => p.imageKind === "venue").length
+
+const districtRows = Object.entries(byDistrict)
+  .sort((a, b) => b[1] - a[1])
+  .map(([district, count]) => `| ${district} | ${count} |`)
+  .join("\n")
+
+const categoryRows = Object.entries(byCategory)
+  .sort((a, b) => b[1] - a[1])
+  .map(([category, count]) => `| ${category} | ${count} |`)
+  .join("\n")
+
+const readme = `# Cold-start data — quán ăn & cafe Đà Nẵng
+
+Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc lập với frontend/backend.
+
+## Quy mô (tái sinh 2026-11-09, quyết định D-046)
+
+- **${places.length} địa điểm** — mỗi địa điểm đều có **địa chỉ số nhà + tên đường** và **toạ độ**.
+- Theo nguồn: ${Object.entries(byTier)
+  .map(([tier, count]) => `${tier} ${count}`)
+  .join(" · ")}.
+- **${images.length}/${places.length} có ảnh**, ${distinctImages} ảnh khác nhau; ${venueImages} địa điểm có **ảnh thật của quán**.
+
+### Phân bố theo quận/phường (đơn vị hành chính 2025)
+
+| Quận/phường | Số địa điểm |
+| --- | --- |
+${districtRows}
+
+### Phân bố theo phân loại
+
+| Phân loại | Số địa điểm |
+| --- | --- |
+${categoryRows}
+
+## Tiêu chuẩn dữ liệu (bắt buộc)
+
+1. **Địa chỉ**: phải có **số nhà + tên đường** (ví dụ \`214 Lương Nhữ Hộc\`). Địa điểm chỉ có
+   quận/phường hoặc mô tả tương đối ("đối diện 16 Hoàng Sa", "Lô 02-03…") **bị loại** —
+   giữ lại chỉ gây loãng.
+2. **Toạ độ**: mọi mục có \`lat\`/\`lng\` nằm trong địa giới TP Đà Nẵng, nguồn ghi ở \`geoSource\`
+   (\`osm\` / \`nominatim\` / \`google-maps\`).
+3. **Không trùng lặp**: cùng tên chuẩn hoá hoặc cách nhau < 80m.
+4. **Không bịa**: mỗi mục nguồn \`curated-v2\` có \`sources\` là URL nơi thông tin xuất hiện.
+
+## Cách hiểu các trường
+
+- \`tier\`: \`curated\` (báo chí ẩm thực) / \`curated-v2\` (nghiên cứu mạng xã hội 2026-11-09) /
+  \`osm\` (POI OpenStreetMap).
+- \`status\`: \`open\` / \`closed\` / \`unknown\` — hiện chưa xác minh quán còn hoạt động.
+- \`imageKind\`: \`venue\` (ảnh thật quán) / \`dish\` (ảnh món đại diện theo nhóm, **không phải** ảnh quán).
+- \`verified\`: luôn \`false\` — phải xác minh trước khi dùng production.
+
+## Quy trình tái sinh (\`scripts/cold-start/\`)
+
+| Script | Việc |
+| --- | --- |
+| \`enrich-osm.mjs\` | Lấy tag \`addr:*\`/\`phone\`/\`opening_hours\` từ OSM API (Overpass bị chặn) |
+| \`geocode-nominatim.mjs\` | Geocode ứng viên nghiên cứu, cache trong \`.cache/\` |
+| \`fix-districts.mjs\` | Sửa nhãn quận theo \`display_name\` Nominatim |
+| \`rebuild.mjs\` | Lọc mục đạt chuẩn, gộp ứng viên, loại trùng, sinh \`places.csv\` |
+| \`diversify-images.mjs\` | Tải ảnh món từ Wikimedia Commons, gán vòng tròn (tối đa 6 lần/ảnh) |
+| \`validate.mjs\` | Kiểm schema/địa chỉ/toạ độ/ảnh/trùng lặp — exit 1 nếu sai |
+| \`update-docs.mjs\` | Sinh lại README + CREDITS |
+
+## Việc còn lại
+
+1. Xác minh \`status\` từng quán (frontend có nút "Báo cáo", backend duyệt rồi mới đổi).
+2. Xác minh giờ mở cửa/SĐT (chỉ một phần POI có tag).
+3. Bổ sung ảnh thật cho quán \`curated-v2\` (hiện dùng ảnh món đại diện).
+4. Giấy phép ảnh quán (Foody/Google Maps) — cần xin phép trước khi phát hành công khai.
+`
+
+await writeFile(join(dataDir, "README.md"), readme)
+
+// CREDITS: giữ bảng ảnh quán cũ, thêm bảng ảnh món mới.
+const creditsPath = join(dataDir, "CREDITS.md")
+const oldCredits = existsSync(creditsPath) ? await readFile(creditsPath, "utf8") : ""
+const venueSection = oldCredits.split("## 2.")[0].trimEnd()
+
+const assignmentsPath = join(dataDir, ".cache/image-assignments.json")
+const assignments = existsSync(assignmentsPath)
+  ? JSON.parse(await readFile(assignmentsPath, "utf8"))
+  : []
+
+const dishCredits = `## 2. Ảnh món đại diện (images/dishes/)
+
+Ảnh tải từ **Wikimedia Commons** (giấy phép mở, ghi nguồn theo trang mô tả file).
+Đây là ảnh **món ăn theo nhóm**, KHÔNG phải ảnh của quán cụ thể.
+
+| File | Trang nguồn |
+| --- | --- |
+${[...new Map(assignments.map((a) => [a.image, a.credit])).entries()]
+  .map(([file, credit]) => `| ${file} | ${credit} |`)
+  .join("\n")}
+`
+
+await writeFile(creditsPath, `${venueSection}\n\n${dishCredits}`)
+console.log(`Đã ghi README.md (${places.length} địa điểm) + CREDITS.md (${assignments.length} ảnh món)`)

@@ -1,10 +1,20 @@
+/**
+ * Danh sách phường/khu vực dùng trong dataset cold-start (đơn vị hành chính
+ * 2025 sau sáp nhập, theo Nominatim — xem D-046). Sắp theo số địa điểm giảm dần.
+ */
 export const DANANG_DISTRICTS = [
   "Hải Châu",
-  "Sơn Trà",
   "Ngũ Hành Sơn",
+  "An Hải",
   "Thanh Khê",
+  "Hòa Cường",
+  "Sơn Trà",
   "Cẩm Lệ",
   "Liên Chiểu",
+  "Hòa Khánh",
+  "Hòa Xuân",
+  "An Khê",
+  "Hải Vân",
 ] as const
 
 /**

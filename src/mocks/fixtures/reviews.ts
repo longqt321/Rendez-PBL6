@@ -35,7 +35,7 @@ export const MOCK_REVIEWS: MockReviewSeed[] = [
   // ---- p-02 (Mì Quảng Bà Mua) ----
   {
     id: "r-02-1",
-    placeId: "mi-quang-ba-mua",
+    placeId: "my-quang-da-nang-ba-mua-10295259298",
     author: AUTHORS["u-1"],
     rating: 5,
     content:
