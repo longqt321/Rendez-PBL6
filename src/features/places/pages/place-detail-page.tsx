@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ErrorState } from "@/components/shared/error-state"
 import { Card, CardContent } from "@/components/ui/card"
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Item, ItemActions, ItemContent, ItemGroup, ItemMedia } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -69,26 +70,12 @@ export function PlaceDetailPage() {
     return (
       <div className="mx-auto max-w-md px-4 py-20">
         <h1 className="sr-only">{notFound ? "Không tìm thấy địa điểm" : "Lỗi tải địa điểm"}</h1>
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <MapPinIcon />
-            </EmptyMedia>
-            <EmptyTitle>
-              {notFound ? "Không tìm thấy địa điểm" : "Không tải được địa điểm"}
-            </EmptyTitle>
-            <EmptyDescription>
-              {notFound
-                ? "Địa điểm này chưa được đăng hoặc không tồn tại."
-                : "Kiểm tra kết nối rồi thử lại."}
-            </EmptyDescription>
-          </EmptyHeader>
-          {notFound ? null : (
-            <Button variant="outline" onClick={() => void refetch()}>
-              Thử lại
-            </Button>
-          )}
-        </Empty>
+        <ErrorState
+          icon={<MapPinIcon />}
+          title={notFound ? "Không tìm thấy địa điểm" : "Không tải được địa điểm"}
+          description={notFound ? "Địa điểm này chưa được đăng hoặc không tồn tại." : undefined}
+          onRetry={notFound ? undefined : () => void refetch()}
+        />
       </div>
     )
   }

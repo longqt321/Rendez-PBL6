@@ -3,7 +3,7 @@ import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { ErrorState } from "@/components/shared/error-state"
 import {
   Field,
   FieldContent,
@@ -71,15 +71,11 @@ export function SettingsPage() {
     return (
       <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
         <h1 className="sr-only">Cài đặt</h1>
-        <Empty className="mt-10 border border-dashed border-border">
-          <EmptyHeader>
-            <EmptyTitle>Không tải được cài đặt</EmptyTitle>
-            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-          </EmptyHeader>
-          <Button variant="outline" onClick={() => void refetch()}>
-            Thử lại
-          </Button>
-        </Empty>
+        <ErrorState
+          className="mt-10"
+          title="Không tải được cài đặt"
+          onRetry={() => void refetch()}
+        />
       </div>
     )
   }

@@ -10,6 +10,7 @@ import {
 import { Link } from "react-router"
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import {
   Item,
@@ -188,15 +189,12 @@ export function NotificationPage() {
           ))}
         </div>
       ) : isError ? (
-        <Empty className="mt-10 border border-dashed border-border">
-          <EmptyHeader>
-            <EmptyTitle>Không tải được thông báo</EmptyTitle>
-            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-          </EmptyHeader>
-          <Button variant="outline" size="sm" onClick={() => void refetch()}>
-            Thử lại
-          </Button>
-        </Empty>
+        <ErrorState
+          className="mt-10"
+          title="Không tải được thông báo"
+          size="sm"
+          onRetry={() => void refetch()}
+        />
       ) : (
         <Tabs defaultValue="all" className="mt-4">
           <TabsList>

@@ -1,7 +1,7 @@
 import { Link } from "react-router"
 import { CameraIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { ErrorState } from "@/components/shared/error-state"
 import { Card } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -47,17 +47,12 @@ export function ProfilePostGrid({
 
   if (isError) {
     return (
-      <Empty className="mt-6">
-        <EmptyHeader>
-          <EmptyTitle>Không tải được bài đăng</EmptyTitle>
-          <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-        </EmptyHeader>
-        {onRetry ? (
-          <Button variant="outline" onClick={onRetry}>
-            Thử lại
-          </Button>
-        ) : null}
-      </Empty>
+      <ErrorState
+        variant="plain"
+        className="mt-6"
+        title="Không tải được bài đăng"
+        onRetry={onRetry}
+      />
     )
   }
 

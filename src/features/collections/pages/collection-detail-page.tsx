@@ -12,6 +12,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
+import { ErrorState } from "@/components/shared/error-state"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   AlertDialog,
@@ -135,23 +136,12 @@ export function CollectionDetailPage() {
     return (
       <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
         <h1 className="sr-only">{notFound ? "Không tìm thấy bộ sưu tập" : "Lỗi tải bộ sưu tập"}</h1>
-        <Empty className="mt-8 border border-dashed border-border">
-          <EmptyHeader>
-            <EmptyTitle>
-              {notFound ? "Không tìm thấy bộ sưu tập" : "Không tải được bộ sưu tập"}
-            </EmptyTitle>
-            <EmptyDescription>
-              {notFound
-                ? "Bộ sưu tập có thể đã bị xoá hoặc link không đúng."
-                : "Kiểm tra kết nối rồi thử lại."}
-            </EmptyDescription>
-          </EmptyHeader>
-          {notFound ? null : (
-            <Button variant="outline" onClick={() => void refetch()}>
-              Thử lại
-            </Button>
-          )}
-        </Empty>
+        <ErrorState
+          className="mt-8"
+          title={notFound ? "Không tìm thấy bộ sưu tập" : "Không tải được bộ sưu tập"}
+          description={notFound ? "Bộ sưu tập có thể đã bị xoá hoặc link không đúng." : undefined}
+          onRetry={notFound ? undefined : () => void refetch()}
+        />
       </div>
     )
   }

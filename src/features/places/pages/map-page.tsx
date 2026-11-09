@@ -1,6 +1,7 @@
 import { SearchXIcon } from "lucide-react"
 import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
+import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PlacesMap } from "../components/places-map"
@@ -26,15 +27,11 @@ export function MapPage() {
       {view.isPending ? (
         <Skeleton className="mt-5 h-[70dvh] min-h-105 rounded-surface" />
       ) : view.isError ? (
-        <Empty className="mt-10 border border-dashed border-border">
-          <EmptyHeader>
-            <EmptyTitle>Không tải được danh sách địa điểm</EmptyTitle>
-            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-          </EmptyHeader>
-          <Button variant="outline" onClick={view.refetch}>
-            Thử lại
-          </Button>
-        </Empty>
+        <ErrorState
+          className="mt-10"
+          title="Không tải được danh sách địa điểm"
+          onRetry={view.refetch}
+        />
       ) : view.sortedPlaces.length === 0 ? (
         <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>

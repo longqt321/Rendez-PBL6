@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { SparklesIcon, UsersIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -51,15 +51,12 @@ export function SocialPage() {
           ))}
         </div>
       ) : isError ? (
-        <Empty className="mt-10 border border-dashed border-border">
-          <EmptyHeader>
-            <EmptyTitle>Không tải được bài đăng</EmptyTitle>
-            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-          </EmptyHeader>
-          <Button variant="outline" size="sm" onClick={() => void refetch()}>
-            Thử lại
-          </Button>
-        </Empty>
+        <ErrorState
+          className="mt-10"
+          title="Không tải được bài đăng"
+          size="sm"
+          onRetry={() => void refetch()}
+        />
       ) : posts.length === 0 ? (
         <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>

@@ -1,6 +1,6 @@
 import { Link } from "react-router"
 import { BookmarkIcon, FolderPlusIcon, MapPinIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -48,15 +48,11 @@ export function SavedPage() {
               ))}
             </div>
           ) : postsError ? (
-            <Empty className="mt-2">
-              <EmptyHeader>
-                <EmptyTitle>Không tải được bài đã lưu</EmptyTitle>
-                <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-              </EmptyHeader>
-              <Button variant="outline" onClick={() => void refetchPosts()}>
-                Thử lại
-              </Button>
-            </Empty>
+            <ErrorState
+              variant="plain"
+              title="Không tải được bài đã lưu"
+              onRetry={() => void refetchPosts()}
+            />
           ) : savedPosts.length === 0 ? (
             <Empty className="mt-2">
               <EmptyHeader>
@@ -106,15 +102,11 @@ export function SavedPage() {
               ))}
             </div>
           ) : collectionsError ? (
-            <Empty className="mt-2">
-              <EmptyHeader>
-                <EmptyTitle>Không tải được bộ sưu tập</EmptyTitle>
-                <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-              </EmptyHeader>
-              <Button variant="outline" onClick={() => void refetchCollections()}>
-                Thử lại
-              </Button>
-            </Empty>
+            <ErrorState
+              variant="plain"
+              title="Không tải được bộ sưu tập"
+              onRetry={() => void refetchCollections()}
+            />
           ) : collections && collections.length > 0 ? (
             <ul className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {collections.map((collection) => (

@@ -10,15 +10,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
+import { ErrorState } from "@/components/shared/error-state"
 import { Card } from "@/components/ui/card"
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Toggle } from "@/components/ui/toggle"
 import { SectionHeading } from "@/components/shared/section-heading"
@@ -71,30 +64,16 @@ export function PostDetailPage() {
     return (
       <div className="mx-auto max-w-md px-4 py-20">
         <h1 className="sr-only">{notFound ? "Không tìm thấy bài đăng" : "Lỗi tải bài đăng"}</h1>
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <ImageOffIcon />
-            </EmptyMedia>
-            <EmptyTitle>
-              {notFound ? "Không tìm thấy bài đăng" : "Không tải được bài đăng"}
-            </EmptyTitle>
-            <EmptyDescription>
-              {notFound
-                ? "Bài đăng này không tồn tại hoặc đã bị xoá khỏi cộng đồng."
-                : "Kiểm tra kết nối rồi thử lại."}
-            </EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            {notFound ? (
-              <Button render={<Link to="/social" />}>Về trang Cộng đồng</Button>
-            ) : (
-              <Button variant="outline" onClick={() => void refetch()}>
-                Thử lại
-              </Button>
-            )}
-          </EmptyContent>
-        </Empty>
+        <ErrorState
+          icon={<ImageOffIcon />}
+          title={notFound ? "Không tìm thấy bài đăng" : "Không tải được bài đăng"}
+          description={
+            notFound ? "Bài đăng này không tồn tại hoặc đã bị xoá khỏi cộng đồng." : undefined
+          }
+          onRetry={notFound ? undefined : () => void refetch()}
+        >
+          {notFound ? <Button render={<Link to="/social" />}>Về trang Cộng đồng</Button> : null}
+        </ErrorState>
       </div>
     )
   }

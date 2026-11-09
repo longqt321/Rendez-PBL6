@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button"
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { ErrorState } from "@/components/shared/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ProfileHeader } from "../components/profile-header"
 import { ProfileTabs } from "../components/profile-tabs"
@@ -32,15 +31,7 @@ export function ProfilePage() {
     return (
       <div className="mx-auto max-w-md px-4 py-20">
         <h1 className="sr-only">Trang cá nhân</h1>
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>Không tải được hồ sơ</EmptyTitle>
-            <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-          </EmptyHeader>
-          <Button variant="outline" onClick={() => void refetch()}>
-            Thử lại
-          </Button>
-        </Empty>
+        <ErrorState title="Không tải được hồ sơ" onRetry={() => void refetch()} />
       </div>
     )
   }

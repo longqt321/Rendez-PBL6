@@ -1,7 +1,7 @@
 import { Link, Navigate, useSearchParams } from "react-router"
 import { SearchXIcon, UsersIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import {
   Item,
@@ -92,15 +92,11 @@ function SearchResults({ query }: { query: string }) {
               ))}
             </ul>
           ) : placesError ? (
-            <Empty className="mt-2">
-              <EmptyHeader>
-                <EmptyTitle>Không tải được kết quả địa điểm</EmptyTitle>
-                <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-              </EmptyHeader>
-              <Button variant="outline" onClick={() => void refetchPlaces()}>
-                Thử lại
-              </Button>
-            </Empty>
+            <ErrorState
+              variant="plain"
+              title="Không tải được kết quả địa điểm"
+              onRetry={() => void refetchPlaces()}
+            />
           ) : places.length === 0 ? (
             <SearchEmptyBlock label="địa điểm" />
           ) : (
@@ -122,15 +118,11 @@ function SearchResults({ query }: { query: string }) {
               ))}
             </div>
           ) : postsError ? (
-            <Empty className="mt-2">
-              <EmptyHeader>
-                <EmptyTitle>Không tải được kết quả bài đăng</EmptyTitle>
-                <EmptyDescription>Kiểm tra kết nối rồi thử lại.</EmptyDescription>
-              </EmptyHeader>
-              <Button variant="outline" onClick={() => void refetchPosts()}>
-                Thử lại
-              </Button>
-            </Empty>
+            <ErrorState
+              variant="plain"
+              title="Không tải được kết quả bài đăng"
+              onRetry={() => void refetchPosts()}
+            />
           ) : posts.length === 0 ? (
             <SearchEmptyBlock label="bài đăng" />
           ) : (

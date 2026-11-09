@@ -1888,3 +1888,30 @@ xử lý như trạng thái rỗng"** — chỉ lộ ra khi API không trả d�
 - CDP trên `vite preview` (mock tắt, 502): 13/13 route có `<h1>`, không route nào kẹt spinner;
   `/discover/p-01` và `/collections/c-01` hiện "Không tải được … Kiểm tra kết nối rồi thử lại" +
   nút "Thử lại"; 0 exception. Trước khi sửa: 6 route trắng trang/thiếu h1, `/settings` kẹt spinner.
+
+## D-039 — Rà "chắp vá": tách khối trạng thái lỗi thành `ErrorState` dùng chung
+
+Định nghĩa "chắp vá" của người dùng: tự code HTML/CSS thay vì dùng component/package đã cài; tự
+viết logic TS thuần thay vì gọi package. Rà toàn bộ code mới viết ở D-037/D-038.
+
+### Phát hiện và sửa
+
+- **Khối `Empty + "Kiểm tra kết nối rồi thử lại." + nút "Thử lại"` bị copy ở 13 vị trí** — vi phạm
+  "một nghiệp vụ một chỗ". Tách thành
+  [`ErrorState`](file:///home/longtran/Projects/frontend/src/components/shared/error-state.tsx)
+  (`src/components/shared/`, dựng trên `Empty` + `Button` của shadcn — không tự viết HTML/CSS).
+  Thay ở: discover, map, social, notification, profile, saved (×2), search (×2),
+  `ProfilePostGrid`, settings, place-detail, collection-detail, post-detail. Thông điệp 404 riêng
+  của từng trang giữ nguyên qua props `title`/`description`/`icon`; `post-detail` dùng `children`
+  cho nút "Về trang Cộng đồng". Thêm 4 test cho component.
+- **Không phát hiện chắp vá khác**: `useDebouncedValue`, `useInfiniteScroll`,
+  `GeolocationWatcher`, `useSessionStorage` đều uỷ thác `@uidotdev/usehooks`; `env.ts` dùng zod;
+  `axios.ts` dùng axios interceptor; `ErrorState`/`PageLoading`/skip-link đều dựng trên component
+  shadcn có sẵn. Không cần cài package mới (react-helmet-async không cần — `useDocumentTitle` 10
+  dòng, không có component tương ứng trong shadcn).
+
+### Bằng chứng
+
+- `bun run typecheck`/`lint`/`format:check`/`build` exit 0; `bun run test` 39 test pass (6 file).
+- `grep "Thử lại"` chỉ còn trong `error-state.tsx`, `route-error-page.tsx` (ErrorBoundary riêng)
+  và thông điệp bình luận khác ngữ cảnh.
