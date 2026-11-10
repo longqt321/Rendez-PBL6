@@ -18,5 +18,43 @@ services:
       timeout: 3s
       retries: 10
 
+  # Chạy migration một lần rồi thoát; API chờ service này xong mới khởi động.
+  migrate:
+    image: rendez-api-migrator
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: migrator
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:-rendez_dev}@postgres:5432/${POSTGRES_DB:-rendez}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: rendez-api
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: runtime
+    container_name: rendez-api
+    environment:
+      # Mặc định development để chạy demo local với secret dev. Production PHẢI
+      # đặt NODE_ENV=production + BETTER_AUTH_SECRET riêng (env.ts từ chối
+      # secret dev khi NODE_ENV=production).
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: "8000"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:-rendez_dev}@postgres:5432/${POSTGRES_DB:-rendez}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-rendez-dev-secret-0123456789abcdef}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:8000}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
 volumes:
   pgdata:
