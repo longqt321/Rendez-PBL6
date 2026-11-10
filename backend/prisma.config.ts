@@ -1,12 +1,10 @@
 // Prisma 7 — cấu hình CLI/migrate. Runtime dùng driver adapter (`src/lib/prisma.ts`).
 // Prisma 7 KHÔNG tự nạp .env; dùng API có sẵn của Node (>= 20.12) thay vì thêm dotenv.
-import { defineConfig, env } from "prisma/config";
+import { defineConfig, env } from "prisma/config"
 
-const loadEnvFile = (
-  process as unknown as { loadEnvFile?: (path?: string) => void }
-).loadEnvFile;
+const loadEnvFile = (process as unknown as { loadEnvFile?: (path?: string) => void }).loadEnvFile
 try {
-  loadEnvFile?.();
+  loadEnvFile?.()
 } catch {
   // .env không bắt buộc khi CI đã export biến môi trường.
 }
@@ -20,4 +18,4 @@ export default defineConfig({
     path: "prisma/migrations",
     seed: "bun run scripts/seed.ts",
   },
-});
+})

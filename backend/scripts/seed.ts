@@ -8,41 +8,41 @@
  *
  * Chạy: `bun run db:seed` (hoặc tự động sau `prisma migrate dev` qua prisma.config.ts).
  */
-import { join } from "node:path";
-import type { PlaceCategory, PlaceStatus } from "@rendez/schema";
-import type { PlaceCategory as PrismaPlaceCategory } from "../generated/prisma/enums";
-import { prisma } from "../src/lib/prisma";
+import { join } from "node:path"
+import type { PlaceCategory, PlaceStatus } from "@rendez/schema"
+import type { PlaceCategory as PrismaPlaceCategory } from "../generated/prisma/enums"
+import { prisma } from "../src/lib/prisma"
 
 interface ColdStartPlace {
-  id: string;
-  name: string;
-  category: string;
-  district: string | null;
-  address: string | null;
-  lat: number | null;
-  lng: number | null;
-  phone: string | null;
-  openingHours: string | null;
-  description: string | null;
-  sources: string[];
-  geoSource: string | null;
-  geoPrecision: string | null;
-  osmId: string | null;
-  image: string | null;
-  imageCredit?: string;
-  imageKind: string | null;
-  imageNote: string | null;
-  images: string[];
-  venuePageUrl: string | null;
-  verified: boolean;
-  collectedAt: string | null;
-  tier: string | null;
-  status: string;
+  id: string
+  name: string
+  category: string
+  district: string | null
+  address: string | null
+  lat: number | null
+  lng: number | null
+  phone: string | null
+  openingHours: string | null
+  description: string | null
+  sources: string[]
+  geoSource: string | null
+  geoPrecision: string | null
+  osmId: string | null
+  image: string | null
+  imageCredit?: string
+  imageKind: string | null
+  imageNote: string | null
+  images: string[]
+  venuePageUrl: string | null
+  verified: boolean
+  collectedAt: string | null
+  tier: string | null
+  status: string
 }
 
 interface ColdStartDataset {
-  meta: { count: number };
-  places: ColdStartPlace[];
+  meta: { count: number }
+  places: ColdStartPlace[]
 }
 
 /**
@@ -68,7 +68,7 @@ const CATEGORY_MAP: Record<string, PlaceCategory> = {
   "banh-cen": "street-food",
   "nem-lui": "street-food",
   banh: "bakery",
-};
+}
 
 /**
  * API dùng `street-food` (dấu gạch nối), Prisma enum buộc tên TS là
@@ -81,42 +81,39 @@ const PRISMA_CATEGORY: Record<PlaceCategory, PrismaPlaceCategory> = {
   bakery: "bakery",
   dessert: "dessert",
   bar: "bar",
-};
+}
 
 /** Địa điểm chưa duyệt — giữ đúng 1 mục như mock để demo `isPublished: false`. */
-const UNPUBLISHED_IDS = new Set(["ram-cuon-cai-di-hoa-6152681085"]);
+const UNPUBLISHED_IDS = new Set(["ram-cuon-cai-di-hoa-6152681085"])
 
 /** Ngày duyệt mặc định cho dữ liệu cold-start (mock server, không thuộc dataset). */
-const PUBLISHED_AT = new Date("2026-11-09T08:00:00+07:00");
+const PUBLISHED_AT = new Date("2026-11-09T08:00:00+07:00")
 
-const DATASET_PATH = join(
-  import.meta.dir,
-  "../../frontend/data/cold-start/places.json",
-);
+const DATASET_PATH = join(import.meta.dir, "../../frontend/data/cold-start/places.json")
 
 function toStatus(raw: string): PlaceStatus {
-  return raw === "open" || raw === "closed" ? raw : "unknown";
+  return raw === "open" || raw === "closed" ? raw : "unknown"
 }
 
 function toDate(value: string | null): Date | null {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+  if (!value) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date
 }
 
 async function main(): Promise<void> {
-  const file = Bun.file(DATASET_PATH);
+  const file = Bun.file(DATASET_PATH)
   if (!(await file.exists())) {
-    throw new Error(`Không tìm thấy dataset: ${DATASET_PATH}`);
+    throw new Error(`Không tìm thấy dataset: ${DATASET_PATH}`)
   }
 
-  const dataset = (await file.json()) as ColdStartDataset;
-  console.info(`[seed] Đọc ${dataset.places.length} place từ ${DATASET_PATH}`);
+  const dataset = (await file.json()) as ColdStartDataset
+  console.info(`[seed] Đọc ${dataset.places.length} place từ ${DATASET_PATH}`)
 
-  let images = 0;
+  let images = 0
 
   for (const raw of dataset.places) {
-    const publishedAt = UNPUBLISHED_IDS.has(raw.id) ? null : PUBLISHED_AT;
+    const publishedAt = UNPUBLISHED_IDS.has(raw.id) ? null : PUBLISHED_AT
     const data = {
       name: raw.name,
       address: raw.address ?? raw.district ?? "Đà Nẵng",
@@ -142,23 +139,22 @@ async function main(): Promise<void> {
       imageKind: raw.imageKind,
       imageNote: raw.imageNote,
       publishedAt,
-    };
+    }
 
     await prisma.place.upsert({
       where: { id: raw.id },
       create: { id: raw.id, ...data },
       update: data,
-    });
+    })
 
     // Ảnh: dataset có `images[]`; giữ thứ tự, idempotent theo (place, url).
-    const urls =
-      raw.images.length > 0 ? raw.images : raw.image ? [raw.image] : [];
+    const urls = raw.images.length > 0 ? raw.images : raw.image ? [raw.image] : []
     for (const [position, path] of urls.entries()) {
-      const url = `/data/cold-start/${path}`;
+      const url = `/data/cold-start/${path}`
       const existing = await prisma.placeImage.findFirst({
         where: { placeId: raw.id, url },
         select: { id: true },
-      });
+      })
       if (existing) {
         await prisma.placeImage.update({
           where: { id: existing.id },
@@ -167,7 +163,7 @@ async function main(): Promise<void> {
             kind: raw.imageKind,
             credit: raw.imageCredit ?? null,
           },
-        });
+        })
       } else {
         await prisma.placeImage.create({
           data: {
@@ -177,24 +173,22 @@ async function main(): Promise<void> {
             kind: raw.imageKind,
             credit: raw.imageCredit ?? null,
           },
-        });
-        images += 1;
+        })
+        images += 1
       }
     }
   }
 
-  const placeCount = await prisma.place.count();
-  const imageCount = await prisma.placeImage.count();
-  console.info(
-    `[seed] Xong: ${placeCount} place, ${imageCount} ảnh (thêm mới ${images}).`,
-  );
+  const placeCount = await prisma.place.count()
+  const imageCount = await prisma.placeImage.count()
+  console.info(`[seed] Xong: ${placeCount} place, ${imageCount} ảnh (thêm mới ${images}).`)
 }
 
 try {
-  await main();
+  await main()
 } catch (error) {
-  console.error("[seed] Thất bại:", error);
-  process.exitCode = 1;
+  console.error("[seed] Thất bại:", error)
+  process.exitCode = 1
 } finally {
-  await prisma.$disconnect();
+  await prisma.$disconnect()
 }

@@ -1,5 +1,5 @@
-import { HTTPException } from "hono/http-exception";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { HTTPException } from "hono/http-exception"
+import type { ContentfulStatusCode } from "hono/utils/http-status"
 
 /**
  * Lỗi nghiệp vụ có chủ đích — luôn trả JSON `{ message }` (quyết định D6).
@@ -15,6 +15,6 @@ export class ApiError extends HTTPException {
         status,
         headers: { "Content-Type": "application/json; charset=utf-8" },
       }),
-    });
+    })
   }
 }

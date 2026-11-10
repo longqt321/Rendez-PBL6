@@ -1,5 +1,5 @@
-import pino from "pino";
-import { env } from "../env";
+import pino from "pino"
+import { env } from "../env"
 
 /**
  * Logger structured JSON — một dòng/request (G3).
@@ -10,4 +10,4 @@ import { env } from "../env";
 export const logger = pino({
   level: env.LOG_LEVEL,
   base: { service: "rendez-api" },
-});
+})

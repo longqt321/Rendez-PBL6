@@ -12,7 +12,7 @@ const envSchema = z.object({
    * Base URL của backend API. Mặc định `/api` — dùng proxy dev của Vite nên
    * không vướng CORS; đặt URL tuyệt đối khi backend ở origin khác.
    */
-  VITE_API_BASE_URL: z.string().min(1).default("/api"),
+  VITE_API_BASE_URL: z.string().min(1).default("/api/v1"),
   /**
    * Bật mock server in-memory (`src/mocks/`). Mock chỉ tồn tại ở dev — build
    * production luôn gọi backend thật. Đặt `VITE_ENABLE_MOCKS=false` để tắt cả ở dev
