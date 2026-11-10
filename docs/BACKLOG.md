@@ -329,3 +329,20 @@ lịch sử; không còn việc mở ở đây.
       bật khi có room/messaging thật (Phase 6+).
 - [ ] **Prisma dev log spam** — `log: ["query"]` ở dev in mỗi query ra stdout (đã thấy khi
       seed). Cân nhắc gate bằng env riêng (ví dụ `LOG_SQL=1`) thay vì mặc định bật.
+
+## Phát hiện 2026-11-11 (e2e với backend thật)
+
+- [ ] **FE chưa có form đăng nhập email+password** — `POST /session` của FE gửi không body
+      (chỉ hợp lệ với mock dev-bypass). Với backend thật, menu "Đăng nhập" trả 400. e2e
+      project `backend` bỏ qua `logout.spec.ts` vì bước "đăng nhập lại" không thể chạy;
+      cần UI đăng nhập thật (T1.3) rồi bỏ `testIgnore` trong `playwright.config.ts`.
+- [ ] **e2e tạo user mới mỗi lần chạy** — `e2e/global-setup.ts` dùng hậu tố thời điểm để
+      tránh dữ liệu cũ (báo cáo trùng) làm spec fail. Về lâu dài nên có reset DB cho e2e
+      (script seed sạch) thay vì user mỗi-lần-chạy.
+
+## Phát hiện 2026-11-11 (Docker + audit enum)
+
+- [ ] **Image runtime kèm devDependencies** — Bun workspace không tạo được node_modules
+      production sạch ở stage riêng (symlink workspace chỉ đúng trong cây install đầy đủ);
+      runtime COPY nguyên node_modules của builder. Cân nhắc `bun install --production`
+      trong backend hoặc registry riêng khi cần thu gọn image.
