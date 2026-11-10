@@ -3,6 +3,8 @@ import type { AppEnv } from "../app"
 import { decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { findPublicPlace, listPlaces, listPlacesInMap, parsePlaceFilters } from "../lib/places"
+import { rankPlaceSuggestions } from "../lib/ranking"
+import { fetchRankCandidates, normalizeCaption, toSuggestionCandidate } from "../lib/suggestions"
 
 /**
  * Route địa điểm (Phase 2) — khớp hợp đồng Phần A:
@@ -15,6 +17,11 @@ import { findPublicPlace, listPlaces, listPlacesInMap, parsePlaceFilters } from 
 const PLACES_PAGE_SIZE = 9
 /** Chặn trên cho `/places/map` — khung nhìn zoom nhỏ không trả cả dataset. */
 const MAP_MAX_PLACES = 300
+/** Số gợi ý tối đa một lần hỏi (A5: suggestion ≤ 10). */
+const MAX_SUGGESTIONS = 10
+const DEFAULT_SUGGESTIONS = 3
+/** Caption ngắn hơn ngưỡng thì không gợi ý (A7.1). */
+const MIN_CAPTION_CHARS = 8
 
 /** Id place là slug từ dataset (`mirkocoffeechillbeer-493`), không phải uuid. */
 const PLACE_ID_RE = /^[A-Za-z0-9_-]{1,120}$/
@@ -34,7 +41,40 @@ export function createPlacesRouter() {
     return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
   })
 
-  // Đứng trước `/places/:id` — nếu không `:id` sẽ nuốt cả "map"/"saved".
+  // Đứng trước `/places/:id` — nếu không `:id` sẽ nuốt cả "map"/"saved"/"suggestions".
+  router.get("/places/suggestions", async (c) => {
+    const caption = c.req.query("q") ?? ""
+    if (caption.trim().length < MIN_CAPTION_CHARS) return c.json({ suggestions: [] })
+
+    const rawLimit = Number(c.req.query("limit") ?? DEFAULT_SUGGESTIONS)
+    const limit = Number.isFinite(rawLimit)
+      ? Math.min(MAX_SUGGESTIONS, Math.max(1, Math.trunc(rawLimit)))
+      : DEFAULT_SUGGESTIONS
+
+    const [captionNorm, rows] = await Promise.all([
+      normalizeCaption(caption),
+      fetchRankCandidates(true),
+    ])
+
+    const ranked = rankPlaceSuggestions(captionNorm, rows.map(toSuggestionCandidate), limit)
+    return c.json({
+      suggestions: ranked.map(({ candidate, reason }) => ({
+        place: {
+          id: candidate.row.id,
+          name: candidate.row.name,
+          address: candidate.row.address,
+          ...(candidate.row.district ? { district: candidate.row.district } : {}),
+          category: candidate.category,
+          ...(candidate.row.image_url ? { imageUrl: candidate.row.image_url } : {}),
+          isPublished: true,
+          ...(candidate.row.lat !== null ? { lat: candidate.row.lat } : {}),
+          ...(candidate.row.lng !== null ? { lng: candidate.row.lng } : {}),
+        },
+        reason,
+      })),
+    })
+  })
+
   router.get("/places/map", async (c) => {
     const filters = parsePlaceFilters(c.req.query())
     const result = await listPlacesInMap(filters, MAP_MAX_PLACES)

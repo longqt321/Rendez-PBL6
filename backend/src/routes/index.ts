@@ -3,6 +3,7 @@ import type { AppEnv } from "../app"
 import { auth } from "../lib/auth"
 import { createAuthRouter } from "./auth"
 import { createPlacesRouter } from "./places"
+import { createUsersRouter } from "./users"
 
 /**
  * Router API v1 — mọi route nghiệp vụ mount dưới `/api/v1` (K1).
@@ -28,6 +29,9 @@ export function createApiRouter() {
 
   // Địa điểm (Phase 2) — `/places`, `/places/map`, `/places/:id`.
   api.route("/", createPlacesRouter())
+
+  // Người dùng (Phase 2) — `/users`.
+  api.route("/", createUsersRouter())
 
   return api
 }

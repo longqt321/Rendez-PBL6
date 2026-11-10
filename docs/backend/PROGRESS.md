@@ -24,9 +24,9 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | T2.1 | 2 | GET /places — bộ lọc A7.9 + cursor keyset | T1.4 | done | |
 | T2.2 | 2 | GET /places/map — bbox + {items,total} + chặn 300 | T2.1 | done | |
 | T2.3 | 2 | GET /places/:id — 404 nếu chưa publish | T2.1 | done | |
-| T2.4 | 2 | GET /places/suggestions — port ranking.ts + unaccent | T2.1 | todo | |
+| T2.4 | 2 | GET /places/suggestions — port ranking.ts + unaccent | T2.1 | done | |
 | T2.5 | 2 | pg_trgm index + test "banh xeo" khớp "Bánh Xèo" | T2.1 | done (unaccent; trgm index dùng cho T2.4) | |
-| T2.6 | 2 | GET /users?q= | T2.1 | todo | |
+| T2.6 | 2 | GET /users?q= | T2.1 | done | |
 | T3.1 | 3 | POST /posts + GET /posts (filter all/unplaced/mine/saved + q) | T1.4 | todo | |
 | T3.2 | 3 | GET /posts/:id; PATCH like/save idempotent | T3.1 | todo | |
 | T3.3 | 3 | PATCH /posts/:id/place — side effects A7.3 trong transaction | T3.1 | todo | |

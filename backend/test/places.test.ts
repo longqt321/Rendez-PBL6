@@ -29,8 +29,26 @@ afterAll(async () => {
   await stopTestDb()
 }, 60_000)
 
+/** Shape JSON dùng trong test — đủ trường để assert, không cần `any`. */
+interface PlaceJson {
+  id: string
+  name: string
+  category: string
+  district?: string
+  tags: string[]
+  address: string
+}
+interface PageJson {
+  items: PlaceJson[]
+  next: string | null
+}
+
 async function get(path: string) {
   return app.request(path)
+}
+
+async function getJson<T>(path: string): Promise<T> {
+  return (await (await get(path)).json()) as T
 }
 
 describe("GET /places", () => {
@@ -40,15 +58,16 @@ describe("GET /places", () => {
 
     const body = await res.json()
     expect(placePageSchema.safeParse(body).success).toBe(true)
-    expect(body.items).toHaveLength(9)
-    expect(body.next).toBeString()
+    const page = body as PageJson
+    expect(page.items).toHaveLength(9)
+    expect(page.next).toBeString()
   })
 
-  test("cursor keyset: trang 2 không trùng trang 1, đi hết dataset", async () => {
-    const first = await (await get("/api/v1/places")).json()
-    const second = await (await get(`/api/v1/places?cursor=${first.next}`)).json()
+  test("cursor keyset: trang 2 không trùng trang 1", async () => {
+    const first = await getJson<PageJson>("/api/v1/places")
+    const second = await getJson<PageJson>(`/api/v1/places?cursor=${first.next}`)
 
-    const firstIds = new Set(first.items.map((item: { id: string }) => item.id))
+    const firstIds = new Set(first.items.map((item) => item.id))
     for (const item of second.items) expect(firstIds.has(item.id)).toBe(false)
   })
 
@@ -59,8 +78,7 @@ describe("GET /places", () => {
   })
 
   test("q không dấu khớp tên có dấu (unaccent)", async () => {
-    const res = await get("/api/v1/places?q=banh%20xeo")
-    const body = await res.json()
+    const body = await getJson<PageJson>("/api/v1/places?q=banh%20xeo")
 
     expect(body.items.length).toBeGreaterThan(0)
     for (const item of body.items) {
@@ -69,8 +87,7 @@ describe("GET /places", () => {
   })
 
   test("category nhiều giá trị + loại trừ hoạt động", async () => {
-    const res = await get("/api/v1/places?category=cafe,bar&excludeDistrict=Sơn Trà")
-    const body = await res.json()
+    const body = await getJson<PageJson>("/api/v1/places?category=cafe,bar&excludeDistrict=Sơn Trà")
 
     expect(body.items.length).toBeGreaterThan(0)
     for (const item of body.items) {
@@ -80,16 +97,13 @@ describe("GET /places", () => {
   })
 
   test("priceMax ngoài 1–3 bị bỏ qua (không lỗi, không lọc sai)", async () => {
-    const all = await (await get("/api/v1/places?priceMax=9")).json()
-    const plain = await (await get("/api/v1/places")).json()
-    expect(all.items.map((item: { id: string }) => item.id)).toEqual(
-      plain.items.map((item: { id: string }) => item.id),
-    )
+    const all = await getJson<PageJson>("/api/v1/places?priceMax=9")
+    const plain = await getJson<PageJson>("/api/v1/places")
+    expect(all.items.map((item) => item.id)).toEqual(plain.items.map((item) => item.id))
   })
 
   test("includeKeyword AND: 2 từ khoá phải cùng xuất hiện", async () => {
-    const res = await get("/api/v1/places?includeKeyword=quang,ga")
-    const body = await res.json()
+    const body = await getJson<PageJson>("/api/v1/places?includeKeyword=quang,ga")
 
     for (const item of body.items) {
       const haystack = `${item.name} ${item.address} ${item.tags.join(" ")}`.toLowerCase()
@@ -99,8 +113,7 @@ describe("GET /places", () => {
   })
 
   test("chỉ trả place đã publish và không closed", async () => {
-    const res = await get("/api/v1/places?q=ram%20cuon")
-    const body = await res.json()
+    const body = await getJson<PageJson>("/api/v1/places?q=ram%20cuon")
 
     // Place duy nhất khớp "ram cuon" trong dataset chưa publish → không lọt ra.
     expect(body.items).toHaveLength(0)
@@ -112,15 +125,17 @@ describe("GET /places/map", () => {
     const res = await get("/api/v1/places/map?bbox=108.0,15.9,108.4,16.3")
     expect(res.status).toBe(200)
 
-    const body = await res.json()
+    const body = (await res.json()) as { items: unknown[]; total: number }
     expect(body.items.length).toBeLessThanOrEqual(300)
     expect(body.total).toBeGreaterThanOrEqual(body.items.length)
     expect(placeSchema.safeParse(body.items[0]).success).toBe(true)
   })
 
   test("bbox sai định dạng bị bỏ qua (trả toàn bộ, vẫn chặn 300)", async () => {
-    const res = await get("/api/v1/places/map?bbox=abc")
-    const body = await res.json()
+    const body = (await (await get("/api/v1/places/map?bbox=abc")).json()) as {
+      items: unknown[]
+      total: number
+    }
 
     expect(body.items).toHaveLength(300)
     expect(body.total).toBeGreaterThan(300)
@@ -129,8 +144,8 @@ describe("GET /places/map", () => {
 
 describe("GET /places/:id", () => {
   test("place đã publish trả đúng schema", async () => {
-    const list = await (await get("/api/v1/places")).json()
-    const id = list.items[0].id
+    const list = await getJson<PageJson>("/api/v1/places")
+    const id = list.items[0]!.id
 
     const res = await get(`/api/v1/places/${id}`)
     expect(res.status).toBe(200)
@@ -146,5 +161,33 @@ describe("GET /places/:id", () => {
   test("id không tồn tại trả 404", async () => {
     const res = await get("/api/v1/places/khong-ton-tai-999")
     expect(res.status).toBe(404)
+  })
+})
+
+describe("GET /places/suggestions", () => {
+  test("caption ngắn hơn 8 ký tự trả rỗng", async () => {
+    const body = await getJson<{ suggestions: unknown[] }>("/api/v1/places/suggestions?q=an%20banh")
+    expect(body.suggestions).toHaveLength(0)
+  })
+
+  test("caption nhắc món/loại hình trả gợi ý khớp PlaceSummary", async () => {
+    const body = await getJson<{ suggestions: { place: { id: string }; reason: string }[] }>(
+      "/api/v1/places/suggestions?q=" +
+        encodeURIComponent("Hôm nay ăn bánh xèo ở Đà Nẵng rất ngon"),
+    )
+
+    expect(body.suggestions.length).toBeGreaterThan(0)
+    expect(body.suggestions.length).toBeLessThanOrEqual(3)
+    for (const suggestion of body.suggestions) {
+      expect(suggestion.place.id.length).toBeGreaterThan(0)
+      expect(suggestion.reason.length).toBeGreaterThan(0)
+    }
+  })
+
+  test("limit bị chặn trên 10", async () => {
+    const body = await getJson<{ suggestions: unknown[] }>(
+      "/api/v1/places/suggestions?limit=99&q=" + encodeURIComponent("quán ăn ngon ở Đà Nẵng"),
+    )
+    expect(body.suggestions.length).toBeLessThanOrEqual(10)
   })
 })

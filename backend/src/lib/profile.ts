@@ -15,6 +15,12 @@ export function formatInitials(name: string): string {
     .join("")
 }
 
+/** Cột tối thiểu để dựng hồ sơ — cho phép truyền dòng SQL rút gọn, không cần cả model. */
+export type ProfileSource = Pick<
+  User,
+  "id" | "name" | "handle" | "bio" | "location" | "privateProfile" | "createdAt"
+>
+
 /**
  * Hồ sơ công khai — khớp `userProfileSchema` của `@rendez/schema` (A2).
  *
@@ -22,7 +28,7 @@ export function formatInitials(name: string): string {
  * server đếm (A6.9) — caller truyền số đã query, không hardcode.
  */
 export function toUserProfile(
-  user: User,
+  user: ProfileSource,
   viewerId: string | null,
   counts: {
     postCount: number
