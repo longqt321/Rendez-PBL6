@@ -89,6 +89,14 @@ const UNPUBLISHED_IDS = new Set(["ram-cuon-cai-di-hoa-6152681085"])
 /** Ngày duyệt mặc định cho dữ liệu cold-start (mock server, không thuộc dataset). */
 const PUBLISHED_AT = new Date("2026-11-09T08:00:00+07:00")
 
+/**
+ * `created_at` gán sẵn theo thứ tự dataset (mục đầu mới nhất, cách nhau 1 giây):
+ * API trả place theo keyset `(created_at, id)` giảm dần, và mock — đặc tả hành vi —
+ * trả theo thứ tự dataset. Không gán thì thứ tự phụ thuộc thời điểm insert,
+ * trang đầu của `GET /places` sẽ không khớp mock (mất ảnh card ở trang đầu).
+ */
+const SEED_BASE_AT = new Date("2026-11-09T00:00:00+07:00")
+
 const DATASET_PATH = join(import.meta.dir, "../../frontend/data/cold-start/places.json")
 
 function toStatus(raw: string): PlaceStatus {
@@ -111,10 +119,12 @@ async function main(): Promise<void> {
   console.info(`[seed] Đọc ${dataset.places.length} place từ ${DATASET_PATH}`)
 
   let images = 0
+  let index = 0
 
   for (const raw of dataset.places) {
     const publishedAt = UNPUBLISHED_IDS.has(raw.id) ? null : PUBLISHED_AT
     const data = {
+      createdAt: new Date(SEED_BASE_AT.getTime() - index * 1_000),
       name: raw.name,
       address: raw.address ?? raw.district ?? "Đà Nẵng",
       city: "Đà Nẵng",
@@ -177,6 +187,8 @@ async function main(): Promise<void> {
         images += 1
       }
     }
+
+    index += 1
   }
 
   const placeCount = await prisma.place.count()

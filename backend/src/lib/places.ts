@@ -1,5 +1,6 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
+import { toApiCategory } from "./enums"
 import type { Cursor } from "./cursor"
 
 /**
@@ -176,11 +177,6 @@ const SELECT_PLACES = Prisma.sql`
     LIMIT 1
   ) img ON true
 `
-
-/** Enum Prisma dùng `street_food`, API dùng `street-food` (khớp `@rendez/schema`). */
-function toApiCategory(value: string): string {
-  return value.replace(/_/g, "-")
-}
 
 /** Chuyển dòng thô thành `Place` đúng `placeSchema` (bỏ trường null thay vì gửi null). */
 export function toPlaceDto(row: PlaceRow) {

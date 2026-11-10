@@ -48,14 +48,14 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | T7.1 | 7 | R2 presigned PUT + POST /media | T1.4 | done (chưa xác minh với R2 thật) | (commit Phase 7) |
 | T7.2 | 7 | Mở lại ảnh check-in (FE — chỉ nếu bug thật) | T7.1 | todo | |
 | T7.3 | 7 | Rate-limit áp dụng + secure headers | T1.4 | done | (commit Phase 7) |
-| T7.4 | 7 | Chạy song song mock/backend (không xoá mock) | T2–T6 | todo | |
-| T8.1 | 8 | Dockerfile API multi-stage + compose | T2–T7 | todo | |
+| T7.4 | 7 | Chạy song song mock/backend (không xoá mock) | T2–T6 | done | project `backend` Playwright, mock giữ nguyên |
+| T8.1 | 8 | Dockerfile API multi-stage + compose | T2–T7 | done | runtime giữ nguyên cấu trúc workspace (node_modules/.bun + backend/node_modules) |
 | T8.2 | 8 | Deploy Fly/Railway — CHỈ nếu user trả lời; mặc định bỏ | T8.1 | todo | |
 | T8.3 | 8 | Đổi tile OSM — ngoài phạm vi backend, đã có BACKLOG | — | todo | |
-| QA1 | — | Audit code-integrity toàn bộ diff | T2–T6 | todo | |
-| QA2 | — | Test: unit + integration + contract + e2e backend | T2–T6 | todo | |
+| QA1 | — | Audit code-integrity toàn bộ diff | T2–T6 | done | xoá 7 chỗ `as never` → `lib/enums.ts`; typecheck + 98 test xanh |
+| QA2 | — | Test: unit + integration + contract + e2e backend | T2–T6 | done (12/12 e2e backend, logout.spec bỏ do FE chưa có form đăng nhập — BACKLOG) | |
 | QA3 | — | Kiểm thử bảo mật local (xh/curl; chỉ 127.0.0.1) | QA1 | todo | |
-| DOC1 | — | docs/backend/API.md + RUNBOOK.md + REPORT.md | T2–T6 | todo | |
+| DOC1 | — | docs/backend/API.md + RUNBOOK.md + REPORT.md | T2–T6 | in-progress (API.md, RUNBOOK.md xong; REPORT.md todo) | |
 | DOC2 | — | Báo cáo đồ án docs/bao-cao/BAO-CAO-DO-AN.md (bắt đầu 09:30) | DOC1 | todo | |
 
 ## Quy ước phiên này
@@ -74,6 +74,14 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 ## Checkpoint 05:30
 
 (chưa đến)
+
+## Checkpoint 06:40 (bổ sung)
+
+- Phase 0–7 xong; Phase 8: Dockerfile + compose chạy được (healthz/readyz/places 200 trong container).
+- Audit enum: 7 chỗ `as never` đã thay bằng `lib/enums.ts`; 4 bản `toApiCategory` cục bộ gộp về một nơi.
+- e2e backend: 12/12 spec pass với `VITE_ENABLE_MOCKS=false`; `logout.spec.ts` bị loại vì FE
+  chưa có form đăng nhập email+password (ghi BACKLOG).
+- Seed: gán `created_at` theo thứ tự dataset để `GET /places` khớp thứ tự mock (trang đầu có ảnh).
 
 ## Checkpoint 08:00
 

@@ -1,5 +1,6 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
+import { toApiCategory } from "./enums"
 import type { Cursor } from "./cursor"
 import { formatInitials } from "./profile"
 
@@ -33,11 +34,6 @@ export interface PostRow {
   comment_count: number
   liked_by_me: boolean
   saved_by_me: boolean
-}
-
-/** Enum Prisma `street_food` → API `street-food`. */
-function toApiCategory(value: string): string {
-  return value.replace(/_/g, "-")
 }
 
 export function toPostDto(row: PostRow) {

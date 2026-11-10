@@ -9,6 +9,7 @@ import {
 import type { AppEnv } from "../app"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
+import { toApiProposalField } from "../lib/enums"
 import { publishRoom, subscribeRoom } from "../lib/room-events"
 import {
   addProposal,
@@ -138,7 +139,7 @@ export function createRoomsRouter() {
 
     const filter = applyProposalToFilter(parseRoomFilter(room.filter), {
       kind: proposal.kind,
-      field: proposal.field === "price_max" ? "priceMax" : (proposal.field as never),
+      field: toApiProposalField(proposal.field),
       value: proposal.value,
     })
 
@@ -155,7 +156,7 @@ export function createRoomsRouter() {
       room: dto,
       summary: describeProposal({
         kind: proposal.kind,
-        field: proposal.field === "price_max" ? "priceMax" : (proposal.field as never),
+        field: toApiProposalField(proposal.field),
         value: proposal.value,
       }),
     })

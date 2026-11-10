@@ -1,6 +1,7 @@
 import type { PlaceCategory } from "@rendez/schema"
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
+import { toApiCategory } from "./enums"
 import type { RankCandidate } from "./ranking"
 
 /**
@@ -31,10 +32,6 @@ interface CandidateRow {
   tags_norm: string[]
   rating: number
   review_count: number
-}
-
-function toApiCategory(value: string): string {
-  return value.replace(/_/g, "-")
 }
 
 /**

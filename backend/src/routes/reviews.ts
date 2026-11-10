@@ -8,6 +8,7 @@ import {
 import type { AppEnv } from "../app"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
+import { toApiReportReason, toPrismaReportReason } from "../lib/enums"
 import { formatInitials } from "../lib/profile"
 import { getViewer, requireAuth } from "../lib/session"
 
@@ -144,7 +145,7 @@ export function createReviewsRouter() {
       where: {
         placeId_reason_reporterId: {
           placeId,
-          reason: parsed.data.reason as never,
+          reason: toPrismaReportReason(parsed.data.reason),
           reporterId: userId,
         },
       },
@@ -158,7 +159,7 @@ export function createReviewsRouter() {
       data: {
         placeId,
         reporterId: userId,
-        reason: parsed.data.reason as never,
+        reason: toPrismaReportReason(parsed.data.reason),
         detail,
       },
       select: { id: true, placeId: true, reason: true, detail: true, createdAt: true },
@@ -168,7 +169,7 @@ export function createReviewsRouter() {
       {
         id: report.id,
         placeId: report.placeId,
-        reason: report.reason.replace(/_/g, "-"),
+        reason: toApiReportReason(report.reason),
         detail: report.detail,
         createdAt: report.createdAt.toISOString(),
       },

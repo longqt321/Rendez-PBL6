@@ -1,5 +1,6 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
+import { toApiNotificationType, toPrismaNotificationType } from "./enums"
 import type { Cursor } from "./cursor"
 import { formatInitials } from "./profile"
 
@@ -11,15 +12,6 @@ import { formatInitials } from "./profile"
  */
 
 export type NotificationKind = "place-suggestion" | "like" | "comment" | "follow" | "system"
-
-/** Enum Prisma dùng gạch dưới cho `place_suggestion`; API dùng gạch nối. */
-const PRISMA_TYPE: Record<NotificationKind, string> = {
-  "place-suggestion": "place_suggestion",
-  like: "like",
-  comment: "comment",
-  follow: "follow",
-  system: "system",
-}
 
 interface ActorPayload {
   actorName: string
@@ -62,7 +54,7 @@ export async function createActorNotification(params: {
 }): Promise<void> {
   if (params.actor.id === params.userId) return
 
-  const payload: ActorPayload = {
+  const payload: Prisma.InputJsonObject = {
     actorName: params.actor.name,
     actorInitials: formatInitials(params.actor.name),
     ...(params.postId ? { postId: params.postId } : {}),
@@ -72,8 +64,8 @@ export async function createActorNotification(params: {
   await prisma.notification.create({
     data: {
       userId: params.userId,
-      type: PRISMA_TYPE[params.kind] as never,
-      payload: payload as never,
+      type: toPrismaNotificationType(params.kind),
+      payload: payload as Prisma.InputJsonObject,
     },
   })
 }
@@ -86,10 +78,10 @@ export async function createSuggestionNotification(params: {
   userId: string
   postId: string
   postCaption: string
-  suggestions: { place: unknown; reason: string }[]
+  suggestions: { place: Prisma.InputJsonObject; reason: string }[]
   client?: Prisma.TransactionClient
 }): Promise<string> {
-  const payload: SuggestionPayload = {
+  const payload: Prisma.InputJsonObject = {
     postId: params.postId,
     postCaption: params.postCaption,
     suggestions: params.suggestions,
@@ -98,8 +90,8 @@ export async function createSuggestionNotification(params: {
   const created = await client.notification.create({
     data: {
       userId: params.userId,
-      type: PRISMA_TYPE["place-suggestion"] as never,
-      payload: payload as never,
+      type: toPrismaNotificationType("place-suggestion"),
+      payload: payload as Prisma.InputJsonObject,
     },
     select: { id: true },
   })
@@ -114,10 +106,9 @@ export function toNotificationDto(row: NotificationRow) {
     read: row.read_at !== null,
   }
 
-  // Enum Prisma map sang gạch nối trong DB (`place-suggestion`) — chuẩn hoá về
-  // dạng gạch dưới để so khớp một lần, không rải `replace` khắp nơi.
-  switch (row.type.replace(/-/g, "_")) {
-    case "place_suggestion": {
+  const kind = toApiNotificationType(row.type)
+  switch (kind) {
+    case "place-suggestion": {
       const payload = row.payload as SuggestionPayload
       return {
         ...base,
@@ -136,7 +127,7 @@ export function toNotificationDto(row: NotificationRow) {
       const payload = row.payload as ActorPayload
       return {
         ...base,
-        kind: row.type as "like" | "comment" | "follow",
+        kind,
         actorName: payload.actorName,
         actorInitials: payload.actorInitials,
         ...(payload.postId ? { postId: payload.postId } : {}),

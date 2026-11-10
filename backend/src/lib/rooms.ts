@@ -1,5 +1,6 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
+import { toApiCategory, toApiProposalField, toPrismaCategory, toPrismaProposalField } from "./enums"
 import type { Room, RoomFilter, RoomMember, RoomProposal, RoomProposalField } from "@rendez/schema"
 
 /**
@@ -23,15 +24,6 @@ const CATEGORY_LABEL: Record<string, string> = {
   bakery: "Tiệm bánh",
   dessert: "Tráng miệng",
   bar: "Quán bar",
-}
-
-/** Enum Prisma dùng `street_food`; API dùng `street-food`. */
-function toApiCategory(value: string): string {
-  return value.replace(/_/g, "-")
-}
-
-function toPrismaCategory(value: string): string {
-  return value.replace(/-/g, "_")
 }
 
 /** Mã phòng 6 ký tự, bỏ O/0/I/1 (dễ nhầm khi đọc qua điện thoại). */
@@ -92,17 +84,6 @@ export function serializeRoomFilter(filter: RoomFilter): Prisma.InputJsonValue {
   } as Prisma.InputJsonValue
 }
 
-/** Field enum của Prisma map `priceMax`; API cũng dùng `priceMax`. */
-function toPrismaField(
-  field: RoomProposalField,
-): "category" | "district" | "keyword" | "price_max" {
-  return field === "priceMax" ? "price_max" : field
-}
-
-function toApiField(field: string): RoomProposalField {
-  return field === "price_max" ? "priceMax" : (field as RoomProposalField)
-}
-
 const ROOM_INCLUDE = {
   members: { orderBy: { joinedAt: "asc" } },
   proposals: { orderBy: { createdAt: "desc" } },
@@ -134,7 +115,7 @@ export function toRoomDto(
     id: proposal.id,
     memberId: proposal.memberId,
     kind: proposal.kind,
-    field: toApiField(proposal.field),
+    field: toApiProposalField(proposal.field),
     value: proposal.value,
     status: proposal.status,
     createdAt: proposal.createdAt.toISOString(),
@@ -221,7 +202,7 @@ export async function addProposal(
       roomId: room.id,
       memberId: input.memberId,
       kind: input.kind,
-      field: toPrismaField(input.field),
+      field: toPrismaProposalField(input.field),
       value: input.value.trim(),
     },
   })
