@@ -1302,7 +1302,7 @@ xong ở D-022.
 ### Phương án đã xem
 
 - _Kéo thả sắp xếp địa điểm trong bộ sưu tập:_ hoãn — cần thêm thư viện DnD hoặc tự viết pointer
-  handling, trong khi nút xoá đã giải quyết nhu cầu chính. Ghi vào `docs/BACKLOG.md`.
+  handling, trong khi nút xoá đã giải quyết nhu cầu chính. Ghi vào `BACKLOG.md`.
 - _Đếm lượt thích riêng ở endpoint `/collections/:id/likes`:_ loại, nhúng thẳng vào DTO để tránh
   thêm round-trip khi render danh sách.
 - _Dùng `sonner` trực tiếp trong từng trang:_ loại, gom vào `ShareButton` để hành vi chia sẻ chỉ có
@@ -1397,7 +1397,7 @@ hoạt động.
 kết luận của server (giống `PlaceSummary.isPublished`), client chỉ hiển thị. Server cũng chặn
 `DELETE /comments/:id` khi không phải chủ.
 
-**(f) `docs/CONVENTIONS.md` là nguồn quy ước duy nhất.** Bảng thay thế "đang tự viết → dùng gì",
+**(f) `CONVENTIONS.md` là nguồn quy ước duy nhất.** Bảng thay thế "đang tự viết → dùng gì",
 danh sách token, helper format, hằng số, quy tắc trợ năng và cổng grep kiểm tra.
 
 ### Đã xác minh
@@ -1436,14 +1436,14 @@ không output). Nguyên nhân thật: **không phải mạng** — CLI đang ch�
 `? The file button.tsx already exists. Would you like to overwrite? › (y/N)` (calendar khai báo
 `registryDependencies: ["button"]`, còn `--yes` không tự trả lời prompt ghi đè). Lần 3 chạy với
 stdin nạp sẵn `n` → thành công: tạo `calendar.tsx`, **giữ nguyên `button.tsx`** (skipped).
-Bài học ghi ở `docs/LESSONS.md` L-008 (đừng tự tạo file khi tool treo) và L-009 (tool "treo" có
+Bài học ghi ở `LESSONS.md` L-008 (đừng tự tạo file khi tool treo) và L-009 (tool "treo" có
 thể là đang chờ prompt — kiểm tra stdin trước khi kết luận).
 
 ### Bối cảnh
 
 Gói "Lên kế hoạch chuyến đi" cần chọn **khoảng ngày** (ngày đến → ngày đi) và chọn **một ngày**
 cho từng chặng. Trước đây dự án không có component chọn ngày; phương án cũ trong
-`docs/design/ke-hoach-thiet-ke.md` là `<Input type="date">` native.
+`design/ke-hoach-thiet-ke.md` là `<Input type="date">` native.
 
 Người dùng đã chốt (2026-11-08): **đồng ý cài thêm dependency để đồng bộ với shadcn**, thay vì
 dùng input native.
@@ -1598,7 +1598,7 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 - `calendar` (react-day-picker + date-fns) và `dnd-kit` đã cài nhưng hiện **chưa có nơi dùng** —
   không gỡ (D-026/D-027 vẫn hợp lệ cho tính năng tương lai), ghi chú ở đây để không quên.
   _(Cập nhật 2026-11-09: đã gỡ hẳn — xem D-033.)_
-- Docs thiết kế `docs/design/ke-hoach-thiet-ke.md` giữ làm tài liệu tham khảo, đánh dấu đã bỏ.
+- Docs thiết kế `design/ke-hoach-thiet-ke.md` giữ làm tài liệu tham khảo, đánh dấu đã bỏ.
 
 ## D-031 — "Phòng lọc nhóm": nhóm cùng lọc /discover với đề xuất include/exclude
 
@@ -1706,14 +1706,14 @@ trong `DropdownMenu`** làm phương án bàn phím và phương án dự phòng
 
 ### Hệ quả
 
-- `package.json` bớt 4 dependency; danh sách component trong `docs/CONVENTIONS.md` còn 30.
+- `package.json` bớt 4 dependency; danh sách component trong `CONVENTIONS.md` còn 30.
 - Arbitrary value còn lại trong `src/` chỉ là viewport/calc/variant — grep được để kiểm.
 
 ## D-034 — Rà soát đợt 2: hằng số, tâm bản đồ, `cn`, tiêu đề nhóm, logic giá
 
 ### Bối cảnh
 
-- Rà lại toàn bộ checklist `docs/CONVENTIONS.md` sau D-033, tìm các chỗ còn vi phạm ở mã cũ.
+- Rà lại toàn bộ checklist `CONVENTIONS.md` sau D-033, tìm các chỗ còn vi phạm ở mã cũ.
 
 ### Quyết định
 

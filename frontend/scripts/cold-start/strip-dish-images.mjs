@@ -44,7 +44,8 @@ for (const place of dataset.places) {
 
   const images = Array.isArray(place.images) ? place.images : []
   // Người dùng duyệt `wrong-image` thì bỏ ảnh dù là ảnh venue (duyệt tay là chuẩn).
-  const isVenue = place.imageKind === "venue" && place.image && images.length > 0 && verdict !== "wrong-image"
+  const isVenue =
+    place.imageKind === "venue" && place.image && images.length > 0 && verdict !== "wrong-image"
   if (isVenue) {
     keptImages.add(place.image)
     for (const file of images) keptImages.add(file)

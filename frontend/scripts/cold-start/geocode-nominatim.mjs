@@ -98,4 +98,6 @@ for (const file of files) {
 
 await mkdir(dirname(cacheFile), { recursive: true })
 await writeFile(cacheFile, JSON.stringify(cache, null, 2))
-console.log(`\nGeocode xong: ${ok} thành công, ${miss} không tìm thấy (chạy lại chỉ xử lý phần còn thiếu)`)
+console.log(
+  `\nGeocode xong: ${ok} thành công, ${miss} không tìm thấy (chạy lại chỉ xử lý phần còn thiếu)`,
+)

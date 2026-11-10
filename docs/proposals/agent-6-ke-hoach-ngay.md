@@ -225,7 +225,7 @@ Thứ tự không trả lời được "9h ăn bánh xèo xong, 11h30 lên Sơn 
    `GET/PUT /me/day-plans/:collectionId` vào `src/mocks/server.ts` (bảng `db.dayPlans` khởi từ
    fixture rỗng — "người dùng chưa có kế hoạch nào" là trạng thái mặc định đúng), validate
    `startTime` 0–1439, `durationMin` 15–240, `placeId` phải thuộc bộ sưu tập. Hợp đồng ghi vào
-   `docs/DECISIONS.md` trước khi implement (theo quy ước D-011).
+   `DECISIONS.md` trước khi implement (theo quy ước D-011).
 3. **Dữ liệu thử:** 4 bộ sưu tập fixture đã có
    (`placeIds` ở [fixtures/collections.ts:33-66](file:///home/longtran/Projects/frontend/src/mocks/fixtures/collections.ts#L33),
    ví dụ `p-04, p-05, p-06` đủ 3 chặng để thử cảnh báo trùng giờ bằng cách đặt `startTime` chồng

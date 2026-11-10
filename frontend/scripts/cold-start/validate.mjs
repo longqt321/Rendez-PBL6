@@ -18,7 +18,7 @@ const dataDir = join(root, "data/cold-start")
 const data = JSON.parse(await readFile(join(dataDir, "places.json"), "utf8"))
 const places = data.places
 
-const BOUNDS = { minLat: 15.93, maxLat: 16.16, minLng: 107.90, maxLng: 108.30 }
+const BOUNDS = { minLat: 15.93, maxLat: 16.16, minLng: 107.9, maxLng: 108.3 }
 const REQUIRED = ["id", "name", "category", "district", "address", "lat", "lng", "tier"]
 const errors = []
 const warnings = []
@@ -88,11 +88,14 @@ for (const [district, count] of Object.entries(byDistrict)) {
 const imageCount = places.filter((p) => p.image).length
 const distinctImages = new Set(places.map((p) => p.image).filter(Boolean)).size
 
-console.log(`Tổng: ${places.length} địa điểm | có ảnh: ${imageCount} | ảnh distinct: ${distinctImages}`)
+console.log(
+  `Tổng: ${places.length} địa điểm | có ảnh: ${imageCount} | ảnh distinct: ${distinctImages}`,
+)
 console.log("Theo quận:", JSON.stringify(byDistrict, null, 1))
-console.log("Theo tier:", JSON.stringify(
-  places.reduce((acc, p) => ({ ...acc, [p.tier]: (acc[p.tier] ?? 0) + 1 }), {}),
-))
+console.log(
+  "Theo tier:",
+  JSON.stringify(places.reduce((acc, p) => ({ ...acc, [p.tier]: (acc[p.tier] ?? 0) + 1 }), {})),
+)
 
 if (warnings.length > 0) {
   console.log(`\n⚠️  Cảnh báo (${warnings.length}):`)

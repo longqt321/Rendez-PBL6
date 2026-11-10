@@ -65,9 +65,7 @@ const places = dataset.places.map((p) => Object.fromEntries(FIELDS.map((k) => [k
 
 /** Overlay quyết định duyệt — KHÔNG sửa places.json. */
 const emptyState = { version: 1, updatedAt: new Date().toISOString(), decisions: {} }
-let state = existsSync(stateFile)
-  ? JSON.parse(await readFile(stateFile, "utf8"))
-  : emptyState
+let state = existsSync(stateFile) ? JSON.parse(await readFile(stateFile, "utf8")) : emptyState
 state.decisions ??= {}
 
 /** Ghi atomic: file tạm rồi rename — tránh mất dữ liệu nếu tắt giữa chừng. */

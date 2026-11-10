@@ -117,12 +117,12 @@ Chọn theo **giá trị người dùng / chi phí**, và ưu tiên cái đang *
 
 - **Hợp đồng API**: DX-1.1/DX-1.2/DX-2.1/DX-2.2/DX-4.3/DX-5.x đều **thêm hoặc đổi param** của
   `GET /places`, `GET /posts`, `PATCH /collections/:id/places`. Theo quy ước dự án phải ghi vào
-  `docs/DECISIONS.md` (D-011 là hợp đồng API hiện tại) **trước** khi implement.
+  `DECISIONS.md` (D-011 là hợp đồng API hiện tại) **trước** khi implement.
 - **DX-4.4 là breaking change lớn nhất**: `Collection.placeIds: string[]` → `places: CollectionPlace[]`.
   Chạm `saved-page`, `collection-detail-page`, `save-to-collection-dialog`, `useSetCollectionPlace`.
   Nên làm sau DX-4.1/DX-4.2 và giữ `placeIds` trong giai đoạn chuyển tiếp.
-- **DX-4.3 kéo thả**: nếu chọn `@dnd-kit/*` phải có mục `docs/DECISIONS.md` (license MIT, ~1,3 MB
-  unpacked — đã khảo sát trong `docs/TOOLING.md`). Phương án không cần dependency: nút "Lên/Xuống"
+- **DX-4.3 kéo thả**: nếu chọn `@dnd-kit/*` phải có mục `DECISIONS.md` (license MIT, ~1,3 MB
+  unpacked — đã khảo sát trong `TOOLING.md`). Phương án không cần dependency: nút "Lên/Xuống"
   trong menu item.
 - **DX-4.1 bundle**: `/collections/:id` hiện không import Leaflet → phải `lazy()` `PlacesMap`, nếu
   không sẽ kéo Leaflet vào lần tải đầu.

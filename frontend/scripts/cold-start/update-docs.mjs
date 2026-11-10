@@ -126,4 +126,6 @@ ${withImage.map((p) => `| ${p.id} | ${p.image} | ${p.imageCredit ?? "chưa rõ"}
 `
 
 await writeFile(creditsPath, credits)
-console.log(`Đã ghi README.md (${places.length} địa điểm) + CREDITS.md (${withImage.length} ảnh venue)`)
+console.log(
+  `Đã ghi README.md (${places.length} địa điểm) + CREDITS.md (${withImage.length} ảnh venue)`,
+)

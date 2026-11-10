@@ -18,13 +18,23 @@
         --info: #3b82f6;
         --accent: #8b5cf6;
       }
-      * { box-sizing: border-box; }
-      html, body { height: 100%; }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
       body {
         margin: 0;
         background: var(--bg);
         color: var(--text);
-        font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font:
+          14px/1.5 system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
         display: flex;
         flex-direction: column;
       }
@@ -37,12 +47,36 @@
         background: var(--panel);
         flex-wrap: wrap;
       }
-      h1 { font-size: 14px; margin: 0; font-weight: 600; white-space: nowrap; }
-      .progress { flex: 1; min-width: 180px; }
-      .bar { height: 6px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
-      .bar > div { height: 100%; background: var(--accent); width: 0; transition: width 0.2s; }
-      .progress small { color: var(--muted); font-variant-numeric: tabular-nums; }
-      select, input[type="text"], textarea, button {
+      h1 {
+        font-size: 14px;
+        margin: 0;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .progress {
+        flex: 1;
+        min-width: 180px;
+      }
+      .bar {
+        height: 6px;
+        background: var(--panel-2);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .bar > div {
+        height: 100%;
+        background: var(--accent);
+        width: 0;
+        transition: width 0.2s;
+      }
+      .progress small {
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      select,
+      input[type="text"],
+      textarea,
+      button {
         font: inherit;
         color: var(--text);
         background: var(--panel-2);
@@ -50,11 +84,18 @@
         border-radius: 6px;
         padding: 5px 8px;
       }
-      select:focus-visible, textarea:focus-visible, button:focus-visible {
+      select:focus-visible,
+      textarea:focus-visible,
+      button:focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 1px;
       }
-      label.check { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+      label.check {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+      }
       main {
         flex: 1;
         display: grid;
@@ -63,7 +104,11 @@
         padding: 16px;
         min-height: 0;
       }
-      @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+      @media (max-width: 900px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
       .image-panel {
         background: var(--panel);
         border: 1px solid var(--border);
@@ -82,8 +127,16 @@
         background: #0b0d11;
         overflow: hidden;
       }
-      .image-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-      .image-box .empty { color: var(--muted); padding: 24px; text-align: center; }
+      .image-box img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .image-box .empty {
+        color: var(--muted);
+        padding: 24px;
+        text-align: center;
+      }
       .thumbs {
         display: flex;
         gap: 6px;
@@ -102,8 +155,15 @@
         background: #000;
         cursor: pointer;
       }
-      .thumbs button[aria-current="true"] { border-color: var(--accent); }
-      .thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .thumbs button[aria-current="true"] {
+        border-color: var(--accent);
+      }
+      .thumbs img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
       .info {
         background: var(--panel);
         border: 1px solid var(--border);
@@ -115,8 +175,17 @@
         overflow-y: auto;
         min-height: 0;
       }
-      .name { font-size: 20px; font-weight: 650; margin: 0; line-height: 1.25; }
-      .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+      .name {
+        font-size: 20px;
+        font-weight: 650;
+        margin: 0;
+        line-height: 1.25;
+      }
+      .badges {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
       .badge {
         font-size: 11px;
         padding: 2px 8px;
@@ -125,10 +194,22 @@
         border: 1px solid var(--border);
         color: var(--muted);
       }
-      .badge.tier-curated-v2 { border-color: #7c3aed; color: #c4b5fd; }
-      .badge.tier-curated { border-color: #0ea5e9; color: #7dd3fc; }
-      .badge.kind-dish { border-color: #a16207; color: #fcd34d; }
-      .badge.kind-venue { border-color: #15803d; color: #86efac; }
+      .badge.tier-curated-v2 {
+        border-color: #7c3aed;
+        color: #c4b5fd;
+      }
+      .badge.tier-curated {
+        border-color: #0ea5e9;
+        color: #7dd3fc;
+      }
+      .badge.kind-dish {
+        border-color: #a16207;
+        color: #fcd34d;
+      }
+      .badge.kind-venue {
+        border-color: #15803d;
+        color: #86efac;
+      }
       /* Phân loại là thông tin đối chiếu chính với ảnh → nổi bật nhất. */
       .badge.category {
         background: #1d4ed8;
@@ -140,11 +221,28 @@
         text-transform: uppercase;
         letter-spacing: 0.02em;
       }
-      dl { display: grid; grid-template-columns: 88px 1fr; gap: 6px 10px; margin: 0; }
-      dt { color: var(--muted); }
-      dd { margin: 0; word-break: break-word; }
-      dd a { color: #7dd3fc; }
-      .verdicts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+      dl {
+        display: grid;
+        grid-template-columns: 88px 1fr;
+        gap: 6px 10px;
+        margin: 0;
+      }
+      dt {
+        color: var(--muted);
+      }
+      dd {
+        margin: 0;
+        word-break: break-word;
+      }
+      dd a {
+        color: #7dd3fc;
+      }
+      .verdicts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: auto;
+      }
       .verdicts button {
         display: flex;
         align-items: center;
@@ -154,11 +252,17 @@
         cursor: pointer;
         border-radius: 8px;
         background: var(--panel-2);
-        transition: background 0.12s, border-color 0.12s;
+        transition:
+          background 0.12s,
+          border-color 0.12s;
       }
-      .verdicts button:hover { background: #262b36; }
+      .verdicts button:hover {
+        background: #262b36;
+      }
       .verdicts button kbd {
-        font: 600 11px ui-monospace, monospace;
+        font:
+          600 11px ui-monospace,
+          monospace;
         background: #0b0d11;
         border: 1px solid var(--border);
         border-radius: 4px;
@@ -170,20 +274,54 @@
         border-color: #15803d;
         background: rgba(34, 197, 94, 0.12);
       }
-      .verdicts button[data-verdict="ok"]:hover { border-color: var(--ok); background: rgba(34, 197, 94, 0.2); }
-      .verdicts button[data-verdict="wrong-image"] { border-color: #78350f; }
-      .verdicts button[data-verdict="wrong-image"]:hover { border-color: var(--warn); }
-      .verdicts button[data-verdict="wrong-address"] { border-color: #713f12; }
-      .verdicts button[data-verdict="wrong-address"]:hover { border-color: var(--warn); }
-      .verdicts button[data-verdict="not-exists"] { border-color: #7f1d1d; }
-      .verdicts button[data-verdict="not-exists"]:hover { border-color: var(--bad); }
-      .verdicts button[data-verdict="duplicate"] { border-color: #1e3a8a; }
-      .verdicts button[data-verdict="duplicate"]:hover { border-color: var(--info); }
-      .row { display: flex; gap: 8px; align-items: center; }
-      .row textarea { flex: 1; resize: vertical; min-height: 38px; }
-      .status { font-size: 12px; color: var(--muted); }
-      .status.saved { color: var(--ok); }
-      .status.error { color: var(--bad); }
+      .verdicts button[data-verdict="ok"]:hover {
+        border-color: var(--ok);
+        background: rgba(34, 197, 94, 0.2);
+      }
+      .verdicts button[data-verdict="wrong-image"] {
+        border-color: #78350f;
+      }
+      .verdicts button[data-verdict="wrong-image"]:hover {
+        border-color: var(--warn);
+      }
+      .verdicts button[data-verdict="wrong-address"] {
+        border-color: #713f12;
+      }
+      .verdicts button[data-verdict="wrong-address"]:hover {
+        border-color: var(--warn);
+      }
+      .verdicts button[data-verdict="not-exists"] {
+        border-color: #7f1d1d;
+      }
+      .verdicts button[data-verdict="not-exists"]:hover {
+        border-color: var(--bad);
+      }
+      .verdicts button[data-verdict="duplicate"] {
+        border-color: #1e3a8a;
+      }
+      .verdicts button[data-verdict="duplicate"]:hover {
+        border-color: var(--info);
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .row textarea {
+        flex: 1;
+        resize: vertical;
+        min-height: 38px;
+      }
+      .status {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .status.saved {
+        color: var(--ok);
+      }
+      .status.error {
+        color: var(--bad);
+      }
       footer {
         border-top: 1px solid var(--border);
         padding: 8px 16px;
@@ -195,15 +333,29 @@
         background: var(--panel);
       }
       kbd {
-        font: 600 11px ui-monospace, monospace;
+        font:
+          600 11px ui-monospace,
+          monospace;
         background: #0b0d11;
         border: 1px solid var(--border);
         border-radius: 4px;
         padding: 1px 5px;
       }
-      .done { padding: 40px; text-align: center; color: var(--muted); }
-      .done strong { color: var(--text); display: block; font-size: 18px; margin-bottom: 8px; }
-      .decision-tag { font-size: 12px; color: var(--muted); }
+      .done {
+        padding: 40px;
+        text-align: center;
+        color: var(--muted);
+      }
+      .done strong {
+        color: var(--text);
+        display: block;
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+      .decision-tag {
+        font-size: 12px;
+        color: var(--muted);
+      }
     </style>
   </head>
   <body>
@@ -219,9 +371,15 @@
         <option value="curated">curated (báo chí)</option>
         <option value="osm">osm (OpenStreetMap)</option>
       </select>
-      <select id="filter-district" aria-label="Lọc theo quận"><option value="">Mọi quận</option></select>
-      <select id="filter-category" aria-label="Lọc theo phân loại"><option value="">Mọi loại</option></select>
-      <label class="check"><input type="checkbox" id="only-unreviewed" checked /> Chỉ chưa duyệt</label>
+      <select id="filter-district" aria-label="Lọc theo quận">
+        <option value="">Mọi quận</option>
+      </select>
+      <select id="filter-category" aria-label="Lọc theo phân loại">
+        <option value="">Mọi loại</option>
+      </select>
+      <label class="check"
+        ><input type="checkbox" id="only-unreviewed" checked /> Chỉ chưa duyệt</label
+      >
       <span id="save-status" class="status">Sẵn sàng</span>
     </header>
 
@@ -235,12 +393,18 @@
         <h2 class="name" id="place-name"></h2>
         <div class="badges" id="badges"></div>
         <dl>
-          <dt>Địa chỉ</dt><dd id="place-address"></dd>
-          <dt>Quận</dt><dd id="place-district"></dd>
-          <dt>Toạ độ</dt><dd id="place-coords"></dd>
-          <dt>Liên hệ</dt><dd id="place-contact"></dd>
-          <dt>Nguồn</dt><dd id="place-sources"></dd>
-          <dt>Mô tả</dt><dd id="place-description"></dd>
+          <dt>Địa chỉ</dt>
+          <dd id="place-address"></dd>
+          <dt>Quận</dt>
+          <dd id="place-district"></dd>
+          <dt>Toạ độ</dt>
+          <dd id="place-coords"></dd>
+          <dt>Liên hệ</dt>
+          <dd id="place-contact"></dd>
+          <dt>Nguồn</dt>
+          <dd id="place-sources"></dd>
+          <dt>Mô tả</dt>
+          <dd id="place-description"></dd>
         </dl>
         <div class="row">
           <a id="maps-link" href="#" target="_blank" rel="noopener noreferrer">Mở Google Maps ↗</a>
@@ -338,7 +502,8 @@
         const total = state.places.length
         const reviewed = Object.keys(state.decisions).length
         $("bar").style.width = total ? `${(reviewed / total) * 100}%` : "0%"
-        $("progress-text").textContent = `Đã duyệt ${reviewed}/${total} · hàng đợi ${state.filtered.length}`
+        $("progress-text").textContent =
+          `Đã duyệt ${reviewed}/${total} · hàng đợi ${state.filtered.length}`
 
         const place = current()
         $("main").hidden = !place
@@ -363,8 +528,7 @@
 
         $("place-address").textContent = place.address ?? "—"
         $("place-district").textContent = place.district ?? "—"
-        $("place-coords").textContent =
-          place.lat != null ? `${place.lat}, ${place.lng}` : "—"
+        $("place-coords").textContent = place.lat != null ? `${place.lat}, ${place.lng}` : "—"
         $("place-contact").textContent =
           [place.phone, place.openingHours].filter(Boolean).join(" · ") || "—"
         $("place-description").textContent = place.description || "—"

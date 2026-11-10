@@ -89,7 +89,7 @@
   hiện có thể đã có — cần kiểm tra trước khi làm). **M**.
 - **Rủi ro / điều kiện cần:** không thay thế luồng gợi ý hiện có (giữ hành vi, chỉ thêm đường);
   phải dùng đúng component có sẵn (`Popover`, `Command`-style list bằng `ItemGroup`) theo
-  `docs/CONVENTIONS.md` §1; cẩn thận không tạo nguồn sự thật thứ hai cho dữ liệu place.
+  `CONVENTIONS.md` §1; cẩn thận không tạo nguồn sự thật thứ hai cho dữ liệu place.
 
 ### DX-2.3: Chia sẻ bài đăng ra ngoài app
 

@@ -209,7 +209,7 @@
   nhãn hiển thị `₫/₫₫/₫₫₫` —
   [price-level.ts:9-11](file:///home/longtran/Projects/frontend/src/features/places/lib/price-level.ts#L9-L11).
   Tổng hợp đề xuất đã **loại** "ngân sách chuyến đi" vì dựng số VND trên dữ liệu này là chính xác
-  giả ([TONG-HOP.md §5](file:///home/longtran/Projects/frontend/docs/proposals/TONG-HOP.md), dòng
+  giả ([TONG-HOP.md §5](file:///home/longtran/Projects/frontend/proposals/TONG-HOP.md), dòng
   143-144). Đề xuất này **không** tái khởi nguyên bản bị loại: bỏ con số tiền, giữ đúng thứ dữ
   liệu có thật — **bậc giá**.
 - **UX:**
@@ -245,7 +245,7 @@
 ## Không đề xuất và lý do
 
 - **Ngân sách bằng số tiền VND** — `priceLevel` là dữ liệu bậc, không phải giá; quy đổi là chính
-  xác giả (đã bị loại ở [TONG-HOP.md §5](file:///home/longtran/Projects/frontend/docs/proposals/TONG-HOP.md),
+  xác giả (đã bị loại ở [TONG-HOP.md §5](file:///home/longtran/Projects/frontend/proposals/TONG-HOP.md),
   giữ nguyên quyết định; DX-10.5 là phiên bản trung thực hoá).
 - **Timeline theo giờ trong từng ngày** — trùng ranh giới DX-6 (agent khác); DX-10.1 chỉ gắn nhãn
   ngày đến/đi, không dựng trục giờ.

@@ -8,17 +8,23 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+node_modules.old
 dist
 dist-ssr
 *.local
 
-# Ảnh cold-start được chép từ data/cold-start/images (xem scripts/copy-cold-start-images.mjs)
-public/data/cold-start
+# Ảnh cold-start được chép từ frontend/data/cold-start/images
+# (xem frontend/scripts/copy-cold-start-images.mjs)
+frontend/public/data/cold-start
 
 # Env files (chỉ commit .env.example)
 .env
 .env.*
 !.env.example
+
+# Backend (Phase 0)
+backend/generated
+backend/.env
 
 # Editor directories and files
 .vscode/*

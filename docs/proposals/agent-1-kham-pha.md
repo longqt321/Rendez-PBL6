@@ -46,7 +46,7 @@
   quyết định chọn quán nhanh hơn, ít phải cuộn/lọc lại.
 - **Phạm vi:** cần backend (mock làm được ngay trong `src/mocks/server.ts`) — **M**.
 - **Rủi ro / điều kiện cần:** đổi hợp đồng API (thêm param `sort`) — phải ghi vào
-  `docs/DECISIONS.md` D-011; sort "Gần tôi" phụ thuộc DX-1.2 gửi toạ độ lên server
+  `DECISIONS.md` D-011; sort "Gần tôi" phụ thuộc DX-1.2 gửi toạ độ lên server
   (hoặc tạm dùng sort client-side trên các page đã tải như hiện nay làm bước S đầu tiên).
 
 ### DX-1.2: "Gần đây" thật sự gần — gửi toạ độ lên server + lọc bán kính

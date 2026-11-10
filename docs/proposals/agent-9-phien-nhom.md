@@ -90,7 +90,7 @@ buộc có backend thật** (ít nhất: REST + polling, lý tưởng: WebSocket
   }
   ```
 
-  Hợp đồng API (ghi `docs/DECISIONS.md` trước khi implement, theo quy ước D-011):
+  Hợp đồng API (ghi `DECISIONS.md` trước khi implement, theo quy ước D-011):
 
   | Method | Path                   | Response                                          |
   | ------ | ---------------------- | ------------------------------------------------- |

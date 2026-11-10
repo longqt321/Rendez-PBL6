@@ -36,9 +36,7 @@ const byId = new Map(places.map((p) => [p.id, p]))
 
 /** file ảnh → URL nguồn Commons (diversify-images.mjs ghi khi tải). */
 const sourcesPath = join(cacheDir, "dish-sources.json")
-const dishSources = existsSync(sourcesPath)
-  ? JSON.parse(await readFile(sourcesPath, "utf8"))
-  : {}
+const dishSources = existsSync(sourcesPath) ? JSON.parse(await readFile(sourcesPath, "utf8")) : {}
 
 const counts = { ok: 0, "wrong-image": 0, "wrong-address": 0, "not-exists": 0, duplicate: 0 }
 const newBlocklist = new Set()
@@ -61,7 +59,12 @@ for (const [id, decision] of Object.entries(state.decisions)) {
       if (url) newBlocklist.add(url)
     }
   } else if (decision.verdict === "duplicate") {
-    duplicates.push({ id, name: place.name, duplicateOf: decision.duplicateOf, note: decision.note })
+    duplicates.push({
+      id,
+      name: place.name,
+      duplicateOf: decision.duplicateOf,
+      note: decision.note,
+    })
   } else if (decision.verdict === "wrong-address") {
     wrongAddresses.push({ id, name: place.name, address: place.address, note: decision.note })
   }
@@ -74,11 +77,11 @@ for (const [verdict, count] of Object.entries(counts)) {
 if (unknownIds.length) console.log(`⚠️  ${unknownIds.length} id không còn trong dataset (bỏ qua)`)
 
 const blocklistPath = join(cacheDir, "image-blocklist.json")
-const blocklist = existsSync(blocklistPath)
-  ? JSON.parse(await readFile(blocklistPath, "utf8"))
-  : []
+const blocklist = existsSync(blocklistPath) ? JSON.parse(await readFile(blocklistPath, "utf8")) : []
 const merged = [...new Set([...blocklist, ...newBlocklist])]
-console.log(`Blocklist: ${blocklist.length} → ${merged.length} URL (+${merged.length - blocklist.length})`)
+console.log(
+  `Blocklist: ${blocklist.length} → ${merged.length} URL (+${merged.length - blocklist.length})`,
+)
 
 if (apply) {
   await writeFile(blocklistPath, JSON.stringify(merged, null, 1))
@@ -104,7 +107,9 @@ if (apply) {
       join(cacheDir, "review-wrong-address.json"),
       JSON.stringify(wrongAddresses, null, 2),
     )
-    console.log(`Danh sách sai địa chỉ: .cache/review-wrong-address.json (${wrongAddresses.length})`)
+    console.log(
+      `Danh sách sai địa chỉ: .cache/review-wrong-address.json (${wrongAddresses.length})`,
+    )
   }
 } else {
   console.log("Chế độ báo cáo — chạy lại với --apply để ghi thay đổi thật.")

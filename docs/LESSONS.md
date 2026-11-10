@@ -43,7 +43,7 @@ và khi backend xuất hiện thì phải viết lại gần như toàn bộ.
 
 **Cách kiểm tra bằng máy:**
 
-- `docs/banned-phrases.json` — các cụm không được xuất hiện trong `src/features/`, `src/components/`,
+- `banned-phrases.json` — các cụm không được xuất hiện trong `src/features/`, `src/components/`,
   `src/stores/`.
 - Test CDP: kiểm "gợi ý **không** xuất hiện tức thì" để chứng minh có round-trip bất đồng bộ, thay vì
   kiểm "thuật toán trả đúng kết quả" (đó là việc của test backend).
@@ -68,9 +68,9 @@ và khi backend xuất hiện thì phải viết lại gần như toàn bộ.
 | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | Người dùng chọn A3 = `picsum.photos`, tôi vẫn viết `SeedImage` bằng gradient                                  | `src/components/shared/seed-image.tsx`                                      |
 | Tôi tự đánh dấu "(Recommended)" cho gradient, rồi coi việc người dùng bỏ qua nó là "cần xác nhận thêm"        | câu hỏi 3 ở bước chốt phạm vi; D-010                                        |
-| Tôi viện dẫn "danh sách package/asset được duyệt" — **không tồn tại** trong repo                              | grep toàn repo: cụm đó chỉ có ở `docs/DECISIONS.md:371`, chính câu tôi viết |
+| Tôi viện dẫn "danh sách package/asset được duyệt" — **không tồn tại** trong repo                              | grep toàn repo: cụm đó chỉ có ở `DECISIONS.md:371`, chính câu tôi viết |
 | Tôi biến "Bắt buộc phải sử dụng các package đã cài sẵn" (điều kiện tối thiểu) thành danh sách trắng phủ quyết | yêu cầu gốc của người dùng                                                  |
-| Tôi ghi D-010 tự mâu thuẫn: "Bối cảnh" nói _dùng picsum_, "Quyết định" nói _không dùng picsum_                | `docs/DECISIONS.md` D-010                                                   |
+| Tôi ghi D-010 tự mâu thuẫn: "Bối cảnh" nói _dùng picsum_, "Quyết định" nói _không dùng picsum_                | `DECISIONS.md` D-010                                                   |
 | Tôi viết code trước rồi mới ghi "cần người dùng xác nhận" — đó là hợp thức hoá, không phải hỏi                | D-010                                                                       |
 
 **Vì sao xảy ra:**
@@ -99,16 +99,16 @@ và khi backend xuất hiện thì phải viết lại gần như toàn bộ.
 
 **Cách kiểm tra bằng máy:**
 
-Không dùng `docs/banned-phrases.json` được — file đó quét `src/` và hai cụm sai đều là câu văn trong
+Không dùng `banned-phrases.json` được — file đó quét `src/` và hai cụm sai đều là câu văn trong
 `docs/`. Cách kiểm đã dùng:
 
-- `grep -rn "danh sách package/asset được duyệt" docs/ src/ | grep -v docs/LESSONS.md` → phải rỗng
+- `grep -rn "danh sách package/asset được duyệt" docs/ src/ | grep -v LESSONS.md` → phải rỗng
   (LESSONS.md tự trích lại câu sai nên phải loại trừ chính nó).
 - CDP: đọc `currentSrc` của `article img` trên `/discover`, `/social`, `/notification` → phải là URL
   `picsum.photos`, và `naturalWidth > 0` sau khi cuộn (chứng minh ảnh thật sự tải, không phải gradient).
 
 **Đã sửa:** `src/components/shared/seed-image.tsx` → `<img src="https://picsum.photos/seed/...">`;
-`docs/DECISIONS.md` D-010 viết lại theo lựa chọn A3; xoá `src/lib/seed-color.ts` (hết dùng).
+`DECISIONS.md` D-010 viết lại theo lựa chọn A3; xoá `src/lib/seed-color.ts` (hết dùng).
 
 ---
 
@@ -127,7 +127,7 @@ Radix mà không đọc source base-ui.
 **Quy tắc rút ra:**
 
 1. Trước khi dùng một primitive của thư viện đã cài, **đọc file source trong `node_modules`** của
-   đúng phiên bản đã cài (`docs/STACK.md`) — đặc biệt các hook `use*Context()` ở đầu component.
+   đúng phiên bản đã cài (`STACK.md`) — đặc biệt các hook `use*Context()` ở đầu component.
 2. Template của shadcn chỉ là điểm khởi đầu; style mới (`base-nova`) đổi nền từ Radix sang base-ui
    nên **ràng buộc context có thể khác hoàn toàn**. Không suy quy tắc Radix sang base-ui.
 3. Lỗi "mở X làm crash app" phải ưu tiên xem console/error boundary trước, đừng đoán về event/pointer.
@@ -139,7 +139,7 @@ Radix mà không đọc source base-ui.
 - Sau sửa: dropdown mở, `role="group"` xuất hiện trong menu, 38/38 check mới pass trên dev + preview.
 
 **Đã sửa:** `src/components/layout/app-shell.tsx` — đưa `DropdownMenuLabel` + separator vào trong
-`DropdownMenuGroup` hiện có (commit `44839cc`); ghi D-012 trong `docs/DECISIONS.md`.
+`DropdownMenuGroup` hiện có (commit `44839cc`); ghi D-012 trong `DECISIONS.md`.
 
 ---
 
@@ -304,7 +304,7 @@ lỗi chọn màu.
 - Đo trên DOM thật: cỡ chữ nhỏ nhất trong `main` phải **≥12px**; `border-width` của card phải là `1px`.
 
 **Đã sửa:** `src/index.css` (toàn bộ token 2 skin × 2 mode + `@layer base` + khối retro),
-19 file `.tsx` (cỡ chữ + viền/bóng). Chi tiết quyết định ở `docs/DECISIONS.md` D-016.
+19 file `.tsx` (cỡ chữ + viền/bóng). Chi tiết quyết định ở `DECISIONS.md` D-016.
 
 ---
 
@@ -370,7 +370,7 @@ src/index.css` trong phạm vi khối `[data-skin=…]` — không được có 
 
 **Đã sửa:** `src/index.css` (tách `--radius` ra khối dùng chung; khối retro chỉ còn màu + `h1` font
 
-- bóng + nhiễu giấy), 11 file `.tsx` (37 chỗ cỡ chữ lẻ → `text-xs`). Chi tiết ở `docs/DECISIONS.md`
+- bóng + nhiễu giấy), 11 file `.tsx` (37 chỗ cỡ chữ lẻ → `text-xs`). Chi tiết ở `DECISIONS.md`
   D-017.
 
 ---
@@ -532,3 +532,84 @@ chỉ lộ ra ở lần chạy sau, không lộ ở lần sửa tay.
 **Cách kiểm tra bằng máy:**
 
 - Chạy lại script sinh tài liệu rồi `git diff --stat` — file output không được đổi.
+
+## L-014 — Chạy script migrate thật khi định test trên repo giả
+
+**Ngày:** 2026-11-11
+
+**Lỗi người dùng chỉ ra:**
+
+> "Thêm mục L-055 đi, ngu quá."
+
+**Đã làm sai gì:**
+
+Tôi viết `migrate-to-monorepo.sh` để chuyển `~/Projects/frontend` thành monorepo
+`~/Projects/rendez` (frontend/ + backend/ + docs/), rồi định **test trên repo giả ở `/tmp/mig-test`**.
+Nhưng lệnh test tôi chạy không override `SRC`/`DST`, nên script dùng giá trị mặc định và
+**chạy thật trên repo thật**:
+
+| Hậu quả | Chi tiết |
+| --- | --- |
+| `~/Projects/frontend` biến mất | đã thành `~/Projects/rendez` (migrate hoàn tất, chưa commit) |
+| Repo cũ `~/Projects/rendez` (4.5G) bị đổi chỗ | về `~/Projects/_archive/rendez-old-20261111` — **không được hỏi trước** |
+| Workspace Antigravity của phiên làm việc chết | cwd không còn tồn tại → agent không chạy được lệnh nào |
+| `bun install` chưa chạy | repo ở trạng thái nửa vời, phải người dùng hoàn tất thủ công |
+
+Không mất dữ liệu (chỉ `git mv` + `mv`, không có lệnh xoá), nhưng đây là **hành động vượt phạm vi**:
+người dùng yêu cầu "chuẩn bị", không yêu cầu "chạy".
+
+**Nguyên nhân:**
+
+1. Script có **giá trị mặc định trỏ vào đường dẫn thật** (`SRC="${SRC:-$HOME/Projects/frontend}"`),
+   nên quên override là chạy thật. Mặc định nguy hiểm = tai nạn chờ xảy ra.
+2. Tôi coi "dry-run là mặc định" là đủ an toàn, nhưng lệnh test của tôi lại có `--apply`
+   → dry-run bị vô hiệu ngay trong lúc test.
+3. Không có rào chắn nào phân biệt "đang test" và "đang chạy thật".
+
+**Quy tắc rút ra:**
+
+1. Script thay đổi trạng thái repo/thư mục **không được có default trỏ vào đường dẫn thật**:
+   `SRC`/`DST` phải là tham số bắt buộc, hoặc default phải nằm trong thư mục tạm.
+2. Muốn test script phá trạng thái: chạy trong thư mục tạm **và** script phải tự chặn khi
+   đường dẫn đích nằm ngoài thư mục tạm mà không có cờ xác nhận tường minh
+   (`--confirm-real` kèm echo lại đường dẫn thật).
+3. Trước khi chạy bất kỳ script nào do mình viết, đọc lại **đúng dòng lệnh** sẽ chạy và tự hỏi:
+   "nếu quên một biến môi trường, nó sẽ tác động vào đâu?"
+4. Thao tác đổi tên/đổi chỗ thư mục đang là **workspace root** phải do người dùng chạy,
+   không tự chạy — vì nó làm agent mất quyền truy cập giữa chừng.
+
+**Cách kiểm tra bằng máy:**
+
+- `grep -n 'SRC="\${SRC:-' scripts/*.sh` → nếu có default là đường dẫn thật thì fail review.
+- Trong script: `case "$DST" in "$HOME/Projects/"*) [ "$CONFIRM_REAL" = 1 ] || exit 1 ;; esac`.
+- Chạy test phải có `MIGRATE_TEST=1` và script `exit 1` nếu `MIGRATE_TEST=1` mà `SRC` không
+  nằm dưới `/tmp/`.
+
+**Bổ sung cùng ngày — hai lỗi cấu hình do cùng lần migrate (phát hiện khi `bun install` +
+`git commit`):**
+
+| Lỗi | Nguyên nhân | Sửa |
+| --- | --- | --- |
+| `Cannot find package 'prettier-plugin-tailwindcss' imported from .../rendez/noop.js` | Tôi để `.prettierrc.json` ở root. Prettier resolve `plugins` và `tailwindStylesheet` **theo thư mục chứa file config**, không theo file đang format → plugin nằm ở `frontend/node_modules`, `./src/index.css` không tồn tại ở root | Chuyển config về `frontend/.prettierrc.json` (nơi có `src/index.css` + plugin) |
+| `Usage: bun run [flags] <file or script>` khi chạy `typecheck`/`test`/`build` | Script root viết `bun --cwd frontend run X` — sai cú pháp; `--cwd` là flag **của `bun run`**, không đứng trước `run` | Đổi thành `cd frontend && bun run X` |
+
+**Quy tắc bổ sung:** khi tách một package ra thư mục con, phải kiểm **mọi file config có đường
+dẫn tương đối tới thư mục chứa nó** (`.prettierrc.json` với `tailwindStylesheet`, `components.json`
+với alias, `tsconfig` với `include`) — chúng phải đi theo package, không được để lại root.
+Và: mọi script điều phối trong `package.json` root phải được chạy thử **một lần** trước khi commit.
+
+**Bổ sung lần 2 — vẫn lỗi `Cannot find package 'prettier-plugin-tailwindcss' imported from
+.../rendez/noop.js` dù config đã ở `frontend/`:**
+
+- Nguyên nhân thật: lint-staged chạy prettier với **cwd = repo root**, và prettier resolve chuỗi
+  plugin trong `plugins` từ **node_modules của cwd** (đường dẫn `noop.js` là file tổng hợp prettier
+  dùng khi import config qua ESM → nó nằm ở root). Plugin chỉ có trong `frontend/node_modules`
+  vì bun không hoist package mà root không khai báo.
+- Sửa: khai báo `prettier-plugin-tailwindcss` ở **root devDependencies** để bun hoist lên
+  `node_modules` root. Config vẫn để ở `frontend/` (vì `tailwindStylesheet` là đường dẫn tương
+  đối với config).
+- Quy tắc: **công cụ chạy từ root (lint-staged, husky) phải có mọi plugin/binary nó cần trong
+  `devDependencies` của root** — không dựa vào việc package con tình cờ cài nó.
+- Hệ quả phụ đã xử lý: `eslint --fix` trong lint-staged cũng sẽ fail vì ESLint flat config
+  resolve theo **cwd** (root không có `eslint.config.js`) → bỏ eslint khỏi lint-staged, để CI
+  job `web` (đã có `working-directory: frontend`) chạy `bun run lint`.

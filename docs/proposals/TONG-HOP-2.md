@@ -5,7 +5,7 @@
 > kiểm chứng chéo bằng chứng code, khử trùng lặp và xếp làn sóng triển khai.
 >
 > Phạm vi đợt 2: **chỉ nghiên cứu, không sửa code**. Đầu ra: 5 file
-> `docs/proposals/agent-{6..10}-*.md` + file tổng hợp này.
+> `proposals/agent-{6..10}-*.md` + file tổng hợp này.
 
 ## 0. Phương pháp và giới hạn
 
@@ -95,7 +95,7 @@ Agent chính đã đọc đủ cả 5 file và đối chiếu bằng chứng `fi
    (4 dòng: chưa chạy app, số liệu fixture có thể đổi, quy tắc hợp nhất là thiết kế đề xuất,
    chưa đo hiệu năng).
 
-Không phát hiện bug code mới trong lúc kiểm chứng → `docs/BACKLOG.md` không đổi ở đợt này.
+Không phát hiện bug code mới trong lúc kiểm chứng → `BACKLOG.md` không đổi ở đợt này.
 
 ## 4. Quan hệ giữa các đề xuất (khử trùng lặp)
 
@@ -157,7 +157,7 @@ flowchart LR
   8.4, 8.5 · DX-10.1, 10.2, 10.3, 10.4, 10.5 · DX-9.5 (sau khi có DX-9.1). Nhóm Trip của agent 10
   là nhóm **không cần sửa `src/mocks/**`** duy nhất.
 - **Cần thêm route/logic vào mock (7):** DX-6.1 (giai đoạn BE) · DX-7.1, 7.2, 7.3, 7.4 ·
-  DX-9.1, 9.2, 9.3, 9.4. Mọi hợp đồng API mới phải ghi `docs/DECISIONS.md` trước (quy ước D-011).
+  DX-9.1, 9.2, 9.3, 9.4. Mọi hợp đồng API mới phải ghi `DECISIONS.md` trước (quy ước D-011).
 - **Cần dữ liệu thật chưa tồn tại (1):** DX-7.5 dietary — không hứa trước khi có dữ liệu,
   quán thiếu dữ liệu hiển thị "chưa rõ" thay vì bị loại im lặng.
 
@@ -203,7 +203,7 @@ flowchart LR
 
 ## 8. Rủi ro và điều kiện chốt trước khi implement
 
-- **Hợp đồng API mới** (sessions, day-plans, preferences, groups/match): ghi `docs/DECISIONS.md`
+- **Hợp đồng API mới** (sessions, day-plans, preferences, groups/match): ghi `DECISIONS.md`
   trước khi viết code — quy ước D-011 đã có.
 - **Mock per-tab**: mọi tính năng "nhiều người" chỉ demo được bằng bot server hoặc
   BroadcastChannel giữa các tab cùng máy; UI phải ghi rõ "thành viên khác là mô phỏng" khi demo.

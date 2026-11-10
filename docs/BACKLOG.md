@@ -212,7 +212,7 @@ gzip) thay 3 hook tự viết; cài `alert`, `radio-group`, `collapsible`; 3 tok
 `--radius-surface/control/thumb` + token `--star`; `src/lib/constants.ts` (giới hạn ký tự + toạ độ
 Đà Nẵng dùng chung client/server); `src/lib/format.ts` mở rộng (`formatRating`, `formatDate`,
 `formatDistance`, `formatCoordinate`); `places/lib/price-level.ts`; `Comment.isMine` do server kết
-luận; `docs/CONVENTIONS.md`. Quét cơ học: 13 `rounded-[…]`, 5 `text-[10px]`, 7 bảng màu thô,
+luận; `CONVENTIONS.md`. Quét cơ học: 13 `rounded-[…]`, 5 `text-[10px]`, 7 bảng màu thô,
 4 `toFixed`/`toLocaleDateString`, 4 `"₫".repeat` → hết.
 
 Còn lại, cập nhật sau đợt chuẩn hoá thứ hai (2026-11-08):
@@ -244,7 +244,7 @@ Còn lại, cập nhật sau đợt chuẩn hoá thứ hai (2026-11-08):
 - [x] **`zustand` chưa dùng** — **quyết định: GIỮ** dependency (người dùng chọn giữ cho state toàn
       cục sau này). Không đếm là nợ kỹ thuật; nếu 2 đợt nữa vẫn chưa dùng thì gỡ.
 - [x] **`index.css` comment sai + rule `small` chết** — đã xoá trong đợt trước.
-- [x] **`docs/STACK.md` ghi `lib/seed-color.ts`** — đã sửa.
+- [x] **`STACK.md` ghi `lib/seed-color.ts`** — đã sửa.
 - [x] **BACKLOG ghi sai `zod`/`react-hook-form`/`resolvers`/`sonner` "chưa dùng"** — đã sửa.
 - [x] **`Badge` không co 16px** — đính chính: co được (twMerge kiểm chứng).
 - [ ] **`scratch/size-parity.mjs` (D-017)** — script **không còn trong repo** (find → 0 kết quả).

@@ -66,11 +66,56 @@ const BAD_TITLE_RE =
 
 /** Query ảnh theo phân loại — mỗi phân loại nhiều query để đa dạng. */
 const QUERIES_BY_CATEGORY = {
-  cafe: ["vietnamese iced coffee", "egg coffee vietnam", "cappuccino cup", "latte art", "coffee cup drink", "iced coffee glass", "espresso cup", "milk coffee glass", "iced tea lemon", "smoothie glass", "matcha latte", "bubble tea"],
-  "quan-an": ["vietnamese restaurant food", "vietnamese street food", "com tam", "vietnamese rice dish", "vietnamese meal table", "rice plate egg", "grilled pork rice"],
-  "an-vat": ["vietnamese street snack", "banh mi", "vietnamese snack food", "spring rolls vietnam", "fried spring rolls plate", "vietnamese dumpling", "grilled skewer"],
-  "hai-san": ["seafood grill", "grilled shrimp dish", "seafood plate", "clams dish", "steamed crab plate", "grilled squid dish", "oyster dish", "seafood hotpot"],
-  banh: ["vietnamese cake", "banh bao", "vietnamese dessert", "banh xeo", "vietnamese crepe", "steamed rice cake"],
+  cafe: [
+    "vietnamese iced coffee",
+    "egg coffee vietnam",
+    "cappuccino cup",
+    "latte art",
+    "coffee cup drink",
+    "iced coffee glass",
+    "espresso cup",
+    "milk coffee glass",
+    "iced tea lemon",
+    "smoothie glass",
+    "matcha latte",
+    "bubble tea",
+  ],
+  "quan-an": [
+    "vietnamese restaurant food",
+    "vietnamese street food",
+    "com tam",
+    "vietnamese rice dish",
+    "vietnamese meal table",
+    "rice plate egg",
+    "grilled pork rice",
+  ],
+  "an-vat": [
+    "vietnamese street snack",
+    "banh mi",
+    "vietnamese snack food",
+    "spring rolls vietnam",
+    "fried spring rolls plate",
+    "vietnamese dumpling",
+    "grilled skewer",
+  ],
+  "hai-san": [
+    "seafood grill",
+    "grilled shrimp dish",
+    "seafood plate",
+    "clams dish",
+    "steamed crab plate",
+    "grilled squid dish",
+    "oyster dish",
+    "seafood hotpot",
+  ],
+  banh: [
+    "vietnamese cake",
+    "banh bao",
+    "vietnamese dessert",
+    "banh xeo",
+    "vietnamese crepe",
+    "steamed rice cake",
+  ],
   pho: ["pho bowl", "vietnamese noodle soup", "beef noodle soup bowl", "pho ga"],
   "mi-quang": ["mi quang", "vietnamese noodles turmeric", "turmeric noodle bowl"],
   bun: ["bun bo hue", "vermicelli bowl vietnam", "rice vermicelli salad", "bun rieu"],
@@ -80,11 +125,20 @@ const QUERIES_BY_CATEGORY = {
   "banh-ngot": ["vietnamese dessert", "che vietnamese", "sweet soup dessert", "vietnamese pudding"],
   han: ["korean food", "korean barbecue", "bibimbap bowl", "korean fried chicken"],
   y: ["pasta dish", "italian pizza", "spaghetti plate", "lasagna dish"],
-  "viet-nam": ["vietnamese food plate", "vietnamese meal", "vietnamese home cooking", "vietnamese stir fry"],
+  "viet-nam": [
+    "vietnamese food plate",
+    "vietnamese meal",
+    "vietnamese home cooking",
+    "vietnamese stir fry",
+  ],
   khac: ["restaurant food plate", "asian food dish", "noodle bowl asian", "rice dish asian"],
   "banh-xeo": ["banh xeo", "vietnamese pancake", "crispy vietnamese crepe"],
   "bun-cha-ca": ["bun cha ca", "fish cake noodle vietnam", "fish ball soup noodle"],
-  "banh-trang-thit-heo": ["vietnamese pork rolls", "rice paper rolls", "vietnamese rice paper pork"],
+  "banh-trang-thit-heo": [
+    "vietnamese pork rolls",
+    "rice paper rolls",
+    "vietnamese rice paper pork",
+  ],
   "bun-mam-nem": ["bun mam", "vietnamese fermented fish noodle", "vermicelli fish sauce bowl"],
 }
 
@@ -180,7 +234,13 @@ for (const [category, queries] of Object.entries(QUERIES_BY_CATEGORY)) {
 
 // 2. Tải file ảnh về đĩa (idempotent), tải song song có giới hạn.
 await mkdir(dishDir, { recursive: true })
-const allUrls = [...new Set(Object.values(poolByCategory).flat().map((img) => img.url))]
+const allUrls = [
+  ...new Set(
+    Object.values(poolByCategory)
+      .flat()
+      .map((img) => img.url),
+  ),
+]
 const downloaded = {}
 let done = 0
 async function download(url) {
@@ -281,7 +341,10 @@ console.log(
 await writeFile(join(dataDir, "places.json"), JSON.stringify(places, null, 2))
 await mkdir(dirname(cacheFile), { recursive: true })
 await writeFile(cacheFile, JSON.stringify(cache, null, 2))
-await writeFile(join(dataDir, ".cache/image-assignments.json"), JSON.stringify(assignments, null, 2))
+await writeFile(
+  join(dataDir, ".cache/image-assignments.json"),
+  JSON.stringify(assignments, null, 2),
+)
 
 // Bảng credits TÍCH LUỸ theo file ảnh (mỗi lần chạy chỉ gán một phần nên không
 // thể dùng `assignments` của riêng lần cuối để sinh CREDITS).

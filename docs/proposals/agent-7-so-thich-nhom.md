@@ -51,7 +51,7 @@ Bằng chứng chi tiết:
 2. **Cần bổ sung dữ liệu**: ăn chay/dị ứng (DX-7.5), giờ rảnh × giờ mở cửa (phụ thuộc DX-A),
    "đi xe gì / có chỗ để xe" (không có dữ liệu, không đề xuất).
 3. Chưa có khái niệm "nhóm" ở bất kỳ đâu trong code — phải tạo mô hình mới, nhưng backend là mock
-   nên chi phí thấp. Cần ghi hợp đồng API mới vào `docs/DECISIONS.md` trước khi implement
+   nên chi phí thấp. Cần ghi hợp đồng API mới vào `DECISIONS.md` trước khi implement
    (theo quy ước D-011, như TONG-HOP §4 đã nhấn mạnh).
 
 ## Đề xuất

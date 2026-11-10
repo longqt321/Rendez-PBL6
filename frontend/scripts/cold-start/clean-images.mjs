@@ -35,13 +35,9 @@ const places = JSON.parse(await readFile(join(dataDir, "places.json"), "utf8"))
 // Blocklist theo URL nguồn — diversify-images.mjs đọc file này để KHÔNG tải lại
 // ảnh rác (xoá file thôi thì lần chạy sau vẫn tải lại từ cache Commons).
 const blocklistPath = join(dataDir, ".cache/image-blocklist.json")
-const blocklist = existsSync(blocklistPath)
-  ? JSON.parse(await readFile(blocklistPath, "utf8"))
-  : []
+const blocklist = existsSync(blocklistPath) ? JSON.parse(await readFile(blocklistPath, "utf8")) : []
 const sourcesPath = join(dataDir, ".cache/dish-sources.json")
-const sources = existsSync(sourcesPath)
-  ? JSON.parse(await readFile(sourcesPath, "utf8"))
-  : {}
+const sources = existsSync(sourcesPath) ? JSON.parse(await readFile(sourcesPath, "utf8")) : {}
 for (const rel of junk) {
   const url = sources[rel]
   if (url && !blocklist.includes(url)) blocklist.push(url)

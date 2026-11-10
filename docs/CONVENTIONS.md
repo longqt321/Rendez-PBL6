@@ -1,7 +1,7 @@
 # CONVENTIONS
 
 Quy ước bắt buộc cho toàn bộ `src/`. Mọi thay đổi UI phải theo tài liệu này.
-Lý do của từng quyết định nằm ở `docs/DECISIONS.md` (D-025 trở đi).
+Lý do của từng quyết định nằm ở `DECISIONS.md` (D-025 trở đi).
 
 ## 1. Không tự chế khi đã có component
 

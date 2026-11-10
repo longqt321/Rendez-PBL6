@@ -26,7 +26,7 @@ const researchDir = join(dataDir, "research")
  * Địa giới TP Đà Nẵng (sau sáp nhập 2025). Hộp rộng hơn sẽ nuốt cả Hội An
  * (15.88, 108.33) và Tam Kỳ — Nominatim hay khớp nhầm tên đường ở đó.
  */
-const DANANG_BOUNDS = { minLat: 15.93, maxLat: 16.16, minLng: 107.90, maxLng: 108.30 }
+const DANANG_BOUNDS = { minLat: 15.93, maxLat: 16.16, minLng: 107.9, maxLng: 108.3 }
 /** Tên địa danh ngoài TP Đà Nẵng — xuất hiện trong displayName là geocode sai. */
 const OUTSIDE_PLACES = ["Hội An", "Tam Kỳ", "Điện Bàn", "Duy Xuyên", "Quế Sơn"]
 
@@ -119,9 +119,7 @@ for (const c of candidates) {
     rejectedBadCategory++
     continue
   }
-  const near = merged.some(
-    (p) => Math.abs(p.lat - c.lat) < 0.002 && distanceMeters(p, c) < 80,
-  )
+  const near = merged.some((p) => Math.abs(p.lat - c.lat) < 0.002 && distanceMeters(p, c) < 80)
   if (near) {
     rejectedDupNear++
     continue
@@ -196,11 +194,10 @@ await writeFile(join(dataDir, "places.json"), JSON.stringify(output, null, 2))
 // CSV phẳng để review.
 const csvHeader = "id,name,category,district,address,lat,lng,tier,image\n"
 const csvBody = finalPlaces
-  .map(
-    (p) =>
-      [p.id, p.name, p.category, p.district, p.address, p.lat, p.lng, p.tier, p.image ?? ""]
-        .map((v) => `"${String(v).replaceAll('"', '""')}"`)
-        .join(","),
+  .map((p) =>
+    [p.id, p.name, p.category, p.district, p.address, p.lat, p.lng, p.tier, p.image ?? ""]
+      .map((v) => `"${String(v).replaceAll('"', '""')}"`)
+      .join(","),
   )
   .join("\n")
 await writeFile(join(dataDir, "places.csv"), csvHeader + csvBody)

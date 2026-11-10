@@ -22,9 +22,9 @@
 3. **Dialog trên desktop, Drawer trên mobile**: `useMediaQuery("(min-width: 768px)")` từ
    `@uidotdev/usehooks`, đúng pattern [comment-thread.tsx:31](../../src/features/social/components/comment-thread.tsx#L31).
 4. **Không thêm thư viện kéo thả**: sắp thứ tự bằng `DropdownMenu` "Lên/Xuống". Kéo thả cần
-   `dnd-kit` (dependency mới) → chỉ làm khi có quyết định riêng trong `docs/DECISIONS.md`.
+   `dnd-kit` (dependency mới) → chỉ làm khi có quyết định riêng trong `DECISIONS.md`.
 5. **Chọn ngày bằng `Calendar` của shadcn** (`react-day-picker` + `date-fns` — đã cài theo
-   `docs/DECISIONS.md` D-026), không dùng `<Input type="date">` native.
+   `DECISIONS.md` D-026), không dùng `<Input type="date">` native.
 6. **Kéo thả bằng `dnd-kit`** (`@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities` — đã
    cài theo D-027) cho sắp thứ tự chặng; **giữ nút Lên/Xuống trong `DropdownMenu`** làm phương án
    bàn phím/a11y.

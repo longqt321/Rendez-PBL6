@@ -19,7 +19,7 @@ Phiên bản đã cài thực tế (đọc từ `node_modules/*/package.json`), 
 | react-router                                   | 8.5.1          | Routing                                                                                                                    |
 | @tanstack/react-query                          | 5.106.1        | Server state (mọi dữ liệu từ API)                                                                                          |
 | zod                                            | 4.6.7          | Schema validation — dùng ở `settings-page`, `review-form`, dialog bộ sưu tập                                               |
-| react-hook-form / @hookform/resolvers          | 7.91.0 / 7.0.3 | Form + cầu nối zod (xem `docs/CONVENTIONS.md` §8)                                                                          |
+| react-hook-form / @hookform/resolvers          | 7.91.0 / 7.0.3 | Form + cầu nối zod (xem `CONVENTIONS.md` §8)                                                                          |
 | axios                                          | 1.21.0         | HTTP client                                                                                                                |
 | sonner                                         | 2.0.8          | Toast — dùng qua `toast()` và `<Toaster>` ở `app-provider`                                                                 |
 | lucide-react                                   | 1.70.0         | Icon                                                                                                                       |
