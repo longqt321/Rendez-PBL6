@@ -5,7 +5,7 @@ import type { AppEnv } from "../app"
 import { auth } from "../lib/auth"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
-import { toUserProfile } from "../lib/profile"
+import { findProfileById } from "../lib/users"
 import { requireAuth } from "../lib/session"
 
 /**
@@ -64,19 +64,10 @@ function mapAuthError(error: unknown): never {
 
 /** Đếm số liệu hồ sơ — một query, không N+1 (bảng `follows` thêm ở T5.4). */
 async function buildProfile(userId: string, viewerId: string | null) {
-  const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user) throw new ApiError(401, "Chưa đăng nhập")
-
-  const postCount = await prisma.post.count({
-    where: { authorId: user.id, deletedAt: null },
-  })
-
-  return toUserProfile(user, viewerId, {
-    postCount,
-    followerCount: 0,
-    followingCount: 0,
-    followedByMe: false,
-  })
+  // Một nơi dựng hồ sơ: `lib/users.ts` đếm bài/follower/following thật (T5.4).
+  const profile = await findProfileById(userId, viewerId)
+  if (!profile) throw new ApiError(401, "Chưa đăng nhập")
+  return profile
 }
 
 export function createAuthRouter() {

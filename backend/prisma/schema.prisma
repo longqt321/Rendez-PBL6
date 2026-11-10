@@ -121,8 +121,27 @@ model User {
   notifications    Notification[]
   ownedRooms       Room[]         @relation("RoomOwner")
   roomMemberships  RoomMember[]
+  following        Follow[]       @relation("Follower")
+  followers        Follow[]       @relation("Following")
 
   @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// 1b. follows — quan hệ theo dõi (T5.4); tự theo dõi bị chặn ở tầng ứng dụng
+// ---------------------------------------------------------------------------
+
+model Follow {
+  followerId  String   @map("follower_id") @db.Uuid
+  followingId String   @map("following_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+  @@map("follows")
 }
 
 // ---------------------------------------------------------------------------

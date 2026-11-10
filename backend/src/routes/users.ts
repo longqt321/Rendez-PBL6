@@ -5,16 +5,26 @@ import { decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { toUserProfile } from "../lib/profile"
+import { listCollectionsOfOwner, toCollectionSummary } from "../lib/collections"
+import { createActorNotification } from "../lib/notifications"
+import { listPosts } from "../lib/posts"
+import { getViewer, requireAuth } from "../lib/session"
+import { findProfileByHandle, findProfileById, setFollow } from "../lib/users"
 
 /**
- * Route người dùng (T2.6).
+ * Route người dùng (T2.6 + T5.3 + T5.4).
  *
  * `GET /users?q=` — tìm theo name/handle không dấu (`unaccent`), trả
  * `Page<UserProfile>`. Đếm bài đăng của cả trang bằng một GROUP BY — không N+1
  * (A6.9: số server đếm).
+ *
+ * `GET /users/:handle` + `/posts?tab=` + `/collections` — trang cá nhân; tab
+ * `saved`/`pinned` của người khác trả RỖNG (khớp mock: chỉ chủ mới xem được).
+ * `POST/DELETE /users/:handle/follow` — idempotent, cấm tự theo dõi (400).
  */
 
 const USERS_PAGE_SIZE = 20
+const PROFILE_POSTS_PAGE_SIZE = 5
 
 interface UserRow {
   id: string
@@ -59,13 +69,42 @@ export function createUsersRouter() {
 
     const page = rows.slice(0, USERS_PAGE_SIZE)
     const last = page.at(-1)
+    const pageIds = page.map((user) => user.id)
+    const viewer = await getViewer(c)
+    const viewerId = viewer?.id ?? null
 
-    const postCounts = await prisma.post.groupBy({
-      by: ["authorId"],
-      where: { authorId: { in: page.map((user) => user.id) }, deletedAt: null },
-      _count: { authorId: true },
-    })
-    const countByUser = new Map(postCounts.map((row) => [row.authorId, row._count.authorId]))
+    // Đếm cho cả trang bằng GROUP BY (không N+1): bài, follower, following.
+    const [postCounts, followerCounts, followingCounts, followedRows] = await Promise.all([
+      prisma.post.groupBy({
+        by: ["authorId"],
+        where: { authorId: { in: pageIds }, deletedAt: null },
+        _count: { authorId: true },
+      }),
+      prisma.follow.groupBy({
+        by: ["followingId"],
+        where: { followingId: { in: pageIds } },
+        _count: { followingId: true },
+      }),
+      prisma.follow.groupBy({
+        by: ["followerId"],
+        where: { followerId: { in: pageIds } },
+        _count: { followerId: true },
+      }),
+      viewerId
+        ? prisma.follow.findMany({
+            where: { followerId: viewerId, followingId: { in: pageIds } },
+            select: { followingId: true },
+          })
+        : Promise.resolve([]),
+    ])
+    const postByUser = new Map(postCounts.map((row) => [row.authorId, row._count.authorId]))
+    const followerByUser = new Map(
+      followerCounts.map((row) => [row.followingId, row._count.followingId]),
+    )
+    const followingByUser = new Map(
+      followingCounts.map((row) => [row.followerId, row._count.followerId]),
+    )
+    const followedIds = new Set(followedRows.map((row) => row.followingId))
 
     return c.json({
       items: page.map((user) =>
@@ -79,12 +118,12 @@ export function createUsersRouter() {
             privateProfile: user.private_profile,
             createdAt: user.created_at,
           },
-          null,
+          viewerId,
           {
-            postCount: countByUser.get(user.id) ?? 0,
-            followerCount: 0,
-            followingCount: 0,
-            followedByMe: false,
+            postCount: postByUser.get(user.id) ?? 0,
+            followerCount: followerByUser.get(user.id) ?? 0,
+            followingCount: followingByUser.get(user.id) ?? 0,
+            followedByMe: followedIds.has(user.id),
           },
         ),
       ),
@@ -94,6 +133,93 @@ export function createUsersRouter() {
           : null,
     })
   })
+
+  /** Hồ sơ công khai theo handle — 404 khi không tồn tại (A6.3). */
+  router.get("/users/:handle", async (c) => {
+    const handle = c.req.param("handle")
+    const viewer = await getViewer(c)
+    const profile = await findProfileByHandle(handle, viewer?.id ?? null)
+    if (!profile) throw new ApiError(404, "Không tìm thấy người dùng")
+    return c.json(profile)
+  })
+
+  /**
+   * Bài đăng trên trang cá nhân — `tab=posts|saved|pinned`.
+   * Tab `saved`/`pinned` chỉ chủ hồ sơ xem được; người khác nhận trang RỖNG
+   * (khớp mock, không phải 403 — client không phân biệt).
+   */
+  router.get("/users/:handle/posts", async (c) => {
+    const handle = c.req.param("handle")
+    const viewer = await getViewer(c)
+    const viewerId = viewer?.id ?? null
+    const profile = await findProfileByHandle(handle, viewerId)
+    if (!profile) throw new ApiError(404, "Không tìm thấy người dùng")
+
+    const tab = c.req.query("tab") ?? "posts"
+    const rawCursor = c.req.query("cursor")
+    const cursor = rawCursor ? decodeCursor(rawCursor) : null
+    if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
+
+    if (tab === "saved" || tab === "pinned") {
+      if (profile.id !== viewerId) return c.json({ items: [], next: null })
+      const page = await listPosts({
+        filter: "all",
+        viewerId,
+        savedOf: profile.id,
+        cursor,
+        pageSize: PROFILE_POSTS_PAGE_SIZE,
+      })
+      return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
+    }
+
+    const page = await listPosts({
+      filter: "all",
+      viewerId,
+      authorId: profile.id,
+      cursor,
+      pageSize: PROFILE_POSTS_PAGE_SIZE,
+    })
+    return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
+  })
+
+  /** Bộ sưu tập công khai của một người — ẩn private trừ khi xem chính mình. */
+  router.get("/users/:handle/collections", async (c) => {
+    const handle = c.req.param("handle")
+    const viewer = await getViewer(c)
+    const viewerId = viewer?.id ?? null
+    const profile = await findProfileByHandle(handle, viewerId)
+    if (!profile) throw new ApiError(404, "Không tìm thấy người dùng")
+
+    const rows = await listCollectionsOfOwner(profile.id, viewerId)
+    return c.json({ items: rows.map((row) => toCollectionSummary(row)), next: null })
+  })
+
+  /** Theo dõi / bỏ theo dõi — idempotent, cấm tự theo dõi (400). */
+  async function toggleFollow(c: Parameters<typeof getViewer>[0], followed: boolean) {
+    const handle = c.req.param("handle") ?? ""
+    const viewerId = c.get("userId")
+    const profile = await findProfileByHandle(handle, viewerId)
+    if (!profile) throw new ApiError(404, "Không tìm thấy người dùng")
+    if (profile.id === viewerId) throw new ApiError(400, "Không thể tự theo dõi chính mình")
+
+    await setFollow(viewerId, profile.id, followed)
+    if (followed) {
+      const actor = await prisma.user.findUnique({
+        where: { id: viewerId },
+        select: { id: true, name: true },
+      })
+      if (actor) {
+        await createActorNotification({ userId: profile.id, kind: "follow", actor })
+      }
+    }
+
+    const updated = await findProfileById(profile.id, viewerId)
+    if (!updated) throw new ApiError(404, "Không tìm thấy người dùng")
+    return c.json(updated)
+  }
+
+  router.post("/users/:handle/follow", requireAuth, (c) => toggleFollow(c, true))
+  router.delete("/users/:handle/follow", requireAuth, (c) => toggleFollow(c, false))
 
   return router
 }

@@ -102,6 +102,10 @@ export interface ListPostsParams {
   filter: PostFilter
   q?: string
   viewerId: string | null
+  /** Lọc theo tác giả — dùng cho `GET /users/:handle/posts`. */
+  authorId?: string
+  /** Bài đã lưu bởi user này — tab `saved`/`pinned` của chính chủ (khớp mock). */
+  savedOf?: string
   cursor: Cursor | null
   pageSize: number
 }
@@ -117,6 +121,12 @@ export async function listPosts(
   if (params.filter === "saved") {
     conditions.push(
       Prisma.sql`EXISTS (SELECT 1 FROM post_saves s WHERE s.post_id = p.id AND s.user_id = ${params.viewerId}::uuid)`,
+    )
+  }
+  if (params.authorId) conditions.push(Prisma.sql`p.author_id = ${params.authorId}::uuid`)
+  if (params.savedOf) {
+    conditions.push(
+      Prisma.sql`EXISTS (SELECT 1 FROM post_saves s WHERE s.post_id = p.id AND s.user_id = ${params.savedOf}::uuid)`,
     )
   }
   if (params.q) {
