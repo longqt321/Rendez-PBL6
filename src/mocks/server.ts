@@ -154,6 +154,11 @@ function listPublishedPlaces(params: {
   category?: string
   district?: string
   q?: string
+  /**
+   * Khung nhìn bản đồ `minLng,minLat,maxLng,maxLat` — chỉ trả địa điểm trong khung.
+   * Dùng cho `GET /places/map` (bản đồ tự nạp theo vùng đang xem).
+   */
+  bbox?: string
   /** Mức giá tối đa (1–3) — dùng cho phòng lọc nhóm. */
   priceMax?: string
   /** Danh sách loại hình/quán bị loại, phân tách bằng dấu phẩy. */
@@ -189,8 +194,26 @@ function listPublishedPlaces(params: {
     .filter(Boolean)
     .map(normalizeText)
 
+  // bbox: 4 số hợp lệ mới có hiệu lực; sai định dạng coi như không lọc khung.
+  const bboxParts = (params.bbox ?? "").split(",").map(Number)
+  const bbox =
+    bboxParts.length === 4 && bboxParts.every((n) => Number.isFinite(n))
+      ? { minLng: bboxParts[0], minLat: bboxParts[1], maxLng: bboxParts[2], maxLat: bboxParts[3] }
+      : undefined
+
   return published
     .filter((place) => {
+      if (bbox) {
+        if (place.lat === undefined || place.lng === undefined) return false
+        if (
+          place.lng < bbox.minLng ||
+          place.lng > bbox.maxLng ||
+          place.lat < bbox.minLat ||
+          place.lat > bbox.maxLat
+        ) {
+          return false
+        }
+      }
       if (categories.length > 0 && !categories.includes(place.category)) {
         return false
       }
@@ -988,6 +1011,39 @@ const routes: Route[] = [
         cursor ?? null,
         PLACES_PAGE_SIZE,
       )
+    },
+  },
+  {
+    method: "get",
+    // Đứng trước `/places/:id` — nếu không `:id` sẽ nuốt cả "map"/"saved".
+    pattern: /^\/places\/map$/,
+    handler: (config) => {
+      const {
+        bbox,
+        category,
+        district,
+        q,
+        priceMax,
+        excludeCategory,
+        excludeDistrict,
+        includeKeyword,
+        excludeKeyword,
+      } = query(config)
+      // Bản đồ không phân trang: trả mọi địa điểm trong khung (chặn trên để
+      // khung nhìn quá rộng ở zoom nhỏ không trả cả dataset).
+      const MAP_MAX_PLACES = 300
+      const items = listPublishedPlaces({
+        bbox,
+        category,
+        district,
+        q,
+        priceMax,
+        excludeCategory,
+        excludeDistrict,
+        includeKeyword,
+        excludeKeyword,
+      })
+      return { items: items.slice(0, MAP_MAX_PLACES), total: items.length }
     },
   },
   {

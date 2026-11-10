@@ -2412,3 +2412,54 @@ hệ thống, và **được lặp lại giữa các quán cùng loại — tuy�
   đúng, `.sr-only` = 0, SVG `meet` + 0 `rect`, tab Bài đăng không còn ô "Chưa có ảnh".
 - `typecheck` ✓, `lint` ✓, unit 67/67 ✓, e2e 10/10 ✓, `validate.mjs` exit 0.
 - Chạy lại `update-docs.mjs`: CREDITS.md 20 ảnh venue, nguồn chính xác (Foody.vn/Google Maps).
+
+## D-052 — Bản đồ nạp pin theo khung nhìn (bbox) + cache theo vùng
+
+**Ngày:** 2026-11-10
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Bản đồ chỉ hiển thị 9 pin, luôn ép về vùng Hải Châu. Nguyên nhân (đã xác nhận bằng code):
+
+- `map-page.tsx` dùng `useDiscoverView()` → `useDiscoverPlaces()` (infinite query lưới),
+  bản đồ không có trigger infinite scroll ⇒ chỉ có trang đầu `PLACES_PAGE_SIZE = 9`
+  (`src/mocks/server.ts`).
+- Dataset sắp theo thứ tự dồn Hải Châu ⇒ `fitBounds` của `MapBoundsUpdater` (chạy lại mỗi
+  lần mảng `places` đổi) luôn fit vào đúng 9 pin đó ⇒ zoom/kéo sang Liên Chiểu không nạp pin.
+- `GET /places` không hỗ trợ lọc theo bbox/viewport.
+
+### Phương án đã xem xét
+
+| Phương án                                                                                         | Kết luận                                                         |
+| ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Tăng page size / fetch hết dataset                                                                | Loại — không theo viewport, tốn payload, vẫn "hardcode" số lượng |
+| Tự viết cache Map trong component                                                                 | Loại — trùng lặp TanStack Query đã cài                           |
+| **Endpoint `GET /places/map?bbox=` + `useMapPlaces` (TanStack Query, khoá = bbox làm tròn lưới)** | **Chọn**                                                         |
+
+### Quyết định chi tiết
+
+1. Mock server thêm `GET /places/map` (đặt trước `/places/:id`), nhận `bbox=minLng,minLat,maxLng,maxLat`,
+   trả `{ items, total }`, không phân trang, chặn trên 300 pin (`MAP_MAX_PLACES`), cùng bộ lọc với `/places`.
+2. `get-map-places.ts` — API client mới, pattern copy từ `get-places.ts`.
+3. `use-map-places.ts` — `useQuery` với khoá cache = bbox **làm tròn lưới 0,01° (~1,1 km) + nới 20% mỗi phía**
+   (`snapBounds`), `staleTime` 5 phút, `gcTime` 10 phút, `keepPreviousData`. Kéo nhẹ hoặc quay lại
+   vùng cũ không gọi lại API (có test chứng minh). Guard khung suy biến (min==max sau làm tròn) nở tối thiểu 1 ô lưới.
+4. `places-map.tsx` — thêm `ViewportReporter` (`moveend`/`zoomend` debounce 300ms bằng `setTimeout`
+   thuần — điều phối sự kiện Leaflet, không phải logic nghiệp vụ) báo `map.getBounds()`;
+   `MapBoundsUpdater` chỉ fit lại khi `fitKey` đổi (category/district/query/room/toạ độ user),
+   không phụ thuộc mảng `places` ⇒ hết vòng lặp fit → fetch → fit.
+5. `map-page.tsx` dùng `useMapPlaces(view.serverFilters, bounds)`; `useDiscoverView` trả thêm
+   `serverFilters` để 2 màn hình dùng chung một nguồn bộ lọc.
+6. Nhãn đếm đổi thành "Đang hiển thị {n} địa điểm trong vùng xem".
+
+### Bằng chứng
+
+- `typecheck` ✓ (0 lỗi), `lint` ✓ (eslint . sạch), unit **72/72** ✓ (gồm 3 test `snapBounds`
+  và 2 test cache đếm số lần gọi `getMapPlaces`: kéo nhẹ + quay lại ⇒ 1 lần; sang vùng khác ⇒ 2; quay lại ⇒ vẫn 2),
+  e2e **12/12** ✓ (gồm 2 test mới `e2e/map.spec.ts`: >9 pin khi mở `/map`, pan sang vùng khác vẫn có pin).
+
+### Chưa xác minh
+
+- Chưa test trên dữ liệu backend thật (mock adapter chặn trước network).
+- Chưa đo hành vi khi zoom rất nhỏ (nhiều pin, chặn 300) và hiệu năng render 300 marker.

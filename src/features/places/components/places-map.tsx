@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react"
 import { Link } from "react-router"
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet"
+import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { ExternalLinkIcon, NavigationIcon, StarIcon } from "lucide-react"
@@ -15,6 +15,7 @@ import { calculateDistanceKm } from "../lib/danang-districts"
 import { priceLevelLabel } from "../lib/price-level"
 import { cn } from "@/lib/utils"
 import { DANANG_CENTER_TUPLE, DANANG_DEFAULT_ZOOM } from "@/lib/constants"
+import type { MapBounds } from "../api/get-map-places"
 import type { Place } from "../types/place"
 
 interface PlacesMapProps {
@@ -25,17 +26,37 @@ interface PlacesMapProps {
   className?: string
   /** Chiều cao bản đồ (mặc định 100% hoặc giá trị h-...) */
   height?: string
+  /**
+   * Báo khung nhìn sau khi người dùng pan/zoom xong (đã debounce). Có callback
+   * này thì bản đồ tự nạp pin theo vùng đang xem.
+   */
+  onViewportChange?: (bounds: MapBounds) => void
+  /**
+   * Đổi giá trị này để yêu cầu căn lại tầm nhìn (ví dụ khi đổi bộ lọc). Không
+   * truyền thì bản đồ chỉ căn một lần lúc mở.
+   */
+  fitKey?: string
+  /** Đang tải pin của vùng xem — nhãn đếm đổi thành trạng thái đang tải. */
+  isPlacesLoading?: boolean
 }
 
-/** Tự động căn chỉnh tầm nhìn bao quát các địa điểm */
+/**
+ * Căn tầm nhìn bao quát các địa điểm — CHỈ khi `fitKey` đổi (mở bản đồ, đổi bộ
+ * lọc, bật vị trí). Trước đây nó chạy lại mỗi lần danh sách địa điểm đổi, tạo
+ * vòng lặp: căn lại → khung nhìn đổi → nạp vùng mới → căn lại…
+ */
 function MapBoundsUpdater({
   places,
   selectedPlace,
   userCoordinates,
+  fitKey,
 }: {
   places: Place[]
   selectedPlace?: Place
   userCoordinates?: { lat: number; lng: number } | null
+  fitKey?: string
+  /** Đang tải pin của vùng xem — nhãn đếm đổi thành trạng thái đang tải. */
+  isPlacesLoading?: boolean
 }) {
   const map = useMap()
 
@@ -62,7 +83,49 @@ function MapBoundsUpdater({
 
     const bounds = L.latLngBounds(points)
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 })
-  }, [places, selectedPlace, userCoordinates, map])
+    // Cố ý KHÔNG phụ thuộc `places`: chỉ căn lại khi `fitKey` đổi.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitKey, selectedPlace, userCoordinates, map])
+
+  return null
+}
+
+/**
+ * Báo khung nhìn hiện tại sau khi người dùng ngừng pan/zoom.
+ *
+ * Debounce 300ms: `moveend` bắn liên tục khi kéo bản đồ, gọi API mỗi lần sẽ tạo
+ * hàng chục request thừa. Debounce bằng `setTimeout` (không cần package) vì đây
+ * là điều phối sự kiện của Leaflet, không phải logic nghiệp vụ.
+ */
+function ViewportReporter({ onChange }: { onChange: (bounds: MapBounds) => void }) {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const report = (map: L.Map) => {
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(() => {
+      const b = map.getBounds()
+      onChange({
+        minLat: b.getSouth(),
+        minLng: b.getWest(),
+        maxLat: b.getNorth(),
+        maxLng: b.getEast(),
+      })
+    }, 300)
+  }
+
+  const map = useMapEvents({
+    moveend: () => report(map),
+    zoomend: () => report(map),
+  })
+
+  // Báo khung nhìn ban đầu để lần mở đầu tiên cũng nạp theo vùng thật.
+  useEffect(() => {
+    report(map)
+    return () => {
+      if (timer.current) clearTimeout(timer.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map])
 
   return null
 }
@@ -127,6 +190,9 @@ export function PlacesMap({
   userCoordinates,
   className = "",
   height = "h-[650px]",
+  onViewportChange,
+  fitKey,
+  isPlacesLoading = false,
 }: PlacesMapProps) {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === "dark"
@@ -176,7 +242,9 @@ export function PlacesMap({
           places={validPlaces}
           selectedPlace={selectedPlace}
           userCoordinates={userCoordinates}
+          fitKey={fitKey}
         />
+        {onViewportChange ? <ViewportReporter onChange={onViewportChange} /> : null}
 
         {/* Marker vị trí hiện tại của người dùng */}
         {userCoordinates ? (
@@ -287,7 +355,11 @@ export function PlacesMap({
 
       {/* Tóm tắt số lượng địa điểm trên bản đồ */}
       <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-md border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur">
-        <span>Đang hiển thị {validPlaces.length} địa điểm tại Đà Nẵng</span>
+        {isPlacesLoading && validPlaces.length === 0 ? (
+          <span>Đang tải địa điểm trong vùng xem…</span>
+        ) : (
+          <span>Đang hiển thị {validPlaces.length} địa điểm trong vùng xem</span>
+        )}
         {userCoordinates ? (
           <span className="flex items-center gap-0.5 text-primary">
             <NavigationIcon className="size-3" /> Đã bật vị trí

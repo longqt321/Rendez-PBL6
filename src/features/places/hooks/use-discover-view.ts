@@ -5,6 +5,7 @@ import type { Room } from "@/features/rooms/types/room"
 import { calculateDistanceKm } from "../lib/danang-districts"
 import type { Place } from "../types/place"
 import { useDiscoverPlaces } from "./use-discover-places"
+import type { DiscoverFilters } from "../api/get-places"
 import { useDiscoverFilters, type DiscoverFiltersState } from "./use-discover-filters"
 
 export interface DiscoverView {
@@ -32,6 +33,11 @@ export interface DiscoverView {
   /** Danh sách đã lọc (kể cả bộ lọc phòng) + khoảng cách, sắp xếp khi bật "Gần đây". */
   placesWithDistance: { place: Place; distanceKm?: number }[]
   sortedPlaces: Place[]
+  /**
+   * Bộ lọc đã quy về tham số server (gồm ràng buộc phòng). Bản đồ dùng lại đúng
+   * bộ này để kết quả hai màn hình không lệch nhau.
+   */
+  serverFilters: DiscoverFilters
 }
 
 /**
@@ -107,6 +113,7 @@ export function useDiscoverView(): DiscoverView {
   )
 
   return {
+    serverFilters,
     filters,
     room,
     createRoom: (name) => createRoom(name).code,

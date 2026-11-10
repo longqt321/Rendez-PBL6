@@ -293,3 +293,12 @@ lịch sử; không còn việc mở ở đây.
       dùng model vision chấm điểm tự động trong CI.
 - [ ] **8 place mất hết ảnh venue** sau audit (biển hiệu/món chen vào) — UI fallback ảnh
       seed; cần ảnh venue thật từ nguồn khác.
+
+## Phát hiện 2026-11-10 (bản đồ theo khung nhìn — D-052)
+
+- [ ] **Hợp đồng backend mới `GET /places/map?bbox=minLng,minLat,maxLng,maxLat`** — trả
+      `{ items, total }`, không phân trang, chặn trên 300 pin, nhận cùng bộ lọc với `/places`
+      (category, district, q, priceMax, keywords, room). Backend thật phải implement cùng semantics
+      bbox (lọc theo tâm địa điểm nằm trong khung).
+- [ ] **Hiệu năng render khi khung nhìn rất rộng** — chặn 300 pin hiện chưa đo bằng mắt; cân nhắc
+      cluster marker nếu số pin thực tế lớn hơn.
