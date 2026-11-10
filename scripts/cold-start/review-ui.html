@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Duyệt cold-start data — Đà Nẵng Ăn &amp; Đi</title>
+    <style>
+      :root {
+        --bg: #0f1115;
+        --panel: #171a21;
+        --panel-2: #1e222b;
+        --border: #2a2f3a;
+        --text: #e6e8ee;
+        --muted: #9aa3b2;
+        --ok: #22c55e;
+        --warn: #f59e0b;
+        --bad: #ef4444;
+        --info: #3b82f6;
+        --accent: #8b5cf6;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel);
+        flex-wrap: wrap;
+      }
+      h1 { font-size: 14px; margin: 0; font-weight: 600; white-space: nowrap; }
+      .progress { flex: 1; min-width: 180px; }
+      .bar { height: 6px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
+      .bar > div { height: 100%; background: var(--accent); width: 0; transition: width 0.2s; }
+      .progress small { color: var(--muted); font-variant-numeric: tabular-nums; }
+      select, input[type="text"], textarea, button {
+        font: inherit;
+        color: var(--text);
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 5px 8px;
+      }
+      select:focus-visible, textarea:focus-visible, button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+      label.check { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+      main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+        gap: 16px;
+        padding: 16px;
+        min-height: 0;
+      }
+      @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+      .image-panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .image-box {
+        flex: 1;
+        min-height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0b0d11;
+        overflow: hidden;
+      }
+      .image-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+      .image-box .empty { color: var(--muted); padding: 24px; text-align: center; }
+      .thumbs {
+        display: flex;
+        gap: 6px;
+        padding: 8px;
+        overflow-x: auto;
+        border-top: 1px solid var(--border);
+      }
+      .thumbs button {
+        padding: 0;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        overflow: hidden;
+        flex: 0 0 auto;
+        width: 64px;
+        height: 64px;
+        background: #000;
+        cursor: pointer;
+      }
+      .thumbs button[aria-current="true"] { border-color: var(--accent); }
+      .thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .info {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+        min-height: 0;
+      }
+      .name { font-size: 20px; font-weight: 650; margin: 0; line-height: 1.25; }
+      .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+      .badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .badge.tier-curated-v2 { border-color: #7c3aed; color: #c4b5fd; }
+      .badge.tier-curated { border-color: #0ea5e9; color: #7dd3fc; }
+      .badge.kind-dish { border-color: #a16207; color: #fcd34d; }
+      .badge.kind-venue { border-color: #15803d; color: #86efac; }
+      /* Phân loại là thông tin đối chiếu chính với ảnh → nổi bật nhất. */
+      .badge.category {
+        background: #1d4ed8;
+        border-color: #3b82f6;
+        color: #fff;
+        font-weight: 650;
+        font-size: 12px;
+        padding: 3px 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+      dl { display: grid; grid-template-columns: 88px 1fr; gap: 6px 10px; margin: 0; }
+      dt { color: var(--muted); }
+      dd { margin: 0; word-break: break-word; }
+      dd a { color: #7dd3fc; }
+      .verdicts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+      .verdicts button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        text-align: left;
+        cursor: pointer;
+        border-radius: 8px;
+        background: var(--panel-2);
+        transition: background 0.12s, border-color 0.12s;
+      }
+      .verdicts button:hover { background: #262b36; }
+      .verdicts button kbd {
+        font: 600 11px ui-monospace, monospace;
+        background: #0b0d11;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 2px 6px;
+        min-width: 22px;
+        text-align: center;
+      }
+      .verdicts button[data-verdict="ok"] {
+        border-color: #15803d;
+        background: rgba(34, 197, 94, 0.12);
+      }
+      .verdicts button[data-verdict="ok"]:hover { border-color: var(--ok); background: rgba(34, 197, 94, 0.2); }
+      .verdicts button[data-verdict="wrong-image"] { border-color: #78350f; }
+      .verdicts button[data-verdict="wrong-image"]:hover { border-color: var(--warn); }
+      .verdicts button[data-verdict="wrong-address"] { border-color: #713f12; }
+      .verdicts button[data-verdict="wrong-address"]:hover { border-color: var(--warn); }
+      .verdicts button[data-verdict="not-exists"] { border-color: #7f1d1d; }
+      .verdicts button[data-verdict="not-exists"]:hover { border-color: var(--bad); }
+      .verdicts button[data-verdict="duplicate"] { border-color: #1e3a8a; }
+      .verdicts button[data-verdict="duplicate"]:hover { border-color: var(--info); }
+      .row { display: flex; gap: 8px; align-items: center; }
+      .row textarea { flex: 1; resize: vertical; min-height: 38px; }
+      .status { font-size: 12px; color: var(--muted); }
+      .status.saved { color: var(--ok); }
+      .status.error { color: var(--bad); }
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 8px 16px;
+        color: var(--muted);
+        font-size: 12px;
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        background: var(--panel);
+      }
+      kbd {
+        font: 600 11px ui-monospace, monospace;
+        background: #0b0d11;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+      }
+      .done { padding: 40px; text-align: center; color: var(--muted); }
+      .done strong { color: var(--text); display: block; font-size: 18px; margin-bottom: 8px; }
+      .decision-tag { font-size: 12px; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Duyệt cold-start data</h1>
+      <div class="progress">
+        <div class="bar"><div id="bar"></div></div>
+        <small id="progress-text">Đang tải…</small>
+      </div>
+      <select id="filter-tier" aria-label="Lọc theo nguồn">
+        <option value="">Mọi nguồn</option>
+        <option value="curated-v2">curated-v2 (mạng xã hội)</option>
+        <option value="curated">curated (báo chí)</option>
+        <option value="osm">osm (OpenStreetMap)</option>
+      </select>
+      <select id="filter-district" aria-label="Lọc theo quận"><option value="">Mọi quận</option></select>
+      <select id="filter-category" aria-label="Lọc theo phân loại"><option value="">Mọi loại</option></select>
+      <label class="check"><input type="checkbox" id="only-unreviewed" checked /> Chỉ chưa duyệt</label>
+      <span id="save-status" class="status">Sẵn sàng</span>
+    </header>
+
+    <main id="main" hidden>
+      <section class="image-panel" aria-label="Ảnh địa điểm">
+        <div class="image-box" id="image-box"></div>
+        <div class="thumbs" id="thumbs"></div>
+      </section>
+
+      <section class="info" aria-label="Thông tin địa điểm">
+        <h2 class="name" id="place-name"></h2>
+        <div class="badges" id="badges"></div>
+        <dl>
+          <dt>Địa chỉ</dt><dd id="place-address"></dd>
+          <dt>Quận</dt><dd id="place-district"></dd>
+          <dt>Toạ độ</dt><dd id="place-coords"></dd>
+          <dt>Liên hệ</dt><dd id="place-contact"></dd>
+          <dt>Nguồn</dt><dd id="place-sources"></dd>
+          <dt>Mô tả</dt><dd id="place-description"></dd>
+        </dl>
+        <div class="row">
+          <a id="maps-link" href="#" target="_blank" rel="noopener noreferrer">Mở Google Maps ↗</a>
+          <a id="osm-link" href="#" target="_blank" rel="noopener noreferrer">OpenStreetMap ↗</a>
+        </div>
+        <div class="row">
+          <textarea id="note" rows="1" placeholder="Ghi chú (N để nhập, Enter để lưu)"></textarea>
+        </div>
+        <div class="verdicts" id="verdicts">
+          <button data-verdict="ok"><kbd>1</kbd> Đúng</button>
+          <button data-verdict="wrong-image"><kbd>2</kbd> Sai ảnh</button>
+          <button data-verdict="wrong-address"><kbd>3</kbd> Sai địa chỉ</button>
+          <button data-verdict="not-exists"><kbd>4</kbd> Quán đóng / không tồn tại</button>
+          <button data-verdict="duplicate"><kbd>5</kbd> Trùng quán khác</button>
+          <button id="skip"><kbd>S</kbd> Bỏ qua (duyệt sau)</button>
+        </div>
+        <div class="decision-tag" id="decision-tag"></div>
+      </section>
+    </main>
+
+    <div class="done" id="done" hidden>
+      <strong>Đã duyệt hết danh sách đang lọc 🎉</strong>
+      Đổi bộ lọc hoặc bỏ chọn "Chỉ chưa duyệt" để xem lại.
+    </div>
+
+    <footer>
+      <span><kbd>1</kbd>–<kbd>5</kbd> quyết định</span>
+      <span><kbd>S</kbd> bỏ qua</span>
+      <span><kbd>U</kbd> hoàn tác</span>
+      <span><kbd>N</kbd> ghi chú</span>
+      <span><kbd>[</kbd> <kbd>]</kbd> đổi ảnh</span>
+      <span><kbd>←</kbd> <kbd>→</kbd> quán trước/sau</span>
+    </footer>
+
+    <script>
+      const VERDICT_LABEL = {
+        ok: "Đúng",
+        "wrong-image": "Sai ảnh",
+        "wrong-address": "Sai địa chỉ",
+        "not-exists": "Quán đóng / không tồn tại",
+        duplicate: "Trùng quán khác",
+      }
+
+      const state = {
+        places: [],
+        decisions: {},
+        filtered: [],
+        index: 0,
+        imageIndex: 0,
+        undoStack: [],
+        busy: false,
+      }
+
+      const $ = (id) => document.getElementById(id)
+      const setStatus = (text, kind = "") => {
+        const el = $("save-status")
+        el.textContent = text
+        el.className = `status ${kind}`
+      }
+
+      function mapsUrl(place) {
+        if (place.venuePageUrl) return place.venuePageUrl
+        const q = [place.name, place.address, "Đà Nẵng"].filter(Boolean).join(" ")
+        return `https://www.google.com/maps/search/${encodeURIComponent(q)}`
+      }
+
+      function osmUrl(place) {
+        if (place.lat == null) return "#"
+        return `https://www.openstreetmap.org/?mlat=${place.lat}&mlon=${place.lng}#map=19/${place.lat}/${place.lng}`
+      }
+
+      function applyFilters() {
+        const tier = $("filter-tier").value
+        const district = $("filter-district").value
+        const category = $("filter-category").value
+        const onlyUnreviewed = $("only-unreviewed").checked
+
+        state.filtered = state.places.filter((p) => {
+          if (tier && p.tier !== tier) return false
+          if (district && p.district !== district) return false
+          if (category && p.category !== category) return false
+          if (onlyUnreviewed && state.decisions[p.id]) return false
+          return true
+        })
+        state.index = 0
+        state.imageIndex = 0
+        render()
+      }
+
+      function current() {
+        return state.filtered[state.index]
+      }
+
+      function render() {
+        const total = state.places.length
+        const reviewed = Object.keys(state.decisions).length
+        $("bar").style.width = total ? `${(reviewed / total) * 100}%` : "0%"
+        $("progress-text").textContent = `Đã duyệt ${reviewed}/${total} · hàng đợi ${state.filtered.length}`
+
+        const place = current()
+        $("main").hidden = !place
+        $("done").hidden = !!place
+        if (!place) return
+
+        $("place-name").textContent = place.name
+
+        const badges = $("badges")
+        badges.textContent = ""
+        const addBadge = (text, cls = "") => {
+          const span = document.createElement("span")
+          span.className = `badge ${cls}`
+          span.textContent = text
+          badges.append(span)
+        }
+        addBadge(place.category, "category")
+        addBadge(place.tier, `tier-${place.tier}`)
+        if (place.imageKind === "venue") addBadge("ảnh quán thật", "kind-venue")
+        else if (place.imageKind === "dish") addBadge("ảnh món đại diện", "kind-dish")
+        if (place.status && place.status !== "unknown") addBadge(`trạng thái: ${place.status}`)
+
+        $("place-address").textContent = place.address ?? "—"
+        $("place-district").textContent = place.district ?? "—"
+        $("place-coords").textContent =
+          place.lat != null ? `${place.lat}, ${place.lng}` : "—"
+        $("place-contact").textContent =
+          [place.phone, place.openingHours].filter(Boolean).join(" · ") || "—"
+        $("place-description").textContent = place.description || "—"
+
+        const sources = $("place-sources")
+        sources.textContent = ""
+        const list = Array.isArray(place.sources) ? place.sources : []
+        if (!list.length) sources.textContent = "—"
+        list.slice(0, 4).forEach((src, i) => {
+          if (i) sources.append(document.createTextNode(" · "))
+          const a = document.createElement("a")
+          a.href = src
+          a.target = "_blank"
+          a.rel = "noopener noreferrer"
+          let label = src
+          try {
+            label = new URL(src).hostname.replace(/^www\./, "")
+          } catch {
+            label = src.slice(0, 30)
+          }
+          a.textContent = `${label} ↗`
+          sources.append(a)
+        })
+
+        $("maps-link").href = mapsUrl(place)
+        $("osm-link").href = osmUrl(place)
+
+        const decision = state.decisions[place.id]
+        $("decision-tag").textContent = decision
+          ? `Đã duyệt: ${VERDICT_LABEL[decision.verdict] ?? decision.verdict}${
+              decision.note ? ` — “${decision.note}”` : ""
+            }`
+          : "Chưa duyệt"
+        $("note").value = decision?.note ?? ""
+
+        renderImages(place)
+      }
+
+      function renderImages(place) {
+        const gallery = []
+        if (place.image) gallery.push(place.image)
+        for (const img of place.images ?? []) if (!gallery.includes(img)) gallery.push(img)
+
+        const box = $("image-box")
+        box.textContent = ""
+        if (!gallery.length) {
+          const div = document.createElement("div")
+          div.className = "empty"
+          div.textContent = "Không có ảnh — UI dùng ảnh minh hoạ theo seed"
+          box.append(div)
+        } else {
+          state.imageIndex = Math.min(state.imageIndex, gallery.length - 1)
+          const img = document.createElement("img")
+          img.src = `/images/${gallery[state.imageIndex].replace(/^images\//, "")}`
+          img.alt = `Ảnh ${state.imageIndex + 1}/${gallery.length} — ${place.name}`
+          box.append(img)
+        }
+
+        const thumbs = $("thumbs")
+        thumbs.textContent = ""
+        gallery.forEach((src, i) => {
+          const btn = document.createElement("button")
+          btn.type = "button"
+          btn.setAttribute("aria-current", String(i === state.imageIndex))
+          btn.title = src
+          const img = document.createElement("img")
+          img.src = `/images/${src.replace(/^images\//, "")}`
+          img.alt = ""
+          img.loading = "lazy"
+          btn.append(img)
+          btn.addEventListener("click", () => {
+            state.imageIndex = i
+            renderImages(place)
+          })
+          thumbs.append(btn)
+        })
+      }
+
+      async function saveDecision(verdict, note) {
+        const place = current()
+        if (!place || state.busy) return
+        state.busy = true
+        const previous = state.decisions[place.id] ?? null
+        try {
+          setStatus("Đang lưu…")
+          const res = await fetch("/api/decisions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: place.id, verdict, note: note ?? $("note").value.trim() }),
+          })
+          if (!res.ok) throw new Error((await res.json()).error ?? `HTTP ${res.status}`)
+          const body = await res.json()
+          state.decisions[place.id] = body.decision
+          state.undoStack.push({ id: place.id, previous })
+          setStatus(`Đã lưu · ${VERDICT_LABEL[verdict]}`, "saved")
+          advance()
+        } catch (error) {
+          setStatus(`Lỗi: ${error.message}`, "error")
+        } finally {
+          state.busy = false
+        }
+      }
+
+      async function undo() {
+        const last = state.undoStack.pop()
+        if (!last || state.busy) return
+        state.busy = true
+        try {
+          setStatus("Đang hoàn tác…")
+          const res = await fetch(`/api/decisions?id=${encodeURIComponent(last.id)}`, {
+            method: "DELETE",
+          })
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          if (last.previous) state.decisions[last.id] = last.previous
+          else delete state.decisions[last.id]
+          // Quay lại đúng quán vừa hoàn tác.
+          const at = state.filtered.findIndex((p) => p.id === last.id)
+          if (at > -1) state.index = at
+          else applyFilters()
+          setStatus("Đã hoàn tác", "saved")
+          render()
+        } catch (error) {
+          setStatus(`Lỗi: ${error.message}`, "error")
+        } finally {
+          state.busy = false
+        }
+      }
+
+      function advance() {
+        state.imageIndex = 0
+        if ($("only-unreviewed").checked) {
+          // Phần tử hiện tại vừa được duyệt → rời khỏi hàng đợi.
+          state.filtered.splice(state.index, 1)
+          if (state.index >= state.filtered.length) state.index = 0
+        } else {
+          state.index = Math.min(state.index + 1, state.filtered.length - 1)
+        }
+        render()
+      }
+
+      function move(delta) {
+        if (!state.filtered.length) return
+        state.index = (state.index + delta + state.filtered.length) % state.filtered.length
+        state.imageIndex = 0
+        render()
+      }
+
+      function cycleImage(delta) {
+        const place = current()
+        if (!place) return
+        const gallery = [place.image, ...(place.images ?? [])].filter(Boolean)
+        const unique = [...new Set(gallery)]
+        if (unique.length < 2) return
+        state.imageIndex = (state.imageIndex + delta + unique.length) % unique.length
+        renderImages(place)
+      }
+
+      function buildFilters() {
+        const districts = [...new Set(state.places.map((p) => p.district).filter(Boolean))].sort(
+          (a, b) => a.localeCompare(b, "vi"),
+        )
+        for (const d of districts) {
+          const opt = document.createElement("option")
+          opt.value = d
+          opt.textContent = d
+          $("filter-district").append(opt)
+        }
+        const categories = [...new Set(state.places.map((p) => p.category).filter(Boolean))].sort()
+        for (const c of categories) {
+          const opt = document.createElement("option")
+          opt.value = c
+          opt.textContent = c
+          $("filter-category").append(opt)
+        }
+      }
+
+      document.addEventListener("keydown", (event) => {
+        const tag = event.target.tagName
+        if (tag === "TEXTAREA" || tag === "SELECT") {
+          if (event.key === "Enter" && tag === "TEXTAREA") {
+            // Lưu ghi chú vào quyết định hiện có (nếu có), rồi thoát khỏi ô nhập.
+            const place = current()
+            const decision = place && state.decisions[place.id]
+            event.target.blur()
+            if (place && decision) saveDecision(decision.verdict, event.target.value.trim())
+          }
+          if (event.key === "Escape") event.target.blur()
+          return
+        }
+        if (tag === "INPUT") return
+
+        const key = event.key.toLowerCase()
+        const verdictByKey = {
+          1: "ok",
+          2: "wrong-image",
+          3: "wrong-address",
+          4: "not-exists",
+          5: "duplicate",
+        }
+        if (verdictByKey[key]) {
+          event.preventDefault()
+          saveDecision(verdictByKey[key])
+          return
+        }
+        if (key === "s") {
+          event.preventDefault()
+          advance()
+        } else if (key === "u") {
+          event.preventDefault()
+          undo()
+        } else if (key === "n") {
+          event.preventDefault()
+          $("note").focus()
+        } else if (key === "[") {
+          event.preventDefault()
+          cycleImage(-1)
+        } else if (key === "]") {
+          event.preventDefault()
+          cycleImage(1)
+        } else if (key === "arrowleft") {
+          event.preventDefault()
+          move(-1)
+        } else if (key === "arrowright") {
+          event.preventDefault()
+          move(1)
+        }
+      })
+
+      for (const id of ["filter-tier", "filter-district", "filter-category", "only-unreviewed"]) {
+        $(id).addEventListener("change", applyFilters)
+      }
+      $("skip").addEventListener("click", advance)
+      for (const btn of document.querySelectorAll("#verdicts button[data-verdict]")) {
+        btn.addEventListener("click", () => saveDecision(btn.dataset.verdict))
+      }
+
+      async function boot() {
+        try {
+          const res = await fetch("/api/places")
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const body = await res.json()
+          state.places = body.places
+          state.decisions = body.decisions ?? {}
+          buildFilters()
+          applyFilters()
+          setStatus("Sẵn sàng")
+        } catch (error) {
+          setStatus(`Không tải được dữ liệu: ${error.message}`, "error")
+        }
+      }
+
+      boot()
+    </script>
+  </body>
+</html>

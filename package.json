@@ -18,7 +18,9 @@
     "test:watch": "vitest",
     "prepare": "husky",
     "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui"
+    "e2e:ui": "playwright test --ui",
+    "review:data": "node scripts/cold-start/review-server.mjs",
+    "review:apply": "node scripts/cold-start/apply-review.mjs --apply"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

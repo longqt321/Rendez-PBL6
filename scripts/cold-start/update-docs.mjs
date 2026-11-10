@@ -94,6 +94,8 @@ ${categoryRows}
 | \`diversify-images.mjs\` | Tải ảnh món từ Wikimedia Commons (lọc tiêu đề rác + kiểm chất lượng), gán vòng tròn (tối đa 6 lần/ảnh); \`--rebalance\` gán lại toàn bộ |
 | \`clean-images.mjs\` | Xoá ảnh rác do audit thị giác phát hiện, gỡ khỏi dataset |
 | \`validate.mjs\` | Kiểm schema/địa chỉ/toạ độ/ảnh/trùng lặp — exit 1 nếu sai |
+| \`review-server.mjs\` | Công cụ duyệt tay (D-048): \`bun run review:data\` → http://localhost:5198 |
+| \`apply-review.mjs\` | Áp kết quả duyệt tay: blocklist ảnh rác, đóng quán không tồn tại |
 | \`update-docs.mjs\` | Sinh lại README + CREDITS |
 
 ## Việc còn lại

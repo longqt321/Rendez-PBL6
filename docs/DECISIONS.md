@@ -2215,6 +2215,53 @@ Dataset cuối: 492 place, **0 thiếu ảnh**, 144 ảnh dish distinct + 22 ven
 **Chưa giải quyết:** ~10% ảnh còn lại có thể vẫn lệch nhẹ; ảnh venue một số quán đã bị
 loại hết — UI dùng ảnh seed minh hoạ.
 
+## D-048 — Công cụ duyệt thủ công cold-start data (review tool)
+
+**Ngày:** 2026-11-10
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Crawl tự động đã chạm trần: 405/492 địa điểm là POI OpenStreetMap (quán nhà dân, không mô
+tả, không đánh giá), 470/492 dùng ảnh món đại diện, quán giới trẻ (Trạm 247, iCoffee,
+Zone Six…) chỉ vào được nhờ nghiên cứu tay. Audit thị giác tự động loại được ảnh rác rõ
+ràng nhưng ~10% còn lệch mà máy không phân biệt được.
+
+### Phương án đã xem xét
+
+| Phương án                          | Vì sao loại / chọn                                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Report HTML tĩnh + tải JSON về tay | Lưu quyết định thủ công, dễ mất, chậm                                                                  |
+| Route `/dev/review` trong app      | MSW chạy trong browser **không ghi được file** → phải thêm Vite middleware; trộn pipeline data vào app |
+| **Tool độc lập (chọn)**            | Server Node nhỏ + 1 file HTML, không dependency, không đụng code app                                   |
+
+### Quyết định
+
+1. `scripts/cold-start/review-server.mjs` — HTTP server (port 5198), API `/api/places`,
+   `/api/decisions` (POST/DELETE), serve ảnh từ `data/cold-start/images/` (chặn traversal).
+2. `scripts/cold-start/review-ui.html` — 1 file HTML + JS thuần; duyệt bằng phím tắt
+   `1`–`5`, `S`, `U`, `N`, `[`/`]`; autosave ngay mỗi quyết định.
+3. `scripts/cold-start/apply-review.mjs` — overlay → blocklist ảnh rác, đóng quán
+   `not-exists`, xuất danh sách `duplicate`/`wrong-address` để xử lý tay. Mặc định báo
+   cáo, `--apply` mới ghi.
+4. **Overlay tách khỏi dataset**: quyết định nằm ở `review-state.json`; `places.json`
+   chỉ bị sửa khi chạy `apply-review --apply` (đóng quán), nên pipeline tái sinh vẫn chạy được.
+5. Tiêu chí duyệt (người dùng chốt): **ảnh đúng quán · địa chỉ đúng · quán còn hoạt động**.
+   Không chấm sao, không bắt buộc ảnh venue.
+
+### Bằng chứng
+
+- Server: `/api/places` trả 492 địa điểm; ảnh `200`; path traversal `404`.
+- UI (Playwright): tải 492/492, ảnh load OK, phím `1` lưu + chuyển quán, `U` hoàn tác đúng
+  quán, `S` bỏ qua, `N` focus ghi chú, lọc `curated-v2` → hàng đợi 52, không lỗi console.
+- `apply-review --apply` trên dữ liệu giả: blocklist 177 → 178 URL, 1 quán `status: closed`,
+  xuất 2 file danh sách; dữ liệu test đã khôi phục.
+- Đánh giá UI bằng vision subagent: đạt cả 3 điểm (badge phân loại nổi bật, lưới nút đều,
+  link tương phản tốt) sau khi sửa.
+
+**Chưa làm (V2):** form thêm quán mới (dán link Google Maps), chọn ảnh thay thế từ gallery,
+map nhúng, chấm chất lượng.
+
 ### Bối cảnh
 
 Bộ 1.701 địa điểm có 3 vấn đề người dùng chỉ ra: (1) 929/939 quán cafe dùng chung một ảnh
