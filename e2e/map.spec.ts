@@ -15,15 +15,19 @@ test("bản đồ nạp pin theo vùng xem, nhiều hơn một trang lưới", a
   await expect(markers.first()).toBeVisible({ timeout: 10_000 })
   expect(await markers.count()).toBeGreaterThan(9)
 
-  const counter = page.getByText(/Đang hiển thị \d+ địa điểm/)
+  const counter = page.getByText(/Đang hiển thị [\d/]+ địa điểm/)
   await expect(counter).toBeVisible()
   const count = Number((await counter.textContent())?.match(/\d+/)?.[0])
   expect(count).toBeGreaterThan(9)
 })
 
-test("pan sang vùng khác nạp thêm pin của vùng đó", async ({ page }) => {
+test("pan sang vùng khác nạp lại pin của vùng đó", async ({ page }) => {
   await page.goto("/map")
   await expect(page.locator(".custom-place-marker").first()).toBeVisible({ timeout: 10_000 })
+
+  // Nhãn đếm phản ánh vùng đang xem — ghi lại giá trị trước khi pan.
+  const counter = page.getByText(/Đang hiển thị [\d/]+ địa điểm/)
+  const before = await counter.textContent()
 
   // Kéo bản đồ sang phải (về hướng Sơn Trà) — khung nhìn đổi → nạp lại vùng.
   const map = page.locator(".leaflet-container")
@@ -32,6 +36,8 @@ test("pan sang vùng khác nạp thêm pin của vùng đó", async ({ page }) =
     targetPosition: { x: 240, y: 450 },
   })
 
-  // Sau khi pan, query vùng mới hoàn tất — lại có pin (vùng Sơn Trà có quán).
-  await expect(page.locator(".custom-place-marker").first()).toBeVisible({ timeout: 10_000 })
+  // Nhãn đếm PHẢI đổi giá trị — chứng tỏ vùng mới được nạp (chỉ assert "vẫn còn
+  // pin" là chưa đủ: pin cũ vẫn hiển thị dù không fetch gì).
+  await expect(counter).not.toHaveText(before ?? "", { timeout: 10_000 })
+  await expect(page.locator(".custom-place-marker").first()).toBeVisible()
 })

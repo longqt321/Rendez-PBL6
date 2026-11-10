@@ -8,12 +8,16 @@ import type { MapBounds } from "../api/get-map-places"
  * Cache bản đồ (D-052): kéo qua kéo lại một vùng KHÔNG được gọi lại API.
  *
  * Đếm số lần gọi `getMapPlaces` (mock adapter chặn trước network nên không đếm
- * được request HTTP — phải đếm ở tầng API).
+ * được request HTTP — phải đếm ở tầng API). Mock có signature đầy đủ nên
+ * `mock.calls` được type kiểm tra, không cần cast.
  */
-const getMapPlaces = vi.fn<() => Promise<{ items: []; total: number }>>()
-vi.mock("../api/get-map-places", () => ({
-  getMapPlaces: (...args: unknown[]) => getMapPlaces(...(args as [])),
-}))
+vi.mock("../api/get-map-places", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../api/get-map-places")>()
+  return { ...actual, getMapPlaces: vi.fn(actual.getMapPlaces) }
+})
+
+const { getMapPlaces } = await import("../api/get-map-places")
+const getMapPlacesMock = vi.mocked(getMapPlaces)
 
 const { useMapPlaces } = await import("./use-map-places")
 
@@ -32,8 +36,8 @@ function wrapper(client: QueryClient) {
 
 describe("useMapPlaces", () => {
   beforeEach(() => {
-    getMapPlaces.mockReset()
-    getMapPlaces.mockResolvedValue({ items: [], total: 0 })
+    getMapPlacesMock.mockReset()
+    getMapPlacesMock.mockResolvedValue({ items: [], total: 0 })
   })
 
   it("kéo nhẹ trong cùng ô lưới và quay lại vùng cũ → không gọi lại API", async () => {
@@ -44,25 +48,25 @@ describe("useMapPlaces", () => {
     )
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(getMapPlaces).toHaveBeenCalledTimes(1)
+    expect(getMapPlacesMock).toHaveBeenCalledTimes(1)
 
     // Kéo nhẹ: cùng ô lưới sau khi làm tròn → cache hit.
     rerender({ bounds: AREA_A_SHIFTED })
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50))
     })
-    expect(getMapPlaces).toHaveBeenCalledTimes(1)
+    expect(getMapPlacesMock).toHaveBeenCalledTimes(1)
 
     // Sang vùng khác: phải gọi API.
     rerender({ bounds: AREA_B })
-    await waitFor(() => expect(getMapPlaces).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(getMapPlacesMock).toHaveBeenCalledTimes(2))
 
     // Quay lại vùng đầu: cache còn (gcTime 10 phút) → không gọi lại.
     rerender({ bounds: AREA_A })
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50))
     })
-    expect(getMapPlaces).toHaveBeenCalledTimes(2)
+    expect(getMapPlacesMock).toHaveBeenCalledTimes(2)
   })
 
   it("chưa có khung nhìn thì không gọi API", async () => {
@@ -72,6 +76,6 @@ describe("useMapPlaces", () => {
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50))
     })
-    expect(getMapPlaces).not.toHaveBeenCalled()
+    expect(getMapPlacesMock).not.toHaveBeenCalled()
   })
 })

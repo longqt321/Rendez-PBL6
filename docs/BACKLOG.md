@@ -302,3 +302,7 @@ lịch sử; không còn việc mở ở đây.
       bbox (lọc theo tâm địa điểm nằm trong khung).
 - [ ] **Hiệu năng render khi khung nhìn rất rộng** — chặn 300 pin hiện chưa đo bằng mắt; cân nhắc
       cluster marker nếu số pin thực tế lớn hơn.
+- [ ] **`/map` vẫn tải 2 nguồn** — `useDiscoverView` gọi `/places` trang 1 chỉ để quyết
+      định skeleton/Empty, trong khi pin lấy từ `/places/map`. Bỏ được cần tách
+      `useDiscoverView` thành hook bộ lọc (URL) + hook dữ liệu riêng — refactor ảnh hưởng
+      cả `/discover`, chưa làm trong D-053.

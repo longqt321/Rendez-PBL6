@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { keepPreviousData, skipToken, useQuery } from "@tanstack/react-query"
 import { getMapPlaces, type MapBounds } from "../api/get-map-places"
 import type { DiscoverFilters } from "../api/get-places"
 
@@ -56,14 +56,16 @@ export function mapPlacesQueryKey(filters: DiscoverFilters, snapped: MapBounds) 
  * khung đã làm tròn ⇒ kéo qua kéo lại một vùng dùng lại cache, không gọi lại
  * server. `placeholderData: keepPreviousData` giữ pin cũ trong lúc tải vùng mới
  * nên bản đồ không bị "nhấp nháy trắng" khi pan.
+ *
+ * Chưa có khung nhìn (lúc mới mount) thì `queryFn = skipToken` — API chính thức
+ * của TanStack Query để "không chạy query", thay cho việc assert `bounds!`.
  */
 export function useMapPlaces(filters: DiscoverFilters, bounds: MapBounds | null) {
   const snapped = bounds ? snapBounds(bounds) : null
 
   return useQuery({
     queryKey: snapped ? mapPlacesQueryKey(filters, snapped) : ["places", "map", "idle"],
-    queryFn: ({ signal }) => getMapPlaces(filters, snapped!, signal),
-    enabled: snapped !== null,
+    queryFn: snapped ? ({ signal }) => getMapPlaces(filters, snapped, signal) : skipToken,
     staleTime: 5 * 60_000,
     gcTime: 10 * 60_000,
     placeholderData: keepPreviousData,

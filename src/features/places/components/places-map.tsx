@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { Link } from "react-router"
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet"
 import L from "leaflet"
@@ -38,12 +38,18 @@ interface PlacesMapProps {
   fitKey?: string
   /** Đang tải pin của vùng xem — nhãn đếm đổi thành trạng thái đang tải. */
   isPlacesLoading?: boolean
+  /**
+   * Tổng số địa điểm khớp trong khung (server trả). Lớn hơn `places.length` khi
+   * vượt chặn trên — nhãn đếm phải nói rõ "x/y" thay vì giấu phần bị cắt.
+   */
+  totalPlaces?: number
 }
 
 /**
- * Căn tầm nhìn bao quát các địa điểm — CHỈ khi `fitKey` đổi (mở bản đồ, đổi bộ
- * lọc, bật vị trí). Trước đây nó chạy lại mỗi lần danh sách địa điểm đổi, tạo
- * vòng lặp: căn lại → khung nhìn đổi → nạp vùng mới → căn lại…
+ * Căn tầm nhìn — mỗi `fitKey` chỉ căn MỘT lần, và chỉ căn khi đã có điểm để căn
+ * (guard `fittedKeyRef`). Nhờ guard này, phụ thuộc `places` là an toàn: dữ liệu
+ * về sau khi bộ lọc đổi sẽ căn lại đúng một lần, không tạo vòng lặp
+ * "căn → khung nhìn đổi → nạp vùng mới → căn lại…".
  */
 function MapBoundsUpdater({
   places,
@@ -55,10 +61,9 @@ function MapBoundsUpdater({
   selectedPlace?: Place
   userCoordinates?: { lat: number; lng: number } | null
   fitKey?: string
-  /** Đang tải pin của vùng xem — nhãn đếm đổi thành trạng thái đang tải. */
-  isPlacesLoading?: boolean
 }) {
   const map = useMap()
+  const fittedKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (selectedPlace?.lat && selectedPlace?.lng) {
@@ -68,64 +73,54 @@ function MapBoundsUpdater({
       return
     }
 
+    // Đã căn cho khoá này rồi (hoặc đang chờ dữ liệu về) thì thôi.
+    if (fittedKeyRef.current === fitKey) return
+
     const validPlaces = places.filter((p) => p.lat !== undefined && p.lng !== undefined)
     const points: [number, number][] = validPlaces.map((p) => [p.lat!, p.lng!])
     if (userCoordinates) {
       points.push([userCoordinates.lat, userCoordinates.lng])
     }
-
-    if (points.length === 0) return
-
-    if (points.length === 1) {
-      map.setView(points[0], 15)
-      return
-    }
+    if (points.length < 2) return
 
     const bounds = L.latLngBounds(points)
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 })
-    // Cố ý KHÔNG phụ thuộc `places`: chỉ căn lại khi `fitKey` đổi.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitKey, selectedPlace, userCoordinates, map])
+    fittedKeyRef.current = fitKey ?? null
+  }, [fitKey, selectedPlace, userCoordinates, places, map])
 
   return null
 }
 
 /**
- * Báo khung nhìn hiện tại sau khi người dùng ngừng pan/zoom.
- *
- * Debounce 300ms: `moveend` bắn liên tục khi kéo bản đồ, gọi API mỗi lần sẽ tạo
- * hàng chục request thừa. Debounce bằng `setTimeout` (không cần package) vì đây
- * là điều phối sự kiện của Leaflet, không phải logic nghiệp vụ.
+ * Báo khung nhìn hiện tại mỗi khi người dùng pan/zoom xong (lẫn lúc mở bản đồ).
+ * Việc làm chậm 300ms nằm ở `map-page` (`useDebounce` của `@uidotdev/usehooks`)
+ * — component này chỉ đọc sự kiện của Leaflet và báo giá trị, không tự điều phối.
  */
 function ViewportReporter({ onChange }: { onChange: (bounds: MapBounds) => void }) {
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const report = (map: L.Map) => {
-    if (timer.current) clearTimeout(timer.current)
-    timer.current = setTimeout(() => {
-      const b = map.getBounds()
-      onChange({
-        minLat: b.getSouth(),
-        minLng: b.getWest(),
-        maxLat: b.getNorth(),
-        maxLng: b.getEast(),
-      })
-    }, 300)
-  }
-
-  const map = useMapEvents({
-    moveend: () => report(map),
-    zoomend: () => report(map),
+  // Giữ callback mới nhất trong ref để `emit` ổn định (không re-run effect khi
+  // parent render lại), đồng thời không cần eslint-disable exhaustive-deps.
+  const onChangeRef = useRef(onChange)
+  useEffect(() => {
+    onChangeRef.current = onChange
   })
+
+  const map = useMap()
+  const emit = useCallback(() => {
+    const b = map.getBounds()
+    onChangeRef.current({
+      minLat: b.getSouth(),
+      minLng: b.getWest(),
+      maxLat: b.getNorth(),
+      maxLng: b.getEast(),
+    })
+  }, [map])
+
+  useMapEvents({ moveend: emit, zoomend: emit })
 
   // Báo khung nhìn ban đầu để lần mở đầu tiên cũng nạp theo vùng thật.
   useEffect(() => {
-    report(map)
-    return () => {
-      if (timer.current) clearTimeout(timer.current)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map])
+    emit()
+  }, [emit])
 
   return null
 }
@@ -193,6 +188,7 @@ export function PlacesMap({
   onViewportChange,
   fitKey,
   isPlacesLoading = false,
+  totalPlaces,
 }: PlacesMapProps) {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === "dark"
@@ -357,6 +353,11 @@ export function PlacesMap({
       <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-md border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur">
         {isPlacesLoading && validPlaces.length === 0 ? (
           <span>Đang tải địa điểm trong vùng xem…</span>
+        ) : totalPlaces !== undefined && totalPlaces > validPlaces.length ? (
+          <span>
+            Đang hiển thị {validPlaces.length}/{totalPlaces} địa điểm trong vùng xem — zoom sát hơn
+            để xem hết
+          </span>
         ) : (
           <span>Đang hiển thị {validPlaces.length} địa điểm trong vùng xem</span>
         )}

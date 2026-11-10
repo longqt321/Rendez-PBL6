@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useDebounce } from "@uidotdev/usehooks"
 import { SearchXIcon } from "lucide-react"
 import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
@@ -26,7 +27,11 @@ import type { MapBounds } from "../api/get-map-places"
 export function MapPage() {
   const view = useDiscoverView()
   const { filters, room } = view
-  const [bounds, setBounds] = useState<MapBounds | null>(null)
+  // Bản đồ báo khung nhìn ngay khi pan/zoom xong; hoãn 300ms trước khi dùng làm
+  // khoá truy vấn để kéo liên tục không bắn hàng loạt request (useDebounce của
+  // @uidotdev/usehooks — không tự viết debounce).
+  const [rawBounds, setRawBounds] = useState<MapBounds | null>(null)
+  const bounds = useDebounce(rawBounds, 300)
 
   const mapQuery = useMapPlaces(view.serverFilters, bounds)
   const mapPlaces = mapQuery.data?.items ?? []
@@ -75,8 +80,9 @@ export function MapPage() {
             places={mapPlaces}
             userCoordinates={view.coordinates}
             height="h-[70dvh] min-h-105"
-            onViewportChange={setBounds}
+            onViewportChange={setRawBounds}
             isPlacesLoading={mapQuery.isPending}
+            totalPlaces={mapQuery.data?.total}
             // Đổi bộ lọc / bật vị trí → căn lại tầm nhìn một lần.
             fitKey={`${view.serverFilters.category}|${view.serverFilters.district ?? ""}|${view.serverFilters.query}|${view.serverFilters.room ? "room" : ""}|${view.coordinates ? `${view.coordinates.lat},${view.coordinates.lng}` : ""}`}
           />

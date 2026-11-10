@@ -2463,3 +2463,44 @@ Bản đồ chỉ hiển thị 9 pin, luôn ép về vùng Hải Châu. Nguyên 
 
 - Chưa test trên dữ liệu backend thật (mock adapter chặn trước network).
 - Chưa đo hành vi khi zoom rất nhỏ (nhiều pin, chặn 300) và hiệu năng render 300 marker.
+
+## D-053 — Rà soát "chắp vá/hack" D-052: 8 điểm đã sửa
+
+**Ngày:** 2026-11-10
+**Trạng thái:** Đã áp dụng
+
+### Chắp vá (tự viết thay vì dùng package đã cài)
+
+1. Debounce 300ms tự viết bằng `setTimeout` + `useRef` trong `ViewportReporter` →
+   `@uidotdev/usehooks@2.4.1` đã cài có `useDebounce<T>(value, delay)`; chuyển debounce
+   sang giá trị `bounds` ở `map-page.tsx`, `ViewportReporter` chỉ báo sự kiện Leaflet.
+2. `getMapPlaces` copy nguyên khối dựng query params từ `getPlaces` → tách
+   `placesQueryParams(filters)` trong `get-places.ts`, hai hàm cùng dùng (một nghiệp vụ
+   một chỗ xử lý).
+
+### Hack/trick (né xử lý, giấu lỗi)
+
+3. `queryFn: getMapPlaces(filters, snapped!, signal)` — non-null assertion để né kiểm tra →
+   dùng `skipToken` (API chính thức TanStack Query v5, xác minh được re-export từ
+   `@tanstack/react-query`), bỏ `enabled`.
+4. Server trả `total` nhưng client bỏ qua → chặn 300 pin bị giấu. Nhãn đếm nay hiện
+   "Đang hiển thị 300/492 địa điểm — zoom sát hơn để xem hết" khi `total > items.length`.
+5. Prop `isPlacesLoading` khai báo trong `MapBoundsUpdater` nhưng không dùng → xoá.
+6. `eslint-disable react-hooks/exhaustive-deps` ở `MapBoundsUpdater` để né phụ thuộc
+   `places`, kéo theo **fit-theo-kết-quả-lọc không bao giờ chạy** trên `/map` (lúc mount
+   `places` rỗng nên return sớm, sau đó `fitKey` không đổi). Sửa: guard `fittedKeyRef`
+   — mỗi `fitKey` căn đúng một lần khi đã có ≥2 điểm; phụ thuộc `places` hợp lệ, không
+   vòng lặp, bỏ hẳn eslint-disable.
+7. e2e "pan sang vùng khác nạp thêm pin" chỉ assert "vẫn còn pin" → pass kể cả khi không
+   nạp gì. Sửa: assert nhãn đếm **đổi giá trị** sau khi pan (`not.toHaveText`).
+8. Test cache dùng `getMapPlaces(...(args as []))` để né type → mock giữ signature gốc
+   (`vi.fn(actual.getMapPlaces)` + `vi.mocked`), không còn cast.
+
+### Bằng chứng
+
+- `typecheck` ✓, `lint` ✓ (0 lỗi, không còn `eslint-disable` trong `places-map.tsx`),
+  unit **72/72** ✓, e2e map **2/2** ✓ (test pan giờ chứng minh vùng mới được nạp).
+
+### Chưa xác minh
+
+- Chưa kiểm bằng mắt nhãn "x/y" trên khung nhìn rộng ở trình duyệt thật (chỉ có e2e).
