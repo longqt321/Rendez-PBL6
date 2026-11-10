@@ -273,3 +273,13 @@ lịch sử; không còn việc mở ở đây.
       chỉ 35 ảnh venue thật. Cần nguồn ảnh quán thật (Google Places API key hoặc
       thu thập thủ công) để thay `imageKind: "dish"` bằng ảnh quán.
 - [ ] **Ảnh lặp tối đa 9 lần** — pool 194 ảnh / 492 place; thêm ảnh sẽ giảm lặp.
+
+## Phát hiện 2026-11-10 (audit thị giác ảnh D-047)
+
+- [x] **247 ảnh rác trong ảnh Commons** (biển hiệu, logo, bưu thiếp, tranh vẽ, panorama,
+      ảnh người/lịch sử, nguyên liệu sống, ảnh sai nhóm) — đã xoá qua 5 vòng audit thị giác,
+      blocklist 148 URL, lọc tiêu đề theo nhóm, tên file hash.
+- [ ] **~11% ảnh dish còn lại có thể lệch nhẹ** — audit lặp lại khi có ảnh mới; cân nhắc
+      dùng model vision chấm điểm tự động trong CI.
+- [ ] **8 place mất hết ảnh venue** sau audit (biển hiệu/món chen vào) — UI fallback ảnh
+      seed; cần ảnh venue thật từ nguồn khác.

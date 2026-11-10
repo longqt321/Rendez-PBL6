@@ -2173,6 +2173,46 @@ lặp tối đa 9); `bun run typecheck` + `bun run test` (67/67) + `bun run lint
 **Chưa giải quyết:** 50 ứng viên nghiên cứu bị loại do geocode miss (có thể retry sau);
 ảnh Commons là ảnh món đại diện theo nhóm, không phải ảnh quán thật.
 
+## D-047 — Audit thị giác ảnh cold-start: blocklist URL + tên file hash
+
+**Ngày:** 2026-11-10
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Model chính không đọc trực tiếp được ảnh, nhưng subagent model `pro` đọc được — dùng nó
+audit 378 ảnh (13 contact sheet, `montage` ImageMagick). Kết quả: **247 ảnh rác** trong
+265 ảnh Commons ban đầu (biển hiệu neon, logo, bưu thiếp, tranh vẽ, panorama méo, ảnh
+người/lịch sử, nguyên liệu sống, ảnh món sai nhóm).
+
+### Vấn đề gốc phát hiện thêm
+
+1. Tên file `dish-001.jpg…` đánh số tuần tự theo lượt chạy → số bị **dùng lại** giữa
+   các lần chạy, danh sách audit/blocklist không ổn định.
+2. Ảnh rác bị xoá nhưng URL vẫn nằm trong cache Commons → lần chạy sau **tải lại**.
+3. Pool ảnh dùng chung giữa các nhóm (`allPool`) → gán pizza cho quán phở.
+
+### Quyết định
+
+1. **Tên file theo hash SHA-1 URL** (`dish-<12 ký tự hash>.jpg`) — định danh ổn định.
+2. **Blocklist URL** (`.cache/image-blocklist.json`) — `clean-images.mjs` ghi URL nguồn
+   của ảnh rác vào đây; `diversify-images.mjs` bỏ qua URL bị block khi chọn ảnh.
+3. **Lọc tiêu đề Commons theo từ khoá nhóm** (`CATEGORY_KEYWORDS`) — query trả về ảnh
+   lệch nhóm bị loại ngay từ metadata.
+4. **Kiểm chất lượng bằng ImageMagick** — loại ảnh < 300px, tỉ lệ > 1.8, tương phản thấp.
+5. **Pool chung chỉ dùng nhóm `khac`** (món Á/đĩa ăn) thay vì toàn bộ pool.
+6. Quy trình audit: `montage` → contact sheet JPEG nhẹ (~150KB) → subagent `pro` đọc
+   và phân loại JUNK/MISMATCH → `clean-images.mjs` → rebalance.
+
+### Bằng chứng
+
+5 vòng audit: 265 → 247 → 71 → 39 → 18 ảnh rác bị loại. Lần cuối: 18/164 JUNK (~11%).
+Dataset cuối: 492 place, 0 thiếu ảnh, 143 ảnh distinct dish + 71 venue, lặp tối đa 6.
+`validate.mjs` exit 0, typecheck/test 67/67/lint/e2e 10/10 pass.
+
+**Chưa giải quyết:** ~11% ảnh còn lại có thể vẫn lệch nhẹ (ảnh chung chung); ảnh venue
+một số quán đã bị loại hết (8 place) — UI dùng ảnh seed minh hoạ.
+
 ### Bối cảnh
 
 Bộ 1.701 địa điểm có 3 vấn đề người dùng chỉ ra: (1) 929/939 quán cafe dùng chung một ảnh

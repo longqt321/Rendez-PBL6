@@ -6,7 +6,7 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
 
 - **492 địa điểm** — mỗi địa điểm đều có **địa chỉ số nhà + tên đường** và **toạ độ**.
 - Theo nguồn: curated 35 · osm 405 · curated-v2 52.
-- **492/492 có ảnh**, 194 ảnh khác nhau; 35 địa điểm có **ảnh thật của quán**.
+- **492/492 có ảnh**, 143 ảnh khác nhau; 22 địa điểm có **ảnh thật của quán**.
 
 ### Phân bố theo quận/phường (đơn vị hành chính 2025)
 
@@ -71,7 +71,8 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
    giữ lại chỉ gây loãng.
 2. **Toạ độ**: mọi mục có `lat`/`lng` nằm trong địa giới TP Đà Nẵng, nguồn ghi ở `geoSource`
    (`osm` / `nominatim` / `google-maps`).
-3. **Không trùng lặp**: cùng tên chuẩn hoá hoặc cách nhau < 80m.
+3. **Không trùng lặp**: cùng tên chuẩn hoá **và** cách nhau < 120m (cùng tên nhưng xa nhau là
+   chi nhánh khác — giữ lại).
 4. **Không bịa**: mỗi mục nguồn `curated-v2` có `sources` là URL nơi thông tin xuất hiện.
 
 ## Cách hiểu các trường
@@ -84,15 +85,16 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
 
 ## Quy trình tái sinh (`scripts/cold-start/`)
 
-| Script                  | Việc                                                                   |
-| ----------------------- | ---------------------------------------------------------------------- |
-| `enrich-osm.mjs`        | Lấy tag `addr:*`/`phone`/`opening_hours` từ OSM API (Overpass bị chặn) |
-| `geocode-nominatim.mjs` | Geocode ứng viên nghiên cứu, cache trong `.cache/`                     |
-| `fix-districts.mjs`     | Sửa nhãn quận theo `display_name` Nominatim                            |
-| `rebuild.mjs`           | Lọc mục đạt chuẩn, gộp ứng viên, loại trùng, sinh `places.csv`         |
-| `diversify-images.mjs`  | Tải ảnh món từ Wikimedia Commons, gán vòng tròn (tối đa 6 lần/ảnh)     |
-| `validate.mjs`          | Kiểm schema/địa chỉ/toạ độ/ảnh/trùng lặp — exit 1 nếu sai              |
-| `update-docs.mjs`       | Sinh lại README + CREDITS                                              |
+| Script                  | Việc                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `enrich-osm.mjs`        | Lấy tag `addr:*`/`phone`/`opening_hours` từ OSM API (Overpass bị chặn)                                                                |
+| `geocode-nominatim.mjs` | Geocode ứng viên nghiên cứu, cache trong `.cache/`                                                                                    |
+| `fix-districts.mjs`     | Sửa nhãn quận theo `display_name` Nominatim                                                                                           |
+| `rebuild.mjs`           | Lọc mục đạt chuẩn, gộp ứng viên, loại trùng, sinh `places.csv`                                                                        |
+| `diversify-images.mjs`  | Tải ảnh món từ Wikimedia Commons (lọc tiêu đề rác + kiểm chất lượng), gán vòng tròn (tối đa 6 lần/ảnh); `--rebalance` gán lại toàn bộ |
+| `clean-images.mjs`      | Xoá ảnh rác do audit thị giác phát hiện, gỡ khỏi dataset                                                                              |
+| `validate.mjs`          | Kiểm schema/địa chỉ/toạ độ/ảnh/trùng lặp — exit 1 nếu sai                                                                             |
+| `update-docs.mjs`       | Sinh lại README + CREDITS                                                                                                             |
 
 ## Việc còn lại
 

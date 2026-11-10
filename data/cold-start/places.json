@@ -83,18 +83,14 @@
       "openingHours": null,
       "description": "Bánh xèo nổi tiếng với nước chấm gan đậu phộng đậm đà.",
       "sources": ["tourism.danang.vn", "canvashotel.com.vn"],
-      "image": "images/venues/banh-xeo-ba-duong-1.jpg",
+      "image": "images/dishes/dish-9913384f2915.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/banh-xeo-ba-duong-1.jpg",
-        "images/venues/banh-xeo-ba-duong-gm-1.jpg",
-        "images/venues/banh-xeo-ba-duong-gm-2.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20x%C3%A8o%20B%C3%A0%20D%C6%B0%E1%BB%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -112,18 +108,14 @@
       "openingHours": "Mo-Su 06:00-21:00",
       "description": "Mì Quảng lâu năm trên đường Hải Phòng.",
       "sources": ["hellodanang.vn", "openstreetmap.org"],
-      "image": "images/venues/mi-quang-1a-1.jpg",
+      "image": "images/venues/mi-quang-1a-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/mi-quang-1a-1.jpg",
-        "images/venues/mi-quang-1a-gm-1.jpg",
-        "images/venues/mi-quang-1a-gm-2.jpg"
-      ],
+      "images": ["images/venues/mi-quang-1a-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/M%C3%AC%20Qu%E1%BA%A3ng%201A%201A%20H%E1%BA%A3i%20Ph%C3%B2ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -151,8 +143,7 @@
       "imageKind": "venue",
       "images": [
         "images/venues/mi-quang-ech-bep-trang-gm-1.jpg",
-        "images/venues/mi-quang-ech-bep-trang-gm-2.jpg",
-        "images/venues/mi-quang-ech-bep-trang-gm-3.jpg"
+        "images/venues/mi-quang-ech-bep-trang-gm-2.jpg"
       ],
       "venuePageUrl": "https://www.google.com/maps/search/M%C3%AC%20Qu%E1%BA%A3ng%20%E1%BA%BEch%20B%E1%BA%BFp%20Trang%20441%20%C3%94ng%20%C3%8Dch%20Khi%C3%AAm%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
@@ -171,18 +162,14 @@
       "openingHours": null,
       "description": "Bánh tráng cuốn thịt heo.",
       "sources": ["canvashotel.com.vn", "openstreetmap.org"],
-      "image": "images/venues/dac-san-tran-1.jpg",
+      "image": "images/venues/dac-san-tran-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/dac-san-tran-1.jpg",
-        "images/venues/dac-san-tran-gm-1.jpg",
-        "images/venues/dac-san-tran-gm-2.jpg"
-      ],
+      "images": ["images/venues/dac-san-tran-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/Qu%C3%A1n%20%C4%90%E1%BA%B7c%20s%E1%BA%A3n%20Tr%E1%BA%A7n%204%20L%C3%AA%20Du%E1%BA%A9n%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -200,19 +187,14 @@
       "openingHours": null,
       "description": "Bánh tráng thịt heo.",
       "sources": ["canvashotel.com.vn", "openstreetmap.org"],
-      "image": "images/venues/quan-mau-gm-1.png",
+      "image": "images/venues/quan-mau-gm-3.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/quan-mau-gm-1.png",
-        "images/venues/quan-mau-gm-2.jpg",
-        "images/venues/quan-mau-gm-3.jpg",
-        "images/venues/quan-mau-gm-4.jpg"
-      ],
+      "images": ["images/venues/quan-mau-gm-3.jpg", "images/venues/quan-mau-gm-4.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/Qu%C3%A1n%20M%E1%BA%ADu%2035%20%C4%90%E1%BB%97%20Th%C3%BAc%20T%E1%BB%8Bnh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -231,19 +213,14 @@
       "description": "Bún mắm nêm.",
       "sources": ["canvashotel.com.vn", "openstreetmap.org"],
       "notes": "Nguồn báo chí ghi K142/18 Trần Nhân Tông; OSM ghi Trần Kế Xương — cần xác minh địa chỉ.",
-      "image": "images/venues/bun-mam-van-gm-1.jpg",
+      "image": "images/venues/bun-mam-van-gm-4.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/bun-mam-van-gm-1.jpg",
-        "images/venues/bun-mam-van-gm-2.jpg",
-        "images/venues/bun-mam-van-gm-3.jpg",
-        "images/venues/bun-mam-van-gm-4.jpg"
-      ],
+      "images": ["images/venues/bun-mam-van-gm-4.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%BAn%20m%E1%BA%AFm%20n%C3%AAm%20V%C3%A2n%20K23%2F14%20Tr%E1%BA%A7n%20K%E1%BA%BF%20X%C6%B0%C6%A1ng%20(OSM)%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -261,18 +238,14 @@
       "openingHours": null,
       "description": "Bún chả cá.",
       "sources": ["sunparadiseland.com", "openstreetmap.org"],
-      "image": "images/venues/bun-cha-ca-ba-lu-1.jpg",
+      "image": "images/dishes/dish-332bbcd0d28e.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/bun-cha-ca-ba-lu-1.jpg",
-        "images/venues/bun-cha-ca-ba-lu-gm-1.jpg",
-        "images/venues/bun-cha-ca-ba-lu-gm-2.png"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%BAn%20ch%E1%BA%A3%20c%C3%A1%20B%C3%A0%20L%E1%BB%AF%20319%20H%C3%B9ng%20V%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -290,21 +263,14 @@
       "openingHours": "14:00-21:30",
       "description": "Bánh tráng kẹp.",
       "sources": ["canvashotel.com.vn", "openstreetmap.org"],
-      "image": "images/venues/banh-trang-kep-di-hoa-1.jpg",
+      "image": "images/dishes/dish-9b954b2acfe6.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/banh-trang-kep-di-hoa-1.jpg",
-        "images/venues/banh-trang-kep-di-hoa-gm-1.png",
-        "images/venues/banh-trang-kep-di-hoa-gm-2.jpg",
-        "images/venues/banh-trang-kep-di-hoa-gm-3.jpg",
-        "images/venues/banh-trang-kep-di-hoa-gm-4.jpg",
-        "images/venues/banh-trang-kep-di-hoa-gm-5.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20tr%C3%A1ng%20k%E1%BA%B9p%20D%C3%AC%20Hoa%2062%2F2A%20L%C3%AA%20%C4%90%C3%ACnh%20D%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -322,20 +288,14 @@
       "openingHours": null,
       "description": "Hải sản bình dân, đông khách địa phương, nằm trong hẻm.",
       "sources": ["cattour.vn", "openstreetmap.org"],
-      "image": "images/venues/hai-san-nam-danh-1.jpg",
+      "image": "images/dishes/dish-95e87b8dd2ec.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/hai-san-nam-danh-1.jpg",
-        "images/venues/hai-san-nam-danh-gm-1.jpg",
-        "images/venues/hai-san-nam-danh-gm-2.jpg",
-        "images/venues/hai-san-nam-danh-gm-3.jpg",
-        "images/venues/hai-san-nam-danh-gm-4.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20N%C4%83m%20%C4%90%E1%BA%A3nh%20K139%2FH59%2F38%20Tr%E1%BA%A7n%20Quang%20Kh%E1%BA%A3i%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -361,10 +321,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/hai-san-nam-ranh-gm-1.jpg",
-        "images/venues/hai-san-nam-ranh-gm-2.jpg"
-      ],
+      "images": ["images/venues/hai-san-nam-ranh-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20N%C4%83m%20R%E1%BA%A3nh%2001%20Ch%C6%B0%C6%A1ng%20D%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -410,17 +367,14 @@
       "openingHours": null,
       "description": "Hải sản hơn 30 năm, mặt tiền biển Mỹ Khê.",
       "sources": ["pasgo.vn", "openstreetmap.org"],
-      "image": "images/venues/my-hanh-seafood-gm-1.png",
+      "image": "images/venues/my-hanh-seafood-gm-2.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/my-hanh-seafood-gm-1.png",
-        "images/venues/my-hanh-seafood-gm-2.jpg"
-      ],
+      "images": ["images/venues/my-hanh-seafood-gm-2.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/Nh%C3%A0%20h%C3%A0ng%20h%E1%BA%A3i%20s%E1%BA%A3n%20M%E1%BB%B9%20H%E1%BA%A1nh%2018%20V%C3%B5%20Nguy%C3%AAn%20Gi%C3%A1p%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -445,10 +399,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/reply-1988-cafe-gm-1.jpg",
-        "images/venues/reply-1988-cafe-gm-2.jpg"
-      ],
+      "images": ["images/venues/reply-1988-cafe-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/Reply%201988%20Caf%C3%A9%2020%20L%C3%AA%20H%E1%BB%93ng%20Phong%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -491,18 +442,14 @@
       "openingHours": null,
       "description": "Cafe kết hợp gelato, phong cách châu Âu.",
       "sources": ["hoabinhtourist.com", "openstreetmap.org"],
-      "image": "images/venues/boulevard-gelato-coffee-gm-1.jpg",
+      "image": "images/dishes/dish-dbff86a18cc8.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/boulevard-gelato-coffee-gm-1.jpg",
-        "images/venues/boulevard-gelato-coffee-gm-2.jpg",
-        "images/venues/boulevard-gelato-coffee-gm-3.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/Boulevard%20Gelato%20%26%20Coffee%2077%20Tr%E1%BA%A7n%20Qu%E1%BB%91c%20To%E1%BA%A3n%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -520,18 +467,14 @@
       "openingHours": null,
       "description": "Chả bò, chả heo tự làm theo công thức gia truyền.",
       "sources": ["dongtienbakery.com"],
-      "image": "images/venues/banh-mi-ong-ty-1.jpg",
+      "image": "images/dishes/dish-cd4e113981ab.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/banh-mi-ong-ty-1.jpg",
-        "images/venues/banh-mi-ong-ty-gm-1.jpg",
-        "images/venues/banh-mi-ong-ty-gm-2.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20m%C3%AC%20%C3%94ng%20T%C3%BD%20272%20H%C3%B9ng%20V%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -575,17 +518,14 @@
       "openingHours": null,
       "description": "Bún chả cá.",
       "sources": ["zalopay.vn"],
-      "image": "images/venues/bun-cha-ca-ong-ta-gm-1.jpg",
+      "image": "images/dishes/dish-0727da4c3906.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/bun-cha-ca-ong-ta-gm-1.jpg",
-        "images/venues/bun-cha-ca-ong-ta-gm-2.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/place/B%C3%BAn+Ch%E1%BA%A3+c%C3%A1+%C3%94ng+T%E1%BA%A1/@16.0741357,108.2209089,17z/data=!3m1!4b1!4m6!3m5!1s0x314218312790debb:0xf0d34db7493bbb50!8m2!3d16.0741357!4d108.2209089!16s%2Fg%2F11g8p88vdl?authuser=0&hl=vi&entry=ttu&g_ep=EgoyMDI2MTEwMy4wIKXMDSoASAFQAw%3D%3D"
     },
     {
@@ -603,17 +543,14 @@
       "openingHours": null,
       "description": "Gỏi cá Nam Ô.",
       "sources": ["sunparadiseland.com"],
-      "image": "images/venues/goi-ca-nam-o-tan-gm-1.jpg",
+      "image": "images/dishes/dish-baaf456cd70a.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/goi-ca-nam-o-tan-gm-1.jpg",
-        "images/venues/goi-ca-nam-o-tan-gm-2.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/G%E1%BB%8Fi%20c%C3%A1%20Nam%20%C3%94%20T%E1%BA%A5n%20464%20%C4%90i%E1%BB%87n%20Bi%C3%AAn%20Ph%E1%BB%A7%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -638,7 +575,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": ["images/venues/com-ga-a-hai-gm-1.jpg", "images/venues/com-ga-a-hai-gm-2.jpg"],
+      "images": ["images/venues/com-ga-a-hai-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/C%C6%A1m%20g%C3%A0%20A%20H%E1%BA%A3i%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -656,19 +593,14 @@
       "openingHours": null,
       "description": "Bánh xèo tôm nhảy.",
       "sources": ["canvashotel.com.vn"],
-      "image": "images/venues/banh-xeo-nam-hien-gm-1.png",
+      "image": "images/dishes/dish-16b6a3391b68.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/banh-xeo-nam-hien-gm-1.png",
-        "images/venues/banh-xeo-nam-hien-gm-2.jpg",
-        "images/venues/banh-xeo-nam-hien-gm-3.jpg",
-        "images/venues/banh-xeo-nam-hien-gm-4.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20x%C3%A8o%20t%C3%B4m%20nh%E1%BA%A3y%20N%C4%83m%20Hi%E1%BB%81n%2046%20Phan%20Ch%C3%A2u%20Trinh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -693,7 +625,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": ["images/venues/hai-san-ba-tam-gm-1.jpg", "images/venues/hai-san-ba-tam-gm-2.jpg"],
+      "images": ["images/venues/hai-san-ba-tam-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20B%C3%A0%20T%C3%A1m%20596%2F14%20Ho%C3%A0ng%20Di%E1%BB%87u%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -711,20 +643,14 @@
       "openingHours": null,
       "description": "Cơm gà.",
       "sources": ["canvashotel.com.vn"],
-      "image": "images/venues/com-ga-ba-buoi-gm-1.jpg",
+      "image": "images/dishes/dish-b1ca52593611.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/com-ga-ba-buoi-gm-1.jpg",
-        "images/venues/com-ga-ba-buoi-gm-2.jpg",
-        "images/venues/com-ga-ba-buoi-gm-3.jpg",
-        "images/venues/com-ga-ba-buoi-gm-4.jpg",
-        "images/venues/com-ga-ba-buoi-gm-5.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/C%C6%A1m%20g%C3%A0%20B%C3%A0%20Bu%E1%BB%99i%2026%20Ng%C3%B4%20Gia%20T%E1%BB%B1%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -742,18 +668,14 @@
       "openingHours": null,
       "description": "Bánh mì khu phố Tây An Thượng.",
       "sources": ["sunworld.vn"],
-      "image": "images/venues/banh-mi-ba-dao-1.jpg",
+      "image": "images/dishes/dish-3ac3db80bd80.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/banh-mi-ba-dao-1.jpg",
-        "images/venues/banh-mi-ba-dao-gm-1.jpg",
-        "images/venues/banh-mi-ba-dao-gm-2.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20m%C3%AC%20B%C3%A0%20%C4%90%C3%A0o%2059%20An%20Th%C6%B0%E1%BB%A3ng%202%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -778,11 +700,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/p-coffee-gm-1.jpg",
-        "images/venues/p-coffee-gm-2.png",
-        "images/venues/p-coffee-gm-3.jpg"
-      ],
+      "images": ["images/venues/p-coffee-gm-1.jpg", "images/venues/p-coffee-gm-2.png"],
       "venuePageUrl": "https://www.google.com/maps/search/P%20Coffee%2053%20Nguy%E1%BB%85n%20V%C4%83n%20Linh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -809,9 +727,7 @@
       "imageKind": "venue",
       "images": [
         "images/venues/wonderlust-coffee-gm-1.jpg",
-        "images/venues/wonderlust-coffee-gm-2.jpg",
-        "images/venues/wonderlust-coffee-gm-3.jpg",
-        "images/venues/wonderlust-coffee-gm-4.jpg"
+        "images/venues/wonderlust-coffee-gm-3.jpg"
       ],
       "venuePageUrl": "https://www.google.com/maps/search/Wonderlust%20Coffee%20%26%20Store%2096%20Tr%E1%BA%A7n%20Ph%C3%BA%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
@@ -839,7 +755,6 @@
       "imageKind": "venue",
       "images": [
         "images/venues/wind-garden-coffee-gm-1.jpg",
-        "images/venues/wind-garden-coffee-gm-2.jpg",
         "images/venues/wind-garden-coffee-gm-3.jpg"
       ],
       "venuePageUrl": "https://www.google.com/maps/search/Wind%20Garden%20Coffee%2072%20L%C3%AA%20M%E1%BA%A1nh%20Trinh%20%C4%90%C3%A0%20N%E1%BA%B5ng"
@@ -868,10 +783,8 @@
       "imageKind": "venue",
       "images": [
         "images/venues/dau-ngot-cafe-1.jpg",
-        "images/venues/dau-ngot-cafe-gm-1.jpg",
         "images/venues/dau-ngot-cafe-gm-2.jpg",
         "images/venues/dau-ngot-cafe-gm-3.jpg",
-        "images/venues/dau-ngot-cafe-gm-4.jpg",
         "images/venues/dau-ngot-cafe-gm-5.jpg"
       ],
       "venuePageUrl": "https://www.google.com/maps/search/D%C3%A2u%20Ng%E1%BB%8Dt%20Caf%C3%A9%2092%20D%C6%B0%C6%A1ng%20%C4%90%C3%ACnh%20Ngh%E1%BB%87%20%C4%90%C3%A0%20N%E1%BA%B5ng"
@@ -898,7 +811,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": ["images/venues/mirko-coffee-gm-1.jpg", "images/venues/mirko-coffee-gm-2.jpg"],
+      "images": ["images/venues/mirko-coffee-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/MIRKO%20Coffee%20%26%20Chill%20Beer%20100%20Nguy%E1%BB%85n%20H%E1%BB%AFu%20An%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -916,18 +829,14 @@
       "openingHours": null,
       "description": "Gần cảng cá, giá niêm yết.",
       "sources": ["aeonmall-vietnam.com"],
-      "image": "images/venues/hai-san-ba-ro-1.jpg",
+      "image": "images/venues/hai-san-ba-ro-gm-1.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/hai-san-ba-ro-1.jpg",
-        "images/venues/hai-san-ba-ro-gm-1.jpg",
-        "images/venues/hai-san-ba-ro-gm-2.png"
-      ],
+      "images": ["images/venues/hai-san-ba-ro-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20B%C3%A0%20R%C3%B4%20115%20L%C3%BD%20T%E1%BB%AD%20T%E1%BA%A5n%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -945,14 +854,14 @@
       "openingHours": null,
       "description": "Bánh mì truyền thống hơn 30 năm; pate, chả, muối tiêu Sa Huỳnh.",
       "sources": ["mia.vn"],
-      "image": "images/venues/banh-mi-ba-lan-gm-1.jpg",
+      "image": "images/dishes/dish-142f9b7d746d.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": ["images/venues/banh-mi-ba-lan-gm-1.jpg", "images/venues/banh-mi-ba-lan-gm-2.jpg"],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20m%C3%AC%20B%C3%A0%20Lan%2062%20Tr%C6%B0ng%20N%E1%BB%AF%20V%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -971,21 +880,14 @@
       "description": "Bánh mì thịt nướng, gan rim.",
       "sources": ["bahungbakery.com.vn"],
       "notes": "OSM có POI 'Cô Hường' gần toạ độ — tên quán chưa xác minh chắc chắn.",
-      "image": "images/venues/banh-mi-co-huong-1.jpg",
+      "image": "images/dishes/dish-ae8e82dd43da.jpg",
       "imageNote": null,
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
-      "imageKind": "venue",
-      "images": [
-        "images/venues/banh-mi-co-huong-1.jpg",
-        "images/venues/banh-mi-co-huong-gm-1.jpg",
-        "images/venues/banh-mi-co-huong-gm-2.jpg",
-        "images/venues/banh-mi-co-huong-gm-3.jpg",
-        "images/venues/banh-mi-co-huong-gm-4.jpg",
-        "images/venues/banh-mi-co-huong-gm-5.jpg"
-      ],
+      "imageKind": "dish",
+      "images": [],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%A1nh%20m%C3%AC%20C%C3%B4%20H%C6%B0%C6%A1ng%201%20L%C3%AA%20Th%C3%A1nh%20T%C3%B4n%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -1010,10 +912,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/goi-ca-thanh-huong-gm-1.jpg",
-        "images/venues/goi-ca-thanh-huong-gm-2.jpg"
-      ],
+      "images": ["images/venues/goi-ca-thanh-huong-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/G%E1%BB%8Fi%20c%C3%A1%20Thanh%20H%C6%B0%C6%A1ng%201029%20Nguy%E1%BB%85n%20L%C6%B0%C6%A1ng%20B%E1%BA%B1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -1031,20 +930,14 @@
       "openingHours": null,
       "description": "Bún mắm nêm.",
       "sources": ["canvashotel.com.vn"],
-      "image": "images/venues/bun-mam-ba-hang-gm-1.png",
+      "image": "images/venues/bun-mam-ba-hang-gm-5.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/bun-mam-ba-hang-gm-1.png",
-        "images/venues/bun-mam-ba-hang-gm-2.jpg",
-        "images/venues/bun-mam-ba-hang-gm-3.jpg",
-        "images/venues/bun-mam-ba-hang-gm-4.jpg",
-        "images/venues/bun-mam-ba-hang-gm-5.jpg"
-      ],
+      "images": ["images/venues/bun-mam-ba-hang-gm-5.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%BAn%20m%E1%BA%AFm%20n%C3%AAm%20B%C3%A0%20H%E1%BA%B1ng%20K227%2F57%20Tr%E1%BA%A7n%20Ph%C3%BA%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -1069,7 +962,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": ["images/venues/ibasho-coffee-gm-1.jpg", "images/venues/ibasho-coffee-gm-2.jpg"],
+      "images": ["images/venues/ibasho-coffee-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/Ibasho%20Coffee%20%26%20Apartment%2065%20An%20Th%C6%B0%20%C4%90%E1%BA%A1o%20%C4%90%C3%A0%20N%E1%BA%B5ng"
     },
     {
@@ -1090,7 +983,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-001.jpg",
+      "image": "images/dishes/dish-d98fe23ed01a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1113,7 +1006,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-001.jpg",
+      "image": "images/dishes/dish-0c7b4126b850.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1136,7 +1029,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-225.jpg",
+      "image": "images/dishes/dish-d31c089b082f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1159,7 +1052,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-181.jpg",
+      "image": "images/dishes/dish-cd4e113981ab.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1182,7 +1075,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-002.jpg",
+      "image": "images/dishes/dish-2f9bf8eed0c9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1205,7 +1098,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-142.jpg",
+      "image": "images/dishes/dish-a33b775e33d8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1228,7 +1121,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-003.jpg",
+      "image": "images/dishes/dish-b9475edef9f6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1251,7 +1144,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-226.jpg",
+      "image": "images/dishes/dish-1bc4d1ac8cdc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1274,7 +1167,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-004.jpg",
+      "image": "images/dishes/dish-e43b4ab9c5a6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1297,7 +1190,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-002.jpg",
+      "image": "images/dishes/dish-37fcd854ffa1.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1320,7 +1213,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-005.jpg",
+      "image": "images/dishes/dish-395cffebc916.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1343,7 +1236,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-227.jpg",
+      "image": "images/dishes/dish-3a3bd1cb41c7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1366,7 +1259,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-006.jpg",
+      "image": "images/dishes/dish-dab92ed372b6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1389,7 +1282,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-007.jpg",
+      "image": "images/dishes/dish-4e037cbe017f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1412,7 +1305,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-157.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1435,7 +1328,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-008.jpg",
+      "image": "images/dishes/dish-31c441129d5c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1458,7 +1351,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-009.jpg",
+      "image": "images/dishes/dish-e26a8b828265.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1481,7 +1374,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-215.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1504,7 +1397,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-228.jpg",
+      "image": "images/dishes/dish-d53e00406d3a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1527,7 +1420,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-010.jpg",
+      "image": "images/dishes/dish-6298384e7f03.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1550,7 +1443,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-151.jpg",
+      "image": "images/dishes/dish-df079eca47c4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1573,7 +1466,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-130.jpg",
+      "image": "images/dishes/dish-f1aba90a2fde.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1596,7 +1489,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-238.jpg",
+      "image": "images/dishes/dish-936fc403fb06.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1619,7 +1512,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-011.jpg",
+      "image": "images/dishes/dish-28e000902fd8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1642,7 +1535,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-012.jpg",
+      "image": "images/dishes/dish-0f4929811fb2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1665,7 +1558,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-013.jpg",
+      "image": "images/dishes/dish-53bf62f50c96.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1688,7 +1581,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-003.jpg",
+      "image": "images/dishes/dish-ad51a6356007.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1711,7 +1604,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-152.jpg",
+      "image": "images/dishes/dish-e389ecfa8111.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1734,7 +1627,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-118.jpg",
+      "image": "images/dishes/dish-2a2368a7bc31.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1757,7 +1650,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-001.jpg",
+      "image": "images/dishes/dish-ee97dd80d886.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1780,7 +1673,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-131.jpg",
+      "image": "images/dishes/dish-dfe19a2b8e48.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1803,7 +1696,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-014.jpg",
+      "image": "images/dishes/dish-67f365f0c0f7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1826,7 +1719,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-153.jpg",
+      "image": "images/dishes/dish-0a540d4d6515.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1849,7 +1742,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-015.jpg",
+      "image": "images/dishes/dish-ad8528143703.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1872,7 +1765,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-004.jpg",
+      "image": "images/dishes/dish-d7cec61f8f3e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1895,7 +1788,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-158.jpg",
+      "image": "images/dishes/dish-839065bc00a7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1918,7 +1811,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-016.jpg",
+      "image": "images/dishes/dish-0e7a40e999cf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1941,7 +1834,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-249.jpg",
+      "image": "images/dishes/dish-cafd5651219e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1964,7 +1857,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-229.jpg",
+      "image": "images/dishes/dish-ff8eb676e984.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -1987,7 +1880,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-017.jpg",
+      "image": "images/dishes/dish-67345c35f1b4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2010,7 +1903,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-018.jpg",
+      "image": "images/dishes/dish-ba7a01394733.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2033,7 +1926,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-019.jpg",
+      "image": "images/dishes/dish-ababeb91cf3b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2056,7 +1949,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-020.jpg",
+      "image": "images/dishes/dish-1769b9d97f2b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2079,7 +1972,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-021.jpg",
+      "image": "images/dishes/dish-3ce73bbf8f6c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2102,7 +1995,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-230.jpg",
+      "image": "images/dishes/dish-baaf456cd70a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2125,7 +2018,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-231.jpg",
+      "image": "images/dishes/dish-b1ca52593611.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2148,7 +2041,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-022.jpg",
+      "image": "images/dishes/dish-8bca0ee21a59.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2171,7 +2064,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-023.jpg",
+      "image": "images/dishes/dish-5bc7d12fcf81.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2194,7 +2087,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-041.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2217,7 +2110,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-203.jpg",
+      "image": "images/dishes/dish-f512ee31c45b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2240,7 +2133,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-024.jpg",
+      "image": "images/dishes/dish-9de4dbed069a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2263,7 +2156,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-025.jpg",
+      "image": "images/dishes/dish-dbff86a18cc8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2286,7 +2179,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-191.jpg",
+      "image": "images/dishes/dish-a1ddad11708b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2309,7 +2202,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-026.jpg",
+      "image": "images/dishes/dish-d98fe23ed01a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2332,7 +2225,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-005.jpg",
+      "image": "images/dishes/dish-0c7b4126b850.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2355,7 +2248,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-216.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2378,7 +2271,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-027.jpg",
+      "image": "images/dishes/dish-2f9bf8eed0c9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2401,7 +2294,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-028.jpg",
+      "image": "images/dishes/dish-b9475edef9f6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2424,7 +2317,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-029.jpg",
+      "image": "images/dishes/dish-e43b4ab9c5a6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2447,7 +2340,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-232.jpg",
+      "image": "images/dishes/dish-d31c089b082f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2470,7 +2363,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-233.jpg",
+      "image": "images/dishes/dish-1bc4d1ac8cdc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2493,7 +2386,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-192.jpg",
+      "image": "images/dishes/dish-e9b6891870d0.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2516,7 +2409,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-234.jpg",
+      "image": "images/dishes/dish-37fcd854ffa1.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2539,7 +2432,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-006.jpg",
+      "image": "images/dishes/dish-3a3bd1cb41c7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2562,7 +2455,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-169.jpg",
+      "image": "images/dishes/dish-da6f9c02ee11.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2585,7 +2478,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-163.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2608,7 +2501,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-217.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2631,7 +2524,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-218.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2654,7 +2547,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-235.jpg",
+      "image": "images/dishes/dish-d53e00406d3a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2677,7 +2570,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-030.jpg",
+      "image": "images/dishes/dish-395cffebc916.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2700,7 +2593,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-219.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2723,7 +2616,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-236.jpg",
+      "image": "images/dishes/dish-ad51a6356007.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2746,7 +2639,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-007.jpg",
+      "image": "images/dishes/dish-2a2368a7bc31.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2769,7 +2662,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-220.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2792,7 +2685,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-154.jpg",
+      "image": "images/dishes/dish-76c93976e9bb.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2815,7 +2708,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-155.jpg",
+      "image": "images/dishes/dish-6c8901359c84.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2838,7 +2731,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-031.jpg",
+      "image": "images/dishes/dish-dab92ed372b6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2861,7 +2754,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-221.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2884,7 +2777,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-008.jpg",
+      "image": "images/dishes/dish-ee97dd80d886.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2907,7 +2800,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-119.jpg",
+      "image": "images/dishes/dish-d7cec61f8f3e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2930,7 +2823,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-032.jpg",
+      "image": "images/dishes/dish-4e037cbe017f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2953,7 +2846,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-033.jpg",
+      "image": "images/dishes/dish-31c441129d5c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2976,7 +2869,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-009.jpg",
+      "image": "images/dishes/dish-ff8eb676e984.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -2999,7 +2892,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-204.jpg",
+      "image": "images/dishes/dish-7d73d4b77188.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3022,7 +2915,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-225.jpg",
+      "image": "images/dishes/dish-baaf456cd70a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3045,7 +2938,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-222.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3068,7 +2961,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-034.jpg",
+      "image": "images/dishes/dish-e26a8b828265.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3091,7 +2984,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-001.jpg",
+      "image": "images/dishes/dish-6298384e7f03.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3114,7 +3007,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-226.jpg",
+      "image": "images/dishes/dish-b1ca52593611.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3137,7 +3030,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-002.jpg",
+      "image": "images/dishes/dish-28e000902fd8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3160,7 +3053,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-003.jpg",
+      "image": "images/dishes/dish-0f4929811fb2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3183,7 +3076,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-224.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3206,7 +3099,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-120.jpg",
+      "image": "images/dishes/dish-0c7b4126b850.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3229,7 +3122,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-227.jpg",
+      "image": "images/dishes/dish-d31c089b082f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3252,7 +3145,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-228.jpg",
+      "image": "images/dishes/dish-1bc4d1ac8cdc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3275,7 +3168,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-010.jpg",
+      "image": "images/dishes/dish-37fcd854ffa1.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3298,7 +3191,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-215.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3321,7 +3214,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-041.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3344,7 +3237,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-229.jpg",
+      "image": "images/dishes/dish-3a3bd1cb41c7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3367,7 +3260,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-230.jpg",
+      "image": "images/dishes/dish-d53e00406d3a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3390,7 +3283,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-004.jpg",
+      "image": "images/dishes/dish-53bf62f50c96.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3413,7 +3306,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-231.jpg",
+      "image": "images/dishes/dish-ad51a6356007.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3436,7 +3329,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-170.jpg",
+      "image": "images/dishes/dish-01c9a0afb383.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3459,7 +3352,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-005.jpg",
+      "image": "images/dishes/dish-67f365f0c0f7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3482,7 +3375,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-006.jpg",
+      "image": "images/dishes/dish-ad8528143703.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3505,7 +3398,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-007.jpg",
+      "image": "images/dishes/dish-0e7a40e999cf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3528,7 +3421,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-008.jpg",
+      "image": "images/dishes/dish-67345c35f1b4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3551,7 +3444,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-009.jpg",
+      "image": "images/dishes/dish-ba7a01394733.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3574,7 +3467,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-156.jpg",
+      "image": "images/dishes/dish-1a09a6079012.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3597,7 +3490,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-010.jpg",
+      "image": "images/dishes/dish-ababeb91cf3b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3620,7 +3513,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-011.jpg",
+      "image": "images/dishes/dish-1769b9d97f2b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3643,7 +3536,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-012.jpg",
+      "image": "images/dishes/dish-3ce73bbf8f6c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3666,7 +3559,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-013.jpg",
+      "image": "images/dishes/dish-8bca0ee21a59.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3689,7 +3582,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-014.jpg",
+      "image": "images/dishes/dish-5bc7d12fcf81.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3712,7 +3605,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-015.jpg",
+      "image": "images/dishes/dish-9de4dbed069a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3735,7 +3628,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-016.jpg",
+      "image": "images/dishes/dish-dbff86a18cc8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3758,7 +3651,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-171.jpg",
+      "image": "images/dishes/dish-6009c4c23e45.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3781,7 +3674,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-172.jpg",
+      "image": "images/dishes/dish-a7bb24757c8a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3804,7 +3697,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-011.jpg",
+      "image": "images/dishes/dish-2a2368a7bc31.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3827,7 +3720,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-232.jpg",
+      "image": "images/dishes/dish-ee97dd80d886.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3850,7 +3743,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-216.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3873,7 +3766,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-151.jpg",
+      "image": "images/dishes/dish-4a1399cd7cbf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3896,7 +3789,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-233.jpg",
+      "image": "images/dishes/dish-d7cec61f8f3e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3919,7 +3812,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-121.jpg",
+      "image": "images/dishes/dish-ff8eb676e984.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3942,7 +3835,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-174.jpg",
+      "image": "images/dishes/dish-da6f9c02ee11.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3965,7 +3858,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-017.jpg",
+      "image": "images/dishes/dish-d98fe23ed01a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -3988,7 +3881,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-018.jpg",
+      "image": "images/dishes/dish-2f9bf8eed0c9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4011,7 +3904,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-234.jpg",
+      "image": "images/dishes/dish-baaf456cd70a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4034,7 +3927,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-235.jpg",
+      "image": "images/dishes/dish-b1ca52593611.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4057,7 +3950,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-019.jpg",
+      "image": "images/dishes/dish-b9475edef9f6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4080,7 +3973,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-020.jpg",
+      "image": "images/dishes/dish-e43b4ab9c5a6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4103,7 +3996,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-021.jpg",
+      "image": "images/dishes/dish-395cffebc916.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4126,7 +4019,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-236.jpg",
+      "image": "images/dishes/dish-0c7b4126b850.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4149,7 +4042,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-163.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4172,7 +4065,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-132.jpg",
+      "image": "images/dishes/dish-ae7659e09155.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4195,7 +4088,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-012.jpg",
+      "image": "images/dishes/dish-d31c089b082f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4218,7 +4111,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-022.jpg",
+      "image": "images/dishes/dish-dab92ed372b6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4241,7 +4134,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-023.jpg",
+      "image": "images/dishes/dish-4e037cbe017f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4264,7 +4157,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-024.jpg",
+      "image": "images/dishes/dish-31c441129d5c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4287,7 +4180,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-025.jpg",
+      "image": "images/dishes/dish-e26a8b828265.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4310,7 +4203,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-026.jpg",
+      "image": "images/dishes/dish-6298384e7f03.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4333,7 +4226,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-013.jpg",
+      "image": "images/dishes/dish-1bc4d1ac8cdc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4356,7 +4249,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-027.jpg",
+      "image": "images/dishes/dish-28e000902fd8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4379,7 +4272,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-014.jpg",
+      "image": "images/dishes/dish-37fcd854ffa1.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4402,7 +4295,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-028.jpg",
+      "image": "images/dishes/dish-0f4929811fb2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4425,7 +4318,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-225.jpg",
+      "image": "images/dishes/dish-3a3bd1cb41c7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4448,7 +4341,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-029.jpg",
+      "image": "images/dishes/dish-53bf62f50c96.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4471,7 +4364,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-030.jpg",
+      "image": "images/dishes/dish-67f365f0c0f7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4494,7 +4387,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-133.jpg",
+      "image": "images/dishes/dish-73621701ae0b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4517,7 +4410,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-175.jpg",
+      "image": "images/dishes/dish-01c9a0afb383.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4540,7 +4433,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-217.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4563,7 +4456,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-031.jpg",
+      "image": "images/dishes/dish-ad8528143703.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4586,7 +4479,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-218.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4609,7 +4502,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-226.jpg",
+      "image": "images/dishes/dish-d53e00406d3a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4632,7 +4525,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-239.jpg",
+      "image": "images/dishes/dish-864d76adb48c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4655,7 +4548,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-143.jpg",
+      "image": "images/dishes/dish-52ff777ea51a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4678,7 +4571,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-032.jpg",
+      "image": "images/dishes/dish-0e7a40e999cf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4701,7 +4594,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-034.jpg",
+      "image": "images/dishes/dish-67345c35f1b4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4724,7 +4617,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-082.jpg",
+      "image": "images/dishes/dish-be2e89643fff.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4747,7 +4640,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-015.jpg",
+      "image": "images/dishes/dish-ad51a6356007.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4770,7 +4663,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-016.jpg",
+      "image": "images/dishes/dish-2a2368a7bc31.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4793,7 +4686,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-227.jpg",
+      "image": "images/dishes/dish-ee97dd80d886.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4816,7 +4709,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-219.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4839,7 +4732,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-159.jpg",
+      "image": "images/dishes/dish-cac494dcaed4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4862,7 +4755,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-144.jpg",
+      "image": "images/dishes/dish-a33b775e33d8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4885,7 +4778,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-001.jpg",
+      "image": "images/dishes/dish-ba7a01394733.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4908,7 +4801,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-176.jpg",
+      "image": "images/dishes/dish-6009c4c23e45.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4931,7 +4824,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-017.jpg",
+      "image": "images/dishes/dish-d7cec61f8f3e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4954,7 +4847,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-177.jpg",
+      "image": "images/dishes/dish-a7bb24757c8a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -4977,7 +4870,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-178.jpg",
+      "image": "images/dishes/dish-da6f9c02ee11.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5000,7 +4893,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-179.jpg",
+      "image": "images/dishes/dish-01c9a0afb383.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5023,7 +4916,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-002.jpg",
+      "image": "images/dishes/dish-ababeb91cf3b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5046,7 +4939,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-018.jpg",
+      "image": "images/dishes/dish-ff8eb676e984.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5069,7 +4962,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-003.jpg",
+      "image": "images/dishes/dish-1769b9d97f2b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5092,7 +4985,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-004.jpg",
+      "image": "images/dishes/dish-3ce73bbf8f6c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5115,7 +5008,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-228.jpg",
+      "image": "images/dishes/dish-baaf456cd70a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5138,7 +5031,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-220.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5161,7 +5054,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-221.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5184,7 +5077,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-019.jpg",
+      "image": "images/dishes/dish-b1ca52593611.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5207,7 +5100,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-020.jpg",
+      "image": "images/dishes/dish-0c7b4126b850.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5230,7 +5123,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-229.jpg",
+      "image": "images/dishes/dish-d31c089b082f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5253,7 +5146,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-230.jpg",
+      "image": "images/dishes/dish-1bc4d1ac8cdc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5276,7 +5169,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-231.jpg",
+      "image": "images/dishes/dish-37fcd854ffa1.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5299,7 +5192,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-021.jpg",
+      "image": "images/dishes/dish-3a3bd1cb41c7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5322,7 +5215,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-005.jpg",
+      "image": "images/dishes/dish-8bca0ee21a59.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5345,7 +5238,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-180.jpg",
+      "image": "images/dishes/dish-6009c4c23e45.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5368,7 +5261,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-160.jpg",
+      "image": "images/dishes/dish-3b1097b3e2ea.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5391,7 +5284,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-182.jpg",
+      "image": "images/dishes/dish-3ac3db80bd80.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5414,7 +5307,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-022.jpg",
+      "image": "images/dishes/dish-d53e00406d3a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5437,7 +5330,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-023.jpg",
+      "image": "images/dishes/dish-ad51a6356007.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5460,7 +5353,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-006.jpg",
+      "image": "images/dishes/dish-5bc7d12fcf81.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5483,7 +5376,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-024.jpg",
+      "image": "images/dishes/dish-2a2368a7bc31.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5506,7 +5399,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-224.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5529,7 +5422,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-059.jpg",
+      "image": "images/dishes/dish-1f5833e4bfed.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5552,7 +5445,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-007.jpg",
+      "image": "images/dishes/dish-9de4dbed069a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5575,7 +5468,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-232.jpg",
+      "image": "images/dishes/dish-ee97dd80d886.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5598,7 +5491,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-205.jpg",
+      "image": "images/dishes/dish-73c1313fb382.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5621,7 +5514,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-215.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5644,7 +5537,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-233.jpg",
+      "image": "images/dishes/dish-d7cec61f8f3e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5667,7 +5560,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-206.jpg",
+      "image": "images/dishes/dish-3d8ce5e321c4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5690,7 +5583,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-041.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5713,7 +5606,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-234.jpg",
+      "image": "images/dishes/dish-ff8eb676e984.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5736,7 +5629,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-008.jpg",
+      "image": "images/dishes/dish-dbff86a18cc8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5759,7 +5652,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-009.jpg",
+      "image": "images/dishes/dish-d98fe23ed01a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5782,7 +5675,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-010.jpg",
+      "image": "images/dishes/dish-2f9bf8eed0c9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5805,7 +5698,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-216.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5828,7 +5721,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-163.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5851,7 +5744,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-217.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5874,7 +5767,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-240.jpg",
+      "image": "images/dishes/dish-87d0722310b7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5897,7 +5790,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-218.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5920,7 +5813,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-219.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5943,7 +5836,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-011.jpg",
+      "image": "images/dishes/dish-b9475edef9f6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5966,7 +5859,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-161.jpg",
+      "image": "images/dishes/dish-56243f2967c3.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -5989,7 +5882,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-012.jpg",
+      "image": "images/dishes/dish-e43b4ab9c5a6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6012,7 +5905,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-013.jpg",
+      "image": "images/dishes/dish-395cffebc916.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6035,7 +5928,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-014.jpg",
+      "image": "images/dishes/dish-dab92ed372b6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6058,7 +5951,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-025.jpg",
+      "image": "images/dishes/dish-baaf456cd70a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6081,7 +5974,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-015.jpg",
+      "image": "images/dishes/dish-4e037cbe017f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6104,7 +5997,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-016.jpg",
+      "image": "images/dishes/dish-31c441129d5c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6127,7 +6020,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-066.jpg",
+      "image": "images/dishes/dish-142f9b7d746d.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6150,7 +6043,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-017.jpg",
+      "image": "images/dishes/dish-e26a8b828265.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6173,7 +6066,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-018.jpg",
+      "image": "images/dishes/dish-6298384e7f03.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6196,7 +6089,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-026.jpg",
+      "image": "images/dishes/dish-b1ca52593611.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6219,7 +6112,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-220.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6242,7 +6135,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-221.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6265,7 +6158,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-222.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6288,7 +6181,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-224.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6311,7 +6204,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-083.jpg",
+      "image": "images/dishes/dish-3304de2f4026.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6334,7 +6227,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-169.jpg",
+      "image": "images/dishes/dish-a7bb24757c8a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6357,7 +6250,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-019.jpg",
+      "image": "images/dishes/dish-28e000902fd8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6380,7 +6273,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-170.jpg",
+      "image": "images/dishes/dish-da6f9c02ee11.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6403,7 +6296,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-027.jpg",
+      "image": "images/dishes/dish-0c7b4126b850.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6426,7 +6319,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-235.jpg",
+      "image": "images/dishes/dish-d31c089b082f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6449,7 +6342,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-236.jpg",
+      "image": "images/dishes/dish-1bc4d1ac8cdc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6472,7 +6365,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-183.jpg",
+      "image": "images/dishes/dish-ae8e82dd43da.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6495,7 +6388,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-002.jpg",
+      "image": "images/dishes/dish-37fcd854ffa1.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6518,7 +6411,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-020.jpg",
+      "image": "images/dishes/dish-0f4929811fb2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6541,7 +6434,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-021.jpg",
+      "image": "images/dishes/dish-53bf62f50c96.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6564,7 +6457,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-084.jpg",
+      "image": "images/dishes/dish-d563958375fd.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6587,7 +6480,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-215.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6610,7 +6503,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-022.jpg",
+      "image": "images/dishes/dish-67f365f0c0f7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6633,7 +6526,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-023.jpg",
+      "image": "images/dishes/dish-ad8528143703.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6656,7 +6549,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-024.jpg",
+      "image": "images/dishes/dish-0e7a40e999cf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6679,7 +6572,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-025.jpg",
+      "image": "images/dishes/dish-67345c35f1b4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6702,7 +6595,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-026.jpg",
+      "image": "images/dishes/dish-ba7a01394733.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6725,7 +6618,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-225.jpg",
+      "image": "images/dishes/dish-3a3bd1cb41c7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6748,7 +6641,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-027.jpg",
+      "image": "images/dishes/dish-ababeb91cf3b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6771,7 +6664,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-162.jpg",
+      "image": "images/dishes/dish-743390def737.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6794,7 +6687,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-152.jpg",
+      "image": "images/dishes/dish-df079eca47c4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6817,7 +6710,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-028.jpg",
+      "image": "images/dishes/dish-1769b9d97f2b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6840,7 +6733,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-241.jpg",
+      "image": "images/dishes/dish-8348f4db9d96.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6863,7 +6756,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-029.jpg",
+      "image": "images/dishes/dish-3ce73bbf8f6c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6886,7 +6779,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-030.jpg",
+      "image": "images/dishes/dish-8bca0ee21a59.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6909,7 +6802,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-193.jpg",
+      "image": "images/dishes/dish-53f16254f930.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6932,7 +6825,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-031.jpg",
+      "image": "images/dishes/dish-5bc7d12fcf81.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6955,7 +6848,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-032.jpg",
+      "image": "images/dishes/dish-9de4dbed069a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -6978,7 +6871,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-194.jpg",
+      "image": "images/dishes/dish-e3befd4446a5.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7001,7 +6894,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-171.jpg",
+      "image": "images/dishes/dish-01c9a0afb383.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7024,7 +6917,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-226.jpg",
+      "image": "images/dishes/dish-d53e00406d3a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7047,7 +6940,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-227.jpg",
+      "image": "images/dishes/dish-ad51a6356007.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7070,7 +6963,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-122.jpg",
+      "image": "images/dishes/dish-2a2368a7bc31.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7093,7 +6986,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-033.jpg",
+      "image": "images/dishes/dish-dbff86a18cc8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7116,7 +7009,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-172.jpg",
+      "image": "images/dishes/dish-6009c4c23e45.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7139,7 +7032,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-153.jpg",
+      "image": "images/dishes/dish-e389ecfa8111.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7162,7 +7055,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-085.jpg",
+      "image": "images/dishes/dish-0923f5df02ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7185,7 +7078,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-228.jpg",
+      "image": "images/dishes/dish-ee97dd80d886.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7208,7 +7101,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-034.jpg",
+      "image": "images/dishes/dish-d98fe23ed01a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7231,7 +7124,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-001.jpg",
+      "image": "images/dishes/dish-2f9bf8eed0c9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7254,7 +7147,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-003.jpg",
+      "image": "images/dishes/dish-d7cec61f8f3e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7277,7 +7170,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-164.jpg",
+      "image": "images/dishes/dish-973f863f0fa6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7300,7 +7193,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-002.jpg",
+      "image": "images/dishes/dish-b9475edef9f6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7323,7 +7216,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-003.jpg",
+      "image": "images/dishes/dish-e43b4ab9c5a6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7346,7 +7239,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-041.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7369,7 +7262,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-004.jpg",
+      "image": "images/dishes/dish-395cffebc916.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7392,7 +7285,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-028.jpg",
+      "image": "images/dishes/dish-ff8eb676e984.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7415,7 +7308,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-029.jpg",
+      "image": "images/dishes/dish-baaf456cd70a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7438,7 +7331,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-030.jpg",
+      "image": "images/dishes/dish-b1ca52593611.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7461,7 +7354,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-031.jpg",
+      "image": "images/dishes/dish-0c7b4126b850.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7484,7 +7377,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-005.jpg",
+      "image": "images/dishes/dish-dab92ed372b6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7507,7 +7400,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-250.jpg",
+      "image": "images/dishes/dish-134edce75bc3.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7530,7 +7423,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-216.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7553,7 +7446,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-006.jpg",
+      "image": "images/dishes/dish-4e037cbe017f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7576,7 +7469,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-229.jpg",
+      "image": "images/dishes/dish-d31c089b082f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7599,7 +7492,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-134.jpg",
+      "image": "images/dishes/dish-6f0f1314a0ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7622,7 +7515,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-007.jpg",
+      "image": "images/dishes/dish-31c441129d5c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7645,7 +7538,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-008.jpg",
+      "image": "images/dishes/dish-e26a8b828265.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7668,7 +7561,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-009.jpg",
+      "image": "images/dishes/dish-6298384e7f03.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7691,7 +7584,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-032.jpg",
+      "image": "images/dishes/dish-1bc4d1ac8cdc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7714,7 +7607,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-154.jpg",
+      "image": "images/dishes/dish-0a540d4d6515.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7737,7 +7630,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-010.jpg",
+      "image": "images/dishes/dish-28e000902fd8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7760,7 +7653,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-011.jpg",
+      "image": "images/dishes/dish-0f4929811fb2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7783,7 +7676,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-012.jpg",
+      "image": "images/dishes/dish-53bf62f50c96.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7806,7 +7699,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-195.jpg",
+      "image": "images/dishes/dish-cb4ecfbe4c66.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7829,7 +7722,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-086.jpg",
+      "image": "images/dishes/dish-185119d4e5f5.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7852,7 +7745,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-013.jpg",
+      "image": "images/dishes/dish-67f365f0c0f7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7875,7 +7768,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-163.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7898,7 +7791,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-033.jpg",
+      "image": "images/dishes/dish-37fcd854ffa1.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7921,7 +7814,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-165.jpg",
+      "image": "images/dishes/dish-db373ac585cf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7944,7 +7837,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-014.jpg",
+      "image": "images/dishes/dish-ad8528143703.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7967,7 +7860,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-217.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -7990,7 +7883,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-207.jpg",
+      "image": "images/dishes/dish-b2f4c598ee28.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8013,7 +7906,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-230.jpg",
+      "image": "images/dishes/dish-3a3bd1cb41c7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8036,7 +7929,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-015.jpg",
+      "image": "images/dishes/dish-0e7a40e999cf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8059,7 +7952,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-016.jpg",
+      "image": "images/dishes/dish-67345c35f1b4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8082,7 +7975,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-017.jpg",
+      "image": "images/dishes/dish-ba7a01394733.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8105,7 +7998,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-087.jpg",
+      "image": "images/dishes/dish-5270ce28f3fe.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8128,7 +8021,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-218.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8151,7 +8044,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-018.jpg",
+      "image": "images/dishes/dish-ababeb91cf3b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8174,7 +8067,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-019.jpg",
+      "image": "images/dishes/dish-1769b9d97f2b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8197,7 +8090,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-020.jpg",
+      "image": "images/dishes/dish-3ce73bbf8f6c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8220,7 +8113,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-021.jpg",
+      "image": "images/dishes/dish-8bca0ee21a59.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8243,7 +8136,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-088.jpg",
+      "image": "images/dishes/dish-c9efa9c91a10.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8266,7 +8159,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-022.jpg",
+      "image": "images/dishes/dish-5bc7d12fcf81.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8289,7 +8182,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-023.jpg",
+      "image": "images/dishes/dish-9de4dbed069a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8312,7 +8205,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-219.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8335,7 +8228,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-155.jpg",
+      "image": "images/dishes/dish-76c93976e9bb.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8358,7 +8251,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-220.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8381,7 +8274,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-221.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8404,7 +8297,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-034.jpg",
+      "image": "images/dishes/dish-d53e00406d3a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8427,7 +8320,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-024.jpg",
+      "image": "images/dishes/dish-dbff86a18cc8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8450,7 +8343,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-035.jpg",
+      "image": "images/dishes/dish-ad51a6356007.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8473,7 +8366,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-036.jpg",
+      "image": "images/dishes/dish-2a2368a7bc31.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8496,7 +8389,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-025.jpg",
+      "image": "images/dishes/dish-d98fe23ed01a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8519,7 +8412,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-026.jpg",
+      "image": "images/dishes/dish-2f9bf8eed0c9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8542,7 +8435,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-027.jpg",
+      "image": "images/dishes/dish-b9475edef9f6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8565,7 +8458,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-231.jpg",
+      "image": "images/dishes/dish-ee97dd80d886.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8588,7 +8481,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-037.jpg",
+      "image": "images/dishes/dish-d7cec61f8f3e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8611,7 +8504,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-123.jpg",
+      "image": "images/dishes/dish-ff8eb676e984.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8634,7 +8527,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-028.jpg",
+      "image": "images/dishes/dish-e43b4ab9c5a6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8657,7 +8550,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-135.jpg",
+      "image": "images/dishes/dish-ba9d2ddbfb9b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8680,7 +8573,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-222.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8703,7 +8596,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-038.jpg",
+      "image": "images/dishes/dish-baaf456cd70a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8726,7 +8619,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-029.jpg",
+      "image": "images/dishes/dish-395cffebc916.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8749,7 +8642,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-224.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8772,7 +8665,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-030.jpg",
+      "image": "images/dishes/dish-dab92ed372b6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8795,7 +8688,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-186.jpg",
+      "image": "images/dishes/dish-b1ca52593611.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8818,7 +8711,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-039.jpg",
+      "image": "images/dishes/dish-0c7b4126b850.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8841,7 +8734,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-166.jpg",
+      "image": "images/dishes/dish-839065bc00a7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8864,7 +8757,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-208.jpg",
+      "image": "images/dishes/dish-e5ada6948c7a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8887,7 +8780,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-031.jpg",
+      "image": "images/dishes/dish-4e037cbe017f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8910,7 +8803,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-174.jpg",
+      "image": "images/dishes/dish-a7bb24757c8a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8933,7 +8826,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-032.jpg",
+      "image": "images/dishes/dish-31c441129d5c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8956,7 +8849,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-215.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -8979,7 +8872,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-167.jpg",
+      "image": "images/dishes/dish-cac494dcaed4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9002,7 +8895,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-196.jpg",
+      "image": "images/dishes/dish-2602b0849b75.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9025,7 +8918,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-033.jpg",
+      "image": "images/dishes/dish-e26a8b828265.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9048,7 +8941,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-175.jpg",
+      "image": "images/dishes/dish-da6f9c02ee11.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9071,7 +8964,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-232.jpg",
+      "image": "images/dishes/dish-d31c089b082f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9094,7 +8987,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-034.jpg",
+      "image": "images/dishes/dish-6298384e7f03.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9117,7 +9010,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-041.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9140,7 +9033,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-001.jpg",
+      "image": "images/dishes/dish-28e000902fd8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9163,7 +9056,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-216.jpg",
+      "image": "images/dishes/dish-3972c7e09662.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9186,7 +9079,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-002.jpg",
+      "image": "images/dishes/dish-0f4929811fb2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9209,7 +9102,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-003.jpg",
+      "image": "images/dishes/dish-53bf62f50c96.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9232,7 +9125,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-004.jpg",
+      "image": "images/dishes/dish-67f365f0c0f7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9255,7 +9148,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-184.jpg",
+      "image": "images/dishes/dish-cd4e113981ab.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9278,7 +9171,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-005.jpg",
+      "image": "images/dishes/dish-ad8528143703.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9301,7 +9194,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-163.jpg",
+      "image": "images/dishes/dish-d087e87750ba.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9324,7 +9217,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-006.jpg",
+      "image": "images/dishes/dish-0e7a40e999cf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9347,7 +9240,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-007.jpg",
+      "image": "images/dishes/dish-67345c35f1b4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9370,7 +9263,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-008.jpg",
+      "image": "images/dishes/dish-ba7a01394733.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9393,7 +9286,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-009.jpg",
+      "image": "images/dishes/dish-ababeb91cf3b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9416,7 +9309,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-233.jpg",
+      "image": "images/dishes/dish-1bc4d1ac8cdc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9439,7 +9332,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-010.jpg",
+      "image": "images/dishes/dish-1769b9d97f2b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9462,7 +9355,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-234.jpg",
+      "image": "images/dishes/dish-37fcd854ffa1.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9485,7 +9378,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-176.jpg",
+      "image": "images/dishes/dish-01c9a0afb383.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9508,7 +9401,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-011.jpg",
+      "image": "images/dishes/dish-3ce73bbf8f6c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9531,7 +9424,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-012.jpg",
+      "image": "images/dishes/dish-8bca0ee21a59.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9554,7 +9447,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-235.jpg",
+      "image": "images/dishes/dish-3a3bd1cb41c7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9577,7 +9470,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-013.jpg",
+      "image": "images/dishes/dish-5bc7d12fcf81.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9600,7 +9493,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-014.jpg",
+      "image": "images/dishes/dish-9de4dbed069a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9623,7 +9516,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-236.jpg",
+      "image": "images/dishes/dish-d53e00406d3a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9646,7 +9539,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-177.jpg",
+      "image": "images/dishes/dish-6009c4c23e45.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9669,7 +9562,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-217.jpg",
+      "image": "images/dishes/dish-8cee7d8eaecc.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9692,7 +9585,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-225.jpg",
+      "image": "images/dishes/dish-ad51a6356007.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9715,7 +9608,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-226.jpg",
+      "image": "images/dishes/dish-2a2368a7bc31.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9738,7 +9631,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-218.jpg",
+      "image": "images/dishes/dish-09fea9e51b94.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9761,7 +9654,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-227.jpg",
+      "image": "images/dishes/dish-ee97dd80d886.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9784,7 +9677,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-228.jpg",
+      "image": "images/dishes/dish-d7cec61f8f3e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9807,7 +9700,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-015.jpg",
+      "image": "images/dishes/dish-dbff86a18cc8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9830,7 +9723,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-156.jpg",
+      "image": "images/dishes/dish-6c8901359c84.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9853,7 +9746,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-060.jpg",
+      "image": "images/dishes/dish-f905fda1669e.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9876,7 +9769,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-229.jpg",
+      "image": "images/dishes/dish-ff8eb676e984.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9899,7 +9792,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-219.jpg",
+      "image": "images/dishes/dish-414e41035648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9922,7 +9815,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-016.jpg",
+      "image": "images/dishes/dish-d98fe23ed01a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9945,7 +9838,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-230.jpg",
+      "image": "images/dishes/dish-baaf456cd70a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9968,7 +9861,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-178.jpg",
+      "image": "images/dishes/dish-a7bb24757c8a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -9991,7 +9884,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-168.jpg",
+      "image": "images/dishes/dish-3b1097b3e2ea.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10014,7 +9907,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-017.jpg",
+      "image": "images/dishes/dish-2f9bf8eed0c9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10037,7 +9930,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-018.jpg",
+      "image": "images/dishes/dish-b9475edef9f6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10060,7 +9953,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-179.jpg",
+      "image": "images/dishes/dish-da6f9c02ee11.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10083,7 +9976,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-019.jpg",
+      "image": "images/dishes/dish-e43b4ab9c5a6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10106,7 +9999,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-061.jpg",
+      "image": "images/dishes/dish-54f4d0dcccdf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10129,7 +10022,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-020.jpg",
+      "image": "images/dishes/dish-395cffebc916.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10152,7 +10045,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-089.jpg",
+      "image": "images/dishes/dish-959d428166c0.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10175,7 +10068,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-021.jpg",
+      "image": "images/dishes/dish-dab92ed372b6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10198,7 +10091,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-022.jpg",
+      "image": "images/dishes/dish-4e037cbe017f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10221,7 +10114,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-023.jpg",
+      "image": "images/dishes/dish-31c441129d5c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10244,7 +10137,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-231.jpg",
+      "image": "images/dishes/dish-b1ca52593611.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10267,7 +10160,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-232.jpg",
+      "image": "images/dishes/dish-0c7b4126b850.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10290,7 +10183,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-024.jpg",
+      "image": "images/dishes/dish-e26a8b828265.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10313,7 +10206,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-157.jpg",
+      "image": "images/dishes/dish-56243f2967c3.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10336,7 +10229,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-025.jpg",
+      "image": "images/dishes/dish-6298384e7f03.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10359,7 +10252,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-026.jpg",
+      "image": "images/dishes/dish-28e000902fd8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10382,7 +10275,7 @@
       "notes": null,
       "tier": "osm",
       "status": "unknown",
-      "image": "images/dishes/dish-027.jpg",
+      "image": "images/dishes/dish-0f4929811fb2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09"
@@ -10401,7 +10294,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/356567999022887/posts/1499216164758059/"],
-      "image": "images/dishes/dish-028.jpg",
+      "image": "images/dishes/dish-53bf62f50c96.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10422,7 +10315,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/shugardencoffe/?locale=vi_VN"],
-      "image": "images/dishes/dish-029.jpg",
+      "image": "images/dishes/dish-67f365f0c0f7.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10443,7 +10336,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/caphetaidanang/posts/1213338079608241/"],
-      "image": "images/dishes/dish-030.jpg",
+      "image": "images/dishes/dish-ad8528143703.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10466,7 +10359,7 @@
       "sources": [
         "https://www.facebook.com/Reviewdanang24h/posts/cafe-r%E1%BB%ABng-nhi%E1%BB%87t-%C4%91%E1%BB%9Bi-k%E1%BA%BFt-h%E1%BB%A3p-v%C6%B0%E1%BB%9Dn-th%C3%BAr%E1%BB%99ng-g%E1%BA%A7n-2000m2-ngay-khu-ho%C3%A0-xu%C3%A2n-kh%C3%B4ng-n%C3%AAn-/981742273979709/"
       ],
-      "image": "images/dishes/dish-031.jpg",
+      "image": "images/dishes/dish-0e7a40e999cf.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10487,7 +10380,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/1831300883808197/posts/4448037662134493/"],
-      "image": "images/dishes/dish-035.jpg",
+      "image": "images/dishes/dish-52d77b0e478a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10508,7 +10401,7 @@
       "openingHours": "10:00-13:30",
       "description": null,
       "sources": ["https://www.facebook.com/groups/353524149439314/posts/1576203313838052/"],
-      "image": "images/dishes/dish-106.jpg",
+      "image": "images/dishes/dish-98d928918f77.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10529,7 +10422,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.foody.vn/da-nang/khu-vuc-cho-cam-le"],
-      "image": "images/dishes/dish-059.jpg",
+      "image": "images/dishes/dish-63f0fa599e46.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10550,7 +10443,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/localfood.travel/posts/657781601648548/"],
-      "image": "images/dishes/dish-036.jpg",
+      "image": "images/dishes/dish-fa62e07fb648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10571,7 +10464,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/caphetaidanang/posts/1359047281703986/"],
-      "image": "images/dishes/dish-032.jpg",
+      "image": "images/dishes/dish-67345c35f1b4.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10592,7 +10485,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/Shipanvathoakhanh/"],
-      "image": "images/dishes/dish-037.jpg",
+      "image": "images/dishes/dish-e637f8ea0419.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10615,7 +10508,7 @@
       "sources": [
         "https://top10danang.com/top-15-quan-nhau-ngon-o-hoa-khanh-da-nang-noi-tieng-gia-binh-dan/"
       ],
-      "image": "images/dishes/dish-038.jpg",
+      "image": "images/dishes/dish-097299587e63.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10638,7 +10531,7 @@
       "sources": [
         "https://www.tripadvisor.com.vn/Restaurant_Review-g298085-d17515183-Reviews-Tiem_Com_75S-Da_Nang.html"
       ],
-      "image": "images/dishes/dish-039.jpg",
+      "image": "images/dishes/dish-e6791fedd2a9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10661,7 +10554,7 @@
       "sources": [
         "https://pasgo.vn/kham-pha/ha-noi/top-7-quan-an-ngon-noi-tieng-nhat-o-hoa-khanh-da-nang-707"
       ],
-      "image": "images/dishes/dish-040.jpg",
+      "image": "images/dishes/dish-cb51ff3ce6d2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10682,7 +10575,7 @@
       "openingHours": "24/7",
       "description": null,
       "sources": ["https://www.facebook.com/tram247.lythaitong/"],
-      "image": "images/dishes/dish-033.jpg",
+      "image": "images/dishes/dish-ba7a01394733.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10705,7 +10598,7 @@
       "sources": [
         "https://www.facebook.com/tram247danang/photos/team-%C4%91ang-ch%E1%BA%A1y-n%C6%B0%E1%BB%9Bc-r%C3%BAt-%C4%91i%E1%BB%83m-danh-m%E1%BB%9F-c%E1%BB%ADa-247-%C4%91%E1%BB%8Ba-ch%E1%BB%8929-x%C3%B4-vi%E1%BA%BFt-ngh%E1%BB%87-t%C4%A9nh-%C4%91%C3%A0-n%E1%BA%B5ng/122251663526172751/"
       ],
-      "image": "images/dishes/dish-034.jpg",
+      "image": "images/dishes/dish-ababeb91cf3b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10728,7 +10621,7 @@
       "sources": [
         "https://www.facebook.com/tram247.ninhton/posts/cu%E1%BB%91i-tu%E1%BA%A7n-ai-v%E1%BA%ABn-c%C3%B2n-b%C3%A0i-v%E1%BB%9F-c%C3%B4ng-vi%E1%BB%87c-ch%C6%B0a-xong-th%C3%AC-ra-tr%E1%BA%A1m-ng%E1%BB%93i-chung-n%C3%A8-tr%E1%BA%A1m-m/122144788773108124/"
       ],
-      "image": "images/dishes/dish-001.jpg",
+      "image": "images/dishes/dish-1769b9d97f2b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10751,7 +10644,7 @@
       "sources": [
         "https://www.facebook.com/tram247danang.xvnt/posts/-tr%E1%BA%A1m-247-%C4%91ang-t%C3%ACm-th%C3%AAm-%C4%91%E1%BB%93ng-%C4%91%E1%BB%99i-n%C3%A8-chi-nh%C3%A1nh-29-x%C3%B4-vi%E1%BA%BFt-ngh%E1%BB%87-t%C4%A9nh-%C4%91%C3%A0-n%E1%BA%B5ng-%C4%91ang-/122259876344172751/"
       ],
-      "image": "images/dishes/dish-002.jpg",
+      "image": "images/dishes/dish-3ce73bbf8f6c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10774,7 +10667,7 @@
       "sources": [
         "https://www.facebook.com/tram247danang.xvnt/posts/-tr%E1%BA%A1m-247-%C4%91ang-t%C3%ACm-th%C3%AAm-%C4%91%E1%BB%93ng-%C4%91%E1%BB%99i-n%C3%A8-chi-nh%C3%A1nh-29-x%C3%B4-vi%E1%BA%BFt-ngh%E1%BB%87-t%C4%A9nh-%C4%91%C3%A0-n%E1%BA%B5ng-%C4%91ang-/122259876344172751/"
       ],
-      "image": "images/dishes/dish-003.jpg",
+      "image": "images/dishes/dish-8bca0ee21a59.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10797,7 +10690,7 @@
       "sources": [
         "https://www.facebook.com/icoffee191hoangdieu/posts/%C4%91%C3%A2y-kh%C3%B4ng-ph%E1%BA%A3i-l%C3%A0-th%C6%B0-vi%E1%BB%87n%C4%91%C3%A2y-l%C3%A0-icoffee-%EF%B8%8Ft%E1%BB%A5i-m%C3%ACnh-m%E1%BB%9F-2424h-%E1%BB%9F-%C4%91%C3%A0-n%E1%BA%B5ng-n%C6%A1i-m%E1%BB%97i-ng/860700376826440/"
       ],
-      "image": "images/dishes/dish-004.jpg",
+      "image": "images/dishes/dish-5bc7d12fcf81.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10820,7 +10713,7 @@
       "sources": [
         "https://www.facebook.com/icoffee191hoangdieu/posts/qu%C3%A1n-cafe-m%E1%BB%9F-c%E1%BB%ADa-xuy%C3%AAn-%C4%91%C3%AAm-cho-sinh-vi%C3%AAn-hay-b%E1%BB%8B-deadline-d%C3%AD-kh%C3%B4ng-gian-y%C3%AAn-t%C4%A9nh-/274673242095826/"
       ],
-      "image": "images/dishes/dish-005.jpg",
+      "image": "images/dishes/dish-9de4dbed069a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10841,7 +10734,7 @@
       "openingHours": "24/24",
       "description": null,
       "sources": ["https://www.facebook.com/zone6milktea/"],
-      "image": "images/dishes/dish-006.jpg",
+      "image": "images/dishes/dish-dbff86a18cc8.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10864,7 +10757,7 @@
       "sources": [
         "https://www.facebook.com/tuidicaphedn/posts/trinhcaphe-khu-v%C6%B0%E1%BB%9Dn-c%C3%A0-ph%C3%AA-m%E1%BB%9Bi-nh%C3%A0-tr%C3%ACnh334-%C4%91%C6%B0%E1%BB%9Dng-29-ho%C3%A0-c%C6%B0%E1%BB%9Dng-%C4%91%C3%A0-n%E1%BA%B5ng-tuidicaph/122149360527133203/"
       ],
-      "image": "images/dishes/dish-007.jpg",
+      "image": "images/dishes/dish-d98fe23ed01a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10885,7 +10778,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://danangfantasticity.com/trinh-ca-phe-111-nguyen-huu-tho"],
-      "image": "images/dishes/dish-008.jpg",
+      "image": "images/dishes/dish-2f9bf8eed0c9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10908,7 +10801,7 @@
       "sources": [
         "https://www.facebook.com/zone6milktea/posts/g%C3%B3c-%C4%91%E1%BB%93-%C4%91%E1%BB%83-qu%C3%AAn-t%E1%BA%A1i-zone-six-10-nguy%E1%BB%85n-tri-ph%C6%B0%C6%A1ngkh%C3%A1ch-y%C3%AAu-c%E1%BB%A7a-qu%C3%A1n-c%C3%B3-%C4%91%E1%BB%83-qu%C3%AAn-%C4%91%E1%BB%93/1225435365439871/"
       ],
-      "image": "images/dishes/dish-009.jpg",
+      "image": "images/dishes/dish-b9475edef9f6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10931,7 +10824,7 @@
       "sources": [
         "https://www.facebook.com/zone6milktea/posts/g%C3%B3c-%C4%91%E1%BB%93-%C4%91%E1%BB%83-qu%C3%AAn-t%E1%BA%A1i-zone-six-10-nguy%E1%BB%85n-tri-ph%C6%B0%C6%A1ngkh%C3%A1ch-y%C3%AAu-c%E1%BB%A7a-qu%C3%A1n-c%C3%B3-%C4%91%E1%BB%83-qu%C3%AAn-%C4%91%E1%BB%93/1225435365439871/"
       ],
-      "image": "images/dishes/dish-041.jpg",
+      "image": "images/dishes/dish-de03be35cf5f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10952,7 +10845,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://localleads.io.vn/danh-sach/cafe/da-nang/an-khe"],
-      "image": "images/dishes/dish-010.jpg",
+      "image": "images/dishes/dish-e43b4ab9c5a6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10973,7 +10866,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/979182732517152/posts/2661234307645311/"],
-      "image": "images/dishes/dish-011.jpg",
+      "image": "images/dishes/dish-395cffebc916.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -10994,7 +10887,7 @@
       "openingHours": "24/24",
       "description": null,
       "sources": ["https://www.danangcafes.com/cafe/cafe-2424-ml964fpaaeq"],
-      "image": "images/dishes/dish-012.jpg",
+      "image": "images/dishes/dish-dab92ed372b6.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11015,7 +10908,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/homestaydanangoffical/posts/2276943069712479/"],
-      "image": "images/dishes/dish-042.jpg",
+      "image": "images/dishes/dish-222591ecff53.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11038,7 +10931,7 @@
       "sources": [
         "https://www.facebook.com/tixgodanang/posts/top-6-qu%C3%A1n-cafe-h%E1%BB%8Dc-b%C3%A0i-d%C3%A0nh-cho-h%E1%BB%99i-ch%C4%83m-ch%E1%BB%89-%E1%BB%9F-%C4%91%C3%A0-n%E1%BA%B5ng-ch%E1%BA%AFc-h%E1%BA%B3n-c%C3%A1c-b%E1%BA%A1n-c%C3%BA-%C4%91%C3%AAm-/614508367605961/"
       ],
-      "image": "images/dishes/dish-013.jpg",
+      "image": "images/dishes/dish-4e037cbe017f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11061,7 +10954,7 @@
       "sources": [
         "https://www.facebook.com/haisan258/videos/h%E1%BA%A3i-s%E1%BA%A3n-258-%C4%91%E1%BB%8Ba-ch%E1%BB%89-12-l%C3%AA-%C4%91%E1%BB%A9c-th%E1%BB%8D-s%C6%A1n-tr%C3%A0-%C4%91%C3%A0-n%E1%BA%B5ng/1169168354104896/"
       ],
-      "image": "images/dishes/dish-082.jpg",
+      "image": "images/dishes/dish-fc97bad4731b.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11084,7 +10977,7 @@
       "sources": [
         "https://www.facebook.com/Reviewdanang24h/videos/ae-s%C6%A1n-tr%C3%A0-mu%E1%BB%91n-nh%E1%BA%ADu-chill-g%E1%BA%A7n-bi%E1%BB%83n-m%E1%BB%93i-ngon-l%E1%BA%A1i-c%C3%B3-kh%C3%B4ng-gian-lung-linh-m%C3%A1t-m%E1%BA%BB-/1064036119693873/"
       ],
-      "image": "images/dishes/dish-043.jpg",
+      "image": "images/dishes/dish-52d77b0e478a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11105,7 +10998,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.tiktok.com/@quocvietdng72/video/7567622373135027464"],
-      "image": "images/dishes/dish-044.jpg",
+      "image": "images/dishes/dish-fa62e07fb648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11126,7 +11019,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/522846599070843/posts/1480550079967152/"],
-      "image": "images/dishes/dish-045.jpg",
+      "image": "images/dishes/dish-e637f8ea0419.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11149,7 +11042,7 @@
       "sources": [
         "https://www.facebook.com/nguyenthi.loen/posts/m%E1%BB%99t-qu%C3%A1n-m%C3%AC-qu%E1%BA%A3ng-m%C3%A0-em-th%C6%B0%E1%BB%9Dng-xuy%C3%AAn-%C4%83n-%E1%BB%9F-b%C3%AAn-s%C6%A1n-tr%C3%A0noenodanang-danang-foodie-f/2868475943486423/"
       ],
-      "image": "images/dishes/dish-046.jpg",
+      "image": "images/dishes/dish-097299587e63.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11172,7 +11065,7 @@
       "sources": [
         "https://www.facebook.com/TrungBuiii/posts/h%C3%A0ng-b%C3%A1nh-canh-tu%E1%BB%95i-th%C6%A1-c%E1%BB%A7a-bao-ng%C6%B0%E1%BB%9Di-con-c%E1%BA%A9m-l%E1%BB%87-nay-%C4%91%C3%A3-c%C3%B3-cs2-r%E1%BB%99ng-r%C3%A3i-tho%C3%A1ng-m/1232526102212325/"
       ],
-      "image": "images/dishes/dish-047.jpg",
+      "image": "images/dishes/dish-e6791fedd2a9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11195,7 +11088,7 @@
       "sources": [
         "https://www.facebook.com/Reviewdanang24h/posts/khu-v%C6%B0%E1%BB%9Dn-l%E1%BA%A9u-n%C6%B0%E1%BB%9Bng-chill-qu%C3%A1-tr%E1%BB%9Di-%C4%91%E1%BA%A5t-ngay-v%C6%B0%C6%A1ng-qu%E1%BB%91c-c%E1%BA%A9m-l%E1%BB%87sashi-bbq-beer336-th/966907995463137/"
       ],
-      "image": "images/dishes/dish-048.jpg",
+      "image": "images/dishes/dish-cb51ff3ce6d2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11218,7 +11111,7 @@
       "sources": [
         "https://www.facebook.com/p/Qu%C3%A1n-Chay-T%C3%A2m-An-105-Ph%E1%BA%A1m-Th%E1%BA%BF-Hi%E1%BB%83n-Khu%C3%AA-Trung-C%E1%BA%A9m-L%E1%BB%87-%C4%90%C3%A0-N%E1%BA%B5ng-100063583925028/"
       ],
-      "image": "images/dishes/dish-049.jpg",
+      "image": "images/dishes/dish-de03be35cf5f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11241,7 +11134,7 @@
       "sources": [
         "https://www.facebook.com/p/H%E1%BA%A3i-S%E1%BA%A3n-T%E1%BB%B1-Do-II-333-Nguy%E1%BB%85n-Ph%C6%B0%E1%BB%9Bc-Lan-100086425043992/"
       ],
-      "image": "images/dishes/dish-083.jpg",
+      "image": "images/dishes/dish-7da727273547.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11262,7 +11155,7 @@
       "openingHours": "12:00-01:00",
       "description": null,
       "sources": ["https://www.facebook.com/groups/DaNangRevieww/posts/2323528151339050/"],
-      "image": "images/dishes/dish-060.jpg",
+      "image": "images/dishes/dish-e2307f9c84e5.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11283,7 +11176,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/cdlienchieu/posts/39938802665766375/"],
-      "image": "images/dishes/dish-050.jpg",
+      "image": "images/dishes/dish-222591ecff53.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11304,7 +11197,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/cdlienchieu/posts/39938802665766375/"],
-      "image": "images/dishes/dish-051.jpg",
+      "image": "images/dishes/dish-52d77b0e478a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11325,7 +11218,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/Tiemnuong.An/"],
-      "image": "images/dishes/dish-052.jpg",
+      "image": "images/dishes/dish-fa62e07fb648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11348,7 +11241,7 @@
       "sources": [
         "https://www.foody.vn/da-nang/khu-vuc-quan-lien-chieu/tren-duong-nguyen-luong-bang"
       ],
-      "image": "images/dishes/dish-053.jpg",
+      "image": "images/dishes/dish-e637f8ea0419.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11371,7 +11264,7 @@
       "sources": [
         "https://vinwonders.com/vi/wonderpedia/news/23-quan-nhau-da-nang-moi-ben-gia-phai-chang/"
       ],
-      "image": "images/dishes/dish-054.jpg",
+      "image": "images/dishes/dish-097299587e63.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11392,7 +11285,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/754626124592788/posts/28984906807804675/"],
-      "image": "images/dishes/dish-055.jpg",
+      "image": "images/dishes/dish-e6791fedd2a9.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11413,7 +11306,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/groups/305840616490740/posts/2290172108057571/"],
-      "image": "images/dishes/dish-056.jpg",
+      "image": "images/dishes/dish-cb51ff3ce6d2.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11434,7 +11327,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.tiktok.com/@reviewdanang4343/video/7558477565661351186"],
-      "image": "images/dishes/dish-057.jpg",
+      "image": "images/dishes/dish-de03be35cf5f.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11455,7 +11348,7 @@
       "openingHours": "8h-22h30",
       "description": null,
       "sources": ["https://www.facebook.com/namco12thangkitchen/?locale=vi_VN"],
-      "image": "images/dishes/dish-058.jpg",
+      "image": "images/dishes/dish-222591ecff53.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11476,7 +11369,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.facebook.com/nguyenthi.loen/posts/2868475943486423/"],
-      "image": "images/dishes/dish-035.jpg",
+      "image": "images/dishes/dish-52d77b0e478a.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11497,7 +11390,7 @@
       "openingHours": null,
       "description": null,
       "sources": ["https://www.youtube.com/watch?v=dMuZl8XRkQs"],
-      "image": "images/dishes/dish-036.jpg",
+      "image": "images/dishes/dish-fa62e07fb648.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",
@@ -11518,7 +11411,7 @@
       "openingHours": "07:30 - 20:00",
       "description": null,
       "sources": ["https://zalopay.vn/quan-cafe-dep-o-da-nang-dep-chill-4854"],
-      "image": "images/dishes/dish-001.jpg",
+      "image": "images/dishes/dish-31c441129d5c.jpg",
       "imageKind": "dish",
       "verified": false,
       "collectedAt": "2026-11-09",

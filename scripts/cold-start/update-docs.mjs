@@ -71,7 +71,8 @@ ${categoryRows}
    giữ lại chỉ gây loãng.
 2. **Toạ độ**: mọi mục có \`lat\`/\`lng\` nằm trong địa giới TP Đà Nẵng, nguồn ghi ở \`geoSource\`
    (\`osm\` / \`nominatim\` / \`google-maps\`).
-3. **Không trùng lặp**: cùng tên chuẩn hoá hoặc cách nhau < 80m.
+3. **Không trùng lặp**: cùng tên chuẩn hoá **và** cách nhau < 120m (cùng tên nhưng xa nhau là
+   chi nhánh khác — giữ lại).
 4. **Không bịa**: mỗi mục nguồn \`curated-v2\` có \`sources\` là URL nơi thông tin xuất hiện.
 
 ## Cách hiểu các trường
@@ -90,7 +91,8 @@ ${categoryRows}
 | \`geocode-nominatim.mjs\` | Geocode ứng viên nghiên cứu, cache trong \`.cache/\` |
 | \`fix-districts.mjs\` | Sửa nhãn quận theo \`display_name\` Nominatim |
 | \`rebuild.mjs\` | Lọc mục đạt chuẩn, gộp ứng viên, loại trùng, sinh \`places.csv\` |
-| \`diversify-images.mjs\` | Tải ảnh món từ Wikimedia Commons, gán vòng tròn (tối đa 6 lần/ảnh) |
+| \`diversify-images.mjs\` | Tải ảnh món từ Wikimedia Commons (lọc tiêu đề rác + kiểm chất lượng), gán vòng tròn (tối đa 6 lần/ảnh); \`--rebalance\` gán lại toàn bộ |
+| \`clean-images.mjs\` | Xoá ảnh rác do audit thị giác phát hiện, gỡ khỏi dataset |
 | \`validate.mjs\` | Kiểm schema/địa chỉ/toạ độ/ảnh/trùng lặp — exit 1 nếu sai |
 | \`update-docs.mjs\` | Sinh lại README + CREDITS |
 
@@ -109,10 +111,10 @@ const creditsPath = join(dataDir, "CREDITS.md")
 const oldCredits = existsSync(creditsPath) ? await readFile(creditsPath, "utf8") : ""
 const venueSection = oldCredits.split("## 2.")[0].trimEnd()
 
-const assignmentsPath = join(dataDir, ".cache/image-assignments.json")
-const assignments = existsSync(assignmentsPath)
+const assignmentsPath = join(dataDir, ".cache/image-credits.json")
+const creditsByFile = existsSync(assignmentsPath)
   ? JSON.parse(await readFile(assignmentsPath, "utf8"))
-  : []
+  : {}
 
 const dishCredits = `## 2. Ảnh món đại diện (images/dishes/)
 
@@ -121,10 +123,11 @@ const dishCredits = `## 2. Ảnh món đại diện (images/dishes/)
 
 | File | Trang nguồn |
 | --- | --- |
-${[...new Map(assignments.map((a) => [a.image, a.credit])).entries()]
+${Object.entries(creditsByFile)
+  .filter(([file]) => existsSync(join(dataDir, file)))
   .map(([file, credit]) => `| ${file} | ${credit} |`)
   .join("\n")}
 `
 
 await writeFile(creditsPath, `${venueSection}\n\n${dishCredits}`)
-console.log(`Đã ghi README.md (${places.length} địa điểm) + CREDITS.md (${assignments.length} ảnh món)`)
+console.log(`Đã ghi README.md (${places.length} địa điểm) + CREDITS.md (${Object.keys(creditsByFile).length} ảnh món)`)
