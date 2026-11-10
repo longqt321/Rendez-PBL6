@@ -26,6 +26,9 @@ afterAll(async () => {
 
 const userPageSchema = pageSchema(userProfileSchema)
 
+/** Hậu tố ngẫu nhiên — các file test dùng chung một container. */
+const suffix = Math.random().toString(36).slice(2, 8)
+
 describe("GET /users", () => {
   test("trả Page<UserProfile> khớp schema", async () => {
     const res = await app.request("/api/v1/users")
@@ -40,9 +43,9 @@ describe("GET /users", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: "Minh Anh",
-        email: "minhanh@rendez.test",
+        email: `minhanh-${suffix}@rendez.test`,
         password: "password123",
-        handle: "minh_anh",
+        handle: `minh_anh_${suffix}`,
       }),
     })
 
@@ -54,7 +57,11 @@ describe("GET /users", () => {
 
     expect(userPageSchema.safeParse(body).success).toBe(true)
     expect(body.items).toHaveLength(1)
-    expect(body.items[0]).toMatchObject({ name: "Minh Anh", handle: "minh_anh", isMe: false })
+    expect(body.items[0]).toMatchObject({
+      name: "Minh Anh",
+      handle: `minh_anh_${suffix}`,
+      isMe: false,
+    })
   })
 
   test("q không khớp ai trả trang rỗng", async () => {

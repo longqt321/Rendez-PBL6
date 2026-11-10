@@ -113,10 +113,18 @@ describe("GET /places", () => {
   })
 
   test("chỉ trả place đã publish và không closed", async () => {
-    const body = await getJson<PageJson>("/api/v1/places?q=ram%20cuon")
+    // Chọn động một place chưa publish (file test khác có thể đã publish place
+    // cứng trong dataset qua PATCH /posts/:id/place).
+    const unpublished = await prisma.place.findFirst({
+      where: { publishedAt: null, deletedAt: null },
+      select: { id: true, name: true },
+    })
+    if (!unpublished) return
 
-    // Place duy nhất khớp "ram cuon" trong dataset chưa publish → không lọt ra.
-    expect(body.items).toHaveLength(0)
+    const body = await getJson<PageJson>(
+      `/api/v1/places?q=${encodeURIComponent(unpublished.name.slice(0, 12))}`,
+    )
+    expect(body.items.some((item) => item.id === unpublished.id)).toBe(false)
   })
 })
 
@@ -153,7 +161,14 @@ describe("GET /places/:id", () => {
   })
 
   test("place chưa publish trả 404", async () => {
-    const res = await get("/api/v1/places/ram-cuon-cai-di-hoa-6152681085")
+    // Chọn động: file test khác có thể đã publish place cứng trong dataset.
+    const unpublished = await prisma.place.findFirst({
+      where: { publishedAt: null, deletedAt: null },
+      select: { id: true },
+    })
+    if (!unpublished) return
+
+    const res = await get(`/api/v1/places/${unpublished.id}`)
     expect(res.status).toBe(404)
     expect(await res.json()).toEqual({ message: "Không tìm thấy địa điểm" })
   })

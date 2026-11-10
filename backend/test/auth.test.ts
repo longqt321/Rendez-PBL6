@@ -11,6 +11,11 @@ import { startTestDb, stopTestDb } from "./helpers/pg"
 let app: Awaited<ReturnType<typeof import("../src/app").createApp>>
 let prisma: typeof import("../src/lib/prisma").prisma
 
+/** Hậu tố ngẫu nhiên — test chạy chung một container nên dữ liệu phải không đụng nhau. */
+const suffix = Math.random().toString(36).slice(2, 8)
+const EMAIL = `yen-${suffix}@rendez.test`
+const HANDLE = `nguyen_yen_${suffix}`
+
 beforeAll(async () => {
   const url = await startTestDb()
   process.env.DATABASE_URL = url
@@ -51,9 +56,9 @@ describe("auth + hồ sơ", () => {
       method: "POST",
       body: JSON.stringify({
         name: "Nguyễn Yến",
-        email: "yen@rendez.test",
+        email: EMAIL,
         password: "password123",
-        handle: "nguyen_yen",
+        handle: HANDLE,
       }),
     })
 
@@ -62,7 +67,7 @@ describe("auth + hồ sơ", () => {
     expect(userProfileSchema.safeParse(body).success).toBe(true)
     expect(body).toMatchObject({
       name: "Nguyễn Yến",
-      handle: "nguyen_yen",
+      handle: HANDLE,
       initials: "NY",
       isMe: true,
       postCount: 0,
@@ -85,7 +90,7 @@ describe("auth + hồ sơ", () => {
   test("POST /session sai mật khẩu trả 401", async () => {
     const res = await call("/api/v1/session", {
       method: "POST",
-      body: JSON.stringify({ email: "yen@rendez.test", password: "sai-mat-khau" }),
+      body: JSON.stringify({ email: EMAIL, password: "sai-mat-khau" }),
     })
     expect(res.status).toBe(401)
     expect(await res.json()).toEqual({ message: "Email hoặc mật khẩu không đúng" })
@@ -94,7 +99,7 @@ describe("auth + hồ sơ", () => {
   test("POST /session đúng trả hồ sơ + cookie mới", async () => {
     const res = await call("/api/v1/session", {
       method: "POST",
-      body: JSON.stringify({ email: "yen@rendez.test", password: "password123" }),
+      body: JSON.stringify({ email: EMAIL, password: "password123" }),
     })
     expect(res.status).toBe(200)
     expect(userProfileSchema.safeParse(await res.json()).success).toBe(true)
@@ -121,7 +126,7 @@ describe("auth + hồ sơ", () => {
       bio: "Mê bánh xèo",
       location: "Đà Nẵng",
       privateProfile: true,
-      handle: "nguyen_yen",
+      handle: HANDLE,
     })
   })
 
@@ -148,9 +153,9 @@ describe("auth + hồ sơ", () => {
       method: "POST",
       body: JSON.stringify({
         name: "Nguyễn Yến 2",
-        email: "yen@rendez.test",
+        email: EMAIL,
         password: "password123",
-        handle: "nguyen_yen_2",
+        handle: `${HANDLE}_2`,
       }),
     })
     expect(res.status).toBe(409)

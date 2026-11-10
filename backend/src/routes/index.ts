@@ -4,6 +4,8 @@ import { auth } from "../lib/auth"
 import { createAuthRouter } from "./auth"
 import { createPlacesRouter } from "./places"
 import { createUsersRouter } from "./users"
+import { createPostsRouter } from "./posts"
+import { createNotificationsRouter } from "./notifications"
 
 /**
  * Router API v1 — mọi route nghiệp vụ mount dưới `/api/v1` (K1).
@@ -32,6 +34,12 @@ export function createApiRouter() {
 
   // Người dùng (Phase 2) — `/users`.
   api.route("/", createUsersRouter())
+
+  // Bài đăng + bình luận (Phase 3).
+  api.route("/", createPostsRouter())
+
+  // Thông báo (Phase 4).
+  api.route("/", createNotificationsRouter())
 
   return api
 }

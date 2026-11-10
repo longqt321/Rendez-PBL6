@@ -27,16 +27,16 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | T2.4 | 2 | GET /places/suggestions — port ranking.ts + unaccent | T2.1 | done | |
 | T2.5 | 2 | pg_trgm index + test "banh xeo" khớp "Bánh Xèo" | T2.1 | done (unaccent; trgm index dùng cho T2.4) | |
 | T2.6 | 2 | GET /users?q= | T2.1 | done | |
-| T3.1 | 3 | POST /posts + GET /posts (filter all/unplaced/mine/saved + q) | T1.4 | todo | |
-| T3.2 | 3 | GET /posts/:id; PATCH like/save idempotent | T3.1 | todo | |
-| T3.3 | 3 | PATCH /posts/:id/place — side effects A7.3 trong transaction | T3.1 | todo | |
-| T3.4 | 3 | Comments GET/POST/PATCH like/DELETE (A7.6) | T3.1 | todo | |
-| T3.5 | 3 | Notification like/comment/follow (A6.4) | T3.4 | todo | |
+| T3.1 | 3 | POST /posts + GET /posts (filter all/unplaced/mine/saved + q) | T1.4 | done | |
+| T3.2 | 3 | GET /posts/:id; PATCH like/save idempotent | T3.1 | done | |
+| T3.3 | 3 | PATCH /posts/:id/place — side effects A7.3 trong transaction | T3.1 | done | |
+| T3.4 | 3 | Comments GET/POST/PATCH like/DELETE (A7.6) | T3.1 | done | |
+| T3.5 | 3 | Notification like/comment (follow ở T5.4) (A6.4) | T3.4 | done | |
 | T4.1 | 4 | POST /places/:id/reviews — upsert + aggregate A7.4 | T1.4 | todo | |
 | T4.2 | 4 | GET /places/:id/reviews — mới nhất trước | T4.1 | todo | |
 | T4.3 | 4 | POST /places/:id/reports — A7.5 + unique | T1.4 | todo | |
 | T4.4 | 4 | Job pg-boss phát hiện place (A7.2) + cron + unique index | T3.1 | todo | |
-| T4.5 | 4 | Notifications GET/PATCH :id/PATCH all | T4.4 | todo | |
+| T4.5 | 4 | Notifications GET/PATCH :id/PATCH all | T4.4 | done | |
 | T5.1 | 5 | CRUD /collections + like + PATCH :id/places (A7.7) | T1.4 | todo | |
 | T5.2 | 5 | GET /places/saved | T5.1 | todo | |
 | T5.3 | 5 | GET /users/:handle (+/posts?tab=, /collections) | T2.6 | todo | |
