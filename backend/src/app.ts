@@ -57,8 +57,22 @@ export function createApp() {
     )
   }
 
-  // Header bảo mật mặc định của Hono (HSTS bật sẵn; CSP tắt — API không trả HTML).
-  app.use("*", secureHeaders())
+  // Header bảo mật mặc định của Hono (HSTS bật sẵn). API chỉ trả JSON nên
+  // CSP khoá cứng `default-src 'none'`; Permissions-Policy tắt mọi tính năng
+  // trình duyệt không cần (nikto 2026-11-11 báo thiếu 2 header này).
+  app.use(
+    "*",
+    secureHeaders({
+      contentSecurityPolicy: { defaultSrc: ["'none'"] },
+      permissionsPolicy: {
+        camera: [],
+        geolocation: [],
+        microphone: [],
+        payment: [],
+        usb: [],
+      },
+    }),
+  )
 
   // JSON API 1MB là dư; ảnh đi qua presigned R2 nên không nhận file qua API (H5).
   app.use(
