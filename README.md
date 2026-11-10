@@ -9,8 +9,8 @@ mức giá, xem trên bản đồ, lưu địa điểm vào bộ sưu tập, đ�
 | Thư mục | Vai trò |
 | --- | --- |
 | `frontend/` | SPA React 19 + Vite 8 + TypeScript strict. Chạy độc lập bằng mock in-memory. |
-| `backend/` | API Hono 4 + Prisma 7 + PostgreSQL 17. *(Phase 0 — chưa scaffold)* |
-| `packages/schema/` | zod schema dùng chung frontend ↔ backend. *(Phase 0)* |
+| `backend/` | API Hono 4 + Prisma 7 + PostgreSQL 17. *(Phase 0 xong — scaffold + 18 bảng + seed)* |
+| `packages/schema/` | zod schema dùng chung frontend ↔ backend. *(Phase 0 xong — FE import qua re-export shim)* |
 | `docs/` | Tài liệu chung: quyết định kiến trúc, hợp đồng API, bài học, kế hoạch backend. |
 
 ## Chạy dự án
@@ -19,7 +19,7 @@ mức giá, xem trên bản đồ, lưu địa điểm vào bộ sưu tập, đ�
 bun install                 # cài cho cả workspace
 bun run dev                 # frontend (mock bật mặc định) → http://localhost:5173
 bun run db:up               # Postgres 17 cho backend
-bun run dev:api             # backend (sau Phase 0)
+bun run dev:api             # backend :8000 (cần backend/.env)
 ```
 
 | Lệnh | Việc |

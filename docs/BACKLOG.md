@@ -312,3 +312,20 @@ lịch sử; không còn việc mở ở đây.
       request, chưa giải quyết policy.
 - [ ] **Cache tile bền bằng service worker** (`vite-plugin-pwa` + workbox `runtimeCaching`
       CacheFirst cho domain tile) — cần duyệt thêm dev dependency trước khi làm.
+
+## Phát hiện 2026-11-11 (Phase 0 backend — T0.1→T0.5)
+
+- [ ] **Schema v1 thiếu bảng theo kế hoạch** — mục 4.1 của `de-xuat-techstack-backend.md`
+      liệt kê 18 bảng nhưng không có `follows` (cần cho T5.4 follow/unfollow) và
+      `place_suggestion_notifications` (cần cho T4.4 idempotence job — unique `(post_id)`).
+      Thêm bằng migration riêng ở phase tương ứng, không sửa migration đã chạy.
+- [ ] **Bảng vận hành chưa có** — `idempotency_keys` (K2), `rate_limits` (H4),
+      `audit_logs` (F3): thêm khi làm phase tương ứng (K2/H4/F3), không làm từ đầu.
+- [ ] **`GET /places/saved` phân trang** — mock trả tất cả (`next: null`); backend thật
+      phải phân trang keyset (đã ghi ở DECISIONS D-042 mục 4). Kiểm tra khi làm T2.x.
+- [ ] **Benchmark `unaccent + pg_trgm`** — dataset 491 dòng không đại diện; đo lại khi
+      ≥ 50k place (đã ghi ở Phần E kế hoạch).
+- [ ] **Nút "Nhắn tin"** — `disabled` + tooltip "sẽ mở khi backend hoàn thiện" (D-043);
+      bật khi có room/messaging thật (Phase 6+).
+- [ ] **Prisma dev log spam** — `log: ["query"]` ở dev in mỗi query ra stdout (đã thấy khi
+      seed). Cân nhắc gate bằng env riêng (ví dụ `LOG_SQL=1`) thay vì mặc định bật.

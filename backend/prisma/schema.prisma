@@ -1,0 +1,505 @@
+// Schema v1 — 18 bảng quan hệ (mục 4.1 của docs/backend/de-xuat-techstack-backend.md).
+// `places.tags` là text[] (mục 4.2) nên KHÔNG có bảng place_tags.
+// Chưa có ở v1 (thêm bằng migration ở phase tương ứng, đã ghi docs/BACKLOG.md):
+//   - follows (T5.4)
+//   - place_suggestion_notifications (T4.4)
+//   - idempotency_keys (K2), rate_limits (H4), audit_logs (F3)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum PlaceCategory {
+  cafe
+  restaurant
+  street_food @map("street-food")
+  bakery
+  dessert
+  bar
+
+  @@map("place_category")
+}
+
+enum PlaceStatus {
+  open
+  closed
+  unknown
+
+  @@map("place_status")
+}
+
+enum ReportReason {
+  closed
+  wrong_info @map("wrong-info")
+  duplicate
+  other
+
+  @@map("report_reason")
+}
+
+enum ReportStatus {
+  pending
+  reviewed
+  dismissed
+
+  @@map("report_status")
+}
+
+enum NotificationType {
+  place_suggestion @map("place-suggestion")
+  like
+  comment
+  follow
+  system
+
+  @@map("notification_type")
+}
+
+enum RoomProposalKind {
+  include
+  exclude
+
+  @@map("room_proposal_kind")
+}
+
+enum RoomProposalField {
+  category
+  district
+  keyword
+  price_max @map("priceMax")
+
+  @@map("room_proposal_field")
+}
+
+enum RoomProposalStatus {
+  open
+  applied
+  dismissed
+
+  @@map("room_proposal_status")
+}
+
+// ---------------------------------------------------------------------------
+// 1. users
+// ---------------------------------------------------------------------------
+
+model User {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  handle          String    @unique
+  email           String    @unique
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  passwordHash    String?   @map("password_hash")
+  avatarUrl       String?   @map("avatar_url")
+  bio             String    @default("")
+  location        String    @default("")
+  privateProfile  Boolean   @default(false) @map("private_profile")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  sessions         Session[]
+  posts            Post[]
+  comments         Comment[]
+  reviews          Review[]
+  reports          PlaceReport[]
+  postLikes        PostLike[]
+  postSaves        PostSave[]
+  commentLikes     CommentLike[]
+  collections      Collection[]
+  collectionLikes  CollectionLike[]
+  notifications    Notification[]
+  ownedRooms       Room[]         @relation("RoomOwner")
+  roomMemberships  RoomMember[]
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// 2. sessions
+// ---------------------------------------------------------------------------
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  ip        String?
+  userAgent String?  @map("user_agent")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ---------------------------------------------------------------------------
+// 3. places — đủ 23 cột dataset + trường nội bộ (F1/F2/F3)
+// ---------------------------------------------------------------------------
+
+model Place {
+  id           String        @id
+  name         String
+  address      String
+  city         String        @default("Đà Nẵng")
+  district     String?
+  category     PlaceCategory
+  priceLevel   Int           @default(1) @map("price_level")
+  tags         String[]      @default([])
+  lat          Float?
+  lng          Float?
+  status       PlaceStatus   @default(unknown)
+
+  // Nội dung dataset — không trả API ở Phase 0 (F1)
+  description  String?
+  phone        String?
+  openingHours String?       @map("opening_hours")
+  sources      String[]      @default([])
+  geoSource    String?       @map("geo_source")
+  geoPrecision String?       @map("geo_precision")
+  venuePageUrl String?       @map("venue_page_url")
+  verified     Boolean       @default(false)
+  collectedAt  DateTime?     @map("collected_at")
+  tier         String?
+  osmId        String?       @map("osm_id")
+  imageKind    String?       @map("image_kind")
+  imageNote    String?       @map("image_note")
+
+  // Duyệt / kiểm duyệt (F2/F3)
+  publishedAt      DateTime? @map("published_at")
+  moderationStatus String?   @map("moderation_status")
+  moderatedBy      String?   @map("moderated_by") @db.Uuid
+  moderatedAt      DateTime? @map("moderated_at")
+  moderationNote   String?   @map("moderation_note")
+  createdBy        String?   @map("created_by") @db.Uuid
+  updatedBy        String?   @map("updated_by") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  images          PlaceImage[]
+  reviews         Review[]
+  reports         PlaceReport[]
+  posts           Post[]
+  collectionItems CollectionPlace[]
+
+  @@index([publishedAt, status])
+  @@index([lat, lng])
+  @@index([category])
+  @@index([district])
+  @@map("places")
+}
+
+// ---------------------------------------------------------------------------
+// 4. place_images
+// ---------------------------------------------------------------------------
+
+model PlaceImage {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  placeId   String   @map("place_id")
+  url       String
+  height    Int      @default(320)
+  credit    String?
+  kind      String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([placeId, position])
+  @@map("place_images")
+}
+
+// ---------------------------------------------------------------------------
+// 5. reviews — 1 user 1 review/place (upsert, A7.4)
+// ---------------------------------------------------------------------------
+
+model Review {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  placeId   String    @map("place_id")
+  authorId  String    @map("author_id") @db.Uuid
+  rating    Int
+  content   String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  place  Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([placeId, authorId])
+  @@index([placeId, createdAt])
+  @@map("reviews")
+}
+
+// ---------------------------------------------------------------------------
+// 6. place_reports — dữ liệu kiểm duyệt, không có GET (A7.5)
+// ---------------------------------------------------------------------------
+
+model PlaceReport {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  placeId    String       @map("place_id")
+  reporterId String       @map("reporter_id") @db.Uuid
+  reason     ReportReason
+  detail     String?
+  status     ReportStatus @default(pending)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  place    Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  reporter User  @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([placeId, reason, reporterId])
+  @@index([status, createdAt])
+  @@map("place_reports")
+}
+
+// ---------------------------------------------------------------------------
+// 7. posts
+// ---------------------------------------------------------------------------
+
+model Post {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authorId  String    @map("author_id") @db.Uuid
+  placeId   String?   @map("place_id")
+  caption   String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  place    Place?    @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  likes    PostLike[]
+  saves    PostSave[]
+  comments Comment[]
+
+  @@index([createdAt(sort: Desc), id(sort: Desc)])
+  @@index([authorId, createdAt(sort: Desc)])
+  @@index([placeId])
+  @@map("posts")
+}
+
+// ---------------------------------------------------------------------------
+// 8. post_likes
+// ---------------------------------------------------------------------------
+
+model PostLike {
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId])
+  @@index([userId])
+  @@map("post_likes")
+}
+
+// ---------------------------------------------------------------------------
+// 9. post_saves
+// ---------------------------------------------------------------------------
+
+model PostSave {
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId])
+  @@index([userId])
+  @@map("post_saves")
+}
+
+// ---------------------------------------------------------------------------
+// 10. comments — lồng tối đa 1 cấp, xoá mềm (A7.6)
+// ---------------------------------------------------------------------------
+
+model Comment {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String    @map("post_id") @db.Uuid
+  authorId  String    @map("author_id") @db.Uuid
+  parentId  String?   @map("parent_id") @db.Uuid
+  body      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  post    Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent  Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]     @relation("CommentReplies")
+  likes   CommentLike[]
+
+  @@index([postId, parentId, createdAt])
+  @@map("comments")
+}
+
+// ---------------------------------------------------------------------------
+// 11. comment_likes
+// ---------------------------------------------------------------------------
+
+model CommentLike {
+  commentId String   @map("comment_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, userId])
+  @@index([userId])
+  @@map("comment_likes")
+}
+
+// ---------------------------------------------------------------------------
+// 12. collections
+// ---------------------------------------------------------------------------
+
+model Collection {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId     String    @map("owner_id") @db.Uuid
+  name        String
+  description String    @default("")
+  isPrivate   Boolean   @default(false) @map("is_private")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  owner User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  items CollectionPlace[]
+  likes CollectionLike[]
+
+  @@index([ownerId, createdAt(sort: Desc)])
+  @@map("collections")
+}
+
+// ---------------------------------------------------------------------------
+// 13. collection_places — position giữ thứ tự thêm (A7.7)
+// ---------------------------------------------------------------------------
+
+model CollectionPlace {
+  collectionId String   @map("collection_id") @db.Uuid
+  placeId      String   @map("place_id")
+  position     Int      @default(0)
+  addedAt      DateTime @default(now()) @map("added_at")
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  place      Place      @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, placeId])
+  @@index([collectionId, position])
+  @@map("collection_places")
+}
+
+// ---------------------------------------------------------------------------
+// 14. collection_likes
+// ---------------------------------------------------------------------------
+
+model CollectionLike {
+  collectionId String   @map("collection_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, userId])
+  @@index([userId])
+  @@map("collection_likes")
+}
+
+// ---------------------------------------------------------------------------
+// 15. rooms — filter là JSONB (mục 4.2)
+// ---------------------------------------------------------------------------
+
+model Room {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code      String   @unique
+  name      String
+  ownerId   String   @map("owner_id") @db.Uuid
+  filter    Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  owner     User           @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members   RoomMember[]
+  proposals RoomProposal[]
+
+  @@map("rooms")
+}
+
+// ---------------------------------------------------------------------------
+// 16. room_members — guest không cần tài khoản (D5)
+// ---------------------------------------------------------------------------
+
+model RoomMember {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId      String   @map("room_id") @db.Uuid
+  userId      String?  @map("user_id") @db.Uuid
+  displayName String   @map("display_name")
+  isGuest     Boolean  @default(true) @map("is_guest")
+  guestToken  String?  @unique @map("guest_token")
+  joinedAt    DateTime @default(now()) @map("joined_at")
+
+  room      Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  proposals RoomProposal[]
+
+  @@index([roomId])
+  @@map("room_members")
+}
+
+// ---------------------------------------------------------------------------
+// 17. room_proposals — status do server quyết định (F2)
+// ---------------------------------------------------------------------------
+
+model RoomProposal {
+  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId    String             @map("room_id") @db.Uuid
+  memberId  String             @map("member_id") @db.Uuid
+  kind      RoomProposalKind
+  field     RoomProposalField
+  value     String
+  status    RoomProposalStatus @default(open)
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+
+  room   Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  member RoomMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, status])
+  @@map("room_proposals")
+}
+
+// ---------------------------------------------------------------------------
+// 18. notifications — payload JSONB theo kind (mục 4.2)
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  payload   Json             @default("{}")
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, readAt])
+  @@map("notifications")
+}

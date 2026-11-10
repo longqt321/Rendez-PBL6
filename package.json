@@ -15,9 +15,14 @@
     "format": "cd frontend && bun run format",
     "format:check": "cd frontend && bun run format:check",
     "test": "cd frontend && bun run test",
+    "test:api": "cd backend && bun run test",
+    "typecheck:api": "cd backend && bun run typecheck",
     "e2e": "cd frontend && bun run e2e",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
+    "db:migrate": "cd backend && bun run db:migrate",
+    "db:seed": "cd backend && bun run db:seed",
+    "db:generate": "cd backend && bun run db:generate",
     "prepare": "husky"
   },
   "lint-staged": {

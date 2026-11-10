@@ -1,12 +1,5 @@
-import { PLACE_REPORT_REASONS } from "./place-report"
-import { z } from "zod"
-import type { PlaceReport } from "./place-report"
-
-/** Báo cáo địa điểm — khớp `PlaceReport`. */
-export const placeReportSchema = z.object({
-  id: z.string(),
-  placeId: z.string(),
-  reason: z.enum(PLACE_REPORT_REASONS),
-  detail: z.string().nullable(),
-  createdAt: z.string(),
-}) satisfies z.ZodType<PlaceReport>
+/**
+ * Schema đã chuyển sang `@rendez/schema` (workspace chung FE/BE).
+ * File này chỉ re-export để giữ nguyên import path cũ trong feature.
+ */
+export { placeReportSchema } from "@rendez/schema"
