@@ -12,7 +12,6 @@ export interface Post {
   id: string
   author: Author
   caption: string
-  imageHeight: number
   createdAt: string
   /** null = bài đăng chưa gắn địa điểm nào */
   placeId: string | null

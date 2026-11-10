@@ -3,7 +3,7 @@
  * Pha E — sinh lại README.md + CREDITS cho dataset sau tái sinh.
  *
  * README: quy mô, phân bố theo quận, cách hiểu trường, việc còn lại.
- * CREDITS: ảnh thật của quán (giữ nguyên bảng cũ) + bảng ảnh món mới từ Commons.
+ * CREDITS: chỉ mục ảnh THẬT của quán — ảnh món đã bị loại hẳn khỏi dataset (D-049).
  *
  * Chạy: node scripts/cold-start/update-docs.mjs
  */
@@ -108,28 +108,22 @@ ${categoryRows}
 
 await writeFile(join(dataDir, "README.md"), readme)
 
-// CREDITS: giữ bảng ảnh quán cũ, thêm bảng ảnh món mới.
+// CREDITS: sinh lại từ dataset — nguồn từng ảnh nằm trong trường `imageCredit`
+// (điền 1 lần khi tải ảnh, không đoán lại từ tên file).
 const creditsPath = join(dataDir, "CREDITS.md")
-const oldCredits = existsSync(creditsPath) ? await readFile(creditsPath, "utf8") : ""
-const venueSection = oldCredits.split("## 2.")[0].trimEnd()
+const withImage = places.filter((p) => p.image)
 
-const assignmentsPath = join(dataDir, ".cache/image-credits.json")
-const creditsByFile = existsSync(assignmentsPath)
-  ? JSON.parse(await readFile(assignmentsPath, "utf8"))
-  : {}
+const credits = `# CREDITS — Nguồn ảnh
 
-const dishCredits = `## 2. Ảnh món đại diện (images/dishes/)
+## Ảnh THẬT của quán (images/venues/)
 
-Ảnh tải từ **Wikimedia Commons** (giấy phép mở, ghi nguồn theo trang mô tả file).
-Đây là ảnh **món ăn theo nhóm**, KHÔNG phải ảnh của quán cụ thể.
+Ảnh người dùng chụp tại quán, lấy từ trang quán trên Foody.vn và Google Maps.
+**Chưa xác minh giấy phép** — dùng nội bộ/demo, cần xin phép trước khi phát hành công khai.
 
-| File | Trang nguồn |
-| --- | --- |
-${Object.entries(creditsByFile)
-  .filter(([file]) => existsSync(join(dataDir, file)))
-  .map(([file, credit]) => `| ${file} | ${credit} |`)
-  .join("\n")}
+| Quán | File | Nguồn |
+| --- | --- | --- |
+${withImage.map((p) => `| ${p.id} | ${p.image} | ${p.imageCredit ?? "chưa rõ"} |`).join("\n")}
 `
 
-await writeFile(creditsPath, `${venueSection}\n\n${dishCredits}`)
-console.log(`Đã ghi README.md (${places.length} địa điểm) + CREDITS.md (${Object.keys(creditsByFile).length} ảnh món)`)
+await writeFile(creditsPath, credits)
+console.log(`Đã ghi README.md (${places.length} địa điểm) + CREDITS.md (${withImage.length} ảnh venue)`)

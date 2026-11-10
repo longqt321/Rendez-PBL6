@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { ErrorState } from "@/components/shared/error-state"
 import { Card, CardContent } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import { Item, ItemActions, ItemContent, ItemGroup, ItemMedia } from "@/components/ui/item"
+import { Item, ItemActions, ItemContent, ItemGroup } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CoverImage } from "@/components/shared/cover-image"
@@ -250,9 +250,6 @@ export function PlaceDetailPage() {
                   render={<Link to={`/post/${post.id}`} />}
                   className="items-start gap-3 rounded-surface p-3 hover:bg-muted"
                 >
-                  <ItemMedia className="w-20 shrink-0 overflow-hidden rounded-thumb">
-                    <CoverImage height={120} className="w-full" alt="" />
-                  </ItemMedia>
                   <ItemContent>
                     <p className="text-xs text-muted-foreground">
                       {post.author.name} · {post.commentCount} bình luận · {post.likeCount} thích

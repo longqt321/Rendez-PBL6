@@ -32,13 +32,6 @@ export const ME = MOCK_USERS["u-me"]
  * Tác giả dạng rút gọn cho bài đăng / bình luận.
  *
  * `Author` là tập con các trường của `UserProfile`, nên suy thẳng từ `MOCK_USERS`
- * thay vì khai báo lại. Trước đây `fixtures/posts.ts` và `fixtures/comments.ts`
- * mỗi file tự định nghĩa một bản `CURRENT_USER`/`AUTHORS` giống hệt — sửa một
- * chỗ là lệch ba chỗ.
+ * thay vì khai báo lại.
  */
 export const CURRENT_USER: Author = ME
-
-/** Tác giả khác — rỗng vì cold-start không có tài khoản ảo. */
-export const AUTHORS: Record<string, Author> = {}
-
-export const AUTHOR_LIST: Author[] = Object.values(AUTHORS)

@@ -12,8 +12,7 @@
  *      `imageKind: null`, ghi chú rõ là chưa có ảnh.
  *   2. Loại địa điểm bị duyệt `wrong-address` (không xác minh được địa chỉ).
  *   3. Ghi lại `places.json` + `places.csv`.
- *   4. (tuỳ chọn `--purge-files`) Xoá file ảnh món không còn được tham chiếu và
- *      đồng bộ `CREDITS.json`.
+ *   4. (tuỳ chọn `--purge-files`) Xoá file ảnh không còn được tham chiếu.
  *
  * Mặc định chỉ báo cáo. Thêm `--apply` mới ghi.
  */
@@ -124,11 +123,6 @@ if (purgeFiles) {
     const abs = join(dataDir, rel)
     if (existsSync(abs)) rmSync(abs)
   }
-  const creditsPath = join(dataDir, "CREDITS.json")
-  const credits = JSON.parse(readFileSync(creditsPath, "utf8"))
-  const venueCredits = credits.filter((entry) => keptImages.has(entry.file))
-  writeFileSync(creditsPath, `${JSON.stringify(venueCredits, null, 2)}\n`)
-  console.log(`CREDITS.json: ${credits.length} → ${venueCredits.length} mục`)
 }
 
 console.log(`\nĐã ghi places.json (${kept.length} địa điểm) + places.csv`)

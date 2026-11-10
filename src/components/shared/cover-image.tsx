@@ -1,4 +1,5 @@
 import { ImageOffIcon } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { PlacePlaceholder } from "@/components/shared/place-placeholder"
 import type { PlaceCategory } from "@/features/places/types/place"
 import { cn } from "@/lib/utils"
@@ -14,7 +15,7 @@ interface CoverImageProps {
   /** Chiều cao cố định cho masonry; bỏ trống thì theo tỉ lệ khung */
   height?: number
   className?: string
-  /** Ảnh trang trí hay ảnh nội dung */
+  /** Mô tả ảnh cho trình đọc màn hình */
   alt?: string
   children?: React.ReactNode
 }
@@ -48,10 +49,13 @@ export function CoverImage({
         />
       ) : isIllustration ? (
         <>
-          <PlacePlaceholder category={placeholder} />
-          <span className="absolute bottom-2 left-2 rounded-md border border-border/70 bg-background/85 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground backdrop-blur">
+          <PlacePlaceholder category={placeholder} label={alt} />
+          <Badge
+            variant="outline"
+            className="absolute bottom-2 left-2 border-border/70 bg-background/85 text-[11px] font-medium text-muted-foreground backdrop-blur"
+          >
             Ảnh minh hoạ
-          </span>
+          </Badge>
         </>
       ) : (
         <div className="flex size-full flex-col items-center justify-center gap-1 text-muted-foreground">
@@ -59,8 +63,6 @@ export function CoverImage({
           <span className="text-xs">Chưa có ảnh</span>
         </div>
       )}
-      {/* Ảnh minh hoạ cần alt mô tả rõ: trình đọc màn hình không thấy nhãn chip. */}
-      {isIllustration && alt ? <span className="sr-only">{alt}</span> : null}
       {children}
     </div>
   )

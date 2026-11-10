@@ -14,7 +14,13 @@ import type { PlaceCategory } from "@/features/places/types/place"
 
 const STROKE = 2.2
 
-/** Khung chung: nền trầm + viền nhẹ, mọi hình vẽ bên trong. */
+/**
+ * Khung chung cho mọi hình.
+ *
+ * `preserveAspectRatio="xMidYMid meet"` để hình **không bị cắt** khi khung cha
+ * rộng/thấp bất kỳ; phần thừa hai bên lộ nền `bg-muted` của khung cha (cùng màu
+ * với nền hình nên liền mạch).
+ */
 function Frame({ children }: { children: React.ReactNode }) {
   return (
     <svg
@@ -22,9 +28,8 @@ function Frame({ children }: { children: React.ReactNode }) {
       role="presentation"
       aria-hidden="true"
       className="size-full text-muted-foreground"
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMidYMid meet"
     >
-      <rect width="120" height="120" className="fill-muted" />
       <g
         fill="none"
         stroke="currentColor"
@@ -169,7 +174,23 @@ const ILLUSTRATIONS: Record<PlaceCategory, () => React.ReactElement> = {
   bar: Bar,
 }
 
-export function PlacePlaceholder({ category }: { category: PlaceCategory }) {
-  const Illustration = ILLUSTRATIONS[category] ?? Restaurant
-  return <Illustration />
+interface PlacePlaceholderProps {
+  category: PlaceCategory
+  /**
+   * Mô tả cho trình đọc màn hình. Có nhãn thì SVG được công bố như một ảnh
+   * (`role="img"`); không có thì coi là trang trí.
+   */
+  label?: string
+}
+
+export function PlacePlaceholder({ category, label }: PlacePlaceholderProps) {
+  const Illustration = ILLUSTRATIONS[category]
+
+  if (!label) return <Illustration />
+
+  return (
+    <div role="img" aria-label={label} className="size-full">
+      <Illustration />
+    </div>
+  )
 }

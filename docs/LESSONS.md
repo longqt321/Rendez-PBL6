@@ -473,3 +473,62 @@ bằng script CDP (`tooltip visible: false`), không thấy qua code review thư
 **Cách kiểm tra bằng máy:**
 
 - Hover phần tử disabled rồi assert tooltip visible (script CDP hoặc Playwright).
+
+## L-011 — Chip/overlay tự viết bằng `<span>` + Tailwind dù đã có `Badge`
+
+**Ngày:** 2026-11-10
+
+**Hiện tượng:** khi thêm nhãn "Ảnh minh hoạ" lên ảnh bìa, tôi viết `<span className="rounded-md
+border border-border/70 bg-background/85 px-1.5 py-0.5 text-[11px] …">`. Trông giống hệt `Badge`
+nhưng lệch bán kính/ném chữ so với các badge khác trong app (badge quận, badge nhóm).
+
+**Nguyên nhân:** viết theo phản xạ "chỗ này cần chip" mà không grep `src/components/ui/` trước.
+
+**Quy tắc rút ra:**
+
+1. Trước khi viết một khối UI mới, grep `src/components/ui/` xem đã có component tương ứng
+   (`Badge`, `Item`, `Empty`, `Field`, `Switch`…) — dự án dùng shadcn/base-ui, gần như đủ.
+2. Overlay trên ảnh cũng là `Badge variant="outline"` + `bg-background/80 backdrop-blur`,
+   không tự dựng lại class.
+
+**Cách kiểm tra bằng máy:**
+
+- Kiểm `element.className` có chứa `group/badge` (dấu hiệu dùng `badgeVariants`) thay vì
+  chỉ nhìn ảnh chụp.
+
+## L-012 — Alt giả bằng `<span class="sr-only">` thay vì `role="img"` + `aria-label`
+
+**Ngày:** 2026-11-10
+
+**Hiện tượng:** ảnh minh hoạ là SVG `aria-hidden`, nên để "có alt" tôi chèn thêm
+`<span className="sr-only">{alt}</span>` cạnh nó. Trình đọc màn hình gặp một đoạn text rời
+không gắn với hình, và DOM có hai nguồn mô tả.
+
+**Quy tắc rút ra:**
+
+1. Hình vẽ inline muốn được công bố như ảnh: bọc `role="img"` + `aria-label`, giữ SVG bên
+   trong `aria-hidden`.
+2. Không dùng `.sr-only` để "mượn" alt cho phần tử không phải `<img>`.
+
+**Cách kiểm tra bằng máy:**
+
+- Assert `document.querySelectorAll('main [role="img"]').length` và `.sr-only` = 0.
+
+## L-013 — Script sinh tài liệu vẫn ghi mục đã bị loại khỏi dataset
+
+**Ngày:** 2026-11-10
+
+**Hiện tượng:** sau khi bỏ ảnh món (D-049), `update-docs.mjs` vẫn sinh mục "## 2. Ảnh món" từ
+`.cache/image-credits.json`. Chạy lại script là CREDITS.md bị ghi đè bằng bảng rỗng/sai — lỗi
+chỉ lộ ra ở lần chạy sau, không lộ ở lần sửa tay.
+
+**Quy tắc rút ra:**
+
+1. Khi loại một loại dữ liệu khỏi dataset, phải sửa **mọi script sinh tài liệu** tham chiếu nó
+   trong cùng lượt — không chỉ sửa file output.
+2. Thông tin không suy ra được từ dataset (nguồn ảnh) phải **thêm trường vào dataset**
+   (`imageCredit`) rồi sinh tài liệu từ đó; không đoán theo đuôi file/tên file.
+
+**Cách kiểm tra bằng máy:**
+
+- Chạy lại script sinh tài liệu rồi `git diff --stat` — file output không được đổi.

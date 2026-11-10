@@ -10,18 +10,14 @@ export function CollectionCard({ collection }: { collection: CollectionSummary }
   return (
     <Card className="relative gap-0 py-0">
       <div className="grid grid-cols-3 gap-px bg-border">
-        {collection.previewPlaceIds.map((placeId) => (
-          <div key={placeId} className="flex h-22.5 items-center justify-center bg-muted">
+        {(collection.previewPlaceIds.length > 0
+          ? collection.previewPlaceIds
+          : Array.from({ length: 3 }, (_, index) => `empty-${index}`)
+        ).map((key) => (
+          <div key={key} className="flex h-22.5 items-center justify-center bg-muted">
             <MapPinIcon className="size-5 text-muted-foreground/50" aria-hidden="true" />
           </div>
         ))}
-        {collection.previewPlaceIds.length === 0
-          ? Array.from({ length: 3 }, (_, index) => (
-              <div key={index} className="flex h-22.5 items-center justify-center bg-muted">
-                <MapPinIcon className="size-5 text-muted-foreground/50" aria-hidden="true" />
-              </div>
-            ))
-          : null}
       </div>
 
       <CardHeader className="gap-1.5 px-4 pt-4">

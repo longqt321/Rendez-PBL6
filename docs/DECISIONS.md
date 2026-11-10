@@ -2383,3 +2383,32 @@ hệ thống, và **được lặp lại giữa các quán cùng loại — tuy�
 ### Chưa xác minh
 
 - Hình minh hoạ chưa được người dùng xem và góp ý thẩm mỹ — cần duyệt bằng mắt.
+
+## D-051 — Rà soát "chắp vá/hack" D-049 + D-050: 9 vấn đề đã sửa
+
+**Ngày:** 2026-11-10
+**Trạng thái:** Đã áp dụng
+
+### Phát hiện & sửa
+
+1. Chip "Ảnh minh hoạ" tự viết `<span>` + Tailwind → dùng `Badge variant="outline"` có sẵn.
+2. Alt giả bằng `<span className="sr-only">` → `PlacePlaceholder` nhận `label`, đặt
+   `role="img"` + `aria-label`.
+3. `collection-card.tsx` hai khối placeholder trùng copy-paste → gộp một khối.
+4. SVG minh hoạ `preserveAspectRatio="slice"` cắt hình ở khung rộng → đổi `meet`, bỏ `rect`
+   nền (khung cha đã `bg-muted`).
+5. Tab "Bài đăng" của trang quán giữ thumbnail 120px rỗng cho bài không có ảnh → bỏ hẳn
+   `ItemMedia` thumbnail.
+6. `update-docs.mjs` vẫn sinh mục "Ảnh món" đã bị loại → bỏ, sinh lại CREDITS.md từ dataset.
+7. Nguồn từng ảnh venue đo theo đuôi file (bịa) → thêm trường `imageCredit` vào dataset,
+   điền chính xác từ bảng CREDITS.md cũ (20/20 ánh xạ đủ), sinh CREDITS.md từ trường đó.
+8. `Post.imageHeight` không còn chỗ dùng → xoá khỏi type/schema/server.
+9. `AUTHORS`/`AUTHOR_LIST` rỗng không ai dùng + fallback `?? Restaurant` chết → xoá.
+10. `CREDITS.json` rỗng `[]` vô nghĩa → xoá file, CREDITS.md là nguồn duy nhất.
+
+### Bằng chứng
+
+- DOM: chip dùng `badgeVariants` (`group/badge`, radius 26px), `[role="img"]` + aria-label
+  đúng, `.sr-only` = 0, SVG `meet` + 0 `rect`, tab Bài đăng không còn ô "Chưa có ảnh".
+- `typecheck` ✓, `lint` ✓, unit 67/67 ✓, e2e 10/10 ✓, `validate.mjs` exit 0.
+- Chạy lại `update-docs.mjs`: CREDITS.md 20 ảnh venue, nguồn chính xác (Foody.vn/Google Maps).

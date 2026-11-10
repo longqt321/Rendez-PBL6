@@ -305,7 +305,6 @@ function createPost(config: InternalAxiosRequestConfig) {
     id: `post-new-${postSeq}`,
     author: CURRENT_USER,
     caption,
-    imageHeight: 380,
     createdAt: new Date().toISOString(),
     placeId: body.placeId ?? null,
     likeCount: 0,

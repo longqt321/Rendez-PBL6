@@ -15,7 +15,6 @@ export const postSchema = z.object({
   id: z.string(),
   author: authorSchema,
   caption: z.string(),
-  imageHeight: z.number(),
   createdAt: z.string(),
   placeId: z.string().nullable(),
   place: placeSummarySchema.nullable(),
