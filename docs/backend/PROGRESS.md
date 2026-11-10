@@ -15,12 +15,12 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | T0.5 | 0 | Prisma 18 bảng + migration + seed 491 | T0.1 | done (phiên trước) | — |
 | T0.7 | 0 | Commit Phase 0 (chưa commit ở phiên trước) | T0.1–T0.5 | doing | |
 | T0.8 | 0 | Mount /api/v1 (K1) + script aliases migrate/seed | T0.4 | todo | |
-| T0.6 | 0 | Testcontainers harness Postgres | T0.5 | todo | |
-| T1.1 | 1 | better-auth email+password + bảng auth (migration mới) | T0.5 | todo | |
-| T1.2 | 1 | GET/PATCH /me, POST/DELETE /session khớp userProfileSchema | T1.1 | todo | |
-| T1.3 | 1 | Đăng ký (POST /register) | T1.1 | todo | |
+| T0.6 | 0 | Testcontainers harness Postgres | T0.5 | done | |
+| T1.1 | 1 | better-auth email+password + bảng auth (migration mới) | T0.5 | done | |
+| T1.2 | 1 | GET/PATCH /me, POST/DELETE /session khớp userProfileSchema | T1.1 | done | |
+| T1.3 | 1 | Đăng ký (POST /register) | T1.1 | done | |
 | T1.4 | 1 | Middleware requireAuth + rate limit store Postgres | T1.1 | todo | |
-| T1.5 | 1 | Contract test Phase 1 (schema A2) | T1.2 | todo | |
+| T1.5 | 1 | Contract test Phase 1 (schema A2) | T1.2 | done (auth) | |
 | T2.1 | 2 | GET /places — bộ lọc A7.9 + cursor keyset | T1.4 | todo | |
 | T2.2 | 2 | GET /places/map — bbox + {items,total} + chặn 300 | T2.1 | todo | |
 | T2.3 | 2 | GET /places/:id — 404 nếu chưa publish | T2.1 | todo | |

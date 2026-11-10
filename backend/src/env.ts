@@ -32,6 +32,18 @@ const envSchema = z.object({
 
   /** Mức log của pino. */
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
+
+  /**
+   * Secret ký cookie phiên của better-auth (tối thiểu 32 ký tự).
+   * Bắt buộc ở production; dev/test dùng giá trị mặc định của .env.example.
+   */
+  BETTER_AUTH_SECRET: z.string().min(32).default("rendez-dev-secret-0123456789abcdef"),
+
+  /**
+   * Base URL của API — better-auth dùng để dựng URL callback/cookie.
+   * Không có scheme đặc biệt ở Phase 1 (chỉ email+password).
+   */
+  BETTER_AUTH_URL: z.string().url().default("http://localhost:8000"),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -46,6 +58,17 @@ if (!parsed.success) {
 const corsOrigins = parsed.data.CORS_ORIGINS.split(",")
   .map((value) => value.trim())
   .filter(Boolean)
+
+/**
+ * Production không được chạy bằng secret dev — secret mặc định ai cũng biết,
+ * dùng nó ở production là lỗ hổng giả mạo cookie phiên.
+ */
+if (
+  parsed.data.NODE_ENV === "production" &&
+  parsed.data.BETTER_AUTH_SECRET === "rendez-dev-secret-0123456789abcdef"
+) {
+  throw new Error("BETTER_AUTH_SECRET phải được đặt riêng ở production (>= 32 ký tự)")
+}
 
 export const env = {
   ...parsed.data,

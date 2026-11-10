@@ -2550,3 +2550,29 @@ tile bị copy-paste ở 2 component.
 - Chưa xử lý policy production: OSM tile chuẩn cấm dùng nặng (curl không kèm UA trình duyệt
   bị trả `x-blocked: Access denied`). Vẫn cần đổi provider/self-host trước khi có traffic thật
   — đã ghi BACKLOG.
+
+## D-055 — Tự quyết trong phiên tự hành 2026-11-11 (backend)
+
+Người dùng đi ngủ 03:00–11:00, không trả lời được. Mọi điểm mơ hồ chọn phương án bảo thủ
+nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
+
+1. **Session token lưu thô, không hash.** better-auth 1.7.19 tự sinh và quản token phiên;
+   nó tra DB bằng chính token client gửi lên. Hash token sẽ phải viết lại toàn bộ luồng
+   session của thư viện (không phải chỗ để tự chế). Bù lại: cookie `HttpOnly`, `SameSite=Lax`,
+   `Secure` khi production, token 32 ký tự random, có hạn 7 ngày và bị xoá khi đăng xuất.
+   Rủi ro còn lại: lộ DB → chiếm được phiên đang hiệu lực (không đăng nhập lại được).
+2. **Handle: `^[a-z0-9_]{3,30}$`.** Kế hoạch không nêu quy tắc; chọn tập ký tự an toàn cho
+   URL `/users/:handle`, không phân biệt hoa/thường, tránh ký tự phải encode.
+3. **`POST /session` bắt buộc body `{email, password}`.** Mock dev cho phép gọi rỗng để
+   "đăng nhập lại phiên mock" — đó là tiện ích mock, không phải hợp đồng API thật. Backend
+   thật không có bypass. Hệ quả: `e2e/logout.spec.ts` bước "Đăng nhập" lại sẽ cần phiên
+   hợp lệ — xử lý ở QA2 bằng storageState/flag dev tường minh, KHÔNG nới bảo mật API.
+4. **`POST /register` trả 201 + Set-Cookie** (autoSignIn) — FE chưa có UI nên không ảnh
+   hưởng hợp đồng hiện tại; trả kèm phiên để client đăng ký xong dùng được ngay.
+5. **`followerCount`/`followingCount`/`followedByMe` = 0/false ở Phase 1** vì bảng `follows`
+   thuộc T5.4. Đây là số thật của dữ liệu hiện có (chưa có quan hệ nào), không phải số bịa;
+   T5.4 thay bằng COUNT.
+6. **CORS mặc định rỗng** (dev dùng proxy Vite). Khi chạy e2e backend trực tiếp sẽ đặt
+   `CORS_ORIGINS` + `BETTER_AUTH_URL` tương ứng.
+7. **R2/email/deploy:** không có credentials và người dùng không trả lời → code theo biến
+   môi trường, test bằng mock tối thiểu, ghi rõ "chưa xác minh" trong REPORT.

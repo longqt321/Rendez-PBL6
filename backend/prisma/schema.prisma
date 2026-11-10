@@ -97,8 +97,8 @@ model User {
   name            String
   handle          String    @unique
   email           String    @unique
-  emailVerifiedAt DateTime? @map("email_verified_at")
-  passwordHash    String?   @map("password_hash")
+  // better-auth dùng boolean `emailVerified`; xác thực email chưa bật (Phase 1).
+  emailVerified   Boolean   @default(false) @map("email_verified")
   avatarUrl       String?   @map("avatar_url")
   bio             String    @default("")
   location        String    @default("")
@@ -107,6 +107,7 @@ model User {
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
+  accounts         Account[]
   sessions         Session[]
   posts            Post[]
   comments         Comment[]
@@ -131,16 +132,59 @@ model User {
 model Session {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
-  tokenHash String   @unique @map("token_hash")
+  // better-auth quản lý token phiên (không hash — xem DECISIONS 2026-11-11).
+  token     String   @unique
   ip        String?
   userAgent String?  @map("user_agent")
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("sessions")
+}
+
+// ---------------------------------------------------------------------------
+// 2b. accounts — bảng của better-auth (email+password lưu hash ở đây)
+// ---------------------------------------------------------------------------
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String    @map("user_id") @db.Uuid
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+// ---------------------------------------------------------------------------
+// 2c. verifications — token xác thực email/reset (better-auth)
+// ---------------------------------------------------------------------------
+
+model Verification {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("verifications")
 }
 
 // ---------------------------------------------------------------------------

@@ -10,6 +10,8 @@ import { createApiRouter } from "./routes"
 /** Biến gắn theo request — middleware đặt, handler/onError đọc. */
 interface AppVariables {
   requestId: string
+  /** Id user đang đăng nhập — chỉ có sau middleware `requireAuth`. */
+  userId: string
 }
 
 export type AppEnv = { Variables: AppVariables }
