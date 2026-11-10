@@ -3,6 +3,7 @@ import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { CoverImage } from "@/components/shared/cover-image"
+import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { formatCount, formatDistance, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
@@ -19,8 +20,9 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
       {/* Chiều cao ảnh do server trả về (`imageHeight`) → lưới mobile có nhịp masonry. */}
       <CoverImage
         src={place.imageUrl}
+        placeholder={place.category}
         height={place.imageHeight}
-        alt={`Ảnh ${place.name}`}
+        alt={placeImageAlt(place)}
         className="w-full shrink-0 rounded-t-xl"
       >
         <div className="absolute top-2 left-2 flex flex-wrap gap-1">

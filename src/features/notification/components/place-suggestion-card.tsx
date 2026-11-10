@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { CoverImage } from "@/components/shared/cover-image"
+import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import { useUpdatePostPlace } from "@/features/social/hooks/use-update-post-place"
 import { formatRelativeTime } from "@/lib/format"
@@ -83,8 +84,9 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
                 <ItemMedia variant="image">
                   <CoverImage
                     src={place.imageUrl}
+                    placeholder={place.category}
                     className="size-full"
-                    alt={`Ảnh ${place.name}`}
+                    alt={placeImageAlt(place)}
                   />
                 </ItemMedia>
                 <ItemContent className="gap-0.5">

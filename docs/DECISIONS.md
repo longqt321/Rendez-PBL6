@@ -2335,3 +2335,51 @@ cold-start tuyệt đối không có dữ liệu giả (bài đăng, tài khoả
 - Giấy phép 20 ảnh venue (Foody/Google Maps) — vẫn cần xin phép trước khi phát hành.
 - Ảnh venue chưa được người dùng xác nhận "có biển hiệu rõ tên quán" (chỉ được duyệt là
   "đúng quán").
+
+## D-050 — Ảnh minh hoạ hệ thống cho địa điểm chưa có ảnh thật
+
+**Ngày:** 2026-11-10
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Sau D-049, 471/491 địa điểm không có ảnh. Người dùng yêu cầu: placeholder tự vẽ, có nét
+riêng theo loại quán, không quá nổi bật so với ảnh thật, người dùng nhận ra ngay là ảnh
+hệ thống, và **được lặp lại giữa các quán cùng loại — tuyệt đối không mỗi quán một ảnh**.
+
+### Phương án đã xem xét
+
+| Phương án                       | Vì sao chọn / loại                                                                                          |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| AI sinh ảnh raster              | Nặng, khó đổi màu theo theme, khó giữ phong cách khi thêm nhóm                                              |
+| **SVG inline theo nhóm (chọn)** | Nhẹ, sắc nét mọi kích thước, tự theo theme sáng/tối qua `currentColor`/CSS var, bản quyền 100% tự kiểm soát |
+| Icon thư viện phóng to          | Không có nét riêng                                                                                          |
+| Ảnh stock CC0                   | Đã thử ở D-046/D-047 — không có ảnh quán Việt phù hợp                                                       |
+
+### Quyết định
+
+1. `src/components/shared/place-placeholder.tsx` — 6 hình SVG inline, mỗi nhóm một hình:
+   cafe (tách cà phê + ghế + cây), restaurant (bát cơm + đũa), street-food (xe hàng rong
+   - dù), bakery (kệ bánh + mái hiên), dessert (ly chè + thìa), bar (quầy + đèn treo).
+2. Nét mảnh, `stroke = currentColor` (muted-foreground) opacity 0.5, nền `fill-muted` →
+   tự đổi theo theme, trầm hơn ảnh thật.
+3. `CoverImage` nhận thêm prop `placeholder?: PlaceCategory`; khi `src` thiếu → SVG +
+   chip "Ảnh minh hoạ" góc dưới trái (nền `background/85`, text muted-foreground).
+   Ảnh thật không bao giờ có chip này.
+4. `placeImageAlt()` tách sang `place-image-alt.ts`: alt ghi rõ "Ảnh minh hoạ {nhóm} —
+   chưa có ảnh thật của {tên quán}".
+5. Không nhúng tên quán vào hình; mọi quán cùng nhóm dùng chung một hình. Áp dụng cho
+   card discover, popup bản đồ, trang chi tiết, thẻ đề xuất thông báo. Ảnh bìa hồ sơ
+   giữ khung trung tính (không minh hoạ). Bài đăng không minh hoạ thay.
+
+### Bằng chứng
+
+- `/discover`: 9 card = 5 ảnh thật + 4 SVG minh hoạ, 4 chip "Ảnh minh hoạ", 0 lỗi.
+- Theme sáng: nền `oklch(0.944…)` / nét `oklch(0.495…)`; theme tối: nền `oklch(0.312…)` /
+  nét `oklch(0.718…)` — placeholder tự thích ứng, độ mờ 0.5 như thiết kế.
+- Quán có ảnh thật (nơi cà phê) không có chip; quán minh hoạ có chip + alt đúng.
+- `typecheck` ✓, `lint` ✓, unit 67/67 ✓, e2e 10/10 ✓.
+
+### Chưa xác minh
+
+- Hình minh hoạ chưa được người dùng xem và góp ý thẩm mỹ — cần duyệt bằng mắt.

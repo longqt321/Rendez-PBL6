@@ -18,6 +18,7 @@ import { Item, ItemActions, ItemContent, ItemGroup, ItemMedia } from "@/componen
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CoverImage } from "@/components/shared/cover-image"
+import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { SectionHeading } from "@/components/shared/section-heading"
 import { formatCount, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
@@ -98,9 +99,10 @@ export function PlaceDetailPage() {
       <Card className="mt-4 gap-0 p-0">
         <CoverImage
           src={place.imageUrl}
+          placeholder={place.category}
           height={280}
           className="w-full rounded-t-xl"
-          alt={`Ảnh ${place.name}`}
+          alt={placeImageAlt(place)}
         />
 
         <CardContent className="flex flex-col gap-2 p-4">

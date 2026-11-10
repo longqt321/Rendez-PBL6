@@ -25,7 +25,6 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
           height={200}
           className="w-full rounded-none border-0 border-b border-border"
           alt={`Ảnh bìa của ${profile.name}`}
-          placeholderLabel="Chưa có ảnh bìa"
         />
         <Avatar className="absolute -bottom-12 left-6 size-24 border-4 border-background bg-background">
           <AvatarFallback className="bg-accent text-xl font-bold text-accent-foreground">

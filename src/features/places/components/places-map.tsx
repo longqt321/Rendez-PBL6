@@ -8,6 +8,7 @@ import { useTheme } from "next-themes"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CoverImage } from "@/components/shared/cover-image"
+import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { CATEGORY_META } from "../lib/category-meta"
 import { formatDistance, formatRating } from "@/lib/format"
 import { calculateDistanceKm } from "../lib/danang-districts"
@@ -221,8 +222,9 @@ export function PlacesMap({
                   <div className="relative h-28 w-full overflow-hidden rounded-md bg-muted">
                     <CoverImage
                       src={place.imageUrl}
+                      placeholder={place.category}
                       height={112}
-                      alt={place.name}
+                      alt={placeImageAlt(place)}
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute top-2 left-2 flex gap-1">
