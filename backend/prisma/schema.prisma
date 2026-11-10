@@ -130,7 +130,6 @@ model User {
 // ---------------------------------------------------------------------------
 // 1b. follows — quan hệ theo dõi (T5.4); tự theo dõi bị chặn ở tầng ứng dụng
 // ---------------------------------------------------------------------------
-
 model Follow {
   followerId  String   @map("follower_id") @db.Uuid
   followingId String   @map("following_id") @db.Uuid
@@ -346,6 +345,7 @@ model Post {
   likes    PostLike[]
   saves    PostSave[]
   comments Comment[]
+  suggestionNotice PlaceSuggestionNotification?
 
   @@index([createdAt(sort: Desc), id(sort: Desc)])
   @@index([authorId, createdAt(sort: Desc)])
@@ -561,8 +561,24 @@ model Notification {
   createdAt DateTime         @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  suggestionNotice PlaceSuggestionNotification?
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, readAt])
   @@map("notifications")
+}
+
+// ---------------------------------------------------------------------------
+// 18b. place_suggestion_notifications — idempotence job A7.2 (1 post 1 lần)
+// ---------------------------------------------------------------------------
+
+model PlaceSuggestionNotification {
+  postId         String   @id @map("post_id") @db.Uuid
+  notificationId String   @unique @map("notification_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  post         Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@map("place_suggestion_notifications")
 }

@@ -12,6 +12,14 @@ export type { Author, Post, CreatePostInput, PostFeedFilter } from "./types/post
 export type { Comment, CommentSort, CreateCommentInput } from "./types/comment"
 export type { Collection, CollectionSummary } from "./types/collection"
 export type {
+  Room,
+  RoomFilter,
+  RoomMember,
+  RoomProposal,
+  RoomProposalField,
+  AppliedProposalResult,
+} from "./types/room"
+export type {
   AppNotification,
   ActorNotification,
   PlaceSuggestionNotification,
@@ -32,3 +40,13 @@ export { placeReportSchema } from "./place-report.schema"
 export { notificationSchema } from "./notification.schema"
 export { userProfileSchema, updateMeInputSchema, type UpdateMeInput } from "./profile.schema"
 export { collectionSchema, collectionSummarySchema } from "./collection.schema"
+export {
+  roomSchema,
+  roomMemberSchema,
+  roomProposalSchema,
+  roomFilterSchema,
+  appliedProposalSchema,
+  createRoomInputSchema,
+  joinRoomInputSchema,
+  createProposalInputSchema,
+} from "./room.schema"

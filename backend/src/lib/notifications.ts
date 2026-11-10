@@ -78,25 +78,32 @@ export async function createActorNotification(params: {
   })
 }
 
-/** Ghi thông báo đề xuất địa điểm (job T4.4 gọi). */
+/**
+ * Ghi thông báo đề xuất địa điểm (job T4.4 gọi) — trả id để job ghi dấu
+ * idempotence. Nhận `client` tuỳ chọn để chạy trong transaction của caller.
+ */
 export async function createSuggestionNotification(params: {
   userId: string
   postId: string
   postCaption: string
   suggestions: { place: unknown; reason: string }[]
-}): Promise<void> {
+  client?: Prisma.TransactionClient
+}): Promise<string> {
   const payload: SuggestionPayload = {
     postId: params.postId,
     postCaption: params.postCaption,
     suggestions: params.suggestions,
   }
-  await prisma.notification.create({
+  const client = params.client ?? prisma
+  const created = await client.notification.create({
     data: {
       userId: params.userId,
       type: PRISMA_TYPE["place-suggestion"] as never,
       payload: payload as never,
     },
+    select: { id: true },
   })
+  return created.id
 }
 
 /** Chuyển dòng DB thành DTO đúng `notificationSchema`. */
@@ -107,7 +114,9 @@ export function toNotificationDto(row: NotificationRow) {
     read: row.read_at !== null,
   }
 
-  switch (row.type) {
+  // Enum Prisma map sang gạch nối trong DB (`place-suggestion`) — chuẩn hoá về
+  // dạng gạch dưới để so khớp một lần, không rải `replace` khắp nơi.
+  switch (row.type.replace(/-/g, "_")) {
     case "place_suggestion": {
       const payload = row.payload as SuggestionPayload
       return {

@@ -8,6 +8,7 @@ import { prisma } from "../lib/prisma"
 import { findPost, listPosts, type PostFilter } from "../lib/posts"
 import { findComment, listCommentsForPost } from "../lib/comments"
 import { createActorNotification } from "../lib/notifications"
+import { enqueuePlaceDetect } from "../lib/queue"
 import { getViewer, requireAuth } from "../lib/session"
 
 /**
@@ -103,6 +104,10 @@ export function createPostsRouter() {
 
     const post = await findPost(created.id, userId)
     if (!post) throw new ApiError(500, "Không tạo được bài đăng")
+
+    // Bài chưa gắn địa điểm → đẩy job phát hiện ngay (cron 5 phút là lưới an toàn).
+    if (!input.placeId) await enqueuePlaceDetect(created.id)
+
     return c.json(post, 201)
   })
 
