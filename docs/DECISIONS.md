@@ -2206,12 +2206,14 @@ người/lịch sử, nguyên liệu sống, ảnh món sai nhóm).
 
 ### Bằng chứng
 
-5 vòng audit: 265 → 247 → 71 → 39 → 18 ảnh rác bị loại. Lần cuối: 18/164 JUNK (~11%).
-Dataset cuối: 492 place, 0 thiếu ảnh, 143 ảnh distinct dish + 71 venue, lặp tối đa 6.
-`validate.mjs` exit 0, typecheck/test 67/67/lint/e2e 10/10 pass.
+6 vòng audit: **276 ảnh rác** bị loại (265 ảnh Commons ban đầu → còn ~144 ảnh dùng được),
+blocklist **177 URL**. Lần cuối: 29 JUNK + 7 MISMATCH trên 170 ảnh.
+Dataset cuối: 492 place, **0 thiếu ảnh**, 144 ảnh dish distinct + 22 venue, **lặp tối đa 6**
+(đã sửa lỗi `useCount` reset mỗi lần chạy khiến ảnh lặp tới 11 lần).
+`validate.mjs` exit 0, typecheck ✓, test 67/67 ✓, lint ✓, e2e 10/10 ✓.
 
-**Chưa giải quyết:** ~11% ảnh còn lại có thể vẫn lệch nhẹ (ảnh chung chung); ảnh venue
-một số quán đã bị loại hết (8 place) — UI dùng ảnh seed minh hoạ.
+**Chưa giải quyết:** ~10% ảnh còn lại có thể vẫn lệch nhẹ; ảnh venue một số quán đã bị
+loại hết — UI dùng ảnh seed minh hoạ.
 
 ### Bối cảnh
 

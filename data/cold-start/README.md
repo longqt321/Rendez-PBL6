@@ -6,7 +6,7 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
 
 - **492 địa điểm** — mỗi địa điểm đều có **địa chỉ số nhà + tên đường** và **toạ độ**.
 - Theo nguồn: curated 35 · osm 405 · curated-v2 52.
-- **492/492 có ảnh**, 143 ảnh khác nhau; 22 địa điểm có **ảnh thật của quán**.
+- **492/492 có ảnh**, 166 ảnh khác nhau; 22 địa điểm có **ảnh thật của quán**.
 
 ### Phân bố theo quận/phường (đơn vị hành chính 2025)
 

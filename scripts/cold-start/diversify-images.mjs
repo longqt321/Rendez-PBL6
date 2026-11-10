@@ -232,25 +232,44 @@ if (REBALANCE) {
       p.imageKind = null
     }
   }
+} else {
+  // Đếm số lần dùng của ảnh đã gán từ các lần chạy TRƯỚC — nếu không, mỗi lượt
+  // lại bắt đầu từ 0 và ảnh có thể bị lặp vượt MAX_REUSE (từng thấy 11 lần).
+  for (const p of places.places) {
+    if (p.image?.startsWith("images/dishes/")) {
+      useCount[p.image] = (useCount[p.image] ?? 0) + 1
+    }
+  }
 }
 for (const p of places.places) {
   // Giữ ảnh thật của quán (venues/) và ảnh món đã đa dạng hoá (dishes/); mọi ảnh
   // cũ dùng chung theo nhóm (images/cafe.jpg, images/pho.jpg…) đều thay lại.
   if (p.image?.startsWith("images/venues/") || p.image?.startsWith("images/dishes/")) continue
-  // Ưu tiên pool đúng nhóm; nhóm không có ảnh đạt thì dùng pool chung; hết hẳn
-  // thì để null — UI tự render ảnh minh hoạ theo seed.
-  const categoryPool = poolByCategory[p.category] ?? []
-  const pool = categoryPool.length ? categoryPool : genericPool
-  const candidates = pool
-    .map((img) => downloaded[img.url])
-    .filter(Boolean)
-    .sort((a, b) => (useCount[a.file] ?? 0) - (useCount[b.file] ?? 0))
+  // Ưu tiên pool đúng nhóm; hết thì pool chung; cuối cùng pool bất kỳ còn chỗ
+  // dưới cap — 0 ảnh minh hoạ tốt hơn ảnh sai nhóm hoàn toàn.
+  const underCap = (pool) =>
+    pool
+      .map((img) => downloaded[img.url])
+      .filter(Boolean)
+      .filter((img) => (useCount[img.file] ?? 0) < MAX_REUSE)
+  let candidates = underCap(poolByCategory[p.category] ?? [])
+  if (!candidates.length) candidates = underCap(genericPool)
+  if (!candidates.length) {
+    candidates = Object.values(poolByCategory)
+      .flat()
+      .map((img) => downloaded[img.url])
+      .filter(Boolean)
+      .filter((img) => (useCount[img.file] ?? 0) < MAX_REUSE)
+  }
+  candidates = candidates.sort((a, b) => (useCount[a.file] ?? 0) - (useCount[b.file] ?? 0))
   const chosen = candidates[0]
-  if (!chosen || (useCount[chosen.file] ?? 0) >= MAX_REUSE) continue // hết ảnh tốt → để null
+  if (!chosen) continue // hết ảnh tốt → để null
   useCount[chosen.file] = (useCount[chosen.file] ?? 0) + 1
   p.image = chosen.file
   p.imageKind = "dish"
-  const meta = pool.find((img) => img.url === chosen.url)
+  const meta = Object.values(poolByCategory)
+    .flat()
+    .find((img) => img.url === chosen.url)
   assignments.push({ id: p.id, image: chosen.file, credit: meta?.pageUrl ?? chosen.url })
 }
 
