@@ -6,6 +6,8 @@ import { createPlacesRouter } from "./places"
 import { createUsersRouter } from "./users"
 import { createPostsRouter } from "./posts"
 import { createNotificationsRouter } from "./notifications"
+import { createReviewsRouter } from "./reviews"
+import { createCollectionsRouter } from "./collections"
 
 /**
  * Router API v1 — mọi route nghiệp vụ mount dưới `/api/v1` (K1).
@@ -40,6 +42,12 @@ export function createApiRouter() {
 
   // Thông báo (Phase 4).
   api.route("/", createNotificationsRouter())
+
+  // Đánh giá + báo cáo địa điểm (Phase 4).
+  api.route("/", createReviewsRouter())
+
+  // Bộ sưu tập (Phase 5).
+  api.route("/", createCollectionsRouter())
 
   return api
 }

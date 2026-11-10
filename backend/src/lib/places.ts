@@ -249,6 +249,46 @@ export async function listPlacesInMap(
   return { items: rows.slice(0, limit).map(toPlaceDto), total: rows.length }
 }
 
+/**
+ * Địa điểm "đã lưu" của viewer = nằm trong ít nhất một bộ sưu tập của chính mình
+ * (khớp mock `GET /places/saved`): gộp + loại trùng, chỉ place công khai,
+ * keyset `(created_at, id)` như `listPlaces`.
+ */
+export async function listSavedPlaces(
+  userId: string,
+  cursor: Cursor | null,
+  pageSize: number,
+): Promise<{ items: PlaceDto[]; next: Cursor | null }> {
+  const conditions: Prisma.Sql[] = [
+    Prisma.sql`p.published_at IS NOT NULL`,
+    Prisma.sql`p.status <> 'closed'`,
+    Prisma.sql`p.deleted_at IS NULL`,
+    Prisma.sql`EXISTS (
+      SELECT 1 FROM collection_places cp
+      JOIN collections col ON col.id = cp.collection_id
+      WHERE cp.place_id = p.id AND col.owner_id = ${userId}::uuid AND col.deleted_at IS NULL
+    )`,
+  ]
+  if (cursor) {
+    conditions.push(
+      Prisma.sql`(p.created_at, p.id) < (${cursor.createdAt}::timestamptz, ${cursor.id})`,
+    )
+  }
+
+  const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
+    ${SELECT_PLACES}
+    WHERE ${Prisma.join(conditions, " AND ")}
+    ORDER BY p.created_at DESC, p.id DESC
+    LIMIT ${pageSize + 1}
+  `)
+
+  const page = rows.slice(0, pageSize)
+  const last = page.at(-1)
+  const next = rows.length > pageSize && last ? { createdAt: last.created_at, id: last.id } : null
+
+  return { items: page.map(toPlaceDto), next }
+}
+
 /** Một địa điểm công khai — `null` khi chưa publish/đã xoá (route trả 404). */
 export async function findPublicPlace(id: string): Promise<PlaceDto | null> {
   const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`

@@ -2,7 +2,14 @@ import { Hono } from "hono"
 import type { AppEnv } from "../app"
 import { decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
-import { findPublicPlace, listPlaces, listPlacesInMap, parsePlaceFilters } from "../lib/places"
+import {
+  findPublicPlace,
+  listPlaces,
+  listPlacesInMap,
+  listSavedPlaces,
+  parsePlaceFilters,
+} from "../lib/places"
+import { requireAuth } from "../lib/session"
 import { rankPlaceSuggestions } from "../lib/ranking"
 import { fetchRankCandidates, normalizeCaption, toSuggestionCandidate } from "../lib/suggestions"
 
@@ -79,6 +86,16 @@ export function createPlacesRouter() {
     const filters = parsePlaceFilters(c.req.query())
     const result = await listPlacesInMap(filters, MAP_MAX_PLACES)
     return c.json(result)
+  })
+
+  /** "Đã lưu" — hợp các bộ sưu tập của chính mình (đứng trước `/places/:id`). */
+  router.get("/places/saved", requireAuth, async (c) => {
+    const rawCursor = c.req.query("cursor")
+    const cursor = rawCursor ? decodeCursor(rawCursor) : null
+    if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
+
+    const page = await listSavedPlaces(c.get("userId"), cursor, PLACES_PAGE_SIZE)
+    return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
   })
 
   router.get("/places/:id", async (c) => {

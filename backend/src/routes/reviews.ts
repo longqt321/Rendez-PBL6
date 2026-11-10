@@ -1,0 +1,180 @@
+import { Hono } from "hono"
+import { z } from "zod"
+import {
+  MAX_REPORT_DETAIL_LENGTH,
+  MAX_REVIEW_CONTENT_LENGTH,
+  PLACE_REPORT_REASONS,
+} from "@rendez/schema"
+import type { AppEnv } from "../app"
+import { ApiError } from "../lib/errors"
+import { prisma } from "../lib/prisma"
+import { formatInitials } from "../lib/profile"
+import { getViewer, requireAuth } from "../lib/session"
+
+/**
+ * Route đánh giá + báo cáo địa điểm (Phase 4).
+ *
+ * - `POST /places/:id/reviews` upsert 1 user 1 review/place (A7.4). `rating`/
+ *   `reviewCount` của place KHÔNG lưu cột — tính bằng aggregate khi đọc
+ *   (`lib/places.ts`), nên không có nguy cơ lệch số.
+ * - `GET /places/:id/reviews` mới nhất trước.
+ * - `POST /places/:id/reports` unique (place, reason, reporter) (A7.5).
+ */
+
+const reviewInputSchema = z.object({
+  rating: z.number().int().min(1).max(5),
+  content: z.string().trim().min(1, "Nội dung đánh giá trống").max(MAX_REVIEW_CONTENT_LENGTH),
+})
+
+const reportInputSchema = z.object({
+  reason: z.enum(PLACE_REPORT_REASONS),
+  detail: z.string().trim().max(MAX_REPORT_DETAIL_LENGTH).optional(),
+})
+
+interface ReviewRow {
+  id: string
+  place_id: string
+  rating: number
+  content: string
+  created_at: Date
+  author_id: string
+  author_name: string
+  author_handle: string
+}
+
+function toReviewDto(row: ReviewRow, viewerId: string | null) {
+  return {
+    id: row.id,
+    placeId: row.place_id,
+    author: {
+      id: row.author_id,
+      name: row.author_name,
+      handle: row.author_handle,
+      initials: formatInitials(row.author_name),
+    },
+    rating: row.rating,
+    content: row.content,
+    createdAt: row.created_at.toISOString(),
+    isMine: viewerId !== null && viewerId === row.author_id,
+  }
+}
+
+/** Place phải tồn tại và đã publish — nếu không thì 404 (A6.6). */
+async function requirePublicPlace(placeId: string): Promise<void> {
+  const place = await prisma.place.findFirst({
+    where: { id: placeId, publishedAt: { not: null }, deletedAt: null },
+    select: { id: true },
+  })
+  if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
+}
+
+export function createReviewsRouter() {
+  const router = new Hono<AppEnv>()
+
+  router.get("/places/:id/reviews", async (c) => {
+    const placeId = c.req.param("id")
+    await requirePublicPlace(placeId)
+
+    const rows = await prisma.$queryRaw<ReviewRow[]>`
+      SELECT r.id, r.place_id, r.rating, r.content, r.created_at,
+             u.id AS author_id, u.name AS author_name, u.handle AS author_handle
+      FROM reviews r
+      JOIN users u ON u.id = r.author_id
+      WHERE r.place_id = ${placeId} AND r.deleted_at IS NULL
+      ORDER BY r.created_at DESC, r.id DESC
+    `
+
+    // Route công khai — phải tự đọc phiên để tính `isMine` (không có requireAuth).
+    const viewer = await getViewer(c)
+    const viewerId = viewer?.id ?? null
+    // Khớp mock: `Page<Review>` — `{ items, next }` (mock không phân trang reviews).
+    return c.json({ items: rows.map((row) => toReviewDto(row, viewerId)), next: null })
+  })
+
+  /** Tạo hoặc ghi đè đánh giá của chính mình (A7.4). */
+  router.post("/places/:id/reviews", requireAuth, async (c) => {
+    const placeId = c.req.param("id")
+    await requirePublicPlace(placeId)
+
+    const raw = await c.req.json().catch(() => null)
+    const parsed = reviewInputSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
+    }
+
+    const userId = c.get("userId")
+    const review = await prisma.review.upsert({
+      where: { placeId_authorId: { placeId, authorId: userId } },
+      create: { placeId, authorId: userId, ...parsed.data },
+      update: { ...parsed.data, deletedAt: null },
+      select: { id: true },
+    })
+
+    const rows = await prisma.$queryRaw<ReviewRow[]>`
+      SELECT r.id, r.place_id, r.rating, r.content, r.created_at,
+             u.id AS author_id, u.name AS author_name, u.handle AS author_handle
+      FROM reviews r
+      JOIN users u ON u.id = r.author_id
+      WHERE r.id = ${review.id}::uuid
+      LIMIT 1
+    `
+    const row = rows[0]
+    if (!row) throw new ApiError(500, "Không lưu được đánh giá")
+    return c.json(toReviewDto(row, userId), 201)
+  })
+
+  /** Báo cáo địa điểm — 1 người 1 lý do 1 lần cho mỗi địa điểm (A7.5). */
+  router.post("/places/:id/reports", requireAuth, async (c) => {
+    const placeId = c.req.param("id")
+    await requirePublicPlace(placeId)
+
+    const raw = await c.req.json().catch(() => null)
+    const parsed = reportInputSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Lý do báo cáo không hợp lệ")
+    }
+
+    const detail = parsed.data.detail && parsed.data.detail.length > 0 ? parsed.data.detail : null
+    if (parsed.data.reason === "other" && detail === null) {
+      throw new ApiError(400, "Lý do khác cần mô tả cụ thể")
+    }
+
+    const userId = c.get("userId")
+    const duplicate = await prisma.placeReport.findUnique({
+      where: {
+        placeId_reason_reporterId: {
+          placeId,
+          reason: parsed.data.reason as never,
+          reporterId: userId,
+        },
+      },
+      select: { id: true },
+    })
+    if (duplicate) {
+      throw new ApiError(400, "Bạn đã gửi báo cáo với lý do này cho địa điểm này rồi")
+    }
+
+    const report = await prisma.placeReport.create({
+      data: {
+        placeId,
+        reporterId: userId,
+        reason: parsed.data.reason as never,
+        detail,
+      },
+      select: { id: true, placeId: true, reason: true, detail: true, createdAt: true },
+    })
+
+    return c.json(
+      {
+        id: report.id,
+        placeId: report.placeId,
+        reason: report.reason.replace(/_/g, "-"),
+        detail: report.detail,
+        createdAt: report.createdAt.toISOString(),
+      },
+      201,
+    )
+  })
+
+  return router
+}
