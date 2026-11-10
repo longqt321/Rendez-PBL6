@@ -14,13 +14,33 @@ import type { PlaceCategory, PlaceReportReason, RoomProposalField } from "@rende
  * cho tới khi gặp giá trị thật.
  */
 
-/** `street_food` (Prisma) ↔ `street-food` (API). */
+/** `street_food` (Prisma) ↔ `street-food` (API) — bảng tường minh, không cast tự do. */
+const CATEGORY_TO_PRISMA: Record<PlaceCategory, string> = {
+  cafe: "cafe",
+  restaurant: "restaurant",
+  "street-food": "street_food",
+  bakery: "bakery",
+  dessert: "dessert",
+  bar: "bar",
+}
+
+const CATEGORY_TO_API: Record<string, PlaceCategory> = {
+  cafe: "cafe",
+  restaurant: "restaurant",
+  street_food: "street-food",
+  bakery: "bakery",
+  dessert: "dessert",
+  bar: "bar",
+}
+
 export function toApiCategory(value: string): PlaceCategory {
-  return value.replace(/_/g, "-") as PlaceCategory
+  const mapped = CATEGORY_TO_API[value]
+  if (!mapped) throw new Error(`Loại hình địa điểm không rõ: ${value}`)
+  return mapped
 }
 
 export function toPrismaCategory(value: PlaceCategory): string {
-  return value.replace(/-/g, "_")
+  return CATEGORY_TO_PRISMA[value]
 }
 
 /** API `wrong-info` ↔ Prisma `wrong_info` (DB lưu `wrong-info` qua `@map`). */

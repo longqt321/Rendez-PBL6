@@ -321,8 +321,8 @@ lịch sử; không còn việc mở ở đây.
       Thêm bằng migration riêng ở phase tương ứng, không sửa migration đã chạy.
 - [ ] **Bảng vận hành chưa có** — `idempotency_keys` (K2), `rate_limits` (H4),
       `audit_logs` (F3): thêm khi làm phase tương ứng (K2/H4/F3), không làm từ đầu.
-- [ ] **`GET /places/saved` phân trang** — mock trả tất cả (`next: null`); backend thật
-      phải phân trang keyset (đã ghi ở DECISIONS D-042 mục 4). Kiểm tra khi làm T2.x.
+- [x] **`GET /places/saved` phân trang** — đã xác minh 2026-11-11: `listSavedPlaces` dùng keyset
+      `(created_at, id)` + `LIMIT pageSize+1`, trả `next` như các danh sách khác.
 - [ ] **Benchmark `unaccent + pg_trgm`** — dataset 491 dòng không đại diện; đo lại khi
       ≥ 50k place (đã ghi ở Phần E kế hoạch).
 - [ ] **Nút "Nhắn tin"** — `disabled` + tooltip "sẽ mở khi backend hoàn thiện" (D-043);
