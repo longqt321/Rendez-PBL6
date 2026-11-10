@@ -306,3 +306,9 @@ lịch sử; không còn việc mở ở đây.
       định skeleton/Empty, trong khi pin lấy từ `/places/map`. Bỏ được cần tách
       `useDiscoverView` thành hook bộ lọc (URL) + hook dữ liệu riêng — refactor ảnh hưởng
       cả `/discover`, chưa làm trong D-053.
+- [ ] **Tile OSM cho production** — OSM tile chuẩn không cho phép dùng nặng (đã thấy
+      `x-blocked: Access denied` khi UA lạ). Trước khi có traffic thật cần đổi sang provider
+      có key/SLA (MapTiler, Carto, Stadia) hoặc self-host (tileserver-gl). D-054 mới giảm
+      request, chưa giải quyết policy.
+- [ ] **Cache tile bền bằng service worker** (`vite-plugin-pwa` + workbox `runtimeCaching`
+      CacheFirst cho domain tile) — cần duyệt thêm dev dependency trước khi làm.

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { CATEGORY_META } from "../lib/category-meta"
+import { OSM_TILE_LAYER_PROPS } from "../lib/map-tiles"
 import { formatDistance, formatRating } from "@/lib/format"
 import { calculateDistanceKm } from "../lib/danang-districts"
 import { priceLevelLabel } from "../lib/price-level"
@@ -214,11 +215,6 @@ export function PlacesMap({
     }
   }, [selectedPlaceId])
 
-  // OpenStreetMap Tile tiêu chuẩn hoàn toàn miễn phí, 100% không cần API key
-  const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-  const attribution =
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-
   return (
     <div
       className={cn(
@@ -233,7 +229,7 @@ export function PlacesMap({
         scrollWheelZoom={true}
         className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
       >
-        <TileLayer attribution={attribution} url={tileUrl} />
+        <TileLayer {...OSM_TILE_LAYER_PROPS} />
         <MapBoundsUpdater
           places={validPlaces}
           selectedPlace={selectedPlace}

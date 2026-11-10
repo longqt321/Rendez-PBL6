@@ -2,11 +2,13 @@ import { MapContainer, Marker, TileLayer } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { ExternalLinkIcon, MapPinIcon } from "lucide-react"
+import { useIntersectionObserver } from "@uidotdev/usehooks"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { formatCoordinate } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import { OSM_TILE_LAYER_PROPS } from "../lib/map-tiles"
 import type { Place } from "../types/place"
 
 interface PlaceMiniMapProps {
@@ -50,6 +52,18 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === "dark"
 
+  // Mount bản đồ LƯƠI: chỉ dựng MapContainer khi khung nằm trong tầm nhìn
+  // (useIntersectionObserver của @uidotdev/usehooks). Mini-map nằm dưới trang
+  // chi tiết — không mount là không tải tile OSM dù user không cuộn tới.
+  // `rootMargin` nới 200px để tile kịp sẵn trước khi khung hiện ra. Cuộn ra
+  // ngoài thì unmount; cuộn lại tile lấy từ HTTP cache của trình duyệt
+  // (max-age ~3,6 ngày — đã kiểm chứng bằng curl), không gọi lại OSM.
+  const [observeRef, entry] = useIntersectionObserver<HTMLDivElement>({
+    threshold: 0.1,
+    rootMargin: "200px",
+  })
+  const shouldRenderMap = entry?.isIntersecting === true
+
   if (!place.lat || !place.lng) {
     return (
       <Empty className="h-56 w-full flex-none border bg-muted">
@@ -64,8 +78,6 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
   }
 
   const position: [number, number] = [place.lat, place.lng]
-  // OpenStreetMap Tile tiêu chuẩn hoàn toàn miễn phí, 100% không cần API key
-  const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${place.name} ${place.address}`,
@@ -73,19 +85,21 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative h-64 w-full overflow-hidden rounded-xl border bg-muted shadow-sm">
-        <MapContainer
-          center={position}
-          zoom={16}
-          scrollWheelZoom={false}
-          className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url={tileUrl}
-          />
-          <Marker position={position} icon={createDetailMarkerIcon()} />
-        </MapContainer>
+      <div
+        ref={observeRef}
+        className="place-mini-map-frame relative h-64 w-full overflow-hidden rounded-xl border bg-muted shadow-sm"
+      >
+        {shouldRenderMap ? (
+          <MapContainer
+            center={position}
+            zoom={16}
+            scrollWheelZoom={false}
+            className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
+          >
+            <TileLayer {...OSM_TILE_LAYER_PROPS} />
+            <Marker position={position} icon={createDetailMarkerIcon()} />
+          </MapContainer>
+        ) : null}
 
         <Button
           size="sm"

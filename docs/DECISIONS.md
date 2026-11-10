@@ -2504,3 +2504,49 @@ Bản đồ chỉ hiển thị 9 pin, luôn ép về vùng Hải Châu. Nguyên 
 ### Chưa xác minh
 
 - Chưa kiểm bằng mắt nhãn "x/y" trên khung nhìn rộng ở trình duyệt thật (chỉ có e2e).
+
+## D-054 — Giảm request tile OpenStreetMap từ frontend
+
+**Ngày:** 2026-11-10
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Frontend tải tile OSM ở 2 nơi: `PlacesMap` (`/map`) và `PlaceMiniMap` (trang chi tiết).
+Trước đợt này **không có cơ chế riêng nào** — chỉ dựa vào HTTP cache của trình duyệt
+(curl tile thật: `cache-control: max-age=311744, stale-while-revalidate=604800`, ~3,6 ngày).
+Ba lỗ hổng: Leaflet mặc định tải tile **trong lúc kéo** (`updateWhenIdle: false` trên
+desktop — `leaflet-src.js:11195`), mini-map mount ngay cả khi chưa cuộn tới, cấu hình
+tile bị copy-paste ở 2 component.
+
+### Quyết định
+
+1. **Module dùng chung** `src/features/places/lib/map-tiles.ts` — `OSM_TILE_URL` +
+   `OSM_TILE_LAYER_PROPS`, cả 2 component spread vào `<TileLayer {...OSM_TILE_LAYER_PROPS} />`
+   (một nguồn duy nhất, hết duplicate attribution/URL).
+2. `updateWhenIdle: true` — chỉ tải tile khi ngừng pan/zoom.
+3. `keepBuffer: 3` (mặc định 2) — giữ thêm tile ngoài khung trong bộ nhớ; pan nhẹ qua lại
+   dùng lại tile có sẵn. (Đã đọc `GridLayer._update`: `keepBuffer` chỉ dùng cho `_pruneTiles`
+   — giữ tile, **không** tải thêm, nên tăng là an toàn về số request.)
+4. `maxNativeZoom: 18` — trên z18 tile phóng từ z18, không tải tile z19. **Không** dùng
+   `maxZoom` (đặt thấp hơn zoom bản đồ sẽ khiến Leaflet ẩn cả lớp tile → bản đồ trắng).
+5. `detectRetina: false` ghi rõ (mặc định của Leaflet) để không ai bật vô ý — bật là x4 request.
+6. `PlaceMiniMap` mount lười bằng `useIntersectionObserver` của `@uidotdev/usehooks`
+   (`threshold: 0.1`, `rootMargin: "200px"`): chưa cuộn tới thì không dựng `MapContainer`,
+   không tải tile. Cuộn ra ngoài thì unmount; cuộn lại lấy từ HTTP cache.
+
+### Bằng chứng
+
+- Đo request thật (Playwright, `page.on("request")` lọc `tile.openstreetmap.org`), kéo bản đồ
+  12 bước liên tục: **0 request trong lúc kéo**, 7 tile sau khi thả chuột (trước đây tải liên tục).
+- `e2e/mini-map.spec.ts` mới: viewport 420px, mở tab "Tổng quan", cuộn về đầu trang →
+  `.leaflet-container` **chưa mount**; cuộn tới → mount.
+- `typecheck` ✓, `lint` ✓, unit **72/72** ✓, e2e **13/13** ✓.
+
+### Chưa xác minh
+
+- Chưa đo tổng số tile/phiên trên thiết bị di động thật (Leaflet mặc định `updateWhenIdle`
+  đã `true` trên mobile nên mức giảm ở đó nhỏ hơn desktop).
+- Chưa xử lý policy production: OSM tile chuẩn cấm dùng nặng (curl không kèm UA trình duyệt
+  bị trả `x-blocked: Access denied`). Vẫn cần đổi provider/self-host trước khi có traffic thật
+  — đã ghi BACKLOG.
