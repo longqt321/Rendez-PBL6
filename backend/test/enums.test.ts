@@ -21,6 +21,9 @@ describe("quy đổi enum", () => {
       expect(toApiCategory(toPrismaCategory(api))).toBe(api)
     }
     expect(toPrismaCategory("street-food")).toBe("street_food")
+    // DB lưu giá trị `@map` (gạch nối) — mapper phải nhận cả hai dạng.
+    expect(toApiCategory("street-food")).toBe("street-food")
+    expect(toApiCategory("street_food")).toBe("street-food")
   })
 
   test("category: giá trị lạ ném lỗi", () => {

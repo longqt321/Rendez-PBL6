@@ -27,7 +27,10 @@ const CATEGORY_TO_PRISMA: Record<PlaceCategory, string> = {
 const CATEGORY_TO_API: Record<string, PlaceCategory> = {
   cafe: "cafe",
   restaurant: "restaurant",
+  // DB lưu `street-food` (gạch nối, do `@map` của enum); nhận cả dạng gạch dưới
+  // để không vỡ nếu có dữ liệu cũ ghi theo tên member TS.
   street_food: "street-food",
+  "street-food": "street-food",
   bakery: "bakery",
   dessert: "dessert",
   bar: "bar",
