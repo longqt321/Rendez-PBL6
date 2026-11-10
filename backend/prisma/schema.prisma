@@ -582,3 +582,18 @@ model PlaceSuggestionNotification {
 
   @@map("place_suggestion_notifications")
 }
+
+// ---------------------------------------------------------------------------
+// 19. rate_limits — đếm theo cửa sổ thời gian, không cần Redis (H4)
+// ---------------------------------------------------------------------------
+
+model RateLimit {
+  key         String   @db.VarChar(200)
+  windowStart DateTime @map("window_start")
+  count       Int      @default(0)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@id([key, windowStart])
+  @@index([windowStart])
+  @@map("rate_limits")
+}

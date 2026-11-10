@@ -32,22 +32,22 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | T3.3 | 3 | PATCH /posts/:id/place — side effects A7.3 trong transaction | T3.1 | done | |
 | T3.4 | 3 | Comments GET/POST/PATCH like/DELETE (A7.6) | T3.1 | done | |
 | T3.5 | 3 | Notification like/comment (follow ở T5.4) (A6.4) | T3.4 | done | |
-| T4.1 | 4 | POST /places/:id/reviews — upsert + aggregate A7.4 | T1.4 | todo | |
-| T4.2 | 4 | GET /places/:id/reviews — mới nhất trước | T4.1 | todo | |
-| T4.3 | 4 | POST /places/:id/reports — A7.5 + unique | T1.4 | todo | |
-| T4.4 | 4 | Job pg-boss phát hiện place (A7.2) + cron + unique index | T3.1 | todo | |
+| T4.1 | 4 | POST /places/:id/reviews — upsert + aggregate A7.4 | T1.4 | done | 6819909 |
+| T4.2 | 4 | GET /places/:id/reviews — mới nhất trước | T4.1 | done | 6819909 |
+| T4.3 | 4 | POST /places/:id/reports — A7.5 + unique | T1.4 | done | 6819909 |
+| T4.4 | 4 | Job pg-boss phát hiện place (A7.2) + cron + unique index | T3.1 | done | f5a14e9 |
 | T4.5 | 4 | Notifications GET/PATCH :id/PATCH all | T4.4 | done | |
-| T5.1 | 5 | CRUD /collections + like + PATCH :id/places (A7.7) | T1.4 | todo | |
-| T5.2 | 5 | GET /places/saved | T5.1 | todo | |
-| T5.3 | 5 | GET /users/:handle (+/posts?tab=, /collections) | T2.6 | todo | |
-| T5.4 | 5 | Follow/unfollow + bảng follows (migration mới) | T5.3 | todo | |
-| T6.1 | 6 | Contract room: POST /rooms, GET /rooms/:code, join, proposals | T1.4 | todo | |
-| T6.2 | 6 | Logic áp proposal vào filter | T6.1 | todo | |
-| T6.3 | 6 | SSE /rooms/:code/events | T6.1 | todo | |
-| T6.4 | 6 | GET /places nhận bộ lọc room (đã có ở T2.1) | T6.1 | todo | |
-| T7.1 | 7 | R2 presigned PUT + POST /media | T1.4 | todo | |
+| T5.1 | 5 | CRUD /collections + like + PATCH :id/places (A7.7) | T1.4 | done | 6819909 |
+| T5.2 | 5 | GET /places/saved | T5.1 | done | 6819909 |
+| T5.3 | 5 | GET /users/:handle (+/posts?tab=, /collections) | T2.6 | done | 0a4f078 |
+| T5.4 | 5 | Follow/unfollow + bảng follows (migration mới) | T5.3 | done | 0a4f078 |
+| T6.1 | 6 | Contract room: POST /rooms, GET /rooms/:code, join, proposals | T1.4 | done | (commit Phase 6) |
+| T6.2 | 6 | Logic áp proposal vào filter | T6.1 | done | (commit Phase 6) |
+| T6.3 | 6 | SSE /rooms/:code/events | T6.1 | done | (commit Phase 6) |
+| T6.4 | 6 | GET /places nhận bộ lọc room (đã có ở T2.1) | T6.1 | done | c61de56 |
+| T7.1 | 7 | R2 presigned PUT + POST /media | T1.4 | done (chưa xác minh với R2 thật) | (commit Phase 7) |
 | T7.2 | 7 | Mở lại ảnh check-in (FE — chỉ nếu bug thật) | T7.1 | todo | |
-| T7.3 | 7 | Rate-limit áp dụng + secure headers | T1.4 | todo | |
+| T7.3 | 7 | Rate-limit áp dụng + secure headers | T1.4 | done | (commit Phase 7) |
 | T7.4 | 7 | Chạy song song mock/backend (không xoá mock) | T2–T6 | todo | |
 | T8.1 | 8 | Dockerfile API multi-stage + compose | T2–T7 | todo | |
 | T8.2 | 8 | Deploy Fly/Railway — CHỈ nếu user trả lời; mặc định bỏ | T8.1 | todo | |

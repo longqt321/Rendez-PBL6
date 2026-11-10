@@ -8,6 +8,8 @@ import { createPostsRouter } from "./posts"
 import { createNotificationsRouter } from "./notifications"
 import { createReviewsRouter } from "./reviews"
 import { createCollectionsRouter } from "./collections"
+import { createRoomsRouter } from "./rooms"
+import { createMediaRouter } from "./media"
 
 /**
  * Router API v1 — mọi route nghiệp vụ mount dưới `/api/v1` (K1).
@@ -48,6 +50,12 @@ export function createApiRouter() {
 
   // Bộ sưu tập (Phase 5).
   api.route("/", createCollectionsRouter())
+
+  // Phòng lọc nhóm + SSE (Phase 6).
+  api.route("/", createRoomsRouter())
+
+  // Upload ảnh presigned R2 (Phase 7).
+  api.route("/", createMediaRouter())
 
   return api
 }

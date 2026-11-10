@@ -44,6 +44,17 @@ const envSchema = z.object({
    * Không có scheme đặc biệt ở Phase 1 (chỉ email+password).
    */
   BETTER_AUTH_URL: z.string().url().default("http://localhost:8000"),
+
+  /**
+   * Cloudflare R2 (S3-compatible). Đủ cả 4 biến thì bật tính năng ảnh
+   * (presigned PUT + `POST /media`); thiếu → route media trả 503 thay vì
+   * crash — môi trường dev không có credentials vẫn chạy được phần còn lại.
+   */
+  R2_ACCOUNT_ID: z.string().default(""),
+  R2_ACCESS_KEY_ID: z.string().default(""),
+  R2_SECRET_ACCESS_KEY: z.string().default(""),
+  R2_BUCKET: z.string().default(""),
+  R2_PUBLIC_BASE_URL: z.string().url().default(""),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -73,6 +84,12 @@ if (
 export const env = {
   ...parsed.data,
   corsOrigins,
+  /** Đủ cấu hình R2 mới bật upload ảnh (xem `lib/r2.ts`). */
+  r2Configured:
+    parsed.data.R2_ACCOUNT_ID.length > 0 &&
+    parsed.data.R2_ACCESS_KEY_ID.length > 0 &&
+    parsed.data.R2_SECRET_ACCESS_KEY.length > 0 &&
+    parsed.data.R2_BUCKET.length > 0,
 } as const
 
 export type Env = typeof env

@@ -5,6 +5,7 @@ import type { AppEnv } from "../app"
 import { auth } from "../lib/auth"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
+import { rateLimit } from "../lib/rate-limit"
 import { findProfileById } from "../lib/users"
 import { requireAuth } from "../lib/session"
 
@@ -97,31 +98,35 @@ export function createAuthRouter() {
    * Trả hồ sơ (không trả token trong body) và chuyển nguyên `Set-Cookie` của
    * better-auth sang response — FE dùng cookie phiên, không lưu token.
    */
-  router.post("/session", async (c) => {
-    const raw = await c.req.json().catch(() => null)
-    const parsed = loginInputSchema.safeParse(raw)
-    if (!parsed.success) {
-      throw new ApiError(400, "Cần email và mật khẩu để đăng nhập")
-    }
+  router.post(
+    "/session",
+    rateLimit({ scope: "auth-session", limit: 20, windowSeconds: 60 }),
+    async (c) => {
+      const raw = await c.req.json().catch(() => null)
+      const parsed = loginInputSchema.safeParse(raw)
+      if (!parsed.success) {
+        throw new ApiError(400, "Cần email và mật khẩu để đăng nhập")
+      }
 
-    try {
-      const { headers, response } = await auth.api.signInEmail({
-        body: parsed.data,
-        headers: c.req.raw.headers,
-        returnHeaders: true,
-      })
-      const userId = (response as { user?: { id?: string } } | null)?.user?.id
-      if (!userId) throw new ApiError(401, "Email hoặc mật khẩu không đúng")
+      try {
+        const { headers, response } = await auth.api.signInEmail({
+          body: parsed.data,
+          headers: c.req.raw.headers,
+          returnHeaders: true,
+        })
+        const userId = (response as { user?: { id?: string } } | null)?.user?.id
+        if (!userId) throw new ApiError(401, "Email hoặc mật khẩu không đúng")
 
-      const profile = await buildProfile(userId, userId)
-      const result = c.json(profile)
-      for (const cookie of headers.getSetCookie()) result.headers.append("Set-Cookie", cookie)
-      return result
-    } catch (error) {
-      if (error instanceof ApiError) throw error
-      mapAuthError(error)
-    }
-  })
+        const profile = await buildProfile(userId, userId)
+        const result = c.json(profile)
+        for (const cookie of headers.getSetCookie()) result.headers.append("Set-Cookie", cookie)
+        return result
+      } catch (error) {
+        if (error instanceof ApiError) throw error
+        mapAuthError(error)
+      }
+    },
+  )
 
   /** Đăng xuất — xoá phiên hiện tại, trả `{ loggedOut: true }` (A6.10). */
   router.delete("/session", requireAuth, async (c) => {
@@ -135,31 +140,35 @@ export function createAuthRouter() {
   })
 
   /** Đăng ký — endpoint mới, FE chưa có UI (T1.3). */
-  router.post("/register", async (c) => {
-    const raw = await c.req.json().catch(() => null)
-    const parsed = registerInputSchema.safeParse(raw)
-    if (!parsed.success) {
-      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
-    }
+  router.post(
+    "/register",
+    rateLimit({ scope: "auth-register", limit: 20, windowSeconds: 60 }),
+    async (c) => {
+      const raw = await c.req.json().catch(() => null)
+      const parsed = registerInputSchema.safeParse(raw)
+      if (!parsed.success) {
+        throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
+      }
 
-    try {
-      const { headers, response } = await auth.api.signUpEmail({
-        body: parsed.data,
-        headers: c.req.raw.headers,
-        returnHeaders: true,
-      })
-      const userId = (response as { user?: { id?: string } } | null)?.user?.id
-      if (!userId) throw new ApiError(500, "Không tạo được tài khoản")
+      try {
+        const { headers, response } = await auth.api.signUpEmail({
+          body: parsed.data,
+          headers: c.req.raw.headers,
+          returnHeaders: true,
+        })
+        const userId = (response as { user?: { id?: string } } | null)?.user?.id
+        if (!userId) throw new ApiError(500, "Không tạo được tài khoản")
 
-      const profile = await buildProfile(userId, userId)
-      const result = c.json(profile, 201)
-      for (const cookie of headers.getSetCookie()) result.headers.append("Set-Cookie", cookie)
-      return result
-    } catch (error) {
-      if (error instanceof ApiError) throw error
-      mapAuthError(error)
-    }
-  })
+        const profile = await buildProfile(userId, userId)
+        const result = c.json(profile, 201)
+        for (const cookie of headers.getSetCookie()) result.headers.append("Set-Cookie", cookie)
+        return result
+      } catch (error) {
+        if (error instanceof ApiError) throw error
+        mapAuthError(error)
+      }
+    },
+  )
 
   return router
 }
