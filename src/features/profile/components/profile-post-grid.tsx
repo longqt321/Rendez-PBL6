@@ -5,7 +5,6 @@ import { ErrorState } from "@/components/shared/error-state"
 import { Card } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
-import { SeedImage } from "@/components/shared/seed-image"
 import type { Post } from "@/features/social/types/post"
 
 /**
@@ -79,11 +78,6 @@ export function ProfilePostGrid({
             className="block transition-transform hover:-translate-y-0.5"
           >
             <Card size="sm" className="gap-0 py-0">
-              <SeedImage
-                seed={post.imageSeed}
-                height={post.imageHeight}
-                alt={`Ảnh bài đăng: ${post.caption.slice(0, 60)}`}
-              />
               <p className="line-clamp-2 px-2.5 py-2 text-xs leading-snug">{post.caption}</p>
             </Card>
           </Link>

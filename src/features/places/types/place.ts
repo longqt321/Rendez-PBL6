@@ -19,8 +19,7 @@ export interface Place {
   rating: number
   reviewCount: number
   priceLevel: 1 | 2 | 3
-  imageSeed: string
-  /** URL ảnh thật (cold-start); thiếu thì UI dùng ảnh minh hoạ theo `imageSeed`. */
+  /** URL ảnh thật của quán (cold-start); thiếu thì UI hiện placeholder trung tính. */
   imageUrl?: string
   /** Chiều cao ảnh (px) cho bố cục masonry trên mobile */
   imageHeight: number
@@ -44,8 +43,7 @@ export interface PlaceSummary {
   address: string
   district?: string
   category: PlaceCategory
-  imageSeed: string
-  /** URL ảnh thật (cold-start); thiếu thì UI dùng ảnh minh hoạ theo `imageSeed`. */
+  /** URL ảnh thật của quán (cold-start); thiếu thì UI hiện placeholder trung tính. */
   imageUrl?: string
   isPublished: boolean
   lat?: number

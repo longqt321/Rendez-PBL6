@@ -2,9 +2,10 @@ import type { UserProfile } from "@/features/profile/types/profile"
 import type { Author } from "@/features/social/types/post"
 
 /**
- * Hồ sơ mẫu. `me` khớp `CURRENT_USER` trong fixtures/posts.ts — cùng id/handle.
+ * Hồ sơ người dùng đang đăng nhập (demo).
  *
- * `postCount`/`followerCount` là dữ liệu seed; server tự cập nhật khi có thay đổi.
+ * Cold-start không chứa tài khoản ảo nào khác (quyết định D-049): mọi tài khoản
+ * khác chỉ xuất hiện khi có người dùng thật đăng ký.
  */
 export const MOCK_USERS: Record<string, UserProfile> = {
   "u-me": {
@@ -15,86 +16,11 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     bio: "Săn quán Đà Nẵng, ghi lại từng bữa ăn đáng tiền. Ưu tiên quán nhỏ, chủ nhiệt tình.",
     location: "Đà Nẵng",
     joinedAt: "2025-03-14T00:00:00+07:00",
-    postCount: 2,
-    followerCount: 128,
-    followingCount: 64,
+    postCount: 0,
+    followerCount: 0,
+    followingCount: 0,
     followedByMe: false,
     isMe: true,
-    privateProfile: false,
-  },
-  "u-1": {
-    id: "u-1",
-    name: "Trần Bảo",
-    handle: "bao.an.day",
-    initials: "TB",
-    bio: "Ăn để sống, sống để ăn. Review thật, không quảng cáo.",
-    location: "Đà Nẵng",
-    joinedAt: "2024-11-02T00:00:00+07:00",
-    postCount: 2,
-    followerCount: 342,
-    followingCount: 87,
-    followedByMe: true,
-    isMe: false,
-    privateProfile: false,
-  },
-  "u-2": {
-    id: "u-2",
-    name: "Lê Thu Hà",
-    handle: "thuha.foodmap",
-    initials: "TH",
-    bio: "Food map cá nhân. Đi là ghi, ghi là chia sẻ.",
-    location: "Đà Nẵng",
-    joinedAt: "2025-01-20T00:00:00+07:00",
-    postCount: 2,
-    followerCount: 519,
-    followingCount: 122,
-    followedByMe: false,
-    isMe: false,
-    privateProfile: false,
-  },
-  "u-3": {
-    id: "u-3",
-    name: "Phạm Quốc",
-    handle: "quoc.around",
-    initials: "PQ",
-    bio: "Cà phê + laptop là đủ một ngày vui.",
-    location: "Đà Nẵng",
-    joinedAt: "2024-06-09T00:00:00+07:00",
-    postCount: 2,
-    followerCount: 203,
-    followingCount: 45,
-    followedByMe: false,
-    isMe: false,
-    privateProfile: false,
-  },
-  "u-4": {
-    id: "u-4",
-    name: "Nguyễn Yến",
-    handle: "yen.danang",
-    initials: "NY",
-    bio: "Đà Nẵng có gì ăn ngon là lên đây hết.",
-    location: "Đà Nẵng",
-    joinedAt: "2025-05-30T00:00:00+07:00",
-    postCount: 2,
-    followerCount: 876,
-    followingCount: 210,
-    followedByMe: false,
-    isMe: false,
-    privateProfile: false,
-  },
-  "u-5": {
-    id: "u-5",
-    name: "Đỗ Khánh",
-    handle: "khanh.brunch",
-    initials: "ĐK",
-    bio: "Brunch là một bữa nghiêm túc.",
-    location: "Đà Nẵng",
-    joinedAt: "2025-08-11T00:00:00+07:00",
-    postCount: 2,
-    followerCount: 154,
-    followingCount: 98,
-    followedByMe: false,
-    isMe: false,
     privateProfile: false,
   },
 }
@@ -112,14 +38,7 @@ export const ME = MOCK_USERS["u-me"]
  */
 export const CURRENT_USER: Author = ME
 
-/** Tác giả mẫu (trừ chính mình), tra theo id. */
-export const AUTHORS: Record<string, Author> = {
-  "u-1": MOCK_USERS["u-1"],
-  "u-2": MOCK_USERS["u-2"],
-  "u-3": MOCK_USERS["u-3"],
-  "u-4": MOCK_USERS["u-4"],
-  "u-5": MOCK_USERS["u-5"],
-}
+/** Tác giả khác — rỗng vì cold-start không có tài khoản ảo. */
+export const AUTHORS: Record<string, Author> = {}
 
-/** Dạng mảng, giữ đúng thứ tự u-1 → u-5, để seed bài đăng theo chỉ số. */
 export const AUTHOR_LIST: Author[] = Object.values(AUTHORS)

@@ -24,8 +24,6 @@ import { usePlaceSuggestions } from "@/features/places/hooks/use-place-suggestio
 import type { PlaceSummary } from "@/features/places/types/place"
 import { useCreatePost } from "../hooks/use-create-post"
 
-const IMAGE_SEEDS = ["post-new-01", "post-new-02", "post-new-03", "post-new-04"]
-
 interface PostComposerProps {
   onCreated?: () => void
 }
@@ -39,7 +37,6 @@ interface PostComposerProps {
 export function PostComposer({ onCreated }: PostComposerProps) {
   const [caption, setCaption] = useState("")
   const [selectedPlace, setSelectedPlace] = useState<PlaceSummary | null>(null)
-  const [seedIndex, setSeedIndex] = useState(0)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const captionId = useId()
   const suggestionsPanelId = useId()
@@ -58,7 +55,6 @@ export function PostComposer({ onCreated }: PostComposerProps) {
     createPost.mutate(
       {
         caption: caption.trim(),
-        imageSeed: IMAGE_SEEDS[seedIndex % IMAGE_SEEDS.length],
         placeId: selectedPlace?.id ?? null,
       },
       {
@@ -166,15 +162,6 @@ export function PostComposer({ onCreated }: PostComposerProps) {
               </Badge>
             ) : null}
           </CollapsibleTrigger>
-
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setSeedIndex((index) => index + 1)}
-            aria-label="Đổi ảnh minh hoạ"
-          >
-            Đổi ảnh
-          </Button>
 
           <span className="ml-auto text-sm text-muted-foreground">
             {formatNumber(caption.trim().length)}/{formatNumber(MAX_CAPTION_LENGTH)}

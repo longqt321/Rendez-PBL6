@@ -2288,3 +2288,50 @@ có trong data; (4) phân bố lệch: Hải Châu 447 vs Cẩm Lệ 31, Hòa Xu
 - `rebuild.mjs` — lọc mục đạt chuẩn, gộp ứng viên, loại trùng tên/toạ độ, sinh `places.csv`.
 - `diversify-images.mjs` — tải ảnh CC0 theo phân loại, gán vòng tròn (tối đa 8 lần/ảnh).
 - `validate.mjs` — kiểm schema/địa chỉ/toạ độ/ảnh/trùng lặp, exit 1 nếu sai (dùng được trong CI).
+
+## D-049 — Bỏ ảnh món + dữ liệu giả khỏi cold-start: chỉ giữ ảnh venue thật
+
+**Ngày:** 2026-11-10
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Người dùng duyệt tay toàn bộ 492 địa điểm qua review tool (D-048): **470 `wrong-image`,
+21 `ok`, 1 `wrong-address`**. Ảnh món đại diện (Commons) sai quán, lặp giữa các quán,
+không giúp định vị. Yêu cầu: ảnh phải là ảnh THẬT của quán (biển hiệu, tên quán);
+cold-start tuyệt đối không có dữ liệu giả (bài đăng, tài khoản ảo).
+
+### Quyết định
+
+1. **Bỏ toàn bộ ảnh món** khỏi dataset: 470 quán → `image: null`, `imageKind: null`,
+   `imageNote` ghi rõ "chưa có ảnh thật". 21 quán có ảnh venue được duyệt `ok` giữ nguyên;
+   1 ảnh venue bị duyệt `wrong-image` (p-coffee) cũng bị bỏ — duyệt tay là chuẩn.
+2. **Loại `che-sau-lien`** (duyệt `wrong-address`): 492 → 491 địa điểm.
+3. **Xoá 191 file ảnh** không còn tham chiếu (ảnh món + ảnh venue mồ côi), đồng bộ
+   `CREDITS.json`/`CREDITS.md`. `copy-cold-start-images.mjs` thêm bước xoá file stale
+   ở `public/` (trước đó tích tụ 156MB ảnh cũ không dùng).
+4. **UI không dùng ảnh minh hoạ thay thế**: xoá `SeedImage` (picsum theo seed) và
+   `imageSeed` khỏi hợp đồng API; thay bằng `CoverImage` — có `src` thì hiện ảnh thật,
+   không thì placeholder trung tính "Chưa có ảnh". Lý do: ảnh ngẫu nhiên không đúng quán
+   khiến người dùng hiểu sai địa điểm.
+5. **Bài đăng không có ảnh**: xoá `imageSeed` khỏi `Post`/`CreatePostInput`, bỏ khối ảnh
+   khỏi `PostCard`/`PostPreview`/lưới profile, bỏ nút "Đổi ảnh" ở composer và check-in
+   dialog (chưa có upload ảnh — không mô phỏng).
+6. **Mock server khởi đầu sạch**: `MOCK_POSTS/COMMENTS/REVIEWS/COLLECTIONS/NOTIFICATIONS`
+   = rỗng; `MOCK_USERS` chỉ còn tài khoản đăng nhập demo. Không seed bài đăng, đánh giá,
+   bộ sưu tập, thông báo, tài khoản ảo nào.
+7. Test/e2e tự tạo dữ liệu lúc chạy (đăng bài qua composer/UI, tạo bộ sưu tập qua dialog)
+   thay vì dựa vào seed giả. Test profile "Nhắn tin" chuyển sang hồ sơ của chính mình vì
+   không còn tài khoản mẫu nào khác để xem.
+
+### Bằng chứng
+
+- `strip-dish-images.mjs --apply --purge-files`: 491 địa điểm, 20 ảnh venue, 0 ảnh dish.
+- `validate.mjs` exit 0; `typecheck` ✓; `lint` ✓; unit test 67/67 ✓; e2e 10/10 ✓.
+- Ảnh chụp UI: placeholder "Chưa có ảnh" gọn gàng, trang rỗng có empty state.
+
+### Chưa xác minh
+
+- Giấy phép 20 ảnh venue (Foody/Google Maps) — vẫn cần xin phép trước khi phát hành.
+- Ảnh venue chưa được người dùng xác nhận "có biển hiệu rõ tên quán" (chỉ được duyệt là
+  "đúng quán").

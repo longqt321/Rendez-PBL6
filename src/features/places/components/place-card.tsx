@@ -2,7 +2,7 @@ import { MapPinIcon, NavigationIcon, StarIcon } from "lucide-react"
 import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { SeedImage } from "@/components/shared/seed-image"
+import { CoverImage } from "@/components/shared/cover-image"
 import { formatCount, formatDistance, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
@@ -17,8 +17,7 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
   return (
     <Card className="group relative gap-0 p-0 shadow-(--shadow-soft) transition-shadow hover:shadow-(--shadow-raised)">
       {/* Chiều cao ảnh do server trả về (`imageHeight`) → lưới mobile có nhịp masonry. */}
-      <SeedImage
-        seed={place.imageSeed}
+      <CoverImage
         src={place.imageUrl}
         height={place.imageHeight}
         alt={`Ảnh ${place.name}`}
@@ -47,7 +46,7 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
             {formatRating(place.rating)}
           </span>
         ) : null}
-      </SeedImage>
+      </CoverImage>
 
       <CardContent className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="font-heading text-base leading-tight font-bold">

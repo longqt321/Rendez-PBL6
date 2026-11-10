@@ -16,7 +16,6 @@ const PLACE: Place = {
   rating: 4.8,
   reviewCount: 10,
   priceLevel: 2,
-  imageSeed: "seed",
   imageHeight: 320,
 }
 

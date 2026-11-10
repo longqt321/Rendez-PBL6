@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Item, ItemContent, ItemGroup } from "@/components/ui/item"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Toggle } from "@/components/ui/toggle"
-import { SeedImage } from "@/components/shared/seed-image"
+import { CoverImage } from "@/components/shared/cover-image"
 import { formatCount, formatDate } from "@/lib/format"
 import { useSetFollow } from "../hooks/use-set-follow"
 import type { UserProfile } from "../types/profile"
@@ -21,11 +21,11 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
   return (
     <header>
       <div className="relative">
-        <SeedImage
-          seed={`cover-${profile.handle}`}
+        <CoverImage
           height={200}
           className="w-full rounded-none border-0 border-b border-border"
           alt={`Ảnh bìa của ${profile.name}`}
+          placeholderLabel="Chưa có ảnh bìa"
         />
         <Avatar className="absolute -bottom-12 left-6 size-24 border-4 border-background bg-background">
           <AvatarFallback className="bg-accent text-xl font-bold text-accent-foreground">

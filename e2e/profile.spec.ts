@@ -1,20 +1,16 @@
 import { expect, test } from "@playwright/test"
 
 /**
- * Nút "Nhắn tin" chưa có backend nên tắt, nhưng phải giải thích được lý do.
+ * Trang cá nhân của chính mình.
  *
- * Nút `disabled` không phát pointer event — tooltip chỉ hiện khi trigger được bọc
- * phần tử nhận hover. Test này khoá lại hành vi đó (trước đây tooltip không bao
- * giờ hiện).
+ * Trước đây test này vào `/u/:handle` của một tài khoản mẫu để thấy nút
+ * "Nhắn tin" tắt kèm tooltip. Cold-start không còn tài khoản ảo nào (quyết định
+ * D-049), nên không còn hồ sơ người khác để xem — test chuyển sang khoá hành vi
+ * còn kiểm được: hồ sơ của mình hiển thị "Sửa hồ sơ" (không có nút "Nhắn tin").
  */
-test("nút Nhắn tin tắt nhưng hover vẫn hiện giải thích", async ({ page }) => {
-  await page.goto("/u/bao.an.day")
+test("hồ sơ của tôi có nút Sửa hồ sơ thay cho Nhắn tin", async ({ page }) => {
+  await page.goto("/profile")
 
-  const button = page.getByRole("button", { name: "Nhắn tin" })
-  await expect(button).toBeDisabled()
-
-  // Hover phần bọc span (mục tiêu hover thật của người dùng): Playwright từ chối
-  // hover trực tiếp nút disabled vì hit-target check.
-  await button.locator("..").hover()
-  await expect(page.getByText("Tính năng nhắn tin sẽ mở khi backend hoàn thiện")).toBeVisible()
+  await expect(page.getByRole("link", { name: "Sửa hồ sơ" })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Nhắn tin" })).toHaveCount(0)
 })

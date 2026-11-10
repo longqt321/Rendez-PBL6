@@ -96,7 +96,6 @@ function toPlaceDto(place: MockPlace): Place {
     rating: place.rating,
     reviewCount: place.reviewCount,
     priceLevel: place.priceLevel,
-    imageSeed: place.imageSeed,
     imageUrl: place.imageUrl,
     imageHeight: place.imageHeight,
     lat: place.lat,
@@ -116,7 +115,6 @@ function toPlaceSummary(place: MockPlace) {
     address: place.address,
     district: place.district,
     category: place.category,
-    imageSeed: place.imageSeed,
     imageUrl: place.imageUrl,
     isPublished: place.publishedAt !== null,
     lat: place.lat,
@@ -293,7 +291,7 @@ function attachPlaceToPost(postId: string, placeId: string): Post | undefined {
 }
 
 function createPost(config: InternalAxiosRequestConfig) {
-  const body = parseBody<{ caption?: string; imageSeed?: string; placeId?: string | null }>(config)
+  const body = parseBody<{ caption?: string; placeId?: string | null }>(config)
   const caption = (body.caption ?? "").trim()
   if (caption.length < MIN_CAPTION_LENGTH) {
     badRequest(config, `Nội dung bài đăng cần ít nhất ${MIN_CAPTION_LENGTH} ký tự`)
@@ -307,7 +305,6 @@ function createPost(config: InternalAxiosRequestConfig) {
     id: `post-new-${postSeq}`,
     author: CURRENT_USER,
     caption,
-    imageSeed: body.imageSeed ?? "post-new-01",
     imageHeight: 380,
     createdAt: new Date().toISOString(),
     placeId: body.placeId ?? null,

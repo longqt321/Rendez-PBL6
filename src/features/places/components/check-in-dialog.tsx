@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { CameraIcon, MapPinIcon, RefreshCwIcon } from "lucide-react"
+import { CameraIcon, MapPinIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -24,9 +24,6 @@ import { categoryLabel } from "../lib/category-meta"
 import { placePostsQueryKey } from "../hooks/use-place-posts"
 import type { Place } from "../types/place"
 
-/** Ảnh minh hoạ xoay vòng — người dùng bấm "Đổi ảnh" để chọn ảnh khác. */
-const IMAGE_SEEDS = ["checkin-01", "checkin-02", "checkin-03", "checkin-04"]
-
 interface CheckInDialogProps {
   place: Place
   children: React.ReactElement
@@ -42,7 +39,6 @@ interface CheckInDialogProps {
 export function CheckInDialog({ place, children }: CheckInDialogProps) {
   const [open, setOpen] = useState(false)
   const [caption, setCaption] = useState("")
-  const [seedIndex, setSeedIndex] = useState(0)
   const createPost = useCreatePost()
   const queryClient = useQueryClient()
 
@@ -60,7 +56,6 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
     createPost.mutate(
       {
         caption: caption.trim(),
-        imageSeed: IMAGE_SEEDS[seedIndex % IMAGE_SEEDS.length],
         placeId: place.id,
       },
       {
@@ -119,15 +114,6 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
           </Field>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              className="sm:mr-auto"
-              onClick={() => setSeedIndex((index) => index + 1)}
-            >
-              <RefreshCwIcon />
-              Đổi ảnh
-            </Button>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Huỷ
             </Button>

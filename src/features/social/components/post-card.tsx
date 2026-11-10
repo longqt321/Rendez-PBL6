@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Toggle } from "@/components/ui/toggle"
-import { SeedImage } from "@/components/shared/seed-image"
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import { formatCount, formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -48,14 +47,6 @@ export function PostCard({ post }: PostCardProps) {
           </p>
         </div>
       </header>
-
-      <Link to={`/post/${post.id}`} aria-label={`Mở bài đăng của ${post.author.name}`}>
-        <SeedImage
-          seed={post.imageSeed}
-          height={post.imageHeight}
-          alt={`Ảnh minh hoạ bài đăng của ${post.author.name}`}
-        />
-      </Link>
 
       <div className="flex flex-col gap-3 p-4">
         <p className="text-base leading-relaxed whitespace-pre-line">{post.caption}</p>

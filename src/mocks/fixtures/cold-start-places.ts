@@ -83,7 +83,6 @@ export const COLD_START_PLACES: MockPlace[] = places.map((raw) => {
     rating: 0,
     reviewCount: 0,
     priceLevel: 1,
-    imageSeed: raw.id,
     imageUrl: raw.image ? `/data/cold-start/${raw.image}` : undefined,
     imageHeight: 320,
     lat: raw.lat ?? undefined,

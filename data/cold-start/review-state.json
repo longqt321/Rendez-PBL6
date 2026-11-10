@@ -1,5 +1,2958 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-10T07:52:20.558Z",
-  "decisions": {}
+  "updatedAt": "2026-11-10T08:09:07.922Z",
+  "decisions": {
+    "banh-xeo-ba-duong": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:02:33.585Z"
+    },
+    "mi-quang-1a": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:02:38.785Z"
+    },
+    "mi-quang-ech-bep-trang": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:02:42.141Z"
+    },
+    "dac-san-tran": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:02:45.532Z"
+    },
+    "quan-mau": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:02:49.846Z"
+    },
+    "bun-mam-van": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:02:54.643Z"
+    },
+    "bun-cha-ca-ba-lu": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:02:59.324Z"
+    },
+    "banh-trang-kep-di-hoa": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:04.907Z"
+    },
+    "hai-san-nam-danh": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:09.349Z"
+    },
+    "hai-san-nam-ranh": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:14.890Z"
+    },
+    "hai-san-moc-quan": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:27.394Z"
+    },
+    "my-hanh-seafood": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:29.420Z"
+    },
+    "reply-1988-cafe": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:31.781Z"
+    },
+    "noi-cafe": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:33.732Z"
+    },
+    "boulevard-gelato-coffee": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:36.096Z"
+    },
+    "banh-mi-ong-ty": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:38.264Z"
+    },
+    "che-sau-lien": {
+      "verdict": "wrong-address",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:45.152Z"
+    },
+    "bun-cha-ca-ong-ta": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:48.812Z"
+    },
+    "goi-ca-nam-o-tan": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:50.632Z"
+    },
+    "com-ga-a-hai": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:53.289Z"
+    },
+    "banh-xeo-nam-hien": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:55.485Z"
+    },
+    "hai-san-ba-tam": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:03:58.965Z"
+    },
+    "com-ga-ba-buoi": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:00.093Z"
+    },
+    "banh-mi-ba-dao": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:01.222Z"
+    },
+    "p-coffee": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:03.784Z"
+    },
+    "wonderlust-coffee": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:06.048Z"
+    },
+    "wind-garden-coffee": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:08.660Z"
+    },
+    "dau-ngot-cafe": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:13.761Z"
+    },
+    "mirko-coffee": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:15.523Z"
+    },
+    "hai-san-ba-ro": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:17.286Z"
+    },
+    "banh-mi-ba-lan": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:18.374Z"
+    },
+    "banh-mi-co-huong": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:19.272Z"
+    },
+    "goi-ca-thanh-huong": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:22.416Z"
+    },
+    "bun-mam-ba-hang": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:23.770Z"
+    },
+    "ibasho-coffee": {
+      "verdict": "ok",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:27.824Z"
+    },
+    "cafe-phong-1769334889": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:29.563Z"
+    },
+    "huong-cau-2988980334": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:30.531Z"
+    },
+    "nha-hang-hancook-4464451389": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:31.377Z"
+    },
+    "banh-mi-cham-pate-6152597685": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:32.330Z"
+    },
+    "cafe-36-6517510885": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:33.151Z"
+    },
+    "mi-quang-dai-loc-6518899995": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:37.143Z"
+    },
+    "green-coffee-6553580441": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:04:38.783Z"
+    },
+    "ans-vegeterian-cuisine-6561782799": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:01.391Z"
+    },
+    "coffee-279-6563400562": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:06.944Z"
+    },
+    "thai-market-6617189371": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:08.109Z"
+    },
+    "art-for-life-coffe-6804757885": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:08.791Z"
+    },
+    "golden-dragon-7253556386": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:09.773Z"
+    },
+    "ht-ca-phe-7705143785": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:10.478Z"
+    },
+    "bt-ca-phe-7705143786": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:11.031Z"
+    },
+    "bep-cua-ma-com-nieu-va-mon-hue-11758839350": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:12.225Z"
+    },
+    "guming-11951761272": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:13.112Z"
+    },
+    "son-hai-12612220720": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:13.756Z"
+    },
+    "hu-tien-minh-hieu-12680165501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:14.435Z"
+    },
+    "kebab-nova-13026042501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:15.343Z"
+    },
+    "anywhere-13074118001": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:16.082Z"
+    },
+    "my-quang-bun-bo-13074118701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:18.169Z"
+    },
+    "pho-13075369202": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:19.130Z"
+    },
+    "bun-cha-ca-17k-13118797501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:20.648Z"
+    },
+    "becoming-specialty-coffee-13340074016": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:21.535Z"
+    },
+    "passport-coffee-roastery-13371126001": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:22.136Z"
+    },
+    "nia-coffee-13744719202": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:22.854Z"
+    },
+    "banh-canh-ca-loc-hue-be-13852133401": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:24.050Z"
+    },
+    "bun-thit-nuong-13853226001": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:25.418Z"
+    },
+    "abc-bakery-13860986975": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:26.185Z"
+    },
+    "nune-smoothie-13964921201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:26.742Z"
+    },
+    "pho-house-14069782201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:27.515Z"
+    },
+    "mixue-14141137001": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:29.883Z"
+    },
+    "bun-14159493501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:31.574Z"
+    },
+    "thien-an-coffee-14165243301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:32.380Z"
+    },
+    "com-ga-mam-toi-khanh-14165243401": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:33.870Z"
+    },
+    "com-tam-mien-tay-14332757101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:34.921Z"
+    },
+    "cafe-da-pho-5485709524": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:36.154Z"
+    },
+    "quan-mau-banh-trang-thit-heo-6152679485": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:36.774Z"
+    },
+    "tian-le-6525009326": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:37.997Z"
+    },
+    "cafe-anh-7282442185": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:38.854Z"
+    },
+    "it-ca-phe-7705143488": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:39.918Z"
+    },
+    "kt-ca-phe-7705143789": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:40.565Z"
+    },
+    "moc-nguyen-coffee-10312969476": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:41.271Z"
+    },
+    "cafeholic-garden-coffee-14283440701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:42.552Z"
+    },
+    "la-luna-4150425790": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:44.718Z"
+    },
+    "the-amazing-taco-in-da-nang-4260382168": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:45.644Z"
+    },
+    "happy-heart-cafe-4782419524": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:46.974Z"
+    },
+    "andy-coffee-5038348824": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:49.597Z"
+    },
+    "quan-an-tuk-tuk-5047614532": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:50.710Z"
+    },
+    "l-italiano-5414316021": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:51.636Z"
+    },
+    "six-on-six-5432960921": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:52.631Z"
+    },
+    "bancaphe-5474212423": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:53.668Z"
+    },
+    "tokbokki-ly-6108930790": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:54.465Z"
+    },
+    "mini-s-cafe-breakfast-6109163975": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:55.156Z"
+    },
+    "mumtaz-6133794785": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:56.596Z"
+    },
+    "markets-6378039485": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:57.473Z"
+    },
+    "bikini-bottom-express-6984061285": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:58.552Z"
+    },
+    "mia-food-drink-7076705485": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:05:59.474Z"
+    },
+    "mua-coffee-7090665544": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:00.125Z"
+    },
+    "tacos-danang-7108269050": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:01.440Z"
+    },
+    "cape-nao-beach-club-7253559186": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:02.632Z"
+    },
+    "panorama-7253593585": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:03.949Z"
+    },
+    "bodhicitta-7271270243": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:04.868Z"
+    },
+    "ca-sau-nuong-da-thanh-2-8624261430": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:05.843Z"
+    },
+    "kurumi-healthy-vegan-food-desserts-10310109109": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:06.550Z"
+    },
+    "roots-plant-based-cafe-10749874405": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:07.925Z"
+    },
+    "bua-no-nhau-10768300006": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:08.730Z"
+    },
+    "bo-de-tam-bodhicitta-10768346405": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:09.803Z"
+    },
+    "dimsum-ba-thim-10775822705": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:10.302Z"
+    },
+    "hanh-phuc-bookcoffee-10777962706": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:11.006Z"
+    },
+    "khang-gia-quan-10779089305": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:12.004Z"
+    },
+    "de-nhat-sui-cao-hoan-my-hoan-my-dumplings-king-10779745505": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:13.943Z"
+    },
+    "kem-bo-be-hue-10787239705": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:34.237Z"
+    },
+    "quan-ty-10807491807": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:35.027Z"
+    },
+    "quan-mai-bun-cha-obama-10819049905": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:40.537Z"
+    },
+    "bun-bo-chum-10837001505": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:41.336Z"
+    },
+    "bro-s-kafe-11074810731": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:42.056Z"
+    },
+    "nu-do-11684513272": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:43.338Z"
+    },
+    "kem-dua-ma-lai-11903735269": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:44.516Z"
+    },
+    "olivia-pizza-11906566170": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:45.412Z"
+    },
+    "kebab-ngon-12105866901": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:46.513Z"
+    },
+    "highlands-coffee-12165826954": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:47.106Z"
+    },
+    "bhojan-12169743830": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:47.814Z"
+    },
+    "bravo-pizzeria-12373107601": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:48.312Z"
+    },
+    "waffle-queen-12464306501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:48.809Z"
+    },
+    "quan-nhan-12606953537": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:49.332Z"
+    },
+    "am-coffee-12815906301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:49.798Z"
+    },
+    "golden-coffee-12815918402": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:50.237Z"
+    },
+    "butcher-steak-12836656104": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:50.713Z"
+    },
+    "roly-poly-fresh-spring-rolls-coffee-da-nang-12850675090": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:51.190Z"
+    },
+    "hom-nay-ca-phe-12853200247": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:52.113Z"
+    },
+    "vietnam-daily-group-12853200250": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:53.181Z"
+    },
+    "pizza-hut-12866042122": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:54.493Z"
+    },
+    "westwood-da-nang-12918575654": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:55.333Z"
+    },
+    "le-comptoir-13009347078": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:56.868Z"
+    },
+    "banh-canh-ca-loc-be-hue-13022818102": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:58.034Z"
+    },
+    "bo-ne-3-ngon-13040636501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:58.681Z"
+    },
+    "vietnom-local-eatery-13165190395": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:59.278Z"
+    },
+    "missteak-13165204025": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:06:59.752Z"
+    },
+    "rainbowl-poke-13165207773": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:00.267Z"
+    },
+    "ace-coworking-space-13294206501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:00.820Z"
+    },
+    "si-dining-13306417601": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:01.456Z"
+    },
+    "quan-chay-xinh-13362942301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:01.921Z"
+    },
+    "brewinghood-13392414601": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:02.650Z"
+    },
+    "d-coffee-13392416701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:03.184Z"
+    },
+    "bahn-mi-cafe-13546015635": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:03.725Z"
+    },
+    "cross-coffee-13563775401": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:04.176Z"
+    },
+    "oh-la-la-13578387140": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:04.687Z"
+    },
+    "quan-bun-cha-ha-noi-thanh-nga-13738874785": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:05.296Z"
+    },
+    "co-toi-coffee-13766193775": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:05.779Z"
+    },
+    "tiem-ca-phe-nang-13784209321": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:06.218Z"
+    },
+    "kate-coffee-tea-13805547596": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:06.659Z"
+    },
+    "369-family-restaurant-13914106801": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:07.081Z"
+    },
+    "ngoc-phung-13937758901": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:07.636Z"
+    },
+    "forest98coffee-13971665001": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:08.018Z"
+    },
+    "little-hanoi-egg-coffee-da-nang-13971928007": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:08.407Z"
+    },
+    "madam-thao-vegan-restaurant-14057537001": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:08.788Z"
+    },
+    "chay-hanh-phuc-vegan-food-14062977601": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:09.180Z"
+    },
+    "kem-bo-14064309338": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:09.696Z"
+    },
+    "m-kitchen-14105254901": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:10.149Z"
+    },
+    "ngon-da-nang-14106869301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:10.562Z"
+    },
+    "bun-bo-hue-na-14128486201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:11.018Z"
+    },
+    "dinh-phong-14134320601": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:11.411Z"
+    },
+    "tomini-s-pizza-14141370201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:11.842Z"
+    },
+    "alt-plant-based-vegan-cafe-14172705701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:12.549Z"
+    },
+    "emoi-coffeestand-14190948201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:13.181Z"
+    },
+    "hi-coffee-restaurant-14293201101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:13.597Z"
+    },
+    "caucasus-homefood-14314444101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:13.997Z"
+    },
+    "yume-izakaya-14314444201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:14.350Z"
+    },
+    "season-coffee-14320771501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:14.715Z"
+    },
+    "xliii-specialty-coffee-1181332013": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:15.146Z"
+    },
+    "pama-boutique-hotel-bistro-1181332461": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:15.546Z"
+    },
+    "nha-hang-meat-plus-da-nang-1314179477": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:15.861Z"
+    },
+    "pho-co-bia-hoi-ha-noi-1463165341": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:16.189Z"
+    },
+    "pho-an-1463167266": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:16.517Z"
+    },
+    "nhatha-coffee-ice-cream-729406447": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:17.096Z"
+    },
+    "caphe-huy-729406580": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:17.615Z"
+    },
+    "caphe-giai-khat-xiromi-729406732": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:18.060Z"
+    },
+    "ca-phe-long-729406734": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:19.688Z"
+    },
+    "dua-ben-tre-2987520837": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:20.588Z"
+    },
+    "dua-186-2987526034": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:21.061Z"
+    },
+    "banh-beo-291-nguyen-chi-thanh-2988814633": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:21.935Z"
+    },
+    "neko-2989006133": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:22.473Z"
+    },
+    "hq-thai-food-3628855206": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:23.557Z"
+    },
+    "boulevard-4166771189": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:24.176Z"
+    },
+    "tran-4267912389": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:24.822Z"
+    },
+    "aquarium-cafe-4326819390": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:25.393Z"
+    },
+    "phieu-thanh-toan-4358812697": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:25.810Z"
+    },
+    "quan-pho-hong-4378701501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:26.254Z"
+    },
+    "quan-chay-vegetarian-restaurant-ngoc-chi-4522677590": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:27.140Z"
+    },
+    "ba-duong-4541527689": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:27.875Z"
+    },
+    "ca-phe-chim-606-4652751790": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:28.416Z"
+    },
+    "bo-ne-quoc-minh-4755650721": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:28.843Z"
+    },
+    "phu-hong-4931152321": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:29.378Z"
+    },
+    "quan-an-bun-cha-ca-4948013624": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:29.849Z"
+    },
+    "mi-quang-ech-5116302323": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:30.290Z"
+    },
+    "cafe-caracoli-5154435522": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:30.804Z"
+    },
+    "precious-plastic-da-nang-le-cafe-5327302782": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:31.202Z"
+    },
+    "moc-mien-coffee-and-more-5382673724": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:31.625Z"
+    },
+    "thai-market-5429167110": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:32.116Z"
+    },
+    "thai-market-5429181331": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:32.470Z"
+    },
+    "memory-lounge-5429221882": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:33.242Z"
+    },
+    "pavilion-5558491521": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:33.703Z"
+    },
+    "da-nang-com-chay-5582157521": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:34.139Z"
+    },
+    "mi-quang-giao-thuy-5678663421": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:34.552Z"
+    },
+    "minh-trang-5762588554": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:35.027Z"
+    },
+    "qquan-chay-dieu-hoa-5791814653": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:35.361Z"
+    },
+    "kem-tu-chon-5791846753": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:35.861Z"
+    },
+    "huong-khach-vegetarian-5791962853": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:36.287Z"
+    },
+    "goom-vegan-5793917955": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:36.811Z"
+    },
+    "nha-hang-chay-5796473953": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:37.155Z"
+    },
+    "hachi-coffee-5865968590": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:37.449Z"
+    },
+    "hiri-5901161285": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:37.821Z"
+    },
+    "cong-ca-phe-5920056999": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:38.145Z"
+    },
+    "brewman-5920089202": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:38.708Z"
+    },
+    "koko-green-kafe-63-5947905986": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:39.249Z"
+    },
+    "so-zach-5964310288": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:39.588Z"
+    },
+    "quan-an-ngon-thia-go-danang-style-6120622785": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:39.932Z"
+    },
+    "che-thai-lien-6151185387": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:40.364Z"
+    },
+    "che-xuan-trang-6151202685": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:40.781Z"
+    },
+    "sua-chua-nep-cam-co-phuc-6152585585": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:41.068Z"
+    },
+    "xoi-ga-ba-be-6152595285": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:41.383Z"
+    },
+    "cut-lon-me-ba-lanh-6152615685": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:41.775Z"
+    },
+    "bun-mam-van-6152685685": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:42.517Z"
+    },
+    "goblin-coffee-play-fashion-6152690985": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:44.690Z"
+    },
+    "quan-chay-thanh-tam-6429921485": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:45.273Z"
+    },
+    "com-ba-thoi-6594176685": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:45.695Z"
+    },
+    "mr-banh-mi-6681015018": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:46.141Z"
+    },
+    "al-fresco-s-cafe-grill-6772235387": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:46.555Z"
+    },
+    "nhop-nhep-lau-nuong-7020359049": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:47.536Z"
+    },
+    "nha-rot-7096082208": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:47.902Z"
+    },
+    "namaste-omar-s-indian-restaurant-7141021685": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:51.453Z"
+    },
+    "den-long-7253521885": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:52.026Z"
+    },
+    "chao-ech-singapore-ng-8552881467": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:52.888Z"
+    },
+    "indochine-box-ca-phe-8616536518": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:53.392Z"
+    },
+    "bep-hen-10111546117": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:54.016Z"
+    },
+    "limoncello-10295139993": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:54.469Z"
+    },
+    "my-quang-da-nang-ba-mua-10295259298": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:55.115Z"
+    },
+    "kfc-10312611228": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:55.534Z"
+    },
+    "cardi-pizzeria-10312895500": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:56.199Z"
+    },
+    "carol-lounge-10537046604": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:56.665Z"
+    },
+    "an-thoi-10711527705": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:57.023Z"
+    },
+    "no-nee-10784775351": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:57.545Z"
+    },
+    "guming-tea-kafei-11905764169": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:57.799Z"
+    },
+    "dimsum-ba-thim-dumplings-11934161570": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:58.149Z"
+    },
+    "bep-que-12019369169": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:58.453Z"
+    },
+    "xom-moi-garden-da-nang-12032859170": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:58.811Z"
+    },
+    "quan-an-chao-xoi-a-tieu-12314059213": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:59.603Z"
+    },
+    "bun-cha-ca-hon-12350543701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:07:59.835Z"
+    },
+    "mi-quang-hong-van-12372824402": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:00.092Z"
+    },
+    "luk-lak-12433230010": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:00.345Z"
+    },
+    "phinn-cafe-12600686584": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:00.628Z"
+    },
+    "com-tam-ba-lang-12600764839": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:01.017Z"
+    },
+    "mia-coffee-roastery-12603294638": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:01.293Z"
+    },
+    "bacama-12603307807": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:01.514Z"
+    },
+    "soncha-roastery-12603332725": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:01.786Z"
+    },
+    "sinh-to-che-thai-a-be-12603960658": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:02.109Z"
+    },
+    "the-crafty-cow-12606908495": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:02.381Z"
+    },
+    "slow-breeze-12608970059": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:02.832Z"
+    },
+    "banh-mi-chang-chang-12609103130": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:03.053Z"
+    },
+    "ala-cafe-12609115911": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:03.254Z"
+    },
+    "v7-tab-12611808584": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:03.473Z"
+    },
+    "kem-dua-ma-lai-12612199719": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:03.742Z"
+    },
+    "quan-dai-loc-12612220045": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:03.981Z"
+    },
+    "quan-hong-nguyet-12612220933": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:04.306Z"
+    },
+    "quan-nga-2-12615301813": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:04.521Z"
+    },
+    "quan-99-12615312425": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:04.796Z"
+    },
+    "ken-sushi-12811815201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:05.060Z"
+    },
+    "nha-hang-chay-ngoc-chi-13288511161": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:05.345Z"
+    },
+    "khau-ca-phe-13288544261": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:05.751Z"
+    },
+    "quan-chay-ha-13417588901": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:05.968Z"
+    },
+    "totoro-nuong-sushi-13724829101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:06.163Z"
+    },
+    "luon-51-14080138202": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:06.360Z"
+    },
+    "nha-hang-nha-bep-cho-han-14125298501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:06.618Z"
+    },
+    "banh-mi-ba-ry-i-madam-ry-14203033401": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:06.849Z"
+    },
+    "nem-lui-bo-la-lot-duoc-cho-han-14269716101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:07.098Z"
+    },
+    "danang-souvenirs-cafe-554812145": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:07.308Z"
+    },
+    "t-t-coffee-694309399": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:07.519Z"
+    },
+    "oc-han-da-nang-754677601": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:07.720Z"
+    },
+    "nam-hin-restaurant-vietnamese-cuisine-han-market-760598151": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:07.919Z"
+    },
+    "the-local-bean-1442969735": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:08.568Z"
+    },
+    "ca-phe-san-vuon-da-thien-ly-729406738": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:09.032Z"
+    },
+    "nbt-coffee-14184609501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:09.692Z"
+    },
+    "lindacoffee-729406441": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:10.031Z"
+    },
+    "homie-coffee-729406487": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:10.375Z"
+    },
+    "thang-bom-2623768438": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:10.658Z"
+    },
+    "cafe-pho-4076168082": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:10.990Z"
+    },
+    "quan-com-08-4076169309": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:11.297Z"
+    },
+    "quan-bun-lieu-4076171123": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:11.665Z"
+    },
+    "cafe-35-4076177424": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:12.193Z"
+    },
+    "bun-cha-ca-thuy-4080898314": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:12.519Z"
+    },
+    "son-4301483689": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:12.732Z"
+    },
+    "cafe-viet-anh-4339674497": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:12.943Z"
+    },
+    "nha-hang-hancook-4339674598": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:13.160Z"
+    },
+    "cafe-68-4571159189": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:13.437Z"
+    },
+    "cafe-sach-4676094289": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:13.699Z"
+    },
+    "the-choi-s-kitchen-4814994722": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:13.928Z"
+    },
+    "quan-chay-xuan-4900701521": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:14.157Z"
+    },
+    "tiem-an-vu-gia-5110691331": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:14.469Z"
+    },
+    "doi-gio-5293335937": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:14.849Z"
+    },
+    "the-pizza-company-5699718559": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:15.711Z"
+    },
+    "green-coffee-165-5913221638": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:16.072Z"
+    },
+    "nha-hang-chay-hoa-sen-vegetarian-restaurant-5978084714": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:16.341Z"
+    },
+    "bun-bo-ba-dieu-6147088185": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:16.678Z"
+    },
+    "oc-buou-tron-co-ha-6152603585": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:16.934Z"
+    },
+    "ram-cuon-cai-di-hoa-6152681085": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:17.232Z"
+    },
+    "highlands-coffee-6520986631": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:17.525Z"
+    },
+    "molly-s-6570954851": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:17.788Z"
+    },
+    "nem-nuong-thanh-ha-6911218676": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:18.047Z"
+    },
+    "com-trua-lau-nuong-rammus-7370362779": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:18.339Z"
+    },
+    "an-sang-15k-chi-ut-cuc-8474743517": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:18.625Z"
+    },
+    "ca-phe-chim-k69-chi-yen-8616526719": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:18.990Z"
+    },
+    "diem-tam-chi-ut-8616536517": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:19.282Z"
+    },
+    "1981-coffee-tea-8616537417": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:19.542Z"
+    },
+    "kem-dua-ma-lai-11715202769": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:19.783Z"
+    },
+    "com-ga-tran-tong-11715206469": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:20.073Z"
+    },
+    "com-ga-hoi-an-11890753369": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:20.357Z"
+    },
+    "banh-beo-nong-12603314868": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:20.654Z"
+    },
+    "2am-coffee-12615300356": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:20.937Z"
+    },
+    "banh-trang-di-em-12618428066": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:21.224Z"
+    },
+    "bo-bo-2-13042655301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:21.483Z"
+    },
+    "the-third-house-coffee-13403678801": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:21.814Z"
+    },
+    "vua-cam-sanh-co-hai-14314444102": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:22.112Z"
+    },
+    "quan-chay-pho-30-694479626": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:22.421Z"
+    },
+    "mai-linh-246-694479630": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:22.710Z"
+    },
+    "coffee-lagare-993260889": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:22.981Z"
+    },
+    "ca-phe-truc-nguyen-4564371397": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:23.228Z"
+    },
+    "pho-nuong-tokyo-4759752150": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:23.527Z"
+    },
+    "my-casa-4778581323": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:23.839Z"
+    },
+    "san-giao-dich-bat-dong-san-dat-lanh-4854309123": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:24.125Z"
+    },
+    "coffee-truc-nguyen-4854342521": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:24.468Z"
+    },
+    "time-coffee-5421670777": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:24.767Z"
+    },
+    "samwon-5437839417": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:25.036Z"
+    },
+    "be-bien-5485496021": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:25.317Z"
+    },
+    "maison-du-cafe-5541654969": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:25.594Z"
+    },
+    "nem-restaurant-5541654970": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:26.146Z"
+    },
+    "mama-hotpot-5696687927": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:26.442Z"
+    },
+    "a-nang-com-chay-2-5804107053": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:26.693Z"
+    },
+    "me-coffee-5921911585": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:26.960Z"
+    },
+    "bao-an-macrobiotic-5947469393": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:27.222Z"
+    },
+    "teddy-garden-burgers-6079848286": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:27.445Z"
+    },
+    "yaourt-muoi-cay-bang-6151202686": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:27.670Z"
+    },
+    "indochine-coffee-food-6310334885": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:27.912Z"
+    },
+    "pureza-6678249499": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:28.142Z"
+    },
+    "doll-coffee-6975514285": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:28.404Z"
+    },
+    "moc-quan-7064981285": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:28.663Z"
+    },
+    "my-quang-ba-mua-7210857787": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:28.915Z"
+    },
+    "red-window-food-and-cafe-7253450586": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:29.181Z"
+    },
+    "tram-bom-cafe-7265347998": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:29.417Z"
+    },
+    "cafe-co-quan-9655304117": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:29.664Z"
+    },
+    "coffee-nano-10292550606": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:29.906Z"
+    },
+    "cua-bien-10314394510": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:30.145Z"
+    },
+    "art-coffee-10773540605": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:30.401Z"
+    },
+    "coffee-thanh-ha-10777276806": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:30.674Z"
+    },
+    "bep-phuong-mon-ngon-ha-noi-10781116908": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:30.942Z"
+    },
+    "quan-be-ut-nem-lui-bun-thit-nuong-10781135505": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:31.205Z"
+    },
+    "arowana-88-10783641305": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:31.466Z"
+    },
+    "haomi-tiem-mi-tron-10796872105": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:31.729Z"
+    },
+    "lang-toi-banh-khoai-ca-kinh-hue-10798682806": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:31.981Z"
+    },
+    "phuong-nguyen-10813726005": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:32.259Z"
+    },
+    "la-cabana-house-of-bbq-11276780187": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:32.510Z"
+    },
+    "ngoi-cafe-11361153194": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:32.753Z"
+    },
+    "mint-cafe-11510069939": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:33.000Z"
+    },
+    "dreamer-11510069960": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:33.240Z"
+    },
+    "m-oi-bistro-bar-11888486669": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:33.501Z"
+    },
+    "my-quang-ong-canh-11906556370": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:33.750Z"
+    },
+    "bababa-japanese-restaurant-11906566069": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:34.025Z"
+    },
+    "olivia-pizza-11906566169": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:34.275Z"
+    },
+    "gom-garden-coffee-12002534969": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:34.560Z"
+    },
+    "pho-long-hoi-12114045301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:34.820Z"
+    },
+    "tahi-garden-12171219561": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:35.095Z"
+    },
+    "banh-canh-ca-nuc-nhi-co-so-4-12174005655": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:35.367Z"
+    },
+    "no-limits-coffee-juice-12174018926": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:35.632Z"
+    },
+    "my-quang-co-sau-12337003901": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:35.900Z"
+    },
+    "danasol-eatery-cafe-workspace-12357498701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:36.216Z"
+    },
+    "cincin-pizzeria-wood-oven-pizza-in-danang-12402101301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:36.468Z"
+    },
+    "nha-hang-nhat-miyoshi-12402104801": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:36.701Z"
+    },
+    "quan-com-truong-tho-25k-12628082301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:36.970Z"
+    },
+    "riverside-terrace-restaurant-12976267223": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:37.226Z"
+    },
+    "gon-coffee-13287334836": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:37.523Z"
+    },
+    "quan-chay-thu-13362942201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:37.799Z"
+    },
+    "oslow-13394279401": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:38.076Z"
+    },
+    "mr-que-13415710101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:38.327Z"
+    },
+    "quan-ut-com-13417598901": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:38.590Z"
+    },
+    "busan-13420475801": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:38.838Z"
+    },
+    "h-e-m-coffee-13420522101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:39.079Z"
+    },
+    "tue-tam-quan-chay-13423167702": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:39.314Z"
+    },
+    "restaurant-cabanon-palace-13597097601": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:39.575Z"
+    },
+    "starbucks-13619314947": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:39.822Z"
+    },
+    "mai-13623400001": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:40.043Z"
+    },
+    "an-s-cafe-13624265424": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:40.301Z"
+    },
+    "altitude-13644299364": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:40.564Z"
+    },
+    "normad-cafe-13651242101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:40.814Z"
+    },
+    "nice-coffee-13651634201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:41.049Z"
+    },
+    "boss-cafe-13653946401": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:41.306Z"
+    },
+    "triplecoffee-banh-my-tony-13715453001": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:41.544Z"
+    },
+    "tamarind-coffee-13722666902": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:41.775Z"
+    },
+    "nhien-bistro-and-a-bit-more-13736627901": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:41.997Z"
+    },
+    "webe-coffee-13739882101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:42.240Z"
+    },
+    "gau-kafe-13755229301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:42.487Z"
+    },
+    "phin-cu-cafe-13848456402": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:42.744Z"
+    },
+    "spanda-yoga-cafe-13848489601": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:42.987Z"
+    },
+    "the-green-ramen-13860331501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:43.224Z"
+    },
+    "kin-cafe-homebakes-13964372302": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:43.451Z"
+    },
+    "gen-sushi-13990311204": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:43.688Z"
+    },
+    "chay-nhu-y-14041035701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:43.922Z"
+    },
+    "highlands-coffee-14104855301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:44.125Z"
+    },
+    "shuyi-14134320401": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:44.344Z"
+    },
+    "taste-of-slavia-14237933201": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:44.549Z"
+    },
+    "mart-coffee-14269724203": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:44.780Z"
+    },
+    "giay-cafe-14320271301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:45.018Z"
+    },
+    "iam-shawarma-14332736301": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:45.271Z"
+    },
+    "hanh-gia-chay-quan-14339986180": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:45.508Z"
+    },
+    "quan-binh-dinh-14340243101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:45.736Z"
+    },
+    "palmier-cafe-restaurant-692331785": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:45.977Z"
+    },
+    "suki-plaza-692331788": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:46.216Z"
+    },
+    "nha-bep-xua-1463170014": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:46.459Z"
+    },
+    "hau-sua-tom-hum-4351989390": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:46.688Z"
+    },
+    "ong-minh-4352303490": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:46.934Z"
+    },
+    "hoa-giay-4647225192": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:47.307Z"
+    },
+    "bun-cha-hue-chi-5123239421": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:47.567Z"
+    },
+    "simpur-5360440323": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:47.883Z"
+    },
+    "a-tri-5911447385": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:48.189Z"
+    },
+    "nam-danh-7141021585": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:48.461Z"
+    },
+    "son-tra-ocean-view-cafe-7287589653": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:48.689Z"
+    },
+    "ton-le-10314394509": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:48.906Z"
+    },
+    "quan-chay-tinh-quan-10777150405": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:49.126Z"
+    },
+    "truong-tho-ha-noi-kebab-rice-noodlse-13230561977": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:49.362Z"
+    },
+    "noi-the-cabin-13728731701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:49.604Z"
+    },
+    "at-ca-phe-14004104302": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:49.827Z"
+    },
+    "mom-s-vegan-kitchen-by-chickpea-eatery-14068157101": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:50.030Z"
+    },
+    "army-coffee-tea-14098489701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:50.253Z"
+    },
+    "sita-14115263501": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:50.495Z"
+    },
+    "om-tea-coffee-14285427701": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:50.741Z"
+    },
+    "buffet-hai-san-da-nang-mr-moc-1050234335": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:50.953Z"
+    },
+    "bitcoffee-1518794391": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:51.165Z"
+    },
+    "diem-hong-5026609321": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:51.383Z"
+    },
+    "ca-phe-thanh-thao-13597246829": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:51.636Z"
+    },
+    "04-nguyen-huy-tu-13597246831": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:51.902Z"
+    },
+    "43-hoa-phu-9-13600463820": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:52.132Z"
+    },
+    "mona-coffee-14186979103": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:52.364Z"
+    },
+    "thien-com-tam-sai-gon-14186980401": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:52.626Z"
+    },
+    "caphe-nhu-mai-729406679": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:52.890Z"
+    },
+    "kien-go-coffee-shop-4239650889": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:53.131Z"
+    },
+    "kua-coffee-4449942994": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:53.380Z"
+    },
+    "havana-442": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:53.617Z"
+    },
+    "shugardencoffee-443": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:53.853Z"
+    },
+    "grandtcoffee-444": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:54.454Z"
+    },
+    "kaycoffee-445": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:54.498Z"
+    },
+    "quananmen-446": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:54.544Z"
+    },
+    "quanbanhxeonemnuongathanh-447": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:54.582Z"
+    },
+    "xoibachanh-448": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:55.058Z"
+    },
+    "chaolonghong-449": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:55.440Z"
+    },
+    "ikigaigardencafe-450": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:55.646Z"
+    },
+    "quanghienseoul-452": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:55.834Z"
+    },
+    "haiman-453": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:56.035Z"
+    },
+    "tiemcom75s-454": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:56.231Z"
+    },
+    "papapizza-455": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:56.452Z"
+    },
+    "tram247cnlythaitong-456": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:56.664Z"
+    },
+    "tram247cnxovietnghetinh-457": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:56.849Z"
+    },
+    "tram247cnninhton-458": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:57.024Z"
+    },
+    "tram247station1nguhanhson-459": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:57.223Z"
+    },
+    "tram247station2lethanhnghi-460": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:59.087Z"
+    },
+    "icoffee121anduongvuong-461": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:08:59.939Z"
+    },
+    "ikafe357nguyentatthanh-462": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:00.310Z"
+    },
+    "zonesix214luongnhuhoc-463": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:00.563Z"
+    },
+    "trinhcaphe334uong29-467": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:00.803Z"
+    },
+    "trinhcaphe111nguyenhuutho-468": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:01.021Z"
+    },
+    "omgarden-469": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:01.250Z"
+    },
+    "yolobuffet-470": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:01.490Z"
+    },
+    "caphenhan-472": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:01.727Z"
+    },
+    "cherrycoffee-473": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:01.965Z"
+    },
+    "cafe2424thanhkhe-474": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:02.190Z"
+    },
+    "laubooty-475": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:02.412Z"
+    },
+    "leevinsstudycoffee-477": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:02.639Z"
+    },
+    "haisan258-478": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:02.860Z"
+    },
+    "quansontra-479": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:03.084Z"
+    },
+    "bunxuongmaham-474": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:03.303Z"
+    },
+    "quannhauxuanlan-475": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:03.528Z"
+    },
+    "miquangtiengquoi-476": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:03.747Z"
+    },
+    "banhcanhcohoa-477": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:03.960Z"
+    },
+    "sashibbqbeer-478": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:04.209Z"
+    },
+    "quanchaytaman-479": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:04.505Z"
+    },
+    "haisantudoii-480": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:04.792Z"
+    },
+    "bepmena-481": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:05.020Z"
+    },
+    "buncangoclien-482": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:05.416Z"
+    },
+    "buncaphuongteo-483": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:05.754Z"
+    },
+    "tiemnuonganlauvanuongsanvuon-484": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:05.964Z"
+    },
+    "goicathanhhuongacsananang-485": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:06.163Z"
+    },
+    "quannhaunhungnguoiban-486": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:06.382Z"
+    },
+    "bunbohue106vanon-487": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:06.625Z"
+    },
+    "bunchacahien-488": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:06.851Z"
+    },
+    "bunbolocui-489": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:07.075Z"
+    },
+    "comnhanamco12thang-490": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:07.285Z"
+    },
+    "miquangcosau-491": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:07.492Z"
+    },
+    "myquangsonle-492": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:07.710Z"
+    },
+    "mirkocoffeechillbeer-493": {
+      "verdict": "wrong-image",
+      "note": "",
+      "duplicateOf": null,
+      "reviewedAt": "2026-11-10T08:09:07.922Z"
+    }
+  }
 }

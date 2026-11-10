@@ -1,6 +1,5 @@
 import { MapPinIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { SeedImage } from "@/components/shared/seed-image"
 import { formatRelativeTime } from "@/lib/format"
 import type { Post } from "../types/post"
 
@@ -21,12 +20,6 @@ export function PostPreview({ post, footer }: PostPreviewProps) {
 
   return (
     <div className="flex flex-col">
-      <SeedImage
-        seed={post.imageSeed}
-        height={post.imageHeight}
-        alt={`Ảnh minh hoạ bài đăng của ${post.author.name}`}
-      />
-
       <div className="flex flex-col gap-2 p-4">
         <div className="flex items-center gap-2.5">
           <Avatar>

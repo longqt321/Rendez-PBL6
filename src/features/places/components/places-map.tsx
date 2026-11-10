@@ -7,7 +7,7 @@ import { ExternalLinkIcon, NavigationIcon, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { SeedImage } from "@/components/shared/seed-image"
+import { CoverImage } from "@/components/shared/cover-image"
 import { CATEGORY_META } from "../lib/category-meta"
 import { formatDistance, formatRating } from "@/lib/format"
 import { calculateDistanceKm } from "../lib/danang-districts"
@@ -219,8 +219,7 @@ export function PlacesMap({
                 {/* Ngoại lệ có chủ đích: popup Leaflet tự quản khung/overflow nên dùng `div`, không bọc `Card` (ring + overflow-hidden phá layout popup). Xem docs/CONVENTIONS.md. */}
                 <div className="flex max-w-65 min-w-55 flex-col gap-2 p-1">
                   <div className="relative h-28 w-full overflow-hidden rounded-md bg-muted">
-                    <SeedImage
-                      seed={place.imageSeed}
+                    <CoverImage
                       src={place.imageUrl}
                       height={112}
                       alt={place.name}

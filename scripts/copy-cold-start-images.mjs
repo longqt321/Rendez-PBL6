@@ -9,7 +9,7 @@
  * Chạy tự động qua `predev` / `prebuild`. Idempotent: chỉ chép file thiếu hoặc
  * khác kích thước/sửa đổi gần nhất.
  */
-import { copyFile, mkdir, readdir, stat } from "node:fs/promises"
+import { copyFile, mkdir, readdir, rm, stat } from "node:fs/promises"
 import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -51,10 +51,21 @@ async function main() {
     copied += 1
   }
 
+  // Xoá file đích không còn ở nguồn (ảnh đã bị loại khỏi dataset) — đồng bộ
+  // một chiều, tránh public/ tích tụ ảnh cũ không bao giờ được dùng lại.
+  const sourceRel = new Set(files.map((from) => relative(source, from)))
+  let removed = 0
+  for (const to of await walk(target)) {
+    if (!sourceRel.has(relative(target, to))) {
+      await rm(to)
+      removed += 1
+    }
+  }
+
   console.log(
-    copied === 0
+    copied === 0 && removed === 0
       ? `[cold-start] Ảnh đã đồng bộ (${files.length} file).`
-      : `[cold-start] Đã chép ${copied}/${files.length} ảnh vào public/data/cold-start/images.`,
+      : `[cold-start] Đã chép ${copied}/${files.length} ảnh, xoá ${removed} file cũ ở public/data/cold-start/images.`,
   )
 }
 

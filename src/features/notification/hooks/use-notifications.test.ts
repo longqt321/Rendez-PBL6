@@ -1,13 +1,20 @@
 import { describe, expect, it } from "vitest"
 import { useNotifications, useUnreadNotificationCount } from "./use-notifications"
 import { renderWithQuery, waitForQuery } from "@/test/query-test-utils"
+import { seedPosts } from "@/test/seed-posts"
 
 /**
  * Test hook dữ liệu chạy qua mock adapter (axios thật + `mockAdapter` của
  * `src/mocks/server.ts`) — không mock module api.
+ *
+ * Cold-start không seed thông báo bịa, nên test tạo thông báo thật: đăng bài
+ * chưa gắn địa điểm → server sinh `place-suggestion` khi phát hiện địa điểm
+ * chưa lên /discover khớp nội dung bài.
  */
 describe("useNotifications", () => {
   it("trả về thông báo có shape đúng AppNotification", async () => {
+    await seedPosts(1, "Ăn ram cuốn cải Dì Hoả ở đâu")
+
     const { result } = renderWithQuery(() => useNotifications())
 
     await waitForQuery(() => expect(result.current.notifications.length).toBeGreaterThan(0))

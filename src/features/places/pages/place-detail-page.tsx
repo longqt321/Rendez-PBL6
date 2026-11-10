@@ -17,7 +17,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/u
 import { Item, ItemActions, ItemContent, ItemGroup, ItemMedia } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SeedImage } from "@/components/shared/seed-image"
+import { CoverImage } from "@/components/shared/cover-image"
 import { SectionHeading } from "@/components/shared/section-heading"
 import { formatCount, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
@@ -96,8 +96,7 @@ export function PlaceDetailPage() {
       </Breadcrumb>
 
       <Card className="mt-4 gap-0 p-0">
-        <SeedImage
-          seed={place.imageSeed}
+        <CoverImage
           src={place.imageUrl}
           height={280}
           className="w-full rounded-t-xl"
@@ -250,7 +249,7 @@ export function PlaceDetailPage() {
                   className="items-start gap-3 rounded-surface p-3 hover:bg-muted"
                 >
                   <ItemMedia className="w-20 shrink-0 overflow-hidden rounded-thumb">
-                    <SeedImage seed={post.imageSeed} height={120} className="w-full" alt="" />
+                    <CoverImage height={120} className="w-full" alt="" />
                   </ItemMedia>
                   <ItemContent>
                     <p className="text-xs text-muted-foreground">

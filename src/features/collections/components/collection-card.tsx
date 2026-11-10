@@ -2,7 +2,6 @@ import { Link } from "react-router"
 import { HeartIcon, LockIcon, MapPinIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { SeedImage } from "@/components/shared/seed-image"
 import { formatCount, formatRelativeTime } from "@/lib/format"
 import type { CollectionSummary } from "../types/collection"
 
@@ -12,7 +11,9 @@ export function CollectionCard({ collection }: { collection: CollectionSummary }
     <Card className="relative gap-0 py-0">
       <div className="grid grid-cols-3 gap-px bg-border">
         {collection.previewPlaceIds.map((placeId) => (
-          <SeedImage key={placeId} seed={placeId} height={90} alt="" className="w-full" />
+          <div key={placeId} className="flex h-22.5 items-center justify-center bg-muted">
+            <MapPinIcon className="size-5 text-muted-foreground/50" aria-hidden="true" />
+          </div>
         ))}
         {collection.previewPlaceIds.length === 0
           ? Array.from({ length: 3 }, (_, index) => (

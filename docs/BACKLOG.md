@@ -20,6 +20,16 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 - [ ] **`GET /posts` cần phân trang cursor** — hiện mock trả `next: null` (10 bài, một trang). Hợp
       đồng đã là `Page<Post>` nên không phải đổi type, chỉ cần backend trả `next` thật.
 
+## Phát hiện khi bỏ ảnh món (2026-11-10, D-049)
+
+- [ ] **471/491 địa điểm chưa có ảnh thật** — chỉ 20 quán có ảnh venue. Cần nguồn ảnh hợp
+      pháp (chụp thực địa, xin phép quán, hoặc Google Places API có key) trước khi phát hành.
+- [ ] **Tính năng đăng ảnh của người dùng** (upload ảnh check-in) — hiện bỏ hẳn ảnh khỏi bài
+      đăng vì chưa có backend lưu file. Khi có backend, thêm `imageUrl` vào `Post`.
+- [ ] **Ảnh bìa hồ sơ** đang là placeholder — cần upload thật.
+- [ ] **Trang tìm kiếm: tab "Mọi người"** chỉ còn tài khoản hiện tại (cold-start không có tài
+      khoản ảo). Cần dữ liệu người dùng thật hoặc ẩn tab khi rỗng.
+
 ## Ưu tiên cao
 
 (không còn — test runner, CI, pre-commit hook đã có ở D-037)

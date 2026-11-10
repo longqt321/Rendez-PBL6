@@ -13,7 +13,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
-import { SeedImage } from "@/components/shared/seed-image"
+import { CoverImage } from "@/components/shared/cover-image"
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import { useUpdatePostPlace } from "@/features/social/hooks/use-update-post-place"
 import { formatRelativeTime } from "@/lib/format"
@@ -81,8 +81,7 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
                 className="gap-2.5 rounded-control p-1.5 transition-colors hover:border-primary/50"
               >
                 <ItemMedia variant="image">
-                  <SeedImage
-                    seed={place.imageSeed}
+                  <CoverImage
                     src={place.imageUrl}
                     className="size-full"
                     alt={`Ảnh ${place.name}`}

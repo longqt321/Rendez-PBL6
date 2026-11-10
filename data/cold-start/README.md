@@ -80,7 +80,8 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
 - `tier`: `curated` (báo chí ẩm thực) / `curated-v2` (nghiên cứu mạng xã hội 2026-11-09) /
   `osm` (POI OpenStreetMap).
 - `status`: `open` / `closed` / `unknown` — hiện chưa xác minh quán còn hoạt động.
-- `imageKind`: `venue` (ảnh thật quán) / `dish` (ảnh món đại diện theo nhóm, **không phải** ảnh quán).
+- `imageKind`: `venue` (ảnh thật quán) / `null` (chưa có ảnh). **Không còn ảnh món** — ảnh món
+  không giúp định vị quán nên đã bỏ hẳn (D-049).
 - `verified`: luôn `false` — phải xác minh trước khi dùng production.
 
 ## Quy trình tái sinh (`scripts/cold-start/`)
@@ -93,6 +94,7 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
 | `rebuild.mjs`           | Lọc mục đạt chuẩn, gộp ứng viên, loại trùng, sinh `places.csv`                                                                        |
 | `diversify-images.mjs`  | Tải ảnh món từ Wikimedia Commons (lọc tiêu đề rác + kiểm chất lượng), gán vòng tròn (tối đa 6 lần/ảnh); `--rebalance` gán lại toàn bộ |
 | `clean-images.mjs`      | Xoá ảnh rác do audit thị giác phát hiện, gỡ khỏi dataset                                                                              |
+| `strip-dish-images.mjs` | Bỏ ảnh món, loại quán `wrong-address`, xoá file ảnh không tham chiếu (D-049); `--apply --purge-files` mới ghi/xoá                     |
 | `validate.mjs`          | Kiểm schema/địa chỉ/toạ độ/ảnh/trùng lặp — exit 1 nếu sai                                                                             |
 | `review-server.mjs`     | Công cụ duyệt tay (D-048): `bun run review:data` → http://localhost:5198                                                              |
 | `apply-review.mjs`      | Áp kết quả duyệt tay: blocklist ảnh rác, đóng quán không tồn tại                                                                      |
@@ -102,5 +104,5 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
 
 1. Xác minh `status` từng quán (frontend có nút "Báo cáo", backend duyệt rồi mới đổi).
 2. Xác minh giờ mở cửa/SĐT (chỉ một phần POI có tag).
-3. Bổ sung ảnh thật cho quán `curated-v2` (hiện dùng ảnh món đại diện).
+3. Bổ sung ảnh THẬT của quán (biển hiệu/mặt tiền) cho 471 quán còn trống ảnh — hiện chỉ 20 quán có ảnh.
 4. Giấy phép ảnh quán (Foody/Google Maps) — cần xin phép trước khi phát hành công khai.

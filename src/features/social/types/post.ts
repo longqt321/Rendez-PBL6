@@ -12,7 +12,6 @@ export interface Post {
   id: string
   author: Author
   caption: string
-  imageSeed: string
   imageHeight: number
   createdAt: string
   /** null = bài đăng chưa gắn địa điểm nào */
@@ -32,7 +31,6 @@ export interface Post {
 
 export interface CreatePostInput {
   caption: string
-  imageSeed: string
   placeId: string | null
 }
 
