@@ -2,6 +2,7 @@ import { OpenAPIHono } from "@hono/zod-openapi"
 import type { AppEnv } from "../app"
 import { auth } from "../lib/auth"
 import { createAuthRouter } from "./auth"
+import { createPlacesRouter } from "./places"
 
 /**
  * Router API v1 — mọi route nghiệp vụ mount dưới `/api/v1` (K1).
@@ -24,6 +25,9 @@ export function createApiRouter() {
 
   // Hồ sơ + phiên (Phase 1) — `/me`, `/session`, `/register`.
   api.route("/", createAuthRouter())
+
+  // Địa điểm (Phase 2) — `/places`, `/places/map`, `/places/:id`.
+  api.route("/", createPlacesRouter())
 
   return api
 }

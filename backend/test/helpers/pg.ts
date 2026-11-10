@@ -38,6 +38,19 @@ export async function startTestDb(): Promise<string> {
     throw new Error(`prisma migrate deploy thất bại trong container test:\n${stderr}`)
   }
 
+  // Seed dataset cold-start — các test places/posts phụ thuộc dữ liệu thật.
+  const seed = Bun.spawnSync(["bun", "run", "scripts/seed.ts"], {
+    cwd: backendDir,
+    env: { ...process.env, DATABASE_URL: connectionUrl },
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  if (seed.exitCode !== 0) {
+    const stderr = seed.stderr.toString()
+    await stopTestDb()
+    throw new Error(`seed thất bại trong container test:\n${stderr}`)
+  }
+
   return connectionUrl
 }
 
