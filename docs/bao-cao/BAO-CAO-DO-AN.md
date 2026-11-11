@@ -518,7 +518,8 @@ Migration 10 hoàn thiện phần còn thiếu: chuẩn hoá **cả hai phía** 
 trắng — đúng quy tắc `normalizeText()` của mock. Trước đó `?q=bánh xèo` không khớp vì haystack
 đã bỏ dấu còn từ khoá thì chưa; đây là lỗi hành vi thật được phát hiện khi đối chiếu mock, không
 phải khác biệt chấp nhận được. Index GIN được dựng lại trên biểu thức mới và test
-`q có dấu khớp tên` giữ hành vi này.
+`q có dấu khớp tên` giữ hành vi này. Cùng hàm đó được dùng cho `?q=` của `/posts` (caption) và
+`/users` (name/handle) để ba route tìm kiếm có chung một quy tắc chuẩn hoá.
 
 ### 3.4. Luồng đăng bài và thông báo
 
