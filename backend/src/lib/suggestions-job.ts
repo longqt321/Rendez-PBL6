@@ -2,6 +2,7 @@ import { prisma } from "./prisma"
 import { isUniqueViolation } from "./errors"
 import { rankPlaceSuggestions } from "./ranking"
 import { createSuggestionNotification } from "./notifications"
+import { publishNotification } from "./notification-events"
 import {
   fetchRankCandidates,
   normalizeCaption,
@@ -71,6 +72,9 @@ export async function detectPlaceSuggestions(postId?: string): Promise<number> {
           data: { postId: post.id, notificationId },
         })
       })
+      // Phát SSE SAU khi commit — phát trong transaction là phát thông tin
+      // chưa chắc chắn tồn tại (transaction có thể bị rollback).
+      publishNotification(post.authorId)
       created += 1
     } catch (error) {
       // Trùng khoá = worker khác đã thông báo bài này — không phải lỗi.

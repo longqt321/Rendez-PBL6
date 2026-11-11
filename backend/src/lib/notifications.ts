@@ -3,6 +3,7 @@ import { prisma } from "./prisma"
 import { toApiNotificationType, toPrismaNotificationType } from "./enums"
 import type { Cursor } from "./cursor"
 import { formatInitials } from "./profile"
+import { publishNotification } from "./notification-events"
 
 /**
  * Thông báo (A6.4) — payload JSONB theo `kind`, DTO là union 3 nhánh.
@@ -68,6 +69,8 @@ export async function createActorNotification(params: {
       payload,
     },
   })
+  // Đẩy SSE cho người nhận — badge/list cập nhật ngay, không chờ poll.
+  publishNotification(params.userId)
 }
 
 /**
@@ -95,6 +98,8 @@ export async function createSuggestionNotification(params: {
     },
     select: { id: true },
   })
+  // Chỉ phát sau khi transaction của caller commit — xem `suggestions-job`.
+  if (!params.client) publishNotification(params.userId)
   return created.id
 }
 

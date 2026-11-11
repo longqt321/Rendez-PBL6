@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
+import { useNotificationStream } from "@/features/notification/hooks/use-notification-stream"
 import { useLogout } from "@/features/auth/hooks/use-logout"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { isUnauthorizedError } from "@/lib/axios"
@@ -110,6 +111,8 @@ export function AppShell({ children }: AppShellProps) {
   const mainRef = useRef<HTMLElement>(null)
   useDocumentTitle(location.pathname)
   useFocusMainOnNavigate(location.pathname, mainRef)
+  // Một kết nối SSE cho toàn app: badge + danh sách cập nhật ngay (G6.3).
+  useNotificationStream()
 
   return (
     <div className="min-h-dvh">
