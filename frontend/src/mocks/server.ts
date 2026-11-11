@@ -86,7 +86,9 @@ function patchFetchForMockStorage(): void {
   target.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url
     const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase()
-    if (method === "PUT" && new URL(url).host === MOCK_STORAGE_HOST) {
+    // `new URL` ném TypeError với URL tương đối (`/api/...`) — resolve theo origin
+    // trang; chỉ host tuyệt đối khớp storage giả mới bị chặn.
+    if (method === "PUT" && new URL(url, globalThis.location?.href).host === MOCK_STORAGE_HOST) {
       return new Response(null, { status: 200 })
     }
     return originalFetch(input, init)
