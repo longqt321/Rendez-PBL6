@@ -712,6 +712,7 @@ mỗi endpoint gọi 20 lần liên tiếp sau 3 lần khởi động nóng:
 | Cookie phiên | HttpOnly, SameSite | `HttpOnly; SameSite=Lax` |
 | CORS từ origin lạ | Không có `Access-Control-Allow-Origin` | Đúng |
 | Quét nikto (7.948 request) | Không có lỗi nghiêm trọng | 0 lỗi nghiêm trọng; 2 header thiếu đã bổ sung |
+| Quét sqlmap `GET /places?q=&district=` | Không injectable | "all tested parameters do not appear to be injectable" |
 
 ### 4.5. Chưa xác minh
 
