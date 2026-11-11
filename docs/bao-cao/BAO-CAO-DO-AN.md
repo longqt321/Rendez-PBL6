@@ -71,7 +71,7 @@ phép nhiều người cùng đề xuất và thống nhất tiêu chí chọn q
 ### 4. Phương pháp nghiên cứu
 
 - **Phương pháp khảo sát và đặc tả:** đọc mã nguồn frontend và mock server in-memory để trích
-  ra hợp đồng API thực tế (45+ route), chuyển các schema kiểm tra dữ liệu thành gói dùng chung.
+  ra hợp đồng API thực tế (41 route của mock), chuyển các schema kiểm tra dữ liệu thành gói dùng chung.
 - **Phương pháp thiết kế dữ liệu:** mô hình hoá thực thể–liên hệ, chuẩn hoá đến 3NF, đánh index
   theo truy vấn thực tế.
 - **Phương pháp thực nghiệm:** kiểm thử tự động (unit/integration với Postgres thật qua

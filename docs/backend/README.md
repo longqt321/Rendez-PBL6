@@ -22,7 +22,7 @@
 
 ## Tài sản frontend tham chiếu (từ mock — đặc tả hành vi thật)
 
-- `frontend/src/mocks/server.ts` (~45 route, 1.430 dòng) — đặc tả hành vi.
+- `frontend/src/mocks/server.ts` (41 route, 1.430 dòng) — đặc tả hành vi.
 - `frontend/src/lib/api-contracts.ts` — 32 contract.
 - `frontend/src/features/*/types/*.schema.ts` — 8 file zod (nguyên liệu `packages/schema`).
 - `frontend/data/cold-start/places.json` — 491 place thật cho seed.
