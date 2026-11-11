@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test"
 
 /**
- * Đăng xuất ở dev (mock): server tắt phiên → `GET /me` trả 401 → menu người
- * dùng đổi thành "Đăng nhập"; mock giữ dữ liệu trong bộ nhớ nên tải lại trang
- * sẽ đăng nhập lại — test chỉ kiểm trong cùng phiên, không `page.goto` lại
- * giữa chừng (reload reset phiên mock).
+ * Đăng xuất → trang đăng nhập → đăng nhập lại.
+ *
+ * Mock giữ dữ liệu trong bộ nhớ nên không `page.goto` lại giữa chừng (reload
+ * reset phiên mock). Tài khoản dev: `me@rendez.test` / `password123`.
  */
-test("đăng xuất rồi đăng nhập lại qua menu người dùng", async ({ page }) => {
+test("đăng xuất rồi đăng nhập lại qua form /login", async ({ page }) => {
   await page.goto("/")
 
   const menuButton = page.getByRole("button", { name: "Mở menu người dùng" })
@@ -19,11 +19,15 @@ test("đăng xuất rồi đăng nhập lại qua menu người dùng", async ({
   await expect(menuButton.locator("svg.lucide-user")).toBeVisible()
 
   await menuButton.click()
-  await expect(page.getByRole("menuitem", { name: "Đăng nhập" })).toBeVisible()
-
-  // Đăng nhập lại: avatar trở về chữ cái đầu của hồ sơ.
   await page.getByRole("menuitem", { name: "Đăng nhập" }).click()
-  await expect(page.getByRole("menu")).toBeHidden()
+  await expect(page).toHaveURL(/\/login$/u)
+
+  await page.getByLabel("Email").fill("me@rendez.test")
+  await page.getByLabel("Mật khẩu").fill("password123")
+  await page.getByRole("button", { name: "Đăng nhập" }).click()
+
+  // Đăng nhập xong về trang khám phá, avatar trở lại chữ cái đầu của hồ sơ.
+  await expect(page).toHaveURL(/\/discover$/u)
   await expect(menuButton).toContainText("MA")
 
   await menuButton.click()

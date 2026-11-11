@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { env } from "../env"
+import { logger } from "./logger"
 import { prisma } from "./prisma"
 
 /**
@@ -32,6 +33,26 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     /** Đăng ký xong trả luôn phiên — FE không phải gọi login lần hai. */
     autoSignIn: true,
+    /**
+     * Quên mật khẩu — quyết định 2026-11-11 (email "phương án khả thi nhất"):
+     * CHƯA có SMTP, token reset được ghi vào log để dev/test tự lấy. Production
+     * cần SMTP thật thì thay hàm này bằng gửi mail — không đổi gì khác.
+     * Chữ ký `{ user, url, token }` đã xác minh trong source better-auth 1.7.19
+     * (`dist/api/routes/password.mjs` gọi `sendResetPassword({ user, url, token })`).
+     */
+    sendResetPassword: async ({ user, url, token }) => {
+      if (env.NODE_ENV === "production") {
+        // Production không log token (ai đọc log lấy được thì reset hộ người khác).
+        logger.info({ userId: user.id }, "Yêu cầu đặt lại mật khẩu — cần SMTP thật")
+        return
+      }
+      logger.warn(
+        { email: user.email, url, token },
+        "DEV ONLY — link đặt lại mật khẩu (chưa có SMTP)",
+      )
+    },
+    /** Token reset hết hạn sau 1 giờ (mặc định của better-auth, khai tường minh). */
+    resetPasswordTokenExpiresIn: 60 * 60,
   },
 
   session: {

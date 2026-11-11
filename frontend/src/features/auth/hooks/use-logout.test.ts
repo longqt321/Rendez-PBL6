@@ -24,7 +24,7 @@ describe("useLogout", () => {
     // Đăng nhập lại ngay trong test: vừa kiểm vòng đời phiên, vừa trả mock về
     // trạng thái ban đầu để test khác không phụ thuộc thứ tự chạy.
     const { result: login } = renderWithQuery(() => useLogin(), client)
-    login.current.mutate()
+    login.current.mutate({ email: "me@rendez.test", password: "password123" })
     await waitFor(() => expect(login.current.isSuccess).toBe(true))
   })
 
@@ -32,7 +32,7 @@ describe("useLogout", () => {
     const client = createTestQueryClient()
     const { result } = renderWithQuery(() => useLogin(), client)
 
-    result.current.mutate()
+    result.current.mutate({ email: "me@rendez.test", password: "password123" })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data?.handle).toBe("minhanh.eats")
 

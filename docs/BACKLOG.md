@@ -381,3 +381,13 @@ lịch sử; không còn việc mở ở đây.
       `places-expanded.json` nếu có. Backend đã tương thích (seed + test không phụ thuộc
       dataset cụ thể), nhưng cần quyết định: commit corpus vào repo hay tải lúc build, và
       đối chiếu lại số liệu trong báo cáo đồ án (hiện ghi theo dataset 491 place).
+
+## 2026-11-11 — G1 (vòng đời tài khoản) xong, việc phát sinh
+
+- [x] **FE chưa có form đăng nhập email+password** — ĐÃ LÀM (G1): `/login`, `/register`,
+  `/forgot-password`, `/reset-password`; bỏ `testIgnore` logout.spec trong playwright.config.
+- [ ] **SMTP thật cho quên/đặt lại mật khẩu**: hiện token reset chỉ ghi log dev
+  (DECISIONS 23). Cần SMTP provider + biến env + UI "đã gửi email" thật.
+- [ ] **Xác thực email khi đăng ký** (`emailVerified` đang luôn false).
+- [ ] **Cho phép đăng ký lại email đã xoá tài khoản** (hiện unique index chặn — DECISIONS 24).
+- [ ] **Xuất dữ liệu cá nhân** (plan H6) — rà soát khi làm.

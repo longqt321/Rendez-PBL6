@@ -613,3 +613,80 @@ Và: mọi script điều phối trong `package.json` root phải được chạ
 - Hệ quả phụ đã xử lý: `eslint --fix` trong lint-staged cũng sẽ fail vì ESLint flat config
   resolve theo **cwd** (root không có `eslint.config.js`) → bỏ eslint khỏi lint-staged, để CI
   job `web` (đã có `working-directory: frontend`) chạy `bun run lint`.
+
+## L-015 — Đọc rồi ghi lại file JSON bằng struct hẹp = âm thầm xoá dữ liệu
+
+**Ngày:** 2026-11-11
+**Phát hiện khi:** tự rà soát toàn bộ pipeline corpus theo yêu cầu người dùng.
+
+**Hiện tượng:** `backend/scripts/crosscheck/main.go` đọc `places-expanded.json` vào struct `place`
+chỉ có 6 trường (`id`, `name`, `category`, `lat`, `lng`, `quality`), thêm 4 trường cross-check rồi
+`json.MarshalIndent` ghi đè **cùng file**. Kết quả: toàn bộ `address`, `phone`, `openingHours`,
+`district`, `tier`, `sources`, `osmId`, `images`, `status`… của ~1800 quán bị xoá sạch — không có
+lỗi, không có cảnh báo, file vẫn "hợp lệ".
+
+**Nguyên nhân:** Go bỏ qua mọi key không khai báo trong struct khi unmarshal, và khi marshal chỉ
+ghi lại những gì struct có. Mẫu "đọc → sửa → ghi đè" là mẫu nguy hiểm nhất với kiểu dữ liệu hẹp.
+
+**Quy tắc rút ra:**
+
+1. Script **ghi đè** một file JSON của người khác phải giữ nguyên mọi key: dùng `map[string]any`
+   (hoặc thêm `json.RawMessage` cho phần không cần đọc), không dùng struct chỉ khai báo một phần.
+2. Nếu buộc dùng struct: khai báo **đủ** trường của file nguồn, và có test đối chiếu
+   `len(keys)` trước/sau.
+3. Ghi ra file tạm rồi `mv` đè, để lỗi giữa chừng không để lại file cụt.
+
+**Cách kiểm tra bằng máy:**
+
+```bash
+jq -r '.places[0]|keys|length' backend/data/places-expanded.json   # trước
+# chạy crosscheck
+jq -r '.places[0]|keys|length' backend/data/places-expanded.json   # sau — phải bằng nhau (hoặc +4)
+```
+
+---
+
+## L-016 — Cắt tỉ lệ lớp làm đổi mẫu số: phải giải phương trình, không nhân trực tiếp
+
+**Ngày:** 2026-11-11
+**Phát hiện khi:** tự rà soát toàn bộ pipeline corpus theo yêu cầu người dùng.
+
+**Hiện tượng:** cap-cafe dùng `keep = cap × tổng` với ý định "cafe ≤ 35%". Nhưng bỏ bớt cafe làm
+**tổng giảm theo**, nên tỉ lệ cuối vẫn cao hơn cap. Ví dụ N=2000, C=1000, cap=0.35 → keep=700,
+tổng còn 1700 → **41.2%**, vượt chỉ tiêu dù log ghi "đã cân bằng".
+
+**Nguyên nhân:** coi mẫu số là hằng số trong khi chính phép cắt làm nó thay đổi.
+
+**Quy tắc rút ra:**
+
+1. Cắt lớp để đạt tỉ lệ `cap` phải giải: `keep/(N-C+keep) = cap` → `keep = cap*(N-C)/(1-cap)`.
+2. Sau khi cắt, **in lại tỉ lệ thực tế** để log tự chứng minh, không chỉ in "đã cắt N mục".
+3. Mọi thống kê phân bố (quận/category/metadata) phải tính **sau** bước cắt và sau khi gộp nguồn
+   phụ, nếu không % sẽ không cộng lại 100%.
+4. Bản ghi đến từ nguồn phụ (curated) có thể thiếu trường điểm số → gán **sàn điểm** trước khi
+   xếp hạng/cắt, tránh việc dữ liệu tốt nhất bị loại vì mặc định 0.
+
+## L-017 — "Đã phủ hết" phải chứng minh bằng audit từng loại hình, không bằng cảm giác
+
+**Ngày:** 2026-11-11
+**Người dùng hỏi:** "Chắc chắn đã bao phủ hết lỗi và phủ hết các loại hình giải trí có thể có ở Đà Nẵng chưa? Ví dụ như quán Nhật, quán Hàn, quán Thái, music box, karaoke thì sao?"
+
+**Phát hiện khi audit lại vì câu hỏi đó:**
+
+| Lỗ hổng | Chi tiết |
+|---|---|
+| Quán Nhật/Hàn/Thái chỉ gán nhãn khi có `cuisine` tag | "Gogi House", "Tom Yum", "Izakaya" không có cuisine → rơi `quan-an`, search "quán Hàn" không tìm được |
+| `chinese`/`dim_sum` → `khac` | Đẩy quán Trung vào thùng nhiễu, làm hỏng chỉ tiêu A7 và mất thông tin |
+| Lexicon Go dùng `strings.Contains` | "Comfort" khớp `com` (cơm), "Ocean" khớp `oc` (ốc) — tôi đã sửa bên Overpass nhưng **quên bên Go** |
+| Funnel T5 in số âm | T5 có thể LỚN hơn T4 (thêm curated) → `T4-T5` âm, `%` âm |
+| `nearestDistrict` không kiểm khoảng cách | POI ngoài biển / Hòa Vang sâu bị gán quận sai mà không có dấu hiệu nào |
+
+**Quy tắc rút ra:**
+
+1. Khi sửa một lỗi "khớp mờ", phải grep **mọi nơi dùng cùng pattern** — lỗi tương tự thường tồn
+   tại song song ở tầng khác (Overpass regex ↔ Go lexicon).
+2. Thêm loại hình mới = audit bảng: *fetch được chưa → gán nhãn được chưa → seed map được chưa
+   → search query loại đó ra kết quả chưa*. Bốn cột đều ✅ mới gọi là "phủ".
+3. Số "loại" trong funnel phải có dấu (+/−) khi tầng có thể **thêm** bản ghi, không chỉ loại.
+4. Gán giá trị suy đoán (district từ centroid) phải có ngưỡng tin cậy; quá ngưỡng → để null,
+   không bịa.

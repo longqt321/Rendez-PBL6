@@ -1,7 +1,20 @@
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
+import { useNavigate } from "react-router"
 import { z } from "zod"
 import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { ErrorState } from "@/components/shared/error-state"
 import {
@@ -20,6 +33,7 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { useUpdateMe } from "@/features/profile/hooks/use-update-me"
+import { useDeleteAccount } from "@/features/auth/hooks/use-delete-account"
 import { Spinner } from "@/components/ui/spinner"
 import {
   MAX_PROFILE_BIO_LENGTH,
@@ -45,6 +59,9 @@ type SettingsForm = z.infer<typeof settingsSchema>
 export function SettingsPage() {
   const { data: me, isPending, isError, refetch } = useMe()
   const updateMe = useUpdateMe()
+  const deleteAccount = useDeleteAccount()
+  const navigate = useNavigate()
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
@@ -169,6 +186,51 @@ export function SettingsPage() {
           </div>
         </FieldGroup>
       </form>
+
+      <FieldSeparator className="my-8" />
+
+      <FieldSet>
+        <FieldLegend variant="label">Xoá tài khoản</FieldLegend>
+        <FieldDescription>
+          Tài khoản sẽ bị vô hiệu hoá và đăng xuất khỏi mọi thiết bị. Bài đăng và bình luận cũ vẫn
+          được giữ lại nhưng hồ sơ không còn hiển thị.
+        </FieldDescription>
+        <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+          <AlertDialogTrigger
+            render={
+              <Button type="button" variant="destructive" disabled={deleteAccount.isPending} />
+            }
+          >
+            Xoá tài khoản
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Xoá tài khoản?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Hành động này không thể hoàn tác. Bạn sẽ bị đăng xuất ngay lập tức.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Huỷ</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={() => {
+                  deleteAccount.mutate(undefined, {
+                    onSuccess: () => {
+                      setConfirmDelete(false)
+                      toast.success("Đã xoá tài khoản.")
+                      void navigate("/login")
+                    },
+                    onError: (error) => toast.error(error.message),
+                  })
+                }}
+              >
+                Xoá tài khoản
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </FieldSet>
     </div>
   )
 }

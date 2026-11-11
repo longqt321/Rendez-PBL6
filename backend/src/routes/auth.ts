@@ -69,6 +69,37 @@ async function buildProfile(userId: string, viewerId: string | null) {
   return profile
 }
 
+/**
+ * Lỗi đăng ký: better-auth chỉ kiểm email trùng (thông báo "User already
+ * exists"), còn `handle` là additionalField nên trùng handle bị adapter Prisma
+ * ném P2002 — better-auth nuốt lỗi đó và trả 422 "Failed to create user"
+ * (đã đọc source `dist/api/routes/sign-up.mjs`). Vì vậy phải kiểm handle trước
+ * khi gọi signUpEmail, và kiểm lại sau lỗi 422 để bắt trường hợp đua (hai
+ * request cùng handle, một request thắng).
+ */
+async function assertHandleAvailable(handle: string) {
+  const taken = await prisma.user.findUnique({ where: { handle }, select: { id: true } })
+  if (taken) throw new ApiError(409, "Handle đã được sử dụng")
+}
+
+/**
+ * Tài khoản đã xoá mềm vẫn còn trong DB (giữ lịch sử bài/bình luận) nên
+ * better-auth vẫn xác thực được mật khẩu. Chặn ở đây để người đã xoá tài khoản
+ * không đăng nhập lại được bằng phiên cũ.
+ */
+async function assertActiveUser(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { deletedAt: true },
+  })
+  if (!user || user.deletedAt) {
+    // signInEmail đã tạo phiên trước khi ta kiểm được — xoá ngay để không còn
+    // cookie hợp lệ cho tài khoản đã xoá.
+    await prisma.session.deleteMany({ where: { userId } })
+    throw new ApiError(401, "Email hoặc mật khẩu không đúng")
+  }
+}
+
 export function createAuthRouter() {
   const router = new Hono<AppEnv>()
 
@@ -115,6 +146,8 @@ export function createAuthRouter() {
         const userId = (response as { user?: { id?: string } } | null)?.user?.id
         if (!userId) throw new ApiError(401, "Email hoặc mật khẩu không đúng")
 
+        await assertActiveUser(userId)
+
         const profile = await buildProfile(userId, userId)
         const result = c.json(profile)
         for (const cookie of headers.getSetCookie()) result.headers.append("Set-Cookie", cookie)
@@ -137,6 +170,21 @@ export function createAuthRouter() {
     return c.json({ loggedOut: true })
   })
 
+  /**
+   * Xoá tài khoản — xoá MỀM (`users.deleted_at`) để giữ nguyên bài/bình luận và
+   * không phải xử lý cascade 15 bảng. Xoá luôn mọi phiên để cookie cũ mất hiệu
+   * lực ngay; email/handle vẫn chiếm unique index nên KHÔNG đăng ký lại được
+   * cùng email (ghi ở DECISIONS 2026-11-11 — mở lại sau nếu cần).
+   */
+  router.delete("/me", requireAuth, async (c) => {
+    const userId = c.get("userId")
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: userId }, data: { deletedAt: new Date() } }),
+      prisma.session.deleteMany({ where: { userId } }),
+    ])
+    return c.json({ deleted: true })
+  })
+
   /** Đăng ký — endpoint mới, FE chưa có UI (T1.3). */
   router.post(
     "/register",
@@ -147,6 +195,7 @@ export function createAuthRouter() {
       if (!parsed.success) {
         throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
       }
+      await assertHandleAvailable(parsed.data.handle)
 
       try {
         const { headers, response } = await auth.api.signUpEmail({
@@ -163,6 +212,11 @@ export function createAuthRouter() {
         return result
       } catch (error) {
         if (error instanceof ApiError) throw error
+        // 422 "Failed to create user": có thể do đua handle (P2002 bị better-auth
+        // nuốt) — kiểm lại để trả 409 thay vì 400 chung chung.
+        if (isAPIError(error) && error.statusCode === 422) {
+          await assertHandleAvailable(parsed.data.handle)
+        }
         mapAuthError(error)
       }
     },

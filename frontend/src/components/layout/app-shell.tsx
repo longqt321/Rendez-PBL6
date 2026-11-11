@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
-import { useLogin } from "@/features/auth/hooks/use-login"
 import { useLogout } from "@/features/auth/hooks/use-logout"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { isUnauthorizedError } from "@/lib/axios"
@@ -288,7 +287,6 @@ function UserMenu() {
   const { skin, setSkin } = useSkin()
   const { data: me, isPending, error, refetch } = useMe()
   const { mutate: logout, isPending: isLoggingOut } = useLogout()
-  const { mutate: login, isPending: isLoggingIn } = useLogin()
   const navigate = useNavigate()
 
   /** Đăng xuất: gọi server, xoá cache rồi về trang chủ (nơi hiển thị trạng thái khách). */
@@ -298,11 +296,6 @@ function UserMenu() {
         void navigate("/")
       },
     })
-  }
-
-  /** Đăng nhập lại phiên mock ở dev — không có form đăng nhập thật. */
-  const handleLogin = () => {
-    login()
   }
 
   return (
@@ -389,14 +382,11 @@ function UserMenu() {
             </DropdownMenuItem>
           </>
         ) : isUnauthorizedError(error) ? (
-          env.enableMocks ? (
-            // Chỉ có ở dev: mock không có form đăng nhập thật, cần đường quay lại
-            // phiên sau khi đăng xuất. Prod để backend/route đăng nhập đảm nhận.
-            <DropdownMenuItem disabled={isLoggingIn} onClick={handleLogin}>
-              <LogInIcon />
-              {isLoggingIn ? "Đang đăng nhập…" : "Đăng nhập"}
-            </DropdownMenuItem>
-          ) : null
+          // Chưa đăng nhập: về trang đăng nhập (form email + password thật).
+          <DropdownMenuItem onClick={() => void navigate("/login")}>
+            <LogInIcon />
+            Đăng nhập
+          </DropdownMenuItem>
         ) : (
           // Lỗi khác 401 (mạng, 5xx): người dùng vẫn có thể đã đăng nhập — không
           // được hiện "Đăng nhập" như thể phiên đã mất.

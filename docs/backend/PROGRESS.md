@@ -196,3 +196,23 @@ nhiều instance, hiệu năng ≥ 50k dòng, trình duyệt mobile thật.
 - Smoke trên image cuối: `/healthz` 200, `/api/v1/places` 200 (9 item/trang, khớp mock bỏ qua `limit`).
 - Audit grep cuối: không còn `as any`/`@ts-ignore`/`.skip`/catch rỗng/TODO trong `backend/src`.
 - Docker chỉ còn `rendez-postgres` + `rendez-api`; không có dev server sót.
+
+## G1 — Vòng đời tài khoản (2026-11-11 chiều)
+
+Đã làm:
+
+- Backend: `emailAndPassword.sendResetPassword` (log token ở dev — DECISIONS 23),
+  `resetPasswordTokenExpiresIn` 1 giờ; `DELETE /me` xoá mềm + thu hồi mọi phiên (DECISIONS 24);
+  chặn đăng nhập tài khoản đã xoá; trùng handle trả 409 đúng thông điệp (DECISIONS 25).
+- FE: `/login`, `/register`, `/forgot-password`, `/reset-password` (RHF + zod, ngoài AppShell);
+  menu header điều hướng `/login`; trang cài đặt có mục xoá tài khoản (AlertDialog xác nhận).
+- Mock: `POST /session` kiểm email+password (`me@rendez.test` / `password123`), `POST /register`,
+  `POST /auth/request-password-reset`, `POST /auth/reset-password`, `DELETE /me`.
+- E2E: `logout.spec` đăng nhập lại qua form; thêm `auth.spec.ts` (4 test).
+
+Xác minh:
+
+- `bun run typecheck` — 0 lỗi (FE + BE).
+- `cd backend && bun test test/auth.test.ts --parallel=1` — **16 pass / 0 fail**.
+- `cd frontend && bun run test` — **72 pass / 0 fail**, 16 file.
+- `bun run e2e --project=mock` — **17/17 pass** (16.8s).

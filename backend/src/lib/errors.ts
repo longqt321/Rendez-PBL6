@@ -45,6 +45,6 @@ export function isNulByteError(error: unknown): boolean {
  * tự kiểm `"code" in error` kiểu duck-typing (trước đây rooms.ts và
  * suggestions-job.ts mỗi nơi viết một bản, dễ lệch nhau).
  */
-export function isUniqueViolation(error: unknown): boolean {
+export function isUniqueViolation(error: unknown): error is Prisma.PrismaClientKnownRequestError {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"
 }

@@ -2626,3 +2626,19 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
    cuối dataset khi thiếu — xác định theo dữ liệu, không hardcode id mới.
 22. **Xoá bộ sưu tập = xoá mềm**: mọi truy vấn đọc đều lọc `deleted_at`; `delete` cứng làm
    cột đó vô nghĩa và mất dữ liệu không khôi phục được.
+23. **Quên mật khẩu: chưa có SMTP — token reset ghi vào log dev** (2026-11-11, G1). better-auth
+   chỉ gọi `sendResetPassword` khi cấu hình; chọn log `url`+`token` ở dev/test (pino `warn`,
+   nhãn "DEV ONLY") và ở production chỉ log sự kiện không kèm token. SMTP thật là việc phát
+   sinh → BACKLOG; khi có SMTP chỉ thay hàm này, không đổi route/FE.
+24. **Xoá tài khoản = xoá mềm + thu hồi phiên**: `DELETE /me` đặt `users.deleted_at` và xoá
+   mọi session trong một transaction. Email/handle vẫn chiếm unique index nên KHÔNG đăng ký
+   lại được cùng email — chấp nhận ở giai đoạn này (mở lại cần thêm logic "giải phóng
+   email" phức tạp). Hồ sơ đã xoá không hiện nữa (`SELECT_PROFILE` lọc `deleted_at IS NULL`).
+25. **Trùng handle khi đăng ký phải kiểm trước khi gọi better-auth**: better-auth chỉ kiểm
+   email trùng; P2002 của `handle` bị nuốt thành 422 "Failed to create user" (đã đọc source
+   `dist/api/routes/sign-up.mjs`). Kiểm `handle` trước khi signUpEmail + kiểm lại sau lỗi 422
+   (bắt trường hợp đua) → 409 đúng thông điệp thay vì 400 chung chung.
+26. **FE có trang `/login`, `/register`, `/forgot-password`, `/reset-password`** (G1): các trang
+   này nằm ngoài `AppShell`; menu "Đăng nhập" của header giờ điều hướng tới `/login` thay vì
+   hack "đăng nhập lại phiên mock" cũ. Mock thêm tài khoản dev `me@rendez.test` /
+   `password123` để e2e chạy được cả hai project.

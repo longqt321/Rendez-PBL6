@@ -55,6 +55,22 @@ const SettingsPage = lazy(() =>
 const NotFoundPage = lazy(() =>
   import("@/features/not-found/pages/not-found-page").then((m) => ({ default: m.NotFoundPage })),
 )
+const LoginPage = lazy(() =>
+  import("@/features/auth/pages/login-page").then((m) => ({ default: m.LoginPage })),
+)
+const RegisterPage = lazy(() =>
+  import("@/features/auth/pages/register-page").then((m) => ({ default: m.RegisterPage })),
+)
+const ForgotPasswordPage = lazy(() =>
+  import("@/features/auth/pages/forgot-password-page").then((m) => ({
+    default: m.ForgotPasswordPage,
+  })),
+)
+const ResetPasswordPage = lazy(() =>
+  import("@/features/auth/pages/reset-password-page").then((m) => ({
+    default: m.ResetPasswordPage,
+  })),
+)
 
 /**
  * `AppShell` là layout route duy nhất: mọi trang con render qua `<Outlet />`,
@@ -64,6 +80,22 @@ export const routes: RouteObject[] = [
   {
     path: "/",
     element: <Navigate to="/discover" replace />,
+  },
+  /*
+   * Trang xác thực đứng NGOÀI `AppShell`: người dùng chưa đăng nhập không cần
+   * thanh điều hướng, và layout riêng giữ form gọn trên một cột.
+   */
+  { path: "/login", element: <LoginPage />, errorElement: <RouteErrorPage /> },
+  { path: "/register", element: <RegisterPage />, errorElement: <RouteErrorPage /> },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+    errorElement: <RouteErrorPage />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
+    errorElement: <RouteErrorPage />,
   },
   {
     element: <AppShell />,

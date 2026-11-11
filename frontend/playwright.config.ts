@@ -49,9 +49,7 @@ export default defineConfig({
               ...devices["Desktop Chrome"],
               storageState: "e2e/.auth/backend.json",
             },
-            // FE chưa có form đăng nhập email+password nên bước "đăng nhập lại"
-            // của spec này không thể chạy với backend thật (xem BACKLOG).
-            testIgnore: /logout\.spec\.ts/u,
+            // FE đã có form đăng nhập email+password (G1) — mọi spec chạy được.
           },
         ]
       : []),

@@ -19,6 +19,7 @@ import { CURRENT_USER, ME, MOCK_USERS } from "./fixtures/users"
 import { rankPlaceSuggestions } from "./ranking"
 import { resolveScenario } from "./scenarios"
 import { normalizeText } from "./text"
+import { formatInitials } from "@/lib/format"
 import { env } from "@/lib/env"
 import {
   MAX_CAPTION_LENGTH,
@@ -47,6 +48,13 @@ const PLACES_PAGE_SIZE = 9
 const POSTS_PAGE_SIZE = 5
 const NOTIFICATIONS_PAGE_SIZE = 20
 
+/**
+ * Tài khoản dev của mock — dùng để thử trang đăng nhập khi chạy mock.
+ * Backend thật lưu mật khẩu đã hash; mock chỉ cần so khớp chuỗi.
+ */
+const MOCK_EMAIL = "me@rendez.test"
+const MOCK_PASSWORD = "password123"
+
 /** Lý do báo cáo hợp lệ — tra cứu O(1) thay vì so khớp mảng. */
 const VALID_REPORT_REASONS: ReadonlySet<string> = new Set(PLACE_REPORT_REASONS)
 
@@ -62,6 +70,13 @@ const db = {
   users: { ...MOCK_USERS },
   /** Hồ sơ người dùng hiện tại — PATCH /me sửa bản sao này, không đụng fixture. */
   me: { ...ME },
+  /**
+   * Tài khoản (email + password) của mock — đăng nhập/đăng ký so khớp ở đây.
+   * Tài khoản đăng ký mới được thêm vào; xoá tài khoản chỉ đánh dấu `deleted`.
+   */
+  accounts: [{ userId: "u-me", email: MOCK_EMAIL, password: MOCK_PASSWORD }],
+  /** Tài khoản đã xoá (DELETE /me) — không đăng nhập lại được, như backend thật. */
+  deletedUserIds: new Set<string>(),
   /**
    * Phiên đăng nhập của mock server. Bật sẵn khi dev bypass auth; `DELETE /session`
    * (đăng xuất) tắt đi, `POST /session` (đăng nhập lại) bật lại. Reset khi tải
@@ -79,6 +94,7 @@ let commentSeq = 0
 let reviewSeq = 0
 let collectionSeq = 0
 let reportSeq = 0
+let userSeq = 0
 
 // ---------------------------------------------------------------------------
 // Serialize: chuyển bản ghi nội bộ thành đúng hợp đồng API
@@ -860,6 +876,11 @@ function ok<T>(config: InternalAxiosRequestConfig, data: T): AxiosResponse<T> {
   }
 }
 
+/** 201 cho `POST /register` — giữ đúng mã trạng thái của backend thật. */
+function created<T>(config: InternalAxiosRequestConfig, data: T): AxiosResponse<T> {
+  return { ...ok(config, data), status: 201, statusText: "Created" }
+}
+
 function notFound(config: InternalAxiosRequestConfig, message: string): never {
   throw new AxiosError(message, "ERR_BAD_REQUEST", config, undefined, {
     data: { detail: message },
@@ -885,6 +906,17 @@ function forbidden(config: InternalAxiosRequestConfig, message: string): never {
     data: { detail: message },
     status: 403,
     statusText: "Forbidden",
+    headers: new AxiosHeaders({ "content-type": "application/json" }),
+    config,
+  })
+}
+
+/** 409 — trùng email/handle khi đăng ký (khớp backend thật). */
+function conflict(config: InternalAxiosRequestConfig, message: string): never {
+  throw new AxiosError(message, "ERR_BAD_REQUEST", config, undefined, {
+    data: { detail: message },
+    status: 409,
+    statusText: "Conflict",
     headers: new AxiosHeaders({ "content-type": "application/json" }),
     config,
   })
@@ -1293,16 +1325,105 @@ const routes: Route[] = [
     },
   },
   {
-    /**
-     * Đăng nhập lại ở dev (không có form đăng nhập thật): bật phiên mock với
-     * `db.me`. Có để test luồng đăng xuất → đăng nhập mà không phải tải lại trang.
-     */
+    /** Đăng nhập email + password — so khớp tài khoản mock (xem `MOCK_EMAIL`). */
     method: "post",
     pattern: /^\/session$/,
     handler: (config) => {
       if (scenario.unauthorized) unauthorized(config, "Chưa đăng nhập")
+      const body = parseBody<{ email?: unknown; password?: unknown }>(config)
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : ""
+      const password = typeof body.password === "string" ? body.password : ""
+      const account = db.accounts.find((item) => item.email === email && item.password === password)
+      if (!account || db.deletedUserIds.has(account.userId)) {
+        unauthorized(config, "Email hoặc mật khẩu không đúng")
+      }
+      const user = db.users[account.userId]
+      if (!user) unauthorized(config, "Email hoặc mật khẩu không đúng")
+      db.me = { ...user }
       db.authenticated = true
       return { ...db.me }
+    },
+  },
+  {
+    /** Đăng ký — tạo tài khoản mới, đăng nhập luôn (khớp autoSignIn của backend). */
+    method: "post",
+    pattern: /^\/register$/,
+    handler: (config) => {
+      const body = parseBody<Record<string, unknown>>(config)
+      const name = typeof body.name === "string" ? body.name.trim() : ""
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : ""
+      const password = typeof body.password === "string" ? body.password : ""
+      const handle = typeof body.handle === "string" ? body.handle.trim().toLowerCase() : ""
+
+      if (name.length < 2 || name.length > MAX_PROFILE_NAME_LENGTH) {
+        badRequest(config, "Tên cần từ 2 đến 40 ký tự")
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email)) badRequest(config, "Email không hợp lệ")
+      if (password.length < 8) badRequest(config, "Mật khẩu cần ít nhất 8 ký tự")
+      if (!/^[a-z0-9_]{3,30}$/u.test(handle)) {
+        badRequest(config, "Handle chỉ gồm chữ thường, số và gạch dưới (3–30 ký tự)")
+      }
+      if (db.accounts.some((account) => account.email === email)) {
+        conflict(config, "Email đã được sử dụng")
+      }
+      if (Object.values(db.users).some((user) => user.handle === handle)) {
+        conflict(config, "Handle đã được sử dụng")
+      }
+
+      const id = `u-${++userSeq}`
+      const user: (typeof db.users)[string] = {
+        id,
+        name,
+        handle,
+        initials: formatInitials(name),
+        bio: "",
+        location: "",
+        joinedAt: new Date().toISOString(),
+        postCount: 0,
+        followerCount: 0,
+        followingCount: 0,
+        followedByMe: false,
+        isMe: true,
+        privateProfile: false,
+      }
+      db.users[id] = user
+      db.accounts.push({ userId: id, email, password })
+      db.me = { ...user }
+      db.authenticated = true
+      return created(config, { ...db.me })
+    },
+  },
+  {
+    /** Quên mật khẩu — luôn thành công để không lộ email có tồn tại. */
+    method: "post",
+    pattern: /^\/auth\/request-password-reset$/,
+    handler: () => ({
+      status: true,
+      message: "If this email exists in our system, check your email for the reset link",
+    }),
+  },
+  {
+    /** Đặt lại mật khẩu — mock không có token thật, chỉ kiểm đầu vào tối thiểu. */
+    method: "post",
+    pattern: /^\/auth\/reset-password$/,
+    handler: (config) => {
+      const body = parseBody<{ token?: unknown; newPassword?: unknown }>(config)
+      const token = typeof body.token === "string" ? body.token : ""
+      const newPassword = typeof body.newPassword === "string" ? body.newPassword : ""
+      if (token.length === 0) badRequest(config, "Token không hợp lệ")
+      if (newPassword.length < 8) badRequest(config, "Mật khẩu cần ít nhất 8 ký tự")
+      return { status: true }
+    },
+  },
+  {
+    /** Xoá tài khoản — đánh dấu đã xoá, tắt phiên (khớp xoá mềm của backend). */
+    method: "delete",
+    pattern: /^\/me$/,
+    handler: (config) => {
+      if (!db.authenticated) unauthorized(config, "Chưa đăng nhập")
+      db.deletedUserIds.add(db.me.id)
+      db.authenticated = false
+      return { deleted: true }
     },
   },
   {

@@ -48,15 +48,24 @@ nguyên văn. Cursor hỏng → `400 {"message":"Cursor không hợp lệ"}`.
 | DELETE | `/session` | ✔ | — | `200 {"loggedOut":true}` |
 | GET | `/me` | ✔ | — | `200 UserProfile` |
 | PATCH | `/me` | ✔ | `{name?, bio?, location?, privateProfile?}` | `200 UserProfile` |
+| DELETE | `/me` | ✔ | — | `200 {"deleted":true}` — xoá mềm + thu hồi mọi phiên |
+| POST | `/auth/request-password-reset` | — | `{email, redirectTo?}` | `200 {"status":true}` (luôn thành công) |
+| POST | `/auth/reset-password` | — | `{token, newPassword}` | `200 {"status":true}` / `400` token sai |
 | GET/POST | `/auth/*` | — | do better-auth quản lý | passthrough |
 
 Ràng buộc đầu vào:
 
 - `name`: 2–40 ký tự (sau trim); `handle`: 3–30, chỉ `[a-z0-9_]`; `password`: 8–128;
   `email`: chuẩn hoá lowercase.
-- Trùng email/handle → `409 {"message":"Email hoặc tên người dùng đã được sử dụng"}`.
-- Sai mật khẩu → `401 {"message":"Email hoặc mật khẩu không đúng"}`.
+- Trùng email → `409 {"message":"Email đã được sử dụng"}`; trùng handle →
+  `409 {"message":"Handle đã được sử dụng"}` (kiểm trước khi gọi better-auth vì
+  better-auth nuốt P2002 của handle thành 422 chung).
+- Sai mật khẩu → `401 {"message":"Email hoặc mật khẩu không đúng"}`. Tài khoản đã xoá mềm
+  cũng trả 401 dù mật khẩu đúng.
 - Rate limit: 20 request/phút/IP cho mỗi route `/session` và `/register`.
+- Quên mật khẩu: dev **chưa có SMTP** — link reset được ghi vào log backend
+  (`DEV ONLY — link đặt lại mật khẩu`); production cần thay `sendResetPassword` bằng gửi mail
+  thật (xem `docs/DECISIONS.md` mục 23).
 
 `UserProfile` (khớp `userProfileSchema` của `@rendez/schema`):
 
