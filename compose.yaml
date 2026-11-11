@@ -40,6 +40,11 @@ services:
       dockerfile: backend/Dockerfile
       target: runtime
     container_name: rendez-api
+    # Nạp thêm biến từ backend/.env nếu có (R2_*, LOG_LEVEL...) — file thiếu
+    # thì bỏ qua. Các biến khai rõ ở `environment` dưới đây luôn thắng.
+    env_file:
+      - path: backend/.env
+        required: false
     environment:
       # Mặc định development để chạy demo local với secret dev. Production PHẢI
       # đặt NODE_ENV=production + BETTER_AUTH_SECRET riêng (env.ts từ chối
