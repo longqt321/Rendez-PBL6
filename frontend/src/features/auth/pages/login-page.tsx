@@ -85,7 +85,11 @@ export function LoginPage() {
 
           {formError && <FieldError>{formError}</FieldError>}
 
-          <Button type="submit" disabled={login.isPending} className="w-full">
+          <Button
+            type="submit"
+            disabled={login.isPending}
+            className="h-10 w-full text-sm font-medium"
+          >
             {login.isPending ? (
               <>
                 <Spinner aria-label="Đang đăng nhập" /> Đang đăng nhập…

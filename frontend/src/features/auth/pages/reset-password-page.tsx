@@ -112,7 +112,11 @@ export function ResetPasswordPage() {
 
             {reset.isError && <FieldError>{reset.error.message}</FieldError>}
 
-            <Button type="submit" disabled={reset.isPending} className="w-full">
+            <Button
+              type="submit"
+              disabled={reset.isPending}
+              className="h-10 w-full text-sm font-medium"
+            >
               {reset.isPending ? (
                 <>
                   <Spinner aria-label="Đang đổi mật khẩu" /> Đang đổi…

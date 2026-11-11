@@ -20,18 +20,27 @@ export function AuthLayout({
 }) {
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-sm flex-col justify-center px-4 py-8">
-      <Link to="/discover" className="mb-4 font-heading text-xl font-bold tracking-tight">
+      <Link
+        to="/discover"
+        className="mb-4 flex items-center gap-2 font-heading text-xl font-bold tracking-tight"
+      >
+        <span
+          aria-hidden="true"
+          className="grid size-8 place-items-center rounded-control border border-border bg-secondary text-sm font-bold text-secondary-foreground"
+        >
+          R
+        </span>
         Rendez
       </Link>
       <Card>
-        <CardContent className="flex flex-col gap-4">
+        <CardContent className="flex flex-col gap-5">
           <div>
-            <h1 className="text-lg font-semibold">{title}</h1>
-            {description && <p className="text-sm text-muted-foreground">{description}</p>}
+            <h1 className="font-heading text-xl font-semibold tracking-tight">{title}</h1>
+            {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
           </div>
           {children}
         </CardContent>
-        {footer && <CardFooter className="text-sm">{footer}</CardFooter>}
+        {footer && <CardFooter className="justify-center text-sm">{footer}</CardFooter>}
       </Card>
     </div>
   )

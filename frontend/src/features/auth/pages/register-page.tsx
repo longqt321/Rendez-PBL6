@@ -5,6 +5,12 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group"
 import { Spinner } from "@/components/ui/spinner"
 import { useRegister } from "../hooks/use-register"
 import { AuthLayout } from "../components/auth-layout"
@@ -107,15 +113,20 @@ export function RegisterPage() {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="register-handle">Handle</FieldLabel>
-            <Input
-              id="register-handle"
-              autoComplete="username"
-              placeholder="vd: minhanh.eats"
-              {...form.register("handle")}
-            />
+            <FieldLabel htmlFor="register-handle">Tên người dùng</FieldLabel>
+            <InputGroup>
+              <InputGroupAddon align="inline-start">
+                <InputGroupText className="text-muted-foreground">@</InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput
+                id="register-handle"
+                autoComplete="username"
+                placeholder="minhanh.eats"
+                {...form.register("handle")}
+              />
+            </InputGroup>
             <FieldDescription>
-              Dùng trong đường dẫn hồ sơ của bạn: /u/&lt;handle&gt;.
+              Bạn bè sẽ tìm thấy bạn qua tên này — chỉ chữ thường, số và dấu gạch dưới.
             </FieldDescription>
             {form.formState.errors.handle && (
               <FieldError>{form.formState.errors.handle.message}</FieldError>
@@ -149,7 +160,11 @@ export function RegisterPage() {
 
           {formError && <FieldError>{formError}</FieldError>}
 
-          <Button type="submit" disabled={register.isPending} className="w-full">
+          <Button
+            type="submit"
+            disabled={register.isPending}
+            className="h-10 w-full text-sm font-medium"
+          >
             {register.isPending ? (
               <>
                 <Spinner aria-label="Đang tạo tài khoản" /> Đang tạo tài khoản…

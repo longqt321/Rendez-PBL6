@@ -70,7 +70,11 @@ export function ForgotPasswordPage() {
 
             {forgot.isError && <FieldError>{forgot.error.message}</FieldError>}
 
-            <Button type="submit" disabled={forgot.isPending} className="w-full">
+            <Button
+              type="submit"
+              disabled={forgot.isPending}
+              className="h-10 w-full text-sm font-medium"
+            >
               {forgot.isPending ? (
                 <>
                   <Spinner aria-label="Đang gửi yêu cầu" /> Đang gửi…

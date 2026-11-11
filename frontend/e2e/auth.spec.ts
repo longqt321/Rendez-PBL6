@@ -30,7 +30,7 @@ test("đăng ký tài khoản mới → đăng nhập luôn và thấy avatar", 
 
   await page.getByLabel("Tên hiển thị").fill("E2E Tester")
   await page.getByLabel("Email").fill(`${handle}@rendez.test`)
-  await page.getByLabel("Handle").fill(handle)
+  await page.getByLabel("Tên người dùng").fill(handle)
   await page.getByLabel("Mật khẩu", { exact: true }).fill("password123")
   await page.getByLabel("Nhập lại mật khẩu").fill("password123")
   await page.getByRole("button", { name: "Đăng ký" }).click()
