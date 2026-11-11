@@ -265,13 +265,23 @@ export async function listPlacesInMap(
 ): Promise<{ items: PlaceDto[]; total: number }> {
   const conditions = buildConditions(filters)
 
-  const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-    ${SELECT_PLACES}
-    WHERE ${Prisma.join(conditions, " AND ")}
-    ORDER BY p.created_at DESC, p.id DESC
-  `)
+  // `total` = tổng số khớp (mock trả `items.length` trước khi cắt 300), nên đếm
+  // riêng thay vì kéo cả dataset về RAM rồi `slice`.
+  const [rows, countRows] = await Promise.all([
+    prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
+      ${SELECT_PLACES}
+      WHERE ${Prisma.join(conditions, " AND ")}
+      ORDER BY p.created_at DESC, p.id DESC
+      LIMIT ${limit}
+    `),
+    prisma.$queryRaw<{ count: number }[]>(Prisma.sql`
+      SELECT COUNT(*)::int AS count
+      FROM places p
+      WHERE ${Prisma.join(conditions, " AND ")}
+    `),
+  ])
 
-  return { items: rows.slice(0, limit).map(toPlaceDto), total: rows.length }
+  return { items: rows.map(toPlaceDto), total: Number(countRows[0]?.count ?? 0) }
 }
 
 /**

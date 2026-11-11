@@ -19,6 +19,9 @@ import { fetchRankCandidates, normalizeCaption, toSuggestionCandidate } from "./
 /** Số gợi ý mỗi thông báo — khớp mock (`rankPlaceSuggestions(..., 3)`). */
 const SUGGESTIONS_PER_NOTIFICATION = 3
 
+/** Batch nhỏ mỗi lần chạy (K6: 50 post/lần) — không giữ query/transaction dài. */
+const BATCH_SIZE = 50
+
 export async function detectPlaceSuggestions(postId?: string): Promise<number> {
   const posts = await prisma.post.findMany({
     where: {
@@ -29,6 +32,8 @@ export async function detectPlaceSuggestions(postId?: string): Promise<number> {
     },
     select: { id: true, authorId: true, caption: true },
     orderBy: { createdAt: "asc" },
+    // postId là xử lý 1 bài cụ thể (trigger) — không cần giới hạn.
+    ...(postId ? {} : { take: BATCH_SIZE }),
   })
   if (posts.length === 0) return 0
 
