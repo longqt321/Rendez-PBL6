@@ -121,6 +121,33 @@ describe("job phát hiện địa điểm", () => {
     expect(after).toBe(before)
   })
 
+  test("hai worker chạy song song chỉ tạo 1 thông báo (khoá post_id)", async () => {
+    const created = await call("/api/v1/posts", {
+      method: "POST",
+      cookie: author.cookie,
+      body: JSON.stringify({ caption: `Chạy đua ghé ${unpublishedName} lần nữa` }),
+    })
+    expect(created.status).toBe(201)
+    const postId = ((await created.json()) as { id: string }).id
+
+    // Hai lần gọi đồng thời: một lần ghi notification + dấu, lần kia (nếu đọc
+    // trước khi dấu xuất hiện) phải nhận P2002 và bỏ qua thay vì ném lỗi.
+    const [first, second] = await Promise.all([
+      detectPlaceSuggestions(postId),
+      detectPlaceSuggestions(postId),
+    ])
+    expect(first + second).toBe(1)
+
+    const notifications = await prisma.notification.count({
+      where: {
+        userId: author.id,
+        type: "place_suggestion",
+        payload: { path: ["postId"], equals: postId },
+      },
+    })
+    expect(notifications).toBe(1)
+  })
+
   test("bài đã gắn địa điểm không bị job quét", async () => {
     const place = await prisma.place.findFirst({
       where: { publishedAt: { not: null }, deletedAt: null },
