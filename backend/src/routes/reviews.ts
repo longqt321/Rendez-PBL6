@@ -8,6 +8,7 @@ import {
 import type { AppEnv } from "../app"
 import { Prisma } from "../../generated/prisma/client"
 import { ApiError, isUniqueViolation } from "../lib/errors"
+import { idempotency } from "../lib/idempotency"
 import { prisma } from "../lib/prisma"
 import { toApiReportReason, toPrismaReportReason } from "../lib/enums"
 import { formatInitials } from "../lib/profile"
@@ -99,7 +100,7 @@ export function createReviewsRouter() {
   })
 
   /** Tạo hoặc ghi đè đánh giá của chính mình (A7.4). */
-  router.post("/places/:id/reviews", requireAuth, async (c) => {
+  router.post("/places/:id/reviews", requireAuth, idempotency(), async (c) => {
     const placeId = c.req.param("id")
     await requirePublicPlace(placeId)
 

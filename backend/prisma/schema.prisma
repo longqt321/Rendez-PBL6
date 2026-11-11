@@ -123,6 +123,7 @@ model User {
   roomMemberships  RoomMember[]
   following        Follow[]       @relation("Follower")
   followers        Follow[]       @relation("Following")
+  idempotencyKeys  IdempotencyKey[]
 
   @@map("users")
 }
@@ -623,4 +624,27 @@ model RateLimit {
   @@id([key, windowStart])
   @@index([windowStart])
   @@map("rate_limits")
+}
+
+// ---------------------------------------------------------------------------
+// 20. idempotency_keys — replay response cho mutation quan trọng (K2)
+// ---------------------------------------------------------------------------
+
+model IdempotencyKey {
+  key            String   @db.VarChar(64)
+  userId         String   @map("user_id") @db.Uuid
+  /// SHA-256 của body request — key dùng lại với payload khác → 422.
+  requestHash    String   @map("request_hash") @db.VarChar(64)
+  /// `pending` khi đang xử lý (request thứ hai cùng key → 409) | `completed`.
+  status         String   @default("pending")
+  responseStatus Int?     @map("response_status")
+  responseBody   String?  @map("response_body")
+  createdAt      DateTime @default(now()) @map("created_at")
+  expiresAt      DateTime @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([key, userId])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
 }

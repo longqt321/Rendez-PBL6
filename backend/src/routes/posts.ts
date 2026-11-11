@@ -12,6 +12,7 @@ import type { AppEnv } from "../app"
 import { env } from "../env"
 import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
+import { idempotency } from "../lib/idempotency"
 import { prisma } from "../lib/prisma"
 import { findPost, listPosts, type PostFilter } from "../lib/posts"
 import { findComment, listCommentsForPost, parseCommentSort } from "../lib/comments"
@@ -123,6 +124,8 @@ export function createPostsRouter() {
     requireAuth,
     // 30 bài/giờ/user — chống spam bài; đăng bài bình thường không chạm ngưỡng.
     rateLimit({ scope: "posts-create", limit: 30, windowSeconds: 3600, byUser: true }),
+    // Chống double-submit: cùng `Idempotency-Key` → replay bài đã tạo (K2).
+    idempotency(),
     async (c) => {
       const input = parseOrThrow(createPostSchema, await readJson(c), "Dữ liệu không hợp lệ")
       const userId = c.get("userId")

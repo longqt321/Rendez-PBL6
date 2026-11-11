@@ -1,4 +1,5 @@
 import { api } from "@/lib/axios"
+import { idempotencyHeaders } from "@/lib/idempotency"
 import type { Page } from "@/types/api"
 import type { Collection, CollectionSummary } from "../types/collection"
 
@@ -26,7 +27,9 @@ export interface CreateCollectionInput {
 
 /** `POST /collections` — tạo bộ sưu tập rỗng. */
 export async function createCollection(input: CreateCollectionInput): Promise<Collection> {
-  const { data } = await api.post<Collection>("/collections", input)
+  const { data } = await api.post<Collection>("/collections", input, {
+    headers: idempotencyHeaders(),
+  })
   return data
 }
 

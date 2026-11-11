@@ -5,6 +5,7 @@ import { MAX_COLLECTION_DESCRIPTION_LENGTH, MAX_COLLECTION_NAME_LENGTH } from "@
 import type { AppEnv } from "../app"
 import { UUID_ID_RE } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
+import { idempotency } from "../lib/idempotency"
 import { prisma } from "../lib/prisma"
 import {
   findCollection,
@@ -64,7 +65,7 @@ export function createCollectionsRouter() {
     return c.json({ items: rows.map((row) => toCollectionSummary(row, placeId)), next: null })
   })
 
-  router.post("/collections", requireAuth, async (c) => {
+  router.post("/collections", requireAuth, idempotency(), async (c) => {
     const raw = await c.req.json().catch(() => null)
     const parsed = createCollectionSchema.safeParse(raw)
     if (!parsed.success) {

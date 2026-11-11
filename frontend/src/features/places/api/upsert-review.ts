@@ -1,4 +1,5 @@
 import { api } from "@/lib/axios"
+import { idempotencyHeaders } from "@/lib/idempotency"
 import type { Review } from "../types/review"
 
 export interface UpsertReviewInput {
@@ -10,6 +11,8 @@ export interface UpsertReviewInput {
 
 /** `POST /places/:id/reviews` — tạo hoặc ghi đè đánh giá của người dùng hiện tại. */
 export async function upsertReview(placeId: string, input: UpsertReviewInput): Promise<Review> {
-  const { data } = await api.post<Review>(`/places/${placeId}/reviews`, input)
+  const { data } = await api.post<Review>(`/places/${placeId}/reviews`, input, {
+    headers: idempotencyHeaders(),
+  })
   return data
 }
