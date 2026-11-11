@@ -229,6 +229,17 @@ describe("bài đăng", () => {
     })
     expect(res.status).toBe(404)
   })
+
+  test("PATCH /posts/:id/place của người khác trả 403", async () => {
+    const other = await register("Người Khác", `other_${suffix}`)
+    const res = await call(`/api/v1/posts/${postId}/place`, {
+      method: "PATCH",
+      cookie: other.cookie,
+      body: JSON.stringify({ placeId: "banh-xeo-ba-duong" }),
+    })
+    expect(res.status).toBe(403)
+    expect(await res.json()).toEqual({ message: "Không phải bài đăng của bạn" })
+  })
 })
 
 describe("bình luận", () => {

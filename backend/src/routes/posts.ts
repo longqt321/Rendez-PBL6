@@ -126,18 +126,18 @@ export function createPostsRouter() {
    */
   router.patch("/posts/:id/place", requireAuth, async (c) => {
     const postId = requireUuid(c.req.param("id"), "Không tìm thấy bài đăng")
-    const body = (await readJson(c)) as { placeId?: unknown } | null
-    if (typeof body?.placeId !== "string" || body.placeId.length === 0) {
-      throw new ApiError(404, "Thiếu placeId")
-    }
-    const placeId = body.placeId
+    // Hợp đồng mock: thiếu `placeId` trả 404 "Thiếu placeId" (không phải 400).
+    const parsed = z.object({ placeId: z.string().min(1) }).safeParse(await readJson(c))
+    if (!parsed.success) throw new ApiError(404, "Thiếu placeId")
+    const placeId = parsed.data.placeId
     const userId = c.get("userId")
 
     const post = await prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, authorId: true },
     })
     if (!post) throw new ApiError(404, "Không tìm thấy bài đăng")
+    if (post.authorId !== userId) throw new ApiError(403, "Không phải bài đăng của bạn")
 
     const place = await prisma.place.findFirst({
       where: { id: placeId, deletedAt: null },
@@ -152,7 +152,8 @@ export function createPostsRouter() {
         : []),
       prisma.notification.updateMany({
         where: {
-          userId,
+          // Thông báo đề xuất thuộc về TÁC GIẢ bài, không phải người gọi.
+          userId: post.authorId,
           type: "place_suggestion",
           payload: { path: ["postId"], equals: postId },
         },
