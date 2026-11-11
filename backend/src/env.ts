@@ -34,6 +34,16 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
 
   /**
+   * IP/CIDR của reverse proxy được tin cậy (phân tách bằng dấu phẩy).
+   *
+   * Chỉ khi request đến TỪ một địa chỉ trong danh sách này thì `X-Forwarded-For`
+   * mới được dùng để lấy IP người gọi (rate limit). Để rỗng = không tin proxy
+   * nào: IP lấy từ socket, header do client tự gửi bị bỏ qua — chống giả mạo
+   * `X-Forwarded-For` để né rate limit.
+   */
+  TRUSTED_PROXIES: z.string().default(""),
+
+  /**
    * Secret ký cookie phiên của better-auth (tối thiểu 32 ký tự).
    * Bắt buộc ở production; dev/test dùng giá trị mặc định của .env.example.
    */
@@ -70,6 +80,11 @@ const corsOrigins = parsed.data.CORS_ORIGINS.split(",")
   .map((value) => value.trim())
   .filter(Boolean)
 
+/** Proxy tin cậy dưới dạng mảng (IP hoặc CIDR IPv4) — rỗng = không tin proxy nào. */
+const trustedProxies = parsed.data.TRUSTED_PROXIES.split(",")
+  .map((value) => value.trim())
+  .filter(Boolean)
+
 /**
  * Production không được chạy bằng secret dev — secret mặc định ai cũng biết,
  * dùng nó ở production là lỗ hổng giả mạo cookie phiên.
@@ -84,6 +99,7 @@ if (
 export const env = {
   ...parsed.data,
   corsOrigins,
+  trustedProxies,
   /** Đủ cấu hình R2 mới bật upload ảnh (xem `lib/r2.ts`). */
   r2Configured:
     parsed.data.R2_ACCOUNT_ID.length > 0 &&

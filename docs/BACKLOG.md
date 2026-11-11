@@ -399,3 +399,6 @@ lịch sử; không còn việc mở ở đây.
   (đã có hạ tầng SSE cho phòng lọc nhóm để tái dùng).
 - [ ] **Feed following chưa gợi ý người để theo dõi** — khi feed rỗng chỉ hiện empty state;
   nên thêm khối "Gợi ý theo dõi" (dùng `GET /users?q=`).
+- [ ] **Chưa có staging/monitoring** — deploy thật cần healthcheck ngoài (UptimeRobot),
+  log aggregation, alert; hiện chỉ có /healthz, /readyz.
+- [ ] **Backup chưa có restore drill tự động** — script restore nên viết kèm và test định kỳ.

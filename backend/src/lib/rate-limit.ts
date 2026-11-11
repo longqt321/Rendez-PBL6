@@ -1,5 +1,6 @@
 import { createMiddleware } from "hono/factory"
 import type { AppEnv } from "../app"
+import { env } from "../env"
 import { ApiError } from "./errors"
 import { prisma } from "./prisma"
 
@@ -21,14 +22,57 @@ export interface RateLimitOptions {
   scope: string
 }
 
-/** IP người gọi — sau proxy thì lấy phần tử đầu của `X-Forwarded-For`. */
-function clientIp(headers: Headers): string {
+/** Đổi IPv4 dạng chuỗi sang số nguyên 32-bit; `null` nếu không phải IPv4 hợp lệ. */
+function ipv4ToInt(ip: string): number | null {
+  const parts = ip.split(".")
+  if (parts.length !== 4) return null
+  let value = 0
+  for (const part of parts) {
+    if (!/^\d{1,3}$/u.test(part)) return null
+    const octet = Number(part)
+    if (octet > 255) return null
+    value = value * 256 + octet
+  }
+  return value >>> 0
+}
+
+/** `address` có khớp mẫu proxy (`1.2.3.4` hoặc `10.0.0.0/8`) không. */
+function matchesProxy(address: string, pattern: string): boolean {
+  const [network, bitsRaw] = pattern.split("/")
+  if (bitsRaw === undefined) return address === pattern
+
+  const bits = Number(bitsRaw)
+  const addressInt = ipv4ToInt(address)
+  const networkInt = ipv4ToInt(network ?? "")
+  if (addressInt === null || networkInt === null) return false
+  if (!Number.isInteger(bits) || bits < 0 || bits > 32) return false
+
+  const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0
+  return (addressInt & mask) === (networkInt & mask)
+}
+
+/**
+ * IP người gọi, chống giả mạo `X-Forwarded-For`.
+ *
+ * - Có `remoteAddress` (Bun cung cấp từ socket): chỉ tin `X-Forwarded-For` khi
+ *   chính địa chỉ socket nằm trong `TRUSTED_PROXIES`; ngược lại dùng địa chỉ
+ *   socket — client tự gửi header không né được rate limit.
+ * - Không có `remoteAddress` (test gọi `app.request()` trực tiếp, runtime không
+ *   cung cấp socket): dùng `X-Forwarded-For` — đây là trường hợp duy nhất không
+ *   xác thực được nguồn, và production luôn có `remoteAddress`.
+ */
+export function clientIp(headers: Headers, remoteAddress: string | undefined): string {
   const forwarded = headers.get("x-forwarded-for")
-  if (forwarded) {
+  const fromTrustedProxy =
+    remoteAddress !== undefined &&
+    env.trustedProxies.some((pattern) => matchesProxy(remoteAddress, pattern))
+
+  if (forwarded && (fromTrustedProxy || remoteAddress === undefined)) {
     const first = forwarded.split(",")[0]?.trim()
     if (first) return first
   }
-  return headers.get("x-real-ip") ?? "unknown"
+
+  return remoteAddress || headers.get("x-real-ip") || "unknown"
 }
 
 /**
@@ -62,7 +106,7 @@ export async function hitRateLimit(
 /** Middleware giới hạn theo IP + scope; vượt ngưỡng trả 429 kèm `Retry-After`. */
 export function rateLimit(options: RateLimitOptions) {
   return createMiddleware<AppEnv>(async (c, next) => {
-    const key = `${options.scope}:${clientIp(c.req.raw.headers)}`
+    const key = `${options.scope}:${clientIp(c.req.raw.headers, c.env?.remoteAddress)}`
     const { count, resetAt } = await hitRateLimit(key, options.windowSeconds)
     if (count > options.limit) {
       const retryAfter = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))

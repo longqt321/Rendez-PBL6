@@ -11,7 +11,12 @@ await startQueue()
 
 const server = Bun.serve({
   port: env.PORT,
-  fetch: app.fetch,
+  /**
+   * Truyền địa chỉ socket vào app để rate limit biết request đến từ đâu — chỉ
+   * khi đó `X-Forwarded-For` mới được tin (và chỉ từ `TRUSTED_PROXIES`).
+   */
+  fetch: (request, bunServer) =>
+    app.fetch(request, { remoteAddress: bunServer.requestIP(request)?.address ?? "" }),
 })
 
 logger.info({ port: server.port, env: env.NODE_ENV }, "API đã khởi động")

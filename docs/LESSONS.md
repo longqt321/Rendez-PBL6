@@ -690,3 +690,48 @@ tổng còn 1700 → **41.2%**, vượt chỉ tiêu dù log ghi "đã cân bằn
 3. Số "loại" trong funnel phải có dấu (+/−) khi tầng có thể **thêm** bản ghi, không chỉ loại.
 4. Gán giá trị suy đoán (district từ centroid) phải có ngưỡng tin cậy; quá ngưỡng → để null,
    không bịa.
+
+## L-018 — Ngưỡng cảnh báo phải khớp ngưỡng cắt dữ liệu, nếu không lỗi im lặng
+
+**Ngày:** 2026-11-11
+**Người dùng yêu cầu:** "Kiểm tra lại phần warning."
+
+**Phát hiện khi rà khối `## Cảnh báo` của `build-corpus`:**
+
+| Lỗi | Chi tiết |
+|---|---|
+| Ngưỡng lệch | Code cắt cafe ở `cap = 35%` nhưng cảnh báo chỉ kêu khi `cafe > 50%`. Nếu bước downsample hỏng và để lại 45%, chương trình in **"✅ không có cảnh báo"** — sai hoàn toàn |
+| Mẫu số sai | `%` quận chia cho **toàn corpus**, trong khi nhiều POI có `district = null` → tỉ lệ bị pha loãng, cảnh báo lệch quận không bao giờ kích hoạt |
+| Hướng dẫn lỗi thời | Thông điệp "chạy `-round L2..L6`" trong khi đã có L7 |
+| Thiếu cảnh báo cho thứ mình vừa thêm | Thêm giải trí, `mart`, `mall` nhưng không có cảnh báo nào kiểm chúng có mặt |
+
+**Quy tắc rút ra:**
+
+1. **Mọi ngưỡng dùng để cắt/lọc dữ liệu phải có cảnh báo tương ứng dùng CÙNG con số.**
+   Cắt ở 35% thì cảnh báo phải kêu khi vượt 35% + epsilon.
+2. Tỉ lệ phải chia cho **mẫu số đúng**: "POI có quận" ≠ "toàn corpus".
+3. Khi thêm một loại dữ liệu mới (giải trí, `mall`…), phải thêm cảnh báo "loại này có mặt
+   không" — nếu query sai, cảnh báo là thứ duy nhất phát hiện ra.
+4. Thông điệp cảnh báo phải nêu **số thật + ngưỡng + việc cần làm**, không chỉ "có vấn đề".
+5. Cảnh báo phải được kiểm bằng cách **cố tình làm sai** (chạy với `-cap-cafe 0.9` để xem
+   cảnh báo có kêu không) — không chỉ đọc code.
+
+## L-019 — Bất biến của seed phải kiểm CHẤT LƯỢNG dữ liệu, không chỉ sự tồn tại
+
+**Bối cảnh:** 2026-11-11, G1–G4. Sau khi corpus OSM thay dataset gốc, test
+`suggestions-job` bắt đầu fail ngẫu nhiên: job phát hiện địa điểm trả 0 gợi ý dù
+bài đăng nhắc đúng tên place chưa publish.
+
+**Nguyên nhân gốc:** Bất biến mà seed bảo đảm là "có ≥ 1 place chưa publish"
+(DECISIONS 21) — nhưng place được chọn là **phần tử cuối dataset**, và corpus OSM
+kết thúc bằng place tên `"N&M"`. Chuẩn hoá xong tên còn `"n m"`: mọi token dài 1
+ký tự nên ranking không thể khớp, rating = 0 → điểm = 0 → lọc bỏ. Bất biến đúng
+về "tồn tại" nhưng sai về "dùng được".
+
+**Cách phòng tránh:**
+1. Mỗi bất biến dữ liệu phải viết kèm **điều kiện chất lượng** mà luồng nghiệp vụ
+   thực sự cần ("có place chưa publish **có tên khớp được**", không chỉ "tồn tại").
+2. Test chọn mẫu theo bất biến đó (tên dài nhất), không chọn "phần tử đầu/cuối"
+   — thứ tự dataset không phải hợp đồng.
+3. Khi thay dataset (491 → 2.726 dòng), phải chạy lại toàn bộ test phụ thuộc dữ
+   liệu ngay, không đợi test khác bắn ra.

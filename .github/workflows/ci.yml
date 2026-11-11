@@ -71,3 +71,48 @@ jobs:
       # Tuần tự: mỗi file test dựng container Postgres riêng.
       - name: Test
         run: bun test --parallel=1
+
+  # Cấu hình deploy: chỉ kiểm cú pháp compose (không chạy container thật).
+  deploy-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Kiểm tra compose production
+        env:
+          BETTER_AUTH_SECRET: ci-placeholder-secret
+          BETTER_AUTH_URL: https://ci.example.com
+          CORS_ORIGINS: https://ci.example.com
+          POSTGRES_PASSWORD: ci-placeholder
+        run: docker compose -f compose.yaml -f deploy/compose.prod.yml config > /dev/null
+
+      - name: Kiểm tra script backup (shellcheck nếu có, else bash -n)
+        run: |
+          if command -v shellcheck > /dev/null; then
+            shellcheck deploy/backup-db.sh
+          else
+            bash -n deploy/backup-db.sh
+          fi
+
+  # E2E với mock in-memory — phủ luồng UI không cần backend thật.
+  e2e-mock:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Cài dependency
+        working-directory: .
+        run: bun install --frozen-lockfile
+
+      - name: Cài trình duyệt Playwright
+        run: bunx playwright install --with-deps chromium
+
+      - name: E2E (mock)
+        run: bun run e2e --project=mock

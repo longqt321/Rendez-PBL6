@@ -1,5 +1,7 @@
 /**
- * Seed idempotent: import `frontend/data/cold-start/places.json` (491 place thật).
+ * Seed idempotent: ưu tiên `backend/data/places-expanded.json` (corpus OSM mở rộng,
+ * sinh bởi scripts/build-corpus), không có thì dùng `frontend/data/cold-start/places.json`
+ * (491 place gốc).
  *
  * Nguyên tắc (D-049, K4): KHÔNG bịa số liệu.
  * - `rating`/`reviewCount` không lưu cột — tính bằng COUNT/AVG (D3).
@@ -68,6 +70,25 @@ const CATEGORY_MAP: Record<string, PlaceCategory> = {
   "banh-cen": "street-food",
   "nem-lui": "street-food",
   banh: "bakery",
+  // Nhãn mới từ corpus OSM mở rộng (D-AI-32, D-AI-37, D-AI-38): map về 6 nhóm frontend.
+  "quan-nhau": "restaurant",
+  farm: "restaurant",
+  "sieu-thi": "restaurant",
+  mall: "restaurant",
+  trung: "restaurant",
+  "hu-tieu": "restaurant",
+  nuong: "restaurant",
+  chao: "restaurant",
+  // Giải trí (L7) — frontend chỉ có 6 nhóm, map gần nhất về mặt trải nghiệm.
+  // KHÔNG có `casino` — đã bỏ khỏi corpus theo yêu cầu user.
+  karaoke: "bar",
+  "music-box": "cafe",
+  cinema: "bar",
+  bida: "bar",
+  bowling: "bar",
+  arcade: "bar",
+  "water-park": "bar",
+  spa: "restaurant",
 }
 
 /**
@@ -83,8 +104,43 @@ const PRISMA_CATEGORY: Record<PlaceCategory, PrismaPlaceCategory> = {
   bar: "bar",
 }
 
-/** Địa điểm chưa duyệt — giữ đúng 1 mục như mock để demo `isPublished: false`. */
+/**
+ * Địa điểm chưa duyệt — giữ đúng 1 mục như mock để demo `isPublished: false`.
+ *
+ * Hợp đồng seed: LUÔN có ít nhất 1 place chưa publish (luồng gợi ý địa điểm
+ * A7.2 và test phụ thuộc nó). Dataset gốc 491 place chứa id của mock; corpus
+ * mở rộng từ OSM thì không — khi đó chọn phần tử CUỐI của dataset (xác định
+ * theo dữ liệu, không phải hardcode id mới mỗi lần dataset thay đổi).
+ */
 const UNPUBLISHED_IDS = new Set(["ram-cuon-cai-di-hoa-6152681085"])
+
+/**
+ * Tên địa điểm có dùng được cho gợi ý/khớp tìm kiếm không.
+ *
+ * Corpus OSM có tên rác kiểu "N&M" — place như vậy làm bất biến "có ≥ 1 place
+ * chưa publish" trở nên vô nghĩa: job gợi ý không thể khớp tên (token < 2 ký tự)
+ * nên test và luồng demo đều rỗng. Chọn place có tên ≥ 2 từ, không ký tự đặc biệt.
+ */
+function isSuggestableName(name: string): boolean {
+  const words = name
+    .trim()
+    .split(/\s+/u)
+    .filter((word) => /[\p{L}]{2,}/u.test(word))
+  return words.length >= 2 && name.length >= 8 && !/[&/|]/u.test(name)
+}
+
+function pickUnpublishedIds(places: ColdStartPlace[]): Set<string> {
+  const fromMock = places.filter((place) => UNPUBLISHED_IDS.has(place.id))
+  if (fromMock.length > 0) return new Set(fromMock.map((place) => place.id))
+
+  // Dataset không chứa id của mock: chọn place cuối có TÊN DÙNG ĐƯỢC (xác định
+  // theo dữ liệu, không hardcode id) để job gợi ý và test có mẫu khớp tên.
+  const usable = places.filter((place) => isSuggestableName(place.name))
+  const chosen = usable.at(-1) ?? places.at(-1)
+  if (!chosen) return new Set()
+  console.info(`[seed] Dataset không chứa id chưa duyệt của mock — dùng place: ${chosen.id}`)
+  return new Set([chosen.id])
+}
 
 /** Ngày duyệt mặc định cho dữ liệu cold-start (mock server, không thuộc dataset). */
 const PUBLISHED_AT = new Date("2026-11-09T08:00:00+07:00")
@@ -97,7 +153,9 @@ const PUBLISHED_AT = new Date("2026-11-09T08:00:00+07:00")
  */
 const SEED_BASE_AT = new Date("2026-11-09T00:00:00+07:00")
 
-const DATASET_PATH = join(import.meta.dir, "../../frontend/data/cold-start/places.json")
+const ORIGINAL_PATH = join(import.meta.dir, "../../frontend/data/cold-start/places.json")
+// Corpus mở rộng từ OSM (nếu có) — ưu tiên dùng. Sinh bởi scripts/build-corpus.
+const EXPANDED_PATH = join(import.meta.dir, "../data/places-expanded.json")
 
 function toStatus(raw: string): PlaceStatus {
   return raw === "open" || raw === "closed" ? raw : "unknown"
@@ -110,19 +168,25 @@ function toDate(value: string | null): Date | null {
 }
 
 async function main(): Promise<void> {
-  const file = Bun.file(DATASET_PATH)
+  // Ưu tiên corpus mở rộng; nếu chưa có thì dùng dataset gốc 491 place.
+  let datasetPath = EXPANDED_PATH
+  if (!(await Bun.file(EXPANDED_PATH).exists())) {
+    datasetPath = ORIGINAL_PATH
+  }
+  const file = Bun.file(datasetPath)
   if (!(await file.exists())) {
-    throw new Error(`Không tìm thấy dataset: ${DATASET_PATH}`)
+    throw new Error(`Không tìm thấy dataset: ${datasetPath}`)
   }
 
   const dataset = (await file.json()) as ColdStartDataset
-  console.info(`[seed] Đọc ${dataset.places.length} place từ ${DATASET_PATH}`)
+  console.info(`[seed] Đọc ${dataset.places.length} place từ ${datasetPath}`)
 
   let images = 0
   let index = 0
+  const unpublishedIds = pickUnpublishedIds(dataset.places)
 
   for (const raw of dataset.places) {
-    const publishedAt = UNPUBLISHED_IDS.has(raw.id) ? null : PUBLISHED_AT
+    const publishedAt = unpublishedIds.has(raw.id) ? null : PUBLISHED_AT
     const data = {
       createdAt: new Date(SEED_BASE_AT.getTime() - index * 1_000),
       name: raw.name,
@@ -189,6 +253,18 @@ async function main(): Promise<void> {
     }
 
     index += 1
+  }
+
+  // Dọn dư liệu: các place tier='osm' KHÔNG còn trong dataset hiện tại là rác
+  // từ lần seed trước (corpus OSM thay đổi id mỗi lần build). Chỉ xoá tier='osm'
+  // — tier curated/curated-v2 là dữ liệu kiểm tay, KHÔNG BAO GIỜ tự xoá.
+  // notIn giới hạn ~65k tham số của Postgres; corpus hiện ~2k, đủ dư địa.
+  const datasetIds = dataset.places.map((p) => p.id)
+  const stale = await prisma.place.deleteMany({
+    where: { tier: "osm", id: { notIn: datasetIds } },
+  })
+  if (stale.count > 0) {
+    console.info(`[seed] Dọn ${stale.count} place tier='osm' không còn trong corpus.`)
   }
 
   const placeCount = await prisma.place.count()

@@ -238,3 +238,17 @@ Xác minh: `bun test test/http-cache.test.ts test/places.test.ts test/auth.test.
 - Mock: filter `following` theo `followedByMe`; e2e social thêm test tab.
 
 Xác minh: typecheck 0 lỗi; FE unit 72 pass; `bun test test/posts.test.ts` 25 pass.
+
+## G4 — Hạ tầng deploy (2026-11-11 chiều, CHUẨN BỊ — không deploy)
+
+- `TRUSTED_PROXIES` (env) + `server.ts` truyền `remoteAddress` từ socket; `clientIp()` chỉ
+  tin `X-Forwarded-For` khi request đến từ proxy đã khai (IP/CIDR IPv4). 6 unit test.
+- `deploy/compose.prod.yml`: NODE_ENV=production, Postgres/API không lộ cổng (`!override []`),
+  Caddy 80/443 + TLS, IP tĩnh cho TRUSTED_PROXIES; `deploy/Caddyfile`; `deploy/.env.example`;
+  `deploy/README.md`; `deploy/backup-db.sh` (pg_dump -Fc + gzip + retention).
+- CI thêm job `deploy-config` (validate compose + `bash -n`) và `e2e-mock` (Playwright).
+
+Xác minh: `docker compose -f compose.yaml -f deploy/compose.prod.yml config` OK (không còn
+port 8000/5432 lộ ra, Caddyfile đúng đường dẫn); `deploy/backup-db.sh` chạy thật trên dev DB
+→ file 192K, magic `PGDMP` hợp lệ, đã xoá file test.
+Chưa xác minh: chạy thật trên máy chủ, TLS Let's Encrypt (cần domain công khai).

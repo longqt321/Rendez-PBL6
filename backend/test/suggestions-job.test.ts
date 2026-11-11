@@ -62,11 +62,13 @@ describe("job phát hiện địa điểm", () => {
 
   beforeAll(async () => {
     author = await register("Người Viết", `job_author_${suffix}`)
-    const place = await prisma.place.findFirst({
+    // Seed bảo đảm ≥ 1 place chưa publish có tên dùng được (xem `pickUnpublishedIds`
+    // trong scripts/seed.ts); nếu dataset có nhiều, chọn tên dài nhất để ổn định.
+    const places = await prisma.place.findMany({
       where: { publishedAt: null, deletedAt: null },
       select: { id: true, name: true },
-      orderBy: { id: "asc" },
     })
+    const place = places.sort((a, b) => b.name.length - a.name.length)[0]
     if (!place) throw new Error("Dataset seed không còn place chưa publish để test job")
     unpublishedId = place.id
     unpublishedName = place.name

@@ -16,7 +16,14 @@ interface AppVariables {
   userId: string
 }
 
-export type AppEnv = { Variables: AppVariables }
+export type AppEnv = {
+  Variables: AppVariables
+  /**
+   * Thông tin do tầng runtime truyền vào (`server.ts` lấy từ socket). Test gọi
+   * `app.request()` trực tiếp nên trường này có thể vắng — xem `clientIp()`.
+   */
+  Bindings: { remoteAddress?: string }
+}
 
 /**
  * App factory — tách khỏi `server.ts` để test gọi `app.request()` trực tiếp

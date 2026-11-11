@@ -2657,3 +2657,20 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
    danh sách lẫn badge thay vì SSE — SSE đã có cho phòng lọc nhóm nhưng thông báo cần chạy
    được sau proxy/restart mà không cần hạ tầng thêm; nâng lên SSE/WebSocket khi cần realtime
    thật (BACKLOG).
+29. **TRUSTED_PROXIES + remoteAddress (G4)**: `Bun.serve` truyền `server.requestIP(req)` vào
+   app qua Bindings (`remoteAddress`); `clientIp()` chỉ tin `X-Forwarded-For` khi địa chỉ
+   socket nằm trong `TRUSTED_PROXIES` (IP hoặc CIDR IPv4). Không có `remoteAddress` (test gọi
+   `app.request()` trực tiếp) thì dùng XFF — production luôn có socket nên client không thể
+   giả mạo header để né rate limit.
+30. **Deploy chỉ chuẩn bị, không chạy** (yêu cầu người dùng): `deploy/compose.prod.yml`
+   (NODE_ENV=production, Postgres/API không lộ cổng, Caddy 80/443 + TLS, IP tĩnh
+   172.30.0.2/3 cho TRUSTED_PROXIES), `deploy/Caddyfile`, `deploy/backup-db.sh`
+   (pg_dump -Fc + gzip + retention 14 ngày, đã test trên dev DB), `deploy/.env.example`,
+   `deploy/README.md`. Compose dùng `!override []` để xoá port mapping của dev — compose
+   merge mặc định nối danh sách, không ghi đè.
+31. **Seed chọn place chưa publish có TÊN DÙNG ĐƯỢC** (2026-11-11): bất biến cũ chỉ bảo đảm
+   "tồn tại ≥ 1 place chưa publish" và lấy phần tử cuối dataset; corpus OSM kết thúc bằng
+   `"N&M"` → chuẩn hoá còn `"n m"`, ranking không khớp được, job gợi ý trả 0 và 2 test fail.
+   `pickUnpublishedIds()` giờ lọc theo `isSuggestableName()` (≥ 2 từ có chữ, ≥ 8 ký tự, không
+   `& / |`) rồi lấy phần tử cuối — vẫn xác định theo dữ liệu, không hardcode id. Test chọn
+   place chưa publish có tên DÀI NHẤT thay vì `orderBy id`. Bài học: `docs/LESSONS.md` L-019.

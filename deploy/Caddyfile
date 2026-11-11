@@ -1,0 +1,34 @@
+# Caddy 2 — TLS tự động (Let's Encrypt) + reverse proxy tới API và FE tĩnh.
+#
+# Thay `rendez.example.com` bằng domain thật trước khi chạy.
+
+rendez.example.com {
+	# API: proxy vào service `api` trong mạng compose.
+	handle /api/v1/* {
+		reverse_proxy api:8000
+	}
+
+	# Health check cũng đi qua proxy để giám sát từ ngoài.
+	handle /healthz {
+		reverse_proxy api:8000
+	}
+	handle /readyz {
+		reverse_proxy api:8000
+	}
+
+	# Frontend: thư mục dist/ build bằng `bun run build` (Vite).
+	handle {
+		root * /srv/web
+		try_files {path} /index.html
+		file_server
+	}
+
+	# Header bảo mật cơ bản (API đã tự gắn một phần qua hono/secure-headers).
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	encode gzip
+}

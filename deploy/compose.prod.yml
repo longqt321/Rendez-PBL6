@@ -1,0 +1,77 @@
+# Cấu hình PRODUCTION — chồng lên `compose.yaml`:
+#   docker compose -f compose.yaml -f deploy/compose.prod.yml up -d
+#
+# KHÁC BIỆT VỚI DEV:
+# - NODE_ENV=production + BETTER_AUTH_SECRET bắt buộc (env.ts từ chối secret dev).
+# - Postgres KHÔNG mở cổng ra ngoài; API chỉ lắng nghe trong mạng docker, Caddy
+#   là cổng duy nhất ra ngoài (80/443, TLS tự động qua Let's Encrypt).
+# - Volumes dữ liệu trỏ tới thư mục máy chủ (backup dễ, không nằm trong named
+#   volume mặc định của compose).
+#
+# KHÔNG tự chạy file này nếu chưa đọc docs/DEPLOY.md — đây là cấu hình chuẩn bị,
+# việc deploy do người dùng thực hiện.
+
+services:
+  postgres:
+    ports: !override [] # không lộ Postgres ra ngoài
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD phải được đặt}
+    volumes:
+      - /var/lib/rendez/pgdata:/var/lib/postgresql/data
+
+  migrate:
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD phải được đặt}@postgres:5432/${POSTGRES_DB:-rendez}
+
+  api:
+    environment:
+      NODE_ENV: production
+      # Bắt buộc đặt qua file .env cạnh compose (xem .env.example trong deploy/).
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET phải được đặt}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL phải là URL công khai}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS phải là origin của FE}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD phải được đặt}@postgres:5432/${POSTGRES_DB:-rendez}
+      # Caddy được gán IP tĩnh trong mạng riêng (xem `networks` dưới) — chỉ IP
+      # này được tin khi đọc X-Forwarded-For.
+      TRUSTED_PROXIES: "172.30.0.2"
+    ports: !override [] # không lộ API trực tiếp; Caddy proxy vào
+    restart: unless-stopped
+    expose:
+      - "8000"
+    networks:
+      rendez_net:
+        ipv4_address: 172.30.0.3
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: rendez-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Đường dẫn tương đối tính từ compose.yaml gốc (file đầu tiên), không phải
+      # từ thư mục deploy/.
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      rendez_net:
+        ipv4_address: 172.30.0.2
+
+  # Frontend build tĩnh (Vite) — phục vụ qua Caddy luôn, không cần container riêng.
+  # Build FE ở máy chủ: cd frontend && bun run build → thư mục dist/ mount cho Caddy.
+
+networks:
+  rendez_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  caddy_data:
+  caddy_config:
