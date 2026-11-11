@@ -391,3 +391,7 @@ lịch sử; không còn việc mở ở đây.
 - [ ] **Xác thực email khi đăng ký** (`emailVerified` đang luôn false).
 - [ ] **Cho phép đăng ký lại email đã xoá tài khoản** (hiện unique index chặn — DECISIONS 24).
 - [ ] **Xuất dữ liệu cá nhân** (plan H6) — rà soát khi làm.
+- [ ] **Cache gợi ý là per-instance** (Map TTL trong tiến trình, DECISIONS 27) — khi chạy nhiều
+  instance cần Redis hoặc chấp nhận mỗi instance tự nạp lại sau TTL.
+- [ ] **`/users/:handle` chỉ cache 15s** — nếu hồ sơ đổi (follow/bio) client có thể thấy dữ liệu
+  cũ tối đa 15s; cân nhắc ETag revalidate thay vì max-age khi có nhiều người dùng thật.

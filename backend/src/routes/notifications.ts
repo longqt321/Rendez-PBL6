@@ -5,6 +5,7 @@ import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { findNotificationById, listAllNotifications, listNotifications } from "../lib/notifications"
 import { requireAuth } from "../lib/session"
+import { noStore } from "../lib/http-cache"
 
 /**
  * Route thông báo (T4.5) — `GET /notifications`, `PATCH /notifications`
@@ -25,7 +26,7 @@ export function createNotificationsRouter() {
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
     const page = await listNotifications(c.get("userId"), cursor, NOTIFICATIONS_PAGE_SIZE)
-    return c.json({
+    return noStore(c, {
       items: page.items,
       next: page.next ? encodeCursor(page.next) : null,
     })
@@ -39,7 +40,7 @@ export function createNotificationsRouter() {
       data: { readAt: new Date() },
     })
 
-    return c.json(await listAllNotifications(userId))
+    return noStore(c, await listAllNotifications(userId))
   })
 
   router.patch("/notifications/:id", requireAuth, async (c) => {

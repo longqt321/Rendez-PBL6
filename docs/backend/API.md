@@ -252,3 +252,14 @@ Client chuyển `RoomFilter` sang tham số của `GET /places` (đã có từ P
 | 429 | Vượt rate limit (kèm `Retry-After`) |
 | 500 | Lỗi không lường trước — không trả stack/SQL ra ngoài |
 | 503 | `/readyz` khi DB chết; `/media` khi chưa cấu hình R2 |
+
+## Cache (G2)
+
+| Endpoint | `Cache-Control` | Ghi chú |
+|---|---|---|
+| `GET /places/:id` | `public, max-age=60` | kèm `ETag`; `If-None-Match` khớp → `304` không body |
+| `GET /places/map` | `public, max-age=30` | kèm `ETag` |
+| `GET /users/:handle` | `private, max-age=15` | `followedByMe` phụ thuộc người xem |
+| `GET /me`, `PATCH /me` | `no-store` | dữ liệu riêng tư |
+| `GET /notifications`, `PATCH /notifications*` | `no-store` | thay đổi liên tục |
+| `GET /places/suggestions` | — | cache ứng viên 60s trong tiến trình + single-flight; invalidate khi publish place |

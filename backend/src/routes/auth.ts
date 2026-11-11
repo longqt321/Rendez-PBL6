@@ -9,6 +9,7 @@ import { prisma } from "../lib/prisma"
 import { rateLimit } from "../lib/rate-limit"
 import { findProfileById } from "../lib/users"
 import { requireAuth } from "../lib/session"
+import { noStore } from "../lib/http-cache"
 
 /**
  * Route auth + hồ sơ (Phase 1).
@@ -105,7 +106,7 @@ export function createAuthRouter() {
 
   /** Hồ sơ của chính mình — 401 khi chưa đăng nhập (khớp mock). */
   router.get("/me", requireAuth, async (c) => {
-    return c.json(await buildProfile(c.get("userId"), c.get("userId")))
+    return noStore(c, await buildProfile(c.get("userId"), c.get("userId")))
   })
 
   /** Cập nhật hồ sơ — chỉ 4 trường hợp đồng; trường lạ bị bỏ qua. */
@@ -118,7 +119,7 @@ export function createAuthRouter() {
 
     const userId = c.get("userId")
     await prisma.user.update({ where: { id: userId }, data: parsed.data })
-    return c.json(await buildProfile(userId, userId))
+    return noStore(c, await buildProfile(userId, userId))
   })
 
   /**

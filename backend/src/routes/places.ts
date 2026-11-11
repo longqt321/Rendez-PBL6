@@ -12,8 +12,9 @@ import {
 import { getViewer, requireAuth } from "../lib/session"
 import { listPosts } from "../lib/posts"
 import { rankPlaceSuggestions } from "../lib/ranking"
+import { jsonWithCache } from "../lib/http-cache"
 import {
-  fetchRankCandidates,
+  fetchPublishedRankCandidates,
   normalizeCaption,
   toSuggestionCandidate,
   toSuggestionPlaceSummary,
@@ -67,7 +68,7 @@ export function createPlacesRouter() {
 
     const [captionNorm, rows] = await Promise.all([
       normalizeCaption(caption),
-      fetchRankCandidates(true),
+      fetchPublishedRankCandidates(),
     ])
 
     const ranked = rankPlaceSuggestions(captionNorm, rows.map(toSuggestionCandidate), limit)
@@ -82,7 +83,8 @@ export function createPlacesRouter() {
   router.get("/places/map", async (c) => {
     const filters = parsePlaceFilters(c.req.query())
     const result = await listPlacesInMap(filters, MAP_MAX_PLACES)
-    return c.json(result)
+    // Dữ liệu công khai, đổi chậm — cho phép trình duyệt/CDN dùng lại 30 giây.
+    return jsonWithCache(c, result, { maxAge: 30 })
   })
 
   /** "Đã lưu" — hợp các bộ sưu tập của chính mình (đứng trước `/places/:id`). */
@@ -129,7 +131,7 @@ export function createPlacesRouter() {
 
     const place = await findPublicPlace(id)
     if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
-    return c.json(place)
+    return jsonWithCache(c, place, { maxAge: 60 })
   })
 
   return router

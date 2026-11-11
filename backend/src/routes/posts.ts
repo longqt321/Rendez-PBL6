@@ -9,6 +9,7 @@ import { findPost, listPosts, type PostFilter } from "../lib/posts"
 import { findComment, listCommentsForPost, parseCommentSort } from "../lib/comments"
 import { createActorNotification } from "../lib/notifications"
 import { enqueuePlaceDetect } from "../lib/queue"
+import { invalidateSuggestionCache } from "../lib/suggestions"
 import { getViewer, requireAuth } from "../lib/session"
 
 /**
@@ -158,6 +159,9 @@ export function createPostsRouter() {
         data: { readAt: new Date() },
       }),
     ])
+
+    // Place vừa được publish → cache ứng viên gợi ý đã cũ (G2).
+    if (place.publishedAt === null) invalidateSuggestionCache()
 
     const updated = await findPost(postId, userId)
     if (!updated) throw new ApiError(404, "Không tìm thấy bài đăng")

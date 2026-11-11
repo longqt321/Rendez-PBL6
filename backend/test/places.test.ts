@@ -314,3 +314,31 @@ describe("GET /places/suggestions", () => {
     expect(body.suggestions.length).toBeLessThanOrEqual(10)
   })
 })
+
+describe("cache HTTP (G2)", () => {
+  test("GET /places/:id trả ETag + Cache-Control public, 304 khi If-None-Match khớp", async () => {
+    const published = await prisma.place.findFirst({
+      where: { publishedAt: { not: null }, deletedAt: null },
+      select: { id: true },
+    })
+    if (!published) throw new Error("Dataset test không có place đã publish")
+
+    const first = await app.request(`/api/v1/places/${published.id}`)
+    expect(first.status).toBe(200)
+    const etag = first.headers.get("etag")
+    expect(etag).toBeTruthy()
+    expect(first.headers.get("cache-control")).toBe("public, max-age=60")
+
+    const second = await app.request(`/api/v1/places/${published.id}`, {
+      headers: { "If-None-Match": etag ?? "" },
+    })
+    expect(second.status).toBe(304)
+    expect(await second.text()).toBe("")
+  })
+
+  test("GET /places/map trả Cache-Control public 30 giây", async () => {
+    const res = await app.request("/api/v1/places/map")
+    expect(res.status).toBe(200)
+    expect(res.headers.get("cache-control")).toBe("public, max-age=30")
+  })
+})

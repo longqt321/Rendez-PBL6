@@ -10,6 +10,7 @@ import { createActorNotification } from "../lib/notifications"
 import { listPosts } from "../lib/posts"
 import { getViewer, requireAuth } from "../lib/session"
 import { findProfileByHandle, findProfileById, setFollow } from "../lib/users"
+import { jsonWithCache } from "../lib/http-cache"
 
 /**
  * Route người dùng (T2.6 + T5.3 + T5.4).
@@ -142,7 +143,9 @@ export function createUsersRouter() {
     const viewer = await getViewer(c)
     const profile = await findProfileByHandle(handle, viewer?.id ?? null)
     if (!profile) throw new ApiError(404, "Không tìm thấy người dùng")
-    return c.json(profile)
+    // `followedByMe` phụ thuộc người xem — cache riêng tư theo trình duyệt,
+    // không cho CDN lưu chung.
+    return jsonWithCache(c, profile, { maxAge: 15, scope: "private" })
   })
 
   /**

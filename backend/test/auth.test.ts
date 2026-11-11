@@ -86,6 +86,7 @@ describe("auth + hồ sơ", () => {
   test("GET /me có cookie trả hồ sơ khớp schema", async () => {
     const res = await call("/api/v1/me", { cookie })
     expect(res.status).toBe(200)
+    expect(res.headers.get("cache-control")).toBe("no-store")
     expect(userProfileSchema.safeParse(await res.json()).success).toBe(true)
   })
 

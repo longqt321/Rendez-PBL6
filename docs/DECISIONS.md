@@ -2642,3 +2642,11 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
    này nằm ngoài `AppShell`; menu "Đăng nhập" của header giờ điều hướng tới `/login` thay vì
    hack "đăng nhập lại phiên mock" cũ. Mock thêm tài khoản dev `me@rendez.test` /
    `password123` để e2e chạy được cả hai project.
+27. **Cache G2: ETag/`Cache-Control` cho dữ liệu công khai + TTL cache trong tiến trình cho gợi ý**
+   (2026-11-11). `/places/:id` (public, 60s), `/places/map` (public, 30s), `/users/:handle`
+   (private, 15s vì `followedByMe` phụ thuộc người xem); `/me` và `/notifications` là
+   `no-store`. ETag tính từ body JSON (sha256) nên tự đổi khi dữ liệu đổi — không cần
+   invalidate thủ công. `GET /places/suggestions` cache ứng viên đã publish 60s + single-flight
+   (Map TTL tự viết, KHÔNG thêm `lru-cache`); `PATCH /posts/:id/place` publish place gọi
+   `invalidateSuggestionCache()` ngay. Cache nằm trong tiến trình — nhiều instance vẫn đúng
+   nhưng mỗi instance tự nạp; chuyển sang Redis khi scale ngang (BACKLOG).

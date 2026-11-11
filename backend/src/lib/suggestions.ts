@@ -2,6 +2,7 @@ import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { toApiCategory } from "./enums"
 import type { RankCandidate } from "./ranking"
+import { createTtlCache } from "./http-cache"
 
 /**
  * Gợi ý địa điểm cho nội dung đang soạn (T2.4) — phần SQL của A7.1.
@@ -77,8 +78,32 @@ export async function fetchRankCandidates(publishedOnly: boolean): Promise<Candi
   `)
 }
 
-/** Chuẩn hoá caption bằng cùng biểu thức SQL — không tự viết lại NFD ở JS. */
-export async function normalizeCaption(caption: string): Promise<string> {
+/**
+ * Cache ứng viên đã publish cho gợi ý (G2).
+ *
+ * Query này quét toàn bộ place công khai + rating ảnh — đắt nhất trong route
+ * gợi ý, và dữ liệu chỉ đổi khi có place mới publish hoặc review mới. TTL 60s
+ * là mức đánh đổi đủ tươi cho demo; `invalidateSuggestionCache()` gọi ngay khi
+ * publish place để không phải chờ hết TTL.
+ */
+const publishedCandidatesCache = createTtlCache<CandidateRow[]>({
+  ttlMs: 60_000,
+  maxEntries: 4,
+})
+
+/** Ứng viên đã publish (có cache + single-flight) — dùng cho `GET /places/suggestions`. */
+export function fetchPublishedRankCandidates(): Promise<CandidateRow[]> {
+  return publishedCandidatesCache.get("published", () => fetchRankCandidates(true))
+}
+
+/** Xoá cache gợi ý — gọi khi dữ liệu place công khai thay đổi (publish). */
+export function invalidateSuggestionCache(): void {
+  publishedCandidatesCache.clear()
+}
+
+/** Chuẩn hoá caption bằng cùng biểu thức SQL — không tự viết lại NFD ở JS. */ export async function normalizeCaption(
+  caption: string,
+): Promise<string> {
   const rows = await prisma.$queryRaw<{ normalized: string }[]>(
     Prisma.sql`SELECT ${norm(Prisma.sql`${caption}::text`)} AS normalized`,
   )

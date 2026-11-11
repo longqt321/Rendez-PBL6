@@ -216,3 +216,15 @@ Xác minh:
 - `cd backend && bun test test/auth.test.ts --parallel=1` — **16 pass / 0 fail**.
 - `cd frontend && bun run test` — **72 pass / 0 fail**, 16 file.
 - `bun run e2e --project=mock` — **17/17 pass** (16.8s).
+
+## G2 — Cache (2026-11-11 chiều)
+
+- `lib/http-cache.ts`: `jsonWithCache` (ETag sha256 + `Cache-Control` + 304), `noStore`,
+  `createTtlCache` (TTL + single-flight + giới hạn phần tử, không thêm dependency).
+- Áp dụng: `/places/:id` (public 60s), `/places/map` (public 30s), `/users/:handle`
+  (private 15s), `/me` + `/notifications` (`no-store`).
+- `GET /places/suggestions` dùng `fetchPublishedRankCandidates()` (cache 60s);
+  `PATCH /posts/:id/place` publish place → `invalidateSuggestionCache()`.
+
+Xác minh: `bun test test/http-cache.test.ts test/places.test.ts test/auth.test.ts --parallel=1`
+— **48 pass / 0 fail**; typecheck 0 lỗi.
