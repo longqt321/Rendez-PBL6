@@ -21,6 +21,8 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"]],
   globalSetup: backendURL ? "./e2e/global-setup.ts" : undefined,
+  // Dọn tài khoản + bài kiểm thử khỏi DB dev sau khi chạy project backend.
+  globalTeardown: backendURL ? "./e2e/global-teardown.ts" : undefined,
   use: {
     baseURL,
     locale: "vi-VN",
