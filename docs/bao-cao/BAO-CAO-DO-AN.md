@@ -848,6 +848,13 @@ máy chủ công khai, đồng bộ SSE nhiều instance và benchmark ở quy m
 | 9 | `20261111080000_places_search_trgm` | GIN `pg_trgm` cho tìm kiếm không dấu (hàm `immutable_unaccent`, `immutable_array_to_string`) |
 | 10 | `20261111090000_places_search_normalize` | Hàm `immutable_search_normalize` (bỏ dấu + dấu câu, khớp `normalizeText` của mock), dựng lại index trên biểu thức chuẩn hoá 2 phía |
 
+> [!NOTE]
+> Trong quá trình phát triển, migration 9 và 10 từng deploy thất bại ở lần thử đầu (hàm SQL
+> chưa đủ IMMUTABLE / thiếu schema prefix khi Prisma chạy với `search_path` rỗng). Đã xử lý
+> bằng `prisma migrate resolve --rolled-back` rồi deploy lại bản sửa — bảng `_prisma_migrations`
+> giữ lại các dòng "rolled back" làm dấu vết lịch sử; mỗi migration hiện có đúng một dòng
+> `finished_at` (đã kiểm bằng psql).
+
 ### Phụ lục B. Lệnh vận hành thường dùng
 
 ```bash
