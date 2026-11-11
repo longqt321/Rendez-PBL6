@@ -1,5 +1,10 @@
 # STACK-BE — Backend (đã cài & xác minh)
 
+> Ghi chú: mục 3–6 là ảnh chụp lúc scaffold Phase 0 (18 bảng, 2 migration, seed 491).
+> Trạng thái hiện tại (25 bảng, 14 migration, seed 344, 185 test) xem
+> [REPORT.md](file:///home/longtran/Projects/rendez/docs/backend/REPORT.md); mục 1–2
+> (version đã cài) vẫn đúng.
+
 Ngày: 2026-11-11. Nguồn: `bun install` thật + `node_modules/<pkg>/package.json` +
 `bunx prisma --version` + chạy migration/seed/smoke thật. Không ghi version từ trí nhớ.
 
