@@ -450,7 +450,7 @@ flowchart TB
   SRC --> R["routes/ (10 file)"]
   SRC --> L["lib/ (truy vấn & nghiệp vụ)"]
   SRC --> I["app.ts · server.ts · env.ts"]
-  BE --> PR["prisma/schema.prisma + 9 migration"]
+  BE --> PR["prisma/schema.prisma + 10 migration"]
   BE --> T["test/ (14 file, 131 test)"]
   BE --> SC["scripts/seed.ts"]
 ```
@@ -671,8 +671,8 @@ thiểu; bộ test chạy tuần tự (`--parallel=1`) để tránh tranh chấp
 
 | Bộ test | Số lượng | Kết quả | Thời gian |
 | --- | --- | --- | --- |
-| Backend integration/unit | 131 test / 14 file | **131 pass, 0 fail** | ~99 giây |
-| E2E với backend thật | 12 spec | **12 pass** | ~8,5 giây |
+| Backend integration/unit | 131 test / 14 file | **131 pass, 0 fail** | ~95 giây |
+| E2E với backend thật | 12 spec | **12 pass** | ~9 giây |
 | E2E với mock (hồi quy FE) | 13 spec | **13 pass** | ~15,8 giây |
 | Typecheck (FE + BE) | — | 0 lỗi | ~5 giây |
 
@@ -695,12 +695,13 @@ Phân bố test backend theo vùng chức năng:
 | `health.test.ts` | 2 | healthz, readyz |
 | `media.test.ts` | 3 | presign PUT khi R2 cấu hình, chặn SVG, folder lạ |
 
-Đo độ phủ bằng `bun test --coverage` (34 file đo được, gồm cả gói schema dùng chung):
+Đo độ phủ bằng `bun test --coverage` (52 file đo được, gồm cả gói schema dùng chung và
+client Prisma sinh sẵn):
 
 | Chỉ số | Trung bình | Ghi chú |
 | --- | --- | --- |
-| Độ phủ hàm | 90% | 13/34 file đạt 100% |
-| Độ phủ dòng | ~94% | |
+| Độ phủ hàm | 92,4% | 30/52 file đạt 100% |
+| Độ phủ dòng | 96,1% | |
 
 Các vùng thấp nhất đều có lý do rõ: `lib/queue.ts` (50% hàm — worker chỉ chạy khi pg-boss
 được bật trong server thật, test gọi trực tiếp job), `routes/media.ts` (nhánh chưa cấu hình

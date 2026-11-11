@@ -12,7 +12,7 @@
 | Migration đã áp dụng | 9 |
 | Route handler tự viết (`routes/` + `healthz`/`readyz`) | 52 (50 khai báo trong `routes/` + `GET /healthz` + `GET /readyz`) |
 | Mã nguồn backend (`src/**/*.ts`) | 35 file, ~4.200 dòng (routes + lib + hạ tầng) |
-| Test backend (`bun test --parallel=1`) | **131 pass / 0 fail**, 14 file, ~99 giây |
+| Test backend (`bun test --parallel=1`) | **131 pass / 0 fail**, 14 file, ~95 giây |
 | e2e Playwright với backend thật | **12/12 pass** (`VITE_ENABLE_MOCKS=false`) |
 | e2e Playwright với mock | **13/13 pass** |
 | Typecheck (`bun run typecheck` = FE + BE) | 0 lỗi |
