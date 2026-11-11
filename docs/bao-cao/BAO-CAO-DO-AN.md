@@ -767,6 +767,10 @@ Các hạng mục sau **chưa kiểm chứng được** trong khuôn khổ đồ
   thủ công trong code.
 - Tác vụ nền idempotent, có DLQ; migration có phiên bản; có runbook vận hành.
 - Bảo mật cơ bản đầy đủ: phiên HttpOnly, rate limit, kiểm quyền từng route, header bảo mật.
+- Quá trình audit tự rà soát đã phát hiện và sửa triệt để 9 lỗi thật (quyền gắn địa điểm, 500
+  do enum rác/ký tự NUL/cursor giả mạo, thiếu `?sort=top`, chuẩn hoá tìm kiếm 3 route, batch
+  job, `COUNT` cho bản đồ, thứ tự bình luận, đề xuất phòng nhận giá trị rác, code chết trong
+  `onError`) — mỗi lỗi đều có test chặn hồi quy.
 
 **Hạn chế**
 
