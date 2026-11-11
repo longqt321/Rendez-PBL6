@@ -42,3 +42,12 @@ test-results
 playwright-report
 blob-report
 frontend/e2e/.auth
+
+# Corpus OSM: binary build từ Go (tái sinh bằng `go build`) và dữ liệu thô tải lại được
+backend/scripts/build-corpus/build-corpus
+backend/scripts/crosscheck/crosscheck
+backend/scripts/fetch-osm/fetch-osm
+backend/data/raw/
+
+# Backup DB cục bộ (chứa dữ liệu thật, không commit)
+backend/data/backup-*.sql
