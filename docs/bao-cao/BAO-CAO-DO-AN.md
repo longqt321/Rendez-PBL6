@@ -736,6 +736,7 @@ mỗi endpoint gọi 20 lần liên tiếp sau 3 lần khởi động nóng:
 | `cursor` sai định dạng | 400 | 400 |
 | `category` là giá trị lạ | Không 500, trả trang rỗng | 200, `{items: [], next: null}` |
 | Query/body chứa ký tự NUL (`%00`) | 400, không lỗi hệ thống | 400 "Dữ liệu chứa ký tự không hợp lệ" |
+| Đề xuất phòng lọc `category=hack` | 400, phòng không hỏng | 400 "Giá trị đề xuất không hợp lệ" |
 | Mật khẩu 3 ký tự | 400 | 400 |
 | Cookie phiên | HttpOnly, SameSite | `HttpOnly; SameSite=Lax` |
 | CORS từ origin lạ | Không có `Access-Control-Allow-Origin` | Đúng |

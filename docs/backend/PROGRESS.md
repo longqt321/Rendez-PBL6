@@ -163,7 +163,7 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | --- | --- |
 | Typecheck FE + BE | 0 lỗi (`bun run typecheck`) |
 | Test backend | **132 pass / 0 fail**, 14 file, ~96 giây (`bun test --parallel=1`) |
-| E2E backend thật | **12/12 pass**, 9,1 giây |
+| E2E backend thật | **12/12 pass**, 9,4 giây |
 | E2E mock | **13/13 pass**, 16,3 giây |
 | Migration | 10 migration áp dụng sạch trên Postgres 17 (compose + Testcontainers) |
 | Smoke compose | `/healthz` 200, `/readyz` 200, `/places?limit=9` 9 item + `next`, `/places?q=bánh xèo` 3 item |
