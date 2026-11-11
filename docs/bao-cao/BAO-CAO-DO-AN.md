@@ -316,7 +316,7 @@ erDiagram
     uuid post_id FK
     uuid author_id FK
     uuid parent_id FK
-    text content
+    text body
   }
   collections {
     uuid id PK
@@ -351,6 +351,7 @@ erDiagram
   rooms {
     uuid id PK
     text code UK
+    text name
     uuid owner_id FK
     jsonb filter
     timestamptz created_at
@@ -359,17 +360,18 @@ erDiagram
     uuid id PK
     uuid room_id FK
     uuid user_id FK
-    text name
+    text display_name
+    boolean is_guest
     timestamptz joined_at
   }
   room_proposals {
     uuid id PK
     uuid room_id FK
     uuid member_id FK
-    proposal_kind kind
-    proposal_field field
+    room_proposal_kind kind
+    room_proposal_field field
     text value
-    proposal_status status
+    room_proposal_status status
   }
   notifications {
     uuid id PK
