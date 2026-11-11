@@ -77,6 +77,7 @@ export async function listCommentsForPost(
     LEFT JOIN comments parent ON parent.id = c.parent_id
     LEFT JOIN users parent_u ON parent_u.id = parent.author_id
     WHERE c.post_id = ${postId}::uuid AND c.deleted_at IS NULL
+    ORDER BY c.created_at ASC, c.id ASC
   `)
 
   const byParent = new Map<string | null, CommentRow[]>()
