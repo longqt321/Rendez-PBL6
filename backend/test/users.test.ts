@@ -70,4 +70,57 @@ describe("GET /users", () => {
     expect(body.items).toHaveLength(0)
     expect(body.next).toBeNull()
   })
+
+  test("cursor keyset: trang sau chỉ gồm người cũ hơn mốc cursor", async () => {
+    // Dựng cursor từ dữ liệu thật (không tạo thêm user — route đăng ký có rate limit).
+    const rows = await prisma.$queryRaw<{ id: string; created_at: Date }[]>`
+      SELECT id, created_at FROM users ORDER BY created_at DESC, id DESC LIMIT 5
+    `
+    expect(rows.length).toBeGreaterThan(0)
+    const pivot = rows[rows.length - 1]!
+    const cursor = Buffer.from(`${pivot.created_at.toISOString()}|${pivot.id}`, "utf8").toString(
+      "base64url",
+    )
+
+    const res = await app.request(`/api/v1/users?cursor=${cursor}`)
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as {
+      items: { id: string; createdAt: string }[]
+      next: string | null
+    }
+    expect(userPageSchema.safeParse(body).success).toBe(true)
+    for (const item of body.items) {
+      expect(item.id).not.toBe(pivot.id)
+      expect(new Date(item.createdAt).getTime()).toBeLessThanOrEqual(pivot.created_at.getTime())
+    }
+  })
+
+  test("đăng nhập rồi tìm: isMe đúng cho chính mình", async () => {
+    const cookie = (
+      (
+        await app.request("/api/v1/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // IP riêng để không đụng rate limit đăng ký của các test trước.
+            "X-Forwarded-For": "10.77.0.9",
+          },
+          body: JSON.stringify({
+            name: "Tôi Tìm Kiếm",
+            email: `me_search_${suffix}@rendez.test`,
+            password: "password123",
+            handle: `me_search_${suffix}`,
+          }),
+        })
+      ).headers.getSetCookie()[0] ?? ""
+    ).split(";")[0]
+    expect(cookie).not.toBe("")
+
+    const res = await app.request(`/api/v1/users?q=me_search_${suffix}`, {
+      headers: { Cookie: cookie },
+    })
+    const body = (await res.json()) as { items: { handle: string; isMe: boolean }[] }
+    expect(body.items).toHaveLength(1)
+    expect(body.items[0]?.isMe).toBe(true)
+  })
 })

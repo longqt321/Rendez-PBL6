@@ -62,6 +62,22 @@ describe("phòng lọc nhóm", () => {
     expect(res.status).toBe(401)
   })
 
+  test("POST /rooms: tên tuỳ chọn (rỗng vẫn tạo được), quá 80 ký tự trả 400", async () => {
+    const empty = await call("/api/v1/rooms", {
+      method: "POST",
+      cookie: ownerCookie,
+      body: JSON.stringify({ name: "  " }),
+    })
+    expect(empty.status).toBe(201)
+
+    const tooLong = await call("/api/v1/rooms", {
+      method: "POST",
+      cookie: ownerCookie,
+      body: JSON.stringify({ name: "x".repeat(81) }),
+    })
+    expect(tooLong.status).toBe(400)
+  })
+
   test("POST /rooms tạo phòng, mã 6 ký tự đúng alphabet", async () => {
     const res = await call("/api/v1/rooms", {
       method: "POST",
@@ -137,6 +153,14 @@ describe("phòng lọc nhóm", () => {
       }),
     })
     expect(stranger.status).toBe(403)
+  })
+
+  test("đề xuất thiếu field/kind trả 400", async () => {
+    const bad = await call(`/api/v1/rooms/${code}/proposals`, {
+      method: "POST",
+      body: JSON.stringify({ memberId: "00000000-0000-4000-8000-000000000000" }),
+    })
+    expect(bad.status).toBe(400)
   })
 
   test("áp đề xuất include/exclude đúng quy tắc filter", async () => {
