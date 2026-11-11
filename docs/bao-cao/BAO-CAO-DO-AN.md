@@ -684,6 +684,18 @@ Phân bố test backend theo vùng chức năng:
 | `users.test.ts` | 3 | tìm kiếm người dùng |
 | `health.test.ts` | 2 | healthz, readyz |
 
+Đo độ phủ bằng `bun test --coverage` (34 file đo được, gồm cả gói schema dùng chung):
+
+| Chỉ số | Trung bình | Ghi chú |
+| --- | --- | --- |
+| Độ phủ hàm | 90% | 13/34 file đạt 100% |
+| Độ phủ dòng | ~94% | |
+
+Các vùng thấp nhất đều có lý do rõ: `lib/queue.ts` (50% hàm — worker chỉ chạy khi pg-boss
+được bật trong server thật, test gọi trực tiếp job), `routes/media.ts` (nhánh chưa cấu hình
+R2 trả 503 được test riêng, nhánh presign thật cần credentials), `routes/index.ts` (33% —
+file chỉ gắn router, 100% dòng).
+
 ### 4.3. Đo lường hiệu năng
 
 Đo bằng `curl -w` trên máy dev (API trong Docker, Postgres cùng máy, dữ liệu 491 địa điểm),
