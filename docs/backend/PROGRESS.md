@@ -105,10 +105,6 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 - Số liệu mới nhất: 127 test backend (14 file), typecheck 0 lỗi, e2e backend 12/12,
   e2e mock 13/13, compose smoke healthz/readyz/places 200.
 
-## Kết quả cuối
-
-(chưa đến)
-
 ## Audit vòng 3 (07:53–07:58)
 
 - `cursor` giả mạo (base64 hợp lệ nhưng id không phải uuid) → 500 do cast `::uuid` ở

@@ -451,7 +451,7 @@ flowchart TB
   SRC --> L["lib/ (truy vấn & nghiệp vụ)"]
   SRC --> I["app.ts · server.ts · env.ts"]
   BE --> PR["prisma/schema.prisma + 9 migration"]
-  BE --> T["test/ (14 file, 127 test)"]
+  BE --> T["test/ (14 file, 129 test)"]
   BE --> SC["scripts/seed.ts"]
 ```
 
@@ -511,6 +511,13 @@ truy vấn (LATERAL + aggregate) nên không phát sinh N+1. Vì `unaccent()` l�
 được trong biểu thức index), migration 9 bọc nó thành `immutable_unaccent()` và tạo GIN index
 `pg_trgm` trên đúng biểu thức haystack — `EXPLAIN` xác nhận `Bitmap Index Scan on
 places_search_trgm_idx` thay vì quét tuần tự khi dữ liệu lớn.
+
+Migration 10 hoàn thiện phần còn thiếu: chuẩn hoá **cả hai phía** (haystack và từ khoá) bằng
+`immutable_search_normalize()` — bỏ dấu, lowercase, dấu câu thành khoảng trắng, gộp khoảng
+trắng — đúng quy tắc `normalizeText()` của mock. Trước đó `?q=bánh xèo` không khớp vì haystack
+đã bỏ dấu còn từ khoá thì chưa; đây là lỗi hành vi thật được phát hiện khi đối chiếu mock, không
+phải khác biệt chấp nhận được. Index GIN được dựng lại trên biểu thức mới và test
+`q có dấu khớp tên` giữ hành vi này.
 
 ### 3.4. Luồng đăng bài và thông báo
 
@@ -664,7 +671,7 @@ thiểu; bộ test chạy tuần tự (`--parallel=1`) để tránh tranh chấp
 
 | Bộ test | Số lượng | Kết quả | Thời gian |
 | --- | --- | --- | --- |
-| Backend integration/unit | 127 test / 14 file | **127 pass, 0 fail** | ~99 giây |
+| Backend integration/unit | 129 test / 14 file | **129 pass, 0 fail** | ~99 giây |
 | E2E với backend thật | 12 spec | **12 pass** | ~8,5 giây |
 | E2E với mock (hồi quy FE) | 13 spec | **13 pass** | ~15,8 giây |
 | Typecheck (FE + BE) | — | 0 lỗi | ~5 giây |
@@ -673,7 +680,7 @@ Phân bố test backend theo vùng chức năng:
 
 | File | Số test | Nội dung |
 | --- | --- | --- |
-| `places.test.ts` | 23 | danh sách, lọc, bản đồ, gợi ý, chi tiết, saved, bài gắn địa điểm |
+| `places.test.ts` | 24 | danh sách, lọc, bản đồ, gợi ý, chi tiết, saved, bài gắn địa điểm |
 | `posts.test.ts` | 23 | feed, phân trang, like, save, bình luận, like bình luận |
 | `notifications.test.ts` | 6 | danh sách, đánh dấu đã đọc, đọc tất cả, 401 |
 | `collections.test.ts` | 14 | CRUD, quyền riêng tư, thêm/bớt địa điểm, like |
@@ -772,7 +779,7 @@ Các hạng mục sau **chưa kiểm chứng được** trong khuôn khổ đồ
 ### Kết quả đạt được
 
 Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 9
-migration, 52 endpoint, 127 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
+migration, 52 endpoint, 129 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
 hệ thống chạy được bằng một lệnh `docker compose up` với dữ liệu 491 địa điểm thật tại Đà Nẵng.
 Báo cáo cũng đã hệ thống hoá quy trình: từ đặc tả hợp đồng API, thiết kế dữ liệu, triển khai,
 đến kiểm thử và đóng gói.
