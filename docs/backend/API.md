@@ -73,7 +73,7 @@ Ràng buộc đầu vào:
 
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
-| GET | `/places` | — | `Page<Place>`, 9 item/trang, bộ lọc A7.9 |
+| GET | `/places` | — | `Page<Place>`, 9 item/trang, bộ lọc A7.9; `q` khớp không dấu + bỏ dấu câu |
 | GET | `/places/map` | — | `{items, total}`, chặn 300 item, `total` = số khớp thật |
 | GET | `/places/suggestions?q=&limit=` | — | `{suggestions: PlaceSuggestion[]}`; caption < 8 ký tự → rỗng; `limit` 1–10 (mặc định 3) |
 | GET | `/places/saved` | ✔ | `Page<Place>` gộp mọi bộ sưu tập của chính mình, loại trùng |
@@ -124,7 +124,7 @@ Trường `district`, `imageUrl`, `lat`, `lng`, `status` **vắng mặt** khi kh
 
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
-| GET | `/posts?filter=&q=&cursor=` | — | `filter` ∈ `all\|unplaced\|mine\|saved`; `mine`/`saved` cần đăng nhập (401); 5 item/trang |
+| GET | `/posts?filter=&q=&cursor=` | — | `filter` ∈ `all\|unplaced\|mine\|saved`; `mine`/`saved` cần đăng nhập (401); 5 item/trang; `q` khớp caption không dấu |
 | POST | `/posts` | ✔ | `{caption, placeId?}` → `201 Post`; bài chưa gắn địa điểm được đẩy job phát hiện |
 | GET | `/posts/:id` | — | `Post`; 404 nếu đã xoá |
 | PATCH | `/posts/:id/like` | ✔ | `{liked?: boolean}` (mặc định đảo trạng thái), idempotent |
@@ -181,7 +181,7 @@ thông báo.
 
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
-| GET | `/users?q=&cursor=` | — | `Page<UserProfile>` 20/trang, tìm không dấu |
+| GET | `/users?q=&cursor=` | — | `Page<UserProfile>` 20/trang, `q` khớp không dấu + bỏ dấu câu |
 | GET | `/users/:handle` | — | `UserProfile`; 404 nếu không có |
 | GET | `/users/:handle/posts?tab=posts\|saved\|pinned&cursor=` | — | Tab `saved`/`pinned` của người khác → trang RỖNG (không 403) |
 | GET | `/users/:handle/collections` | — | `Page<CollectionSummary>`; ẩn private trừ chính chủ |
@@ -198,7 +198,7 @@ giữ nguyên shape `Room` của frontend, thêm `memberId` cho khách.
 | POST | `/rooms` | ✔ | `{name?}` → `201 Room`; mã 6 ký tự alphabet `A–Z2–9` (bỏ O/0/I/1) |
 | GET | `/rooms/:code?memberId=` | — | `Room`; mã sai → `404` |
 | POST | `/rooms/:code/join` | — | `{displayName}` → `{room, memberId, joined}`; trùng tên → `joined:false` |
-| POST | `/rooms/:code/proposals` | — | `{memberId, kind, field, value}` → `201 Room`; không phải thành viên → `403` |
+| POST | `/rooms/:code/proposals` | — | `{memberId, kind, field, value}` → `201 Room`; không phải thành viên → `403`; `value` không hợp lệ theo `field` (category lạ, priceMax ngoài 1–3) → `400` |
 | POST | `/rooms/:code/proposals/:id/apply?memberId=` | — | `{room, summary}`; đề xuất đã xử lý → `400` |
 | POST | `/rooms/:code/proposals/:id/dismiss?memberId=` | — | `Room`; filter không đổi |
 | DELETE | `/rooms/:code/members/:memberId?actorId=` | — | `Room`; xoá kèm mọi đề xuất của thành viên. `actorId` phải là thành viên; xoá người khác khi không phải chủ phòng → `403` |
