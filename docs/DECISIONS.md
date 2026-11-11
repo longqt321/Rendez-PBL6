@@ -2598,3 +2598,17 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
 14. **`GET /places?category=<giá trị lạ>`: giá trị lạ bị bỏ qua; danh sách toàn giá trị lạ
     trả trang RỖNG** (không phải bỏ lọc). Khớp hành vi mock (lọc theo chuỗi, không khớp → rỗng);
     tránh 500 từ cast `::place_category`.
+15. **Chuẩn hoá tìm kiếm 2 phía bằng `immutable_search_normalize()`** (migration 10): mock so
+    khớp trên `normalizeText()` (bỏ dấu, lowercase, dấu câu → khoảng trắng) ở CẢ haystack và
+    từ khoá; backend cũ chỉ chuẩn hoá haystack → `?q=bánh xèo` không khớp dù mock khớp. Chọn
+    chuẩn hoá cả 2 phía bằng 1 hàm SQL IMMUTABLE để planner khớp GIN index `pg_trgm`; áp dụng
+    cho `/places`, `/posts` (caption), `/users` (name/handle). Không đổi hợp đồng API.
+16. **Đề xuất phòng lọc: `value` phải hợp lệ theo `field`** (`category` là loại hình đã biết,
+    `priceMax` ∈ 1–3) → 400 nếu không. Trước đây giá trị rác lưu vào filter JSONB làm lần
+    `GET /rooms/:code` kế tiếp 500 vĩnh viễn (phòng hỏng). `parseRoomFilter` cũng bỏ qua loại
+    hình lạ thay vì ném để dữ liệu cũ không làm phòng chết.
+17. **Xoá nhánh `instanceof ZodError` trong `onError`**: zod 4 `ZodError` không phải
+    `instanceof Error` (xác minh bằng script) và Hono chỉ chuyển lỗi `Error` cho `onError`
+    (hono/dist/compose.js:37) — nhánh đó là code chết, không bao giờ chạy. Mọi validate dùng
+    `safeParse`/`defaultHook` nên không có đường ném ZodError; nếu có code mới ném thì phải
+    bọc thành `ApiError` thay vì dựa vào nhánh này.
