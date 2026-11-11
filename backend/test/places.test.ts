@@ -87,6 +87,15 @@ describe("GET /places", () => {
     }
   })
 
+  test("GIN trgm index cho tìm kiếm tồn tại (migration 9)", async () => {
+    const rows = await prisma.$queryRaw<{ indexname: string }[]>`
+      SELECT indexname FROM pg_indexes
+      WHERE schemaname = 'public' AND tablename = 'places'
+        AND indexname = 'places_search_trgm_idx'
+    `
+    expect(rows).toHaveLength(1)
+  })
+
   test("category nhiều giá trị + loại trừ hoạt động", async () => {
     const body = await getJson<PageJson>("/api/v1/places?category=cafe,bar&excludeDistrict=Sơn Trà")
 
