@@ -153,6 +153,17 @@ const PUBLISHED_AT = new Date("2026-11-09T08:00:00+07:00")
  */
 const SEED_BASE_AT = new Date("2026-11-09T00:00:00+07:00")
 
+/**
+ * Corpus OSM mở rộng để place `osm` (không ảnh) TRƯỚC place curated (có ảnh),
+ * khiến trang đầu `/discover` toàn card không ảnh — lệch đặc tả mock (curated
+ * đầu tiên). Thứ tự seed: place CÓ ẢNH → curated còn lại → osm. Sort ổn định nên
+ * giữ nguyên thứ tự trong từng nhóm, và `created_at` theo thứ tự đã sắp.
+ */
+function seedRank(place: ColdStartPlace): number {
+  if (place.image || place.images.length > 0) return 0
+  return place.tier === "osm" ? 2 : 1
+}
+
 const ORIGINAL_PATH = join(import.meta.dir, "../../frontend/data/cold-start/places.json")
 // Corpus mở rộng từ OSM (nếu có) — ưu tiên dùng. Sinh bởi scripts/build-corpus.
 const EXPANDED_PATH = join(import.meta.dir, "../data/places-expanded.json")
@@ -181,11 +192,13 @@ async function main(): Promise<void> {
   const dataset = (await file.json()) as ColdStartDataset
   console.info(`[seed] Đọc ${dataset.places.length} place từ ${datasetPath}`)
 
+  // Có ảnh → curated → osm: trang đầu /discover phải giống mock (có ảnh card).
+  const places = [...dataset.places].sort((a, b) => seedRank(a) - seedRank(b))
   let images = 0
   let index = 0
-  const unpublishedIds = pickUnpublishedIds(dataset.places)
+  const unpublishedIds = pickUnpublishedIds(places)
 
-  for (const raw of dataset.places) {
+  for (const raw of places) {
     const publishedAt = unpublishedIds.has(raw.id) ? null : PUBLISHED_AT
     const data = {
       createdAt: new Date(SEED_BASE_AT.getTime() - index * 1_000),
