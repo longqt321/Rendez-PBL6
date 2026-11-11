@@ -713,7 +713,20 @@ mỗi endpoint gọi 20 lần liên tiếp sau 3 lần khởi động nóng:
 | CORS từ origin lạ | Không có `Access-Control-Allow-Origin` | Đúng |
 | Quét nikto (7.948 request) | Không có lỗi nghiêm trọng | 0 lỗi nghiêm trọng; 2 header thiếu đã bổ sung |
 
-### 4.5. Đánh giá
+### 4.5. Chưa xác minh
+
+Các hạng mục sau **chưa kiểm chứng được** trong khuôn khổ đồ án, kèm nguyên nhân:
+
+| Hạng mục | Nguyên nhân | Đã làm gì thay thế |
+| --- | --- | --- |
+| Tải ảnh lên Cloudflare R2 thật | Chưa có credentials R2 | Presigned URL được kiểm bằng unit test với thời điểm giả lập; route trả 503 khi chưa cấu hình |
+| Gửi email thật | Chưa có SMTP provider | Đã thiết kế bảng `verifications` theo schema của better-auth; auth hiện chỉ email+password |
+| Triển khai lên máy chủ công khai | Người dùng không xác nhận target deploy | Chạy được bằng `docker compose up` trên máy dev; có runbook từng bước |
+| SSE nhiều instance | Pub/sub trong bộ nhớ | Ghi rõ hạn chế; hướng phát triển dùng Redis pub/sub |
+| Hiệu năng ở quy mô lớn | Dataset chỉ 491 địa điểm | Đo latency thực tế trên máy dev; benchmark `pg_trgm` ghi BACKLOG cho ≥ 50k dòng |
+| Trình duyệt mobile thật | Không có thiết bị trong phiên | e2e chạy trên Chromium desktop |
+
+### 4.6. Đánh giá
 
 **Ưu điểm**
 
