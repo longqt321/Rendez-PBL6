@@ -857,9 +857,10 @@ cd frontend && E2E_BACKEND_URL=http://localhost:8000 bun run e2e --project=backe
 | --- | --- | --- |
 | 400 | Dữ liệu đầu vào sai, vi phạm quy tắc nghiệp vụ | `{ "message": "..." }` |
 | 401 | Chưa đăng nhập hoặc phiên hết hạn | `{ "message": "..." }` |
-| 403 | Không đủ quyền (ví dụ tự theo dõi mình) | `{ "message": "..." }` |
+| 403 | Không đủ quyền (ví dụ xoá bình luận/bộ sưu tập của người khác) | `{ "message": "..." }` |
 | 404 | Không tìm thấy tài nguyên hoặc không được phép thấy | `{ "message": "..." }` |
 | 409 | Trùng dữ liệu (email đã dùng) | `{ "message": "..." }` |
 | 413 | Body vượt 1 MB | `{ "message": "..." }` |
 | 429 | Vượt rate limit | `{ "message": "..." }` + `Retry-After` |
+| 500 | Lỗi không lường trước — không lộ stack/SQL ra ngoài | `{ "message": "...", "code": "INTERNAL" }` |
 | 503 | Tính năng chưa cấu hình (R2) hoặc DB không sẵn sàng | `{ "message": "..." }` |
