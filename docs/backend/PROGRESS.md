@@ -161,7 +161,7 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | E2E mock | **13/13 pass**, 16,3 giây |
 | Migration | 10 migration áp dụng sạch trên Postgres 17 (compose + Testcontainers) |
 | Smoke compose | `/healthz` 200, `/readyz` 200, `/places?limit=9` 9 item + `next`, `/places?q=bánh xèo` 3 item |
-| Endpoint | 52 endpoint tự viết + mount better-auth |
+| Endpoint | 50 endpoint nghiệp vụ + 2 health check + mount better-auth |
 
 Lỗi thật đã sửa trong phiên: quyền gắn địa điểm vào bài người khác + thông báo sai người nhận;
 `category` rác gây 500; ký tự NUL gây 500; cursor giả mạo gây 500; thiếu `?sort=top`; tìm kiếm

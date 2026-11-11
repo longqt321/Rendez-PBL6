@@ -405,7 +405,8 @@ Hợp đồng API được trích từ mock server của frontend (đặc tả h
 | D6 | Lỗi luôn có dạng `{ "message": string }` | Frontend hiển thị trực tiếp, không lộ chi tiết nội bộ |
 | D7 | Monorepo Bun workspaces | Chia sẻ schema, chạy một lệnh cho cả hai phía |
 
-Bảng nhóm endpoint (52 endpoint tự viết, cộng thêm mount xác thực của better-auth):
+Bảng nhóm endpoint (50 endpoint nghiệp vụ tự viết + 2 health check, cộng thêm mount xác thực
+của better-auth):
 
 | Nhóm | Số endpoint | Ví dụ |
 | --- | --- | --- |
@@ -779,8 +780,9 @@ Các hạng mục sau **chưa kiểm chứng được** trong khuôn khổ đồ
 
 ### Kết quả đạt được
 
-Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 9
-migration, 52 endpoint, 131 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
+Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 10
+migration, 50 endpoint nghiệp vụ + 2 health check, 131 test backend và 12 spec e2e chạy với
+backend thật đều đạt; toàn bộ
 hệ thống chạy được bằng một lệnh `docker compose up` với dữ liệu 491 địa điểm thật tại Đà Nẵng.
 Báo cáo cũng đã hệ thống hoá quy trình: từ đặc tả hợp đồng API, thiết kế dữ liệu, triển khai,
 đến kiểm thử và đóng gói.
@@ -838,6 +840,7 @@ máy chủ công khai, đồng bộ SSE nhiều instance và benchmark ở quy m
 | 7 | `20261111052000_psn_notification_unique` | Unique `notification_id` (quan hệ 1-1) |
 | 8 | `20261111054500_rate_limits` | Bảng đếm rate limit theo cửa sổ thời gian |
 | 9 | `20261111080000_places_search_trgm` | GIN `pg_trgm` cho tìm kiếm không dấu (hàm `immutable_unaccent`, `immutable_array_to_string`) |
+| 10 | `20261111090000_places_search_normalize` | Hàm `immutable_search_normalize` (bỏ dấu + dấu câu, khớp `normalizeText` của mock), dựng lại index trên biểu thức chuẩn hoá 2 phía |
 
 ### Phụ lục B. Lệnh vận hành thường dùng
 
