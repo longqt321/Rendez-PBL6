@@ -26,7 +26,7 @@ export function PasswordInput({ className, ...props }: React.ComponentProps<"inp
           type="button"
           variant="ghost"
           size="icon-sm"
-          className="bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground [&_svg]:size-4"
+          className="bg-transparent text-muted-foreground shadow-none hover:bg-transparent hover:text-foreground dark:hover:bg-transparent [&_svg]:size-4"
           aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
           aria-pressed={visible}
           onClick={() => setVisible((value) => !value)}

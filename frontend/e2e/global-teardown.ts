@@ -12,7 +12,7 @@ import { execSync } from "node:child_process"
  * `e2e_%` — tài khoản thật của người dùng (miền khác) không bị đụng tới.
  * Chạy khi có `E2E_BACKEND_URL` (project mock không có DB, không cần).
  */
-export default async function globalTeardown(): Promise<void> {
+export default function globalTeardown(): void {
   if (!process.env.E2E_BACKEND_URL) return
 
   const sql =
