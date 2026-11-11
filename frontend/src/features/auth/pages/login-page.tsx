@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useLogin } from "../hooks/use-login"
 import { AuthLayout } from "../components/auth-layout"
+import { PasswordInput } from "../components/password-input"
+import { serverErrorField } from "../lib/server-field-error"
 
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().pipe(z.email("Email không hợp lệ")),
@@ -15,6 +17,8 @@ const loginSchema = z.object({
 })
 
 type LoginForm = z.infer<typeof loginSchema>
+
+const LOGIN_FIELDS = ["email", "password"] as const
 
 /** Trang đăng nhập — `/login`. Đăng nhập xong về `/discover`. */
 export function LoginPage() {
@@ -31,8 +35,18 @@ export function LoginPage() {
       onSuccess: () => {
         void navigate("/discover")
       },
+      onError: (error) => {
+        const field = serverErrorField(error.message, LOGIN_FIELDS)
+        if (field) form.setError(field, { type: "server", message: error.message })
+      },
     })
   }
+
+  /** Lỗi server nhắc đúng một field thì đã gắn lên field đó, không lặp lại cuối form. */
+  const formError =
+    login.isError && !serverErrorField(login.error.message, LOGIN_FIELDS)
+      ? login.error.message
+      : undefined
 
   return (
     <AuthLayout
@@ -59,9 +73,8 @@ export function LoginPage() {
 
           <Field>
             <FieldLabel htmlFor="login-password">Mật khẩu</FieldLabel>
-            <Input
+            <PasswordInput
               id="login-password"
-              type="password"
               autoComplete="current-password"
               {...form.register("password")}
             />
@@ -70,7 +83,7 @@ export function LoginPage() {
             )}
           </Field>
 
-          {login.isError && <FieldError>{login.error.message}</FieldError>}
+          {formError && <FieldError>{formError}</FieldError>}
 
           <Button type="submit" disabled={login.isPending} className="w-full">
             {login.isPending ? (

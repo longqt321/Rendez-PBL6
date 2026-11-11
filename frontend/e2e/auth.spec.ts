@@ -15,11 +15,11 @@ test("đăng nhập sai mật khẩu hiện lỗi, đúng mật khẩu về tran
   await page.goto("/login")
 
   await page.getByLabel("Email").fill(account.email)
-  await page.getByLabel("Mật khẩu").fill("sai-mat-khau")
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("sai-mat-khau")
   await page.getByRole("button", { name: "Đăng nhập" }).click()
   await expect(page.getByText("Email hoặc mật khẩu không đúng")).toBeVisible()
 
-  await page.getByLabel("Mật khẩu").fill(account.password)
+  await page.getByLabel("Mật khẩu", { exact: true }).fill(account.password)
   await page.getByRole("button", { name: "Đăng nhập" }).click()
   await expect(page).toHaveURL(/\/discover$/u)
 })
@@ -32,6 +32,7 @@ test("đăng ký tài khoản mới → đăng nhập luôn và thấy avatar", 
   await page.getByLabel("Email").fill(`${handle}@rendez.test`)
   await page.getByLabel("Handle").fill(handle)
   await page.getByLabel("Mật khẩu", { exact: true }).fill("password123")
+  await page.getByLabel("Nhập lại mật khẩu").fill("password123")
   await page.getByRole("button", { name: "Đăng ký" }).click()
 
   await expect(page).toHaveURL(/\/discover$/u)

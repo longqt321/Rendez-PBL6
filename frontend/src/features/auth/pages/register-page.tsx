@@ -8,22 +8,35 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useRegister } from "../hooks/use-register"
 import { AuthLayout } from "../components/auth-layout"
+import { PasswordInput } from "../components/password-input"
+import { serverErrorField } from "../lib/server-field-error"
 
 /** Khớp validate backend (`registerInputSchema` trong `routes/auth.ts`). */
-const registerSchema = z.object({
-  name: z.string().trim().min(2, "Tên cần ít nhất 2 ký tự").max(40, "Tên tối đa 40 ký tự"),
-  email: z.string().trim().toLowerCase().pipe(z.email("Email không hợp lệ")),
-  password: z.string().min(8, "Mật khẩu cần ít nhất 8 ký tự").max(128, "Mật khẩu tối đa 128 ký tự"),
-  handle: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .min(3, "Handle cần ít nhất 3 ký tự")
-    .max(30, "Handle tối đa 30 ký tự")
-    .regex(/^[a-z0-9_]+$/, "Handle chỉ gồm chữ thường, số và gạch dưới"),
-})
+const registerSchema = z
+  .object({
+    name: z.string().trim().min(2, "Tên cần ít nhất 2 ký tự").max(40, "Tên tối đa 40 ký tự"),
+    email: z.string().trim().toLowerCase().pipe(z.email("Email không hợp lệ")),
+    password: z
+      .string()
+      .min(8, "Mật khẩu cần ít nhất 8 ký tự")
+      .max(128, "Mật khẩu tối đa 128 ký tự"),
+    handle: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .min(3, "Handle cần ít nhất 3 ký tự")
+      .max(30, "Handle tối đa 30 ký tự")
+      .regex(/^[a-z0-9_]+$/, "Handle chỉ gồm chữ thường, số và gạch dưới"),
+    confirmPassword: z.string().min(1, "Cần nhập lại mật khẩu"),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Mật khẩu nhập lại không khớp",
+    path: ["confirmPassword"],
+  })
 
 type RegisterForm = z.infer<typeof registerSchema>
+
+const REGISTER_FIELDS = ["name", "email", "handle", "password"] as const
 
 /** Trang đăng ký — `/register`. Đăng ký xong backend trả phiên luôn. */
 export function RegisterPage() {
@@ -32,16 +45,30 @@ export function RegisterPage() {
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: "", email: "", password: "", handle: "" },
+    defaultValues: { name: "", email: "", password: "", handle: "", confirmPassword: "" },
   })
 
   const onSubmit = (values: RegisterForm) => {
-    register.mutate(values, {
-      onSuccess: () => {
-        void navigate("/discover")
+    // Chỉ gửi các field backend nhận — `confirmPassword` chỉ dùng để validate.
+    register.mutate(
+      { name: values.name, email: values.email, password: values.password, handle: values.handle },
+      {
+        onSuccess: () => {
+          void navigate("/discover")
+        },
+        onError: (error) => {
+          const field = serverErrorField(error.message, REGISTER_FIELDS)
+          if (field) form.setError(field, { type: "server", message: error.message })
+        },
       },
-    })
+    )
   }
+
+  /** Lỗi server nhắc đúng một field thì đã gắn lên field đó, không lặp lại cuối form. */
+  const formError =
+    register.isError && !serverErrorField(register.error.message, REGISTER_FIELDS)
+      ? register.error.message
+      : undefined
 
   return (
     <AuthLayout
@@ -97,9 +124,8 @@ export function RegisterPage() {
 
           <Field>
             <FieldLabel htmlFor="register-password">Mật khẩu</FieldLabel>
-            <Input
+            <PasswordInput
               id="register-password"
-              type="password"
               autoComplete="new-password"
               {...form.register("password")}
             />
@@ -109,7 +135,19 @@ export function RegisterPage() {
             )}
           </Field>
 
-          {register.isError && <FieldError>{register.error.message}</FieldError>}
+          <Field>
+            <FieldLabel htmlFor="register-confirm-password">Nhập lại mật khẩu</FieldLabel>
+            <PasswordInput
+              id="register-confirm-password"
+              autoComplete="new-password"
+              {...form.register("confirmPassword")}
+            />
+            {form.formState.errors.confirmPassword && (
+              <FieldError>{form.formState.errors.confirmPassword.message}</FieldError>
+            )}
+          </Field>
+
+          {formError && <FieldError>{formError}</FieldError>}
 
           <Button type="submit" disabled={register.isPending} className="w-full">
             {register.isPending ? (

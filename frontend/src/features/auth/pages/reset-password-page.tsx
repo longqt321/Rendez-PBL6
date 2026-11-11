@@ -5,10 +5,10 @@ import { z } from "zod"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useResetPassword } from "../hooks/use-reset-password"
 import { AuthLayout } from "../components/auth-layout"
+import { PasswordInput } from "../components/password-input"
 
 const resetSchema = z
   .object({
@@ -88,9 +88,8 @@ export function ResetPasswordPage() {
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="reset-password">Mật khẩu mới</FieldLabel>
-              <Input
+              <PasswordInput
                 id="reset-password"
-                type="password"
                 autoComplete="new-password"
                 {...form.register("newPassword")}
               />
@@ -101,9 +100,8 @@ export function ResetPasswordPage() {
 
             <Field>
               <FieldLabel htmlFor="reset-confirm">Nhập lại mật khẩu</FieldLabel>
-              <Input
+              <PasswordInput
                 id="reset-confirm"
-                type="password"
                 autoComplete="new-password"
                 {...form.register("confirmPassword")}
               />

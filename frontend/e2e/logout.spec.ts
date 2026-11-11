@@ -14,7 +14,7 @@ test("đăng xuất rồi đăng nhập lại qua form /login", async ({ page })
 
   await page.goto("/login")
   await page.getByLabel("Email").fill(account.email)
-  await page.getByLabel("Mật khẩu").fill(account.password)
+  await page.getByLabel("Mật khẩu", { exact: true }).fill(account.password)
   await page.getByRole("button", { name: "Đăng nhập" }).click()
   await expect(page).toHaveURL(/\/discover$/u)
 
@@ -32,7 +32,7 @@ test("đăng xuất rồi đăng nhập lại qua form /login", async ({ page })
   await expect(page).toHaveURL(/\/login$/u)
 
   await page.getByLabel("Email").fill(account.email)
-  await page.getByLabel("Mật khẩu").fill(account.password)
+  await page.getByLabel("Mật khẩu", { exact: true }).fill(account.password)
   await page.getByRole("button", { name: "Đăng nhập" }).click()
 
   // Đăng nhập xong về trang khám phá, avatar trở lại chữ cái đầu của hồ sơ.
