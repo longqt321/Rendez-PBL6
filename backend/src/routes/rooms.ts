@@ -183,11 +183,23 @@ export function createRoomsRouter() {
     return c.json(dto)
   })
 
-  /** Rời phòng — xoá thành viên và mọi đề xuất của họ (khớp `leaveRoom`). */
+  /**
+   * Rời phòng — xoá thành viên và mọi đề xuất của họ (khớp `leaveRoom`).
+   *
+   * Quyền: mỗi thành viên chỉ rời được chính mình; chủ phòng được mời thêm
+   * người khác. Gọi với memberId của người khác khi không phải chủ phòng → 403.
+   */
   router.delete("/rooms/:code/members/:memberId", async (c) => {
     const code = requireCode(c.req.param("code"))
     const room = await loadRoom(code)
     const memberId = requireMember(room, c.req.param("memberId"))
+
+    const actorId = requireMember(room, c.req.query("actorId") ?? undefined)
+    const actor = room.members.find((item) => item.id === actorId)
+    const isOwner = actor?.userId != null && actor.userId === room.ownerId
+    if (actorId !== memberId && !isOwner) {
+      throw new ApiError(403, "Chỉ chủ phòng mới được cho người khác rời phòng")
+    }
 
     await prisma.roomMember.delete({ where: { id: memberId } })
 

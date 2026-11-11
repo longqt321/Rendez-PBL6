@@ -263,7 +263,10 @@ describe("phòng lọc nhóm", () => {
     }
     expect(before.proposals.some((item) => item.memberId === guestMemberId)).toBe(true)
 
-    const leave = await call(`/api/v1/rooms/${code}/members/${guestMemberId}`, { method: "DELETE" })
+    const leave = await call(
+      `/api/v1/rooms/${code}/members/${guestMemberId}?actorId=${guestMemberId}`,
+      { method: "DELETE" },
+    )
     expect(leave.status).toBe(200)
     const body = (await leave.json()) as {
       members: Array<{ id: string }>
@@ -273,8 +276,35 @@ describe("phòng lọc nhóm", () => {
     expect(body.proposals.some((item) => item.memberId === guestMemberId)).toBe(false)
 
     // Rời lần nữa → 403 (không còn là thành viên).
-    const again = await call(`/api/v1/rooms/${code}/members/${guestMemberId}`, { method: "DELETE" })
+    const again = await call(
+      `/api/v1/rooms/${code}/members/${guestMemberId}?actorId=${guestMemberId}`,
+      { method: "DELETE" },
+    )
     expect(again.status).toBe(403)
+  })
+
+  test("thành viên thường không xoá được người khác, chủ phòng thì được", async () => {
+    // Khách thứ hai vào phòng.
+    const joined = await call(`/api/v1/rooms/${code}/join`, {
+      method: "POST",
+      body: JSON.stringify({ displayName: `Khách phụ ${suffix}` }),
+    })
+    expect(joined.status).toBe(200)
+    const secondGuestId = ((await joined.json()) as { memberId: string }).memberId
+
+    // Khách thứ nhất (không phải chủ phòng) xoá khách thứ hai → 403.
+    const forbidden = await call(
+      `/api/v1/rooms/${code}/members/${secondGuestId}?actorId=${guestMemberId}`,
+      { method: "DELETE" },
+    )
+    expect(forbidden.status).toBe(403)
+
+    // Chủ phòng xoá được.
+    const byOwner = await call(
+      `/api/v1/rooms/${code}/members/${secondGuestId}?actorId=${ownerMemberId}`,
+      { method: "DELETE" },
+    )
+    expect(byOwner.status).toBe(200)
   })
 
   test("SSE đẩy trạng thái phòng khi có thay đổi", async () => {

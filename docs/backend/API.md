@@ -201,7 +201,7 @@ giữ nguyên shape `Room` của frontend, thêm `memberId` cho khách.
 | POST | `/rooms/:code/proposals` | — | `{memberId, kind, field, value}` → `201 Room`; không phải thành viên → `403` |
 | POST | `/rooms/:code/proposals/:id/apply?memberId=` | — | `{room, summary}`; đề xuất đã xử lý → `400` |
 | POST | `/rooms/:code/proposals/:id/dismiss?memberId=` | — | `Room`; filter không đổi |
-| DELETE | `/rooms/:code/members/:memberId` | — | `Room`; xoá kèm mọi đề xuất của thành viên |
+| DELETE | `/rooms/:code/members/:memberId?actorId=` | — | `Room`; xoá kèm mọi đề xuất của thành viên. `actorId` phải là thành viên; xoá người khác khi không phải chủ phòng → `403` |
 | GET | `/rooms/:code/events?memberId=` | — | SSE: `event: room` (JSON `Room`), `event: ping` mỗi 15s |
 
 Quy tắc áp đề xuất (port 1:1 từ `frontend/src/features/rooms/lib/room.ts`):
