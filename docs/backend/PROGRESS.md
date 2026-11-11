@@ -168,6 +168,9 @@ places_search_trgm_idx`. Test chặn hồi quy sự tồn tại index (120 test)
 
 ## Kết quả cuối (phiên tự hành 2026-11-11)
 
+> Số liệu dưới đây là ảnh chụp lúc 10:12; sau G5b/G6 con số đã tăng — xem mục
+> "G6 — Chốt trạng thái" ở cuối file.
+
 | Hạng mục          | Kết quả (output thật)                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------- |
 | Typecheck FE + BE | 0 lỗi (`bun run typecheck`)                                                                   |
@@ -269,3 +272,28 @@ Chưa xác minh: chạy thật trên máy chủ, TLS Let's Encrypt (cần domain
 
 Xác minh: `E2E_BACKEND_URL=http://localhost:8000 bun run e2e --project=backend` — **18 pass /
 0 fail**; `--project=mock` — **18 pass / 0 fail**; typecheck root 0 lỗi; FE unit 72 pass.
+
+## G6 — Chốt trạng thái (2026-11-11 đêm)
+
+Bổ sung cuối cùng của phiên (commit `8d28819`, `66c0423`):
+
+- **Idempotency (K2)**: bảng `idempotency_keys` + middleware theo semantics bản nháp
+  IETF `Idempotency-Key`; áp cho `POST /posts`, `POST /places/:id/reviews`,
+  `POST /collections`; FE gửi header qua `lib/idempotency.ts`. 8 test.
+- **SSE thông báo (G6.3)**: `GET /notifications/events` theo user, event
+  `notification-created` + `{version}` (payload trung tính), publish sau commit,
+  heartbeat 15s; FE `use-notification-stream` invalidate query, poll 60s giữ làm dự
+  phòng. 3 test.
+- **Audit 3 + lint**: `guestToken` vào contract schema, bỏ `console.log` mock, test
+  suy giảm 503 ảnh trong e2e backend.
+
+Xác minh (output thật, lần chạy cuối):
+
+- `cd backend && bun test --parallel=1` — **185 pass / 0 fail**, 20 file, ~134s.
+- `bun run e2e --project=mock` — **22/22 pass**; `--project=backend` — **22/22 pass**.
+- FE unit — **68/68 pass**; lint 0 lỗi 0 cảnh báo; typecheck FE+BE 0 lỗi.
+- Migration `20261111150000_idempotency_keys` áp dụng sạch; tổng cộng **14 migration**,
+  **25 bảng**.
+
+Chưa xác minh (giữ nguyên): R2 thật, email thật, deploy công khai, SSE nhiều instance,
+buffering SSE qua Caddy, hiệu năng ≥ 50k dòng, trình duyệt mobile thật.

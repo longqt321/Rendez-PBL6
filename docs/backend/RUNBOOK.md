@@ -1,4 +1,4 @@
-# RUNBOOK — vận hành backend RendeZ
+# RUNBOOK — vận hành backend Rendez
 
 > Đối tượng: người chạy/dev backend. Mọi lệnh chạy từ thư mục gốc repo
 > (`~/Projects/rendez`) trừ khi ghi khác. Cập nhật: 2026-11-11.
@@ -19,7 +19,7 @@ cd backend
 cp .env.example .env                   # nếu chưa có; điền BETTER_AUTH_SECRET >= 32 ký tự
 bun install                            # từ root nếu chưa: bun install
 bunx prisma migrate deploy             # áp migration đã commit
-bun run seed                           # 491 địa điểm cold-start (idempotent)
+bun run seed                           # corpus hiện tại 344 POI (idempotent, tự dọn tier='osm' cũ)
 bun run dev                            # API ở http://localhost:8000, watch mode
 ```
 
@@ -46,6 +46,7 @@ Frontend dev (`bun run dev:web` ở root) proxy `/api/v1` sang `:8000`, không c
 | `LOG_LEVEL` | — | `info` | `fatal\|error\|warn\|info\|debug\|trace` |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | — | rỗng | Đủ 4 → bật `/media`; thiếu → 503 |
 | `R2_PUBLIC_BASE_URL` | — | rỗng | Domain đọc ảnh công khai |
+| `TRUSTED_PROXIES` | — | rỗng | CSV IP/mạng proxy tin tưởng (để lấy IP client thật cho rate limit); rỗng = chỉ tin socket trực tiếp |
 
 Env được validate **một lần lúc boot** (`backend/src/env.ts`); sai → process thoát ngay
 với thông báo rõ, không chạy nửa vời.
@@ -66,7 +67,7 @@ Quy tắc: migration đã commit là bất biến. Cần đổi schema → migra
 
 ```bash
 cd backend
-bun test --parallel=1          # 98 test, Testcontainers Postgres 17 thật
+bun test --parallel=1          # 185 test / 20 file, Testcontainers Postgres 17 thật
 bun run typecheck              # tsc --noEmit
 ```
 
@@ -112,7 +113,9 @@ Thứ tự khởi động: `postgres` (healthy) → `migrate` (one-shot, `prisma
 | `Prisma schema mismatch: Missing columns …` | client cũ sau migration | `bunx prisma generate` |
 | `/media` trả 503 | chưa cấu hình R2 | điền 4 biến `R2_*` |
 | 429 liên tục khi test tay | rate limit Postgres theo IP | xoá `rate_limits` của IP đó hoặc chờ hết cửa sổ |
-| SSE không nhận cập nhật | API chạy nhiều instance | hiện chỉ hỗ trợ 1 instance (xem BACKLOG) |
+| SSE không nhận cập nhật | API chạy nhiều instance | pub/sub rooms lẫn notifications đều in-RAM, hiện chỉ hỗ trợ 1 instance (xem BACKLOG) |
+| `422 Idempotency-Key` | client gửi lại cùng key với payload khác | dùng key mới cho request khác nội dung |
+| `409` khi POST có `Idempotency-Key` | request trước cùng key còn `pending` | đợi request đầu hoàn tất hoặc gửi key mới |
 
 ## 9. Vận hành DB
 
@@ -121,6 +124,7 @@ docker exec -it rendez-postgres psql -U rendez -d rendez
 \dt                                  # danh sách bảng
 select count(*) from places;
 select count(*) from pgboss.job;
+select count(*) from idempotency_keys where expires_at < now();   -- key hết hạn chờ dọn
 ```
 
 - Backup: `docker exec rendez-postgres pg_dump -U rendez rendez > backup.sql`

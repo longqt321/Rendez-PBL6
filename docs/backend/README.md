@@ -7,15 +7,17 @@
 
 ## Trạng thái (2026-11-11 — phiên tự hành)
 
-- Monorepo: `frontend/` + `backend/` + `packages/schema/` (FE/BE dùng chung 8 file zod).
-- Backend: **Phase 0–8 xong** — scaffold Hono + env fail-fast, 23 bảng nghiệp vụ + 11 migration,
-  seed 491 place, auth better-auth, places/posts/reviews/collections/users/rooms(SSE)/media,
-  job pg-boss phát hiện địa điểm, rate limit, presigned R2, Dockerfile + compose.
-- Kiểm thử: **135 test backend pass** (Testcontainers Postgres thật), **12/12 e2e với backend
-  thật** (`VITE_ENABLE_MOCKS=false`), 13/13 e2e mock, typecheck FE+BE 0 lỗi.
+- Monorepo: `frontend/` + `backend/` + `packages/schema/` (FE/BE dùng chung bộ zod schema).
+- Backend: **Phase 0–8 xong** — scaffold Hono + env fail-fast, 25 bảng (21 nghiệp vụ + 4
+  better-auth) + 14 migration, seed 344 place, auth better-auth, places/posts/reviews/
+  collections/users/rooms(SSE)/media, job pg-boss phát hiện địa điểm, rate limit theo IP
+  và user, presigned R2, idempotency key cho POST tạo tài nguyên, SSE thông báo theo user,
+  Dockerfile + compose.
+- Kiểm thử: **185 test backend pass** (Testcontainers Postgres thật), **22/22 e2e với backend
+  thật** (`VITE_ENABLE_MOCKS=false`), 22/22 e2e mock, 68 unit FE, lint + typecheck FE+BE 0 lỗi.
 - Tài liệu: [API.md](./API.md) · [RUNBOOK.md](./RUNBOOK.md) · [REPORT.md](./REPORT.md) ·
   [PROGRESS.md](./PROGRESS.md).
-- Chưa xác minh: R2 thật, email thật, deploy thật, SSE nhiều instance (xem REPORT mục 8).
+- Chưa xác minh: R2 thật, email thật, deploy thật, SSE nhiều instance (xem REPORT mục 11).
 - Quyết định Phần D đã duyệt: D1 zod 4 · D2 cursor opaque keyset · D3 COUNT · D4 email+password ·
   D5 room guest · D6 `{message}` · D7 Bun workspaces; tự quyết phiên tự hành: `docs/DECISIONS.md`
   mục D-055 (8–12).
@@ -25,4 +27,4 @@
 - `frontend/src/mocks/server.ts` (41 route, 1.430 dòng) — đặc tả hành vi.
 - `frontend/src/lib/api-contracts.ts` — 32 contract.
 - `frontend/src/features/*/types/*.schema.ts` — 8 file zod (nguyên liệu `packages/schema`).
-- `frontend/data/cold-start/places.json` — 491 place thật cho seed.
+- `frontend/data/cold-start/places.json` — dữ liệu địa điểm gốc cho seed (corpus hiện tại 344 place).

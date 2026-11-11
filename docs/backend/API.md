@@ -1,4 +1,4 @@
-# API RendeZ — tài liệu hợp đồng
+# API Rendez — tài liệu hợp đồng
 
 > Trạng thái: Phase 0–8 đã cài đặt và có integration test trên Postgres thật.
 > Mọi route mount dưới `/api/v1` (quyết định K1). Lỗi luôn có shape `{ "message": string }`
@@ -16,6 +16,7 @@
 | Phân trang | `{ "items": [...], "next": string \| null }`; `next` là cursor opaque base64 (D2) |
 | Giới hạn body | 1 MB (JSON). Ảnh đi thẳng lên R2 qua presigned URL, không qua API |
 | Rate limit | Vượt ngưỡng → `429` + `Retry-After` (giây) |
+| Idempotency | POST tạo tài nguyên nhận header tùy chọn `Idempotency-Key` (mục 1.3) |
 | Enum loại hình | API và DB đều dùng gạch nối: `street-food` (Prisma `@map`); bộ lọc nhận cả `street_food` |
 
 ### 1.1. Cursor (D2)
@@ -23,7 +24,19 @@
 Cursor là base64url của `created_at|id` — client KHÔNG được parse, chỉ truyền lại
 nguyên văn. Cursor hỏng → `400 {"message":"Cursor không hợp lệ"}`.
 
-### 1.2. Phân quyền
+### 1.2. Idempotency (`Idempotency-Key`)
+
+Áp dụng cho `POST /posts`, `POST /places/:id/reviews`, `POST /collections` — header
+tùy chọn, theo semantics của bản nháp IETF `Idempotency-Key`:
+
+- Khoá là `(key, user_id)` — user khác dùng lại cùng key không xung đột.
+- Request đang xử lý mà nhận thêm request cùng key → `409`; hoàn tất rồi → trả lại đúng
+  status + body cũ kèm header `Idempotency-Replayed: true`.
+- Cùng key nhưng payload khác (`request_hash` khác) → `422`.
+- Lỗi 4xx được lưu (replay trả lại đúng lỗi); lỗi 5xx không lưu để client retry. Key sống
+  24 giờ.
+
+### 1.3. Phân quyền
 
 | Nhóm | Quyền |
 |---|---|
@@ -173,6 +186,7 @@ request không có `images` vẫn chạy bình thường. Bài + ảnh được 
 | GET | `/notifications?cursor=` | ✔ | `Page<AppNotification>`, 20/trang, mới nhất trước |
 | PATCH | `/notifications` | ✔ | Đánh dấu TẤT CẢ đã đọc → `200 AppNotification[]` |
 | PATCH | `/notifications/:id` | ✔ | Đánh dấu 1 thông báo → `200 AppNotification`; 404 nếu không phải của mình |
+| GET | `/notifications/events` | ✔ | SSE: `event: notification-created` + `{"version":n}` (payload trung tính — client refetch), `event: ping` mỗi 15s |
 
 Ba nhánh `kind`: `place-suggestion` (kèm `postId`, `postCaption`, `postPlaceId`,
 `suggestions[]`), `like|comment|follow` (kèm `actorName`, `actorInitials`, `postId?`,
@@ -273,8 +287,9 @@ client bỏ qua bước PUT, dùng thẳng `publicUrl`.
 | 401 | Chưa đăng nhập hoặc sai mật khẩu |
 | 403 | Không phải chủ tài nguyên, không phải thành viên phòng |
 | 404 | Không tồn tại / chưa publish / private của người khác (giấu tồn tại) |
-| 409 | Trùng email hoặc handle khi đăng ký |
+| 409 | Trùng email hoặc handle khi đăng ký; idempotency key đang xử lý |
 | 413 | Body > 1 MB |
+| 422 | `Idempotency-Key` tái sử dụng với payload khác |
 | 429 | Vượt rate limit (kèm `Retry-After`) |
 | 500 | Lỗi không lường trước — không trả stack/SQL ra ngoài |
 | 503 | `/readyz` khi DB chết; `/media` khi chưa cấu hình R2 |
