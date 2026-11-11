@@ -22,7 +22,8 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 
 ## Phát hiện khi bỏ ảnh món (2026-11-10, D-049)
 
-- [ ] **471/491 địa điểm chưa có ảnh thật** — chỉ 20 quán có ảnh venue. Cần nguồn ảnh hợp
+- [ ] **Phần lớn địa điểm chưa có ảnh thật** — chỉ 20 quán có ảnh venue (corpus hiện tại 344
+      place; phát hiện ban đầu là 471/491 khi dataset còn 491). Cần nguồn ảnh hợp
       pháp (chụp thực địa, xin phép quán, hoặc Google Places API có key) trước khi phát hành.
 - [x] **Tính năng đăng ảnh của người dùng** (G5b, 2026-11-11) — `Post.images[]` (tối đa 4,
       bảng `post_images`), composer tải ảnh qua presigned URL (`POST /media` → PUT R2).
@@ -327,11 +328,11 @@ lịch sử; không còn việc mở ở đây.
       liệt kê 18 bảng nhưng không có `follows` (cần cho T5.4 follow/unfollow) và
       `place_suggestion_notifications` (cần cho T4.4 idempotence job — unique `(post_id)`).
       Thêm bằng migration riêng ở phase tương ứng, không sửa migration đã chạy.
-- [ ] **Bảng vận hành chưa có** — `idempotency_keys` (K2), `rate_limits` (H4),
-      `audit_logs` (F3): thêm khi làm phase tương ứng (K2/H4/F3), không làm từ đầu.
+- [x] **Bảng vận hành** — `idempotency_keys` (K2) và `rate_limits` (H4) đã có (2026-11-11);
+      còn thiếu `audit_logs` (F3): thêm khi làm phase tương ứng.
 - [x] **`GET /places/saved` phân trang** — đã xác minh 2026-11-11: `listSavedPlaces` dùng keyset
       `(created_at, id)` + `LIMIT pageSize+1`, trả `next` như các danh sách khác.
-- [ ] **Benchmark `unaccent + pg_trgm`** — dataset 491 dòng không đại diện; đo lại khi
+- [ ] **Benchmark `unaccent + pg_trgm`** — dataset 344 dòng không đại diện; đo lại khi
       ≥ 50k place (đã ghi ở Phần E kế hoạch).
 - [ ] **Nút "Nhắn tin"** — `disabled` + tooltip "sẽ mở khi backend hoàn thiện" (D-043);
       bật khi có room/messaging thật (Phase 6+).
@@ -377,7 +378,7 @@ lịch sử; không còn việc mở ở đây.
       `prisma migrate dev` về sau sẽ thấy "drift" và có thể đề nghị xoá; cần ghi chú khi
       tạo migration mới hoặc chuyển sang `prisma migrate diff` + chỉnh tay. `migrate deploy`
       (CI/compose) không bị ảnh hưởng.
-- [ ] **Benchmark `pg_trgm` ở quy mô lớn** — dataset 491 dòng; cần ≥ 50k dòng để đo
+- [ ] **Benchmark `pg_trgm` ở quy mô lớn** — dataset 344 dòng; cần ≥ 50k dòng để đo
       lợi ích index tìm kiếm.
 - [ ] **Thay SigV4 tự viết bằng `aws4fetch`** (vòng audit 2026-11-11) — `lib/r2.ts` tự cài
       AWS SigV4 bằng `node:crypto` vì `@aws-sdk/*` không nằm trong danh sách dependency đã
@@ -388,7 +389,8 @@ lịch sử; không còn việc mở ở đây.
       `backend/scripts/fetch-osm/`, `backend/scripts/build-corpus/` chưa commit; seed ưu tiên
       `places-expanded.json` nếu có. Backend đã tương thích (seed + test không phụ thuộc
       dataset cụ thể), nhưng cần quyết định: commit corpus vào repo hay tải lúc build, và
-      đối chiếu lại số liệu trong báo cáo đồ án (hiện ghi theo dataset 491 place).
+      đối chiếu lại số liệu trong báo cáo đồ án — ĐÃ XONG (2026-11-11): báo cáo ghi theo
+      dataset 344 place (86 curated + 258 OSM).
 
 ## 2026-11-11 — G1 (vòng đời tài khoản) xong, việc phát sinh
 
@@ -403,8 +405,14 @@ lịch sử; không còn việc mở ở đây.
       instance cần Redis hoặc chấp nhận mỗi instance tự nạp lại sau TTL.
 - [ ] **`/users/:handle` chỉ cache 15s** — nếu hồ sơ đổi (follow/bio) client có thể thấy dữ liệu
       cũ tối đa 15s; cân nhắc ETag revalidate thay vì max-age khi có nhiều người dùng thật.
-- [ ] **Thông báo dùng polling 60s** (DECISIONS 28) — đủ cho demo; realtime thật cần SSE/WebSocket
-      (đã có hạ tầng SSE cho phòng lọc nhóm để tái dùng).
+- [x] **Thông báo polling 60s** → **ĐÃ LÀM SSE per-user** (G6.3, commit `66c0423`):
+      `GET /notifications/events` + `notification-events.ts`, badge cập nhật ngay. Poll 60s giữ
+      lại làm lưới an toàn khi SSE lỗi/mock bật.
+- [ ] **SSE thông báo cũng chỉ đúng một tiến trình** — cùng giới hạn với SSE phòng; khi scale
+      nhiều instance phải chuyển sang LISTEN/NOTIFY hoặc Redis (một chỗ sửa cho cả hai kênh).
+- [ ] **EventSource không gửi được header tuỳ biến** — nếu sau này API tách domain khác (CORS
+      cross-site), cookie `SameSite=Lax` sẽ không được gửi; phải dùng fetch-stream hoặc token
+      ngắn hạn trên query. Hiện tại same-origin qua proxy nên chưa ảnh hưởng.
 - [ ] **Feed following chưa gợi ý người để theo dõi** — khi feed rỗng chỉ hiện empty state;
       nên thêm khối "Gợi ý theo dõi" (dùng `GET /users?q=`).
 - [ ] **Chưa có staging/monitoring** — deploy thật cần healthcheck ngoài (UptimeRobot),
@@ -413,7 +421,7 @@ lịch sử; không còn việc mở ở đây.
 
 ## 2026-11-11 — G5 (e2e trên backend thật) xong, việc phát sinh
 
-- [ ] **Ảnh địa điểm chỉ có 20/2.726 place** (corpus OSM không có ảnh): trang đầu `/discover`
+- [ ] **Ảnh địa điểm chỉ có 20/344 place** (corpus OSM không có ảnh): trang đầu `/discover`
       giờ có ảnh nhờ seed sắp ảnh lên trước, nhưng phần lớn place vẫn hiện placeholder. Cần bổ
       sung ảnh (R2) hoặc nguồn ảnh có giấy phép cho corpus mở rộng.
 - [ ] **E2E backend cần dev DB đã seed + API container đang chạy**: chưa tự động hoá trong CI
