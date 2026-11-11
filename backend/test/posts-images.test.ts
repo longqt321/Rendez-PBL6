@@ -159,6 +159,9 @@ describe("ảnh bài đăng", () => {
       ]),
     })
     expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({
+      message: "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn",
+    })
   })
 
   test("URL có query string → 400", async () => {
@@ -168,6 +171,9 @@ describe("ảnh bài đăng", () => {
       body: createPostBody("URL có query", [`${CDN}/posts/${author.id}/x.jpg?token=abc`]),
     })
     expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({
+      message: "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn",
+    })
   })
 
   test("URL có userinfo → 400", async () => {
@@ -179,6 +185,20 @@ describe("ảnh bài đăng", () => {
       ]),
     })
     expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({
+      message: "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn",
+    })
+  })
+
+  test("URL dài hơn 2048 ký tự → 400", async () => {
+    const longName = "a".repeat(2100)
+    const res = await call("/api/v1/posts", {
+      method: "POST",
+      cookie: author.cookie,
+      body: createPostBody("URL quá dài", [`${CDN}/posts/${author.id}/${longName}.jpg`]),
+    })
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ message: "URL ảnh quá dài" })
   })
 
   test("POST /posts không có images → images: []", async () => {

@@ -34,6 +34,16 @@ export {
   placeSuggestionSchema,
 } from "./place.schema"
 export { postSchema, authorSchema } from "./post.schema"
+export {
+  MAX_POST_IMAGE_URL_LENGTH,
+  POST_IMAGE_DUPLICATE_MESSAGE,
+  POST_IMAGE_INVALID_MESSAGE,
+  POST_IMAGE_TOO_LONG_MESSAGE,
+  POST_IMAGE_TOO_MANY_MESSAGE,
+  validatePostImageUrls,
+  type PostImageValidation,
+  type ValidatePostImageUrlsOptions,
+} from "./post-images"
 export { commentSchema } from "./comment.schema"
 export { reviewSchema } from "./review.schema"
 export { placeReportSchema } from "./place-report.schema"

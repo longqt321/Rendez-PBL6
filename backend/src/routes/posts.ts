@@ -3,8 +3,10 @@ import { z } from "zod"
 import {
   MAX_CAPTION_LENGTH,
   MIN_CAPTION_LENGTH,
+  MAX_POST_IMAGE_URL_LENGTH,
   MAX_POST_IMAGES,
   MAX_REVIEW_CONTENT_LENGTH,
+  validatePostImageUrls,
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { env } from "../env"
@@ -33,55 +35,30 @@ const createPostSchema = z.object({
   caption: z.string().trim().min(MIN_CAPTION_LENGTH).max(MAX_CAPTION_LENGTH),
   placeId: z.string().min(1).nullable().optional(),
   images: z
-    .array(z.string().min(1).max(2048, "URL ảnh quá dài"))
+    .array(z.string().min(1).max(MAX_POST_IMAGE_URL_LENGTH, "URL ảnh quá dài"))
     .max(MAX_POST_IMAGES, `Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
     .optional(),
 })
 
 /**
  * Ảnh bài đăng phải do CHÍNH người gọi tải lên thư mục `posts/<userId>/` của
- * bucket. Không có bước này thì ai cũng gắn được URL ảnh của người khác (hoặc
- * URL ngoài) vào bài của mình.
+ * bucket. Logic kiểm URL nằm chung `@rendez/schema` (`validatePostImageUrls`)
+ * để mock server dùng đúng một nguồn; hàm này chỉ thêm phần phụ thuộc env.
  *
  * Trả mảng rỗng khi client không gửi ảnh — request không ảnh không bị ảnh
  * hưởng bởi việc R2 chưa cấu hình.
  */
 function validatePostImages(images: string[] | undefined, userId: string): string[] {
-  if (!images || images.length === 0) return []
-  if (images.length > MAX_POST_IMAGES) {
-    throw new ApiError(400, `Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
-  }
-  if (new Set(images).size !== images.length) {
-    throw new ApiError(400, "Ảnh bị trùng trong bài đăng")
-  }
-
   // Chưa có bucket (hoặc thiếu domain công khai) thì không xác thực được ảnh
   // thuộc về ai — từ chối thay vì nhận URL tuỳ ý.
-  if (!env.r2Configured || env.R2_PUBLIC_BASE_URL.length === 0) {
+  if (images && images.length > 0 && (!env.r2Configured || env.R2_PUBLIC_BASE_URL.length === 0)) {
     throw new ApiError(400, "Tính năng ảnh chưa được cấu hình")
   }
 
-  const base = new URL(env.R2_PUBLIC_BASE_URL)
-  const basePath = base.pathname.replace(/\/$/, "")
-  const expectedPrefix = `${basePath}/posts/${userId}/`
-  const invalid = () => new ApiError(400, "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn")
+  const result = validatePostImageUrls(images, { userId, publicBaseUrl: env.R2_PUBLIC_BASE_URL })
+  if (!result.ok) throw new ApiError(400, result.message)
 
-  for (const url of images) {
-    let parsed: URL
-    try {
-      parsed = new URL(url)
-    } catch {
-      throw invalid()
-    }
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw invalid()
-    if (parsed.origin !== base.origin) throw invalid()
-    // Userinfo (`user:pass@`), query (`?x=`) hay fragment (`#x`) đều không nằm
-    // trong URL công khai R2 trả về — có nghĩa là URL bị chế biến, từ chối.
-    if (parsed.username || parsed.password || parsed.search || parsed.hash) throw invalid()
-    if (!parsed.pathname.startsWith(expectedPrefix)) throw invalid()
-  }
-
-  return images
+  return result.images
 }
 
 const createCommentSchema = z.object({

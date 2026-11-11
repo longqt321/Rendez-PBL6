@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { expect, test } from "@playwright/test"
 
 // Mỗi card bài đăng có link vào trang bài đăng — đếm để so phân trang.
@@ -68,6 +69,12 @@ const ONE_PIXEL_PNG = Buffer.from(
 )
 
 test("đăng bài kèm ảnh qua composer", async ({ page }) => {
+  // Mock trả `publicUrl` trên host storage giả (không có server thật) — chặn
+  // request ảnh và trả PNG 1x1 thật để kiểm ảnh RENDER được, không chỉ "visible".
+  await page.route("https://mock-r2.test/**", (route) =>
+    route.fulfill({ status: 200, contentType: "image/png", body: ONE_PIXEL_PNG }),
+  )
+
   await page.goto("/social")
   const composer = page.getByRole("textbox", { name: "Nội dung bài đăng" })
   await composer.fill("Bài kiểm tra có ảnh đính kèm")
@@ -85,5 +92,11 @@ test("đăng bài kèm ảnh qua composer", async ({ page }) => {
 
   await page.getByRole("button", { name: "Đăng", exact: true }).click()
   await expect(composer).toHaveValue("")
-  await expect(page.locator('img[alt^="Ảnh 1/2 của bài đăng"]').first()).toBeVisible()
+
+  const firstImage = page.locator('img[alt^="Ảnh 1/2 của bài đăng"]').first()
+  await expect(firstImage).toBeVisible()
+  // Ảnh tải xong thật (naturalWidth > 0) — không phải thẻ <img> gãy.
+  await expect
+    .poll(() => firstImage.evaluate((img: HTMLImageElement) => img.naturalWidth))
+    .toBeGreaterThan(0)
 })

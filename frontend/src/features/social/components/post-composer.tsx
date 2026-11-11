@@ -86,11 +86,9 @@ export function PostComposer({ onCreated }: PostComposerProps) {
   }, [])
 
   function removeImage(id: string) {
-    setImages((current) => {
-      const target = current.find((image) => image.id === id)
-      if (target) URL.revokeObjectURL(target.previewUrl)
-      return current.filter((image) => image.id !== id)
-    })
+    const target = imagesRef.current.find((image) => image.id === id)
+    if (target) URL.revokeObjectURL(target.previewUrl)
+    setImages((current) => current.filter((image) => image.id !== id))
   }
 
   function clearImages() {
@@ -105,19 +103,28 @@ export function PostComposer({ onCreated }: PostComposerProps) {
     event.target.value = "" // chọn lại cùng file vẫn kích hoạt onChange
     if (files.length === 0) return
 
-    setImages((current) => {
-      const accepted = files.slice(0, MAX_POST_IMAGES - current.length)
-      if (accepted.length < files.length) {
-        toast.error(`Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
+    // Mọi side effect (đếm slot, tạo blob URL, toast) chạy TRƯỚC khi dispatch:
+    // updater của `setImages` phải thuần vì StrictMode gọi nó hai lần — tạo
+    // objectURL trong updater sẽ rò rỉ blob và lặp toast.
+    const accepted = files.slice(0, MAX_POST_IMAGES - imagesRef.current.length)
+    if (accepted.length === 0) {
+      toast.error(`Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
+      return
+    }
+    if (accepted.length < files.length) {
+      toast.error(`Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
+    }
+
+    const added: PendingImage[] = accepted.map((file) => {
+      imageSeq.current += 1
+      return {
+        id: `img-${imageSeq.current}`,
+        file,
+        previewUrl: URL.createObjectURL(file),
       }
-      return [
-        ...current,
-        ...accepted.map((file) => {
-          imageSeq.current += 1
-          return { id: `img-${imageSeq.current}`, file, previewUrl: URL.createObjectURL(file) }
-        }),
-      ]
     })
+
+    setImages((current) => [...current, ...added])
   }
 
   const canSubmit = caption.trim().length >= 3 && !createPost.isPending && !uploading
@@ -150,29 +157,29 @@ export function PostComposer({ onCreated }: PostComposerProps) {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     // `isPending` chỉ bật khi mutation chạy — upload ảnh diễn ra TRƯỚC đó, nên
-    // cần cờ riêng để bấm Đăng hai lần liên tiếp không tạo hai bài.
+    // cần cờ riêng để bấm Đăng hai lần liên tiếp không tạo hai bài. Cờ chỉ được
+    // nhả sau khi mutation xong (`await mutateAsync`), không phải ngay sau khi
+    // gọi — nếu không vẫn còn khe double-submit trong lúc request đang bay.
     if (submittingRef.current || !canSubmit) return
     submittingRef.current = true
     try {
       const uploaded = await uploadImages()
       if (uploaded === null) return // lỗi ảnh — giữ nguyên nội dung để người dùng thử lại
 
-      createPost.mutate(
-        {
-          caption: caption.trim(),
-          placeId: selectedPlace?.id ?? null,
-          ...(uploaded.length > 0 ? { images: uploaded } : {}),
-        },
-        {
-          onSuccess: () => {
-            setCaption("")
-            setSelectedPlace(null)
-            setShowSuggestions(false)
-            clearImages()
-            onCreated?.()
-          },
-        },
-      )
+      await createPost.mutateAsync({
+        caption: caption.trim(),
+        placeId: selectedPlace?.id ?? null,
+        ...(uploaded.length > 0 ? { images: uploaded } : {}),
+      })
+
+      setCaption("")
+      setSelectedPlace(null)
+      setShowSuggestions(false)
+      clearImages()
+      onCreated?.()
+    } catch {
+      // Lỗi tạo bài: giữ nguyên nội dung + ảnh để người dùng thử lại.
+      toast.error("Không đăng được bài. Thử lại nhé.")
     } finally {
       submittingRef.current = false
     }

@@ -2779,3 +2779,21 @@ Quyết định:
   được bình thường). Dismiss dùng cùng quy tắc + cùng CAS.
 - **`priceMax` giá trị lạ**: `describeProposal` hiện "—" thay vì tự quy về 3, thống nhất với
   `applyProposalToFilter` (giá trị lạ bị bỏ qua).
+37. **Sửa theo audit 2b ảnh bài đăng (2026-11-11)**:
+
+- **Updater thuần**: `setImages` trong composer chỉ nối mảng; `URL.createObjectURL`, id và
+  `toast.error` được tạo NGOÀI updater — React StrictMode gọi updater hai lần, tạo blob URL
+  trong đó sẽ rò rỉ và sinh id trùng.
+- **Reset khoá submit**: `submittingRef` được nhả trong `finally` sau `await mutateAsync`
+  (trước đó nhả ngay sau khi gọi `mutate`, nên request lỗi vẫn khoá nút vĩnh viễn).
+- **Một nguồn validate**: tách `validatePostImageUrls` sang `@rendez/schema`; backend
+  (`routes/posts.ts`) và mock (`mocks/server.ts`) cùng gọi — mock không còn lệch quy tắc với
+  backend (trước đó mock chỉ kiểm prefix). Backend giữ thêm kiểm tra `env.r2Configured`.
+- **Rate limit theo user**: `byUser` chỉ dùng khoá user khi `userId` khác rỗng, ngược lại
+  fallback IP (tránh khoá `scope:user:` chung cho mọi request thiếu định danh).
+- **`Retry-After` bị rơi**: `onError` của Hono dựng lại `Response` từ `HTTPException` nên
+  header đặt qua `c.header()` trước khi `throw` bị mất (lỗi có sẵn, `infra.test.ts` cũng fail
+  vì thế). Middleware rate limit giờ trả `c.json(..., 429, { "Retry-After": ... })` trực tiếp.
+- **Test**: bổ sung assert thông điệp lỗi cụ thể + URL > 2048 (backend), test rate limit theo
+  user (429 + `Retry-After`, hai user chung IP không chặn nhau), e2e assert `naturalWidth > 0`
+  với PNG fulfill qua `page.route` (chưa phải storage thật).

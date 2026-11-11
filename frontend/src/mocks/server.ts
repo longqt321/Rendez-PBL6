@@ -33,13 +33,14 @@ import {
   MAX_PROFILE_BIO_LENGTH,
   MAX_PROFILE_LOCATION_LENGTH,
   MAX_PROFILE_NAME_LENGTH,
-  MAX_POST_IMAGES,
   MAX_REPORT_DETAIL_LENGTH,
   MAX_REVIEW_CONTENT_LENGTH,
   MAX_ROOM_KEYWORD_LENGTH,
   MAX_ROOM_NAME_LENGTH,
   MIN_CAPTION_LENGTH,
-} from "@/lib/constants"
+  POST_IMAGE_INVALID_MESSAGE,
+  validatePostImageUrls,
+} from "@rendez/schema"
 import type { MockCollection, MockComment, MockPost, MockReport, MockReview } from "./types"
 import type { MockRoom, MockRoomMember } from "./types"
 
@@ -397,22 +398,18 @@ function createPost(config: InternalAxiosRequestConfig) {
     badRequest(config, `Nội dung bài đăng tối đa ${MAX_CAPTION_LENGTH} ký tự`)
   }
 
-  // Ảnh (G5b): mock coi R2 đã cấu hình nên chỉ kiểm số lượng/định dạng URL —
-  // backend thật còn kiểm prefix `posts/<userId>/` của bucket.
-  const images = body.images === undefined ? [] : body.images
-  if (!Array.isArray(images) || images.some((url) => typeof url !== "string")) {
-    badRequest(config, "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn")
+  // Ảnh (G5b): CÙNG logic với backend (`validatePostImageUrls` trong
+  // `@rendez/schema`) — mock chỉ thay domain bucket bằng storage giả.
+  const rawImages = body.images === undefined ? [] : body.images
+  if (!Array.isArray(rawImages) || rawImages.some((url) => typeof url !== "string")) {
+    badRequest(config, POST_IMAGE_INVALID_MESSAGE)
   }
-  const urls = images as string[]
-  if (urls.length > MAX_POST_IMAGES) {
-    badRequest(config, `Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
-  }
-  if (new Set(urls).size !== urls.length) badRequest(config, "Ảnh bị trùng trong bài đăng")
-  for (const url of urls) {
-    if (!/^https?:\/\//u.test(url)) {
-      badRequest(config, "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn")
-    }
-  }
+  const imageResult = validatePostImageUrls(rawImages as string[], {
+    userId: CURRENT_USER.id,
+    publicBaseUrl: `https://${MOCK_STORAGE_HOST}`,
+  })
+  if (!imageResult.ok) badRequest(config, imageResult.message)
+  const urls = imageResult.images
 
   postSeq += 1
   const post: MockPost = {

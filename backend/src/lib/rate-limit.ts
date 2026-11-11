@@ -1,7 +1,6 @@
 import { createMiddleware } from "hono/factory"
 import type { AppEnv } from "../app"
 import { env } from "../env"
-import { ApiError } from "./errors"
 import { prisma } from "./prisma"
 
 /**
@@ -112,17 +111,24 @@ export async function hitRateLimit(
 /** Middleware giới hạn theo IP (hoặc userId khi `byUser`) + scope; vượt trả 429 kèm `Retry-After`. */
 export function rateLimit(options: RateLimitOptions) {
   return createMiddleware<AppEnv>(async (c, next) => {
-    const identity = options.byUser
-      ? (c.get("userId") ?? clientIp(c.req.raw.headers, c.env?.remoteAddress))
-      : clientIp(c.req.raw.headers, c.env?.remoteAddress)
-    const key = options.byUser
-      ? `${options.scope}:user:${identity}`
-      : `${options.scope}:${identity}`
+    // `byUser`: đếm theo userId (route đã qua requireAuth). userId rỗng/thiếu
+    // (không đăng nhập) thì rơi về IP — nếu không, mọi user "rỗng" dùng chung
+    // một khoá `scope:user:`.
+    const userId = options.byUser ? c.get("userId") : undefined
+    const identity =
+      userId && userId.length > 0
+        ? `user:${userId}`
+        : clientIp(c.req.raw.headers, c.env?.remoteAddress)
+    const key = `${options.scope}:${identity}`
     const { count, resetAt } = await hitRateLimit(key, options.windowSeconds)
     if (count > options.limit) {
       const retryAfter = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
-      c.header("Retry-After", String(retryAfter))
-      throw new ApiError(429, "Bạn thao tác quá nhanh, vui lòng thử lại sau")
+      // Trả response TRỰC TIẾP thay vì `c.header()` + `throw ApiError`: `onError`
+      // của app dựng lại Response từ `HTTPException` nên header đặt trên context
+      // bị rơi — client không nhận được `Retry-After`.
+      return c.json({ message: "Bạn thao tác quá nhanh, vui lòng thử lại sau" }, 429, {
+        "Retry-After": String(retryAfter),
+      })
     }
     await next()
   })
