@@ -96,18 +96,18 @@ export function parsePlaceFilters(query: Record<string, string | undefined>): Pl
 }
 
 /** Haystack tìm kiếm — khớp mock: name + address + city + district + tags.
- * Dùng `immutable_unaccent` (hàm IMMUTABLE trong migration 20261111080000) thay
- * vì `unaccent` thô để biểu thức trùng khít với GIN index `pg_trgm` (T2.5) —
- * planner chỉ khớp index khi biểu thức giống hệt. */
-const HAYSTACK = Prisma.sql`immutable_unaccent(lower(p.name || ' ' || p.address || ' ' || p.city || ' ' || coalesce(p.district, '') || ' ' || immutable_array_to_string(p.tags, ' ')))`
+ * Dùng `immutable_search_normalize` (migration 20261111090000) — cùng quy tắc
+ * với `normalizeText()` của mock (bỏ dấu, lowercase, dấu câu → khoảng trắng) và
+ * trùng khít biểu thức GIN index `pg_trgm` (T2.5) để planner khớp index. */
+const HAYSTACK = Prisma.sql`immutable_search_normalize(p.name || ' ' || p.address || ' ' || p.city || ' ' || coalesce(p.district, '') || ' ' || immutable_array_to_string(p.tags, ' '))`
 
-/** Escape ký tự đặc biệt của LIKE để từ khoá người dùng không thành wildcard. */
-function likePattern(keyword: string): string {
-  return `%${keyword.replace(/[\\%_]/g, (char) => `\\${char}`)}%`
-}
-
+/**
+ * Điều kiện LIKE trên haystack. Từ khoá được chuẩn hoá bằng chính hàm SQL của
+ * haystack nên `?q=bánh xèo` khớp `Bánh xèo Bà Dương` (mock cũng vậy). Sau
+ * chuẩn hoá từ khoá không còn `%`/`_` nên không thể thành wildcard.
+ */
 function keywordCondition(keyword: string): Prisma.Sql {
-  return Prisma.sql`${HAYSTACK} LIKE ${likePattern(keyword.toLowerCase())}`
+  return Prisma.sql`${HAYSTACK} LIKE ${Prisma.sql`'%' || immutable_search_normalize(${keyword}) || '%'`}`
 }
 
 function buildConditions(filters: PlaceFilters): Prisma.Sql[] {

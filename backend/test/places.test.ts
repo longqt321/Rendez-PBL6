@@ -87,13 +87,23 @@ describe("GET /places", () => {
     }
   })
 
-  test("GIN trgm index cho tìm kiếm tồn tại (migration 9)", async () => {
-    const rows = await prisma.$queryRaw<{ indexname: string }[]>`
-      SELECT indexname FROM pg_indexes
+  test("GIN trgm index cho tìm kiếm tồn tại và dùng hàm chuẩn hoá (migration 9+10)", async () => {
+    const rows = await prisma.$queryRaw<{ indexdef: string }[]>`
+      SELECT indexdef FROM pg_indexes
       WHERE schemaname = 'public' AND tablename = 'places'
         AND indexname = 'places_search_trgm_idx'
     `
     expect(rows).toHaveLength(1)
+    expect(rows[0]?.indexdef).toContain("immutable_search_normalize")
+  })
+
+  test("q có dấu khớp tên (chuẩn hoá 2 phía như mock)", async () => {
+    const body = await getJson<PageJson>("/api/v1/places?q=" + encodeURIComponent("bánh xèo"))
+
+    expect(body.items.length).toBeGreaterThan(0)
+    for (const item of body.items) {
+      expect(item.name.toLowerCase()).toContain("bánh xèo")
+    }
   })
 
   test("category nhiều giá trị + loại trừ hoạt động", async () => {
