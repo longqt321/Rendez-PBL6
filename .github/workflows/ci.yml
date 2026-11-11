@@ -38,29 +38,36 @@ jobs:
       - name: Build
         run: bun run build
 
-  # Bật job này ở Phase 0 khi backend/ đã có package.json thật + script test.
-  # api:
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: backend
-  #   services:
-  #     postgres:
-  #       image: postgres:17-alpine
-  #       env:
-  #         POSTGRES_USER: rendez
-  #         POSTGRES_PASSWORD: rendez_dev
-  #         POSTGRES_DB: rendez_test
-  #       ports: ["5432:5432"]
-  #       options: >-
-  #         --health-cmd pg_isready --health-interval 5s
-  #         --health-timeout 3s --health-retries 10
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: oven-sh/setup-bun@v2
-  #       with:
-  #         bun-version: 1.3.14
-  #     - run: bun install --frozen-lockfile
-  #       working-directory: .
-  #     - run: bun run typecheck
-  #     - run: bun run test
+  # Backend: test integration dùng Testcontainers nên cần Docker của runner
+  # (ubuntu-latest có sẵn) — không cần service postgres riêng.
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Cài dependency
+        working-directory: .
+        run: bun install --frozen-lockfile
+
+      - name: Sinh Prisma client
+        env:
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+        run: bunx prisma generate
+
+      - name: Kiểm tra kiểu
+        run: bun run typecheck
+
+      - name: Kiểm tra format
+        working-directory: .
+        run: bunx prettier --check "backend/**/*.{ts,json}"
+
+      # Tuần tự: mỗi file test dựng container Postgres riêng.
+      - name: Test
+        run: bun test --parallel=1
