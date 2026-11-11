@@ -57,6 +57,7 @@ export {
   roomFilterSchema,
   appliedProposalSchema,
   createRoomInputSchema,
+  createRoomResponseSchema,
   joinRoomInputSchema,
   joinRoomResponseSchema,
   createProposalInputSchema,

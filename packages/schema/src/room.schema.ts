@@ -63,6 +63,14 @@ export const createRoomInputSchema = z.object({
   name: z.string().trim().max(80).optional(),
 })
 
+/**
+ * Response tạo phòng: DTO phòng + `guestToken` của owner (cookie HttpOnly tự
+ * gửi; trường này chỉ để test/CLI dùng).
+ */
+export const createRoomResponseSchema = roomSchema.extend({
+  guestToken: z.string(),
+})
+
 /** Body tham gia phòng — guest không cần tài khoản (D5). */
 export const joinRoomInputSchema = z.object({
   displayName: z.string().trim().min(1, "Tên hiển thị trống").max(40),

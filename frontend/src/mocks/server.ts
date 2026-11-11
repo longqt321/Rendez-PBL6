@@ -1919,7 +1919,6 @@ const routes: Route[] = [
         status: "open",
         createdAt: new Date().toISOString(),
       })
-      console.log("MOCK proposals after", room.code, JSON.stringify(room.proposals))
       return toRoomDto(room)
     },
   },

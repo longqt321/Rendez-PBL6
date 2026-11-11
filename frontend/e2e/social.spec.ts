@@ -91,6 +91,17 @@ test("đăng bài kèm ảnh qua composer", async ({ page }) => {
   await expect(page.locator('img[alt^="Ảnh sẽ đính kèm"]')).toHaveCount(2)
 
   await page.getByRole("button", { name: "Đăng", exact: true }).click()
+
+  if (process.env.E2E_BACKEND_URL) {
+    // Backend thật chưa cấu hình R2 → `POST /media` trả 503. Hành vi đúng:
+    // báo tính năng chưa cấu hình, GIỮ nội dung + ảnh để người dùng thử lại
+    // (không được xoá trắng như đăng thành công).
+    await expect(page.locator("#main").getByText("Tính năng ảnh chưa được cấu hình")).toBeVisible()
+    await expect(composer).toHaveValue("Bài kiểm tra có ảnh đính kèm")
+    await expect(page.locator('img[alt^="Ảnh sẽ đính kèm"]')).toHaveCount(2)
+    return
+  }
+
   await expect(composer).toHaveValue("")
 
   const firstImage = page.locator('img[alt^="Ảnh 1/2 của bài đăng"]').first()

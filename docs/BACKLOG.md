@@ -442,10 +442,24 @@ lịch sử; không còn việc mở ở đây.
 
 ## 2026-11-11 — Lỗi có sẵn (không do thay đổi rooms): `Retry-After` mất khi rate limit
 
-- [ ] `test/infra.test.ts` → "rate limit: vượt ngưỡng POST /session trả 429 kèm Retry-After"
-      FAIL ổn định (đã xác nhận fail cả trên HEAD trước thay đổi rooms bằng `git stash`).
-      Nguyên nhân: `rateLimit` gọi `c.header("Retry-After", ...)` rồi `throw ApiError`; response
-      của `HTTPException` thay thế header của context trong một số trường hợp nên header không
-      tới client. Cần sửa ở `backend/src/lib/rate-limit.ts` (gắn header vào chính `Response` của
-      `ApiError`, hoặc trả response 429 trực tiếp thay vì throw). Ngoài phạm vi việc rooms nên
-      chưa sửa.
+- [x] **ĐÃ SỬA** (`backend/src/lib/rate-limit.ts`): middleware trả `c.json(..., 429, { "Retry-After" })`
+      trực tiếp thay vì `throw ApiError`, vì `onError` dựng lại `Response` từ `HTTPException`
+      và làm rơi header đặt qua `c.header()`. `test/infra.test.ts` + `test/rate-limit-ip.test.ts`
+      xanh trong lần chạy 174 test gần nhất.
+
+## 2026-11-11 — Ảnh bài đăng (G5b) + audit vòng 3, việc phát sinh
+
+- [ ] **E2E ảnh trên backend thật cần R2** — hiện `POST /media` trả 503 (chưa cấu hình R2),
+      nên `e2e/social.spec.ts` nhánh backend kiểm hành vi suy giảm (báo "Tính năng ảnh chưa
+      được cấu hình", giữ nội dung + ảnh để thử lại). Khi có bucket thật, thêm biến môi trường
+      và chạy lại nhánh upload thật (presigned PUT + `publicUrl` render).
+- [ ] **Presigned PUT với `content-type` đã ký** — chưa xác minh trên bucket R2 thật; cần
+      kiểm cả trường hợp client gửi `UNSIGNED-PAYLOAD` bị từ chối.
+- [ ] **Object R2 mồ côi** — nếu `POST /posts` fail sau khi PUT ảnh xong, object nằm lại
+      bucket. Cần job dọn theo prefix `posts/<userId>/` hoặc lifecycle rule.
+- [ ] **`mediaUnavailable` chỉ được phát hiện khi submit** — nên dò một lần lúc mount
+      (HEAD/GET nhẹ) để ẩn nút "Thêm ảnh" sớm, tránh người dùng chọn ảnh rồi mới biết.
+- [ ] **Mock rooms dùng một token/phòng** — đúng với thực tế một browser (mỗi browser một
+      cookie/phòng), nhưng không mô phỏng được nhiều guest song song trong cùng một tab.
+      Nếu cần test đa khách, phải chạy ở project `backend` với nhiều browser context.
+

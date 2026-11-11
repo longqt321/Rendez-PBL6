@@ -105,7 +105,8 @@ describe("checkApiContract", () => {
     }
 
     expect(checkApiContract("GET", "/rooms/AB23CD", room)).toBeNull()
-    expect(checkApiContract("POST", "/rooms", room)).toBeNull()
+    // Tạo phòng trả thêm `guestToken` (cookie HttpOnly; trường này cho test/CLI).
+    expect(checkApiContract("POST", "/rooms", { ...room, guestToken: "tok" })).toBeNull()
     expect(
       checkApiContract("POST", "/rooms/AB23CD/join", {
         room,
