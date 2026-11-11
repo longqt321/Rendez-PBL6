@@ -447,7 +447,7 @@ flowchart TB
   SRC --> R["routes/ (10 file)"]
   SRC --> L["lib/ (truy vấn & nghiệp vụ)"]
   SRC --> I["app.ts · server.ts · env.ts"]
-  BE --> PR["prisma/schema.prisma + 8 migration"]
+  BE --> PR["prisma/schema.prisma + 9 migration"]
   BE --> T["test/ (13 file, 119 test)"]
   BE --> SC["scripts/seed.ts"]
 ```
@@ -504,7 +504,10 @@ sequenceDiagram
 
 Điểm thiết kế: tìm kiếm không dấu dùng `unaccent()` của Postgres để “banh xeo” khớp “Bánh Xèo”;
 phân trang keyset tránh trùng/sót khi dữ liệu thay đổi; ảnh và điểm đánh giá lấy trong cùng một
-truy vấn (LATERAL + aggregate) nên không phát sinh N+1.
+truy vấn (LATERAL + aggregate) nên không phát sinh N+1. Vì `unaccent()` là STABLE (không dùng
+được trong biểu thức index), migration 9 bọc nó thành `immutable_unaccent()` và tạo GIN index
+`pg_trgm` trên đúng biểu thức haystack — `EXPLAIN` xác nhận `Bitmap Index Scan on
+places_search_trgm_idx` thay vì quét tuần tự khi dữ liệu lớn.
 
 ### 3.4. Luồng đăng bài và thông báo
 
@@ -752,7 +755,7 @@ Các hạng mục sau **chưa kiểm chứng được** trong khuôn khổ đồ
 
 ### Kết quả đạt được
 
-Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 8
+Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 9
 migration, 51 endpoint, 119 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
 hệ thống chạy được bằng một lệnh `docker compose up` với dữ liệu 491 địa điểm thật tại Đà Nẵng.
 Báo cáo cũng đã hệ thống hoá quy trình: từ đặc tả hợp đồng API, thiết kế dữ liệu, triển khai,
@@ -810,6 +813,7 @@ máy chủ công khai, đồng bộ SSE nhiều instance và benchmark ở quy m
 | 6 | `20261111051500_place_suggestion_notifications` | Bảng dấu idempotence job đề xuất |
 | 7 | `20261111052000_psn_notification_unique` | Unique `notification_id` (quan hệ 1-1) |
 | 8 | `20261111054500_rate_limits` | Bảng đếm rate limit theo cửa sổ thời gian |
+| 9 | `20261111080000_places_search_trgm` | GIN `pg_trgm` cho tìm kiếm không dấu (hàm `immutable_unaccent`, `immutable_array_to_string`) |
 
 ### Phụ lục B. Lệnh vận hành thường dùng
 

@@ -9,7 +9,7 @@
 | Hạng mục | Kết quả |
 | --- | --- |
 | Bảng trong DB (schema `public`) | 24 (23 bảng nghiệp vụ/auth + `_prisma_migrations`) |
-| Migration đã áp dụng | 8 |
+| Migration đã áp dụng | 9 |
 | Route handler tự viết (`routes/` + `healthz`/`readyz`) | 51 (46 khai báo một dòng + 2 khai báo nhiều dòng + 2 hạ tầng + `POST /media`) |
 | Mã nguồn backend (`src/**/*.ts`) | 35 file, ~4.200 dòng (routes + lib + hạ tầng) |
 | Test backend (`bun test --parallel=1`) | **119 pass / 0 fail**, 13 file, ~87 giây |

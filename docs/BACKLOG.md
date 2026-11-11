@@ -356,3 +356,8 @@ lịch sử; không còn việc mở ở đây.
 - [ ] **`POST /posts` caption chứa ký tự NUL** — đã map SQLSTATE 22021 → 400 ở
       `onError` (624ce5d); về lâu dài có thể thêm middleware strip control chars
       nếu xuất hiện thêm lỗi đầu vào tương tự.
+- [ ] **Index biểu thức không khai báo được trong Prisma schema** — GIN `pg_trgm`
+      (`places_search_trgm_idx`) và 2 hàm `immutable_unaccent`/`immutable_array_to_string`
+      chỉ có trong migration SQL. `prisma migrate dev` về sau sẽ thấy "drift" và có thể đề
+      nghị xoá; cần ghi chú khi tạo migration mới hoặc chuyển sang `prisma migrate diff`
+      + chỉnh tay. `migrate deploy` (CI/compose) không bị ảnh hưởng.

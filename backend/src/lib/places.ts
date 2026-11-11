@@ -95,8 +95,11 @@ export function parsePlaceFilters(query: Record<string, string | undefined>): Pl
   }
 }
 
-/** Haystack tìm kiếm — khớp mock: name + address + city + district + tags. */
-const HAYSTACK = Prisma.sql`unaccent(lower(concat_ws(' ', p.name, p.address, p.city, coalesce(p.district, ''), array_to_string(p.tags, ' '))))`
+/** Haystack tìm kiếm — khớp mock: name + address + city + district + tags.
+ * Dùng `immutable_unaccent` (hàm IMMUTABLE trong migration 20261111080000) thay
+ * vì `unaccent` thô để biểu thức trùng khít với GIN index `pg_trgm` (T2.5) —
+ * planner chỉ khớp index khi biểu thức giống hệt. */
+const HAYSTACK = Prisma.sql`immutable_unaccent(lower(p.name || ' ' || p.address || ' ' || p.city || ' ' || coalesce(p.district, '') || ' ' || immutable_array_to_string(p.tags, ' ')))`
 
 /** Escape ký tự đặc biệt của LIKE để từ khoá người dùng không thành wildcard. */
 function likePattern(keyword: string): string {
