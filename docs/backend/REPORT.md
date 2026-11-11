@@ -9,9 +9,9 @@
 | Hạng mục | Kết quả |
 | --- | --- |
 | Bảng trong DB (schema `public`) | 24 (23 bảng nghiệp vụ/auth + `_prisma_migrations`) |
-| Migration đã áp dụng | 9 |
+| Migration đã áp dụng | 10 |
 | Route handler tự viết (`routes/` + `healthz`/`readyz`) | 52 (50 khai báo trong `routes/` + `GET /healthz` + `GET /readyz`) |
-| Mã nguồn backend (`src/**/*.ts`) | 35 file, ~4.200 dòng (routes + lib + hạ tầng) |
+| Mã nguồn backend (`src/**/*.ts`) | 35 file, ~4.440 dòng (routes + lib + hạ tầng) |
 | Test backend (`bun test --parallel=1`) | **135 pass / 0 fail**, 14 file, ~95 giây |
 | e2e Playwright với backend thật | **12/12 pass** (`VITE_ENABLE_MOCKS=false`) |
 | e2e Playwright với mock | **13/13 pass** |
