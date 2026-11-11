@@ -31,6 +31,7 @@ function getTransporter(): Transporter {
 /** Tiêu đề cố định — test và template cùng đọc một hằng số. */
 export const RESET_PASSWORD_SUBJECT = "Đặt lại mật khẩu Rendez"
 export const VERIFY_EMAIL_SUBJECT = "Xác thực email Rendez"
+export const ACCOUNT_EXISTS_SUBJECT = "Tài khoản Rendez của bạn đã tồn tại"
 
 function escapeHtml(value: string): string {
   return value
@@ -177,5 +178,83 @@ export function buildVerifyEmailMail(input: VerifyEmailMailInput) {
 export async function sendVerifyEmailEmail(input: VerifyEmailMailInput): Promise<boolean> {
   if (!env.mailConfigured) return false
   await getTransporter().sendMail(buildVerifyEmailMail(input))
+  return true
+}
+
+export interface AccountExistsMailInput {
+  to: string
+  /** Tên hiển thị để chào — thiếu thì chào trung tính. */
+  name?: string
+  /** Trang đăng nhập của FE (không kèm token). */
+  loginUrl: string
+  /** Trang quên mật khẩu của FE (không kèm token). */
+  forgotPasswordUrl: string
+}
+
+/**
+ * Dựng mail "tài khoản đã tồn tại" — gửi khi có người đăng ký lại bằng email đã
+ * có tài khoản ĐÃ xác thực.
+ *
+ * Vì sao không gửi link đặt lại mật khẩu kèm token: kẻ xấu có thể nhập email
+ * người khác vào form đăng ký để "ép" hệ thống gửi mail đổi mật khẩu. Mail này
+ * chỉ chứa link tới trang đăng nhập / quên mật khẩu, người dùng chủ động yêu
+ * cầu link khi thật sự cần.
+ */
+export function buildAccountExistsMail(input: AccountExistsMailInput) {
+  const greeting = input.name?.trim() ? `Chào ${input.name.trim()},` : "Chào bạn,"
+  const safeName = escapeHtml(input.name?.trim() || "bạn")
+  const safeLogin = escapeHtml(input.loginUrl)
+  const safeForgot = escapeHtml(input.forgotPasswordUrl)
+
+  const text = [
+    greeting,
+    "",
+    "Ai đó (có thể là bạn) vừa thử tạo tài khoản Rendez bằng email này, nhưng email đã gắn với một tài khoản Rendez đã xác thực.",
+    "",
+    "Nếu là bạn, hãy đăng nhập tại:",
+    input.loginUrl,
+    "",
+    "Quên mật khẩu? Yêu cầu link mới tại:",
+    input.forgotPasswordUrl,
+    "",
+    "Nếu không phải bạn, hãy bỏ qua email này — tài khoản hiện tại không bị thay đổi.",
+  ].join("\n")
+
+  const html = `
+    <div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1f2937">
+      <h2 style="margin:0 0 16px;font-size:20px">Tài khoản Rendez đã tồn tại</h2>
+      <p style="margin:0 0 12px">Chào ${safeName},</p>
+      <p style="margin:0 0 12px">
+        Ai đó (có thể là bạn) vừa thử tạo tài khoản Rendez bằng email này, nhưng email
+        đã gắn với một tài khoản Rendez <strong>đã xác thực</strong>.
+      </p>
+      <p style="margin:20px 0">
+        <a href="${safeLogin}"
+           style="display:inline-block;background:#e07a5f;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600">
+          Đăng nhập Rendez
+        </a>
+      </p>
+      <p style="margin:0 0 12px;font-size:13px;color:#6b7280">
+        Quên mật khẩu? <a href="${safeForgot}" style="color:#e07a5f">Yêu cầu link đặt lại mật khẩu</a>.
+      </p>
+      <p style="margin:16px 0 0;font-size:13px;color:#6b7280">
+        Nếu không phải bạn, hãy bỏ qua email này — tài khoản hiện tại không bị thay đổi.
+      </p>
+    </div>
+  `.trim()
+
+  return {
+    from: env.MAIL_FROM,
+    to: input.to,
+    subject: ACCOUNT_EXISTS_SUBJECT,
+    text,
+    html,
+  }
+}
+
+/** Gửi mail "tài khoản đã tồn tại" — hành vi trả về giống mail xác thực. */
+export async function sendAccountExistsEmail(input: AccountExistsMailInput): Promise<boolean> {
+  if (!env.mailConfigured) return false
+  await getTransporter().sendMail(buildAccountExistsMail(input))
   return true
 }
