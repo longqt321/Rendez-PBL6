@@ -1,6 +1,6 @@
 # API RendeZ — tài liệu hợp đồng
 
-> Trạng thái: Phase 0–7 đã cài đặt và có integration test trên Postgres thật.
+> Trạng thái: Phase 0–8 đã cài đặt và có integration test trên Postgres thật.
 > Mọi route mount dưới `/api/v1` (quyết định K1). Lỗi luôn có shape `{ "message": string }`
 > (D6). Ngày cập nhật: 2026-11-11.
 
@@ -16,7 +16,7 @@
 | Phân trang | `{ "items": [...], "next": string \| null }`; `next` là cursor opaque base64 (D2) |
 | Giới hạn body | 1 MB (JSON). Ảnh đi thẳng lên R2 qua presigned URL, không qua API |
 | Rate limit | Vượt ngưỡng → `429` + `Retry-After` (giây) |
-| Enum loại hình | API dùng gạch nối: `street-food`; DB dùng gạch dưới: `street_food` |
+| Enum loại hình | API và DB đều dùng gạch nối: `street-food` (Prisma `@map`); bộ lọc nhận cả `street_food` |
 
 ### 1.1. Cursor (D2)
 

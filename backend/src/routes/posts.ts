@@ -6,7 +6,7 @@ import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { findPost, listPosts, type PostFilter } from "../lib/posts"
-import { findComment, listCommentsForPost } from "../lib/comments"
+import { findComment, listCommentsForPost, parseCommentSort } from "../lib/comments"
 import { createActorNotification } from "../lib/notifications"
 import { enqueuePlaceDetect } from "../lib/queue"
 import { getViewer, requireAuth } from "../lib/session"
@@ -236,7 +236,8 @@ export function createPostsRouter() {
     if (!post) throw new ApiError(404, "Không tìm thấy bài đăng")
 
     const viewer = await getViewer(c)
-    const items = await listCommentsForPost(postId, viewer?.id ?? null)
+    const sort = parseCommentSort(c.req.query("sort"))
+    const items = await listCommentsForPost(postId, viewer?.id ?? null, sort)
     return c.json({ items, next: null })
   })
 

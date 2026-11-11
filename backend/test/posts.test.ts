@@ -334,6 +334,36 @@ describe("bình luận", () => {
     expect(body.items[1]?.parentId).toBe(parentId)
   })
 
+  test("GET comments?sort=top xếp cha theo likeCount giảm dần", async () => {
+    // Bình luận của người khác được like nhiều hơn bình luận của tác giả.
+    const like = await call(`/api/v1/comments/${parentId}/like`, {
+      method: "PATCH",
+      cookie: other.cookie,
+      body: JSON.stringify({ liked: true }),
+    })
+    expect(like.status).toBe(200)
+
+    const res = await call(`/api/v1/posts/${postId}/comments?sort=top`)
+    const body = (await res.json()) as {
+      items: { id: string; likeCount: number; parentId: string | null }[]
+    }
+    const topLevel = body.items.filter((item) => item.parentId === null)
+    const counts = topLevel.map((item) => item.likeCount)
+    expect([...counts].sort((a, b) => b - a)).toEqual(counts)
+
+    // sort lạ coi như "new" (khớp mock).
+    const fallback = await call(`/api/v1/posts/${postId}/comments?sort=xxx`)
+    expect(fallback.status).toBe(200)
+
+    // Bỏ like để không ảnh hưởng test "idempotent" phía sau (trạng thái sạch).
+    const unlike = await call(`/api/v1/comments/${parentId}/like`, {
+      method: "PATCH",
+      cookie: other.cookie,
+      body: JSON.stringify({ liked: false }),
+    })
+    expect(unlike.status).toBe(200)
+  })
+
   test("commentCount của bài tăng theo số bình luận", async () => {
     const post = (await (await call(`/api/v1/posts/${postId}`)).json()) as { commentCount: number }
     expect(post.commentCount).toBe(2)

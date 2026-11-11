@@ -51,10 +51,19 @@ export function toCommentDto(row: CommentRow, viewerId: string | null) {
 
 export type CommentDto = ReturnType<typeof toCommentDto>
 
+/** Cách sắp xếp bình luận cấp 1 — khớp mock (`sort=new|top`). */
+export type CommentSort = "new" | "top"
+
+/** Chuẩn hoá `?sort=` — giá trị lạ coi như "new" (mock cũng vậy). */
+export function parseCommentSort(raw: string | undefined): CommentSort {
+  return raw === "top" ? "top" : "new"
+}
+
 /** Toàn bộ bình luận còn sống của một bài — đủ để xếp hạng + ghép reply ở JS. */
 export async function listCommentsForPost(
   postId: string,
   viewerId: string | null,
+  sort: CommentSort = "new",
 ): Promise<CommentDto[]> {
   const viewer = Prisma.sql`${viewerId}::uuid`
   const rows = await prisma.$queryRaw<CommentRow[]>(Prisma.sql`
@@ -78,8 +87,17 @@ export async function listCommentsForPost(
   }
 
   const topLevel = byParent.get(null) ?? []
-  // Sort "new": cha mới nhất trước (mock so `Date.parse` giảm dần).
-  topLevel.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+  if (sort === "top") {
+    // "top": nhiều like trước; hoà thì mới nhất trước (tất định, khớp thứ tự mock).
+    topLevel.sort(
+      (a, b) =>
+        Number(b.like_count) - Number(a.like_count) ||
+        b.created_at.getTime() - a.created_at.getTime(),
+    )
+  } else {
+    // Sort "new": cha mới nhất trước (mock so `Date.parse` giảm dần).
+    topLevel.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+  }
 
   const items: CommentDto[] = []
   for (const parent of topLevel) {
