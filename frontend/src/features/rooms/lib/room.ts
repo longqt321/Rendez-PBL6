@@ -17,8 +17,7 @@ export function describeProposal(proposal: RoomProposal): string {
   if (proposal.field === "priceMax") {
     const level = Number(proposal.value)
     // Giá trị lạ thì hiện "—" — không tự quy về mức 3 (khớp backend).
-    const label =
-      level === 1 || level === 2 || level === 3 ? priceLevelLabel(level as 1 | 2 | 3) : "—"
+    const label = level === 1 || level === 2 || level === 3 ? priceLevelLabel(level) : "—"
     return `＋ Mức giá tối đa: ${label}`
   }
   return `${sign} Từ khoá: ${proposal.value}`

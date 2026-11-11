@@ -1186,8 +1186,7 @@ function describeMockProposal(proposal: RoomProposal): string {
   if (proposal.field === "district") return `${sign} Quận: ${proposal.value}`
   if (proposal.field === "priceMax") {
     const level = Number(proposal.value)
-    const label =
-      level === 1 || level === 2 || level === 3 ? priceLevelLabel(level as 1 | 2 | 3) : "—"
+    const label = level === 1 || level === 2 || level === 3 ? priceLevelLabel(level) : "—"
     return `＋ Mức giá tối đa: ${label}`
   }
   return `${sign} Từ khoá: ${proposal.value}`
@@ -1230,7 +1229,7 @@ function applyMockProposalToFilter(
     if (proposal.kind !== "include") return filter
     const parsed = Number(value)
     if (parsed !== 1 && parsed !== 2 && parsed !== 3) return filter
-    return { ...filter, priceMax: parsed as 1 | 2 | 3 }
+    return { ...filter, priceMax: parsed }
   }
   return proposal.kind === "include"
     ? { ...filter, includeKeywords: [...new Set([...filter.includeKeywords, value])] }

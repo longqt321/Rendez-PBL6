@@ -199,11 +199,11 @@ export function RoomPage() {
                   value={joinName}
                   onChange={(event) => setJoinName(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter" && joinName.trim()) handleJoin()
+                    if (event.key === "Enter" && joinName.trim()) void handleJoin()
                   }}
                   aria-label="Tên hiển thị của bạn"
                 />
-                <Button size="sm" disabled={!joinName.trim()} onClick={handleJoin}>
+                <Button size="sm" disabled={!joinName.trim()} onClick={() => void handleJoin()}>
                   <UsersIcon aria-hidden="true" />
                   Tham gia
                 </Button>
@@ -235,7 +235,7 @@ export function RoomPage() {
         <Separator className="my-3" />
         <ProposalList
           room={room}
-          onApply={handleApply}
+          onApply={(id) => void handleApply(id)}
           onDismiss={(id) => {
             void dismissProposal(room.code, id).catch((error: unknown) =>
               toast.error(error instanceof Error ? error.message : "Không bỏ qua được đề xuất"),

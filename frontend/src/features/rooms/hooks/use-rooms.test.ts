@@ -29,7 +29,7 @@ describe("useRooms", () => {
     })
     expect(result.current.rooms[code]?.proposals[0]?.status).toBe("open")
 
-    const proposalId = result.current.rooms[code]!.proposals[0]!.id
+    const proposalId = result.current.rooms[code].proposals[0].id
     let summary = ""
     await act(async () => {
       summary = await result.current.applyProposal(code, proposalId)

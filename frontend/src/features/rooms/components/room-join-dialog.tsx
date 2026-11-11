@@ -95,13 +95,18 @@ export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoi
             value={name}
             onChange={(event) => setName(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") handleCreate()
+              if (event.key === "Enter") void handleCreate()
             }}
           />
           <FieldDescription>
             Mã phòng sẽ sinh tự động, chia sẻ cho bạn bè để họ vào cùng.
           </FieldDescription>
-          <Button type="button" className="mt-1 w-full" onClick={handleCreate} disabled={pending}>
+          <Button
+            type="button"
+            className="mt-1 w-full"
+            onClick={() => void handleCreate()}
+            disabled={pending}
+          >
             Tạo phòng
           </Button>
         </Field>
@@ -134,7 +139,7 @@ export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoi
             type="button"
             variant="outline"
             className="w-full"
-            onClick={handleJoin}
+            onClick={() => void handleJoin()}
             disabled={pending}
           >
             Vào phòng

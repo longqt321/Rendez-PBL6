@@ -184,7 +184,7 @@ export function useRooms(): UseRoomsResult {
       setActiveCode(data.code)
       return data.code
     },
-    [storeRoom, setActiveCode],
+    [markMutation, storeRoom, setActiveCode],
   )
 
   const joinRoom = useCallback(
@@ -207,7 +207,7 @@ export function useRooms(): UseRoomsResult {
         throw error
       }
     },
-    [storeRoom, setActiveCode],
+    [markMutation, storeRoom, setActiveCode],
   )
 
   const addMyProposal = useCallback(

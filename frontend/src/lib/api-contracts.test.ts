@@ -121,7 +121,8 @@ describe("checkApiContract", () => {
     ).toBeNull()
 
     // Thiếu `filter` → lệch hợp đồng.
-    const { filter: _filter, ...broken } = room
+    const broken: Record<string, unknown> = { ...room }
+    delete broken.filter
     expect(checkApiContract("GET", "/rooms/AB23CD", broken)).not.toBeNull()
   })
 })
