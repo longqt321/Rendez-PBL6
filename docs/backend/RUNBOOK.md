@@ -111,7 +111,8 @@ Thứ tự khởi động: `postgres` (healthy) → `migrate` (one-shot, `prisma
 | `prisma migrate deploy` báo `CLI.COMMAND_MOVED` | `bunx` tải Prisma mới (8.x) | dùng Prisma trong `node_modules` (image builder/migrator) hoặc `bun run db:deploy` |
 | Test fail `ECONNREFUSED` | chạy `bun test` không có `--parallel=1` | thêm `--parallel=1` |
 | `Prisma schema mismatch: Missing columns …` | client cũ sau migration | `bunx prisma generate` |
-| `/media` trả 503 | chưa cấu hình R2 | điền 4 biến `R2_*` |
+| `/media` trả 503 | chưa cấu hình R2 | điền 4 biến `R2_*` — hướng dẫn từng bước: [R2-SETUP.md](./R2-SETUP.md) |
+| Upload ảnh báo lỗi CORS trong console | bucket chưa có CORS Policy | thêm CORS Policy cho bucket (mục 3 của R2-SETUP.md) |
 | 429 liên tục khi test tay | rate limit Postgres theo IP | xoá `rate_limits` của IP đó hoặc chờ hết cửa sổ |
 | SSE không nhận cập nhật | API chạy nhiều instance | pub/sub rooms lẫn notifications đều in-RAM, hiện chỉ hỗ trợ 1 instance (xem BACKLOG) |
 | `422 Idempotency-Key` | client gửi lại cùng key với payload khác | dùng key mới cho request khác nội dung |
