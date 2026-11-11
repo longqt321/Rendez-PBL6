@@ -476,3 +476,166 @@ lịch sử; không còn việc mở ở đây.
       cookie/phòng), nhưng không mô phỏng được nhiều guest song song trong cùng một tab.
       Nếu cần test đa khách, phải chạy ở project `backend` với nhiều browser context.
 
+
+## 2026-11-12 — Quét UX qua đêm (vòng 1: auth) — báo cáo QUET-vong1-auth.md
+
+- [ ] **V1-02 (lớn)**: đăng ký email đã tồn tại vẫn hiện màn "kiểm tra email" như thành công
+      (API 201 generic-duplicate, không tạo user, không gửi link verify) — người dùng chờ mail
+      mãi. Trùng handle lại báo lỗi rõ → không nhất quán. Chọn một: gửi lại link verify cho
+      email cũ (resend flow) hoặc trả thông báo "email đã đăng ký".
+- [ ] **V1-01 (lớn)**: guest vào `/profile`, `/settings` thấy lỗi "không tải được hồ sơ — kiểm
+      tra kết nối" (401 bị đóng gói thành lỗi mạng), thiếu CTA đăng nhập. Cần redirect
+      `/login?next=` hoặc trạng thái "cần đăng nhập".
+- [ ] **V1-03 (lớn)**: `/verify-email` không có token vẫn hiện "xác thực thành công" — trạng
+      thái giả. Thiếu/sai token phải hiện lỗi + nút gửi lại.
+- [ ] **V1-04 (lớn)**: đặt lại mật khẩu token sai → alert "Invalid token" tiếng Anh raw từ API;
+      cần map sang tiếng Việt.
+- [ ] **V1-05**: nút submit không disable khi pending — double-click đăng nhập tạo 2 POST session.
+- [ ] **V1-06 (nhỏ)**: SSE `/notifications/events` lỗi `ERR_INCOMPLETE_CHUNKED_ENCODING` lặp
+      ~12s/lần trong console — rà reconnect/backoff + timeout proxy nginx.
+- [ ] **V1-07 (nhỏ)**: vùng chạm input 32px / nút 32–40px < 44px chuẩn mobile.
+- [ ] **V1-08 (nhỏ)**: input lỗi thiếu `aria-invalid` + `aria-describedby`.
+- [ ] **V1-09 (nhỏ)**: đã đăng nhập vẫn mở được `/login`, `/register`; title trang auth thiếu.
+- [ ] **V1-10, V1-11 (gợi ý)**: toast sau đăng xuất; menu guest thiếu "Đăng ký"; "Email không
+      hợp lệ" khi để trống nên là "Cần nhập email".
+
+## 2026-11-12 — Quét UX qua đêm (vòng 2: discover + trang quán) — QUET-vong2-discover.md
+
+- [ ] **V2-01 (lớn)**: `/discover` không có tiêu đề nhìn thấy (h1 `sr-only`) — người dùng đáp
+      xuống chỉ thấy chip "Quận:". Cần heading thật + mô tả ngắn.
+- [ ] **V2-02 (lớn)**: thiếu bộ lọc giá và thiếu hẳn sắp xếp (rating/giá/khoảng cách); popover
+      Lọc chỉ có Từ khoá + Loại hình.
+- [ ] **V2-03 (lớn, dữ liệu)**: 100% quán `tags=[]`, `priceLevel=1`, `status=unknown`; không có
+      giờ mở cửa/SĐT/website; "Giới thiệu" boilerplate giống nhau; card nào cũng "Chưa có đánh
+      giá" + "₫". Cần làm giàu corpus (tags/giá/giờ mở cửa) và ẩn field rỗng thay vì hiện rỗng.
+- [ ] **V2-04 (lớn, mobile)**: `imageHeight=320` cố định mọi breakpoint → card mobile 164×320,
+      crop dọc mất ~62% ảnh, mỗi màn chỉ ~1,3 card. Cần chiều cao ảnh theo breakpoint / aspect-ratio.
+- [ ] **V2-05 (perf)**: hero trang quán (LCP) dùng `loading="lazy"`, không `srcset/fetchpriority`;
+      ảnh lưới full-size không responsive.
+- [ ] Các mục V2-06…V2-15 xem báo cáo (chi tiết nhỏ/gợi ý).
+
+## 2026-11-12 — Quét UX qua đêm (vòng 3: social) — QUET-vong3-social.md
+
+- [ ] **V3-01 (chặn luồng follow)**: API JSON trả `Cache-Control: private, max-age=15` —
+      bấm "Theo dõi" xong refetch ăn disk cache 15s → nút + số đếm không đổi, người dùng
+      bấm lại thành unfollow. API nên `no-store` (chỉ cache GET công khai như /places/:id).
+- [ ] **V3-02 (lớn)**: không có cách tìm người để theo dõi — không user directory/search user;
+      tên tác giả trên card là link tới bài chứ không phải hồ sơ; empty state tab "Đang theo
+      dõi" không có CTA.
+- [ ] **V3-03 (lớn)**: không sửa/xoá được bài của mình (không menu, không API), không ghim
+      được bài dù có tab "Đã ghim".
+- [ ] **V3-04 (lớn)**: gợi ý địa điểm lộ chuỗi nội bộ ("khớp tên: dung · cùng khu vực: dung")
+      và khớp rác theo chuỗi con ("noi"/"dung") — cần làm sạch lý do hiển thị + khớp theo từ.
+- [ ] **V3-05 (lớn)**: không giới hạn ảnh — upload được 22,8MB; file .png 17 byte không phải
+      ảnh vẫn nhận → bài có ảnh hỏng vĩnh viễn. Cần validate size + magic bytes ở server
+      (presigned PUT ràng buộc content-length) và client.
+- [ ] Các mục V3-06…V3-19 xem báo cáo.
+
+## 2026-11-12 — Quét UX qua đêm (vòng 4: map/rooms/collections) — QUET-vong4-map-rooms.md
+
+- [ ] **V4-01 (một phần — vòng 6 đính chính)**: nút "Tham gia" disabled chỉ vì ô tên trống
+      (gõ tên khác là vào được) — KHÔNG phải lỗi chặn. Phần đúng còn lại: join bằng tên
+      thành viên cũ báo "trùng tên", và room state theo sessionStorage per-tab khiến mở link
+      mời ở tab mới phải nhập lại tên. Cân nhắc server-side membership (nhận diện theo userId).
+- [x] ~~**V4-02 (chặn mobile)**~~ — **RÚT LẠI 2026-11-12 (vòng 6 kiểm chứng): BÁO CÁO SAI.**
+      Đo lại 390px: scrollWidth 375 (không tràn), nút "Gửi đề xuất" left=32 on-screen, cả khi
+      chưa join và đã join. Không có commit nào sửa rooms giữa 2 vòng. Chỉ còn đúng phần
+      "nút cao 28px < 44px" (tap target, xem V1-07).
+- [x] ~~**V4-03 (lớn)**~~ — **RÚT LẠI 2026-11-12 (vòng 6 kiểm chứng): BÁO CÁO SAI.**
+      Lọc "Hải Châu" trên /map CÓ request `/places/map?bbox=…&district=…` và lọc đúng
+      300 → 96 pin. Đã nối API đúng — KHÔNG sửa lại.
+- [ ] **V4-04 (lớn)**: 2 nguồn dữ liệu mâu thuẫn trên /map: badge "9 địa điểm" (curated) cạnh
+      "300/341" (OSM) — 9 quán curated chìm giữa 338 pin rỗng dữ liệu. Cần tách lớp dữ liệu
+      hoặc badge rõ nguồn.
+- [ ] **V4-05 (lớn, dữ liệu)**: phân loại OSM sai hàng loạt (Chợ Hàn/Co.opmart → "Quán ăn",
+      kebab → "Cà phê") — chú giải + pin icon sai nghĩa ~40% pin. Cần rà CATEGORY_MAP
+      build-corpus + rule phân loại.
+- [ ] **V4-06**: room state sống sót qua đăng xuất — người kế tiếp trên máy chung kế thừa
+      phòng + tên của người trước.
+- [ ] **V4-08**: clustering quá thô — cụm 298 ở zoom thành phố; cụm 117/75 chỉ chứa 5 pin
+      (radius 60px quá lớn, cân nhắc giảm hoặc dùng spiderfy).
+- [ ] **V4-12, V4-13, V4-15**: guest 401 → "lỗi mạng" (lặp V1-01) ở /saved; không có nút tạo
+      bộ sưu tập ngoài dialog lưu quán; Xoá tài khoản chỉ 1 click xác nhận (cần gõ handle).
+- [ ] Các mục V4-07…V4-19 còn lại xem báo cáo.
+
+## 2026-11-12 — Quét UX qua đêm (vòng 5: tổng hợp) — QUET-vong5-tong-hop.md
+
+Nguyên nhân gốc lớn nhất (chi tiết trong báo cáo):
+- RC-1: cache HTTP 15s áp cho cả dữ liệu riêng tư → follow/like trông như hỏng (V3-01).
+- RC-5+RC-2: room state theo tab + nhận diện theo displayName; 401 bị đóng gói thành
+  "lỗi mạng" lặp ở V1-01/V4-12.
+- RC-8: corpus nghèo (0 quán có tags/giá/status) + OSM phân loại sai ~40% + 2 nguồn
+  curated/OSM không hợp nhất.
+
+Tính năng mới đề xuất (top 5, chi tiết 8–12 mục trong báo cáo):
+- [ ] "Gợi ý hôm nay" — 3 quán/ngày ở đầu /discover (S; cron pg-boss sẵn có).
+- [ ] Tìm người + gợi ý theo dõi (S; tiền đề tính năng xã hội, V3-02).
+- [ ] Share + Open Graph preview cho post/quán (S; lan truyền Zalo/FB).
+- [ ] Lọc giá + sắp xếp + lọc quận tác động map (S–M; trùng V2-02/V4-03).
+- [ ] "Đóng góp thông tin quán" crowdsource giờ/giá/tag cho 258 quán OSM (M; tái dùng
+      PlaceReport + pg-boss).
+
+Thị giác (3 thay đổi nhỏ tạo khác biệt lớn): bật Fraunces cho h1 mọi skin + tagline;
+đổi --primary sang màu ấm ẩm thực; monogram chén+đũa + favicon/OG image.
+
+## 2026-11-12 — Quét UX qua đêm (vòng 6: kiểm chứng + đo lường) — QUET-vong6-kiem-chung.md
+
+Kết quả kiểm chứng: 6/10 phát hiện nặng ĐÚNG, 2/10 SAI (đã rút lại ở trên), 2/10 một phần.
+Số đo chính: TTFB 2–3ms, LCP 400–470ms, CLS≈0; cold transfer /discover 3,80 MB (ảnh PNG
+1200×900 338–456KB, không srcset, lãng phí 60–95% pixel); feed có N+1 comments (/me ×2 +
+3 request comments); 0/20 ca tràn ngang 5 breakpoint; 20/20 nút mobile /discover < 44px;
+2 nav trùng aria-label; h1 /discover + /social là sr-only.
+
+- [ ] **V6-01 (lớn)**: like khi offline → UI đổi trạng thái vĩnh viễn, không rollback, không
+      toast, DB không đổi — người dùng tưởng đã like. Cần xử lý lỗi mutation + rollback
+      optimistic + thông báo.
+- [ ] **V6-02 (lớn)**: session hết hạn → like im lặng hoàn toàn (không lỗi, không redirect).
+      Cần interceptor 401 toàn cục: thông báo + đưa về đăng nhập.
+- [ ] **V6-03 (lớn)**: guest bấm "Theo dõi" không có phản hồi gì.
+- [ ] **V6-04 (perf)**: ảnh card/hero PNG full-size không srcset — chuyển WebP/AVIF + responsive
+      srcset + `fetchpriority="high"` cho hero; giảm ~3MB cold load /discover.
+- [ ] **V6-05**: không có service worker / offline state; popup map không vào history (Back
+      thoát cả trang).
+- [ ] **V6-06 (a11y)**: 2 nav trùng aria-label; /social có button vô danh + input file sr-only.
+
+## 2026-11-12 — Quét UX qua đêm (vòng 7: coverage gaps) — QUET-vong7-coverage.md
+
+Tốt (không sửa): tìm kiếm không dấu + phân nhóm tab; trang 404 route tử tế; notifications
+realtime badge tự tăng qua SSE; bàn phím (Tab/Enter/Escape) ổn; zoom 200% không tràn;
+0 chuỗi tiếng Anh lọt UI trên 9 trang.
+
+- [ ] **V7-01 (lớn)**: tab "Người" ở /search dùng MOCK_USERS (`search-page.tsx:67`) — tìm
+      "quet" (API /users?q= trả user thật) vẫn báo không có; "minhanh" hiện hồ sơ ảo link về
+      /profile của chính mình; còn gọi `/api/v1/search?q=` → 404 mỗi lần tìm.
+- [ ] **V7-02 (lớn)**: SEO = 0 — index.html chỉ có title; không meta description/og:*/twitter:*;
+      title động chung chung ("Địa điểm · Rendez"), không có tên quán/người.
+- [ ] **V7-03 (lớn)**: soft-404 asset — /manifest.json, /favicon.ico, /apple-touch-icon.png,
+      /robots.txt, /sitemap.xml, /og-image.png đều trả 200 text/html 160B (SPA fallback nuốt
+      mọi path). Sửa fallback chỉ cho path không có phần mở rộng; thêm manifest + og-image thật.
+- [ ] **V7-04 (lớn)**: menu "Trợ giúp" là nút chết (`app-shell.tsx:373`); /help → 404; không có
+      /about, /terms, /privacy.
+- [ ] **V7-05 (lớn)**: focus trap rò rỉ ở dialog Bình luận — Tab 12 lần thì 3 lần thoát ra ngoài.
+- [ ] **V7-06..08**: notification follow nhân đôi (5 dòng DB → 5 mục trùng trong tab "Tất cả (8)"),
+      mục follow là button không link hồ sơ; empty-state chen vào đầu tab "Tất cả"; SSE
+      ERR_INCOMPLETE_CHUNKED_ENCODING ≥14 lần/5 phút (trùng V1-06).
+- [ ] **V7-09/10**: 404 trang quán thiếu CTA về Khám phá; collections public cho guest nhưng
+      breadcrumb "Đã lưu" dẫn tới 401 giả (trùng V4-12).
+
+## 2026-11-12 — Quét UX qua đêm (vòng 8: góc mười) — QUET-vong8-goc-muoi.md
+
+- [ ] **V8-07 (lớn)**: đa tab — logout ở tab A, tab B vẫn hiện đăng nhập; like ở tab B → 401
+      im lặng. Cần interceptor 401 toàn cục (clear cache + redirect /login?next) +
+      BroadcastChannel đồng bộ đăng xuất.
+- [ ] **V8-01 (lớn)**: bio 160 ký tự không khoảng trắng (dán URL) → vỡ layout toàn trang
+      (scrollWidth 1913 desktop / 1521 mobile) — thiếu `break-words` ở /profile và /u/:handle.
+- [ ] **V8-02**: placeholder handle `minhanh.eats` chứa dấu chấm nhưng validate chỉ cho
+      `[a-z0-9_]` — gõ theo gợi ý là lỗi. Đổi placeholder hoặc cho phép dấu chấm.
+- [ ] **V8-03**: ảnh hỏng không có fallback (cover/ảnh bài/popup map) — icon vỡ + alt thô;
+      avatar đã có fallback chữ cái đầu, nhân rộng pattern đó.
+- [ ] **V8-04**: like/follow/comment không rate limit (10 click = 10 request 200) — thêm limit
+      như posts-create/media/auth-session; kèm spam notification (V7-06).
+- [ ] **V8-05/06**: Back từ /discover/:id mất vị trí cuộn (trong khi /social giữ đúng);
+      tab /social không lưu vào URL nên F5 mất — nhân rộng pattern URL của /discover.
+
+Đã xác nhận tốt: XSS sạch (payload render thành text), handle có dấu bị chặn với message rõ,
+tên 40 emoji hiển thị OK, /u/<script> escaped an toàn.
