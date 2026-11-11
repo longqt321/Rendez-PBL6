@@ -62,8 +62,9 @@ phép nhiều người cùng đề xuất và thống nhất tiêu chí chọn q
 - **Phạm vi chức năng:** đăng ký/đăng nhập, khám phá và lọc địa điểm (danh sách, bản đồ, gợi ý
   theo nội dung đang soạn), đánh giá và báo cáo địa điểm, đăng bài và tương tác, bộ sưu tập,
   trang cá nhân và theo dõi, thông báo, phòng lọc nhóm có đồng bộ thời gian thực, tải ảnh.
-- **Phạm vi dữ liệu:** bộ dữ liệu cold-start **491 địa điểm thật tại Đà Nẵng** (35 địa điểm
-  tuyển chọn từ báo chí ẩm thực, 405 điểm từ OpenStreetMap, 29 ảnh).
+- **Phạm vi dữ liệu:** bộ dữ liệu cold-start **491 địa điểm thật tại Đà Nẵng** — 86 địa điểm
+  tuyển chọn thủ công (34 curated + 52 curated-v2 từ báo chí ẩm thực và khảo sát), 405 điểm
+  từ OpenStreetMap; 29 ảnh cho 20 địa điểm.
 - **Phạm vi kỹ thuật:** backend + cơ sở dữ liệu; giao diện frontend đã hoàn thiện trước và được
   dùng làm **đặc tả hành vi** cho API.
 
@@ -402,13 +403,13 @@ Hợp đồng API được trích từ mock server của frontend (đặc tả h
 | D6 | Lỗi luôn có dạng `{ "message": string }` | Frontend hiển thị trực tiếp, không lộ chi tiết nội bộ |
 | D7 | Monorepo Bun workspaces | Chia sẻ schema, chạy một lệnh cho cả hai phía |
 
-Bảng nhóm endpoint (51 endpoint tự viết, cộng thêm mount xác thực của better-auth):
+Bảng nhóm endpoint (52 endpoint tự viết, cộng thêm mount xác thực của better-auth):
 
 | Nhóm | Số endpoint | Ví dụ |
 | --- | --- | --- |
 | Hạ tầng | 2 | `GET /healthz`, `GET /readyz` |
 | Xác thực & hồ sơ | 5 | `POST /register`, `POST /session`, `DELETE /session`, `GET/PATCH /me` |
-| Địa điểm | 5 | `GET /places`, `/places/map`, `/places/suggestions`, `/places/:id`, `/places/saved` |
+| Địa điểm | 6 | `GET /places`, `/places/map`, `/places/suggestions`, `/places/:id`, `/places/:id/posts`, `/places/saved` |
 | Đánh giá & báo cáo | 3 | `GET/POST /places/:id/reviews`, `POST /places/:id/reports` |
 | Bài đăng & bình luận | 10 | `GET/POST /posts`, like/save/gắn địa điểm, comments, like comment, xoá comment |
 | Bộ sưu tập | 8 | CRUD, `PATCH /collections/:id/places`, like |
@@ -769,7 +770,7 @@ Các hạng mục sau **chưa kiểm chứng được** trong khuôn khổ đồ
 ### Kết quả đạt được
 
 Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 9
-migration, 51 endpoint, 127 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
+migration, 52 endpoint, 127 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
 hệ thống chạy được bằng một lệnh `docker compose up` với dữ liệu 491 địa điểm thật tại Đà Nẵng.
 Báo cáo cũng đã hệ thống hoá quy trình: từ đặc tả hợp đồng API, thiết kế dữ liệu, triển khai,
 đến kiểm thử và đóng gói.
