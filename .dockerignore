@@ -1,0 +1,9 @@
+# Loại khỏi build context — backend/frontend Dockerfile chỉ COPY thư mục cần thiết,
+# nhưng context nhỏ giúp build nhanh và tránh node_modules bản local lọt vào image.
+.git
+**/node_modules
+**/dist
+**/.turbo
+**/.cache
+frontend/playwright-report
+frontend/test-results
