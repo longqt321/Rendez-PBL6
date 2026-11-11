@@ -395,3 +395,7 @@ lịch sử; không còn việc mở ở đây.
   instance cần Redis hoặc chấp nhận mỗi instance tự nạp lại sau TTL.
 - [ ] **`/users/:handle` chỉ cache 15s** — nếu hồ sơ đổi (follow/bio) client có thể thấy dữ liệu
   cũ tối đa 15s; cân nhắc ETag revalidate thay vì max-age khi có nhiều người dùng thật.
+- [ ] **Thông báo dùng polling 60s** (DECISIONS 28) — đủ cho demo; realtime thật cần SSE/WebSocket
+  (đã có hạ tầng SSE cho phòng lọc nhóm để tái dùng).
+- [ ] **Feed following chưa gợi ý người để theo dõi** — khi feed rỗng chỉ hiện empty state;
+  nên thêm khối "Gợi ý theo dõi" (dùng `GET /users?q=`).

@@ -12,7 +12,7 @@ import { formatInitials } from "./profile"
  * kèm `PlaceSummary` (A6.1) để FE không phải tra cứu id.
  */
 
-export type PostFilter = "all" | "unplaced" | "mine" | "saved"
+export type PostFilter = "all" | "unplaced" | "mine" | "saved" | "following"
 
 export interface PostRow {
   id: string
@@ -119,6 +119,13 @@ export async function listPosts(
   if (params.filter === "saved") {
     conditions.push(
       Prisma.sql`EXISTS (SELECT 1 FROM post_saves s WHERE s.post_id = p.id AND s.user_id = ${params.viewerId}::uuid)`,
+    )
+  }
+  if (params.filter === "following") {
+    // Bài của người mình theo dõi — EXISTS trên khoá chính (follower_id,
+    // following_id) nên không cần index thêm; route đã chặn viewer null.
+    conditions.push(
+      Prisma.sql`EXISTS (SELECT 1 FROM follows f WHERE f.follower_id = ${params.viewerId}::uuid AND f.following_id = p.author_id)`,
     )
   }
   if (params.authorId) conditions.push(Prisma.sql`p.author_id = ${params.authorId}::uuid`)

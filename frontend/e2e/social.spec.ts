@@ -48,3 +48,14 @@ test("tab bài đăng của tôi có nội dung", async ({ page }) => {
   await expect(page.getByRole("tab", { name: "Bài đăng" })).toBeVisible()
   await expect(page.locator('a[href^="/post/"]').first()).toBeVisible()
 })
+
+// Tab "Đang theo dõi" (G3): mock chỉ có bài của chính mình nên feed rỗng —
+// kiểm tab tồn tại, gọi đúng filter và hiện empty state riêng.
+test("tab Đang theo dõi hiện empty state khi chưa theo dõi ai", async ({ page }) => {
+  await page.goto("/social")
+  await postViaComposer(page, "Bài của tôi không thuộc feed following")
+
+  await page.getByRole("tab", { name: "Đang theo dõi" }).click()
+  await expect(page.getByText("Theo dõi ai đó để thấy bài của họ ở đây.")).toBeVisible()
+  await expect(postLinks(page)).toHaveCount(0)
+})

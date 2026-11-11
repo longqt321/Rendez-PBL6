@@ -16,6 +16,9 @@ export function useNotifications() {
     queryFn: ({ pageParam, signal }) => getNotifications(pageParam, signal),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    // Server sinh thông báo (đề xuất địa điểm, follow, like) — poll 60 giây để
+    // trang đang mở thấy thông báo mới mà không cần SSE (xem DECISIONS 28).
+    refetchInterval: 60_000,
   })
 
   return {
@@ -35,5 +38,7 @@ export function useUnreadNotificationCount() {
     queryKey: [...notificationsQueryKey, "unread-count"],
     queryFn: ({ signal }) => getNotifications(null, signal),
     select: (page) => page.items.filter((notification) => !notification.read).length,
+    // Badge ở layout luôn mount — poll 60 giây để số chưa đọc không bị cũ.
+    refetchInterval: 60_000,
   })
 }

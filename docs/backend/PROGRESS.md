@@ -228,3 +228,13 @@ Xác minh:
 
 Xác minh: `bun test test/http-cache.test.ts test/places.test.ts test/auth.test.ts --parallel=1`
 — **48 pass / 0 fail**; typecheck 0 lỗi.
+
+## G3 — Cá nhân hóa + thông báo (2026-11-11 chiều)
+
+- `GET /posts?filter=following` (cần đăng nhập): `EXISTS` trên `follows`, không N+1.
+- `PostFeedFilter` thêm `"following"` (schema dùng chung); FE tab "Đang theo dõi"
+  chỉ hiện khi đã đăng nhập, empty state riêng.
+- Thông báo: polling 60s ở danh sách + badge (DECISIONS 28 — SSE để BACKLOG).
+- Mock: filter `following` theo `followedByMe`; e2e social thêm test tab.
+
+Xác minh: typecheck 0 lỗi; FE unit 72 pass; `bun test test/posts.test.ts` 25 pass.

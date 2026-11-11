@@ -1181,6 +1181,12 @@ const routes: Route[] = [
         if (filter === "unplaced" && post.placeId !== null) return false
         if (filter === "mine" && post.author.id !== CURRENT_USER.id) return false
         if (filter === "saved" && !post.savedByMe) return false
+        if (filter === "following") {
+          // Chưa đăng nhập hoặc chưa theo dõi ai → feed rỗng (khớp backend).
+          if (!db.authenticated) return false
+          const author = db.users[post.author.id]
+          if (!author?.followedByMe) return false
+        }
         if (needle.length > 0 && !normalizeText(post.caption).includes(needle)) return false
         return true
       })

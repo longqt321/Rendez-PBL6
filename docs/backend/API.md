@@ -133,7 +133,7 @@ Trường `district`, `imageUrl`, `lat`, `lng`, `status` **vắng mặt** khi kh
 
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
-| GET | `/posts?filter=&q=&cursor=` | — | `filter` ∈ `all\|unplaced\|mine\|saved`; `mine`/`saved` cần đăng nhập (401); 5 item/trang; `q` khớp caption không dấu |
+| GET | `/posts?filter=&q=&cursor=` | — | `filter` ∈ `all\|unplaced\|mine\|saved\|following`; `mine`/`saved`/`following` cần đăng nhập (401); 5 item/trang; `q` khớp caption không dấu |
 | POST | `/posts` | ✔ | `{caption, placeId?}` → `201 Post`; bài chưa gắn địa điểm được đẩy job phát hiện |
 | GET | `/posts/:id` | — | `Post`; 404 nếu đã xoá |
 | PATCH | `/posts/:id/like` | ✔ | `{liked?: boolean}` (mặc định đảo trạng thái), idempotent |

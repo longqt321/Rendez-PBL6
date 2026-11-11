@@ -53,16 +53,16 @@ function parseOrThrow<T>(schema: z.ZodType<T>, raw: unknown, fallback: string): 
 export function createPostsRouter() {
   const router = new Hono<AppEnv>()
 
-  /** Feed công khai; `mine`/`saved` cần đăng nhập. */
+  /** Feed công khai; `mine`/`saved`/`following` cần đăng nhập. */
   router.get("/posts", async (c) => {
     const rawFilter = c.req.query("filter") ?? "all"
-    if (!["all", "unplaced", "mine", "saved"].includes(rawFilter)) {
+    if (!["all", "unplaced", "mine", "saved", "following"].includes(rawFilter)) {
       throw new ApiError(400, "Bộ lọc không hợp lệ")
     }
     const filter = rawFilter as PostFilter
 
     const viewer = await getViewer(c)
-    if ((filter === "mine" || filter === "saved") && !viewer) {
+    if ((filter === "mine" || filter === "saved" || filter === "following") && !viewer) {
       throw new ApiError(401, "Chưa đăng nhập")
     }
 

@@ -417,3 +417,39 @@ describe("bình luận", () => {
     expect(post.commentCount).toBe(0)
   })
 })
+
+describe("feed following (G3)", () => {
+  test("filter=following cần đăng nhập và chỉ trả bài của người đang theo dõi", async () => {
+    const anonymous = await call("/api/v1/posts?filter=following")
+    expect(anonymous.status).toBe(401)
+
+    const authorHandle = `follow_author_${suffix}`
+    const author = await register("Tác Giả Following", authorHandle)
+    const follower = await register("Người Theo Dõi", `follow_fan_${suffix}`)
+
+    const created = await call("/api/v1/posts", {
+      method: "POST",
+      cookie: author.cookie,
+      body: JSON.stringify({ caption: "Bài để test feed following của tác giả" }),
+    })
+    expect(created.status).toBe(201)
+
+    // Chưa theo dõi → feed rỗng (không lộ bài của người lạ).
+    const before = (await (
+      await call("/api/v1/posts?filter=following", { cookie: follower.cookie })
+    ).json()) as { items: { author: { id: string } }[] }
+    expect(before.items).toHaveLength(0)
+
+    const follow = await call(`/api/v1/users/${authorHandle}/follow`, {
+      method: "POST",
+      cookie: follower.cookie,
+    })
+    expect(follow.status).toBe(200)
+
+    const after = (await (
+      await call("/api/v1/posts?filter=following", { cookie: follower.cookie })
+    ).json()) as { items: { author: { id: string } }[] }
+    expect(after.items.length).toBeGreaterThan(0)
+    for (const item of after.items) expect(item.author.id).toBe(author.id)
+  })
+})

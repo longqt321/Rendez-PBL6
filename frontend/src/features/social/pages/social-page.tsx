@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
+import { useMe } from "@/features/profile/hooks/use-me"
 import { usePosts } from "../hooks/use-posts"
 import type { PostFeedFilter } from "../types/post"
 import { PostCard } from "../components/post-card"
@@ -13,6 +14,7 @@ import { PostComposer } from "../components/post-composer"
 
 export function SocialPage() {
   const [filter, setFilter] = useState<PostFeedFilter>("all")
+  const { data: me } = useMe()
   const { posts, isPending, isError, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
     usePosts({ filter })
 
@@ -32,6 +34,8 @@ export function SocialPage() {
           <TabsList>
             <TabsTrigger value="all">Tất cả</TabsTrigger>
             <TabsTrigger value="unplaced">Chưa gắn địa điểm</TabsTrigger>
+            {/* Chỉ hiện khi đã đăng nhập — người khách không có "đang theo dõi". */}
+            {me && <TabsTrigger value="following">Đang theo dõi</TabsTrigger>}
             <TabsTrigger value="mine">Của tôi</TabsTrigger>
           </TabsList>
         </Tabs>
@@ -71,7 +75,11 @@ export function SocialPage() {
               <UsersIcon />
             </EmptyMedia>
             <EmptyTitle>Chưa có bài đăng nào</EmptyTitle>
-            <EmptyDescription>Mục này chưa có bài. Thử chọn bộ lọc khác.</EmptyDescription>
+            <EmptyDescription>
+              {filter === "following"
+                ? "Theo dõi ai đó để thấy bài của họ ở đây."
+                : "Mục này chưa có bài. Thử chọn bộ lọc khác."}
+            </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (

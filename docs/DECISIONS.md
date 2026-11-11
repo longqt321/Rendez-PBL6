@@ -2650,3 +2650,10 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
    (Map TTL tự viết, KHÔNG thêm `lru-cache`); `PATCH /posts/:id/place` publish place gọi
    `invalidateSuggestionCache()` ngay. Cache nằm trong tiến trình — nhiều instance vẫn đúng
    nhưng mỗi instance tự nạp; chuyển sang Redis khi scale ngang (BACKLOG).
+28. **Feed "Đang theo dõi" + polling thông báo (G3)**: `GET /posts?filter=following` dùng
+   `EXISTS (SELECT 1 FROM follows ...)` trên khoá chính `(follower_id, following_id)` — không
+   cần index thêm, không N+1. Filter này (như `mine`/`saved`) cần đăng nhập → 401; tab chỉ
+   hiện khi `useMe()` có dữ liệu. Thông báo dùng polling 60 giây (`refetchInterval`) ở cả
+   danh sách lẫn badge thay vì SSE — SSE đã có cho phòng lọc nhóm nhưng thông báo cần chạy
+   được sau proxy/restart mà không cần hạ tầng thêm; nâng lên SSE/WebSocket khi cần realtime
+   thật (BACKLOG).
