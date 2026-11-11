@@ -1,19 +1,23 @@
 /**
- * Danh sách phường/khu vực dùng trong dataset cold-start (đơn vị hành chính
- * 2025 sau sáp nhập, theo Nominatim — xem D-046). Sắp theo số địa điểm giảm dần.
+ * Danh sách phường/khu vực dùng trong dataset (đơn vị hành chính 2025 sau sáp
+ * nhập, theo Nominatim — xem D-046). Sắp theo số địa điểm giảm dần.
+ *
+ * Đồng bộ với `build-corpus` (`districtCanonical`, 13 giá trị) — corpus OSM
+ * hiện có 1 POI "Hòa Vang" nên bổ sung vào đây (D-AI-42).
  */
 export const DANANG_DISTRICTS = [
   "Hải Châu",
-  "Ngũ Hành Sơn",
   "An Hải",
-  "Thanh Khê",
-  "Hòa Cường",
+  "Ngũ Hành Sơn",
   "Sơn Trà",
+  "Thanh Khê",
   "Cẩm Lệ",
+  "Hòa Cường",
   "Liên Chiểu",
+  "An Khê",
   "Hòa Khánh",
   "Hòa Xuân",
-  "An Khê",
+  "Hòa Vang",
   "Hải Vân",
 ] as const
 

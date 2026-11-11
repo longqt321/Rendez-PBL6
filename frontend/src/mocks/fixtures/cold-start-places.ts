@@ -4,9 +4,14 @@ import coldStartDataset from "../../../data/cold-start/places.json"
 /**
  * Adapter cold-start → bản ghi server giả.
  *
- * Nguồn: `data/cold-start/places.json` (1.701 địa điểm THẬT tại Đà Nẵng, thu thập
- * ngoài repo frontend). File này là phía SERVER — chỉ `src/mocks/` import; khi có
- * backend thật thì xoá cùng `src/mocks/`.
+ * Nguồn: `data/cold-start/places.json` (491 địa điểm curated gốc của Đà Nẵng).
+ * File này là phía SERVER — chỉ `src/mocks/` import; khi chạy với backend thật
+ * thì không dùng (xem `VITE_USE_MOCKS`).
+ *
+ * LƯU Ý ĐỒNG BỘ: corpus thật hiện do backend seed từ
+ * `backend/data/places-expanded.json` (344 POI, sinh bởi `scripts/build-corpus`).
+ * Mock này CHỈ là fallback khi không có backend, nên không cần khớp 1:1 —
+ * nhưng nếu demo offline thì số liệu sẽ khác backend.
  *
  * Nguyên tắc: KHÔNG bịa số liệu. Trường dataset không có thì để trung tính:
  * - `rating = 0`, `reviewCount = 0`: chưa ai đánh giá trên hệ thống.
