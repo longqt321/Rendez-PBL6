@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { startTestDb, stopTestDb } from "./helpers/pg"
+import { registerVerifiedUser } from "./helpers/auth"
 
 /**
  * Rate limit theo USER (`rateLimit({ byUser: true })`) — `/media` 10 URL/giờ/user.
@@ -39,13 +40,7 @@ afterAll(async () => {
 }, 60_000)
 
 async function register(name: string, handle: string): Promise<string> {
-  const res = await app.request("/api/v1/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email: `${handle}@rendez.test`, password: "password123", handle }),
-  })
-  expect(res.status).toBe(201)
-  return (res.headers.getSetCookie()[0] ?? "").split(";")[0] ?? ""
+  return (await registerVerifiedUser(app, prisma, { name, handle })).cookie
 }
 
 function requestMedia(cookie: string) {

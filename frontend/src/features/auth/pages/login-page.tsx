@@ -2,11 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router"
 import { z } from "zod"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useLogin } from "../hooks/use-login"
+import { useSendVerificationEmail } from "../hooks/use-send-verification-email"
 import { AuthLayout } from "../components/auth-layout"
 import { PasswordInput } from "../components/password-input"
 import { serverErrorField } from "../lib/server-field-error"
@@ -24,11 +26,18 @@ const LOGIN_FIELDS = ["email", "password"] as const
 export function LoginPage() {
   const navigate = useNavigate()
   const login = useLogin()
+  const resend = useSendVerificationEmail()
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   })
+
+  /**
+   * Chưa xác thực email (2026-11-12): backend trả 403 với message riêng — hiện
+   * nút gửi lại mail xác thực thay vì chỉ báo lỗi đăng nhập chung.
+   */
+  const needsVerification = login.isError && /chưa được xác thực/i.test(login.error.message)
 
   const onSubmit = (values: LoginForm) => {
     login.mutate(values, {
@@ -84,6 +93,33 @@ export function LoginPage() {
           </Field>
 
           {formError && <FieldError>{formError}</FieldError>}
+
+          {needsVerification && (
+            <div className="flex flex-col gap-2">
+              {resend.isSuccess && (
+                <Alert>
+                  <AlertTitle>Đã gửi lại email xác thực</AlertTitle>
+                  <AlertDescription>Kiểm tra hộp thư rồi đăng nhập lại.</AlertDescription>
+                </Alert>
+              )}
+              {resend.isError && <FieldError>{resend.error.message}</FieldError>}
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 w-full text-sm font-medium"
+                disabled={resend.isPending}
+                onClick={() => resend.mutate(form.getValues("email"))}
+              >
+                {resend.isPending ? (
+                  <>
+                    <Spinner aria-label="Đang gửi lại email" /> Đang gửi lại…
+                  </>
+                ) : (
+                  "Gửi lại email xác thực"
+                )}
+              </Button>
+            </div>
+          )}
 
           <Button
             type="submit"

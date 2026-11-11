@@ -71,6 +71,9 @@ const ResetPasswordPage = lazy(() =>
     default: m.ResetPasswordPage,
   })),
 )
+const VerifyEmailPage = lazy(() =>
+  import("@/features/auth/pages/verify-email-page").then((m) => ({ default: m.VerifyEmailPage })),
+)
 
 /**
  * `AppShell` là layout route duy nhất: mọi trang con render qua `<Outlet />`,
@@ -95,6 +98,11 @@ export const routes: RouteObject[] = [
   {
     path: "/reset-password",
     element: <ResetPasswordPage />,
+    errorElement: <RouteErrorPage />,
+  },
+  {
+    path: "/verify-email",
+    element: <VerifyEmailPage />,
     errorElement: <RouteErrorPage />,
   },
   {

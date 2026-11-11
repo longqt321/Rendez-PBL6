@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { startTestDb, stopTestDb } from "./helpers/pg"
+import { registerVerifiedUser } from "./helpers/auth"
 
 /**
  * Integration test Phase 7 — rate limit Postgres, body limit, `/readyz`,
@@ -103,19 +104,12 @@ describe("rate limit + hạ tầng", () => {
 
   test("POST /media trả 503 khi chưa cấu hình R2", async () => {
     const cookie = (
-      (
-        await app.request("/api/v1/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "Người Ảnh",
-            email: `media_${suffix}@rendez.test`,
-            password: "password123",
-            handle: `media_${suffix}`,
-          }),
-        })
-      ).headers.getSetCookie()[0] ?? ""
-    ).split(";")[0]
+      await registerVerifiedUser(app, prisma, {
+        name: "Người Ảnh",
+        email: `media_${suffix}@rendez.test`,
+        handle: `media_${suffix}`,
+      })
+    ).cookie
 
     const res = await call("/api/v1/media", {
       method: "POST",

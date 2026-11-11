@@ -2797,3 +2797,53 @@ Quyết định:
 - **Test**: bổ sung assert thông điệp lỗi cụ thể + URL > 2048 (backend), test rate limit theo
   user (429 + `Retry-After`, hai user chung IP không chặn nhau), e2e assert `naturalWidth > 0`
   với PNG fulfill qua `page.route` (chưa phải storage thật).
+
+---
+
+## D-056 — Bắt buộc xác thực email trước khi đăng nhập
+
+**Ngày:** 2026-11-12
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+
+Cột `users.email_verified` có từ migration init nhưng luôn `false` — ai đăng ký cũng đăng nhập
+được. Yêu cầu: "Nếu đã có SMTP rồi thì cho phép xác thực email khi đăng ký đi".
+
+### Quyết định
+
+- Bật `emailAndPassword.requireEmailVerification` + `emailVerification.sendOnSignUp` /
+  `autoSignInAfterVerification` trong `backend/src/lib/auth.ts`; token hết hạn sau 1 giờ.
+- Mail xác thực gửi bằng `lib/mailer.ts` (cùng pattern mail reset mật khẩu: đủ SMTP thì gửi
+  thật, thiếu thì dev/test log link `DEV ONLY — link xác thực email`, production không log token).
+- Link trong mail trỏ tới API (`BETTER_AUTH_URL/verify-email?token=…&callbackURL=…`) rồi redirect
+  về FE `APP_ORIGIN/verify-email` — origin mới `APP_ORIGIN` (mặc định `http://localhost:5173`)
+  được thêm vào `trustedOrigins` của better-auth vì callbackURL phải thuộc origin tin cậy.
+- Hợp đồng `POST /register` đổi: trả `201 {requiresVerification: true}`, KHÔNG có Set-Cookie.
+  Trùng email cũng trả response như đăng ký mới ("generic duplicate" của better-auth) — không lộ
+  email tồn tại; test cũ "trùng email → 409" được thay bằng assert này.
+- Đăng nhập chưa xác thực: better-auth trả 403 "Email not verified" → route `/session` map thành
+  `403 {"message":"Email chưa được xác thực. Hãy mở link trong email xác thực …"}` (tách khỏi
+  401 "Email hoặc mật khẩu không đúng").
+- Migration MỚI `20261112010000_email_verified_backfill`: `UPDATE users SET email_verified = true`
+  — user cũ không hề nhận được mail, để false là khoá toàn bộ ngoài.
+- FE: trang đăng ký hiện "Kiểm tra email của bạn" + nút gửi lại (`POST
+  /auth/send-verification-email`, callbackURL trỏ về `/verify-email`); trang `/verify-email` nhận
+  redirect (thành công không tham số, lỗi kèm `?error=CODE`); trang đăng nhập hiện nút gửi lại
+  khi lỗi chưa xác thực.
+- Mock: tài khoản có cờ `verified`; `POST /auth/send-verification-email` được mock coi như
+  "người dùng đã bấm link" (đánh dấu verified) để e2e mock đi được trọn luồng — mock không có
+  hộp thư thật. Ghi chú ngay trong code.
+
+### Phương án đã xem
+
+- Gửi token tự chế + bảng verification riêng: bỏ — better-auth có sẵn JWT token + endpoint
+  `/verify-email`, không cần thêm bảng.
+- Cho FE tự truyền callbackURL tuỳ ý: bỏ — origin phải tin cậy; backend quyết định đích redirect.
+
+### Hệ quả
+
+- e2e project `backend`: `global-setup` đánh dấu `email_verified = true` cho tài khoản demo qua
+  `docker exec` (không bấm được link trong mail từ e2e); spec luồng xác thực đầy đủ chỉ chạy
+  project mock, luồng token thật được phủ ở backend test `test/auth.test.ts`.
+- Người dùng đổi email chưa làm (chưa có tính năng đổi email) — mở lại khi làm.

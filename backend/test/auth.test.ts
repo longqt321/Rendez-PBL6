@@ -52,8 +52,9 @@ function sessionCookie(res: Response): string {
 
 describe("auth + hồ sơ", () => {
   let cookie = ""
+  let userId = ""
 
-  test("POST /register tạo tài khoản, trả hồ sơ khớp schema + cookie phiên", async () => {
+  test("POST /register tạo tài khoản, trả {requiresVerification:true} và không có phiên", async () => {
     const res = await call("/api/v1/register", {
       method: "POST",
       body: JSON.stringify({
@@ -65,15 +66,88 @@ describe("auth + hồ sơ", () => {
     })
 
     expect(res.status).toBe(201)
-    const body = await res.json()
-    expect(userProfileSchema.safeParse(body).success).toBe(true)
-    expect(body).toMatchObject({
-      name: "Nguyễn Yến",
-      handle: HANDLE,
-      initials: "NY",
-      isMe: true,
-      postCount: 0,
+    expect(await res.json()).toEqual({ requiresVerification: true })
+    // Chưa xác thực email thì không được có cookie phiên nào.
+    expect(res.headers.getSetCookie()).toHaveLength(0)
+    const user = await prisma.user.findUnique({ where: { email: EMAIL } })
+    expect(user?.emailVerified).toBe(false)
+    userId = user?.id ?? ""
+  })
+
+  test("POST /session khi chưa xác thực email trả 403 kèm hướng dẫn", async () => {
+    const res = await call("/api/v1/session", {
+      method: "POST",
+      body: JSON.stringify({ email: EMAIL, password: "password123" }),
     })
+    expect(res.status).toBe(403)
+    const body = (await res.json()) as { message: string }
+    expect(body.message).toContain("chưa được xác thực")
+  })
+
+  test("POST /auth/send-verification-email trả {status:true} (kể cả email lạ)", async () => {
+    const res = await call("/api/v1/auth/send-verification-email", {
+      method: "POST",
+      body: JSON.stringify({ email: EMAIL }),
+    })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ status: true })
+
+    const unknown = await call("/api/v1/auth/send-verification-email", {
+      method: "POST",
+      body: JSON.stringify({ email: `khong-ton-tai-${suffix}@rendez.test` }),
+    })
+    expect(unknown.status).toBe(200)
+    expect(await unknown.json()).toEqual({ status: true })
+  })
+
+  test("GET /auth/verify-email xác thực, tự tạo phiên (autoSignIn) và redirect về FE", async () => {
+    // Token do chính test ký bằng secret của app — cùng cơ chế với mail thật
+    // (`createEmailVerificationToken` là export chính thức của better-auth/api).
+    const { createEmailVerificationToken } = await import("better-auth/api")
+    const { env } = await import("../src/env")
+    const token = await createEmailVerificationToken(
+      env.BETTER_AUTH_SECRET,
+      EMAIL,
+      undefined,
+      3600,
+      { userId },
+    )
+
+    const res = await call(
+      `/api/v1/auth/verify-email?token=${token}&callbackURL=${encodeURIComponent(
+        "http://localhost:5173/verify-email",
+      )}`,
+    )
+    expect(res.status).toBe(302)
+    expect(res.headers.get("location")).toBe("http://localhost:5173/verify-email")
+    // autoSignInAfterVerification: redirect phải kèm cookie phiên.
+    cookie = sessionCookie(res)
+
+    const me = await call("/api/v1/me", { cookie })
+    expect(me.status).toBe(200)
+    expect(userProfileSchema.safeParse(await me.json()).success).toBe(true)
+  })
+
+  test("GET /auth/verify-email token sai redirect kèm ?error= và không có phiên", async () => {
+    const res = await call(
+      `/api/v1/auth/verify-email?token=token-gia&callbackURL=${encodeURIComponent(
+        "http://localhost:5173/verify-email",
+      )}`,
+    )
+    expect(res.status).toBe(302)
+    expect(res.headers.get("location")).toContain("error=")
+    expect(
+      res.headers.getSetCookie().some((value) => value.startsWith("better-auth.session_token=")),
+    ).toBe(false)
+  })
+
+  test("POST /session sau khi xác thực trả hồ sơ + cookie mới", async () => {
+    const res = await call("/api/v1/session", {
+      method: "POST",
+      body: JSON.stringify({ email: EMAIL, password: "password123" }),
+    })
+    expect(res.status).toBe(200)
+    expect(userProfileSchema.safeParse(await res.json()).success).toBe(true)
     cookie = sessionCookie(res)
   })
 
@@ -185,7 +259,7 @@ describe("auth + hồ sơ", () => {
     expect(me.status).toBe(401)
   })
 
-  test("POST /register trùng email trả 409", async () => {
+  test("POST /register trùng email trả 201 {requiresVerification:true} — không lộ email tồn tại", async () => {
     const res = await call("/api/v1/register", {
       method: "POST",
       body: JSON.stringify({
@@ -195,7 +269,10 @@ describe("auth + hồ sơ", () => {
         handle: `${HANDLE}_2`,
       }),
     })
-    expect(res.status).toBe(409)
+    // better-auth "generic duplicate": cùng response với đăng ký mới để người
+    // dò email không phân biệt được (đã đọc `dist/api/routes/sign-up.mjs`).
+    expect(res.status).toBe(201)
+    expect(await res.json()).toEqual({ requiresVerification: true })
   })
 
   test("POST /register trùng handle trả 409 {message} — P2002 map đúng trường", async () => {

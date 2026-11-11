@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process"
 import { mkdirSync, writeFileSync } from "node:fs"
 import { request } from "@playwright/test"
 
@@ -33,6 +34,16 @@ export default async function globalSetup(): Promise<void> {
     if (!register.ok() && register.status() !== 409) {
       throw new Error(`Không tạo được tài khoản e2e: ${register.status()} ${await register.text()}`)
     }
+
+    /**
+     * Bắt buộc xác thực email (2026-11-12): tài khoản demo do e2e tạo không bấm
+     * được link trong hộp thư — đánh dấu `email_verified` trực tiếp trong DB dev.
+     * Email do chính script này sinh (hậu tố thời điểm) nên ghép chuỗi an toàn.
+     */
+    execSync(
+      `docker exec rendez-postgres psql -U rendez -d rendez -c "update users set email_verified = true where email = '${DEMO_USER.email}';"`,
+      { stdio: "pipe" },
+    )
 
     const login = await context.post("/api/v1/session", {
       data: { email: DEMO_USER.email, password: DEMO_USER.password },

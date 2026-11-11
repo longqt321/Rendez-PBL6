@@ -1,20 +1,15 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { register, type RegisterInput } from "../api/session"
+import { useMutation } from "@tanstack/react-query"
+import { register, type RegisterInput, type RegisterResult } from "../api/session"
 
 /**
  * Đăng ký tài khoản.
  *
- * Backend trả 201 kèm Set-Cookie (autoSignIn) nên sau khi thành công người dùng
- * đã đăng nhập: ghi hồ sơ vào cache `["me"]` và nạp lại dữ liệu liên quan.
+ * Từ 2026-11-12 bắt buộc xác thực email: đăng ký thành công KHÔNG tạo phiên —
+ * backend trả `{requiresVerification: true}` và gửi mail xác thực. UI hiện
+ * trạng thái "kiểm tra email" thay vì đưa vào app.
  */
 export function useRegister() {
-  const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: (input: RegisterInput) => register(input),
-    onSuccess: (profile) => {
-      queryClient.setQueryData(["me"], profile)
-      void queryClient.invalidateQueries()
-    },
+    mutationFn: (input: RegisterInput): Promise<RegisterResult> => register(input),
   })
 }

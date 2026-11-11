@@ -7,7 +7,7 @@ import {
   type ProfileMediaFolder,
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
-import { auth } from "../lib/auth"
+import { auth, verifyEmailCallbackUrl } from "../lib/auth"
 import { env } from "../env"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
@@ -25,6 +25,8 @@ import { noStore } from "../lib/http-cache"
  * - `POST /session` đăng nhập email+password → trả hồ sơ + Set-Cookie phiên.
  * - `DELETE /session` → `{ loggedOut: true }`.
  * - `POST /register` endpoint mới (FE chưa có UI) → hồ sơ + Set-Cookie.
+ *   Từ 2026-11-12: bắt buộc xác thực email, đăng ký xong trả
+ *   `201 { requiresVerification: true }` (không có phiên).
  */
 
 /** Handle: chữ thường, số, gạch dưới; 3–30 ký tự (quy ước mới, xem DECISIONS). */
@@ -56,11 +58,23 @@ const loginInputSchema = z.object({
 function mapAuthError(error: unknown): never {
   if (!isAPIError(error)) throw error
 
+  /**
+   * Chưa xác thực email: better-auth trả 403 "Email not verified" từ
+   * `dist/api/routes/sign-in.mjs:338` (đã đọc source). Phải kiểm TRƯỚC nhánh 401/403
+   * chung, nếu không người dùng chỉ thấy "Email hoặc mật khẩu không đúng" và
+   * không biết cần mở mail.
+   */
+  const message = error.body?.message
+  if (error.statusCode === 403 && message && /not verified/i.test(message)) {
+    throw new ApiError(
+      403,
+      "Email chưa được xác thực. Hãy mở link trong email xác thực (kiểm tra cả mục spam) rồi đăng nhập lại.",
+    )
+  }
   if (error.statusCode === 401 || error.statusCode === 403) {
     throw new ApiError(401, "Email hoặc mật khẩu không đúng")
   }
   if (error.statusCode === 422 || error.statusCode === 400) {
-    const message = error.body?.message
     if (message && /exist/i.test(message)) throw new ApiError(409, "Email đã được sử dụng")
     throw new ApiError(400, "Dữ liệu đăng ký không hợp lệ")
   }
@@ -218,7 +232,14 @@ export function createAuthRouter() {
     return c.json({ deleted: true })
   })
 
-  /** Đăng ký — endpoint mới, FE chưa có UI (T1.3). */
+  /**
+   * Đăng ký — endpoint mới, FE chưa có UI (T1.3).
+   *
+   * Từ 2026-11-12 bắt buộc xác thực email: đăng ký thành công KHÔNG tạo phiên,
+   * trả `201 { requiresVerification: true }` — FE hiện "kiểm tra email". Trùng
+   * email cũng trả response như vậy (better-auth "generic duplicate") để không
+   * lộ email nào đã đăng ký.
+   */
   router.post(
     "/register",
     rateLimit({ scope: "auth-register", limit: 20, windowSeconds: 60 }),
@@ -232,17 +253,36 @@ export function createAuthRouter() {
 
       try {
         const { headers, response } = await auth.api.signUpEmail({
-          body: parsed.data,
+          body: {
+            ...parsed.data,
+            // Link trong mail xác thực redirect về trang FE (trustedOrigins đã
+            // gồm APP_ORIGIN) — mặc định của better-auth là "/" sẽ trỏ về API.
+            callbackURL: verifyEmailCallbackUrl(),
+          },
           headers: c.req.raw.headers,
           returnHeaders: true,
         })
-        const userId = (response as { user?: { id?: string } } | null)?.user?.id
+        const result = response as { token?: string | null; user?: { id?: string } } | null
+        const userId = result?.user?.id
         if (!userId) throw new ApiError(500, "Không tạo được tài khoản")
 
+        /**
+         * `requireEmailVerification` bật: better-auth KHÔNG tạo phiên và trả
+         * `{ token: null, user }` (đã đọc `dist/api/routes/sign-up.mjs` — cả
+         * trường hợp email đã tồn tại cũng trả response "generic" như vậy để
+         * không lộ email). Trả hợp đồng mới cho FE, không có Set-Cookie.
+         */
+        if (result?.token == null) {
+          return c.json({ requiresVerification: true } as const, 201)
+        }
+
+        // Nhánh dự phòng nếu sau này tắt requireEmailVerification: giữ hành vi cũ.
         const profile = await buildProfile(userId, userId)
-        const result = c.json(profile, 201)
-        for (const cookie of headers.getSetCookie()) result.headers.append("Set-Cookie", cookie)
-        return result
+        const sessionResult = c.json(profile, 201)
+        for (const cookie of headers.getSetCookie()) {
+          sessionResult.headers.append("Set-Cookie", cookie)
+        }
+        return sessionResult
       } catch (error) {
         if (error instanceof ApiError) throw error
         // 422 "Failed to create user": có thể do đua handle (P2002 bị better-auth

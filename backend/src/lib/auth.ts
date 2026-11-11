@@ -2,7 +2,22 @@ import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { env } from "../env"
 import { logger } from "./logger"
+import { sendResetPasswordEmail, sendVerifyEmailEmail } from "./mailer"
 import { prisma } from "./prisma"
+
+/** Link xác thực email redirect về trang FE — dùng chung cho mail và route đăng ký. */
+export const VERIFY_EMAIL_CALLBACK_PATH = "/verify-email"
+
+/** URL FE nhận kết quả xác thực (đã nằm trong trustedOrigins). */
+export function verifyEmailCallbackUrl(): string {
+  return new URL(VERIFY_EMAIL_CALLBACK_PATH, env.APP_ORIGIN).toString()
+}
+
+/**
+ * Origin tin cậy cho better-auth: origin CORS của API + origin FE (đích redirect
+ * của link xác thực email). Trùng nhau thì bỏ bản lặp.
+ */
+const trustedOrigins = [...new Set([...env.corsOrigins, env.APP_ORIGIN])]
 
 /**
  * better-auth 1.7.19 — xác thực email + password (D4), phiên bằng cookie.
@@ -23,7 +38,7 @@ export const auth = betterAuth({
   /** Khớp mount thật trong `routes/index.ts` — mặc định của better-auth là `/api/auth`. */
   basePath: "/api/v1/auth",
   secret: env.BETTER_AUTH_SECRET,
-  trustedOrigins: env.corsOrigins,
+  trustedOrigins,
 
   database: prismaAdapter(prisma, { provider: "postgresql" }),
 
@@ -31,19 +46,40 @@ export const auth = betterAuth({
     enabled: true,
     /** Khớp validate của FE (mật khẩu tối thiểu 8 ký tự). */
     minPasswordLength: 8,
-    /** Đăng ký xong trả luôn phiên — FE không phải gọi login lần hai. */
+    /**
+     * Đăng ký xong trả luôn phiên — FE không phải gọi login lần hai.
+     * Khi `requireEmailVerification` bật, better-auth tự bỏ auto sign-in và trả
+     * `{ token: null, user }` (đã đọc `dist/api/routes/sign-up.mjs:155,241`).
+     */
     autoSignIn: true,
     /**
+     * Bắt buộc xác thực email trước khi đăng nhập (quyết định 2026-11-12).
+     * better-auth chặn ở `sign-in.mjs:338` với lỗi 403 "Email not verified";
+     * route `/session` map lỗi đó sang message tiếng Việt.
+     */
+    requireEmailVerification: true,
+    /**
      * Quên mật khẩu — quyết định 2026-11-11 (email "phương án khả thi nhất"):
-     * CHƯA có SMTP, token reset được ghi vào log để dev/test tự lấy. Production
-     * cần SMTP thật thì thay hàm này bằng gửi mail — không đổi gì khác.
+     * đủ cấu hình SMTP (`env.mailConfigured`) thì gửi mail thật qua nodemailer
+     * (`lib/mailer.ts`, tương thích Resend/Brevo/SES…); thiếu thì giữ hành vi cũ:
+     * dev/test log token để tự lấy, production chỉ ghi nhận (không log token).
      * Chữ ký `{ user, url, token }` đã xác minh trong source better-auth 1.7.19
      * (`dist/api/routes/password.mjs` gọi `sendResetPassword({ user, url, token })`).
      */
     sendResetPassword: async ({ user, url, token }) => {
+      try {
+        const sent = await sendResetPasswordEmail({ to: user.email, url, name: user.name })
+        if (sent) {
+          logger.info({ userId: user.id }, "Đã gửi email đặt lại mật khẩu")
+          return
+        }
+      } catch (error) {
+        // Lỗi SMTP không được lộ ra API (chống dò email) — chỉ log cho người vận hành.
+        logger.error({ err: error, userId: user.id }, "Gửi email đặt lại mật khẩu thất bại")
+      }
       if (env.NODE_ENV === "production") {
         // Production không log token (ai đọc log lấy được thì reset hộ người khác).
-        logger.info({ userId: user.id }, "Yêu cầu đặt lại mật khẩu — cần SMTP thật")
+        logger.warn({ userId: user.id }, "Yêu cầu đặt lại mật khẩu — chưa cấu hình SMTP")
         return
       }
       logger.warn(
@@ -53,6 +89,46 @@ export const auth = betterAuth({
     },
     /** Token reset hết hạn sau 1 giờ (mặc định của better-auth, khai tường minh). */
     resetPasswordTokenExpiresIn: 60 * 60,
+  },
+
+  /**
+   * Xác thực email — quyết định 2026-11-12.
+   *
+   * - `sendVerificationEmail`: chữ ký `{ user, url, token }` đã xác minh trong
+   *   source better-auth 1.7.19 (`dist/api/routes/email-verification.mjs` và
+   *   `dist/api/routes/sign-up.mjs`). Đủ SMTP thì gửi mail thật; thiếu thì
+   *   dev/test log link để tự lấy, production chỉ ghi nhận (không log token).
+   * - `sendOnSignUp`: gửi mail ngay khi đăng ký (mặc định đã bật khi
+   *   `requireEmailVerification` — khai tường minh).
+   * - `autoSignInAfterVerification`: bấm link xong có phiên luôn, không phải
+   *   đăng nhập lại (better-auth set cookie phiên trong response redirect).
+   * - `expiresIn`: token xác thực hết hạn sau 1 giờ, như token reset mật khẩu.
+   */
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url, token }) => {
+      try {
+        const sent = await sendVerifyEmailEmail({ to: user.email, url, name: user.name })
+        if (sent) {
+          logger.info({ userId: user.id }, "Đã gửi email xác thực")
+          return
+        }
+      } catch (error) {
+        // Lỗi SMTP không được lộ ra API (chống dò email) — chỉ log cho người vận hành.
+        logger.error({ err: error, userId: user.id }, "Gửi email xác thực thất bại")
+      }
+      if (env.NODE_ENV === "production") {
+        // Production không log token (ai đọc log lấy được thì xác thực hộ người khác).
+        logger.warn({ userId: user.id }, "Yêu cầu xác thực email — chưa cấu hình SMTP")
+        return
+      }
+      logger.warn(
+        { email: user.email, url, token },
+        "DEV ONLY — link xác thực email (chưa có SMTP)",
+      )
+    },
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    expiresIn: 60 * 60,
   },
 
   session: {

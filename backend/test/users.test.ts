@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { pageSchema, userProfileSchema } from "@rendez/schema"
 import { startTestDb, stopTestDb } from "./helpers/pg"
+import { registerVerifiedUser } from "./helpers/auth"
 
 /**
  * Integration test T2.6 — `GET /users?q=` tìm không dấu, trả `Page<UserProfile>`.
@@ -117,26 +118,13 @@ describe("GET /users", () => {
   })
 
   test("đăng nhập rồi tìm: isMe đúng cho chính mình", async () => {
-    const cookie =
-      (
-        (
-          await app.request("/api/v1/register", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              // IP riêng để không đụng rate limit đăng ký của các test trước.
-              "X-Forwarded-For": "10.77.0.9",
-            },
-            body: JSON.stringify({
-              name: "Tôi Tìm Kiếm",
-              email: `me_search_${suffix}@rendez.test`,
-              password: "password123",
-              handle: `me_search_${suffix}`,
-            }),
-          })
-        ).headers.getSetCookie()[0] ?? ""
-      ).split(";")[0] ?? ""
-    expect(cookie).not.toBe("")
+    // IP riêng để không đụng rate limit đăng ký của các test trước.
+    const { cookie } = await registerVerifiedUser(app, prisma, {
+      name: "Tôi Tìm Kiếm",
+      email: `me_search_${suffix}@rendez.test`,
+      handle: `me_search_${suffix}`,
+      headers: { "X-Forwarded-For": "10.77.0.9" },
+    })
 
     const res = await app.request(`/api/v1/users?q=me_search_${suffix}`, {
       headers: { Cookie: cookie },

@@ -1,7 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { Link, useNavigate } from "react-router"
+import { Link } from "react-router"
 import { z } from "zod"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -13,6 +15,7 @@ import {
 } from "@/components/ui/input-group"
 import { Spinner } from "@/components/ui/spinner"
 import { useRegister } from "../hooks/use-register"
+import { useSendVerificationEmail } from "../hooks/use-send-verification-email"
 import { AuthLayout } from "../components/auth-layout"
 import { PasswordInput } from "../components/password-input"
 import { serverErrorField } from "../lib/server-field-error"
@@ -44,10 +47,17 @@ type RegisterForm = z.infer<typeof registerSchema>
 
 const REGISTER_FIELDS = ["name", "email", "handle", "password"] as const
 
-/** Trang đăng ký — `/register`. Đăng ký xong backend trả phiên luôn. */
+/**
+ * Trang đăng ký — `/register`.
+ *
+ * Đăng ký xong backend KHÔNG tạo phiên (bắt buộc xác thực email, 2026-11-12):
+ * hiện màn hình "kiểm tra email" kèm nút gửi lại mail và lối sang đăng nhập.
+ */
 export function RegisterPage() {
-  const navigate = useNavigate()
   const register = useRegister()
+  const resend = useSendVerificationEmail()
+  /** Email vừa đăng ký — dùng cho nút "gửi lại mail xác thực". */
+  const [sentTo, setSentTo] = useState<string | null>(null)
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -60,7 +70,7 @@ export function RegisterPage() {
       { name: values.name, email: values.email, password: values.password, handle: values.handle },
       {
         onSuccess: () => {
-          void navigate("/discover")
+          setSentTo(values.email)
         },
         onError: (error) => {
           const field = serverErrorField(error.message, REGISTER_FIELDS)
@@ -75,6 +85,57 @@ export function RegisterPage() {
     register.isError && !serverErrorField(register.error.message, REGISTER_FIELDS)
       ? register.error.message
       : undefined
+
+  if (sentTo) {
+    return (
+      <AuthLayout
+        title="Kiểm tra email của bạn"
+        description={`Chúng tôi đã gửi link xác thực tới ${sentTo}.`}
+        footer={
+          <span>
+            Đã xác thực xong?{" "}
+            <Link to="/login" className="text-primary underline-offset-4 hover:underline">
+              Đăng nhập
+            </Link>
+          </span>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <Alert>
+            <AlertTitle>Xác thực email để đăng nhập</AlertTitle>
+            <AlertDescription>
+              Mở link trong email (kiểm tra cả mục spam) rồi quay lại đăng nhập. Link hết hạn sau 1
+              giờ.
+            </AlertDescription>
+          </Alert>
+
+          {resend.isSuccess && (
+            <Alert>
+              <AlertTitle>Đã gửi lại email</AlertTitle>
+              <AlertDescription>Kiểm tra hộp thư của {sentTo}.</AlertDescription>
+            </Alert>
+          )}
+          {resend.isError && <FieldError>{resend.error.message}</FieldError>}
+
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 w-full text-sm font-medium"
+            disabled={resend.isPending}
+            onClick={() => resend.mutate(sentTo)}
+          >
+            {resend.isPending ? (
+              <>
+                <Spinner aria-label="Đang gửi lại email" /> Đang gửi lại…
+              </>
+            ) : (
+              "Gửi lại email xác thực"
+            )}
+          </Button>
+        </div>
+      </AuthLayout>
+    )
+  }
 
   return (
     <AuthLayout

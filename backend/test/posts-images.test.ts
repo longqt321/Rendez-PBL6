@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { postSchema } from "@rendez/schema"
 import { startTestDb, stopTestDb } from "./helpers/pg"
+import { registerVerifiedUser } from "./helpers/auth"
 
 /**
  * Ảnh bài đăng (G5b) — chạy trên Postgres thật với R2 ĐÃ cấu hình (biến env giả).
@@ -42,15 +43,7 @@ interface Session {
 }
 
 async function register(name: string, handle: string): Promise<Session> {
-  const res = await app.request("/api/v1/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email: `${handle}@rendez.test`, password: "password123", handle }),
-  })
-  expect(res.status).toBe(201)
-  const cookie = (res.headers.getSetCookie()[0] ?? "").split(";")[0] ?? ""
-  const body = (await res.json()) as { id: string }
-  return { cookie, id: body.id }
+  return registerVerifiedUser(app, prisma, { name, handle })
 }
 
 function call(path: string, init: RequestInit & { cookie?: string } = {}) {

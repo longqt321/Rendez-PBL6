@@ -65,6 +65,14 @@ const NOTIFICATIONS_PAGE_SIZE = 20
 const MOCK_EMAIL = "me@rendez.test"
 const MOCK_PASSWORD = "password123"
 
+/** Tài khoản mock — `verified` mô phỏng `users.email_verified` của backend thật. */
+interface MockAccount {
+  userId: string
+  email: string
+  password: string
+  verified: boolean
+}
+
 /** Lý do báo cáo hợp lệ — tra cứu O(1) thay vì so khớp mảng. */
 const VALID_REPORT_REASONS: ReadonlySet<string> = new Set(PLACE_REPORT_REASONS)
 
@@ -121,8 +129,12 @@ const db = {
   /**
    * Tài khoản (email + password) của mock — đăng nhập/đăng ký so khớp ở đây.
    * Tài khoản đăng ký mới được thêm vào; xoá tài khoản chỉ đánh dấu `deleted`.
+   * `verified` mô phỏng `users.email_verified` của backend thật (bắt buộc xác
+   * thực email trước khi đăng nhập, 2026-11-12).
    */
-  accounts: [{ userId: "u-me", email: MOCK_EMAIL, password: MOCK_PASSWORD }],
+  accounts: [
+    { userId: "u-me", email: MOCK_EMAIL, password: MOCK_PASSWORD, verified: true },
+  ] as MockAccount[],
   /** Tài khoản đã xoá (DELETE /me) — không đăng nhập lại được, như backend thật. */
   deletedUserIds: new Set<string>(),
   /** Phòng lọc nhóm (Phase 6) — in-memory, reset khi tải lại trang. */
@@ -1634,6 +1646,14 @@ const routes: Route[] = [
       if (!account || db.deletedUserIds.has(account.userId)) {
         unauthorized(config, "Email hoặc mật khẩu không đúng")
       }
+      // Bắt buộc xác thực email (khớp backend thật): chưa verified → 403 riêng,
+      // không lẫn vào "Email hoặc mật khẩu không đúng".
+      if (!account.verified) {
+        forbidden(
+          config,
+          "Email chưa được xác thực. Hãy mở link trong email xác thực (kiểm tra cả mục spam) rồi đăng nhập lại.",
+        )
+      }
       const user = db.users[account.userId]
       if (!user) unauthorized(config, "Email hoặc mật khẩu không đúng")
       db.me = { ...user }
@@ -1642,7 +1662,10 @@ const routes: Route[] = [
     },
   },
   {
-    /** Đăng ký — tạo tài khoản mới, đăng nhập luôn (khớp autoSignIn của backend). */
+    /**
+     * Đăng ký — tạo tài khoản CHƯA xác thực email (khớp backend thật từ
+     * 2026-11-12): không mở phiên, trả `{requiresVerification:true}` (201).
+     */
     method: "post",
     pattern: /^\/register$/,
     handler: (config) => {
@@ -1660,8 +1683,10 @@ const routes: Route[] = [
       if (!/^[a-z0-9_]{3,30}$/u.test(handle)) {
         badRequest(config, "Handle chỉ gồm chữ thường, số và gạch dưới (3–30 ký tự)")
       }
+      // Trùng email: backend thật trả "generic" 201 như đăng ký mới (không lộ
+      // email tồn tại) — mock giữ đúng hợp đồng đó.
       if (db.accounts.some((account) => account.email === email)) {
-        conflict(config, "Email đã được sử dụng")
+        return created(config, { requiresVerification: true })
       }
       if (Object.values(db.users).some((user) => user.handle === handle)) {
         conflict(config, "Handle đã được sử dụng")
@@ -1686,10 +1711,27 @@ const routes: Route[] = [
         privateProfile: false,
       }
       db.users[id] = user
-      db.accounts.push({ userId: id, email, password })
-      db.me = { ...user }
-      db.authenticated = true
-      return created(config, { ...db.me })
+      db.accounts.push({ userId: id, email, password, verified: false })
+      return created(config, { requiresVerification: true })
+    },
+  },
+  {
+    /**
+     * Gửi lại mail xác thực.
+     *
+     * Mock không có hộp thư thật: coi thao tác này là "người dùng đã mở link
+     * xác thực" và đánh dấu tài khoản đã xác thực — nhờ vậy e2e mock đi được
+     * trọn luồng đăng ký → chưa xác thực bị chặn → xác thực → đăng nhập được.
+     * Luôn trả `{status:true}` như backend (không lộ email tồn tại).
+     */
+    method: "post",
+    pattern: /^\/auth\/send-verification-email$/,
+    handler: (config) => {
+      const body = parseBody<{ email?: unknown }>(config)
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : ""
+      const account = db.accounts.find((item) => item.email === email)
+      if (account) account.verified = true
+      return { status: true }
     },
   },
   {

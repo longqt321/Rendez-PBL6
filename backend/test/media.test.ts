@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { startTestDb, stopTestDb } from "./helpers/pg"
+import { registerVerifiedUser } from "./helpers/auth"
 
 /**
  * Integration test route media khi R2 ĐÃ cấu hình (biến env giả).
@@ -43,19 +44,12 @@ function call(path: string, init: RequestInit & { cookie?: string } = {}) {
 describe("POST /media khi R2 đã cấu hình", () => {
   test("trả presigned PUT + publicUrl, key do server sinh", async () => {
     const cookie = (
-      (
-        await app.request("/api/v1/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "Người Ảnh",
-            email: `media_ok_${suffix}@rendez.test`,
-            password: "password123",
-            handle: `media_ok_${suffix}`,
-          }),
-        })
-      ).headers.getSetCookie()[0] ?? ""
-    ).split(";")[0]
+      await registerVerifiedUser(app, prisma, {
+        name: "Người Ảnh",
+        email: `media_ok_${suffix}@rendez.test`,
+        handle: `media_ok_${suffix}`,
+      })
+    ).cookie
     expect(cookie).not.toBe("")
 
     const res = await call("/api/v1/media", {
@@ -88,19 +82,12 @@ describe("POST /media khi R2 đã cấu hình", () => {
 
   test("contentType không phải ảnh (SVG) trả 400", async () => {
     const cookie = (
-      (
-        await app.request("/api/v1/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "Người SVG",
-            email: `media_svg_${suffix}@rendez.test`,
-            password: "password123",
-            handle: `media_svg_${suffix}`,
-          }),
-        })
-      ).headers.getSetCookie()[0] ?? ""
-    ).split(";")[0]
+      await registerVerifiedUser(app, prisma, {
+        name: "Người SVG",
+        email: `media_svg_${suffix}@rendez.test`,
+        handle: `media_svg_${suffix}`,
+      })
+    ).cookie
 
     const res = await call("/api/v1/media", {
       method: "POST",
@@ -113,19 +100,12 @@ describe("POST /media khi R2 đã cấu hình", () => {
 
   test("folder avatars/covers trả presigned đúng thư mục hồ sơ", async () => {
     const cookie = (
-      (
-        await app.request("/api/v1/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "Người Hồ Sơ",
-            email: `media_profile_${suffix}@rendez.test`,
-            password: "password123",
-            handle: `media_profile_${suffix}`,
-          }),
-        })
-      ).headers.getSetCookie()[0] ?? ""
-    ).split(";")[0]
+      await registerVerifiedUser(app, prisma, {
+        name: "Người Hồ Sơ",
+        email: `media_profile_${suffix}@rendez.test`,
+        handle: `media_profile_${suffix}`,
+      })
+    ).cookie
 
     for (const folder of ["avatars", "covers"] as const) {
       const res = await call("/api/v1/media", {
@@ -143,19 +123,12 @@ describe("POST /media khi R2 đã cấu hình", () => {
 
   test("folder lạ trả 400", async () => {
     const cookie = (
-      (
-        await app.request("/api/v1/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "Người Thư Mục",
-            email: `media_dir_${suffix}@rendez.test`,
-            password: "password123",
-            handle: `media_dir_${suffix}`,
-          }),
-        })
-      ).headers.getSetCookie()[0] ?? ""
-    ).split(";")[0]
+      await registerVerifiedUser(app, prisma, {
+        name: "Người Thư Mục",
+        email: `media_dir_${suffix}@rendez.test`,
+        handle: `media_dir_${suffix}`,
+      })
+    ).cookie
 
     const res = await call("/api/v1/media", {
       method: "POST",

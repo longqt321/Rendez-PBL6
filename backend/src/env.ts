@@ -49,11 +49,15 @@ const envSchema = z.object({
    */
   BETTER_AUTH_SECRET: z.string().min(32).default("rendez-dev-secret-0123456789abcdef"),
 
-  /**
-   * Base URL của API — better-auth dùng để dựng URL callback/cookie.
-   * Không có scheme đặc biệt ở Phase 1 (chỉ email+password).
-   */
+  /** URL công khai của API — better-auth dùng để dựng callback URL. */
   BETTER_AUTH_URL: z.string().url().default("http://localhost:8000"),
+
+  /**
+   * Origin của frontend — nơi link trong email (xác thực email) redirect về.
+   * Cũng được thêm vào trustedOrigins của better-auth: callbackURL gửi kèm
+   * endpoint xác thực phải thuộc origin này mới được chấp nhận.
+   */
+  APP_ORIGIN: z.string().url().default("http://localhost:5173"),
 
   /**
    * Cloudflare R2 (S3-compatible). Đủ cả 4 biến thì bật tính năng ảnh
@@ -64,7 +68,24 @@ const envSchema = z.object({
   R2_ACCESS_KEY_ID: z.string().default(""),
   R2_SECRET_ACCESS_KEY: z.string().default(""),
   R2_BUCKET: z.string().default(""),
-  R2_PUBLIC_BASE_URL: z.string().url().default(""),
+  /**
+   * Chuỗi rỗng phải hợp lệ (biến có mặt nhưng chưa điền — đúng như
+   * `.env.example`): `z.string().url()` từ chối `""` nên boot sẽ chết dù R2
+   * chưa bật. `r2Configured` mới là nơi quyết định bật/tắt tính năng ảnh.
+   */
+  R2_PUBLIC_BASE_URL: z.string().url().or(z.literal("")).default(""),
+
+  /**
+   * SMTP gửi mail (quên mật khẩu). Đủ cả 4 biến thì gửi mail thật qua
+   * nodemailer (tương thích Resend/Brevo/SES… — xem docs/backend/SMTP-SETUP.md);
+   * thiếu → dev/test log token ra log như trước, production chỉ ghi nhận.
+   */
+  SMTP_HOST: z.string().default(""),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(465),
+  SMTP_USER: z.string().default(""),
+  SMTP_PASSWORD: z.string().default(""),
+  /** Địa chỉ From hiển thị, ví dụ `Rendez <no-reply@rendez.example.com>`. */
+  MAIL_FROM: z.string().default(""),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -106,6 +127,12 @@ export const env = {
     parsed.data.R2_ACCESS_KEY_ID.length > 0 &&
     parsed.data.R2_SECRET_ACCESS_KEY.length > 0 &&
     parsed.data.R2_BUCKET.length > 0,
+  /** Đủ cấu hình SMTP mới gửi mail thật (xem `lib/mailer.ts`). */
+  mailConfigured:
+    parsed.data.SMTP_HOST.length > 0 &&
+    parsed.data.SMTP_USER.length > 0 &&
+    parsed.data.SMTP_PASSWORD.length > 0 &&
+    parsed.data.MAIL_FROM.length > 0,
 } as const
 
 export type Env = typeof env

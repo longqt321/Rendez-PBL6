@@ -56,29 +56,36 @@ tùy chọn, theo semantics của bản nháp IETF `Idempotency-Key`:
 
 | Method | Path | Auth | Body | Response |
 |---|---|---|---|---|
-| POST | `/register` | — | `{name, email, password, handle}` | `201 UserProfile` + `Set-Cookie` |
-| POST | `/session` | — | `{email, password}` | `200 UserProfile` + `Set-Cookie` |
+| POST | `/register` | — | `{name, email, password, handle}` | `201 {"requiresVerification":true}` — KHÔNG có phiên, đã gửi mail xác thực |
+| POST | `/session` | — | `{email, password}` | `200 UserProfile` + `Set-Cookie`; `403` khi email chưa xác thực |
 | DELETE | `/session` | ✔ | — | `200 {"loggedOut":true}` |
 | GET | `/me` | ✔ | — | `200 UserProfile` |
 | PATCH | `/me` | ✔ | `{name?, bio?, location?, privateProfile?, avatarUrl?, coverUrl?}` — `avatarUrl`/`coverUrl` `null` = xoá ảnh, bỏ trống = giữ nguyên | `200 UserProfile` |
 | DELETE | `/me` | ✔ | — | `200 {"deleted":true}` — xoá mềm + thu hồi mọi phiên |
 | POST | `/auth/request-password-reset` | — | `{email, redirectTo?}` | `200 {"status":true}` (luôn thành công) |
 | POST | `/auth/reset-password` | — | `{token, newPassword}` | `200 {"status":true}` / `400` token sai |
+| POST | `/auth/send-verification-email` | — | `{email, callbackURL?}` | `200 {"status":true}` (luôn thành công) — gửi lại mail xác thực |
+| GET | `/auth/verify-email` | — | `?token=&callbackURL=` | `302` redirect về `callbackURL` (thành công không tham số, lỗi kèm `?error=CODE`); `autoSignInAfterVerification` → kèm Set-Cookie phiên |
 | GET/POST | `/auth/*` | — | do better-auth quản lý | passthrough |
 
 Ràng buộc đầu vào:
 
 - `name`: 2–40 ký tự (sau trim); `handle`: 3–30, chỉ `[a-z0-9_]`; `password`: 8–128;
   `email`: chuẩn hoá lowercase.
-- Trùng email → `409 {"message":"Email đã được sử dụng"}`; trùng handle →
+- Trùng email → `201 {"requiresVerification":true}` (better-auth "generic duplicate" — không lộ
+  email đã tồn tại, cùng response với đăng ký mới); trùng handle →
   `409 {"message":"Handle đã được sử dụng"}` (kiểm trước khi gọi better-auth vì
   better-auth nuốt P2002 của handle thành 422 chung).
+- **Bắt buộc xác thực email (D-056):** đăng ký không tạo phiên; mail xác thực chứa link trỏ
+  tới API rồi redirect về `APP_ORIGIN/verify-email`. Đăng nhập khi chưa xác thực →
+  `403 {"message":"Email chưa được xác thực. Hãy mở link trong email xác thực (kiểm tra cả mục spam) rồi đăng nhập lại."}`.
+  Gửi lại mail: `POST /auth/send-verification-email` (luôn 200 để không lộ email tồn tại).
 - Sai mật khẩu → `401 {"message":"Email hoặc mật khẩu không đúng"}`. Tài khoản đã xoá mềm
   cũng trả 401 dù mật khẩu đúng.
 - Rate limit: 20 request/phút/IP cho mỗi route `/session` và `/register`.
-- Quên mật khẩu: dev **chưa có SMTP** — link reset được ghi vào log backend
-  (`DEV ONLY — link đặt lại mật khẩu`); production cần thay `sendResetPassword` bằng gửi mail
-  thật (xem `docs/DECISIONS.md` mục 23).
+- Quên mật khẩu / xác thực email: đủ `SMTP_*` + `MAIL_FROM` thì gửi mail thật; thiếu thì dev
+  **log link** (`DEV ONLY — link đặt lại mật khẩu` / `DEV ONLY — link xác thực email`),
+  production chỉ ghi nhận (không log token). Xem `docs/backend/SMTP-SETUP.md`.
 
 `UserProfile` (khớp `userProfileSchema` của `@rendez/schema`):
 

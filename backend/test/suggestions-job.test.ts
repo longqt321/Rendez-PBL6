@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { notificationSchema } from "@rendez/schema"
 import { startTestDb, stopTestDb } from "./helpers/pg"
+import { registerVerifiedUser } from "./helpers/auth"
 
 /**
  * Integration test T4.4 — job phát hiện địa điểm (A7.2).
@@ -38,14 +39,7 @@ interface Session {
 }
 
 async function register(name: string, handle: string): Promise<Session> {
-  const res = await app.request("/api/v1/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email: `${handle}@rendez.test`, password: "password123", handle }),
-  })
-  expect(res.status).toBe(201)
-  const cookie = (res.headers.getSetCookie()[0] ?? "").split(";")[0] ?? ""
-  return { cookie, id: ((await res.json()) as { id: string }).id }
+  return registerVerifiedUser(app, prisma, { name, handle })
 }
 
 function call(path: string, init: RequestInit & { cookie?: string } = {}) {

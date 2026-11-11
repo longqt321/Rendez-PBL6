@@ -43,9 +43,11 @@ Frontend dev (`bun run dev:web` ở root) proxy `/api/v1` sang `:8000`, không c
 | `BETTER_AUTH_SECRET` | ✔ (prod) | secret dev | ≥ 32 ký tự; production **phải** đổi |
 | `BETTER_AUTH_URL` | — | `http://localhost:8000` | Dùng dựng cookie/callback |
 | `CORS_ORIGINS` | — | rỗng | CSV origin FE; rỗng = không CORS (dev qua proxy) |
+| `APP_ORIGIN` | — | `http://localhost:5173` | Origin FE — đích redirect của link xác thực email; tự thêm vào `trustedOrigins` |
 | `LOG_LEVEL` | — | `info` | `fatal\|error\|warn\|info\|debug\|trace` |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | — | rỗng | Đủ 4 → bật `/media`; thiếu → 503 |
 | `R2_PUBLIC_BASE_URL` | — | rỗng | Domain đọc ảnh công khai |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | — | rỗng | Đủ → gửi mail quên mật khẩu thật; thiếu → dev log link reset, production chỉ ghi nhận |
 | `TRUSTED_PROXIES` | — | rỗng | CSV IP/mạng proxy tin tưởng (để lấy IP client thật cho rate limit); rỗng = chỉ tin socket trực tiếp |
 
 Env được validate **một lần lúc boot** (`backend/src/env.ts`); sai → process thoát ngay
@@ -113,6 +115,9 @@ Thứ tự khởi động: `postgres` (healthy) → `migrate` (one-shot, `prisma
 | `Prisma schema mismatch: Missing columns …` | client cũ sau migration | `bunx prisma generate` |
 | `/media` trả 503 | chưa cấu hình R2 | điền 4 biến `R2_*` — hướng dẫn từng bước: [R2-SETUP.md](./R2-SETUP.md) |
 | Upload ảnh báo lỗi CORS trong console | bucket chưa có CORS Policy | thêm CORS Policy cho bucket (mục 3 của R2-SETUP.md) |
+| Không nhận được mail quên mật khẩu | chưa cấu hình SMTP hoặc key/domain sai | điền `SMTP_*` + `MAIL_FROM` — hướng dẫn: [SMTP-SETUP.md](./SMTP-SETUP.md); xem log `Gửi email đặt lại mật khẩu thất bại` |
+| Không nhận được mail xác thực khi đăng ký | chưa cấu hình SMTP | như trên; dev xem log `DEV ONLY — link xác thực email`, lỗi gửi xem log `Gửi email xác thực thất bại` |
+| Đăng nhập báo "Email chưa được xác thực" | user tạo trước khi bật verification mà migration backfill chưa chạy | chạy `bun run db:deploy` (migration `20261112010000_email_verified_backfill`); hoặc gửi lại mail xác thực từ trang đăng nhập |
 | 429 liên tục khi test tay | rate limit Postgres theo IP | xoá `rate_limits` của IP đó hoặc chờ hết cửa sổ |
 | SSE không nhận cập nhật | API chạy nhiều instance | pub/sub rooms lẫn notifications đều in-RAM, hiện chỉ hỗ trợ 1 instance (xem BACKLOG) |
 | `422 Idempotency-Key` | client gửi lại cùng key với payload khác | dùng key mới cho request khác nội dung |

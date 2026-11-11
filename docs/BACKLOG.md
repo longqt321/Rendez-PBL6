@@ -396,9 +396,14 @@ lịch sử; không còn việc mở ở đây.
 
 - [x] **FE chưa có form đăng nhập email+password** — ĐÃ LÀM (G1): `/login`, `/register`,
       `/forgot-password`, `/reset-password`; bỏ `testIgnore` logout.spec trong playwright.config.
-- [ ] **SMTP thật cho quên/đặt lại mật khẩu**: hiện token reset chỉ ghi log dev
-      (DECISIONS 23). Cần SMTP provider + biến env + UI "đã gửi email" thật.
-- [ ] **Xác thực email khi đăng ký** (`emailVerified` đang luôn false).
+- [ ] **SMTP thật cho quên/đặt lại mật khẩu** — ĐÃ LÀM phần backend (2026-11-12):
+      `lib/mailer.ts` gửi qua SMTP chuẩn (nodemailer, tương thích Resend/Brevo/SES),
+      biến env `SMTP_*` + `MAIL_FROM` (env.ts, compose.prod.yml, deploy/.env.example),
+      hướng dẫn Resend ở `docs/backend/SMTP-SETUP.md`. CÒN LẠI: người dùng tự đăng ký
+      Resend + xác minh domain rồi điền env; UI "đã gửi email" hiện đã có.
+- [x] **Xác thực email khi đăng ký** — đã bật (D-056, 2026-11-12): đăng ký trả
+  `{requiresVerification:true}`, mail xác thực qua mailer, trang `/verify-email`, migration
+  backfill user cũ. CÒN LẠI: đổi email (kèm xác thực lại) chưa làm.
 - [ ] **Cho phép đăng ký lại email đã xoá tài khoản** (hiện unique index chặn — DECISIONS 24).
 - [ ] **Xuất dữ liệu cá nhân** (plan H6) — rà soát khi làm.
 - [ ] **Cache gợi ý là per-instance** (Map TTL trong tiến trình, DECISIONS 27) — khi chạy nhiều

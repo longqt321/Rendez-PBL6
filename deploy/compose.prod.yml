@@ -34,6 +34,13 @@ services:
       # Caddy được gán IP tĩnh trong mạng riêng (xem `networks` dưới) — chỉ IP
       # này được tin khi đọc X-Forwarded-For.
       TRUSTED_PROXIES: "172.30.0.2"
+      # SMTP gửi mail (quên mật khẩu). Thiếu → API vẫn chạy, chỉ không gửi được
+      # mail reset. Xem docs/backend/SMTP-SETUP.md.
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-}
     ports: !override [] # không lộ API trực tiếp; Caddy proxy vào
     restart: unless-stopped
     expose:
