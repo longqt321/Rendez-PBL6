@@ -235,6 +235,8 @@ export function createRoomsRouter() {
       let unsubscribe = () => {}
       const closed = new Promise<void>((resolve) => {
         unsubscribe = subscribeRoom(code, (next) => {
+          // Ghi lỗi chỉ xảy ra khi client đã ngắt — `onAbort` bên dưới đã dọn
+          // subscriber nên không cần xử lý thêm, chỉ tránh unhandled rejection.
           void stream.writeSSE({ event: "room", data: JSON.stringify(next) }).catch(() => {})
         })
         stream.onAbort(() => {
