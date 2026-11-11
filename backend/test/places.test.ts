@@ -158,6 +158,20 @@ describe("GET /places", () => {
     }
   })
 
+  test("excludeKeyword loại mọi địa điểm chứa từ khoá (bất kỳ là loại)", async () => {
+    const excluded = await getJson<PageJson>("/api/v1/places?excludeKeyword=quang")
+    const plain = await getJson<PageJson>("/api/v1/places")
+
+    // Trang đầu có ít nhất 1 địa điểm chứa "quang" (đối chứng)…
+    const hay = (item: { name: string; address: string; tags: string[] }) =>
+      `${item.name} ${item.address} ${item.tags.join(" ")}`.toLowerCase()
+    expect(plain.items.some((item) => hay(item).includes("quang"))).toBe(true)
+    // …và trang đã loại thì không còn địa điểm nào chứa "quang".
+    for (const item of excluded.items) {
+      expect(hay(item)).not.toContain("quang")
+    }
+  })
+
   test("chỉ trả place đã publish và không closed", async () => {
     // Chọn động một place chưa publish (file test khác có thể đã publish place
     // cứng trong dataset qua PATCH /posts/:id/place).
