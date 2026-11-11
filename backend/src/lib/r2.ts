@@ -1,4 +1,5 @@
 import { createHash, createHmac } from "node:crypto"
+import { IMAGE_CONTENT_TYPES } from "@rendez/schema"
 
 /**
  * Presigned PUT cho Cloudflare R2 (S3-compatible) — T7.1.
@@ -83,12 +84,19 @@ export function presignPut(config: R2Config, params: PresignPutParams): Presigne
   const canonicalUri = encodePath(`/${config.bucket}/${params.key}`)
   const scope = `${dateStamp}/${REGION}/${SERVICE}/aws4_request`
 
+  // Có contentType thì ký luôn `content-type` — client không thể đổi kiểu file
+  // sau khi đã xin URL (chặn đẩy nội dung khác loại vào đúng object ảnh).
+  const signedHeaders = params.contentType ? "content-type;host" : "host"
+  const canonicalHeaders = params.contentType
+    ? `content-type:${params.contentType}\nhost:${host}\n`
+    : `host:${host}\n`
+
   const query: Record<string, string> = {
     "X-Amz-Algorithm": ALGORITHM,
     "X-Amz-Credential": `${config.accessKeyId}/${scope}`,
     "X-Amz-Date": timestamp,
     "X-Amz-Expires": String(params.expiresInSeconds),
-    "X-Amz-SignedHeaders": "host",
+    "X-Amz-SignedHeaders": signedHeaders,
   }
   const canonicalQuery = Object.keys(query)
     .sort()
@@ -99,8 +107,8 @@ export function presignPut(config: R2Config, params: PresignPutParams): Presigne
     "PUT",
     canonicalUri,
     canonicalQuery,
-    `host:${host}\n`,
-    "host",
+    canonicalHeaders,
+    signedHeaders,
     UNSIGNED_PAYLOAD,
   ].join("\n")
 
@@ -124,7 +132,7 @@ export function presignPut(config: R2Config, params: PresignPutParams): Presigne
   }
 }
 
-/** Đuôi file hợp lệ cho ảnh — chặn client đẩy HTML/SVG lên bucket công khai. */
+/** Đuôi file theo Content-Type — danh sách loại ảnh dùng chung `@rendez/schema`. */
 const IMAGE_EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -133,6 +141,7 @@ const IMAGE_EXTENSIONS: Record<string, string> = {
 }
 
 export function extensionForContentType(contentType: string): string | null {
+  if (!(IMAGE_CONTENT_TYPES as readonly string[]).includes(contentType)) return null
   return IMAGE_EXTENSIONS[contentType] ?? null
 }
 

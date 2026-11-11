@@ -74,7 +74,9 @@ export function toPostDto(row: PostRow) {
 
 /** `json_agg` có thể về dạng mảng hoặc chuỗi JSON tuỳ driver — chuẩn hoá một chỗ. */
 function parseImages(value: PostRow["images"]): string[] {
-  if (Array.isArray(value)) return value
+  if (Array.isArray(value)) {
+    return value.filter((url): url is string => typeof url === "string")
+  }
   if (typeof value === "string") {
     try {
       const parsed: unknown = JSON.parse(value)
@@ -105,7 +107,7 @@ function selectPosts(viewerId: string | null): Prisma.Sql {
            EXISTS (SELECT 1 FROM post_likes l WHERE l.post_id = p.id AND l.user_id = ${viewer}) AS liked_by_me,
            EXISTS (SELECT 1 FROM post_saves s WHERE s.post_id = p.id AND s.user_id = ${viewer}) AS saved_by_me,
            COALESCE(
-             (SELECT json_agg(pi.url ORDER BY pi.position) FROM post_images pi WHERE pi.post_id = p.id),
+             (SELECT json_agg(pi.url ORDER BY pi.position, pi.id) FROM post_images pi WHERE pi.post_id = p.id),
              '[]'::json
            ) AS images
     FROM posts p

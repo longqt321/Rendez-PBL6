@@ -2703,3 +2703,25 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
     `selectPosts`. FE composer tải ảnh qua presigned (`POST /media` → PUT) lúc bấm "Đăng",
     503 → ẩn nút upload và giữ composer; mock trả `uploadUrl` host `mock-r2.test` để client
     bỏ qua PUT (mock không có storage thật). Chưa xác minh với bucket R2 thật.
+34. **Sửa theo audit ảnh bài đăng (2026-11-11)**:
+
+- **Mock leak**: bỏ nhánh `mock-r2.test` khỏi `upload-post-image.ts` (code thật không biết
+  tên host mock); mock tự monkey-patch `fetch` trong `src/mocks/server.ts` (chỉ nạp khi
+  `DEV && enableMocks`) chặn PUT tới storage giả → 200.
+- **Presign ký `content-type`**: `presignPut` đưa `content-type` vào signed headers
+  (`X-Amz-SignedHeaders: content-type;host`) khi có contentType — client không thể đổi kiểu
+  file sau khi xin URL. Chưa xác minh với R2 thật (BACKLOG).
+- **Rate limit theo user**: `rateLimit()` thêm tuỳ chọn `byUser` (khoá `scope:user:<userId>`,
+  fallback IP khi thiếu) — `/media` 10/giờ/user, `POST /posts` 30/giờ/user (chống spam bài,
+  người chung IP không chặn lẫn nhau).
+- **Chặn double-submit**: composer dùng `submittingRef` vì upload ảnh chạy TRƯỚC `mutate`
+  nên `isPending` chưa bật.
+- **Validate URL chặt hơn**: mỗi URL ≤ 2048 ký tự; từ chối URL có userinfo (`user:pass@`),
+  query (`?`) hay fragment (`#`) — URL công khai R2 không chứa các thành phần này; traversal
+  `../` đã bị chặn từ trước nhờ so khớp pathname đã chuẩn hoá.
+- **Hằng chung**: `IMAGE_CONTENT_TYPES` trong `@rendez/schema` dùng cho `extensionForContentType`,
+  input `accept` của composer và validate của mock — một nguồn duy nhất.
+- **Mock**: `POST /media` trả 201 (route có cờ `status`); thêm kịch bản
+  `VITE_MOCK_SCENARIO=media-unavailable` (503) để thử UI khi R2 chưa cấu hình; thêm contract
+  `/media` vào `api-contracts.ts`.
+- **Object mồ côi** (đã PUT nhưng bài không lưu) cần job dọn — ghi BACKLOG, chưa làm.

@@ -138,6 +138,49 @@ describe("ảnh bài đăng", () => {
     expect(await res.json()).toEqual({ message: "Ảnh bị trùng trong bài đăng" })
   })
 
+  test("URL traversal `posts/<uid>/../places/x.jpg` → 400", async () => {
+    const res = await call("/api/v1/posts", {
+      method: "POST",
+      cookie: author.cookie,
+      body: createPostBody("Traversal", [`${CDN}/posts/${author.id}/../places/x.jpg`]),
+    })
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({
+      message: "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn",
+    })
+  })
+
+  test("subdomain khác của domain CDN → 400", async () => {
+    const res = await call("/api/v1/posts", {
+      method: "POST",
+      cookie: author.cookie,
+      body: createPostBody("Subdomain lạ", [
+        `https://evil.cdn.rendez.test/posts/${author.id}/x.jpg`,
+      ]),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test("URL có query string → 400", async () => {
+    const res = await call("/api/v1/posts", {
+      method: "POST",
+      cookie: author.cookie,
+      body: createPostBody("URL có query", [`${CDN}/posts/${author.id}/x.jpg?token=abc`]),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test("URL có userinfo → 400", async () => {
+    const res = await call("/api/v1/posts", {
+      method: "POST",
+      cookie: author.cookie,
+      body: createPostBody("URL có userinfo", [
+        `https://user:pass@cdn.rendez.test/posts/${author.id}/x.jpg`,
+      ]),
+    })
+    expect(res.status).toBe(400)
+  })
+
   test("POST /posts không có images → images: []", async () => {
     const res = await call("/api/v1/posts", {
       method: "POST",

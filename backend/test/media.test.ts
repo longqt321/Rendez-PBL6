@@ -78,6 +78,9 @@ describe("POST /media khi R2 đã cấu hình", () => {
     expect(url.pathname.startsWith("/rendez-media/posts/")).toBe(true)
     expect(url.pathname.endsWith(".jpg")).toBe(true)
     expect(url.searchParams.get("X-Amz-Algorithm")).toBe("AWS4-HMAC-SHA256")
+    // `content-type` nằm trong signed headers → client không đổi kiểu file sau
+    // khi đã xin URL (giá trị `;` phải được encode thành `%3B`).
+    expect(url.searchParams.get("X-Amz-SignedHeaders")).toBe("content-type;host")
     expect(body.headers["Content-Type"]).toBe("image/jpeg")
     expect(body.publicUrl).toBe(`https://cdn.rendez.test/${body.key}`)
     expect(Number(new Date(body.expiresAt)) - Date.now()).toBeGreaterThan(500_000)

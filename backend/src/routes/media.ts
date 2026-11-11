@@ -31,7 +31,9 @@ export function createMediaRouter() {
   router.post(
     "/media",
     requireAuth,
-    rateLimit({ scope: "media", limit: 10, windowSeconds: 3600 }),
+    // 10 URL/giờ/USER (không theo IP): nhiều người chung một IP không chặn lẫn
+    // nhau, còn một tài khoản vẫn bị giới hạn khi lạm dụng presign.
+    rateLimit({ scope: "media", limit: 10, windowSeconds: 3600, byUser: true }),
     async (c) => {
       if (!env.r2Configured) {
         throw new ApiError(503, "Tính năng upload ảnh chưa được cấu hình")

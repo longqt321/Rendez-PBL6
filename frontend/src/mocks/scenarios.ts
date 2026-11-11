@@ -21,24 +21,42 @@ export interface MockScenario {
   unauthorized: boolean
   /** Mọi request lỗi mạng (status 0) */
   offline: boolean
+  /** `POST /media` trả 503 — môi trường chưa cấu hình R2 (ẩn nút upload) */
+  mediaUnavailable: boolean
 }
 
 const SCENARIOS: Record<string, MockScenario> = {
-  ok: { delayMs: 0, emptyLists: false, serverError: false, unauthorized: false, offline: false },
+  ok: {
+    delayMs: 0,
+    emptyLists: false,
+    serverError: false,
+    unauthorized: false,
+    offline: false,
+    mediaUnavailable: false,
+  },
   slow: {
     delayMs: 3000,
     emptyLists: false,
     serverError: false,
     unauthorized: false,
     offline: false,
+    mediaUnavailable: false,
   },
-  empty: { delayMs: 0, emptyLists: true, serverError: false, unauthorized: false, offline: false },
+  empty: {
+    delayMs: 0,
+    emptyLists: true,
+    serverError: false,
+    unauthorized: false,
+    offline: false,
+    mediaUnavailable: false,
+  },
   "server-error": {
     delayMs: 0,
     emptyLists: false,
     serverError: true,
     unauthorized: false,
     offline: false,
+    mediaUnavailable: false,
   },
   unauthorized: {
     delayMs: 0,
@@ -46,6 +64,7 @@ const SCENARIOS: Record<string, MockScenario> = {
     serverError: false,
     unauthorized: true,
     offline: false,
+    mediaUnavailable: false,
   },
   offline: {
     delayMs: 0,
@@ -53,6 +72,16 @@ const SCENARIOS: Record<string, MockScenario> = {
     serverError: false,
     unauthorized: false,
     offline: true,
+    mediaUnavailable: false,
+  },
+  /** Backend chưa cấu hình R2 → `POST /media` trả 503, composer ẩn nút upload. */
+  "media-unavailable": {
+    delayMs: 0,
+    emptyLists: false,
+    serverError: false,
+    unauthorized: false,
+    offline: false,
+    mediaUnavailable: true,
   },
 }
 

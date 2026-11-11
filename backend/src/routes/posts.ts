@@ -16,6 +16,7 @@ import { findComment, listCommentsForPost, parseCommentSort } from "../lib/comme
 import { createActorNotification } from "../lib/notifications"
 import { enqueuePlaceDetect } from "../lib/queue"
 import { invalidateSuggestionCache } from "../lib/suggestions"
+import { rateLimit } from "../lib/rate-limit"
 import { getViewer, requireAuth } from "../lib/session"
 
 /**
@@ -32,7 +33,7 @@ const createPostSchema = z.object({
   caption: z.string().trim().min(MIN_CAPTION_LENGTH).max(MAX_CAPTION_LENGTH),
   placeId: z.string().min(1).nullable().optional(),
   images: z
-    .array(z.string().min(1))
+    .array(z.string().min(1).max(2048, "URL ảnh quá dài"))
     .max(MAX_POST_IMAGES, `Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
     .optional(),
 })
@@ -73,9 +74,10 @@ function validatePostImages(images: string[] | undefined, userId: string): strin
       throw invalid()
     }
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw invalid()
-    // So khớp origin + path đã chuẩn hoá (URL tự resolve `..`) — không chỉ
-    // startsWith chuỗi thô, tránh `posts/<uid>/../../places/...` lọt qua.
     if (parsed.origin !== base.origin) throw invalid()
+    // Userinfo (`user:pass@`), query (`?x=`) hay fragment (`#x`) đều không nằm
+    // trong URL công khai R2 trả về — có nghĩa là URL bị chế biến, từ chối.
+    if (parsed.username || parsed.password || parsed.search || parsed.hash) throw invalid()
     if (!parsed.pathname.startsWith(expectedPrefix)) throw invalid()
   }
 
@@ -139,41 +141,47 @@ export function createPostsRouter() {
     })
   })
 
-  router.post("/posts", requireAuth, async (c) => {
-    const input = parseOrThrow(createPostSchema, await readJson(c), "Dữ liệu không hợp lệ")
-    const userId = c.get("userId")
+  router.post(
+    "/posts",
+    requireAuth,
+    // 30 bài/giờ/user — chống spam bài; đăng bài bình thường không chạm ngưỡng.
+    rateLimit({ scope: "posts-create", limit: 30, windowSeconds: 3600, byUser: true }),
+    async (c) => {
+      const input = parseOrThrow(createPostSchema, await readJson(c), "Dữ liệu không hợp lệ")
+      const userId = c.get("userId")
 
-    if (input.placeId) {
-      const place = await prisma.place.findFirst({
-        where: { id: input.placeId, deletedAt: null },
+      if (input.placeId) {
+        const place = await prisma.place.findFirst({
+          where: { id: input.placeId, deletedAt: null },
+          select: { id: true },
+        })
+        if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
+      }
+
+      const images = validatePostImages(input.images, userId)
+
+      const created = await prisma.post.create({
+        data: {
+          authorId: userId,
+          caption: input.caption,
+          placeId: input.placeId ?? null,
+          // Bài + ảnh trong MỘT transaction: không có bài "nửa vời" khi insert ảnh lỗi.
+          images: {
+            create: images.map((url, position) => ({ url, position })),
+          },
+        },
         select: { id: true },
       })
-      if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
-    }
 
-    const images = validatePostImages(input.images, userId)
+      const post = await findPost(created.id, userId)
+      if (!post) throw new ApiError(500, "Không tạo được bài đăng")
 
-    const created = await prisma.post.create({
-      data: {
-        authorId: userId,
-        caption: input.caption,
-        placeId: input.placeId ?? null,
-        // Bài + ảnh trong MỘT transaction: không có bài "nửa vời" khi insert ảnh lỗi.
-        images: {
-          create: images.map((url, position) => ({ url, position })),
-        },
-      },
-      select: { id: true },
-    })
+      // Bài chưa gắn địa điểm → đẩy job phát hiện ngay (cron 5 phút là lưới an toàn).
+      if (!input.placeId) await enqueuePlaceDetect(created.id)
 
-    const post = await findPost(created.id, userId)
-    if (!post) throw new ApiError(500, "Không tạo được bài đăng")
-
-    // Bài chưa gắn địa điểm → đẩy job phát hiện ngay (cron 5 phút là lưới an toàn).
-    if (!input.placeId) await enqueuePlaceDetect(created.id)
-
-    return c.json(post, 201)
-  })
+      return c.json(post, 201)
+    },
+  )
 
   router.get("/posts/:id", async (c) => {
     const id = requireUuid(c.req.param("id"), "Không tìm thấy bài đăng")

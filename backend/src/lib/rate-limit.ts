@@ -20,6 +20,12 @@ export interface RateLimitOptions {
   windowSeconds: number
   /** Tiền tố khoá — tách bộ đếm giữa các nhóm route. */
   scope: string
+  /**
+   * Đếm theo userId thay vì IP — dùng cho route đã qua `requireAuth` để NHIỀU
+   * người dùng chung một IP (văn phòng, NAT) không chặn lẫn nhau. Thiếu userId
+   * (không đăng nhập) thì rơi về IP như mặc định.
+   */
+  byUser?: boolean
 }
 
 /** Đổi IPv4 dạng chuỗi sang số nguyên 32-bit; `null` nếu không phải IPv4 hợp lệ. */
@@ -103,10 +109,15 @@ export async function hitRateLimit(
   return { count: Number(rows[0]?.count ?? 1), resetAt }
 }
 
-/** Middleware giới hạn theo IP + scope; vượt ngưỡng trả 429 kèm `Retry-After`. */
+/** Middleware giới hạn theo IP (hoặc userId khi `byUser`) + scope; vượt trả 429 kèm `Retry-After`. */
 export function rateLimit(options: RateLimitOptions) {
   return createMiddleware<AppEnv>(async (c, next) => {
-    const key = `${options.scope}:${clientIp(c.req.raw.headers, c.env?.remoteAddress)}`
+    const identity = options.byUser
+      ? (c.get("userId") ?? clientIp(c.req.raw.headers, c.env?.remoteAddress))
+      : clientIp(c.req.raw.headers, c.env?.remoteAddress)
+    const key = options.byUser
+      ? `${options.scope}:user:${identity}`
+      : `${options.scope}:${identity}`
     const { count, resetAt } = await hitRateLimit(key, options.windowSeconds)
     if (count > options.limit) {
       const retryAfter = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))

@@ -39,6 +39,14 @@ export const MIN_CAPTION_LENGTH = 3
 /** Số ảnh tối đa của một bài đăng (G5b) — backend từ chối nếu vượt. */
 export const MAX_POST_IMAGES = 4
 
+/** Loại ảnh được tải lên qua `POST /media` — FE (input accept) và BE cùng dùng. */
+export const IMAGE_CONTENT_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+] as const
+
 /** Số ký tự tối thiểu để bắt đầu gợi ý địa điểm trong composer. */
 export const PLACE_SUGGESTION_MIN_CHARS = 8
 

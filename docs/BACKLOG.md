@@ -28,6 +28,12 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
       bảng `post_images`), composer tải ảnh qua presigned URL (`POST /media` → PUT R2).
       Chưa xác minh với bucket R2 thật (không có credentials); prefix `posts/<userId>/` đã được
       kiểm bằng test với env giả.
+- [ ] **Presign ký `content-type` chưa xác minh với R2 thật** — đã đưa `content-type` vào
+      signed headers (SigV4) và kiểm qua URL params trong test, nhưng chưa có credentials để
+      PUT thật lên bucket xác nhận R2 chấp nhận chữ ký này.
+- [ ] **Dọn object mồ côi trên R2** — ảnh đã PUT lên bucket nhưng bài đăng bị từ chối
+      (validate fail) hoặc người dùng bỏ không đăng sẽ nằm mãi trong bucket. Cần job dọn định
+      kỳ (so khớp object trong `posts/<userId>/` với bảng `post_images`) hoặc lifecycle rule.
 - [ ] **Ảnh bìa hồ sơ** đang là placeholder — cần upload thật.
 - [ ] **Trang tìm kiếm: tab "Mọi người"** chỉ còn tài khoản hiện tại (cold-start không có tài
       khoản ảo). Cần dữ liệu người dùng thật hoặc ẩn tab khi rỗng.

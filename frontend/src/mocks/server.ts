@@ -22,6 +22,7 @@ import { normalizeText } from "./text"
 import { formatInitials } from "@/lib/format"
 import { env } from "@/lib/env"
 import {
+  IMAGE_CONTENT_TYPES,
   MAX_CAPTION_LENGTH,
   MAX_COLLECTION_DESCRIPTION_LENGTH,
   MAX_COLLECTION_NAME_LENGTH,
@@ -59,13 +60,41 @@ const MOCK_PASSWORD = "password123"
 /** Lý do báo cáo hợp lệ — tra cứu O(1) thay vì so khớp mảng. */
 const VALID_REPORT_REASONS: ReadonlySet<string> = new Set(PLACE_REPORT_REASONS)
 
-/** Content-Type ảnh được nhận — khớp `IMAGE_EXTENSIONS` của backend. */
+/** Content-Type ảnh được nhận — cùng nguồn `@rendez/schema` với backend. */
 const MOCK_IMAGE_EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
   "image/avif": "avif",
 }
+
+/** Host storage giả của mock — CHỈ file trong `src/mocks/` biết tên này. */
+const MOCK_STORAGE_HOST = "mock-r2.test"
+
+/**
+ * Mock không có storage thật: chặn `PUT` tới storage giả để client coi như tải
+ * lên thành công. Mọi request khác đi qua `fetch` gốc.
+ *
+ * Chỉ chạy khi module mock được nạp (`lib/axios.ts` import động khi
+ * `DEV && env.enableMocks`) — code thật không biết gì về host này.
+ */
+function patchFetchForMockStorage(): void {
+  const target = globalThis as { fetch: typeof fetch; __rendezMockFetchPatched?: boolean }
+  if (target.__rendezMockFetchPatched) return
+  const originalFetch = target.fetch.bind(globalThis)
+
+  target.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url
+    const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase()
+    if (method === "PUT" && new URL(url).host === MOCK_STORAGE_HOST) {
+      return new Response(null, { status: 200 })
+    }
+    return originalFetch(input, init)
+  }
+  target.__rendezMockFetchPatched = true
+}
+
+patchFetchForMockStorage()
 
 /** "Database" trong bộ nhớ của server. Reset khi tải lại trang. */
 const db = {
@@ -385,9 +414,9 @@ function createPost(config: InternalAxiosRequestConfig) {
 /**
  * `POST /media` — cấp "presigned URL" giả.
  *
- * Mock không có storage thật: `uploadUrl` trỏ host `mock-r2.test` để client biết
- * mà bỏ qua bước PUT (`upload-post-image.ts`), còn `publicUrl` là URL ảnh giả
- * dùng thẳng trong bài đăng. Mock coi R2 ĐÃ cấu hình — không trả 503.
+ * Mock không có storage thật: `POST /media` trả `uploadUrl` trên host storage giả —
+ * `patchFetchForMockStorage()` chặn PUT tới host đó nên client coi như đã tải lên
+ * thành công và dùng `publicUrl` trong bài đăng. Mock coi R2 ĐÃ cấu hình — không trả 503.
  */
 function createMediaTicket(config: InternalAxiosRequestConfig) {
   const body = parseBody<{ folder?: unknown; contentType?: unknown }>(config)
@@ -397,12 +426,14 @@ function createMediaTicket(config: InternalAxiosRequestConfig) {
   }
   const contentType = typeof body.contentType === "string" ? body.contentType : ""
   const extension = MOCK_IMAGE_EXTENSIONS[contentType]
-  if (!extension) badRequest(config, "Chỉ nhận ảnh JPEG, PNG, WebP hoặc AVIF")
+  if (!extension || !(IMAGE_CONTENT_TYPES as readonly string[]).includes(contentType)) {
+    badRequest(config, "Chỉ nhận ảnh JPEG, PNG, WebP hoặc AVIF")
+  }
 
   const id = crypto.randomUUID()
   return {
-    uploadUrl: `https://mock-r2.test/upload/${id}`,
-    publicUrl: `https://mock-r2.test/${folder}/${CURRENT_USER.id}/${id}.${extension}`,
+    uploadUrl: `https://${MOCK_STORAGE_HOST}/upload/${id}`,
+    publicUrl: `https://${MOCK_STORAGE_HOST}/${folder}/${CURRENT_USER.id}/${id}.${extension}`,
     key: `${folder}/${CURRENT_USER.id}/${id}.${extension}`,
     expiresAt: new Date(Date.now() + 600_000).toISOString(),
     headers: { "Content-Type": contentType },
@@ -1002,6 +1033,17 @@ function networkError(config: InternalAxiosRequestConfig, message: string): neve
   throw new AxiosError(message, AxiosError.ERR_NETWORK, config)
 }
 
+/** 503 — tính năng chưa được cấu hình phía server (kịch bản `media-unavailable`). */
+function serviceUnavailable(config: InternalAxiosRequestConfig, message: string): never {
+  throw new AxiosError(message, "ERR_BAD_RESPONSE", config, undefined, {
+    data: { detail: message },
+    status: 503,
+    statusText: "Service Unavailable",
+    headers: new AxiosHeaders({ "content-type": "application/json" }),
+    config,
+  })
+}
+
 function parseBody<T>(config: InternalAxiosRequestConfig): T {
   const raw: unknown = config.data
   if (typeof raw !== "string" || raw.length === 0) return {} as T
@@ -1057,6 +1099,8 @@ interface Route {
   method: string
   pattern: RegExp
   handler: Handler
+  /** Mã trạng thái trả về — mặc định 200 (201 dùng `created`). */
+  status?: 201
 }
 
 const routes: Route[] = [
@@ -1249,7 +1293,9 @@ const routes: Route[] = [
   },
   {
     method: "post",
+    // Khớp backend thật: `POST /media` trả 201.
     pattern: /^\/media$/,
+    status: 201,
     handler: (config) => createMediaTicket(config),
   },
   {
@@ -1602,6 +1648,11 @@ export const mockAdapter: AxiosAdapter = async (config) => {
   // Kịch bản `offline`: mọi method đều lỗi mạng (status 0, không response).
   if (scenario.offline) networkError(config, "Không có kết nối mạng (kịch bản offline)")
 
+  // `media-unavailable`: giả lập backend chưa cấu hình R2 → composer ẩn nút upload.
+  if (scenario.mediaUnavailable && method === "post" && path === "/media") {
+    serviceUnavailable(config, "Tính năng upload ảnh chưa được cấu hình")
+  }
+
   // Các kịch bản còn lại chỉ áp dụng cho GET — mutation vẫn hoạt động bình thường.
   if (method === "get") {
     if (scenario.serverError) serverError(config, "Lỗi máy chủ (kịch bản server-error)")
@@ -1615,7 +1666,8 @@ export const mockAdapter: AxiosAdapter = async (config) => {
     if (route.method !== method) continue
     const match = route.pattern.exec(path)
     if (!match) continue
-    return ok(config, route.handler(config, match.slice(1)))
+    const data = route.handler(config, match.slice(1))
+    return route.status === 201 ? created(config, data) : ok(config, data)
   }
 
   notFound(config, `Không có route ${method.toUpperCase()} ${path}`)

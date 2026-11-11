@@ -28,11 +28,12 @@ const envSchema = z.object({
   /**
    * Kịch bản lỗi của mock server (`src/mocks/scenarios.ts`): `slow` (trễ thêm),
    * `empty` (danh sách rỗng), `server-error` (GET trả 500), `unauthorized`
-   * (GET /me trả 401), `offline` (mọi request lỗi mạng). Chỉ có ý nghĩa khi mock
-   * bật; đổi giá trị cần restart dev server.
+   * (GET /me trả 401), `offline` (mọi request lỗi mạng), `media-unavailable`
+   * (`POST /media` trả 503). Chỉ có ý nghĩa khi mock bật; đổi giá trị cần
+   * restart dev server.
    */
   VITE_MOCK_SCENARIO: z
-    .enum(["ok", "slow", "empty", "server-error", "unauthorized", "offline"])
+    .enum(["ok", "slow", "empty", "server-error", "unauthorized", "offline", "media-unavailable"])
     .optional(),
 })
 

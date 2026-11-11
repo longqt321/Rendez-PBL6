@@ -29,6 +29,15 @@ const suggestionsResponseSchema = z.object({
   suggestions: z.array(placeSuggestionSchema),
 })
 
+/** `POST /media` — URL PUT đã ký + `publicUrl` để gắn vào bài đăng. */
+const mediaTicketSchema = z.object({
+  uploadUrl: z.string(),
+  publicUrl: z.string(),
+  key: z.string(),
+  expiresAt: z.string(),
+  headers: z.record(z.string(), z.string()),
+})
+
 /** Bảng route theo đúng các endpoint của mock server. */
 export const API_CONTRACTS: ApiContract[] = [
   // Địa điểm — mục cụ thể phải đứng trước `:id`.
@@ -48,6 +57,9 @@ export const API_CONTRACTS: ApiContract[] = [
   { pattern: /^\/posts$/, method: "GET", schema: pageSchema(postSchema) },
   { pattern: /^\/posts$/, method: "POST", schema: postSchema },
   { pattern: /^\/comments\/[^/]+\/like$/, method: "PATCH", schema: commentSchema },
+
+  // Upload ảnh.
+  { pattern: /^\/media$/, method: "POST", schema: mediaTicketSchema },
 
   // Thông báo.
   { pattern: /^\/notifications\/[^/]+$/, method: "PATCH", schema: notificationSchema },

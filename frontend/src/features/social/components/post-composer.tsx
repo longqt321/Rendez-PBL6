@@ -17,7 +17,12 @@ import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { SectionHeading } from "@/components/shared/section-heading"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
-import { MAX_CAPTION_LENGTH, MAX_POST_IMAGES, PLACE_SUGGESTION_MIN_CHARS } from "@/lib/constants"
+import {
+  IMAGE_CONTENT_TYPES,
+  MAX_CAPTION_LENGTH,
+  MAX_POST_IMAGES,
+  PLACE_SUGGESTION_MIN_CHARS,
+} from "@/lib/constants"
 import { formatNumber } from "@/lib/format"
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import { usePlaceSuggestions } from "@/features/places/hooks/use-place-suggestions"
@@ -61,6 +66,8 @@ export function PostComposer({ onCreated }: PostComposerProps) {
   const fileInputId = useId()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageSeq = useRef(0)
+  /** Chặn submit lặp khi upload ảnh còn đang chạy (trước cả `isPending`). */
+  const submittingRef = useRef(false)
 
   const debouncedCaption = useDebouncedValue(caption, 450)
   const { data: suggestions = [], isFetching } = usePlaceSuggestions(debouncedCaption)
@@ -93,24 +100,24 @@ export function PostComposer({ onCreated }: PostComposerProps) {
 
   function handleFilesSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []).filter((file) =>
-      file.type.startsWith("image/"),
+      (IMAGE_CONTENT_TYPES as readonly string[]).includes(file.type),
     )
     event.target.value = "" // chọn lại cùng file vẫn kích hoạt onChange
     if (files.length === 0) return
 
-    // `imagesRef` cập nhật sau mỗi render nên luôn phản ánh danh sách hiện tại.
-    const current = imagesRef.current
-    const accepted = files.slice(0, MAX_POST_IMAGES - current.length)
-    if (accepted.length < files.length) {
-      toast.error(`Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
-    }
-    setImages([
-      ...current,
-      ...accepted.map((file) => {
-        imageSeq.current += 1
-        return { id: `img-${imageSeq.current}`, file, previewUrl: URL.createObjectURL(file) }
-      }),
-    ])
+    setImages((current) => {
+      const accepted = files.slice(0, MAX_POST_IMAGES - current.length)
+      if (accepted.length < files.length) {
+        toast.error(`Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
+      }
+      return [
+        ...current,
+        ...accepted.map((file) => {
+          imageSeq.current += 1
+          return { id: `img-${imageSeq.current}`, file, previewUrl: URL.createObjectURL(file) }
+        }),
+      ]
+    })
   }
 
   const canSubmit = caption.trim().length >= 3 && !createPost.isPending && !uploading
@@ -142,27 +149,33 @@ export function PostComposer({ onCreated }: PostComposerProps) {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
-    if (!canSubmit) return
+    // `isPending` chỉ bật khi mutation chạy — upload ảnh diễn ra TRƯỚC đó, nên
+    // cần cờ riêng để bấm Đăng hai lần liên tiếp không tạo hai bài.
+    if (submittingRef.current || !canSubmit) return
+    submittingRef.current = true
+    try {
+      const uploaded = await uploadImages()
+      if (uploaded === null) return // lỗi ảnh — giữ nguyên nội dung để người dùng thử lại
 
-    const uploaded = await uploadImages()
-    if (uploaded === null) return // lỗi ảnh — giữ nguyên nội dung để người dùng thử lại
-
-    createPost.mutate(
-      {
-        caption: caption.trim(),
-        placeId: selectedPlace?.id ?? null,
-        ...(uploaded.length > 0 ? { images: uploaded } : {}),
-      },
-      {
-        onSuccess: () => {
-          setCaption("")
-          setSelectedPlace(null)
-          setShowSuggestions(false)
-          clearImages()
-          onCreated?.()
+      createPost.mutate(
+        {
+          caption: caption.trim(),
+          placeId: selectedPlace?.id ?? null,
+          ...(uploaded.length > 0 ? { images: uploaded } : {}),
         },
-      },
-    )
+        {
+          onSuccess: () => {
+            setCaption("")
+            setSelectedPlace(null)
+            setShowSuggestions(false)
+            clearImages()
+            onCreated?.()
+          },
+        },
+      )
+    } finally {
+      submittingRef.current = false
+    }
   }
 
   return (
@@ -295,7 +308,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
                 ref={fileInputRef}
                 id={fileInputId}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/avif"
+                accept={IMAGE_CONTENT_TYPES.join(",")}
                 multiple
                 className="sr-only"
                 onChange={handleFilesSelected}

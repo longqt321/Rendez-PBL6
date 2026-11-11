@@ -9,7 +9,18 @@ describe("resolveScenario", () => {
       serverError: false,
       unauthorized: false,
       offline: false,
+      mediaUnavailable: false,
     })
+  })
+
+  it("media-unavailable: chỉ POST /media trả 503", () => {
+    const scenario = resolveScenario("media-unavailable")
+    expect(scenario.mediaUnavailable).toBe(true)
+    expect(scenario.delayMs).toBe(0)
+    expect(scenario.emptyLists).toBe(false)
+    expect(scenario.serverError).toBe(false)
+    expect(scenario.unauthorized).toBe(false)
+    expect(scenario.offline).toBe(false)
   })
 
   it("slow: chỉ trễ thêm response", () => {
