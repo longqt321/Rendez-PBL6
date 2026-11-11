@@ -129,7 +129,7 @@ Trường `district`, `imageUrl`, `lat`, `lng`, `status` **vắng mặt** khi kh
 | GET | `/posts/:id` | — | `Post`; 404 nếu đã xoá |
 | PATCH | `/posts/:id/like` | ✔ | `{liked?: boolean}` (mặc định đảo trạng thái), idempotent |
 | PATCH | `/posts/:id/save` | ✔ | `{saved?: boolean}`, idempotent |
-| PATCH | `/posts/:id/place` | ✔ | `{placeId}` — side effects A7.3 trong 1 transaction |
+| PATCH | `/posts/:id/place` | ✔ | `{placeId}` — chỉ tác giả bài (403); thiếu `placeId` → 404; side effects A7.3 trong 1 transaction |
 | GET | `/posts/:id/comments?sort=new\|top` | — | `{items, next:null}` phẳng: cha rồi reply của nó |
 | POST | `/posts/:id/comments` | ✔ | `{body, parentId?}` → `201 Comment`; reply 1 cấp |
 | PATCH | `/comments/:id/like` | ✔ | `{liked?: boolean}` idempotent |

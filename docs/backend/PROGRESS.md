@@ -52,7 +52,7 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | T8.1 | 8 | Dockerfile API multi-stage + compose | T2–T7 | done | runtime giữ nguyên cấu trúc workspace (node_modules/.bun + backend/node_modules) |
 | T8.2 | 8 | Deploy Fly/Railway — CHỈ nếu user trả lời; mặc định bỏ | T8.1 | todo | |
 | T8.3 | 8 | Đổi tile OSM — ngoài phạm vi backend, đã có BACKLOG | — | todo | |
-| QA1 | — | Audit code-integrity toàn bộ diff | T2–T6 | done | xoá 7 chỗ `as never` → `lib/enums.ts`; bảng enum tường minh + test round-trip; typecheck + 111 test xanh |
+| QA1 | — | Audit code-integrity toàn bộ diff | T2–T6 | done | xoá 7 chỗ `as never` → `lib/enums.ts`; bảng enum tường minh + test round-trip; typecheck + 113 test xanh |
 | QA2 | — | Test: unit + integration + contract + e2e backend | T2–T6 | done (12/12 e2e backend, logout.spec bỏ do FE chưa có form đăng nhập — BACKLOG) | |
 | QA3 | — | Kiểm thử bảo mật local (xh/curl; chỉ 127.0.0.1) | QA1 | done | 401/400/404 đúng, SQLi tham số hoá, cookie HttpOnly, nikto 7.948 request không lỗi nghiêm trọng; thêm CSP + Permissions-Policy | |
 | DOC1 | — | docs/backend/API.md + RUNBOOK.md + REPORT.md | T2–T6 | done | 60ac3c1 | |
@@ -92,7 +92,7 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
   · Enum `street-food` trong DB là gạch nối (`@map`) → mapper nhận cả hai dạng (2e72a8a).
   · Thông báo: 3 endpoint chưa có test → thêm `test/notifications.test.ts` (5 test) (ccfd63d).
   · CI job `api` bật lại (typecheck + prettier + test Testcontainers) (191071b).
-- Số liệu mới nhất: 111 test backend (13 file), typecheck 0 lỗi, e2e backend 12/12,
+- Số liệu mới nhất: 113 test backend (13 file), typecheck 0 lỗi, e2e backend 12/12,
   e2e mock 13/13, compose smoke healthz/readyz/places 200.
 
 ## Checkpoint 08:00

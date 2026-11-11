@@ -448,7 +448,7 @@ flowchart TB
   SRC --> L["lib/ (truy vấn & nghiệp vụ)"]
   SRC --> I["app.ts · server.ts · env.ts"]
   BE --> PR["prisma/schema.prisma + 8 migration"]
-  BE --> T["test/ (13 file, 111 test)"]
+  BE --> T["test/ (13 file, 113 test)"]
   BE --> SC["scripts/seed.ts"]
 ```
 
@@ -658,7 +658,7 @@ thiểu; bộ test chạy tuần tự (`--parallel=1`) để tránh tranh chấp
 
 | Bộ test | Số lượng | Kết quả | Thời gian |
 | --- | --- | --- | --- |
-| Backend integration/unit | 111 test / 13 file | **111 pass, 0 fail** | ~88 giây |
+| Backend integration/unit | 113 test / 13 file | **113 pass, 0 fail** | ~88 giây |
 | E2E với backend thật | 12 spec | **12 pass** | ~8,5 giây |
 | E2E với mock (hồi quy FE) | 13 spec | **13 pass** | ~15,8 giây |
 | Typecheck (FE + BE) | — | 0 lỗi | ~5 giây |
@@ -668,10 +668,10 @@ Phân bố test backend theo vùng chức năng:
 | File | Số test | Nội dung |
 | --- | --- | --- |
 | `places.test.ts` | 19 | danh sách, lọc, bản đồ, gợi ý, chi tiết, saved, bài gắn địa điểm |
-| `posts.test.ts` | 19 | feed, phân trang, like, save, bình luận, like bình luận |
+| `posts.test.ts` | 20 | feed, phân trang, like, save, bình luận, like bình luận |
 | `notifications.test.ts` | 5 | danh sách, đánh dấu đã đọc, đọc tất cả, 401 |
 | `collections.test.ts` | 14 | CRUD, quyền riêng tư, thêm/bớt địa điểm, like |
-| `rooms.test.ts` | 10 | tạo/join, đề xuất, áp dụng, rời phòng, SSE |
+| `rooms.test.ts` | 11 | tạo/join, đề xuất, áp dụng, rời phòng, SSE |
 | `auth.test.ts` | 9 | đăng ký, đăng nhập, đăng xuất, hồ sơ, rate limit |
 | `reviews.test.ts` | 8 | upsert đánh giá, báo cáo, chống trùng |
 | `profile.test.ts` | 7 | hồ sơ theo handle, tab bài, theo dõi |
@@ -680,7 +680,6 @@ Phân bố test backend theo vùng chức năng:
 | `enums.test.ts` | 5 | quy đổi enum API ↔ Prisma (round-trip, giá trị lạ) |
 | `users.test.ts` | 3 | tìm kiếm người dùng |
 | `health.test.ts` | 2 | healthz, readyz |
-| `enums.test.ts` | 5 | quy đổi enum API ↔ Prisma (round-trip, giá trị lạ) |
 
 ### 4.3. Đo lường hiệu năng
 
@@ -738,7 +737,7 @@ mỗi endpoint gọi 20 lần liên tiếp sau 3 lần khởi động nóng:
 ### Kết quả đạt được
 
 Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 8
-migration, 51 endpoint, 111 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
+migration, 51 endpoint, 113 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
 hệ thống chạy được bằng một lệnh `docker compose up` với dữ liệu 491 địa điểm thật tại Đà Nẵng.
 Báo cáo cũng đã hệ thống hoá quy trình: từ đặc tả hợp đồng API, thiết kế dữ liệu, triển khai,
 đến kiểm thử và đóng gói.
