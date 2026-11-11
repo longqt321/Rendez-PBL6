@@ -78,6 +78,7 @@ Ràng buộc đầu vào:
 | GET | `/places/suggestions?q=&limit=` | — | `{suggestions: PlaceSuggestion[]}`; caption < 8 ký tự → rỗng; `limit` 1–10 (mặc định 3) |
 | GET | `/places/saved` | ✔ | `Page<Place>` gộp mọi bộ sưu tập của chính mình, loại trùng |
 | GET | `/places/:id` | — | `Place`; 404 nếu chưa publish/đã xoá |
+| GET | `/places/:id/posts` | — | `Page<Post>` chỉ bài gắn địa điểm, cursor keyset; 404 nếu place chưa publish |
 | GET | `/places/:id/reviews` | — | `{items: Review[], next: null}` mới nhất trước |
 | POST | `/places/:id/reviews` | ✔ | upsert 1 user 1 review (A7.4) → `201 Review` |
 | POST | `/places/:id/reports` | ✔ | `201 PlaceReport`; unique (place, reason, reporter) |

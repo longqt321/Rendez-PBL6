@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
-import { pageSchema, placeSchema } from "@rendez/schema"
+import { pageSchema, placeSchema, postSchema } from "@rendez/schema"
 import { startTestDb, stopTestDb } from "./helpers/pg"
 
 /**
@@ -12,6 +12,7 @@ let app: Awaited<ReturnType<typeof import("../src/app").createApp>>
 let prisma: typeof import("../src/lib/prisma").prisma
 
 const placePageSchema = pageSchema(placeSchema)
+const postPageSchema = pageSchema(postSchema)
 
 beforeAll(async () => {
   const url = await startTestDb()
@@ -175,6 +176,37 @@ describe("GET /places/:id", () => {
 
   test("id không tồn tại trả 404", async () => {
     const res = await get("/api/v1/places/khong-ton-tai-999")
+    expect(res.status).toBe(404)
+  })
+})
+
+describe("GET /places/:id/posts", () => {
+  test("chỉ trả bài gắn địa điểm, khớp pageSchema(postSchema)", async () => {
+    const list = await getJson<PageJson>("/api/v1/places")
+    const id = list.items[0]!.id
+
+    const res = await get(`/api/v1/places/${id}/posts`)
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: { place: { id: string } | null }[] }
+    expect(postPageSchema.safeParse(body).success).toBe(true)
+    for (const post of body.items) {
+      expect(post.place?.id).toBe(id)
+    }
+  })
+
+  test("place chưa publish trả 404", async () => {
+    const unpublished = await prisma.place.findFirst({
+      where: { publishedAt: null, deletedAt: null },
+      select: { id: true },
+    })
+    if (!unpublished) return
+
+    const res = await get(`/api/v1/places/${unpublished.id}/posts`)
+    expect(res.status).toBe(404)
+  })
+
+  test("id không tồn tại trả 404", async () => {
+    const res = await get("/api/v1/places/khong-ton-tai-999/posts")
     expect(res.status).toBe(404)
   })
 })

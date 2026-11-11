@@ -9,7 +9,8 @@ import {
   listSavedPlaces,
   parsePlaceFilters,
 } from "../lib/places"
-import { requireAuth } from "../lib/session"
+import { getViewer, requireAuth } from "../lib/session"
+import { listPosts } from "../lib/posts"
 import { rankPlaceSuggestions } from "../lib/ranking"
 import { fetchRankCandidates, normalizeCaption, toSuggestionCandidate } from "../lib/suggestions"
 
@@ -22,6 +23,8 @@ import { fetchRankCandidates, normalizeCaption, toSuggestionCandidate } from "..
 
 /** Khớp mock (`PLACES_PAGE_SIZE = 9`) — FE infinite scroll không phụ thuộc số này. */
 const PLACES_PAGE_SIZE = 9
+/** Bài đăng gắn địa điểm — cùng cỡ trang với feed cộng đồng. */
+const PLACE_POSTS_PAGE_SIZE = 5
 /** Chặn trên cho `/places/map` — khung nhìn zoom nhỏ không trả cả dataset. */
 const MAP_MAX_PLACES = 300
 /** Số gợi ý tối đa một lần hỏi (A5: suggestion ≤ 10). */
@@ -95,6 +98,34 @@ export function createPlacesRouter() {
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
     const page = await listSavedPlaces(c.get("userId"), cursor, PLACES_PAGE_SIZE)
+    return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
+  })
+
+  /**
+   * Bài đăng gắn địa điểm (FE `usePlacePosts`, phân trang cursor).
+   *
+   * Đứng trước `/places/:id` để không bị route chi tiết nuốt; địa điểm chưa
+   * publish coi như không tồn tại (khớp mock).
+   */
+  router.get("/places/:id/posts", async (c) => {
+    const id = c.req.param("id")
+    if (!PLACE_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")
+
+    const place = await findPublicPlace(id)
+    if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
+
+    const rawCursor = c.req.query("cursor")
+    const cursor = rawCursor ? decodeCursor(rawCursor) : null
+    if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
+
+    const viewer = await getViewer(c)
+    const page = await listPosts({
+      filter: "all",
+      viewerId: viewer?.id ?? null,
+      placeId: id,
+      cursor,
+      pageSize: PLACE_POSTS_PAGE_SIZE,
+    })
     return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
   })
 

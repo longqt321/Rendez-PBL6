@@ -102,6 +102,8 @@ export interface ListPostsParams {
   authorId?: string
   /** Bài đã lưu bởi user này — tab `saved`/`pinned` của chính chủ (khớp mock). */
   savedOf?: string
+  /** Chỉ bài gắn địa điểm này — `GET /places/:id/posts`. */
+  placeId?: string
   cursor: Cursor | null
   pageSize: number
 }
@@ -120,6 +122,7 @@ export async function listPosts(
     )
   }
   if (params.authorId) conditions.push(Prisma.sql`p.author_id = ${params.authorId}::uuid`)
+  if (params.placeId) conditions.push(Prisma.sql`p.place_id = ${params.placeId}`)
   if (params.savedOf) {
     conditions.push(
       Prisma.sql`EXISTS (SELECT 1 FROM post_saves s WHERE s.post_id = p.id AND s.user_id = ${params.savedOf}::uuid)`,
