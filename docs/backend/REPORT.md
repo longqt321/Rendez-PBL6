@@ -12,7 +12,7 @@
 | Migration đã áp dụng | 9 |
 | Route handler tự viết (`routes/` + `healthz`/`readyz`) | 52 (50 khai báo trong `routes/` + `GET /healthz` + `GET /readyz`) |
 | Mã nguồn backend (`src/**/*.ts`) | 35 file, ~4.200 dòng (routes + lib + hạ tầng) |
-| Test backend (`bun test --parallel=1`) | **129 pass / 0 fail**, 14 file, ~99 giây |
+| Test backend (`bun test --parallel=1`) | **131 pass / 0 fail**, 14 file, ~99 giây |
 | e2e Playwright với backend thật | **12/12 pass** (`VITE_ENABLE_MOCKS=false`) |
 | e2e Playwright với mock | **13/13 pass** |
 | Typecheck (`bun run typecheck` = FE + BE) | 0 lỗi |
@@ -77,7 +77,7 @@ Quy ước: lỗi luôn `{ "message": string }` (D6); phân trang keyset cursor 
 
 ## 5. Kiểm thử
 
-- **Unit/integration backend**: 129 test, mỗi file dùng Postgres thật qua Testcontainers
+- **Unit/integration backend**: 131 test, mỗi file dùng Postgres thật qua Testcontainers
   (`@testcontainers/postgresql`), chạy tuần tự `--parallel=1` để tránh tranh chấp.
   Phủ: health, auth (đăng ký/đăng nhập/đăng xuất/rate limit), places (list/map/suggestions/
   chi tiết/saved), posts (feed, like, save, comment), reviews + reports, collections,

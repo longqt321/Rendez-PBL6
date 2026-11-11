@@ -11,7 +11,7 @@
 - Backend: **Phase 0–8 xong** — scaffold Hono + env fail-fast, 23 bảng nghiệp vụ + 10 migration,
   seed 491 place, auth better-auth, places/posts/reviews/collections/users/rooms(SSE)/media,
   job pg-boss phát hiện địa điểm, rate limit, presigned R2, Dockerfile + compose.
-- Kiểm thử: **129 test backend pass** (Testcontainers Postgres thật), **12/12 e2e với backend
+- Kiểm thử: **131 test backend pass** (Testcontainers Postgres thật), **12/12 e2e với backend
   thật** (`VITE_ENABLE_MOCKS=false`), 13/13 e2e mock, typecheck FE+BE 0 lỗi.
 - Tài liệu: [API.md](./API.md) · [RUNBOOK.md](./RUNBOOK.md) · [REPORT.md](./REPORT.md) ·
   [PROGRESS.md](./PROGRESS.md).

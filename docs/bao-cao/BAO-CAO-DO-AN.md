@@ -451,7 +451,7 @@ flowchart TB
   SRC --> L["lib/ (truy vấn & nghiệp vụ)"]
   SRC --> I["app.ts · server.ts · env.ts"]
   BE --> PR["prisma/schema.prisma + 9 migration"]
-  BE --> T["test/ (14 file, 129 test)"]
+  BE --> T["test/ (14 file, 131 test)"]
   BE --> SC["scripts/seed.ts"]
 ```
 
@@ -498,7 +498,7 @@ sequenceDiagram
   U->>FE: Gõ từ khoá "banh xeo", chọn quận, mức giá
   FE->>API: ?q=banh+xeo&district=...&priceLevel=...&cursor=...
   API->>API: Parse + validate tham số (zod)
-  API->>DB: SELECT ... WHERE unaccent(name) LIKE unaccent(%q%)<br/>AND keyset (created_at,id) < cursor<br/>ORDER BY created_at DESC LIMIT 9<br/>+ 1 dòng dư để biết còn trang
+  API->>DB: SELECT ... WHERE immutable_search_normalize(haystack)<br/>LIKE '%' || immutable_search_normalize(q) || '%'<br/>AND keyset (created_at,id) < cursor<br/>ORDER BY created_at DESC LIMIT 9<br/>+ 1 dòng dư để biết còn trang
   DB-->>API: 10 dòng + 1 dòng dư (biết còn trang)
   API->>DB: LATERAL lấy ảnh đầu + aggregate rating/reviewCount
   API-->>FE: {items, next: cursor base64}
@@ -671,7 +671,7 @@ thiểu; bộ test chạy tuần tự (`--parallel=1`) để tránh tranh chấp
 
 | Bộ test | Số lượng | Kết quả | Thời gian |
 | --- | --- | --- | --- |
-| Backend integration/unit | 129 test / 14 file | **129 pass, 0 fail** | ~99 giây |
+| Backend integration/unit | 131 test / 14 file | **131 pass, 0 fail** | ~99 giây |
 | E2E với backend thật | 12 spec | **12 pass** | ~8,5 giây |
 | E2E với mock (hồi quy FE) | 13 spec | **13 pass** | ~15,8 giây |
 | Typecheck (FE + BE) | — | 0 lỗi | ~5 giây |
@@ -681,7 +681,7 @@ Phân bố test backend theo vùng chức năng:
 | File | Số test | Nội dung |
 | --- | --- | --- |
 | `places.test.ts` | 24 | danh sách, lọc, bản đồ, gợi ý, chi tiết, saved, bài gắn địa điểm |
-| `posts.test.ts` | 23 | feed, phân trang, like, save, bình luận, like bình luận |
+| `posts.test.ts` | 24 | feed, phân trang, like, save, bình luận, like bình luận |
 | `notifications.test.ts` | 6 | danh sách, đánh dấu đã đọc, đọc tất cả, 401 |
 | `collections.test.ts` | 14 | CRUD, quyền riêng tư, thêm/bớt địa điểm, like |
 | `rooms.test.ts` | 13 | tạo/join, đề xuất, áp dụng, rời phòng, SSE |
@@ -691,7 +691,7 @@ Phân bố test backend theo vùng chức năng:
 | `infra.test.ts` | 6 | body limit, presign, media 503, rate limit |
 | `suggestions-job.test.ts` | 4 | job phát hiện địa điểm, idempotence |
 | `enums.test.ts` | 5 | quy đổi enum API ↔ Prisma (round-trip, giá trị lạ) |
-| `users.test.ts` | 5 | tìm kiếm người dùng |
+| `users.test.ts` | 6 | tìm kiếm người dùng |
 | `health.test.ts` | 2 | healthz, readyz |
 | `media.test.ts` | 3 | presign PUT khi R2 cấu hình, chặn SVG, folder lạ |
 
@@ -779,7 +779,7 @@ Các hạng mục sau **chưa kiểm chứng được** trong khuôn khổ đồ
 ### Kết quả đạt được
 
 Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 9
-migration, 52 endpoint, 129 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
+migration, 52 endpoint, 131 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
 hệ thống chạy được bằng một lệnh `docker compose up` với dữ liệu 491 địa điểm thật tại Đà Nẵng.
 Báo cáo cũng đã hệ thống hoá quy trình: từ đặc tả hợp đồng API, thiết kế dữ liệu, triển khai,
 đến kiểm thử và đóng gói.
