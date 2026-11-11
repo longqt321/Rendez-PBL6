@@ -2,7 +2,7 @@ import { Hono } from "hono"
 import { z } from "zod"
 import { MAX_CAPTION_LENGTH, MIN_CAPTION_LENGTH, MAX_REVIEW_CONTENT_LENGTH } from "@rendez/schema"
 import type { AppEnv } from "../app"
-import { decodeCursor, encodeCursor } from "../lib/cursor"
+import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { findPost, listPosts, type PostFilter } from "../lib/posts"
@@ -68,7 +68,7 @@ export function createPostsRouter() {
     }
 
     const rawCursor = c.req.query("cursor")
-    const cursor = rawCursor ? decodeCursor(rawCursor) : null
+    const cursor = rawCursor ? decodeCursor(rawCursor, UUID_ID_RE) : null
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
     const page = await listPosts({

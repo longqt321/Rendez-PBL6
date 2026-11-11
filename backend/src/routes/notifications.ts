@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import type { AppEnv } from "../app"
-import { decodeCursor, encodeCursor } from "../lib/cursor"
+import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { listNotifications, toNotificationDto, type NotificationRow } from "../lib/notifications"
@@ -19,7 +19,7 @@ export function createNotificationsRouter() {
 
   router.get("/notifications", requireAuth, async (c) => {
     const rawCursor = c.req.query("cursor")
-    const cursor = rawCursor ? decodeCursor(rawCursor) : null
+    const cursor = rawCursor ? decodeCursor(rawCursor, UUID_ID_RE) : null
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
     const page = await listNotifications(c.get("userId"), cursor, NOTIFICATIONS_PAGE_SIZE)

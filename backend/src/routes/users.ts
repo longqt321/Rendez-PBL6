@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { Prisma } from "../../generated/prisma/client"
 import type { AppEnv } from "../app"
-import { decodeCursor, encodeCursor } from "../lib/cursor"
+import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { toUserProfile } from "../lib/profile"
@@ -41,7 +41,7 @@ export function createUsersRouter() {
 
   router.get("/users", async (c) => {
     const rawCursor = c.req.query("cursor")
-    const cursor = rawCursor ? decodeCursor(rawCursor) : null
+    const cursor = rawCursor ? decodeCursor(rawCursor, UUID_ID_RE) : null
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
     const q = c.req.query("q")?.trim() ?? ""
@@ -157,7 +157,7 @@ export function createUsersRouter() {
 
     const tab = c.req.query("tab") ?? "posts"
     const rawCursor = c.req.query("cursor")
-    const cursor = rawCursor ? decodeCursor(rawCursor) : null
+    const cursor = rawCursor ? decodeCursor(rawCursor, UUID_ID_RE) : null
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
     if (tab === "saved" || tab === "pinned") {

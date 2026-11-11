@@ -17,11 +17,18 @@ export interface Cursor {
  */
 const ID_RE = /^[A-Za-z0-9_-]{1,120}$/
 
+/**
+ * Id dạng uuid — bắt buộc cho cursor của tài nguyên lưu khoá chính uuid
+ * (post, user, thông báo). Không kiểm thì `::uuid` trong SQL ném lỗi cast → 500
+ * khi client sửa cursor.
+ */
+export const UUID_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export function encodeCursor(cursor: Cursor): string {
   return Buffer.from(`${cursor.createdAt.toISOString()}|${cursor.id}`, "utf8").toString("base64url")
 }
 
-export function decodeCursor(raw: string): Cursor | null {
+export function decodeCursor(raw: string, idPattern: RegExp = ID_RE): Cursor | null {
   let decoded: string
   try {
     decoded = Buffer.from(raw, "base64url").toString("utf8")
@@ -34,7 +41,7 @@ export function decodeCursor(raw: string): Cursor | null {
 
   const createdAt = new Date(decoded.slice(0, separator))
   const id = decoded.slice(separator + 1)
-  if (Number.isNaN(createdAt.getTime()) || !ID_RE.test(id)) return null
+  if (Number.isNaN(createdAt.getTime()) || !idPattern.test(id)) return null
 
   return { createdAt, id }
 }

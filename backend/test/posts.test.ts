@@ -66,6 +66,13 @@ describe("bài đăng", () => {
     other = await register("Người Khác", `nguoi_khac_${suffix}`)
   })
 
+  test("cursor uuid giả mạo trả 400, không 500 (cast ::uuid)", async () => {
+    // base64url của "2026-01-01T00:00:00.000Z|not-a-uuid" — id không phải uuid.
+    const res = await call("/api/v1/posts?cursor=MjAyNi0wMS0wMVQwMDowMDowMC4wMDBafG5vdC1hLXV1aWQ=")
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ message: "Cursor không hợp lệ" })
+  })
+
   test("POST /posts cần đăng nhập", async () => {
     const res = await call("/api/v1/posts", {
       method: "POST",

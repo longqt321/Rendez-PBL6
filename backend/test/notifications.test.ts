@@ -97,6 +97,15 @@ describe("thông báo", () => {
     expect(res.status).toBe(401)
   })
 
+  test("cursor uuid giả mạo trả 400, không 500", async () => {
+    const res = await call(
+      "/api/v1/notifications?cursor=MjAyNi0wMS0wMVQwMDowMDowMC4wMDBafG5vdC1hLXV1aWQ=",
+      { cookie: alice.cookie },
+    )
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ message: "Cursor không hợp lệ" })
+  })
+
   test("PATCH /notifications/:id đánh dấu đã đọc (idempotent)", async () => {
     const list = (await (await call("/api/v1/notifications", { cookie: alice.cookie })).json()) as {
       items: { id: string; read: boolean }[]
