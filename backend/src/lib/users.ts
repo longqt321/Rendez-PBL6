@@ -79,19 +79,28 @@ export async function findProfileById(
   return row ? countProfile(row.id, viewerId, row) : null
 }
 
-/** Theo dõi / bỏ theo dõi — idempotent; trả hồ sơ người được theo dõi (T5.4). */
+/**
+ * Theo dõi / bỏ theo dõi — idempotent; trả `true` khi THỰC SỰ tạo mới quan hệ
+ * (route chỉ thông báo cho người được theo dõi ở lần đầu, tránh spam mỗi lần
+ * client gọi lại).
+ *
+ * `createMany({ skipDuplicates: true })` là một câu lệnh nguyên tử: hai request
+ * song song không thể cùng tạo (khác với findUnique-rồi-create, nơi request thứ
+ * hai sẽ ném P2002 → 500).
+ */
 export async function setFollow(
   followerId: string,
   followingId: string,
   followed: boolean,
-): Promise<void> {
+): Promise<boolean> {
   if (followed) {
-    await prisma.follow.upsert({
-      where: { followerId_followingId: { followerId, followingId } },
-      create: { followerId, followingId },
-      update: {},
+    const { count } = await prisma.follow.createMany({
+      data: [{ followerId, followingId }],
+      skipDuplicates: true,
     })
-  } else {
-    await prisma.follow.deleteMany({ where: { followerId: followerId, followingId } })
+    return count > 0
   }
+
+  await prisma.follow.deleteMany({ where: { followerId, followingId } })
+  return false
 }

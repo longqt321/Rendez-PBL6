@@ -451,7 +451,7 @@ flowchart TB
   SRC --> R["routes/ (10 file)"]
   SRC --> L["lib/ (truy vấn & nghiệp vụ)"]
   SRC --> I["app.ts · server.ts · env.ts"]
-  BE --> PR["prisma/schema.prisma + 10 migration"]
+  BE --> PR["prisma/schema.prisma + 11 migration"]
   BE --> T["test/ (14 file, 135 test)"]
   BE --> SC["scripts/seed.ts"]
 ```
@@ -847,6 +847,7 @@ máy chủ công khai, đồng bộ SSE nhiều instance và benchmark ở quy m
 | 8 | `20261111054500_rate_limits` | Bảng đếm rate limit theo cửa sổ thời gian |
 | 9 | `20261111080000_places_search_trgm` | GIN `pg_trgm` cho tìm kiếm không dấu (hàm `immutable_unaccent`, `immutable_array_to_string`) |
 | 10 | `20261111090000_places_search_normalize` | Hàm `immutable_search_normalize` (bỏ dấu + dấu câu, khớp `normalizeText` của mock), dựng lại index trên biểu thức chuẩn hoá 2 phía |
+| 11 | `20261111110000_places_price_level_check` | CHECK `price_level BETWEEN 1 AND 3` ở DB — thay cho clamp lặng lẽ khi đọc (`toPlaceDto`) |
 
 > [!NOTE]
 > Trong quá trình phát triển, migration 9 và 10 từng deploy thất bại ở lần thử đầu (hàm SQL

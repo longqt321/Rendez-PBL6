@@ -174,7 +174,7 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | Test backend | **135 pass / 0 fail**, 14 file, ~100 giây (`bun test --parallel=1`) |
 | E2E backend thật | **12/12 pass**, 9,4 giây |
 | E2E mock | **13/13 pass**, 16,3 giây |
-| Migration | 10 migration áp dụng sạch trên Postgres 17 (compose + Testcontainers) |
+| Migration | 11 migration áp dụng sạch trên Postgres 17 (compose + Testcontainers) |
 | Smoke compose | `/healthz` 200, `/readyz` 200, `/places?limit=9` 9 item + `next`, `/places?q=bánh xèo` 3 item |
 | Endpoint | 50 endpoint nghiệp vụ + 2 health check + mount better-auth |
 

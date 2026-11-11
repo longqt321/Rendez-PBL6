@@ -1,4 +1,3 @@
-import type { PlaceCategory } from "@rendez/schema"
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { toApiCategory } from "./enums"
@@ -7,13 +6,20 @@ import type { RankCandidate } from "./ranking"
 /**
  * Gợi ý địa điểm cho nội dung đang soạn (T2.4) — phần SQL của A7.1.
  *
- * Chuẩn hoá chuỗi bằng `unaccent()` + regex của Postgres để ranking chỉ so
- * khớp trên chuỗi đã chuẩn hoá (một nguồn duy nhất).
+ * Chuẩn hoá chuỗi bằng `immutable_search_normalize()` (một nguồn duy nhất với
+ * tìm kiếm địa điểm/bài đăng/người dùng) để ranking chỉ so khớp trên chuỗi đã
+ * chuẩn hoá.
  */
 
-/** Biểu thức chuẩn hoá — khớp `normalizeText` của mock: bỏ dấu, lowercase, gộp space. */
+/**
+ * Biểu thức chuẩn hoá — dùng CHÍNH hàm SQL `immutable_search_normalize` của
+ * migration 20261111090000 (khớp `normalizeText` của mock). Trước đây file này
+ * viết lại biểu thức riêng bằng `unaccent()` + regex: kết quả trùng hôm nay,
+ * nhưng hai nguồn chuẩn hoá song song là một lỗi tiềm ẩn — sửa hàm SQL mà
+ * quên bản này là gợi ý lệch với tìm kiếm.
+ */
 function norm(column: Prisma.Sql): Prisma.Sql {
-  return Prisma.sql`trim(regexp_replace(lower(unaccent(${column})), '[^a-z0-9]+', ' ', 'g'))`
+  return Prisma.sql`immutable_search_normalize(${column})`
 }
 
 interface CandidateRow {
@@ -87,7 +93,7 @@ export interface SuggestionCandidate extends RankCandidate {
 export function toSuggestionCandidate(row: CandidateRow): SuggestionCandidate {
   return {
     id: row.id,
-    category: toApiCategory(row.category) as PlaceCategory,
+    category: toApiCategory(row.category),
     rating: Number(row.rating),
     reviewCount: Number(row.review_count),
     city: row.city,
@@ -96,5 +102,24 @@ export function toSuggestionCandidate(row: CandidateRow): SuggestionCandidate {
     cityNorm: row.city_norm,
     tagsNorm: row.tags_norm,
     row,
+  }
+}
+
+/**
+ * `PlaceSummary` nhúng trong gợi ý — MỘT nơi dựng cho cả route
+ * `GET /places/suggestions` và job phát hiện địa điểm (trước đây hai nơi chép
+ * tay cùng một object, sửa một bên là lệch hợp đồng).
+ */
+export function toSuggestionPlaceSummary(row: CandidateRow, isPublished: boolean) {
+  return {
+    id: row.id,
+    name: row.name,
+    address: row.address,
+    ...(row.district ? { district: row.district } : {}),
+    category: toApiCategory(row.category),
+    ...(row.image_url ? { imageUrl: row.image_url } : {}),
+    isPublished,
+    ...(row.lat !== null ? { lat: row.lat } : {}),
+    ...(row.lng !== null ? { lng: row.lng } : {}),
   }
 }

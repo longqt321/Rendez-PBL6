@@ -1,5 +1,6 @@
 import { Hono } from "hono"
 import { z } from "zod"
+import { isAPIError } from "better-auth/api"
 import { updateMeInputSchema } from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { auth } from "../lib/auth"
@@ -42,21 +43,18 @@ const loginInputSchema = z.object({
 /**
  * Chuyển lỗi better-auth thành `{ message }` tiếng Việt (D6).
  *
- * better-auth ném `APIError` với `statusCode` + `body.message` tiếng Anh; FE
- * hiển thị thẳng `message` nên phải dịch ở đây, không để lộ chi tiết nội bộ.
+ * `isAPIError` là predicate chính thức của better-auth (chấp nhận cả hai bản
+ * APIError nội bộ) — trước đây file này tự kiểm `"statusCode" in error` kiểu
+ * duck-typing, dễ sai khi thư viện đổi hình dạng lỗi.
  */
 function mapAuthError(error: unknown): never {
-  const status =
-    typeof error === "object" && error !== null && "statusCode" in error
-      ? Number((error as { statusCode: unknown }).statusCode)
-      : 500
+  if (!isAPIError(error)) throw error
 
-  if (status === 401 || status === 403) throw new ApiError(401, "Email hoặc mật khẩu không đúng")
-  if (status === 422 || status === 400) {
-    const message =
-      typeof error === "object" && error !== null && "body" in error
-        ? (error as { body?: { message?: string } }).body?.message
-        : undefined
+  if (error.statusCode === 401 || error.statusCode === 403) {
+    throw new ApiError(401, "Email hoặc mật khẩu không đúng")
+  }
+  if (error.statusCode === 422 || error.statusCode === 400) {
+    const message = error.body?.message
     if (message && /exist/i.test(message)) throw new ApiError(409, "Email đã được sử dụng")
     throw new ApiError(400, "Dữ liệu đăng ký không hợp lệ")
   }

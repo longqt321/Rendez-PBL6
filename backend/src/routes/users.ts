@@ -204,8 +204,8 @@ export function createUsersRouter() {
     if (!profile) throw new ApiError(404, "Không tìm thấy người dùng")
     if (profile.id === viewerId) throw new ApiError(400, "Không thể tự theo dõi chính mình")
 
-    await setFollow(viewerId, profile.id, followed)
-    if (followed) {
+    const created = await setFollow(viewerId, profile.id, followed)
+    if (followed && created) {
       const actor = await prisma.user.findUnique({
         where: { id: viewerId },
         select: { id: true, name: true },

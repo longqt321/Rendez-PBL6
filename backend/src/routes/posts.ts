@@ -34,10 +34,8 @@ const createCommentSchema = z.object({
 const toggleSchema = z.object({ liked: z.boolean().optional() })
 const saveSchema = z.object({ saved: z.boolean().optional() })
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
 function requireUuid(value: string, message: string): string {
-  if (!UUID_RE.test(value)) throw new ApiError(404, message)
+  if (!UUID_ID_RE.test(value)) throw new ApiError(404, message)
   return value
 }
 
@@ -184,13 +182,20 @@ export function createPostsRouter() {
     const liked = input.liked ?? existing === null
 
     if (liked && !existing) {
-      await prisma.postLike.create({ data: { postId, userId } })
-      await createActorNotification({
-        userId: post.authorId,
-        kind: "like",
-        actor: await actorOf(userId),
-        postId,
+      // `skipDuplicates` = nguyên tử: hai request like song song không làm
+      // request thứ hai ném P2002 → 500; chỉ request tạo được mới thông báo.
+      const { count } = await prisma.postLike.createMany({
+        data: [{ postId, userId }],
+        skipDuplicates: true,
       })
+      if (count > 0) {
+        await createActorNotification({
+          userId: post.authorId,
+          kind: "like",
+          actor: await actorOf(userId),
+          postId,
+        })
+      }
     } else if (!liked && existing) {
       await prisma.postLike.delete({ where: { postId_userId: { postId, userId } } })
     }
@@ -217,7 +222,9 @@ export function createPostsRouter() {
     })
     const saved = input.saved ?? existing === null
 
-    if (saved && !existing) await prisma.postSave.create({ data: { postId, userId } })
+    if (saved && !existing) {
+      await prisma.postSave.createMany({ data: [{ postId, userId }], skipDuplicates: true })
+    }
     if (!saved && existing) {
       await prisma.postSave.delete({ where: { postId_userId: { postId, userId } } })
     }
@@ -295,7 +302,9 @@ export function createPostsRouter() {
     })
     const liked = input.liked ?? existing === null
 
-    if (liked && !existing) await prisma.commentLike.create({ data: { commentId, userId } })
+    if (liked && !existing) {
+      await prisma.commentLike.createMany({ data: [{ commentId, userId }], skipDuplicates: true })
+    }
     if (!liked && existing) {
       await prisma.commentLike.delete({ where: { commentId_userId: { commentId, userId } } })
     }

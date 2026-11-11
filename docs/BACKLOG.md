@@ -371,3 +371,13 @@ lịch sử; không còn việc mở ở đây.
       (CI/compose) không bị ảnh hưởng.
 - [ ] **Benchmark `pg_trgm` ở quy mô lớn** — dataset 491 dòng; cần ≥ 50k dòng để đo
       lợi ích index tìm kiếm.
+- [ ] **Thay SigV4 tự viết bằng `aws4fetch`** (vòng audit 2026-11-11) — `lib/r2.ts` tự cài
+      AWS SigV4 bằng `node:crypto` vì `@aws-sdk/*` không nằm trong danh sách dependency đã
+      chốt. Đã test theo spec AWS (không có credentials thật để xác minh end-to-end). Nếu sau
+      này cần thêm operation (GET presigned, multipart), đề xuất cài `aws4fetch` (~2 KB,
+      không dependency, chính thống cho edge/Bun) thay vì mở rộng bản tự viết.
+- [ ] **Corpus mở rộng từ OSM (1.872 place) đang là WIP của người dùng** — `backend/data/`,
+      `backend/scripts/fetch-osm/`, `backend/scripts/build-corpus/` chưa commit; seed ưu tiên
+      `places-expanded.json` nếu có. Backend đã tương thích (seed + test không phụ thuộc
+      dataset cụ thể), nhưng cần quyết định: commit corpus vào repo hay tải lúc build, và
+      đối chiếu lại số liệu trong báo cáo đồ án (hiện ghi theo dataset 491 place).

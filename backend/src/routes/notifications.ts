@@ -3,16 +3,18 @@ import type { AppEnv } from "../app"
 import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
-import { listNotifications, toNotificationDto, type NotificationRow } from "../lib/notifications"
+import { findNotificationById, listAllNotifications, listNotifications } from "../lib/notifications"
 import { requireAuth } from "../lib/session"
 
 /**
  * Route thông báo (T4.5) — `GET /notifications`, `PATCH /notifications`
  * (đánh dấu tất cả đã đọc), `PATCH /notifications/:id`.
+ *
+ * Truy vấn nằm ở `lib/notifications.ts` (một nơi dựng DTO + SELECT) — route chỉ
+ * kiểm quyền và gọi lib, không tự viết lại SQL.
  */
 
 const NOTIFICATIONS_PAGE_SIZE = 20
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export function createNotificationsRouter() {
   const router = new Hono<AppEnv>()
@@ -37,20 +39,12 @@ export function createNotificationsRouter() {
       data: { readAt: new Date() },
     })
 
-    const rows = await prisma.$queryRaw<NotificationRow[]>`
-      SELECT n.id, n.type::text AS type, n.payload, n.read_at, n.created_at,
-             p.place_id AS post_place_id
-      FROM notifications n
-      LEFT JOIN posts p ON p.id = NULLIF(n.payload->>'postId', '')::uuid
-      WHERE n.user_id = ${userId}::uuid
-      ORDER BY n.created_at DESC, n.id DESC
-    `
-    return c.json(rows.map(toNotificationDto))
+    return c.json(await listAllNotifications(userId))
   })
 
   router.patch("/notifications/:id", requireAuth, async (c) => {
     const id = c.req.param("id")
-    if (!UUID_RE.test(id)) throw new ApiError(404, "Không tìm thấy thông báo")
+    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy thông báo")
 
     const userId = c.get("userId")
     const notification = await prisma.notification.findFirst({
@@ -61,17 +55,9 @@ export function createNotificationsRouter() {
 
     await prisma.notification.update({ where: { id }, data: { readAt: new Date() } })
 
-    const rows = await prisma.$queryRaw<NotificationRow[]>`
-      SELECT n.id, n.type::text AS type, n.payload, n.read_at, n.created_at,
-             p.place_id AS post_place_id
-      FROM notifications n
-      LEFT JOIN posts p ON p.id = NULLIF(n.payload->>'postId', '')::uuid
-      WHERE n.id = ${id}::uuid
-      LIMIT 1
-    `
-    const row = rows[0]
-    if (!row) throw new ApiError(404, "Không tìm thấy thông báo")
-    return c.json(toNotificationDto(row))
+    const updated = await findNotificationById(id)
+    if (!updated) throw new ApiError(404, "Không tìm thấy thông báo")
+    return c.json(updated)
   })
 
   return router

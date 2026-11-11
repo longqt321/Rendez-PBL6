@@ -8,7 +8,7 @@
 ## Trạng thái (2026-11-11 — phiên tự hành)
 
 - Monorepo: `frontend/` + `backend/` + `packages/schema/` (FE/BE dùng chung 8 file zod).
-- Backend: **Phase 0–8 xong** — scaffold Hono + env fail-fast, 23 bảng nghiệp vụ + 10 migration,
+- Backend: **Phase 0–8 xong** — scaffold Hono + env fail-fast, 23 bảng nghiệp vụ + 11 migration,
   seed 491 place, auth better-auth, places/posts/reviews/collections/users/rooms(SSE)/media,
   job pg-boss phát hiện địa điểm, rate limit, presigned R2, Dockerfile + compose.
 - Kiểm thử: **135 test backend pass** (Testcontainers Postgres thật), **12/12 e2e với backend

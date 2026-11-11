@@ -14,6 +14,22 @@ let prisma: typeof import("../src/lib/prisma").prisma
 const placePageSchema = pageSchema(placeSchema)
 const postPageSchema = pageSchema(postSchema)
 
+/**
+ * Chuẩn hoá tên theo cùng quy tắc `normalizeText` của mock (bỏ dấu, đ→d,
+ * dấu câu → khoảng trắng) — dùng để assert kết quả tìm kiếm không phụ thuộc
+ * cách dataset viết tên (có/không dấu).
+ */
+function normalizeName(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
 beforeAll(async () => {
   const url = await startTestDb()
   process.env.DATABASE_URL = url
@@ -83,7 +99,9 @@ describe("GET /places", () => {
 
     expect(body.items.length).toBeGreaterThan(0)
     for (const item of body.items) {
-      expect(item.name.toLowerCase()).toContain("bánh xèo")
+      // So khớp trên tên đã chuẩn hoá — dataset có thể chứa tên không dấu
+      // ("Banh xeo Co Ba"), điều quan trọng là "banh xeo" (không dấu) khớp được.
+      expect(normalizeName(item.name)).toContain("banh xeo")
     }
   })
 
@@ -102,7 +120,7 @@ describe("GET /places", () => {
 
     expect(body.items.length).toBeGreaterThan(0)
     for (const item of body.items) {
-      expect(item.name.toLowerCase()).toContain("bánh xèo")
+      expect(normalizeName(item.name)).toContain("banh xeo")
     }
   })
 
@@ -159,14 +177,13 @@ describe("GET /places", () => {
   })
 
   test("excludeKeyword loại mọi địa điểm chứa từ khoá (bất kỳ là loại)", async () => {
-    const excluded = await getJson<PageJson>("/api/v1/places?excludeKeyword=quang")
-    const plain = await getJson<PageJson>("/api/v1/places")
+    // Đối chứng bằng includeKeyword (không phụ thuộc trang đầu dataset có gì).
+    const withQuang = await getJson<PageJson>("/api/v1/places?includeKeyword=quang")
+    expect(withQuang.items.length).toBeGreaterThan(0)
 
-    // Trang đầu có ít nhất 1 địa điểm chứa "quang" (đối chứng)…
+    const excluded = await getJson<PageJson>("/api/v1/places?excludeKeyword=quang")
     const hay = (item: { name: string; address: string; tags: string[] }) =>
       `${item.name} ${item.address} ${item.tags.join(" ")}`.toLowerCase()
-    expect(plain.items.some((item) => hay(item).includes("quang"))).toBe(true)
-    // …và trang đã loại thì không còn địa điểm nào chứa "quang".
     for (const item of excluded.items) {
       expect(hay(item)).not.toContain("quang")
     }

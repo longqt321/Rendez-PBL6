@@ -1,7 +1,13 @@
 import { prisma } from "./prisma"
+import { isUniqueViolation } from "./errors"
 import { rankPlaceSuggestions } from "./ranking"
 import { createSuggestionNotification } from "./notifications"
-import { fetchRankCandidates, normalizeCaption, toSuggestionCandidate } from "./suggestions"
+import {
+  fetchRankCandidates,
+  normalizeCaption,
+  toSuggestionCandidate,
+  toSuggestionPlaceSummary,
+} from "./suggestions"
 
 /**
  * Job phát hiện địa điểm cho bài chưa gắn địa điểm (A7.2).
@@ -12,8 +18,9 @@ import { fetchRankCandidates, normalizeCaption, toSuggestionCandidate } from "./
  *
  * Idempotence: khoá chính `post_id` của bảng dấu — hai worker chạy song song
  * (cron + trigger sau khi tạo bài) không thể tạo 2 thông báo cho cùng một bài.
- * Ghi dấu TRƯỚC khi tạo notification; nếu tạo notification lỗi thì xoá dấu để
- * lần chạy sau thử lại (không nuốt lỗi).
+ * Notification và dấu idempotence được ghi trong CÙNG một transaction: worker
+ * khác chen vào thì unique constraint trên `post_id` làm cả hai bị hoàn tác
+ * (P2002 được coi là "đã xử lý", không phải lỗi).
  */
 
 /** Số gợi ý mỗi thông báo — khớp mock (`rankPlaceSuggestions(..., 3)`). */
@@ -55,17 +62,7 @@ export async function detectPlaceSuggestions(postId?: string): Promise<number> {
           postId: post.id,
           postCaption: post.caption,
           suggestions: ranked.map(({ candidate, reason }) => ({
-            place: {
-              id: candidate.row.id,
-              name: candidate.row.name,
-              address: candidate.row.address,
-              ...(candidate.row.district ? { district: candidate.row.district } : {}),
-              category: candidate.category,
-              ...(candidate.row.image_url ? { imageUrl: candidate.row.image_url } : {}),
-              isPublished: false,
-              ...(candidate.row.lat !== null ? { lat: candidate.row.lat } : {}),
-              ...(candidate.row.lng !== null ? { lng: candidate.row.lng } : {}),
-            },
+            place: toSuggestionPlaceSummary(candidate.row, false),
             reason,
           })),
           client: tx,
@@ -77,14 +74,7 @@ export async function detectPlaceSuggestions(postId?: string): Promise<number> {
       created += 1
     } catch (error) {
       // Trùng khoá = worker khác đã thông báo bài này — không phải lỗi.
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "code" in error &&
-        error.code === "P2002"
-      ) {
-        continue
-      }
+      if (isUniqueViolation(error)) continue
       throw error
     }
   }

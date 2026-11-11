@@ -219,7 +219,7 @@ export function toPlaceDto(row: PlaceRow) {
     tags: row.tags,
     rating: Number(row.rating),
     reviewCount: Number(row.review_count),
-    priceLevel: Math.min(3, Math.max(1, row.price_level)),
+    priceLevel: row.price_level,
     ...(row.image_url ? { imageUrl: row.image_url } : {}),
     imageHeight: row.image_height ?? 320,
     ...(row.lat !== null ? { lat: row.lat } : {}),

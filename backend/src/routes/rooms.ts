@@ -25,6 +25,7 @@ import {
   type RoomWithRelations,
 } from "../lib/rooms"
 import { getViewer, requireAuth } from "../lib/session"
+import { UUID_ID_RE } from "../lib/cursor"
 
 /**
  * Route phòng lọc nhóm (Phase 6) — hợp đồng mới, xem `@rendez/schema` room.
@@ -37,7 +38,6 @@ import { getViewer, requireAuth } from "../lib/session"
  */
 
 const CODE_RE = /^[A-Z2-9]{6}$/
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** Nhịp heartbeat giữ kết nối SSE sống qua proxy (15s). */
 const SSE_HEARTBEAT_MS = 15_000
@@ -56,7 +56,8 @@ async function loadRoom(code: string): Promise<RoomWithRelations> {
 
 /** Thành viên phải thuộc phòng — nếu không thì 403 (không lộ mã phòng hợp lệ). */
 function requireMember(room: RoomWithRelations, memberId: string | undefined): string {
-  if (!memberId || !UUID_RE.test(memberId)) throw new ApiError(403, "Bạn không ở trong phòng này")
+  if (!memberId || !UUID_ID_RE.test(memberId))
+    throw new ApiError(403, "Bạn không ở trong phòng này")
   const member = room.members.find((item) => item.id === memberId)
   if (!member) throw new ApiError(403, "Bạn không ở trong phòng này")
   return member.id
@@ -135,7 +136,7 @@ export function createRoomsRouter() {
   router.post("/rooms/:code/proposals/:proposalId/apply", async (c) => {
     const code = requireCode(c.req.param("code"))
     const proposalId = c.req.param("proposalId") ?? ""
-    if (!UUID_RE.test(proposalId)) throw new ApiError(404, "Không tìm thấy đề xuất")
+    if (!UUID_ID_RE.test(proposalId)) throw new ApiError(404, "Không tìm thấy đề xuất")
 
     const room = await loadRoom(code)
     const memberId = requireMember(room, c.req.query("memberId") ?? undefined)
@@ -172,7 +173,7 @@ export function createRoomsRouter() {
   router.post("/rooms/:code/proposals/:proposalId/dismiss", async (c) => {
     const code = requireCode(c.req.param("code"))
     const proposalId = c.req.param("proposalId") ?? ""
-    if (!UUID_RE.test(proposalId)) throw new ApiError(404, "Không tìm thấy đề xuất")
+    if (!UUID_ID_RE.test(proposalId)) throw new ApiError(404, "Không tìm thấy đề xuất")
 
     const room = await loadRoom(code)
     const memberId = requireMember(room, c.req.query("memberId") ?? undefined)

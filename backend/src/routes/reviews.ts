@@ -6,7 +6,8 @@ import {
   PLACE_REPORT_REASONS,
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
-import { ApiError } from "../lib/errors"
+import { Prisma } from "../../generated/prisma/client"
+import { ApiError, isUniqueViolation } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { toApiReportReason, toPrismaReportReason } from "../lib/enums"
 import { formatInitials } from "../lib/profile"
@@ -43,6 +44,14 @@ interface ReviewRow {
   author_handle: string
 }
 
+/** SELECT dùng chung cho list + sau khi upsert — một nơi dựng DTO. */
+const SELECT_REVIEWS = Prisma.sql`
+  SELECT r.id, r.place_id, r.rating, r.content, r.created_at,
+         u.id AS author_id, u.name AS author_name, u.handle AS author_handle
+  FROM reviews r
+  JOIN users u ON u.id = r.author_id
+`
+
 function toReviewDto(row: ReviewRow, viewerId: string | null) {
   return {
     id: row.id,
@@ -76,14 +85,11 @@ export function createReviewsRouter() {
     const placeId = c.req.param("id")
     await requirePublicPlace(placeId)
 
-    const rows = await prisma.$queryRaw<ReviewRow[]>`
-      SELECT r.id, r.place_id, r.rating, r.content, r.created_at,
-             u.id AS author_id, u.name AS author_name, u.handle AS author_handle
-      FROM reviews r
-      JOIN users u ON u.id = r.author_id
+    const rows = await prisma.$queryRaw<ReviewRow[]>(Prisma.sql`
+      ${SELECT_REVIEWS}
       WHERE r.place_id = ${placeId} AND r.deleted_at IS NULL
       ORDER BY r.created_at DESC, r.id DESC
-    `
+    `)
 
     // Route công khai — phải tự đọc phiên để tính `isMine` (không có requireAuth).
     const viewer = await getViewer(c)
@@ -111,14 +117,11 @@ export function createReviewsRouter() {
       select: { id: true },
     })
 
-    const rows = await prisma.$queryRaw<ReviewRow[]>`
-      SELECT r.id, r.place_id, r.rating, r.content, r.created_at,
-             u.id AS author_id, u.name AS author_name, u.handle AS author_handle
-      FROM reviews r
-      JOIN users u ON u.id = r.author_id
+    const rows = await prisma.$queryRaw<ReviewRow[]>(Prisma.sql`
+      ${SELECT_REVIEWS}
       WHERE r.id = ${review.id}::uuid
       LIMIT 1
-    `
+    `)
     const row = rows[0]
     if (!row) throw new ApiError(500, "Không lưu được đánh giá")
     return c.json(toReviewDto(row, userId), 201)
@@ -155,15 +158,24 @@ export function createReviewsRouter() {
       throw new ApiError(400, "Bạn đã gửi báo cáo với lý do này cho địa điểm này rồi")
     }
 
-    const report = await prisma.placeReport.create({
-      data: {
-        placeId,
-        reporterId: userId,
-        reason: toPrismaReportReason(parsed.data.reason),
-        detail,
-      },
-      select: { id: true, placeId: true, reason: true, detail: true, createdAt: true },
-    })
+    const report = await prisma.placeReport
+      .create({
+        data: {
+          placeId,
+          reporterId: userId,
+          reason: toPrismaReportReason(parsed.data.reason),
+          detail,
+        },
+        select: { id: true, placeId: true, reason: true, detail: true, createdAt: true },
+      })
+      .catch((error: unknown) => {
+        // Hai request song song cùng vượt qua bước kiểm trùng → unique constraint
+        // chặn ở DB. Đây vẫn là lỗi ĐẦU VÀO (báo cáo trùng), không phải 500.
+        if (isUniqueViolation(error)) {
+          throw new ApiError(400, "Bạn đã gửi báo cáo với lý do này cho địa điểm này rồi")
+        }
+        throw error
+      })
 
     return c.json(
       {

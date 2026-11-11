@@ -2612,3 +2612,17 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
     (hono/dist/compose.js:37) — nhánh đó là code chết, không bao giờ chạy. Mọi validate dùng
     `safeParse`/`defaultHook` nên không có đường ném ZodError; nếu có code mới ném thì phải
     bọc thành `ApiError` thay vì dựa vào nhánh này.
+18. **Ràng buộc `price_level` ở DB thay vì clamp khi đọc** (migration 11): trước đây
+   `toPlaceDto` làm `Math.min(3, Math.max(1, ...))` — dữ liệu sai vẫn ghi được và bị sửa
+   lặng lẽ khi đọc (band-aid). CHECK ở DB là chốt cuối; API đọc giá trị thật.
+19. **Like/save/follow dùng `createMany({ skipDuplicates: true })`**: findUnique-rồi-create
+   để lại cửa sổ race — hai request song song làm request thứ hai ném P2002 → 500.
+   Lệnh nguyên tử của Prisma giải quyết; thông báo chỉ gửi khi `count > 0` (lần đầu).
+20. **`isUniqueViolation()` / `isAPIError()` thay duck-typing**: kiểm `"code" in error` /
+   `"statusCode" in error` tự chế là chắp vá — dùng class/predicate chính thức của Prisma
+   và better-auth (đã xác minh `isAPIError` chấp nhận cả hai bản APIError nội bộ).
+21. **Seed đảm bảo bất biến "có ≥ 1 place chưa publish"**: dataset gốc chứa id mock
+   (`ram-cuon-cai-di-hoa-6152681085`); corpus mở rộng từ OSM không chứa id đó. Chọn phần tử
+   cuối dataset khi thiếu — xác định theo dữ liệu, không hardcode id mới.
+22. **Xoá bộ sưu tập = xoá mềm**: mọi truy vấn đọc đều lọc `deleted_at`; `delete` cứng làm
+   cột đó vô nghĩa và mất dữ liệu không khôi phục được.

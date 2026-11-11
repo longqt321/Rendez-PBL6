@@ -1,13 +1,14 @@
 import type { PlaceCategory } from "@rendez/schema"
+import { CATEGORY_LABEL } from "./enums"
 
 /**
  * Xếp hạng địa điểm phù hợp với nội dung bài đăng — port 1:1 từ
  * `frontend/src/mocks/ranking.ts` (A7.1).
  *
- * Khác biệt duy nhất: chuỗi đã được chuẩn hoá (bỏ dấu, lowercase, gộp space)
- * bằng `unaccent()` của Postgres ở tầng SQL thay vì `normalizeText` của JS —
- * một nguồn chuẩn hoá duy nhất, không lặp logic tiếng Việt ở 2 nơi.
- * Trọng số, thứ tự xét, cách ghép `reason` giữ nguyên.
+ * Khác biệt duy nhất: chuỗi đã được chuẩn hoá (bỏ dấu, lowercase, dấu câu →
+ * khoảng trắng) bằng `immutable_search_normalize()` của Postgres ở tầng SQL thay
+ * vì `normalizeText` của JS — một nguồn chuẩn hoá duy nhất, không lặp logic
+ * tiếng Việt ở 2 nơi. Trọng số, thứ tự xét, cách ghép `reason` giữ nguyên.
  */
 
 const STOP_WORDS = new Set([
@@ -45,15 +46,6 @@ const CATEGORY_KEYWORDS: Record<PlaceCategory, string[]> = {
   bakery: ["tien banh", "banh ngot", "banh my", "bakery"],
   dessert: ["che", "kem", "flan", "trang mieng"],
   bar: ["bar", "bia", "cocktail", "rooftop", "pub"],
-}
-
-const CATEGORY_LABEL: Record<PlaceCategory, string> = {
-  cafe: "Cà phê",
-  restaurant: "Quán ăn",
-  "street-food": "Ăn vặt",
-  bakery: "Tiệm bánh",
-  dessert: "Tráng miệng",
-  bar: "Quán bar",
 }
 
 /** Ứng viên đã chuẩn hoá sẵn — SQL tính `*Norm`, ranking chỉ so khớp. */

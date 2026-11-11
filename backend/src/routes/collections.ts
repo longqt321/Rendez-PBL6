@@ -3,6 +3,7 @@ import type { Context } from "hono"
 import { z } from "zod"
 import { MAX_COLLECTION_DESCRIPTION_LENGTH, MAX_COLLECTION_NAME_LENGTH } from "@rendez/schema"
 import type { AppEnv } from "../app"
+import { UUID_ID_RE } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import {
@@ -22,8 +23,6 @@ import { getViewer, requireAuth } from "../lib/session"
  * - `?placeId=` nhúng `containsPlace` (A6.5 — chỉ khi có query).
  */
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
 const createCollectionSchema = z.object({
   name: z.string().trim().min(1, "Tên bộ sưu tập trống").max(MAX_COLLECTION_NAME_LENGTH),
   description: z.string().trim().max(MAX_COLLECTION_DESCRIPTION_LENGTH).optional(),
@@ -40,6 +39,19 @@ const setPlacesSchema = z.object({
   placeId: z.string().min(1),
   member: z.boolean().optional(),
 })
+
+/**
+ * Kiểm quyền sửa/xoá bộ sưu tập — MỘT nơi duy nhất (trước đây 4 route chép tay
+ * cùng một khối findFirst + so ownerId, sửa quy tắc là phải sửa 4 chỗ).
+ */
+async function requireOwnedCollection(id: string, userId: string): Promise<void> {
+  const collection = await prisma.collection.findFirst({
+    where: { id, deletedAt: null },
+    select: { ownerId: true },
+  })
+  if (!collection) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+  if (collection.ownerId !== userId) throw new ApiError(403, "Không phải bộ sưu tập của bạn")
+}
 
 export function createCollectionsRouter() {
   const router = new Hono<AppEnv>()
@@ -78,7 +90,7 @@ export function createCollectionsRouter() {
   /** Chi tiết — private của người khác → 404 (giấu tồn tại, A7.7). */
   router.get("/collections/:id", async (c) => {
     const id = c.req.param("id")
-    if (!UUID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
 
     // Route công khai — tự đọc phiên để tính `isMine`/`likedByMe`.
     const viewer = await getViewer(c)
@@ -90,15 +102,10 @@ export function createCollectionsRouter() {
 
   router.patch("/collections/:id", requireAuth, async (c) => {
     const id = c.req.param("id")
-    if (!UUID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
 
     const userId = c.get("userId")
-    const collection = await prisma.collection.findFirst({
-      where: { id, deletedAt: null },
-      select: { ownerId: true },
-    })
-    if (!collection) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
-    if (collection.ownerId !== userId) throw new ApiError(403, "Không phải bộ sưu tập của bạn")
+    await requireOwnedCollection(id, userId)
 
     const raw = await c.req.json().catch(() => null)
     const parsed = updateCollectionSchema.safeParse(raw)
@@ -114,24 +121,21 @@ export function createCollectionsRouter() {
 
   router.delete("/collections/:id", requireAuth, async (c) => {
     const id = c.req.param("id")
-    if (!UUID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
 
     const userId = c.get("userId")
-    const collection = await prisma.collection.findFirst({
-      where: { id, deletedAt: null },
-      select: { ownerId: true },
-    })
-    if (!collection) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
-    if (collection.ownerId !== userId) throw new ApiError(403, "Không phải bộ sưu tập của bạn")
+    await requireOwnedCollection(id, userId)
 
-    await prisma.collection.delete({ where: { id } })
+    // Xoá mềm: bảng có `deleted_at` và mọi truy vấn đọc đều lọc theo nó — xoá
+    // cứng sẽ làm cột đó thành vô nghĩa và mất dữ liệu không khôi phục được.
+    await prisma.collection.update({ where: { id }, data: { deletedAt: new Date() } })
     return c.json(true)
   })
 
   /** Like/bỏ like — POST đặt, DELETE bỏ; cấm tự like (A7.7). */
   async function toggleLike(c: Context<AppEnv>, liked: boolean) {
     const id = c.req.param("id") ?? ""
-    if (!UUID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
 
     const userId = c.get("userId")
     const row = await findCollection(id, userId)
@@ -161,15 +165,10 @@ export function createCollectionsRouter() {
   /** Thêm/bớt địa điểm — idempotent, thêm đẩy cuối (A7.7). */
   router.patch("/collections/:id/places", requireAuth, async (c) => {
     const id = c.req.param("id")
-    if (!UUID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
 
     const userId = c.get("userId")
-    const collection = await prisma.collection.findFirst({
-      where: { id, deletedAt: null },
-      select: { ownerId: true },
-    })
-    if (!collection) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
-    if (collection.ownerId !== userId) throw new ApiError(403, "Không phải bộ sưu tập của bạn")
+    await requireOwnedCollection(id, userId)
 
     const raw = await c.req.json().catch(() => null)
     const parsed = setPlacesSchema.safeParse(raw)

@@ -1,5 +1,6 @@
 import { HTTPException } from "hono/http-exception"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
+import { Prisma } from "../../generated/prisma/client"
 
 /**
  * Lỗi nghiệp vụ có chủ đích — luôn trả JSON `{ message }` (quyết định D6).
@@ -37,4 +38,13 @@ export function isNulByteError(error: unknown): boolean {
   const cause = (adapter as { cause?: unknown }).cause
   if (typeof cause !== "object" || cause === null) return false
   return (cause as { originalCode?: unknown }).originalCode === "22021"
+}
+
+/**
+ * Vi phạm unique constraint (P2002) — dùng class chính thức của Prisma thay vì
+ * tự kiểm `"code" in error` kiểu duck-typing (trước đây rooms.ts và
+ * suggestions-job.ts mỗi nơi viết một bản, dễ lệch nhau).
+ */
+export function isUniqueViolation(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"
 }

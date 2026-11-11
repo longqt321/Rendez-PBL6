@@ -190,6 +190,9 @@ describe("trang cá nhân", () => {
     expect(page.items.some((item) => item.kind === "follow" && item.actorName === "Bob Trần")).toBe(
       true,
     )
+    // Follow lặp lại (idempotent) KHÔNG sinh thông báo thứ hai.
+    const followNotifications = page.items.filter((item) => item.kind === "follow")
+    expect(followNotifications).toHaveLength(1)
 
     const unfollow = await call(`/api/v1/users/${alice.handle}/follow`, {
       method: "DELETE",

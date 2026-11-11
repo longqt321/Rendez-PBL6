@@ -51,6 +51,16 @@ export function parseApiCategory(value: string): PlaceCategory | null {
   return CATEGORY_TO_API[value] ?? null
 }
 
+/** Nhãn loại hình tiếng Việt — dùng cho reason gợi ý và mô tả đề xuất phòng. */
+export const CATEGORY_LABEL: Record<PlaceCategory, string> = {
+  cafe: "Cà phê",
+  restaurant: "Quán ăn",
+  "street-food": "Ăn vặt",
+  bakery: "Tiệm bánh",
+  dessert: "Tráng miệng",
+  bar: "Quán bar",
+}
+
 export function toPrismaCategory(value: PlaceCategory): string {
   return CATEGORY_TO_PRISMA[value]
 }
@@ -67,8 +77,16 @@ export function toPrismaReportReason(reason: PlaceReportReason): ReportReason {
   return REPORT_REASON_TO_PRISMA[reason]
 }
 
+/** DB `wrong_info` ↔ API `wrong-info` — bảng tường minh, không cast tự do. */
+const REPORT_REASON_TO_API: Record<ReportReason, PlaceReportReason> = {
+  closed: "closed",
+  wrong_info: "wrong-info",
+  duplicate: "duplicate",
+  other: "other",
+}
+
 export function toApiReportReason(reason: ReportReason): PlaceReportReason {
-  return reason.replace(/_/g, "-") as PlaceReportReason
+  return REPORT_REASON_TO_API[reason]
 }
 
 /** API `place-suggestion` ↔ Prisma `place_suggestion`. */
@@ -102,11 +120,25 @@ export function toApiNotificationType(value: string): NotificationKind {
   throw new Error(`Loại thông báo không rõ: ${value}`)
 }
 
-/** API `priceMax` ↔ Prisma `price_max`. */
+/** API `priceMax` ↔ Prisma `price_max` — bảng tường minh hai chiều. */
+const PROPOSAL_FIELD_TO_PRISMA: Record<RoomProposalField, PrismaProposalField> = {
+  category: "category",
+  district: "district",
+  priceMax: "price_max",
+  keyword: "keyword",
+}
+
+const PROPOSAL_FIELD_TO_API: Record<PrismaProposalField, RoomProposalField> = {
+  category: "category",
+  district: "district",
+  price_max: "priceMax",
+  keyword: "keyword",
+}
+
 export function toPrismaProposalField(field: RoomProposalField): PrismaProposalField {
-  return (field === "priceMax" ? "price_max" : field) as PrismaProposalField
+  return PROPOSAL_FIELD_TO_PRISMA[field]
 }
 
 export function toApiProposalField(field: PrismaProposalField): RoomProposalField {
-  return (field === "price_max" ? "priceMax" : field) as RoomProposalField
+  return PROPOSAL_FIELD_TO_API[field]
 }

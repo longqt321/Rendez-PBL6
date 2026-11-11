@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import type { AppEnv } from "../app"
-import { decodeCursor, encodeCursor } from "../lib/cursor"
+import { SLUG_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import {
   findPublicPlace,
@@ -12,7 +12,12 @@ import {
 import { getViewer, requireAuth } from "../lib/session"
 import { listPosts } from "../lib/posts"
 import { rankPlaceSuggestions } from "../lib/ranking"
-import { fetchRankCandidates, normalizeCaption, toSuggestionCandidate } from "../lib/suggestions"
+import {
+  fetchRankCandidates,
+  normalizeCaption,
+  toSuggestionCandidate,
+  toSuggestionPlaceSummary,
+} from "../lib/suggestions"
 
 /**
  * Route địa điểm (Phase 2) — khớp hợp đồng Phần A:
@@ -34,7 +39,6 @@ const DEFAULT_SUGGESTIONS = 3
 const MIN_CAPTION_CHARS = 8
 
 /** Id place là slug từ dataset (`mirkocoffeechillbeer-493`), không phải uuid. */
-const PLACE_ID_RE = /^[A-Za-z0-9_-]{1,120}$/
 
 export function createPlacesRouter() {
   const router = new Hono<AppEnv>()
@@ -69,17 +73,7 @@ export function createPlacesRouter() {
     const ranked = rankPlaceSuggestions(captionNorm, rows.map(toSuggestionCandidate), limit)
     return c.json({
       suggestions: ranked.map(({ candidate, reason }) => ({
-        place: {
-          id: candidate.row.id,
-          name: candidate.row.name,
-          address: candidate.row.address,
-          ...(candidate.row.district ? { district: candidate.row.district } : {}),
-          category: candidate.category,
-          ...(candidate.row.image_url ? { imageUrl: candidate.row.image_url } : {}),
-          isPublished: true,
-          ...(candidate.row.lat !== null ? { lat: candidate.row.lat } : {}),
-          ...(candidate.row.lng !== null ? { lng: candidate.row.lng } : {}),
-        },
+        place: toSuggestionPlaceSummary(candidate.row, true),
         reason,
       })),
     })
@@ -109,7 +103,7 @@ export function createPlacesRouter() {
    */
   router.get("/places/:id/posts", async (c) => {
     const id = c.req.param("id")
-    if (!PLACE_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")
+    if (!SLUG_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")
 
     const place = await findPublicPlace(id)
     if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
@@ -131,7 +125,7 @@ export function createPlacesRouter() {
 
   router.get("/places/:id", async (c) => {
     const id = c.req.param("id")
-    if (!PLACE_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")
+    if (!SLUG_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")
 
     const place = await findPublicPlace(id)
     if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")

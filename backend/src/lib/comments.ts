@@ -59,14 +59,10 @@ export function parseCommentSort(raw: string | undefined): CommentSort {
   return raw === "top" ? "top" : "new"
 }
 
-/** Toàn bộ bình luận còn sống của một bài — đủ để xếp hạng + ghép reply ở JS. */
-export async function listCommentsForPost(
-  postId: string,
-  viewerId: string | null,
-  sort: CommentSort = "new",
-): Promise<CommentDto[]> {
+/** SELECT dùng chung cho list + find — tên cột snake_case như SELECT. */
+function selectComments(viewerId: string | null): Prisma.Sql {
   const viewer = Prisma.sql`${viewerId}::uuid`
-  const rows = await prisma.$queryRaw<CommentRow[]>(Prisma.sql`
+  return Prisma.sql`
     SELECT c.id, c.post_id, c.parent_id, c.body, c.created_at, c.author_id,
            u.name AS author_name, u.handle AS author_handle,
            parent_u.handle AS parent_handle, parent.deleted_at IS NOT NULL AS parent_deleted,
@@ -76,6 +72,17 @@ export async function listCommentsForPost(
     JOIN users u ON u.id = c.author_id
     LEFT JOIN comments parent ON parent.id = c.parent_id
     LEFT JOIN users parent_u ON parent_u.id = parent.author_id
+  `
+}
+
+/** Toàn bộ bình luận còn sống của một bài — đủ để xếp hạng + ghép reply ở JS. */
+export async function listCommentsForPost(
+  postId: string,
+  viewerId: string | null,
+  sort: CommentSort = "new",
+): Promise<CommentDto[]> {
+  const rows = await prisma.$queryRaw<CommentRow[]>(Prisma.sql`
+    ${selectComments(viewerId)}
     WHERE c.post_id = ${postId}::uuid AND c.deleted_at IS NULL
     ORDER BY c.created_at ASC, c.id ASC
   `)
@@ -113,17 +120,8 @@ export async function listCommentsForPost(
 
 /** Bình luận còn sống theo id — `null` khi không tồn tại/đã xoá. */
 export async function findComment(id: string, viewerId: string | null): Promise<CommentDto | null> {
-  const viewer = Prisma.sql`${viewerId}::uuid`
   const rows = await prisma.$queryRaw<CommentRow[]>(Prisma.sql`
-    SELECT c.id, c.post_id, c.parent_id, c.body, c.created_at, c.author_id,
-           u.name AS author_name, u.handle AS author_handle,
-           parent_u.handle AS parent_handle, parent.deleted_at IS NOT NULL AS parent_deleted,
-           (SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id = c.id)::int AS like_count,
-           EXISTS (SELECT 1 FROM comment_likes cl WHERE cl.comment_id = c.id AND cl.user_id = ${viewer}) AS liked_by_me
-    FROM comments c
-    JOIN users u ON u.id = c.author_id
-    LEFT JOIN comments parent ON parent.id = c.parent_id
-    LEFT JOIN users parent_u ON parent_u.id = parent.author_id
+    ${selectComments(viewerId)}
     WHERE c.id = ${id}::uuid AND c.deleted_at IS NULL
     LIMIT 1
   `)

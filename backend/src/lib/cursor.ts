@@ -11,11 +11,14 @@ export interface Cursor {
 }
 
 /**
- * Id trong cursor: place dùng slug (`mirkocoffeechillbeer-493`), post/user dùng
+ * Id dạng slug: place dùng slug (`mirkocoffeechillbeer-493`), post/user dùng
  * uuid — nên chỉ kiểm "không rỗng, không khoảng trắng, độ dài hợp lý" thay vì
  * ép uuid (ép uuid sẽ làm cursor của places không decode được).
+ *
+ * Export để route kiểm `:id` của place dùng CÙNG một regex — trước đây
+ * `routes/places.ts` khai lại y hệt, sửa một nơi quên nơi kia là lệch hợp đồng.
  */
-const ID_RE = /^[A-Za-z0-9_-]{1,120}$/
+export const SLUG_ID_RE = /^[A-Za-z0-9_-]{1,120}$/
 
 /**
  * Id dạng uuid — bắt buộc cho cursor của tài nguyên lưu khoá chính uuid
@@ -28,7 +31,7 @@ export function encodeCursor(cursor: Cursor): string {
   return Buffer.from(`${cursor.createdAt.toISOString()}|${cursor.id}`, "utf8").toString("base64url")
 }
 
-export function decodeCursor(raw: string, idPattern: RegExp = ID_RE): Cursor | null {
+export function decodeCursor(raw: string, idPattern: RegExp = SLUG_ID_RE): Cursor | null {
   let decoded: string
   try {
     decoded = Buffer.from(raw, "base64url").toString("utf8")

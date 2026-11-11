@@ -40,6 +40,28 @@ describe("rate limit + hạ tầng", () => {
     expect(((await res.json()) as { status: string }).status).toBe("ok")
   })
 
+  test("CHECK price_level 1–3 ở DB (migration 11) — chốt cuối, không clamp khi đọc", async () => {
+    // Constraint tồn tại…
+    const constraints = await prisma.$queryRaw<{ conname: string }[]>`
+      SELECT conname FROM pg_constraint
+      WHERE conrelid = 'places'::regclass AND conname = 'places_price_level_check'
+    `
+    expect(constraints).toHaveLength(1)
+
+    // …và chặn giá trị ngoài 1–3 ngay tại DB (không phải tầng app sửa lặng lẽ).
+    let blocked = false
+    try {
+      await prisma.$executeRaw`
+        INSERT INTO places (id, name, address, city, category, price_level, updated_at)
+        VALUES ('00000000-0000-0000-0000-000000000000', 'test-price', 'x', 'Đà Nẵng',
+                'cafe'::place_category, 9, now())
+      `
+    } catch {
+      blocked = true
+    }
+    expect(blocked).toBe(true)
+  })
+
   test("rate limit: vượt ngưỡng POST /session trả 429 kèm Retry-After", async () => {
     // Ngưỡng auth-session là 20/phút/IP — gửi 21 lần đăng nhập sai.
     let lastStatus = 0

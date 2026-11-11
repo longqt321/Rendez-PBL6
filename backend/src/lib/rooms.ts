@@ -1,6 +1,8 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
+import { isUniqueViolation } from "./errors"
 import {
+  CATEGORY_LABEL,
   parseApiCategory,
   toApiProposalField,
   toPrismaCategory,
@@ -20,16 +22,6 @@ import type { Room, RoomFilter, RoomMember, RoomProposal, RoomProposalField } fr
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 const CODE_LENGTH = 6
 const DEFAULT_ROOM_NAME = "Phòng lọc nhóm"
-
-/** Nhãn loại hình — khớp `CATEGORY_META` của frontend để toast không lệch chữ. */
-const CATEGORY_LABEL: Record<string, string> = {
-  cafe: "Cà phê",
-  restaurant: "Quán ăn",
-  "street-food": "Ăn vặt",
-  bakery: "Tiệm bánh",
-  dessert: "Tráng miệng",
-  bar: "Quán bar",
-}
 
 /** Mã phòng 6 ký tự, bỏ O/0/I/1 (dễ nhầm khi đọc qua điện thoại). */
 export function generateRoomCode(): string {
@@ -164,14 +156,7 @@ export async function createRoom(
       })
     } catch (error) {
       // P2002 = trùng mã phòng; thử mã khác. Lỗi khác phải nổi lên.
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "code" in error &&
-        error.code === "P2002"
-      ) {
-        continue
-      }
+      if (isUniqueViolation(error)) continue
       throw error
     }
   }
@@ -220,7 +205,6 @@ export async function addProposal(
   return updated
 }
 
-/** Áp đề xuất vào filter chung — port 1:1 `applyProposal` của frontend. */
 /**
  * Kiểm + chuẩn hoá giá trị đề xuất theo `field` — trả `null` khi không hợp lệ
  * (route trả 400) thay vì lưu rác vào filter JSONB làm phòng hỏng vĩnh viễn:
@@ -240,7 +224,9 @@ export function applyProposalToFilter(
   const value = proposal.value
 
   if (proposal.field === "category") {
-    const category = value as RoomFilter["categories"][number]
+    // Giá trị lạ (dữ liệu cũ) bị bỏ qua — không ép kiểu mù vào enum.
+    const category = parseApiCategory(value)
+    if (!category) return filter
     return proposal.kind === "include"
       ? {
           ...filter,
@@ -272,8 +258,10 @@ export function applyProposalToFilter(
     // "exclude" với mức giá không có nghĩa — chỉ ghi nhận khi là include.
     if (proposal.kind !== "include") return filter
     const parsed = Number(value)
-    const priceMax = (parsed === 1 || parsed === 2 || parsed === 3 ? parsed : 3) as 1 | 2 | 3
-    return { ...filter, priceMax }
+    // Giá trị lạ (dữ liệu cũ) KHÔNG được tự quy về 3 — bỏ qua đề xuất thay vì
+    // âm thầm áp một mức giá người dùng không chọn.
+    if (parsed !== 1 && parsed !== 2 && parsed !== 3) return filter
+    return { ...filter, priceMax: parsed }
   }
 
   return proposal.kind === "include"
@@ -289,7 +277,8 @@ export function describeProposal(proposal: {
 }): string {
   const sign = proposal.kind === "include" ? "＋" : "－"
   if (proposal.field === "category") {
-    return `${sign} Loại hình: ${CATEGORY_LABEL[proposal.value] ?? proposal.value}`
+    const category = parseApiCategory(proposal.value)
+    return `${sign} Loại hình: ${category ? CATEGORY_LABEL[category] : proposal.value}`
   }
   if (proposal.field === "district") return `${sign} Quận: ${proposal.value}`
   if (proposal.field === "priceMax") {

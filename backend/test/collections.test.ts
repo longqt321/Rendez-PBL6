@@ -290,5 +290,12 @@ describe("bộ sưu tập", () => {
 
     const gone = await call(`/api/v1/collections/${collectionId}`, { cookie: owner.cookie })
     expect(gone.status).toBe(404)
+
+    // Xoá MỀM: dòng vẫn còn trong DB (deleted_at), không mất dữ liệu.
+    const row = await prisma.collection.findUnique({
+      where: { id: collectionId },
+      select: { deletedAt: true },
+    })
+    expect(row?.deletedAt).not.toBeNull()
   })
 })

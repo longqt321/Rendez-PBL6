@@ -65,7 +65,7 @@ export async function createActorNotification(params: {
     data: {
       userId: params.userId,
       type: toPrismaNotificationType(params.kind),
-      payload: payload as Prisma.InputJsonObject,
+      payload,
     },
   })
 }
@@ -91,7 +91,7 @@ export async function createSuggestionNotification(params: {
     data: {
       userId: params.userId,
       type: toPrismaNotificationType("place-suggestion"),
-      payload: payload as Prisma.InputJsonObject,
+      payload,
     },
     select: { id: true },
   })
@@ -139,6 +139,14 @@ export function toNotificationDto(row: NotificationRow) {
 
 export type NotificationDto = ReturnType<typeof toNotificationDto>
 
+/** SELECT dùng chung cho mọi cách đọc thông báo (trang, tất cả, theo id). */
+const SELECT_NOTIFICATIONS = Prisma.sql`
+  SELECT n.id, n.type::text AS type, n.payload, n.read_at, n.created_at,
+         p.place_id AS post_place_id
+  FROM notifications n
+  LEFT JOIN posts p ON p.id = NULLIF(n.payload->>'postId', '')::uuid
+`
+
 /** Trang thông báo của một user, mới nhất trước. */
 export async function listNotifications(
   userId: string,
@@ -153,10 +161,7 @@ export async function listNotifications(
   }
 
   const rows = await prisma.$queryRaw<NotificationRow[]>(Prisma.sql`
-    SELECT n.id, n.type::text AS type, n.payload, n.read_at, n.created_at,
-           p.place_id AS post_place_id
-    FROM notifications n
-    LEFT JOIN posts p ON p.id = NULLIF(n.payload->>'postId', '')::uuid
+    ${SELECT_NOTIFICATIONS}
     WHERE ${Prisma.join(conditions, " AND ")}
     ORDER BY n.created_at DESC, n.id DESC
     LIMIT ${pageSize + 1}
@@ -168,4 +173,25 @@ export async function listNotifications(
     items: page.map(toNotificationDto),
     next: rows.length > pageSize && last ? { createdAt: last.created_at, id: last.id } : null,
   }
+}
+
+/** Toàn bộ thông báo của user (dùng cho PATCH /notifications — khớp mock). */
+export async function listAllNotifications(userId: string): Promise<NotificationDto[]> {
+  const rows = await prisma.$queryRaw<NotificationRow[]>(Prisma.sql`
+    ${SELECT_NOTIFICATIONS}
+    WHERE n.user_id = ${userId}::uuid
+    ORDER BY n.created_at DESC, n.id DESC
+  `)
+  return rows.map(toNotificationDto)
+}
+
+/** Một thông báo theo id — `null` khi không tồn tại (route tự kiểm quyền). */
+export async function findNotificationById(id: string): Promise<NotificationDto | null> {
+  const rows = await prisma.$queryRaw<NotificationRow[]>(Prisma.sql`
+    ${SELECT_NOTIFICATIONS}
+    WHERE n.id = ${id}::uuid
+    LIMIT 1
+  `)
+  const row = rows[0]
+  return row ? toNotificationDto(row) : null
 }
