@@ -16,12 +16,14 @@ interface ProfileRow {
   handle: string
   bio: string
   location: string
+  avatar_url: string | null
+  cover_url: string | null
   private_profile: boolean
   created_at: Date
 }
 
 const SELECT_PROFILE = Prisma.sql`
-  SELECT u.id, u.name, u.handle, u.bio, u.location, u.private_profile, u.created_at
+  SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url, u.private_profile, u.created_at
   FROM users u
   WHERE u.deleted_at IS NULL
 `
@@ -45,6 +47,8 @@ async function countProfile(userId: string, viewerId: string | null, row: Profil
       handle: row.handle,
       bio: row.bio,
       location: row.location,
+      avatarUrl: row.avatar_url,
+      coverUrl: row.cover_url,
       privateProfile: row.private_profile,
       createdAt: row.created_at,
     },

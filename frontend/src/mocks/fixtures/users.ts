@@ -15,6 +15,8 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     initials: "MA",
     bio: "Săn quán Đà Nẵng, ghi lại từng bữa ăn đáng tiền. Ưu tiên quán nhỏ, chủ nhiệt tình.",
     location: "Đà Nẵng",
+    avatarUrl: null,
+    coverUrl: null,
     joinedAt: "2025-03-14T00:00:00+07:00",
     postCount: 0,
     followerCount: 0,

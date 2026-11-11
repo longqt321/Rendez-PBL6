@@ -33,6 +33,8 @@ interface UserRow {
   handle: string
   bio: string
   location: string
+  avatar_url: string | null
+  cover_url: string | null
   private_profile: boolean
   created_at: Date
 }
@@ -63,7 +65,7 @@ export function createUsersRouter() {
     }
 
     const rows = await prisma.$queryRaw<UserRow[]>(Prisma.sql`
-      SELECT u.id, u.name, u.handle, u.bio, u.location, u.private_profile, u.created_at
+      SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url, u.private_profile, u.created_at
       FROM users u
       WHERE ${Prisma.join(conditions, " AND ")}
       ORDER BY u.created_at DESC, u.id DESC
@@ -118,6 +120,8 @@ export function createUsersRouter() {
             handle: user.handle,
             bio: user.bio,
             location: user.location,
+            avatarUrl: user.avatar_url,
+            coverUrl: user.cover_url,
             privateProfile: user.private_profile,
             createdAt: user.created_at,
           },

@@ -1,6 +1,6 @@
 import { Link } from "react-router"
 import { MapPinIcon } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Item, ItemContent, ItemGroup } from "@/components/ui/item"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -22,11 +22,15 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
     <header>
       <div className="relative">
         <CoverImage
+          src={profile.coverUrl ?? undefined}
           height={200}
           className="w-full rounded-none border-0 border-b border-border"
           alt={`Ảnh bìa của ${profile.name}`}
         />
         <Avatar className="absolute -bottom-12 left-6 size-24 border-4 border-background bg-background">
+          {profile.avatarUrl && (
+            <AvatarImage src={profile.avatarUrl} alt={`Ảnh đại diện của ${profile.name}`} />
+          )}
           <AvatarFallback className="bg-accent text-xl font-bold text-accent-foreground">
             {profile.initials}
           </AvatarFallback>

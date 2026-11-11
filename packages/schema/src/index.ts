@@ -41,8 +41,12 @@ export {
   POST_IMAGE_TOO_LONG_MESSAGE,
   POST_IMAGE_TOO_MANY_MESSAGE,
   validatePostImageUrls,
+  validateProfileImageUrl,
   type PostImageValidation,
   type ValidatePostImageUrlsOptions,
+  type ProfileImageValidation,
+  type ProfileMediaFolder,
+  type ValidateProfileImageUrlOptions,
 } from "./post-images"
 export { commentSchema } from "./comment.schema"
 export { reviewSchema } from "./review.schema"

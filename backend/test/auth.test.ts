@@ -142,6 +142,40 @@ describe("auth + hồ sơ", () => {
     expect(res.status).toBe(400)
   })
 
+  test("PATCH /me từ chối ảnh hồ sơ khi R2 chưa cấu hình", async () => {
+    const res = await call("/api/v1/me", {
+      method: "PATCH",
+      cookie,
+      body: JSON.stringify({
+        name: "Yến Nguyễn",
+        bio: "",
+        location: "",
+        privateProfile: false,
+        avatarUrl: "https://cdn.example.test/avatars/u/x.webp",
+      }),
+    })
+    expect(res.status).toBe(400)
+    expect(((await res.json()) as { message: string }).message).toContain("chưa được cấu hình")
+  })
+
+  test("PATCH /me vẫn nhận avatarUrl/coverUrl null (xoá ảnh) khi R2 chưa cấu hình", async () => {
+    const res = await call("/api/v1/me", {
+      method: "PATCH",
+      cookie,
+      body: JSON.stringify({
+        name: "Yến Nguyễn",
+        bio: "",
+        location: "",
+        privateProfile: false,
+        avatarUrl: null,
+        coverUrl: null,
+      }),
+    })
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body).toMatchObject({ avatarUrl: null, coverUrl: null })
+  })
+
   test("DELETE /session trả {loggedOut:true}, phiên sau đó 401", async () => {
     const res = await call("/api/v1/session", { method: "DELETE", cookie })
     expect(res.status).toBe(200)

@@ -28,8 +28,7 @@ import { categoryLabel } from "@/features/places/lib/category-meta"
 import { usePlaceSuggestions } from "@/features/places/hooks/use-place-suggestions"
 import type { PlaceSummary } from "@/features/places/types/place"
 import { toast } from "sonner"
-import { isMediaUnavailableError, requestMediaUpload } from "../api/request-media-upload"
-import { uploadPostImage } from "../api/upload-post-image"
+import { isMediaUnavailableError, requestMediaUpload, uploadMediaFile } from "@/lib/media-upload"
 import { useCreatePost } from "../hooks/use-create-post"
 
 interface PostComposerProps {
@@ -138,7 +137,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
       const urls: string[] = []
       for (const image of imagesRef.current) {
         const ticket = await requestMediaUpload("posts", image.file.type)
-        urls.push(await uploadPostImage(image.file, ticket))
+        urls.push(await uploadMediaFile(image.file, ticket))
       }
       return urls
     } catch (error) {

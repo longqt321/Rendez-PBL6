@@ -60,7 +60,7 @@ tùy chọn, theo semantics của bản nháp IETF `Idempotency-Key`:
 | POST | `/session` | — | `{email, password}` | `200 UserProfile` + `Set-Cookie` |
 | DELETE | `/session` | ✔ | — | `200 {"loggedOut":true}` |
 | GET | `/me` | ✔ | — | `200 UserProfile` |
-| PATCH | `/me` | ✔ | `{name?, bio?, location?, privateProfile?}` | `200 UserProfile` |
+| PATCH | `/me` | ✔ | `{name?, bio?, location?, privateProfile?, avatarUrl?, coverUrl?}` — `avatarUrl`/`coverUrl` `null` = xoá ảnh, bỏ trống = giữ nguyên | `200 UserProfile` |
 | DELETE | `/me` | ✔ | — | `200 {"deleted":true}` — xoá mềm + thu hồi mọi phiên |
 | POST | `/auth/request-password-reset` | — | `{email, redirectTo?}` | `200 {"status":true}` (luôn thành công) |
 | POST | `/auth/reset-password` | — | `{token, newPassword}` | `200 {"status":true}` / `400` token sai |
@@ -260,7 +260,7 @@ Client chuyển `RoomFilter` sang tham số của `GET /places` (đã có từ P
 
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
-| POST | `/media` | ✔ | `{folder: "posts"\|"places", contentType}` → `201 {uploadUrl, publicUrl, key, expiresAt, headers}` |
+| POST | `/media` | ✔ | `{folder: "posts"\|"places"\|"avatars"\|"covers", contentType}` → `201 {uploadUrl, publicUrl, key, expiresAt, headers}` |
 
 - Chỉ nhận `image/jpeg|png|webp|avif`; khoá object do server sinh
   (`<folder>/<userId>/<uuid>.<ext>`), không dùng tên client gửi.
@@ -278,6 +278,16 @@ Client chuyển `RoomFilter` sang tham số của `GET /places` (đã có từ P
 
 Mock dev không có storage thật: `POST /media` của mock trả `uploadUrl` host `mock-r2.test` và
 client bỏ qua bước PUT, dùng thẳng `publicUrl`.
+
+### Luồng ảnh hồ sơ (avatar + ảnh bìa)
+
+1. `POST /media {folder:"avatars"|"covers", contentType}` → `201 {uploadUrl, publicUrl, …}`.
+2. Client `PUT uploadUrl` với body là file (giữ nguyên `headers` server trả).
+3. `PATCH /me {name, bio, location, privateProfile, avatarUrl|coverUrl}` — server kiểm prefix
+   `avatars/<userId>/` hoặc `covers/<userId>/` (cùng quy tắc ảnh bài đăng) rồi lưu vào
+   `users.avatar_url`/`users.cover_url`. `null` = xoá ảnh.
+4. R2 chưa cấu hình mà gửi URL ảnh → `400 {"message":"Tính năng ảnh chưa được cấu hình"}`
+   (gửi `null`/bỏ trống vẫn hợp lệ để xoá/giữ nguyên).
 
 ## 11. Mã lỗi thường gặp
 

@@ -100,6 +100,7 @@ model User {
   // better-auth dùng boolean `emailVerified`; xác thực email chưa bật (Phase 1).
   emailVerified   Boolean   @default(false) @map("email_verified")
   avatarUrl       String?   @map("avatar_url")
+  coverUrl        String?   @map("cover_url")
   bio             String    @default("")
   location        String    @default("")
   privateProfile  Boolean   @default(false) @map("private_profile")

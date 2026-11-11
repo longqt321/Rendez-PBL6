@@ -111,6 +111,36 @@ describe("POST /media khi R2 đã cấu hình", () => {
     expect(((await res.json()) as { message: string }).message).toContain("ảnh")
   })
 
+  test("folder avatars/covers trả presigned đúng thư mục hồ sơ", async () => {
+    const cookie = (
+      (
+        await app.request("/api/v1/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "Người Hồ Sơ",
+            email: `media_profile_${suffix}@rendez.test`,
+            password: "password123",
+            handle: `media_profile_${suffix}`,
+          }),
+        })
+      ).headers.getSetCookie()[0] ?? ""
+    ).split(";")[0]
+
+    for (const folder of ["avatars", "covers"] as const) {
+      const res = await call("/api/v1/media", {
+        method: "POST",
+        cookie,
+        body: JSON.stringify({ folder, contentType: "image/webp" }),
+      })
+      expect(res.status).toBe(201)
+      const body = (await res.json()) as { uploadUrl: string; publicUrl: string; key: string }
+      expect(new URL(body.uploadUrl).pathname).toContain(`/rendez-media/${folder}/`)
+      expect(body.key.startsWith(`${folder}/`)).toBe(true)
+      expect(body.publicUrl).toBe(`https://cdn.rendez.test/${body.key}`)
+    }
+  })
+
   test("folder lạ trả 400", async () => {
     const cookie = (
       (

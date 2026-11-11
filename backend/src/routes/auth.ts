@@ -1,9 +1,14 @@
 import { Hono } from "hono"
 import { z } from "zod"
 import { isAPIError } from "better-auth/api"
-import { updateMeInputSchema } from "@rendez/schema"
+import {
+  updateMeInputSchema,
+  validateProfileImageUrl,
+  type ProfileMediaFolder,
+} from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { auth } from "../lib/auth"
+import { env } from "../env"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { rateLimit } from "../lib/rate-limit"
@@ -16,7 +21,7 @@ import { noStore } from "../lib/http-cache"
  *
  * Hợp đồng (Phần A của kế hoạch):
  * - `GET /me` 401 khi chưa đăng nhập, 200 `userProfileSchema`.
- * - `PATCH /me` chỉ 4 trường `updateMeInputSchema`; trường lạ bị bỏ qua.
+ * - `PATCH /me` chỉ các trường `updateMeInputSchema`; trường lạ bị bỏ qua.
  * - `POST /session` đăng nhập email+password → trả hồ sơ + Set-Cookie phiên.
  * - `DELETE /session` → `{ loggedOut: true }`.
  * - `POST /register` endpoint mới (FE chưa có UI) → hồ sơ + Set-Cookie.
@@ -101,6 +106,29 @@ async function assertActiveUser(userId: string) {
   }
 }
 
+/**
+ * Ảnh hồ sơ phải do CHÍNH người gọi tải lên thư mục `avatars/<userId>/` hoặc
+ * `covers/<userId>/` — cùng chuẩn với ảnh bài đăng (`routes/posts.ts`), logic
+ * kiểm dùng chung `@rendez/schema`. `null`/bỏ trống = xoá/giữ nguyên, hợp lệ.
+ */
+function validateProfileImages(
+  userId: string,
+  urls: { url: string | null | undefined; folder: ProfileMediaFolder }[],
+): void {
+  const hasImage = urls.some(({ url }) => url != null && url !== "")
+  if (hasImage && (!env.r2Configured || env.R2_PUBLIC_BASE_URL.length === 0)) {
+    throw new ApiError(400, "Tính năng ảnh chưa được cấu hình")
+  }
+  for (const { url, folder } of urls) {
+    const result = validateProfileImageUrl(url, {
+      userId,
+      folder,
+      publicBaseUrl: env.R2_PUBLIC_BASE_URL,
+    })
+    if (!result.ok) throw new ApiError(400, result.message)
+  }
+}
+
 export function createAuthRouter() {
   const router = new Hono<AppEnv>()
 
@@ -109,7 +137,7 @@ export function createAuthRouter() {
     return noStore(c, await buildProfile(c.get("userId"), c.get("userId")))
   })
 
-  /** Cập nhật hồ sơ — chỉ 4 trường hợp đồng; trường lạ bị bỏ qua. */
+  /** Cập nhật hồ sơ — chỉ các trường hợp đồng; trường lạ bị bỏ qua. */
   router.patch("/me", requireAuth, async (c) => {
     const raw = await c.req.json().catch(() => null)
     const parsed = updateMeInputSchema.safeParse(raw)
@@ -118,6 +146,10 @@ export function createAuthRouter() {
     }
 
     const userId = c.get("userId")
+    validateProfileImages(userId, [
+      { url: parsed.data.avatarUrl, folder: "avatars" },
+      { url: parsed.data.coverUrl, folder: "covers" },
+    ])
     await prisma.user.update({ where: { id: userId }, data: parsed.data })
     return noStore(c, await buildProfile(userId, userId))
   })

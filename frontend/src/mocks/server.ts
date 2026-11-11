@@ -438,7 +438,7 @@ function createPost(config: InternalAxiosRequestConfig) {
 function createMediaTicket(config: InternalAxiosRequestConfig) {
   const body = parseBody<{ folder?: unknown; contentType?: unknown }>(config)
   const folder = body.folder
-  if (folder !== "posts" && folder !== "places") {
+  if (folder !== "posts" && folder !== "places" && folder !== "avatars" && folder !== "covers") {
     badRequest(config, "Thư mục không hợp lệ")
   }
   const contentType = typeof body.contentType === "string" ? body.contentType : ""
@@ -1081,9 +1081,20 @@ function query(config: InternalAxiosRequestConfig): Record<string, string> {
  * `PATCH /me` — cập nhật hồ sơ.
  *
  * Validate trùng quy tắc của form `/settings` (dùng chung `lib/constants`).
- * Chỉ nhận đúng 4 trường trong hợp đồng; trường lạ bị bỏ qua để client không
+ * Chỉ nhận đúng các trường trong hợp đồng; trường lạ bị bỏ qua để client không
  * thể ghi đè dữ liệu server không cho sửa.
  */
+/** Ảnh hồ sơ: `null` = xoá, chuỗi = URL mới, khác = 400 — khớp hợp đồng `PATCH /me`. */
+function normalizeProfileImageUrl(
+  value: unknown,
+  config: InternalAxiosRequestConfig,
+): string | null | undefined {
+  if (value === undefined) return undefined
+  if (value === null) return null
+  if (typeof value === "string" && value.length > 0) return value
+  badRequest(config, "URL ảnh không hợp lệ")
+}
+
 function updateMe(config: InternalAxiosRequestConfig): typeof db.me {
   const body = parseBody<Record<string, unknown>>(config)
   const name = typeof body.name === "string" ? body.name.trim() : ""
@@ -1105,7 +1116,20 @@ function updateMe(config: InternalAxiosRequestConfig): typeof db.me {
     badRequest(config, "Trường riêng tư phải là boolean")
   }
 
-  db.me = { ...db.me, name, bio, location, privateProfile }
+  // Ảnh hồ sơ: `null` = xoá, bỏ trống = giữ nguyên. Mock không kiểm prefix R2
+  // (không có bucket thật) nhưng vẫn giữ đúng kiểu dữ liệu của hợp đồng.
+  const avatarUrl = normalizeProfileImageUrl(body.avatarUrl, config)
+  const coverUrl = normalizeProfileImageUrl(body.coverUrl, config)
+
+  db.me = {
+    ...db.me,
+    name,
+    bio,
+    location,
+    privateProfile,
+    ...(avatarUrl !== undefined ? { avatarUrl } : {}),
+    ...(coverUrl !== undefined ? { coverUrl } : {}),
+  }
   db.users[db.me.id] = { ...db.me }
   return { ...db.me }
 }
@@ -1651,6 +1675,8 @@ const routes: Route[] = [
         initials: formatInitials(name),
         bio: "",
         location: "",
+        avatarUrl: null,
+        coverUrl: null,
         joinedAt: new Date().toISOString(),
         postCount: 0,
         followerCount: 0,

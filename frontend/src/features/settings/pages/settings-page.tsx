@@ -34,6 +34,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { useUpdateMe } from "@/features/profile/hooks/use-update-me"
 import { useDeleteAccount } from "@/features/auth/hooks/use-delete-account"
+import { ProfileImagesField } from "@/features/settings/components/profile-images-field"
 import { Spinner } from "@/components/ui/spinner"
 import {
   MAX_PROFILE_BIO_LENGTH,
@@ -143,6 +144,10 @@ export function SettingsPage() {
               </Field>
             </FieldGroup>
           </FieldSet>
+
+          <FieldSeparator />
+
+          <ProfileImagesField profile={me} />
 
           <FieldSeparator />
 

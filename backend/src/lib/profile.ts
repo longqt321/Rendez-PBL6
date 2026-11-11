@@ -18,7 +18,15 @@ export function formatInitials(name: string): string {
 /** Cột tối thiểu để dựng hồ sơ — cho phép truyền dòng SQL rút gọn, không cần cả model. */
 export type ProfileSource = Pick<
   User,
-  "id" | "name" | "handle" | "bio" | "location" | "privateProfile" | "createdAt"
+  | "id"
+  | "name"
+  | "handle"
+  | "bio"
+  | "location"
+  | "avatarUrl"
+  | "coverUrl"
+  | "privateProfile"
+  | "createdAt"
 >
 
 /**
@@ -44,6 +52,8 @@ export function toUserProfile(
     initials: formatInitials(user.name),
     bio: user.bio,
     location: user.location,
+    avatarUrl: user.avatarUrl,
+    coverUrl: user.coverUrl,
     joinedAt: user.createdAt.toISOString(),
     postCount: counts.postCount,
     followerCount: counts.followerCount,

@@ -11,6 +11,10 @@ export interface UserProfile {
   initials: string
   bio: string
   location: string
+  /** Ảnh đại diện do người dùng tải lên; `null` = chưa có (fallback chữ cái đầu). */
+  avatarUrl: string | null
+  /** Ảnh bìa hồ sơ; `null` = chưa có (fallback khung trung tính). */
+  coverUrl: string | null
   /** ISO date — client chỉ format, không tính toán. */
   joinedAt: string
   postCount: number
