@@ -52,7 +52,7 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | T8.1 | 8 | Dockerfile API multi-stage + compose | T2–T7 | done | runtime giữ nguyên cấu trúc workspace (node_modules/.bun + backend/node_modules) |
 | T8.2 | 8 | Deploy Fly/Railway — CHỈ nếu user trả lời; mặc định bỏ | T8.1 | todo | |
 | T8.3 | 8 | Đổi tile OSM — ngoài phạm vi backend, đã có BACKLOG | — | todo | |
-| QA1 | — | Audit code-integrity toàn bộ diff | T2–T6 | done | xoá 7 chỗ `as never` → `lib/enums.ts`; bảng enum tường minh + test round-trip; typecheck + 117 test xanh |
+| QA1 | — | Audit code-integrity toàn bộ diff | T2–T6 | done | xoá 7 chỗ `as never` → `lib/enums.ts`; bảng enum tường minh + test round-trip; typecheck + 119 test xanh |
 | QA2 | — | Test: unit + integration + contract + e2e backend | T2–T6 | done (12/12 e2e backend, logout.spec bỏ do FE chưa có form đăng nhập — BACKLOG) | |
 | QA3 | — | Kiểm thử bảo mật local (xh/curl; chỉ 127.0.0.1) | QA1 | done | 401/400/404 đúng, SQLi tham số hoá, cookie HttpOnly, nikto 7.948 request không lỗi nghiêm trọng; thêm CSP + Permissions-Policy | |
 | DOC1 | — | docs/backend/API.md + RUNBOOK.md + REPORT.md | T2–T6 | done | 60ac3c1 | |
@@ -102,9 +102,18 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
     (624ce5d, +2 test).
   · Rà quyền: collections (owner), comments (tác giả), notifications (chủ sở hữu), rooms
     (thành viên/chủ phòng), follow (cấm tự theo dõi) — không phát hiện lỗ hổng mới.
-- Số liệu mới nhất: 117 test backend (13 file), typecheck 0 lỗi, e2e backend 12/12,
+- Số liệu mới nhất: 119 test backend (13 file), typecheck 0 lỗi, e2e backend 12/12,
   e2e mock 13/13, compose smoke healthz/readyz/places 200.
 
 ## Kết quả cuối
 
 (chưa đến)
+
+## Audit vòng 3 (07:53–07:58)
+
+- `cursor` giả mạo (base64 hợp lệ nhưng id không phải uuid) → 500 do cast `::uuid` ở
+  `/posts`, `/notifications`, `/users/:handle/posts` → `decodeCursor` nhận thêm mẫu id,
+  route uuid truyền `UUID_ID_RE` (710476b, +2 test).
+- Fuzz thêm 25 input rác (bbox, q dài 1000 ký tự, id 121 ký tự, uuid ngẫu nhiên, cursor rác…):
+  không còn 500.
+- Số liệu cuối: **119 test / 13 file pass**, e2e backend 12/12, e2e mock 13/13.
