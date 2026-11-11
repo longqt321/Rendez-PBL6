@@ -52,11 +52,11 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | T8.1 | 8 | Dockerfile API multi-stage + compose | T2–T7 | done | runtime giữ nguyên cấu trúc workspace (node_modules/.bun + backend/node_modules) |
 | T8.2 | 8 | Deploy Fly/Railway — CHỈ nếu user trả lời; mặc định bỏ | T8.1 | todo | |
 | T8.3 | 8 | Đổi tile OSM — ngoài phạm vi backend, đã có BACKLOG | — | todo | |
-| QA1 | — | Audit code-integrity toàn bộ diff | T2–T6 | done | xoá 7 chỗ `as never` → `lib/enums.ts`; typecheck + 98 test xanh |
+| QA1 | — | Audit code-integrity toàn bộ diff | T2–T6 | done | xoá 7 chỗ `as never` → `lib/enums.ts`; bảng enum tường minh + test round-trip; typecheck + 111 test xanh |
 | QA2 | — | Test: unit + integration + contract + e2e backend | T2–T6 | done (12/12 e2e backend, logout.spec bỏ do FE chưa có form đăng nhập — BACKLOG) | |
-| QA3 | — | Kiểm thử bảo mật local (xh/curl; chỉ 127.0.0.1) | QA1 | todo | |
-| DOC1 | — | docs/backend/API.md + RUNBOOK.md + REPORT.md | T2–T6 | in-progress (API.md, RUNBOOK.md xong; REPORT.md todo) | |
-| DOC2 | — | Báo cáo đồ án docs/bao-cao/BAO-CAO-DO-AN.md (bắt đầu 09:30) | DOC1 | todo | |
+| QA3 | — | Kiểm thử bảo mật local (xh/curl; chỉ 127.0.0.1) | QA1 | done | 401/400/404 đúng, SQLi tham số hoá, cookie HttpOnly, nikto 7.948 request không lỗi nghiêm trọng; thêm CSP + Permissions-Policy | |
+| DOC1 | — | docs/backend/API.md + RUNBOOK.md + REPORT.md | T2–T6 | done | 60ac3c1 | |
+| DOC2 | — | Báo cáo đồ án docs/bao-cao/BAO-CAO-DO-AN.md (bắt đầu 09:30) | DOC1 | done (bản 1, còn bổ sung số liệu cuối) | 60ac3c1 | |
 
 ## Quy ước phiên này
 
@@ -82,6 +82,18 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 - e2e backend: 12/12 spec pass với `VITE_ENABLE_MOCKS=false`; `logout.spec.ts` bị loại vì FE
   chưa có form đăng nhập email+password (ghi BACKLOG).
 - Seed: gán `created_at` theo thứ tự dataset để `GET /places` khớp thứ tự mock (trang đầu có ảnh).
+
+## Checkpoint 08:00
+
+- Tiến độ so với kế hoạch: KHÔNG chậm — Phase 0–8, QA1–QA3, DOC1, DOC2 (bản 1) đều xong
+  trước mốc cắt scope, không cần cắt Phase 7/8.
+- Phát hiện & sửa trong vòng audit:
+  · `GET /places/:id/posts` thiếu so với mock (FE đang gọi) → bổ sung + 3 test (7a220ec).
+  · Enum `street-food` trong DB là gạch nối (`@map`) → mapper nhận cả hai dạng (2e72a8a).
+  · Thông báo: 3 endpoint chưa có test → thêm `test/notifications.test.ts` (5 test) (ccfd63d).
+  · CI job `api` bật lại (typecheck + prettier + test Testcontainers) (191071b).
+- Số liệu mới nhất: 111 test backend (13 file), typecheck 0 lỗi, e2e backend 12/12,
+  e2e mock 13/13, compose smoke healthz/readyz/places 200.
 
 ## Checkpoint 08:00
 
