@@ -145,6 +145,13 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
   Đã thêm `normalizeProposalValue()` (category phải là loại hình đã biết, priceMax phải 1–3,
   `street_food` chuẩn hoá về `street-food`) → 400; `parseRoomFilter` bỏ qua loại hình lạ thay vì
   ném (dữ liệu cũ) (4dcf0ad, +1 test).
+- **Code chết trong `onError`**: nhánh `err instanceof ZodError` không bao giờ chạy — zod 4
+  `ZodError` không phải `instanceof Error` (xác minh bằng script) và Hono chỉ chuyển lỗi
+  `instanceof Error` cho `onError` (hono/dist/compose.js:37), nên ZodError thoát ra ngoài hoàn
+  toàn. Không có đường nào ném ZodError (validate đều `safeParse`/`defaultHook`) → xoá nhánh,
+  ghi chú lý do ngay tại chỗ (e78212b trước đó + commit này).
+- Thêm test: chạy đua 2 worker job gợi ý (chỉ 1 thông báo), probe `onError` 500 giữ
+  `X-Request-Id` và không lộ stack (health 2→3 test).
 - `detectPlaceSuggestions` quét toàn bộ post chưa gắn địa điểm trong một lần → thêm `take: 50`
   (K6 "batch nhỏ 50 post/lần"); `postId` cụ thể (trigger) không giới hạn (9ea259a).
 - `GET /places/map` kéo cả dataset về RAM rồi `slice(0,300)` → `LIMIT` trong SQL + `COUNT(*)`

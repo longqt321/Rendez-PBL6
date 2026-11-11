@@ -3,7 +3,6 @@ import { cors } from "hono/cors"
 import { HTTPException } from "hono/http-exception"
 import { bodyLimit } from "hono/body-limit"
 import { secureHeaders } from "hono/secure-headers"
-import { ZodError } from "zod"
 import { env } from "./env"
 import { isNulByteError } from "./lib/errors"
 import { logger } from "./lib/logger"
@@ -136,10 +135,10 @@ export function createApp() {
       return new Response(response.body, { status: response.status, headers })
     }
 
-    if (err instanceof ZodError) {
-      const message = err.issues[0]?.message ?? "Dữ liệu không hợp lệ"
-      return c.json({ message }, 400)
-    }
+    // Lưu ý: KHÔNG có nhánh `instanceof ZodError` — `ZodError` của zod 4 không phải
+    // `instanceof Error`, và Hono chỉ chuyển lỗi `instanceof Error` cho `onError`
+    // (hono/dist/compose.js), nên nhánh đó sẽ là code chết. Mọi validate đều dùng
+    // `safeParse`/`defaultHook` và trả 400 trực tiếp, không ném ZodError.
 
     // Postgres từ chối ký tự NUL trong text — lỗi đầu vào, không phải hệ thống.
     if (isNulByteError(err)) {
