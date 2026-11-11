@@ -385,20 +385,31 @@ lịch sử; không còn việc mở ở đây.
 ## 2026-11-11 — G1 (vòng đời tài khoản) xong, việc phát sinh
 
 - [x] **FE chưa có form đăng nhập email+password** — ĐÃ LÀM (G1): `/login`, `/register`,
-  `/forgot-password`, `/reset-password`; bỏ `testIgnore` logout.spec trong playwright.config.
+      `/forgot-password`, `/reset-password`; bỏ `testIgnore` logout.spec trong playwright.config.
 - [ ] **SMTP thật cho quên/đặt lại mật khẩu**: hiện token reset chỉ ghi log dev
-  (DECISIONS 23). Cần SMTP provider + biến env + UI "đã gửi email" thật.
+      (DECISIONS 23). Cần SMTP provider + biến env + UI "đã gửi email" thật.
 - [ ] **Xác thực email khi đăng ký** (`emailVerified` đang luôn false).
 - [ ] **Cho phép đăng ký lại email đã xoá tài khoản** (hiện unique index chặn — DECISIONS 24).
 - [ ] **Xuất dữ liệu cá nhân** (plan H6) — rà soát khi làm.
 - [ ] **Cache gợi ý là per-instance** (Map TTL trong tiến trình, DECISIONS 27) — khi chạy nhiều
-  instance cần Redis hoặc chấp nhận mỗi instance tự nạp lại sau TTL.
+      instance cần Redis hoặc chấp nhận mỗi instance tự nạp lại sau TTL.
 - [ ] **`/users/:handle` chỉ cache 15s** — nếu hồ sơ đổi (follow/bio) client có thể thấy dữ liệu
-  cũ tối đa 15s; cân nhắc ETag revalidate thay vì max-age khi có nhiều người dùng thật.
+      cũ tối đa 15s; cân nhắc ETag revalidate thay vì max-age khi có nhiều người dùng thật.
 - [ ] **Thông báo dùng polling 60s** (DECISIONS 28) — đủ cho demo; realtime thật cần SSE/WebSocket
-  (đã có hạ tầng SSE cho phòng lọc nhóm để tái dùng).
+      (đã có hạ tầng SSE cho phòng lọc nhóm để tái dùng).
 - [ ] **Feed following chưa gợi ý người để theo dõi** — khi feed rỗng chỉ hiện empty state;
-  nên thêm khối "Gợi ý theo dõi" (dùng `GET /users?q=`).
+      nên thêm khối "Gợi ý theo dõi" (dùng `GET /users?q=`).
 - [ ] **Chưa có staging/monitoring** — deploy thật cần healthcheck ngoài (UptimeRobot),
-  log aggregation, alert; hiện chỉ có /healthz, /readyz.
+      log aggregation, alert; hiện chỉ có /healthz, /readyz.
 - [ ] **Backup chưa có restore drill tự động** — script restore nên viết kèm và test định kỳ.
+
+## 2026-11-11 — G5 (e2e trên backend thật) xong, việc phát sinh
+
+- [ ] **Ảnh địa điểm chỉ có 20/2.726 place** (corpus OSM không có ảnh): trang đầu `/discover`
+      giờ có ảnh nhờ seed sắp ảnh lên trước, nhưng phần lớn place vẫn hiện placeholder. Cần bổ
+      sung ảnh (R2) hoặc nguồn ảnh có giấy phép cho corpus mở rộng.
+- [ ] **E2E backend cần dev DB đã seed + API container đang chạy**: chưa tự động hoá trong CI
+      (job `e2e-mock` chỉ chạy mock). Muốn chạy backend trong CI cần service Postgres + migrate +
+      seed + build API — cân nhắc khi CI có thời gian chạy dài hơn.
+- [x] **`e2e/.auth/*.json` là file sinh ra khi chạy** — đã kiểm: `.gitignore:44` bỏ qua
+      `frontend/e2e/.auth`, không commit session/tài khoản demo.

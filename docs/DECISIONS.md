@@ -2613,64 +2613,79 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
     `safeParse`/`defaultHook` nên không có đường ném ZodError; nếu có code mới ném thì phải
     bọc thành `ApiError` thay vì dựa vào nhánh này.
 18. **Ràng buộc `price_level` ở DB thay vì clamp khi đọc** (migration 11): trước đây
-   `toPlaceDto` làm `Math.min(3, Math.max(1, ...))` — dữ liệu sai vẫn ghi được và bị sửa
-   lặng lẽ khi đọc (band-aid). CHECK ở DB là chốt cuối; API đọc giá trị thật.
+    `toPlaceDto` làm `Math.min(3, Math.max(1, ...))` — dữ liệu sai vẫn ghi được và bị sửa
+    lặng lẽ khi đọc (band-aid). CHECK ở DB là chốt cuối; API đọc giá trị thật.
 19. **Like/save/follow dùng `createMany({ skipDuplicates: true })`**: findUnique-rồi-create
-   để lại cửa sổ race — hai request song song làm request thứ hai ném P2002 → 500.
-   Lệnh nguyên tử của Prisma giải quyết; thông báo chỉ gửi khi `count > 0` (lần đầu).
+    để lại cửa sổ race — hai request song song làm request thứ hai ném P2002 → 500.
+    Lệnh nguyên tử của Prisma giải quyết; thông báo chỉ gửi khi `count > 0` (lần đầu).
 20. **`isUniqueViolation()` / `isAPIError()` thay duck-typing**: kiểm `"code" in error` /
-   `"statusCode" in error` tự chế là chắp vá — dùng class/predicate chính thức của Prisma
-   và better-auth (đã xác minh `isAPIError` chấp nhận cả hai bản APIError nội bộ).
+    `"statusCode" in error` tự chế là chắp vá — dùng class/predicate chính thức của Prisma
+    và better-auth (đã xác minh `isAPIError` chấp nhận cả hai bản APIError nội bộ).
 21. **Seed đảm bảo bất biến "có ≥ 1 place chưa publish"**: dataset gốc chứa id mock
-   (`ram-cuon-cai-di-hoa-6152681085`); corpus mở rộng từ OSM không chứa id đó. Chọn phần tử
-   cuối dataset khi thiếu — xác định theo dữ liệu, không hardcode id mới.
+    (`ram-cuon-cai-di-hoa-6152681085`); corpus mở rộng từ OSM không chứa id đó. Chọn phần tử
+    cuối dataset khi thiếu — xác định theo dữ liệu, không hardcode id mới.
 22. **Xoá bộ sưu tập = xoá mềm**: mọi truy vấn đọc đều lọc `deleted_at`; `delete` cứng làm
-   cột đó vô nghĩa và mất dữ liệu không khôi phục được.
+    cột đó vô nghĩa và mất dữ liệu không khôi phục được.
 23. **Quên mật khẩu: chưa có SMTP — token reset ghi vào log dev** (2026-11-11, G1). better-auth
-   chỉ gọi `sendResetPassword` khi cấu hình; chọn log `url`+`token` ở dev/test (pino `warn`,
-   nhãn "DEV ONLY") và ở production chỉ log sự kiện không kèm token. SMTP thật là việc phát
-   sinh → BACKLOG; khi có SMTP chỉ thay hàm này, không đổi route/FE.
+    chỉ gọi `sendResetPassword` khi cấu hình; chọn log `url`+`token` ở dev/test (pino `warn`,
+    nhãn "DEV ONLY") và ở production chỉ log sự kiện không kèm token. SMTP thật là việc phát
+    sinh → BACKLOG; khi có SMTP chỉ thay hàm này, không đổi route/FE.
 24. **Xoá tài khoản = xoá mềm + thu hồi phiên**: `DELETE /me` đặt `users.deleted_at` và xoá
-   mọi session trong một transaction. Email/handle vẫn chiếm unique index nên KHÔNG đăng ký
-   lại được cùng email — chấp nhận ở giai đoạn này (mở lại cần thêm logic "giải phóng
-   email" phức tạp). Hồ sơ đã xoá không hiện nữa (`SELECT_PROFILE` lọc `deleted_at IS NULL`).
+    mọi session trong một transaction. Email/handle vẫn chiếm unique index nên KHÔNG đăng ký
+    lại được cùng email — chấp nhận ở giai đoạn này (mở lại cần thêm logic "giải phóng
+    email" phức tạp). Hồ sơ đã xoá không hiện nữa (`SELECT_PROFILE` lọc `deleted_at IS NULL`).
 25. **Trùng handle khi đăng ký phải kiểm trước khi gọi better-auth**: better-auth chỉ kiểm
-   email trùng; P2002 của `handle` bị nuốt thành 422 "Failed to create user" (đã đọc source
-   `dist/api/routes/sign-up.mjs`). Kiểm `handle` trước khi signUpEmail + kiểm lại sau lỗi 422
-   (bắt trường hợp đua) → 409 đúng thông điệp thay vì 400 chung chung.
+    email trùng; P2002 của `handle` bị nuốt thành 422 "Failed to create user" (đã đọc source
+    `dist/api/routes/sign-up.mjs`). Kiểm `handle` trước khi signUpEmail + kiểm lại sau lỗi 422
+    (bắt trường hợp đua) → 409 đúng thông điệp thay vì 400 chung chung.
 26. **FE có trang `/login`, `/register`, `/forgot-password`, `/reset-password`** (G1): các trang
-   này nằm ngoài `AppShell`; menu "Đăng nhập" của header giờ điều hướng tới `/login` thay vì
-   hack "đăng nhập lại phiên mock" cũ. Mock thêm tài khoản dev `me@rendez.test` /
-   `password123` để e2e chạy được cả hai project.
+    này nằm ngoài `AppShell`; menu "Đăng nhập" của header giờ điều hướng tới `/login` thay vì
+    hack "đăng nhập lại phiên mock" cũ. Mock thêm tài khoản dev `me@rendez.test` /
+    `password123` để e2e chạy được cả hai project.
 27. **Cache G2: ETag/`Cache-Control` cho dữ liệu công khai + TTL cache trong tiến trình cho gợi ý**
-   (2026-11-11). `/places/:id` (public, 60s), `/places/map` (public, 30s), `/users/:handle`
-   (private, 15s vì `followedByMe` phụ thuộc người xem); `/me` và `/notifications` là
-   `no-store`. ETag tính từ body JSON (sha256) nên tự đổi khi dữ liệu đổi — không cần
-   invalidate thủ công. `GET /places/suggestions` cache ứng viên đã publish 60s + single-flight
-   (Map TTL tự viết, KHÔNG thêm `lru-cache`); `PATCH /posts/:id/place` publish place gọi
-   `invalidateSuggestionCache()` ngay. Cache nằm trong tiến trình — nhiều instance vẫn đúng
-   nhưng mỗi instance tự nạp; chuyển sang Redis khi scale ngang (BACKLOG).
+    (2026-11-11). `/places/:id` (public, 60s), `/places/map` (public, 30s), `/users/:handle`
+    (private, 15s vì `followedByMe` phụ thuộc người xem); `/me` và `/notifications` là
+    `no-store`. ETag tính từ body JSON (sha256) nên tự đổi khi dữ liệu đổi — không cần
+    invalidate thủ công. `GET /places/suggestions` cache ứng viên đã publish 60s + single-flight
+    (Map TTL tự viết, KHÔNG thêm `lru-cache`); `PATCH /posts/:id/place` publish place gọi
+    `invalidateSuggestionCache()` ngay. Cache nằm trong tiến trình — nhiều instance vẫn đúng
+    nhưng mỗi instance tự nạp; chuyển sang Redis khi scale ngang (BACKLOG).
 28. **Feed "Đang theo dõi" + polling thông báo (G3)**: `GET /posts?filter=following` dùng
-   `EXISTS (SELECT 1 FROM follows ...)` trên khoá chính `(follower_id, following_id)` — không
-   cần index thêm, không N+1. Filter này (như `mine`/`saved`) cần đăng nhập → 401; tab chỉ
-   hiện khi `useMe()` có dữ liệu. Thông báo dùng polling 60 giây (`refetchInterval`) ở cả
-   danh sách lẫn badge thay vì SSE — SSE đã có cho phòng lọc nhóm nhưng thông báo cần chạy
-   được sau proxy/restart mà không cần hạ tầng thêm; nâng lên SSE/WebSocket khi cần realtime
-   thật (BACKLOG).
+    `EXISTS (SELECT 1 FROM follows ...)` trên khoá chính `(follower_id, following_id)` — không
+    cần index thêm, không N+1. Filter này (như `mine`/`saved`) cần đăng nhập → 401; tab chỉ
+    hiện khi `useMe()` có dữ liệu. Thông báo dùng polling 60 giây (`refetchInterval`) ở cả
+    danh sách lẫn badge thay vì SSE — SSE đã có cho phòng lọc nhóm nhưng thông báo cần chạy
+    được sau proxy/restart mà không cần hạ tầng thêm; nâng lên SSE/WebSocket khi cần realtime
+    thật (BACKLOG).
 29. **TRUSTED_PROXIES + remoteAddress (G4)**: `Bun.serve` truyền `server.requestIP(req)` vào
-   app qua Bindings (`remoteAddress`); `clientIp()` chỉ tin `X-Forwarded-For` khi địa chỉ
-   socket nằm trong `TRUSTED_PROXIES` (IP hoặc CIDR IPv4). Không có `remoteAddress` (test gọi
-   `app.request()` trực tiếp) thì dùng XFF — production luôn có socket nên client không thể
-   giả mạo header để né rate limit.
+    app qua Bindings (`remoteAddress`); `clientIp()` chỉ tin `X-Forwarded-For` khi địa chỉ
+    socket nằm trong `TRUSTED_PROXIES` (IP hoặc CIDR IPv4). Không có `remoteAddress` (test gọi
+    `app.request()` trực tiếp) thì dùng XFF — production luôn có socket nên client không thể
+    giả mạo header để né rate limit.
 30. **Deploy chỉ chuẩn bị, không chạy** (yêu cầu người dùng): `deploy/compose.prod.yml`
-   (NODE_ENV=production, Postgres/API không lộ cổng, Caddy 80/443 + TLS, IP tĩnh
-   172.30.0.2/3 cho TRUSTED_PROXIES), `deploy/Caddyfile`, `deploy/backup-db.sh`
-   (pg_dump -Fc + gzip + retention 14 ngày, đã test trên dev DB), `deploy/.env.example`,
-   `deploy/README.md`. Compose dùng `!override []` để xoá port mapping của dev — compose
-   merge mặc định nối danh sách, không ghi đè.
+    (NODE_ENV=production, Postgres/API không lộ cổng, Caddy 80/443 + TLS, IP tĩnh
+    172.30.0.2/3 cho TRUSTED_PROXIES), `deploy/Caddyfile`, `deploy/backup-db.sh`
+    (pg_dump -Fc + gzip + retention 14 ngày, đã test trên dev DB), `deploy/.env.example`,
+    `deploy/README.md`. Compose dùng `!override []` để xoá port mapping của dev — compose
+    merge mặc định nối danh sách, không ghi đè.
 31. **Seed chọn place chưa publish có TÊN DÙNG ĐƯỢC** (2026-11-11): bất biến cũ chỉ bảo đảm
-   "tồn tại ≥ 1 place chưa publish" và lấy phần tử cuối dataset; corpus OSM kết thúc bằng
-   `"N&M"` → chuẩn hoá còn `"n m"`, ranking không khớp được, job gợi ý trả 0 và 2 test fail.
-   `pickUnpublishedIds()` giờ lọc theo `isSuggestableName()` (≥ 2 từ có chữ, ≥ 8 ký tự, không
-   `& / |`) rồi lấy phần tử cuối — vẫn xác định theo dữ liệu, không hardcode id. Test chọn
-   place chưa publish có tên DÀI NHẤT thay vì `orderBy id`. Bài học: `docs/LESSONS.md` L-019.
+    "tồn tại ≥ 1 place chưa publish" và lấy phần tử cuối dataset; corpus OSM kết thúc bằng
+    `"N&M"` → chuẩn hoá còn `"n m"`, ranking không khớp được, job gợi ý trả 0 và 2 test fail.
+    `pickUnpublishedIds()` giờ lọc theo `isSuggestableName()` (≥ 2 từ có chữ, ≥ 8 ký tự, không
+    `& / |`) rồi lấy phần tử cuối — vẫn xác định theo dữ liệu, không hardcode id. Test chọn
+    place chưa publish có tên DÀI NHẤT thay vì `orderBy id`. Bài học: `docs/LESSONS.md` L-019.
+32. **Thứ tự seed + e2e chạy trên backend thật** (2026-11-11):
+
+- **Seed sắp theo `seedRank`**: place CÓ ẢNH → curated còn lại → `osm`. Corpus OSM mở rộng
+  đứng đầu dataset làm trang đầu `GET /places` toàn card không ảnh — lệch đặc tả mock
+  (curated + ảnh đầu tiên) và làm spec `discover` fail. `created_at` vẫn gán theo thứ tự
+  đã sắp nên keyset trả đúng thứ tự này; sort ổn định giữ nguyên thứ tự trong từng nhóm.
+- **E2E dùng tài khoản theo project** (`frontend/e2e/credentials.ts`): mock dùng
+  `me@rendez.test`/`password123`; backend đọc `e2e/.auth/backend-account.json` do
+  `global-setup.ts` ghi ra (user mới mỗi lần chạy) — không hardcode mật khẩu backend.
+- **`logout.spec` tự đăng nhập trước khi đăng xuất**: logout trên backend thật xoá session
+  ở server; dùng chung storageState thì mọi spec chạy song song nhận 401. Đăng nhập trong
+  chính context của spec tạo session riêng nên không ảnh hưởng spec khác.
+- **`CORS_ORIGINS` mặc định của dev compose gồm cả `http://localhost:5199`** (cổng dev
+  server E2E): FE gửi `redirectTo = window.location.origin + /reset-password`, thiếu origin
+  này thì better-auth trả 403 và trang quên mật khẩu không hiện thông báo trung tính.

@@ -1,3 +1,4 @@
+import { mkdirSync, writeFileSync } from "node:fs"
 import { request } from "@playwright/test"
 
 /**
@@ -40,7 +41,11 @@ export default async function globalSetup(): Promise<void> {
       throw new Error(`Không đăng nhập được tài khoản e2e: ${login.status()} ${await login.text()}`)
     }
 
+    mkdirSync("e2e/.auth", { recursive: true })
     await context.storageState({ path: "e2e/.auth/backend.json" })
+    // Spec đăng nhập bằng form (auth/logout) đọc tài khoản này thay vì
+    // hardcode mật khẩu mock — mỗi lần chạy là user mới.
+    writeFileSync("e2e/.auth/backend-account.json", JSON.stringify(DEMO_USER))
   } finally {
     await context.dispose()
   }

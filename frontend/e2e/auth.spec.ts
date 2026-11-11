@@ -1,23 +1,25 @@
 import { expect, test } from "@playwright/test"
+import { e2eAccount } from "./credentials.js"
 
 /**
  * Vòng đời tài khoản (G1): đăng nhập, đăng ký, quên mật khẩu.
  *
- * Mock dùng tài khoản dev `me@rendez.test` / `password123` (xem
- * `src/mocks/server.ts`); project backend dùng tài khoản demo của global-setup
- * nên spec này chỉ chạy project `mock`.
+ * Tài khoản đăng nhập lấy từ `e2eAccount()`: mock dùng tài khoản dev
+ * `me@rendez.test` / `password123` (xem `src/mocks/server.ts`); project backend
+ * dùng tài khoản demo do global-setup tạo qua API thật.
  */
 test.describe.configure({ mode: "serial" })
 
 test("đăng nhập sai mật khẩu hiện lỗi, đúng mật khẩu về trang khám phá", async ({ page }) => {
+  const account = e2eAccount()
   await page.goto("/login")
 
-  await page.getByLabel("Email").fill("me@rendez.test")
+  await page.getByLabel("Email").fill(account.email)
   await page.getByLabel("Mật khẩu").fill("sai-mat-khau")
   await page.getByRole("button", { name: "Đăng nhập" }).click()
   await expect(page.getByText("Email hoặc mật khẩu không đúng")).toBeVisible()
 
-  await page.getByLabel("Mật khẩu").fill("password123")
+  await page.getByLabel("Mật khẩu").fill(account.password)
   await page.getByRole("button", { name: "Đăng nhập" }).click()
   await expect(page).toHaveURL(/\/discover$/u)
 })

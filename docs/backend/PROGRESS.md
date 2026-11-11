@@ -6,57 +6,57 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 
 ## Bảng task
 
-| ID | Phase | Mô tả | Phụ thuộc | Trạng thái | Commit |
-|---|---|---|---|---|---|
-| T0.1 | 0 | Scaffold backend + env fail-fast | — | done (phiên trước) | — |
-| T0.2 | 0 | packages/schema + FE re-export shim | T0.1 | done (phiên trước) | — |
-| T0.3 | 0 | docs/STACK-BE.md | T0.1 | done (phiên trước) | — |
-| T0.4 | 0 | Skeleton Hono + /healthz + error {message} | T0.1 | done (phiên trước) | — |
-| T0.5 | 0 | Prisma 18 bảng + migration + seed 491 | T0.1 | done (phiên trước) | — |
-| T0.7 | 0 | Commit Phase 0 (chưa commit ở phiên trước) | T0.1–T0.5 | doing | |
-| T0.8 | 0 | Mount /api/v1 (K1) + script aliases migrate/seed | T0.4 | todo | |
-| T0.6 | 0 | Testcontainers harness Postgres | T0.5 | done | |
-| T1.1 | 1 | better-auth email+password + bảng auth (migration mới) | T0.5 | done | |
-| T1.2 | 1 | GET/PATCH /me, POST/DELETE /session khớp userProfileSchema | T1.1 | done | |
-| T1.3 | 1 | Đăng ký (POST /register) | T1.1 | done | |
-| T1.4 | 1 | Middleware requireAuth + rate limit store Postgres | T1.1 | todo | |
-| T1.5 | 1 | Contract test Phase 1 (schema A2) | T1.2 | done (auth) | |
-| T2.1 | 2 | GET /places — bộ lọc A7.9 + cursor keyset | T1.4 | done | |
-| T2.2 | 2 | GET /places/map — bbox + {items,total} + chặn 300 | T2.1 | done | |
-| T2.3 | 2 | GET /places/:id — 404 nếu chưa publish | T2.1 | done | |
-| T2.4 | 2 | GET /places/suggestions — port ranking.ts + unaccent | T2.1 | done | |
-| T2.5 | 2 | pg_trgm index + test "banh xeo" khớp "Bánh Xèo" | T2.1 | done (unaccent; trgm index dùng cho T2.4) | |
-| T2.6 | 2 | GET /users?q= | T2.1 | done | |
-| T3.1 | 3 | POST /posts + GET /posts (filter all/unplaced/mine/saved + q) | T1.4 | done | |
-| T3.2 | 3 | GET /posts/:id; PATCH like/save idempotent | T3.1 | done | |
-| T3.3 | 3 | PATCH /posts/:id/place — side effects A7.3 trong transaction | T3.1 | done | |
-| T3.4 | 3 | Comments GET/POST/PATCH like/DELETE (A7.6) | T3.1 | done | |
-| T3.5 | 3 | Notification like/comment (follow ở T5.4) (A6.4) | T3.4 | done | |
-| T4.1 | 4 | POST /places/:id/reviews — upsert + aggregate A7.4 | T1.4 | done | 6819909 |
-| T4.2 | 4 | GET /places/:id/reviews — mới nhất trước | T4.1 | done | 6819909 |
-| T4.3 | 4 | POST /places/:id/reports — A7.5 + unique | T1.4 | done | 6819909 |
-| T4.4 | 4 | Job pg-boss phát hiện place (A7.2) + cron + unique index | T3.1 | done | f5a14e9 |
-| T4.5 | 4 | Notifications GET/PATCH :id/PATCH all | T4.4 | done | |
-| T5.1 | 5 | CRUD /collections + like + PATCH :id/places (A7.7) | T1.4 | done | 6819909 |
-| T5.2 | 5 | GET /places/saved | T5.1 | done | 6819909 |
-| T5.3 | 5 | GET /users/:handle (+/posts?tab=, /collections) | T2.6 | done | 0a4f078 |
-| T5.4 | 5 | Follow/unfollow + bảng follows (migration mới) | T5.3 | done | 0a4f078 |
-| T6.1 | 6 | Contract room: POST /rooms, GET /rooms/:code, join, proposals | T1.4 | done | (commit Phase 6) |
-| T6.2 | 6 | Logic áp proposal vào filter | T6.1 | done | (commit Phase 6) |
-| T6.3 | 6 | SSE /rooms/:code/events | T6.1 | done | (commit Phase 6) |
-| T6.4 | 6 | GET /places nhận bộ lọc room (đã có ở T2.1) | T6.1 | done | c61de56 |
-| T7.1 | 7 | R2 presigned PUT + POST /media | T1.4 | done (chưa xác minh với R2 thật) | (commit Phase 7) |
-| T7.2 | 7 | Mở lại ảnh check-in (FE — chỉ nếu bug thật) | T7.1 | todo | |
-| T7.3 | 7 | Rate-limit áp dụng + secure headers | T1.4 | done | (commit Phase 7) |
-| T7.4 | 7 | Chạy song song mock/backend (không xoá mock) | T2–T6 | done | project `backend` Playwright, mock giữ nguyên |
-| T8.1 | 8 | Dockerfile API multi-stage + compose | T2–T7 | done | runtime giữ nguyên cấu trúc workspace (node_modules/.bun + backend/node_modules) |
-| T8.2 | 8 | Deploy Fly/Railway — CHỈ nếu user trả lời; mặc định bỏ | T8.1 | todo | |
-| T8.3 | 8 | Đổi tile OSM — ngoài phạm vi backend, đã có BACKLOG | — | todo | |
-| QA1 | — | Audit code-integrity toàn bộ diff | T2–T6 | done | xoá 7 chỗ `as never` → `lib/enums.ts`; bảng enum tường minh + test round-trip; typecheck + 127 test xanh |
-| QA2 | — | Test: unit + integration + contract + e2e backend | T2–T6 | done (12/12 e2e backend, logout.spec bỏ do FE chưa có form đăng nhập — BACKLOG) | |
-| QA3 | — | Kiểm thử bảo mật local (xh/curl; chỉ 127.0.0.1) | QA1 | done | 401/400/404 đúng, SQLi tham số hoá, cookie HttpOnly, nikto 7.948 request không lỗi nghiêm trọng; thêm CSP + Permissions-Policy | |
-| DOC1 | — | docs/backend/API.md + RUNBOOK.md + REPORT.md | T2–T6 | done | 60ac3c1 | |
-| DOC2 | — | Báo cáo đồ án docs/bao-cao/BAO-CAO-DO-AN.md (bắt đầu 09:30) | DOC1 | done (bản 1, còn bổ sung số liệu cuối) | 60ac3c1 | |
+| ID   | Phase | Mô tả                                                         | Phụ thuộc | Trạng thái                                                                      | Commit                                                                                                                         |
+| ---- | ----- | ------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| T0.1 | 0     | Scaffold backend + env fail-fast                              | —         | done (phiên trước)                                                              | —                                                                                                                              |
+| T0.2 | 0     | packages/schema + FE re-export shim                           | T0.1      | done (phiên trước)                                                              | —                                                                                                                              |
+| T0.3 | 0     | docs/STACK-BE.md                                              | T0.1      | done (phiên trước)                                                              | —                                                                                                                              |
+| T0.4 | 0     | Skeleton Hono + /healthz + error {message}                    | T0.1      | done (phiên trước)                                                              | —                                                                                                                              |
+| T0.5 | 0     | Prisma 18 bảng + migration + seed 491                         | T0.1      | done (phiên trước)                                                              | —                                                                                                                              |
+| T0.7 | 0     | Commit Phase 0 (chưa commit ở phiên trước)                    | T0.1–T0.5 | doing                                                                           |                                                                                                                                |
+| T0.8 | 0     | Mount /api/v1 (K1) + script aliases migrate/seed              | T0.4      | todo                                                                            |                                                                                                                                |
+| T0.6 | 0     | Testcontainers harness Postgres                               | T0.5      | done                                                                            |                                                                                                                                |
+| T1.1 | 1     | better-auth email+password + bảng auth (migration mới)        | T0.5      | done                                                                            |                                                                                                                                |
+| T1.2 | 1     | GET/PATCH /me, POST/DELETE /session khớp userProfileSchema    | T1.1      | done                                                                            |                                                                                                                                |
+| T1.3 | 1     | Đăng ký (POST /register)                                      | T1.1      | done                                                                            |                                                                                                                                |
+| T1.4 | 1     | Middleware requireAuth + rate limit store Postgres            | T1.1      | todo                                                                            |                                                                                                                                |
+| T1.5 | 1     | Contract test Phase 1 (schema A2)                             | T1.2      | done (auth)                                                                     |                                                                                                                                |
+| T2.1 | 2     | GET /places — bộ lọc A7.9 + cursor keyset                     | T1.4      | done                                                                            |                                                                                                                                |
+| T2.2 | 2     | GET /places/map — bbox + {items,total} + chặn 300             | T2.1      | done                                                                            |                                                                                                                                |
+| T2.3 | 2     | GET /places/:id — 404 nếu chưa publish                        | T2.1      | done                                                                            |                                                                                                                                |
+| T2.4 | 2     | GET /places/suggestions — port ranking.ts + unaccent          | T2.1      | done                                                                            |                                                                                                                                |
+| T2.5 | 2     | pg_trgm index + test "banh xeo" khớp "Bánh Xèo"               | T2.1      | done (unaccent; trgm index dùng cho T2.4)                                       |                                                                                                                                |
+| T2.6 | 2     | GET /users?q=                                                 | T2.1      | done                                                                            |                                                                                                                                |
+| T3.1 | 3     | POST /posts + GET /posts (filter all/unplaced/mine/saved + q) | T1.4      | done                                                                            |                                                                                                                                |
+| T3.2 | 3     | GET /posts/:id; PATCH like/save idempotent                    | T3.1      | done                                                                            |                                                                                                                                |
+| T3.3 | 3     | PATCH /posts/:id/place — side effects A7.3 trong transaction  | T3.1      | done                                                                            |                                                                                                                                |
+| T3.4 | 3     | Comments GET/POST/PATCH like/DELETE (A7.6)                    | T3.1      | done                                                                            |                                                                                                                                |
+| T3.5 | 3     | Notification like/comment (follow ở T5.4) (A6.4)              | T3.4      | done                                                                            |                                                                                                                                |
+| T4.1 | 4     | POST /places/:id/reviews — upsert + aggregate A7.4            | T1.4      | done                                                                            | 6819909                                                                                                                        |
+| T4.2 | 4     | GET /places/:id/reviews — mới nhất trước                      | T4.1      | done                                                                            | 6819909                                                                                                                        |
+| T4.3 | 4     | POST /places/:id/reports — A7.5 + unique                      | T1.4      | done                                                                            | 6819909                                                                                                                        |
+| T4.4 | 4     | Job pg-boss phát hiện place (A7.2) + cron + unique index      | T3.1      | done                                                                            | f5a14e9                                                                                                                        |
+| T4.5 | 4     | Notifications GET/PATCH :id/PATCH all                         | T4.4      | done                                                                            |                                                                                                                                |
+| T5.1 | 5     | CRUD /collections + like + PATCH :id/places (A7.7)            | T1.4      | done                                                                            | 6819909                                                                                                                        |
+| T5.2 | 5     | GET /places/saved                                             | T5.1      | done                                                                            | 6819909                                                                                                                        |
+| T5.3 | 5     | GET /users/:handle (+/posts?tab=, /collections)               | T2.6      | done                                                                            | 0a4f078                                                                                                                        |
+| T5.4 | 5     | Follow/unfollow + bảng follows (migration mới)                | T5.3      | done                                                                            | 0a4f078                                                                                                                        |
+| T6.1 | 6     | Contract room: POST /rooms, GET /rooms/:code, join, proposals | T1.4      | done                                                                            | (commit Phase 6)                                                                                                               |
+| T6.2 | 6     | Logic áp proposal vào filter                                  | T6.1      | done                                                                            | (commit Phase 6)                                                                                                               |
+| T6.3 | 6     | SSE /rooms/:code/events                                       | T6.1      | done                                                                            | (commit Phase 6)                                                                                                               |
+| T6.4 | 6     | GET /places nhận bộ lọc room (đã có ở T2.1)                   | T6.1      | done                                                                            | c61de56                                                                                                                        |
+| T7.1 | 7     | R2 presigned PUT + POST /media                                | T1.4      | done (chưa xác minh với R2 thật)                                                | (commit Phase 7)                                                                                                               |
+| T7.2 | 7     | Mở lại ảnh check-in (FE — chỉ nếu bug thật)                   | T7.1      | todo                                                                            |                                                                                                                                |
+| T7.3 | 7     | Rate-limit áp dụng + secure headers                           | T1.4      | done                                                                            | (commit Phase 7)                                                                                                               |
+| T7.4 | 7     | Chạy song song mock/backend (không xoá mock)                  | T2–T6     | done                                                                            | project `backend` Playwright, mock giữ nguyên                                                                                  |
+| T8.1 | 8     | Dockerfile API multi-stage + compose                          | T2–T7     | done                                                                            | runtime giữ nguyên cấu trúc workspace (node_modules/.bun + backend/node_modules)                                               |
+| T8.2 | 8     | Deploy Fly/Railway — CHỈ nếu user trả lời; mặc định bỏ        | T8.1      | todo                                                                            |                                                                                                                                |
+| T8.3 | 8     | Đổi tile OSM — ngoài phạm vi backend, đã có BACKLOG           | —         | todo                                                                            |                                                                                                                                |
+| QA1  | —     | Audit code-integrity toàn bộ diff                             | T2–T6     | done                                                                            | xoá 7 chỗ `as never` → `lib/enums.ts`; bảng enum tường minh + test round-trip; typecheck + 127 test xanh                       |
+| QA2  | —     | Test: unit + integration + contract + e2e backend             | T2–T6     | done (12/12 e2e backend, logout.spec bỏ do FE chưa có form đăng nhập — BACKLOG) |                                                                                                                                |
+| QA3  | —     | Kiểm thử bảo mật local (xh/curl; chỉ 127.0.0.1)               | QA1       | done                                                                            | 401/400/404 đúng, SQLi tham số hoá, cookie HttpOnly, nikto 7.948 request không lỗi nghiêm trọng; thêm CSP + Permissions-Policy |     |
+| DOC1 | —     | docs/backend/API.md + RUNBOOK.md + REPORT.md                  | T2–T6     | done                                                                            | 60ac3c1                                                                                                                        |     |
+| DOC2 | —     | Báo cáo đồ án docs/bao-cao/BAO-CAO-DO-AN.md (bắt đầu 09:30)   | DOC1      | done (bản 1, còn bổ sung số liệu cuối)                                          | 60ac3c1                                                                                                                        |     |
 
 ## Quy ước phiên này
 
@@ -96,13 +96,13 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
   · CI job `api` bật lại (typecheck + prettier + test Testcontainers) (191071b).
 - Audit vòng 2 (07:37–07:52):
   · `PATCH /posts/:id/place`: người không phải tác giả gắn được địa điểm vào bài người khác;
-    thông báo đề xuất bị đánh dấu đọc cho SAI người (người gọi thay vì tác giả) → chặn 403
-    + lọc theo `post.authorId` (770b203, +1 test).
-  · `GET /places?category=<rác>` trả 500 (cast `::place_category` lỗi) → chuẩn hoá enum,
+  thông báo đề xuất bị đánh dấu đọc cho SAI người (người gọi thay vì tác giả) → chặn 403
+  - lọc theo `post.authorId` (770b203, +1 test).
+    · `GET /places?category=<rác>` trả 500 (cast `::place_category` lỗi) → chuẩn hoá enum,
     giá trị lạ bị bỏ qua; danh sách toàn giá trị lạ trả trang RỖNG như mock (491feec, +2 test).
-  · Query/body chứa ký tự NUL → 500 từ Postgres (SQLSTATE 22021) → map về 400 ở `onError`
+    · Query/body chứa ký tự NUL → 500 từ Postgres (SQLSTATE 22021) → map về 400 ở `onError`
     (624ce5d, +2 test).
-  · Rà quyền: collections (owner), comments (tác giả), notifications (chủ sở hữu), rooms
+    · Rà quyền: collections (owner), comments (tác giả), notifications (chủ sở hữu), rooms
     (thành viên/chủ phòng), follow (cấm tự theo dõi) — không phát hiện lỗ hổng mới.
 - Số liệu mới nhất: 127 test backend (14 file), typecheck 0 lỗi, e2e backend 12/12,
   e2e mock 13/13, compose smoke healthz/readyz/places 200.
@@ -122,7 +122,7 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
   và `array_to_string()` STABLE không dùng được trong biểu thức index (42P17) → bọc thành
   `immutable_unaccent`/`immutable_array_to_string` IMMUTABLE trong migration 9; `concat_ws`
   cũng STABLE → thay bằng `||`. `EXPLAIN` (seqscan off) xác nhận `Bitmap Index Scan on
-  places_search_trgm_idx`. Test chặn hồi quy sự tồn tại index (120 test).
+places_search_trgm_idx`. Test chặn hồi quy sự tồn tại index (120 test).
 - Lint FE (eslint) sạch, prettier backend sạch.
 
 ## Audit vòng 5 (08:39–08:50)
@@ -138,7 +138,7 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
   `Bitmap Index Scan on places_search_trgm_idx`; smoke container: `q=bánh xèo` 3 bài,
   `q=yến nguyễn` và `q=yen nguyen` đều trả "Yến Nguyễn").
   · Ghi chú: Prisma chạy migration với `search_path` rỗng → hàm SQL phải tham chiếu
-    `public.immutable_unaccent` (lỗi 42883 nếu không).
+  `public.immutable_unaccent` (lỗi 42883 nếu không).
 - `listCommentsForPost` không có `ORDER BY` → thứ tự reply khi trùng `created_at` phụ thuộc
   planner; thêm `ORDER BY c.created_at ASC, c.id ASC` để tất định (02161dd).
 - **Đề xuất phòng lọc nhận giá trị rác**: `POST /rooms/:code/proposals` chỉ kiểm `value` là
@@ -168,15 +168,15 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 
 ## Kết quả cuối (phiên tự hành 2026-11-11)
 
-| Hạng mục | Kết quả (output thật) |
-| --- | --- |
-| Typecheck FE + BE | 0 lỗi (`bun run typecheck`) |
-| Test backend | **135 pass / 0 fail**, 14 file, ~100 giây (`bun test --parallel=1`) |
-| E2E backend thật | **12/12 pass**, 9,4 giây |
-| E2E mock | **13/13 pass**, 16,3 giây |
-| Migration | 11 migration áp dụng sạch trên Postgres 17 (compose + Testcontainers) |
-| Smoke compose | `/healthz` 200, `/readyz` 200, `/places?limit=9` 9 item + `next`, `/places?q=bánh xèo` 3 item |
-| Endpoint | 50 endpoint nghiệp vụ + 2 health check + mount better-auth |
+| Hạng mục          | Kết quả (output thật)                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| Typecheck FE + BE | 0 lỗi (`bun run typecheck`)                                                                   |
+| Test backend      | **135 pass / 0 fail**, 14 file, ~100 giây (`bun test --parallel=1`)                           |
+| E2E backend thật  | **12/12 pass**, 9,4 giây                                                                      |
+| E2E mock          | **13/13 pass**, 16,3 giây                                                                     |
+| Migration         | 11 migration áp dụng sạch trên Postgres 17 (compose + Testcontainers)                         |
+| Smoke compose     | `/healthz` 200, `/readyz` 200, `/places?limit=9` 9 item + `next`, `/places?q=bánh xèo` 3 item |
+| Endpoint          | 50 endpoint nghiệp vụ + 2 health check + mount better-auth                                    |
 
 Lỗi thật đã sửa trong phiên: quyền gắn địa điểm vào bài người khác + thông báo sai người nhận;
 `category` rác gây 500; ký tự NUL gây 500; cursor giả mạo gây 500; thiếu `?sort=top`; tìm kiếm
@@ -252,3 +252,20 @@ Xác minh: `docker compose -f compose.yaml -f deploy/compose.prod.yml config` OK
 port 8000/5432 lộ ra, Caddyfile đúng đường dẫn); `deploy/backup-db.sh` chạy thật trên dev DB
 → file 192K, magic `PGDMP` hợp lệ, đã xoá file test.
 Chưa xác minh: chạy thật trên máy chủ, TLS Let's Encrypt (cần domain công khai).
+
+## G5 — E2E chạy trên backend thật (2026-11-11 tối)
+
+- Sửa 3 gốc rễ khiến 10/18 spec fail lần đầu chạy `--project=backend`:
+  1. Seed đặt corpus OSM (không ảnh) trước curated → trang đầu `/discover` không có ảnh card.
+     `seed.ts` giờ sắp theo `seedRank`: có ảnh → curated → osm (DECISIONS 32).
+  2. `logout.spec` đăng xuất phiên storageState dùng chung → session bị xoá ở server, mọi spec
+     song song nhận 401. Spec giờ tự đăng nhập qua `/login` (session riêng) rồi mới đăng xuất.
+  3. Spec đăng nhập hardcode tài khoản mock `password123` (không tồn tại trên backend thật).
+     Thêm `e2e/credentials.ts`: mock dùng tài khoản dev; backend đọc tài khoản demo do
+     `global-setup.ts` ghi ra `e2e/.auth/backend-account.json` (user mới mỗi lần chạy).
+- `CORS_ORIGINS` mặc định của dev compose thêm `http://localhost:5199` (cổng dev server E2E) —
+  thiếu thì better-auth từ chối `redirectTo` của link reset mật khẩu (403, DECISIONS 32).
+- Smoke: `request-password-reset` cho user mới → 200; log dev có dòng "DEV ONLY" kèm token.
+
+Xác minh: `E2E_BACKEND_URL=http://localhost:8000 bun run e2e --project=backend` — **18 pass /
+0 fail**; `--project=mock` — **18 pass / 0 fail**; typecheck root 0 lỗi; FE unit 72 pass.
