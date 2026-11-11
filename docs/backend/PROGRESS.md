@@ -186,3 +186,13 @@ phòng lọc nhận giá trị rác làm phòng 500 vĩnh viễn.
 
 Chưa xác minh (giữ nguyên như báo cáo §4.5): R2 thật, gửi email thật, deploy công khai, SSE
 nhiều instance, hiệu năng ≥ 50k dòng, trình duyệt mobile thật.
+
+## Xác minh cuối (10:12, 2026-11-11)
+
+- `bun run typecheck` — 0 lỗi.
+- `cd backend && bun test --parallel=1` — **135 pass / 0 fail**, 14 file, 99.73s.
+- `bun run e2e --project=mock` — **13/13 pass** (16.4s).
+- `E2E_BACKEND_URL=http://localhost:8000 bun run e2e --project=backend` — **12/12 pass** (8.5s).
+- Smoke trên image cuối: `/healthz` 200, `/api/v1/places` 200 (9 item/trang, khớp mock bỏ qua `limit`).
+- Audit grep cuối: không còn `as any`/`@ts-ignore`/`.skip`/catch rỗng/TODO trong `backend/src`.
+- Docker chỉ còn `rendez-postgres` + `rendez-api`; không có dev server sót.

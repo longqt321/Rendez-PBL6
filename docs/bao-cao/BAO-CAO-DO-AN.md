@@ -456,7 +456,7 @@ flowchart TB
   BE --> SC["scripts/seed.ts"]
 ```
 
-Backend có 35 file TypeScript trong `src/`, khoảng 4.200 dòng. Nguyên tắc: **route mỏng, lib dày**
+Backend có 35 file TypeScript trong `src/`, khoảng 4.440 dòng. Nguyên tắc: **route mỏng, lib dày**
 — route lo kiểm tra đầu vào và mã HTTP, mọi truy vấn nằm trong `lib/` để tái sử dụng và dễ test.
 
 ### 3.2. Luồng đăng nhập và phiên
