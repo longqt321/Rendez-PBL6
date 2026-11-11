@@ -128,13 +128,17 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 - `GET /posts/:id/comments?sort=top`: mock xếp bình luận cha theo `likeCount` giảm dần, backend
   bỏ qua tham số → thêm `parseCommentSort` + `listCommentsForPost(..., sort)` (2eb50f0, +1 test;
   reply vẫn xếp tăng dần theo thời gian).
-- **Bug thật về tìm kiếm**: `?q=bánh xèo` không khớp dù mock khớp — HAYSTACK đã bỏ dấu còn từ
-  khoá thì chưa; mock còn coi dấu câu là khoảng trắng ("Đường 2/9" → "duong 2 9"). Migration 10
-  thêm `immutable_search_normalize()` (bỏ dấu, lowercase, dấu câu → space, gộp space, trim),
-  dựng lại GIN index trên biểu thức mới, từ khoá chuẩn hoá bằng chính hàm đó (32731b8, +1 test;
-  `EXPLAIN` xác nhận `Bitmap Index Scan on places_search_trgm_idx`).
+- **Bug thật về tìm kiếm** (3 route cùng một lớp lỗi): `?q=bánh xèo` ở `/places`, `/posts`,
+  `/users` không khớp dù mock khớp — cột đã bỏ dấu còn từ khoá thì chưa; mock còn coi dấu câu
+  là khoảng trắng ("Đường 2/9" → "duong 2 9"). Migration 10 thêm `immutable_search_normalize()`
+  (bỏ dấu, lowercase, dấu câu → space, gộp space, trim), dựng lại GIN index trên biểu thức mới,
+  cả 3 route chuẩn hoá 2 phía bằng chính hàm đó (32731b8 + 0083082, +3 test; `EXPLAIN` xác nhận
+  `Bitmap Index Scan on places_search_trgm_idx`; smoke container: `q=bánh xèo` 3 bài,
+  `q=yến nguyễn` và `q=yen nguyen` đều trả "Yến Nguyễn").
   · Ghi chú: Prisma chạy migration với `search_path` rỗng → hàm SQL phải tham chiếu
     `public.immutable_unaccent` (lỗi 42883 nếu không).
+- `listCommentsForPost` không có `ORDER BY` → thứ tự reply khi trùng `created_at` phụ thuộc
+  planner; thêm `ORDER BY c.created_at ASC, c.id ASC` để tất định (02161dd).
 - `detectPlaceSuggestions` quét toàn bộ post chưa gắn địa điểm trong một lần → thêm `take: 50`
   (K6 "batch nhỏ 50 post/lần"); `postId` cụ thể (trigger) không giới hạn (9ea259a).
 - `GET /places/map` kéo cả dataset về RAM rồi `slice(0,300)` → `LIMIT` trong SQL + `COUNT(*)`
@@ -152,8 +156,8 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | Hạng mục | Kết quả (output thật) |
 | --- | --- |
 | Typecheck FE + BE | 0 lỗi (`bun run typecheck`) |
-| Test backend | **129 pass / 0 fail**, 14 file, 98,45 giây (`bun test --parallel=1`) |
-| E2E backend thật | **12/12 pass**, 8,5 giây |
+| Test backend | **131 pass / 0 fail**, 14 file, 95,93 giây (`bun test --parallel=1`) |
+| E2E backend thật | **12/12 pass**, 9,1 giây |
 | E2E mock | **13/13 pass**, 16,3 giây |
 | Migration | 10 migration áp dụng sạch trên Postgres 17 (compose + Testcontainers) |
 | Smoke compose | `/healthz` 200, `/readyz` 200, `/places?limit=9` 9 item + `next`, `/places?q=bánh xèo` 3 item |
@@ -161,7 +165,8 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 
 Lỗi thật đã sửa trong phiên: quyền gắn địa điểm vào bài người khác + thông báo sai người nhận;
 `category` rác gây 500; ký tự NUL gây 500; cursor giả mạo gây 500; thiếu `?sort=top`; tìm kiếm
-có dấu/dấu câu không khớp mock; job quét không batch; `/places/map` tải cả dataset.
+có dấu/dấu câu không khớp mock ở cả `/places`, `/posts`, `/users`; job quét không batch;
+`/places/map` tải cả dataset; thứ tự bình luận không tất định khi trùng thời điểm.
 
 Chưa xác minh (giữ nguyên như báo cáo §4.5): R2 thật, gửi email thật, deploy công khai, SSE
 nhiều instance, hiệu năng ≥ 50k dòng, trình duyệt mobile thật.
