@@ -448,7 +448,7 @@ flowchart TB
   SRC --> L["lib/ (truy vấn & nghiệp vụ)"]
   SRC --> I["app.ts · server.ts · env.ts"]
   BE --> PR["prisma/schema.prisma + 8 migration"]
-  BE --> T["test/ (13 file, 113 test)"]
+  BE --> T["test/ (13 file, 117 test)"]
   BE --> SC["scripts/seed.ts"]
 ```
 
@@ -658,7 +658,7 @@ thiểu; bộ test chạy tuần tự (`--parallel=1`) để tránh tranh chấp
 
 | Bộ test | Số lượng | Kết quả | Thời gian |
 | --- | --- | --- | --- |
-| Backend integration/unit | 113 test / 13 file | **113 pass, 0 fail** | ~88 giây |
+| Backend integration/unit | 117 test / 13 file | **117 pass, 0 fail** | ~88 giây |
 | E2E với backend thật | 12 spec | **12 pass** | ~8,5 giây |
 | E2E với mock (hồi quy FE) | 13 spec | **13 pass** | ~15,8 giây |
 | Typecheck (FE + BE) | — | 0 lỗi | ~5 giây |
@@ -667,8 +667,8 @@ Phân bố test backend theo vùng chức năng:
 
 | File | Số test | Nội dung |
 | --- | --- | --- |
-| `places.test.ts` | 19 | danh sách, lọc, bản đồ, gợi ý, chi tiết, saved, bài gắn địa điểm |
-| `posts.test.ts` | 20 | feed, phân trang, like, save, bình luận, like bình luận |
+| `places.test.ts` | 22 | danh sách, lọc, bản đồ, gợi ý, chi tiết, saved, bài gắn địa điểm |
+| `posts.test.ts` | 21 | feed, phân trang, like, save, bình luận, like bình luận |
 | `notifications.test.ts` | 5 | danh sách, đánh dấu đã đọc, đọc tất cả, 401 |
 | `collections.test.ts` | 14 | CRUD, quyền riêng tư, thêm/bớt địa điểm, like |
 | `rooms.test.ts` | 11 | tạo/join, đề xuất, áp dụng, rời phòng, SSE |
@@ -706,6 +706,8 @@ mỗi endpoint gọi 20 lần liên tiếp sau 3 lần khởi động nóng:
 | Tham số `q=' OR 1=1 --` | Không lỗi SQL, 0 kết quả | 200, 0 kết quả |
 | `id` dài 500 ký tự | 404 | 404 |
 | `cursor` sai định dạng | 400 | 400 |
+| `category` là giá trị lạ | Không 500, trả trang rỗng | 200, `{items: [], next: null}` |
+| Query/body chứa ký tự NUL (`%00`) | 400, không lỗi hệ thống | 400 "Dữ liệu chứa ký tự không hợp lệ" |
 | Mật khẩu 3 ký tự | 400 | 400 |
 | Cookie phiên | HttpOnly, SameSite | `HttpOnly; SameSite=Lax` |
 | CORS từ origin lạ | Không có `Access-Control-Allow-Origin` | Đúng |
@@ -737,7 +739,7 @@ mỗi endpoint gọi 20 lần liên tiếp sau 3 lần khởi động nóng:
 ### Kết quả đạt được
 
 Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 8
-migration, 51 endpoint, 113 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
+migration, 51 endpoint, 117 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
 hệ thống chạy được bằng một lệnh `docker compose up` với dữ liệu 491 địa điểm thật tại Đà Nẵng.
 Báo cáo cũng đã hệ thống hoá quy trình: từ đặc tả hợp đồng API, thiết kế dữ liệu, triển khai,
 đến kiểm thử và đóng gói.

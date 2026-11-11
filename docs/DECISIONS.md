@@ -2591,3 +2591,10 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
 12. **Runtime image dùng lại `node_modules` của builder.** Bun workspace đặt store ở
     `node_modules/.bun` và symlink của workspace con ở `backend/node_modules` (trỏ tương đối);
     stage production riêng không tái tạo được cấu trúc này. Đổi lại image lớn hơn — ghi BACKLOG.
+13. **Ký tự NUL (`\u0000`) trong query/body trả 400** "Dữ liệu chứa ký tự không hợp lệ".
+    Postgres không nhận NUL trong text (SQLSTATE 22021) — để nguyên sẽ 500. Mock không có
+    dữ liệu control character nên không có hành vi đối chiếu; chọn 400 (lỗi đầu vào, an toàn,
+    một chỗ xử lý ở `onError` cho mọi route) thay vì 500 hay strip âm thầm.
+14. **`GET /places?category=<giá trị lạ>`: giá trị lạ bị bỏ qua; danh sách toàn giá trị lạ
+    trả trang RỖNG** (không phải bỏ lọc). Khớp hành vi mock (lọc theo chuỗi, không khớp → rỗng);
+    tránh 500 từ cast `::place_category`.

@@ -346,3 +346,13 @@ lịch sử; không còn việc mở ở đây.
       production sạch ở stage riêng (symlink workspace chỉ đúng trong cây install đầy đủ);
       runtime COPY nguyên node_modules của builder. Cân nhắc `bun install --production`
       trong backend hoặc registry riêng khi cần thu gọn image.
+
+## Phát hiện 2026-11-11 (audit vòng 2)
+
+- [ ] **Rate limit tin `X-Forwarded-For` mù quáng** — `lib/rate-limit.ts` lấy phần tử
+      đầu của `XFF` làm IP; client gọi thẳng API có thể tự đặt header để xoay IP ảo,
+      né giới hạn đăng ký/đăng nhập. Khi có reverse proxy thật cần cấu hình
+      "trusted proxy" (chỉ tin XFF từ IP proxy đã biết), ví dụ env `TRUSTED_PROXIES`.
+- [ ] **`POST /posts` caption chứa ký tự NUL** — đã map SQLSTATE 22021 → 400 ở
+      `onError` (624ce5d); về lâu dài có thể thêm middleware strip control chars
+      nếu xuất hiện thêm lỗi đầu vào tương tự.
