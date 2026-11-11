@@ -448,7 +448,7 @@ flowchart TB
   SRC --> L["lib/ (truy vấn & nghiệp vụ)"]
   SRC --> I["app.ts · server.ts · env.ts"]
   BE --> PR["prisma/schema.prisma + 9 migration"]
-  BE --> T["test/ (13 file, 120 test)"]
+  BE --> T["test/ (14 file, 123 test)"]
   BE --> SC["scripts/seed.ts"]
 ```
 
@@ -661,7 +661,7 @@ thiểu; bộ test chạy tuần tự (`--parallel=1`) để tránh tranh chấp
 
 | Bộ test | Số lượng | Kết quả | Thời gian |
 | --- | --- | --- | --- |
-| Backend integration/unit | 120 test / 13 file | **120 pass, 0 fail** | ~88 giây |
+| Backend integration/unit | 123 test / 14 file | **123 pass, 0 fail** | ~99 giây |
 | E2E với backend thật | 12 spec | **12 pass** | ~8,5 giây |
 | E2E với mock (hồi quy FE) | 13 spec | **13 pass** | ~15,8 giây |
 | Typecheck (FE + BE) | — | 0 lỗi | ~5 giây |
@@ -683,6 +683,7 @@ Phân bố test backend theo vùng chức năng:
 | `enums.test.ts` | 5 | quy đổi enum API ↔ Prisma (round-trip, giá trị lạ) |
 | `users.test.ts` | 3 | tìm kiếm người dùng |
 | `health.test.ts` | 2 | healthz, readyz |
+| `media.test.ts` | 3 | presign PUT khi R2 cấu hình, chặn SVG, folder lạ |
 
 Đo độ phủ bằng `bun test --coverage` (34 file đo được, gồm cả gói schema dùng chung):
 
@@ -768,7 +769,7 @@ Các hạng mục sau **chưa kiểm chứng được** trong khuôn khổ đồ
 ### Kết quả đạt được
 
 Đồ án đã hoàn thiện **backend và cơ sở dữ liệu** cho ứng dụng RendeZ: 23 bảng nghiệp vụ, 9
-migration, 51 endpoint, 120 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
+migration, 51 endpoint, 123 test backend và 12 spec e2e chạy với backend thật đều đạt; toàn bộ
 hệ thống chạy được bằng một lệnh `docker compose up` với dữ liệu 491 địa điểm thật tại Đà Nẵng.
 Báo cáo cũng đã hệ thống hoá quy trình: từ đặc tả hợp đồng API, thiết kế dữ liệu, triển khai,
 đến kiểm thử và đóng gói.
