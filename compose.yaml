@@ -48,6 +48,9 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:-rendez_dev}@postgres:5432/${POSTGRES_DB:-rendez}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-rendez-dev-secret-0123456789abcdef}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:8000}
+      # Origin FE được phép gọi — cần cho CORS và cho better-auth kiểm `redirectTo`
+      # của link reset mật khẩu (thiếu → 403 khi FE gọi từ origin khác).
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
