@@ -73,7 +73,9 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 
 ## Checkpoint 05:30
 
-(chưa đến)
+- Phase 0–8 xong trước mốc; chuyển sang audit + test bổ sung (xem các mục "Audit vòng").
+- Số liệu ghi tại thời điểm đó (commit `0d92f5c`): 113 test backend, e2e backend 12/12,
+  e2e mock 13/13. Con số hiện tại xem mục "Kết quả cuối".
 
 ## Checkpoint 06:40 (bổ sung)
 
