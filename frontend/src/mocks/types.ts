@@ -1,5 +1,6 @@
 import type { Author, Post } from "@/features/social/types/post"
 import type { PlaceReport } from "@/features/places/types/place-report"
+import type { RoomFilter, RoomProposal } from "@/features/rooms/types/room"
 
 /**
  * Bản ghi bài đăng trong "database" của server giả lập.
@@ -79,4 +80,24 @@ export interface MockCollection {
   likeCount: number
   /** Người dùng hiện tại đã thả tim chưa — server lưu, không suy ra lúc serialize. */
   likedByMe: boolean
+}
+
+/** Thành viên phòng trong db của mock — `isMe` tính lúc serialize. */
+export interface MockRoomMember {
+  id: string
+  displayName: string
+  joinedAt: string
+  /** Chỉ chủ phòng (đăng nhập) có userId; khách là `null`. */
+  userId: string | null
+}
+
+/** Phòng lọc nhóm trong db của mock. */
+export interface MockRoom {
+  id: string
+  code: string
+  name: string
+  members: MockRoomMember[]
+  proposals: RoomProposal[]
+  filter: RoomFilter
+  createdAt: string
 }

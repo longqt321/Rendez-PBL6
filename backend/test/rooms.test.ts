@@ -1,13 +1,14 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
-import { roomSchema, appliedProposalSchema } from "@rendez/schema"
+import { appliedProposalSchema, roomSchema } from "@rendez/schema"
 import { startTestDb, stopTestDb } from "./helpers/pg"
 
 /**
  * Integration test Phase 6 — phòng lọc nhóm trên Postgres thật.
  *
- * Kiểm tạo phòng (mã 6 ký tự đúng alphabet), guest join không cần tài khoản
- * (D5), đề xuất include/exclude áp vào filter đúng quy tắc port từ frontend,
- * quyền của thành viên, rời phòng xoá kèm đề xuất, và SSE đẩy trạng thái mới.
+ * Hợp đồng bảo mật (D-056/D-057): guest token trong cookie HttpOnly theo phòng
+ * (DB chỉ lưu HMAC), trùng tên không token → 409, mọi mutation xác thực actor
+ * từ session/cookie (không đọc memberId/actorId từ query/body), CAS apply
+ * (song song chỉ một thắng), SSE chỉ phát `{version}` trung tính.
  */
 let app: Awaited<ReturnType<typeof import("../src/app").createApp>>
 let prisma: typeof import("../src/lib/prisma").prisma
@@ -47,11 +48,33 @@ function call(path: string, init: RequestInit & { cookie?: string } = {}) {
   return app.request(path, { ...init, headers })
 }
 
+interface RoomBody {
+  code: string
+  name: string
+  members: Array<{ id: string; displayName: string; isMe: boolean }>
+  proposals: Array<{ id: string; memberId: string; status: string; value: string }>
+  filter: Record<string, unknown>
+}
+
+interface JoinBody {
+  room: RoomBody
+  memberId: string
+  joined: boolean
+  guestToken?: string
+}
+
+/** Lấy cookie `rendez_room_<code>` từ response join/create. */
+function roomCookie(res: Response, code: string): string {
+  const raw = res.headers.getSetCookie().find((cookie) => cookie.startsWith(`rendez_room_${code}=`))
+  expect(raw).toBeDefined()
+  return raw!.split(";")[0] ?? ""
+}
+
 describe("phòng lọc nhóm", () => {
   let ownerCookie = ""
   let code = ""
-  let ownerMemberId = ""
   let guestMemberId = ""
+  let guestCookie = ""
 
   beforeAll(async () => {
     ownerCookie = await register("Chủ Phòng", `room_owner_${suffix}`)
@@ -78,7 +101,7 @@ describe("phòng lọc nhóm", () => {
     expect(tooLong.status).toBe(400)
   })
 
-  test("POST /rooms tạo phòng, mã 6 ký tự đúng alphabet", async () => {
+  test("POST /rooms tạo phòng, mã base32 Crockford 6 ký tự, cookie token được gắn", async () => {
     const res = await call("/api/v1/rooms", {
       method: "POST",
       cookie: ownerCookie,
@@ -87,17 +110,17 @@ describe("phòng lọc nhóm", () => {
     expect(res.status).toBe(201)
     const body = (await res.json()) as unknown
     expect(roomSchema.safeParse(body).success).toBe(true)
-    const room = body as {
-      code: string
-      name: string
-      members: Array<{ id: string; isMe: boolean }>
-    }
-    expect(room.code).toMatch(/^[A-HJ-NP-Z2-9]{6}$/)
+    const room = body as RoomBody & { guestToken?: string }
+    expect(room.code).toMatch(/^[0-9A-HJKMNP-TV-Z]{6}$/u)
     expect(room.name).toBe("Ăn tối nhóm")
     expect(room.members).toHaveLength(1)
     expect(room.members[0]!.isMe).toBe(true)
+    expect(typeof room.guestToken).toBe("string")
     code = room.code
-    ownerMemberId = room.members[0]!.id
+
+    // Cookie HttpOnly theo phòng, không lộ token qua JS.
+    const cookie = roomCookie(res, code)
+    expect(cookie).toContain(`rendez_room_${code}=`)
   })
 
   test("GET /rooms/:code 404 với mã sai, 200 với mã đúng", async () => {
@@ -110,30 +133,37 @@ describe("phòng lọc nhóm", () => {
     expect(roomSchema.safeParse(body).success).toBe(true)
   })
 
-  test("guest join không cần tài khoản, idempotent theo tên", async () => {
+  test("guest GET phòng không thấy isMe (không có token/session)", async () => {
+    const res = await call(`/api/v1/rooms/${code}`)
+    const body = (await res.json()) as RoomBody
+    expect(body.members.every((member) => member.isMe === false)).toBe(true)
+  })
+
+  test("guest join không cần tài khoản, nhận token đúng một lần", async () => {
     const join = await call(`/api/v1/rooms/${code}/join`, {
       method: "POST",
       body: JSON.stringify({ displayName: "Minh" }),
     })
     expect(join.status).toBe(200)
-    const body = (await join.json()) as {
-      room: { members: Array<{ id: string; isMe: boolean }> }
-      memberId: string
-      joined: boolean
-    }
+    const body = (await join.json()) as JoinBody
     expect(body.joined).toBe(true)
+    expect(typeof body.guestToken).toBe("string")
     expect(body.room.members).toHaveLength(2)
     expect(body.room.members.find((member) => member.id === body.memberId)?.isMe).toBe(true)
     guestMemberId = body.memberId
+    guestCookie = roomCookie(join, code)
 
-    // Cùng tên → không thêm thành viên mới.
+    // Join lại với token (cookie) → cùng thành viên, không tạo mới.
     const again = await call(`/api/v1/rooms/${code}/join`, {
       method: "POST",
-      body: JSON.stringify({ displayName: "minh" }),
+      cookie: guestCookie,
+      body: JSON.stringify({ displayName: "Minh khác tên" }),
     })
-    const againBody = (await again.json()) as { joined: boolean; memberId: string }
+    expect(again.status).toBe(200)
+    const againBody = (await again.json()) as JoinBody
     expect(againBody.joined).toBe(false)
     expect(againBody.memberId).toBe(guestMemberId)
+    expect(againBody.guestToken).toBeUndefined()
 
     const empty = await call(`/api/v1/rooms/${code}/join`, {
       method: "POST",
@@ -142,23 +172,35 @@ describe("phòng lọc nhóm", () => {
     expect(empty.status).toBe(400)
   })
 
-  test("đề xuất cần là thành viên của phòng", async () => {
-    const stranger = await call(`/api/v1/rooms/${code}/proposals`, {
+  test("join trùng tên KHÔNG có token → 409 (chặn mạo danh qua tên công khai)", async () => {
+    const res = await call(`/api/v1/rooms/${code}/join`, {
       method: "POST",
-      body: JSON.stringify({
-        memberId: "00000000-0000-4000-8000-000000000000",
-        kind: "include",
-        field: "category",
-        value: "cafe",
-      }),
+      body: JSON.stringify({ displayName: "minh" }),
     })
-    expect(stranger.status).toBe(403)
+    expect(res.status).toBe(409)
+    expect(await res.json()).toEqual({ message: "Tên này đã có người dùng trong phòng" })
+  })
+
+  test("đề xuất: không token → 403, token giả → 403", async () => {
+    const noAuth = await call(`/api/v1/rooms/${code}/proposals`, {
+      method: "POST",
+      body: JSON.stringify({ kind: "include", field: "category", value: "cafe" }),
+    })
+    expect(noAuth.status).toBe(403)
+
+    const fake = await call(`/api/v1/rooms/${code}/proposals`, {
+      method: "POST",
+      cookie: `rendez_room_${code}=token-gia`,
+      body: JSON.stringify({ kind: "include", field: "category", value: "cafe" }),
+    })
+    expect(fake.status).toBe(403)
   })
 
   test("đề xuất thiếu field/kind trả 400", async () => {
     const bad = await call(`/api/v1/rooms/${code}/proposals`, {
       method: "POST",
-      body: JSON.stringify({ memberId: "00000000-0000-4000-8000-000000000000" }),
+      cookie: guestCookie,
+      body: JSON.stringify({}),
     })
     expect(bad.status).toBe(400)
   })
@@ -168,39 +210,27 @@ describe("phòng lọc nhóm", () => {
     // `toApiCategory` ném lỗi ở lần GET phòng kế tiếp → phòng hỏng vĩnh viễn (500).
     const badCategory = await call(`/api/v1/rooms/${code}/proposals`, {
       method: "POST",
-      body: JSON.stringify({
-        memberId: guestMemberId,
-        kind: "include",
-        field: "category",
-        value: "hack",
-      }),
+      cookie: guestCookie,
+      body: JSON.stringify({ kind: "include", field: "category", value: "hack" }),
     })
     expect(badCategory.status).toBe(400)
     expect(await badCategory.json()).toEqual({ message: "Giá trị đề xuất không hợp lệ" })
 
     const badPrice = await call(`/api/v1/rooms/${code}/proposals`, {
       method: "POST",
-      body: JSON.stringify({
-        memberId: guestMemberId,
-        kind: "include",
-        field: "priceMax",
-        value: "9",
-      }),
+      cookie: guestCookie,
+      body: JSON.stringify({ kind: "include", field: "priceMax", value: "9" }),
     })
     expect(badPrice.status).toBe(400)
 
     // Giá trị dạng Prisma (`street_food`) được chuẩn hoá về dạng API.
     const normalized = await call(`/api/v1/rooms/${code}/proposals`, {
       method: "POST",
-      body: JSON.stringify({
-        memberId: guestMemberId,
-        kind: "include",
-        field: "category",
-        value: "street_food",
-      }),
+      cookie: guestCookie,
+      body: JSON.stringify({ kind: "include", field: "category", value: "street_food" }),
     })
     expect(normalized.status).toBe(201)
-    const body = (await normalized.json()) as { proposals: Array<{ value: string }> }
+    const body = (await normalized.json()) as RoomBody
     expect(body.proposals[0]?.value).toBe("street-food")
 
     // Phòng vẫn đọc được bình thường sau các đề xuất trên.
@@ -211,15 +241,13 @@ describe("phòng lọc nhóm", () => {
     const add = async (payload: Record<string, unknown>) => {
       const res = await call(`/api/v1/rooms/${code}/proposals`, {
         method: "POST",
-        body: JSON.stringify({ memberId: guestMemberId, ...payload }),
+        cookie: guestCookie,
+        body: JSON.stringify(payload),
       })
       expect(res.status).toBe(201)
       const body = (await res.json()) as unknown
       expect(roomSchema.safeParse(body).success).toBe(true)
-      return body as {
-        proposals: Array<{ id: string; status: string }>
-        filter: Record<string, unknown>
-      }
+      return body as RoomBody
     }
 
     // 1. include cafe
@@ -227,15 +255,15 @@ describe("phòng lọc nhóm", () => {
     const includeProposal = afterInclude.proposals[0]!
     expect(includeProposal.status).toBe("open")
 
-    const apply = await call(
-      `/api/v1/rooms/${code}/proposals/${includeProposal.id}/apply?memberId=${guestMemberId}`,
-      { method: "POST" },
-    )
+    const apply = await call(`/api/v1/rooms/${code}/proposals/${includeProposal.id}/apply`, {
+      method: "POST",
+      cookie: guestCookie,
+    })
     expect(apply.status).toBe(200)
     const applied = (await apply.json()) as unknown
     expect(appliedProposalSchema.safeParse(applied).success).toBe(true)
     const appliedBody = applied as {
-      room: { filter: { categories: string[] }; proposals: Array<{ status: string }> }
+      room: RoomBody
       summary: string
     }
     expect(appliedBody.room.filter.categories).toEqual(["cafe"])
@@ -245,139 +273,180 @@ describe("phòng lọc nhóm", () => {
     // 2. exclude cafe → bỏ khỏi include, thêm vào exclude
     const afterExclude = await add({ kind: "exclude", field: "category", value: "cafe" })
     const excludeProposal = afterExclude.proposals[0]!
-    const applyExclude = await call(
-      `/api/v1/rooms/${code}/proposals/${excludeProposal.id}/apply?memberId=${guestMemberId}`,
-      { method: "POST" },
-    )
+    const applyExclude = await call(`/api/v1/rooms/${code}/proposals/${excludeProposal.id}/apply`, {
+      method: "POST",
+      cookie: guestCookie,
+    })
     const excludeBody = (await applyExclude.json()) as {
-      room: { filter: { categories: string[]; excludedCategories: string[] } }
+      room: RoomBody
     }
     expect(excludeBody.room.filter.categories).toEqual([])
     expect(excludeBody.room.filter.excludedCategories).toEqual(["cafe"])
 
-    // 3. priceMax include "2"
+    // 3. priceMax chỉ áp cho include
     const afterPrice = await add({ kind: "include", field: "priceMax", value: "2" })
-    const priceProposal = afterPrice.proposals[0]!
     const applyPrice = await call(
-      `/api/v1/rooms/${code}/proposals/${priceProposal.id}/apply?memberId=${guestMemberId}`,
-      { method: "POST" },
+      `/api/v1/rooms/${code}/proposals/${afterPrice.proposals[0]!.id}/apply`,
+      { method: "POST", cookie: guestCookie },
     )
-    const priceBody = (await applyPrice.json()) as { room: { filter: { priceMax?: number } } }
+    const priceBody = (await applyPrice.json()) as { room: RoomBody }
     expect(priceBody.room.filter.priceMax).toBe(2)
 
-    // 4. keyword include/exclude
-    const afterKeyword = await add({ kind: "include", field: "keyword", value: "hải sản" })
-    const keywordProposal = afterKeyword.proposals[0]!
-    await call(
-      `/api/v1/rooms/${code}/proposals/${keywordProposal.id}/apply?memberId=${guestMemberId}`,
-      {
-        method: "POST",
-      },
+    // 4. keyword exclude
+    const afterKeyword = await add({ kind: "exclude", field: "keyword", value: "chay" })
+    const applyKeyword = await call(
+      `/api/v1/rooms/${code}/proposals/${afterKeyword.proposals[0]!.id}/apply`,
+      { method: "POST", cookie: guestCookie },
     )
-    const afterExcludeKeyword = await add({ kind: "exclude", field: "keyword", value: "chay" })
-    const excludeKeyword = afterExcludeKeyword.proposals[0]!
-    const applyExcludeKeyword = await call(
-      `/api/v1/rooms/${code}/proposals/${excludeKeyword.id}/apply?memberId=${guestMemberId}`,
-      { method: "POST" },
-    )
-    const keywordBody = (await applyExcludeKeyword.json()) as {
-      room: { filter: { includeKeywords: string[]; excludeKeywords: string[] } }
-    }
-    expect(keywordBody.room.filter.includeKeywords).toEqual(["hải sản"])
+    const keywordBody = (await applyKeyword.json()) as { room: RoomBody }
     expect(keywordBody.room.filter.excludeKeywords).toEqual(["chay"])
   })
 
-  test("áp/dismiss đề xuất đã xử lý → 400", async () => {
-    const room = (await (await call(`/api/v1/rooms/${code}`)).json()) as {
-      proposals: Array<{ id: string; status: string }>
-    }
+  test("áp đề xuất đã xử lý → 409 (CAS)", async () => {
+    const room = (await (await call(`/api/v1/rooms/${code}`)).json()) as RoomBody
     const applied = room.proposals.find((item) => item.status === "applied")!
-    const res = await call(
-      `/api/v1/rooms/${code}/proposals/${applied.id}/apply?memberId=${guestMemberId}`,
-      { method: "POST" },
-    )
-    expect(res.status).toBe(400)
-  })
-
-  test("dismiss đề xuất mở → status dismissed, filter không đổi", async () => {
-    const add = await call(`/api/v1/rooms/${code}/proposals`, {
+    const res = await call(`/api/v1/rooms/${code}/proposals/${applied.id}/apply`, {
       method: "POST",
-      body: JSON.stringify({
-        memberId: guestMemberId,
-        kind: "include",
-        field: "district",
-        value: "Hải Châu",
-      }),
+      cookie: guestCookie,
     })
-    const created = (await add.json()) as { proposals: Array<{ id: string }>; filter: unknown }
-    const proposalId = created.proposals[0]!.id
-
-    const dismiss = await call(
-      `/api/v1/rooms/${code}/proposals/${proposalId}/dismiss?memberId=${guestMemberId}`,
-      { method: "POST" },
-    )
-    expect(dismiss.status).toBe(200)
-    const body = (await dismiss.json()) as {
-      proposals: Array<{ id: string; status: string }>
-      filter: { districts: string[] }
-    }
-    expect(body.proposals.find((item) => item.id === proposalId)?.status).toBe("dismissed")
-    expect(body.filter.districts).toEqual([])
+    expect(res.status).toBe(409)
   })
 
-  test("rời phòng xoá thành viên và đề xuất của họ", async () => {
-    const before = (await (await call(`/api/v1/rooms/${code}`)).json()) as {
-      proposals: Array<{ memberId: string }>
-    }
-    expect(before.proposals.some((item) => item.memberId === guestMemberId)).toBe(true)
-
-    const leave = await call(
-      `/api/v1/rooms/${code}/members/${guestMemberId}?actorId=${guestMemberId}`,
-      { method: "DELETE" },
-    )
-    expect(leave.status).toBe(200)
-    const body = (await leave.json()) as {
-      members: Array<{ id: string }>
-      proposals: Array<{ memberId: string }>
-    }
-    expect(body.members.some((member) => member.id === guestMemberId)).toBe(false)
-    expect(body.proposals.some((item) => item.memberId === guestMemberId)).toBe(false)
-
-    // Rời lần nữa → 403 (không còn là thành viên).
-    const again = await call(
-      `/api/v1/rooms/${code}/members/${guestMemberId}?actorId=${guestMemberId}`,
-      { method: "DELETE" },
-    )
-    expect(again.status).toBe(403)
-  })
-
-  test("thành viên thường không xoá được người khác, chủ phòng thì được", async () => {
-    // Khách thứ hai vào phòng.
+  test("người ngoài (không tác giả, không chủ phòng) không apply/dismiss được", async () => {
+    // Guest thứ hai vào phòng.
     const joined = await call(`/api/v1/rooms/${code}/join`, {
       method: "POST",
       body: JSON.stringify({ displayName: `Khách phụ ${suffix}` }),
     })
-    expect(joined.status).toBe(200)
-    const secondGuestId = ((await joined.json()) as { memberId: string }).memberId
+    const second = (await joined.json()) as JoinBody
+    const secondCookie = roomCookie(joined, code)
 
-    // Khách thứ nhất (không phải chủ phòng) xoá khách thứ hai → 403.
-    const forbidden = await call(
-      `/api/v1/rooms/${code}/members/${secondGuestId}?actorId=${guestMemberId}`,
-      { method: "DELETE" },
-    )
+    const open = (await (await call(`/api/v1/rooms/${code}`)).json()) as RoomBody
+    const openProposal = open.proposals.find((item) => item.status === "open")!
+
+    const applyOther = await call(`/api/v1/rooms/${code}/proposals/${openProposal.id}/apply`, {
+      method: "POST",
+      cookie: secondCookie,
+    })
+    expect(applyOther.status).toBe(403)
+
+    const dismissOther = await call(`/api/v1/rooms/${code}/proposals/${openProposal.id}/dismiss`, {
+      method: "POST",
+      cookie: secondCookie,
+    })
+    expect(dismissOther.status).toBe(403)
+
+    // Chủ phòng (session) vẫn apply được đề xuất của guest.
+    const byOwner = await call(`/api/v1/rooms/${code}/proposals/${openProposal.id}/apply`, {
+      method: "POST",
+      cookie: ownerCookie,
+    })
+    expect(byOwner.status).toBe(200)
+    expect(second.memberId.length).toBeGreaterThan(0)
+  })
+
+  test("apply 2 request song song → đúng 1 thành công, 1 nhận 409", async () => {
+    const add = await call(`/api/v1/rooms/${code}/proposals`, {
+      method: "POST",
+      cookie: guestCookie,
+      body: JSON.stringify({ kind: "include", field: "district", value: "Hải Châu" }),
+    })
+    const proposal = ((await add.json()) as RoomBody).proposals[0]!
+
+    const [first, second] = await Promise.all([
+      call(`/api/v1/rooms/${code}/proposals/${proposal.id}/apply`, {
+        method: "POST",
+        cookie: guestCookie,
+      }),
+      call(`/api/v1/rooms/${code}/proposals/${proposal.id}/apply`, {
+        method: "POST",
+        cookie: guestCookie,
+      }),
+    ])
+    const statuses = [first.status, second.status].sort((a, b) => a - b)
+    expect(statuses).toEqual([200, 409])
+  })
+
+  test("dismiss đề xuất mở → status dismissed, filter không đổi", async () => {
+    const before = (await (await call(`/api/v1/rooms/${code}`)).json()) as RoomBody
+    const add = await call(`/api/v1/rooms/${code}/proposals`, {
+      method: "POST",
+      cookie: guestCookie,
+      body: JSON.stringify({ kind: "include", field: "district", value: "Sơn Trà" }),
+    })
+    const created = (await add.json()) as RoomBody
+    const proposalId = created.proposals[0]!.id
+
+    const dismiss = await call(`/api/v1/rooms/${code}/proposals/${proposalId}/dismiss`, {
+      method: "POST",
+      cookie: guestCookie,
+    })
+    expect(dismiss.status).toBe(200)
+    const body = (await dismiss.json()) as RoomBody
+    expect(body.proposals.find((item) => item.id === proposalId)?.status).toBe("dismissed")
+    // Dismiss không đụng filter — so với filter ngay trước khi dismiss.
+    expect(body.filter.districts).toEqual(before.filter.districts)
+  })
+
+  test("rời phòng xoá thành viên và đề xuất của họ, xoá cookie", async () => {
+    const before = (await (await call(`/api/v1/rooms/${code}`)).json()) as RoomBody
+    expect(before.proposals.some((item) => item.memberId === guestMemberId)).toBe(true)
+
+    const leave = await call(`/api/v1/rooms/${code}/members/${guestMemberId}`, {
+      method: "DELETE",
+      cookie: guestCookie,
+    })
+    expect(leave.status).toBe(200)
+    const body = (await leave.json()) as RoomBody
+    expect(body.members.some((member) => member.id === guestMemberId)).toBe(false)
+    expect(body.proposals.some((item) => item.memberId === guestMemberId)).toBe(false)
+
+    // Cookie bị xoá (Max-Age=0).
+    const cleared = leave.headers.getSetCookie().find((c) => c.startsWith(`rendez_room_${code}=`))
+    expect(cleared).toContain("Max-Age=0")
+
+    // Rời lần nữa → 403 (token đã bị dọn, không còn là thành viên).
+    const again = await call(`/api/v1/rooms/${code}/members/${guestMemberId}`, {
+      method: "DELETE",
+      cookie: guestCookie,
+    })
+    expect(again.status).toBe(403)
+  })
+
+  test("thành viên thường không xoá được người khác, chủ phòng thì được", async () => {
+    // Hai khách mới vào phòng — khách A không được xoá khách B.
+    const joinedA = await call(`/api/v1/rooms/${code}/join`, {
+      method: "POST",
+      body: JSON.stringify({ displayName: `Khách A ${suffix}` }),
+    })
+    expect(joinedA.status).toBe(200)
+    const cookieA = roomCookie(joinedA, code)
+
+    const joinedB = await call(`/api/v1/rooms/${code}/join`, {
+      method: "POST",
+      body: JSON.stringify({ displayName: `Khách B ${suffix}` }),
+    })
+    expect(joinedB.status).toBe(200)
+    const guestBId = ((await joinedB.json()) as JoinBody).memberId
+
+    // Khách A (không phải chủ phòng) xoá khách B → 403.
+    const forbidden = await call(`/api/v1/rooms/${code}/members/${guestBId}`, {
+      method: "DELETE",
+      cookie: cookieA,
+    })
     expect(forbidden.status).toBe(403)
 
     // Chủ phòng xoá được.
-    const byOwner = await call(
-      `/api/v1/rooms/${code}/members/${secondGuestId}?actorId=${ownerMemberId}`,
-      { method: "DELETE" },
-    )
+    const byOwner = await call(`/api/v1/rooms/${code}/members/${guestBId}`, {
+      method: "DELETE",
+      cookie: ownerCookie,
+    })
     expect(byOwner.status).toBe(200)
   })
 
-  test("SSE đẩy trạng thái phòng khi có thay đổi", async () => {
+  test("SSE chỉ phát room-updated + version (không isMe/token/memberId)", async () => {
     const controller = new AbortController()
-    const res = await app.request(`/api/v1/rooms/${code}/events?memberId=${ownerMemberId}`, {
+    const res = await app.request(`/api/v1/rooms/${code}/events`, {
       signal: controller.signal,
     })
     expect(res.status).toBe(200)
@@ -386,27 +455,60 @@ describe("phòng lọc nhóm", () => {
     const reader = res.body!.getReader()
     const decoder = new TextDecoder()
 
-    // Sự kiện đầu tiên là trạng thái hiện tại.
-    const first = await reader.read()
-    const firstText = decoder.decode(first.value)
-    expect(firstText).toContain("event: room")
-    const initial = JSON.parse(firstText.split("data: ")[1]!.split("\n")[0]!) as { code: string }
-    expect(initial.code).toBe(code)
+    const readEvent = async (): Promise<{ event: string; data: string }> => {
+      let buffer = ""
+      while (true) {
+        const chunk = await reader.read()
+        buffer += decoder.decode(chunk.value ?? new Uint8Array())
+        const match = buffer.match(/event: (.+)\ndata: (.+)\n/u)
+        if (match) return { event: match[1]!, data: match[2]! }
+      }
+    }
 
-    // Mutation từ client khác → SSE đẩy trạng thái mới.
+    // Sự kiện đầu là version hiện tại.
+    const first = await readEvent()
+    expect(first.event).toBe("room-updated")
+    const initial = JSON.parse(first.data) as { version: number }
+    expect(typeof initial.version).toBe("number")
+    expect(first.data).not.toContain("isMe")
+    expect(first.data).not.toContain("memberId")
+    expect(first.data).not.toContain("token")
+
+    // Mutation từ client khác → SSE đẩy version mới.
     await call(`/api/v1/rooms/${code}/join`, {
       method: "POST",
       body: JSON.stringify({ displayName: "Lan" }),
     })
 
-    const second = await reader.read()
-    const secondText = decoder.decode(second.value)
-    expect(secondText).toContain("event: room")
-    const updated = JSON.parse(secondText.split("data: ")[1]!.split("\n")[0]!) as {
-      members: Array<{ displayName: string }>
-    }
-    expect(updated.members.some((member) => member.displayName === "Lan")).toBe(true)
+    const second = await readEvent()
+    expect(second.event).toBe("room-updated")
+    const updated = JSON.parse(second.data) as { version: number }
+    expect(updated.version).toBeGreaterThan(initial.version)
 
     controller.abort()
+  })
+
+  test("rate limit join theo IP → 429 kèm Retry-After sau ngưỡng", async () => {
+    // Phòng riêng để không làm bẩn phòng chính.
+    const created = await call("/api/v1/rooms", {
+      method: "POST",
+      cookie: ownerCookie,
+      body: JSON.stringify({ name: "Rate limit" }),
+    })
+    const fresh = ((await created.json()) as RoomBody & { guestToken?: string }).code
+
+    let saw429 = false
+    for (let attempt = 0; attempt < 30; attempt++) {
+      const res = await call(`/api/v1/rooms/${fresh}/join`, {
+        method: "POST",
+        body: JSON.stringify({ displayName: `Khách ${attempt}` }),
+      })
+      if (res.status === 429) {
+        saw429 = true
+        expect(res.headers.get("Retry-After")).toBeDefined()
+        break
+      }
+    }
+    expect(saw429).toBe(true)
   })
 })

@@ -74,6 +74,12 @@ export const api = axios.create({
   },
   timeout: 10_000,
   adapter: mockAdapter,
+  /**
+   * Cookie phiên + cookie guest token phòng (`rendez_room_<code>`) phải đi kèm.
+   * Cùng origin qua proxy Vite thì trình duyệt tự gửi; bật `withCredentials` để
+   * trường hợp `VITE_API_BASE_URL` là origin khác cũng hoạt động đúng.
+   */
+  withCredentials: true,
 })
 
 api.interceptors.response.use(

@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { toast } from "sonner"
 import { useUserLocation } from "@/hooks/use-user-location"
 import { useRooms, type JoinRoomStatus } from "@/features/rooms/hooks/use-rooms"
 import type { Room } from "@/features/rooms/types/room"
@@ -13,9 +14,9 @@ export interface DiscoverView {
   /** Phòng lọc nhóm đang hoạt động (nếu có) — mọi trang nhìn cùng một kết quả lọc. */
   room: Room | undefined
   /** Tạo phòng và trả về mã phòng (dùng cho dialog mời). */
-  createRoom: (name: string) => string
-  /** Vào phòng theo mã; trả về mã nếu thành công. */
-  joinRoom: (code: string, displayName: string) => JoinRoomStatus
+  createRoom: (name: string) => Promise<string>
+  /** Vào phòng theo mã; trả trạng thái để UI báo đúng nguyên nhân. */
+  joinRoom: (code: string, displayName: string) => Promise<JoinRoomStatus>
   leaveRoom: () => void
   coordinates: { lat: number; lng: number } | null
   isLocating: boolean
@@ -116,10 +117,14 @@ export function useDiscoverView(): DiscoverView {
     serverFilters,
     filters,
     room,
-    createRoom: (name) => createRoom(name).code,
+    createRoom: (name) => createRoom(name),
     joinRoom: (code, displayName) => joinRoom(code, displayName || "Khách"),
     leaveRoom: () => {
-      if (room) leaveRoom(room.code)
+      if (room) {
+        void leaveRoom(room.code).catch((error: unknown) => {
+          toast.error(error instanceof Error ? error.message : "Không rời được phòng")
+        })
+      }
     },
     clearLocation,
     requestLocation,

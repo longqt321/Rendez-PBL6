@@ -2725,3 +2725,57 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
   `VITE_MOCK_SCENARIO=media-unavailable` (503) để thử UI khi R2 chưa cấu hình; thêm contract
   `/media` vào `api-contracts.ts`.
 - **Object mồ côi** (đã PUT nhưng bài không lưu) cần job dọn — ghi BACKLOG, chưa làm.
+35. **Bảo mật phòng lọc nhóm: guest token trong cookie HttpOnly, SSE trung tính** (2026-11-11):
+
+Auditor phát hiện 3 lỗ hổng ở hợp đồng Phase 6 đầu tiên:
+
+1. **IDOR mạo danh qua `memberId`.** `POST /rooms/:code/join` trả `memberId` của thành viên
+   trùng tên; `memberId` là credential duy nhất (query `?memberId=`) nên ai biết mã phòng +
+   tên (tên lộ công khai ở `GET /rooms/:code`) là mạo danh được.
+2. **IDOR xoá thành viên.** `DELETE /rooms/:code/members/:memberId?actorId=` tin `actorId`
+   client khai → gửi `actorId` của chủ phòng là xoá được bất kỳ ai.
+3. **SSE sai per-viewer.** `publishRoom` broadcast DTO đã tính `isMe` theo người gây mutation
+   → subscriber khác thấy "Bạn" sai chỗ.
+
+Quyết định:
+
+- **Guest token**: 32 byte ngẫu nhiên (base64url) sinh khi join/create; DB lưu
+  HMAC-SHA256(token, `BETTER_AUTH_SECRET`) ở cột `room_members.token_hash`. Token gốc trả
+  đúng một lần qua **cookie HttpOnly** `rendez_room_<code>` (`Path=/api/v1/rooms/<code>`,
+  `SameSite=Lax`, `Max-Age=86400`, `Secure` khi production). Lý do cookie thay vì header +
+  sessionStorage: XSS không đọc được token, và trình duyệt tự gửi nên FE không phải quản lý.
+  Transport tách một chỗ ở `backend/src/lib/room-token.ts` để đổi sang header sau này.
+- **Join trùng tên**: token cũ khớp thành viên → trả lại member đó (`joined:false`, idempotent
+  thật); không khớp → `409`. Tên công khai không còn là credential. FE phân biệt: `200 +
+  joined:false` = "already" (đã ở trong phòng, toast thành công), chỉ `409` mới là "duplicate".
+- **Resolve actor**: `backend/src/lib/room-actor.ts` — session user trước (member có `userId`),
+  sau đó cookie token; KHÔNG đọc `memberId`/`actorId` từ query/body. `isOwner` theo
+  `room.ownerId`.
+- **SSE**: chỉ phát `event: room-updated` + `{"version":n}`; client refetch `GET /rooms/:code`
+  để server tính `isMe` theo đúng danh tính từng kết nối. Subscribe trước khi đọc version để
+  không mất update.
+- **TTL 24h**: cột `last_seen_at` cập nhật khi resolve actor; `findRoomByCode` dọn
+  `token_hash` của thành viên quá hạn (token chết không mạo danh vĩnh viễn được).
+- **Mã phòng**: base32 Crockford (`0-9A-HJKMNP-TV-Z`), sinh từ `crypto.randomInt` (CSPRNG),
+  giữ retry 5 lần. Rate limit theo IP bằng bảng `rate_limits` sẵn có: GET 240/phút, join
+  20/phút (429 + `Retry-After`).
+- **Unique tên**: migration SQL thủ công
+  `CREATE UNIQUE INDEX room_members_room_display_lower_key ON room_members (room_id, LOWER(display_name))`
+  (Prisma không khai được expression index; không dùng citext). Join bắt P2002 → lookup lại
+  trả member cũ.
+- **Hệ quả FE**: bỏ hẳn `myMemberId` khỏi hook/UI; `isMe` do server tính. Demo nhiều người
+  trên một máy phải dùng cửa sổ ẩn danh (mỗi profile một cookie), không hứa "nhiều tab = nhiều
+  người". Axios bật `withCredentials: true` để cookie đi kèm cả khi `VITE_API_BASE_URL` khác
+  origin.
+
+36. **Apply đề xuất: CAS + quyền tác giả/chủ phòng** (2026-11-11):
+
+- **CAS**: `updateMany({ where: { id, roomId, status: "open" }, data: { status: "applied",
+  appliedBy, appliedAt } })` trong transaction; `count === 0` → `409` "Đề xuất đã được áp dụng
+  hoặc đã bị bỏ". Hai request song song chỉ một thắng — không còn đọc status rồi update ở
+  transaction khác (lost update).
+- **Quyền**: tác giả đề xuất HOẶC chủ phòng được apply/dismiss (UI hiện cho mọi người bấm
+  "Áp dụng", nhưng giới hạn này chặn người ngoài phá bộ lọc chung; thành viên vẫn đề xuất
+  được bình thường). Dismiss dùng cùng quy tắc + cùng CAS.
+- **`priceMax` giá trị lạ**: `describeProposal` hiện "—" thay vì tự quy về 3, thống nhất với
+  `applyProposalToFilter` (giá trị lạ bị bỏ qua).

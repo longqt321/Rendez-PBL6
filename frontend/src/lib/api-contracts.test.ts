@@ -75,6 +75,55 @@ describe("checkApiContract", () => {
     expect(contract?.schema.safeParse([systemNotification]).success).toBe(true)
     expect(contract?.schema.safeParse({ items: [], next: null }).success).toBe(false)
   })
+
+  it("hợp đồng phòng lọc nhóm: Room, join, apply", () => {
+    const room = {
+      id: "r1",
+      code: "AB23CD",
+      name: "Nhóm",
+      members: [{ id: "m1", displayName: "Bạn", isMe: true, joinedAt: "" }],
+      proposals: [
+        {
+          id: "p1",
+          memberId: "m1",
+          kind: "include",
+          field: "category",
+          value: "cafe",
+          status: "open",
+          createdAt: "",
+        },
+      ],
+      filter: {
+        categories: ["cafe"],
+        excludedCategories: [],
+        districts: [],
+        excludedDistricts: [],
+        includeKeywords: [],
+        excludeKeywords: [],
+      },
+      createdAt: "",
+    }
+
+    expect(checkApiContract("GET", "/rooms/AB23CD", room)).toBeNull()
+    expect(checkApiContract("POST", "/rooms", room)).toBeNull()
+    expect(
+      checkApiContract("POST", "/rooms/AB23CD/join", {
+        room,
+        memberId: "m1",
+        joined: true,
+      }),
+    ).toBeNull()
+    expect(
+      checkApiContract("POST", "/rooms/AB23CD/proposals/p1/apply", {
+        room,
+        summary: "＋ Loại hình: Cà phê",
+      }),
+    ).toBeNull()
+
+    // Thiếu `filter` → lệch hợp đồng.
+    const { filter: _filter, ...broken } = room
+    expect(checkApiContract("GET", "/rooms/AB23CD", broken)).not.toBeNull()
+  })
 })
 
 /** Schema suy từ type phải khớp: pageSchema(Post) parse được Post thật. */

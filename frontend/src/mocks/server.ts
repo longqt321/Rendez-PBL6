@@ -6,6 +6,9 @@ import type { PlaceReport, PlaceReportReason } from "@/features/places/types/pla
 import { PLACE_REPORT_REASONS } from "@/features/places/types/place-report"
 import type { Review } from "@/features/places/types/review"
 import type { Collection, CollectionSummary } from "@/features/collections/types/collection"
+import type { Room, RoomFilter, RoomProposal } from "@/features/rooms/types/room"
+import { categoryLabel } from "@/features/places/lib/category-meta"
+import { priceLevelLabel } from "@/features/places/lib/price-level"
 import type { Post } from "@/features/social/types/post"
 import type { Comment, CommentSort } from "@/features/social/types/comment"
 import type { Page } from "@/types/api"
@@ -26,15 +29,19 @@ import {
   MAX_CAPTION_LENGTH,
   MAX_COLLECTION_DESCRIPTION_LENGTH,
   MAX_COLLECTION_NAME_LENGTH,
+  MAX_MEMBER_NAME_LENGTH,
   MAX_PROFILE_BIO_LENGTH,
   MAX_PROFILE_LOCATION_LENGTH,
   MAX_PROFILE_NAME_LENGTH,
   MAX_POST_IMAGES,
   MAX_REPORT_DETAIL_LENGTH,
   MAX_REVIEW_CONTENT_LENGTH,
+  MAX_ROOM_KEYWORD_LENGTH,
+  MAX_ROOM_NAME_LENGTH,
   MIN_CAPTION_LENGTH,
 } from "@/lib/constants"
 import type { MockCollection, MockComment, MockPost, MockReport, MockReview } from "./types"
+import type { MockRoom, MockRoomMember } from "./types"
 
 /**
  * SERVER GIẢ LẬP — không phải code frontend.
@@ -117,6 +124,14 @@ const db = {
   accounts: [{ userId: "u-me", email: MOCK_EMAIL, password: MOCK_PASSWORD }],
   /** Tài khoản đã xoá (DELETE /me) — không đăng nhập lại được, như backend thật. */
   deletedUserIds: new Set<string>(),
+  /** Phòng lọc nhóm (Phase 6) — in-memory, reset khi tải lại trang. */
+  rooms: [] as MockRoom[],
+  /**
+   * Mô phỏng cookie HttpOnly `rendez_room_<code>` của "trình duyệt" hiện tại:
+   * mã phòng → memberId. Adapter axios không có cookie thật, nên đây là state
+   * thay thế để e2e mock chạy đúng luồng guest token của backend.
+   */
+  roomTokens: {} as Record<string, string>,
   /**
    * Phiên đăng nhập của mock server. Bật sẵn khi dev bypass auth; `DELETE /session`
    * (đăng xuất) tắt đi, `POST /session` (đăng nhập lại) bật lại. Reset khi tải
@@ -135,6 +150,9 @@ let reviewSeq = 0
 let collectionSeq = 0
 let reportSeq = 0
 let userSeq = 0
+let roomSeq = 0
+let roomMemberSeq = 0
+let roomProposalSeq = 0
 
 // ---------------------------------------------------------------------------
 // Serialize: chuyển bản ghi nội bộ thành đúng hợp đồng API
@@ -1095,8 +1113,154 @@ function updateMe(config: InternalAxiosRequestConfig): typeof db.me {
   return { ...db.me }
 }
 
-type Handler = (config: InternalAxiosRequestConfig, params: string[]) => unknown
+// ---------------------------------------------------------------------------
+// Phòng lọc nhóm — port hành vi backend thật (backend/src/lib/rooms.ts).
+// ---------------------------------------------------------------------------
 
+/** Base32 Crockford — bỏ I, L, O, U (khớp backend). */
+const ROOM_CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+
+/** Sinh mã phòng 6 ký tự từ CSPRNG của trình duyệt. */
+function generateRoomCode(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(6))
+  let code = ""
+  for (const byte of bytes) code += ROOM_CODE_ALPHABET[byte % ROOM_CODE_ALPHABET.length]
+  return code
+}
+
+function emptyRoomFilter(): RoomFilter {
+  return {
+    categories: [],
+    excludedCategories: [],
+    districts: [],
+    excludedDistricts: [],
+    includeKeywords: [],
+    excludeKeywords: [],
+  }
+}
+
+/** DTO Room — `isMe` tính từ "cookie" mock (roomTokens) hoặc phiên đăng nhập. */
+function toRoomDto(room: MockRoom): Room {
+  const tokenMemberId = db.roomTokens[room.code]
+  return {
+    id: room.id,
+    code: room.code,
+    name: room.name,
+    members: room.members.map((member) => ({
+      id: member.id,
+      displayName: member.displayName,
+      isMe: (db.authenticated && member.userId === CURRENT_USER.id) || member.id === tokenMemberId,
+      joinedAt: member.joinedAt,
+    })),
+    // Bản sao sâu — không trả tham chiếu tới "db" nội bộ, nếu không React state
+    // bị mutate tại chỗ (unshift vào proposals) và JSON-compare tưởng không đổi.
+    proposals: room.proposals.map((proposal) => ({ ...proposal })),
+    filter: {
+      categories: [...room.filter.categories],
+      excludedCategories: [...room.filter.excludedCategories],
+      districts: [...room.filter.districts],
+      excludedDistricts: [...room.filter.excludedDistricts],
+      includeKeywords: [...room.filter.includeKeywords],
+      excludeKeywords: [...room.filter.excludeKeywords],
+    },
+    createdAt: room.createdAt,
+  }
+}
+
+/**
+ * Actor của một mutation phòng: phiên đăng nhập (chủ phòng) trước, "cookie"
+ * guest sau — khớp thứ tự resolve của backend (`resolveRoomActor`).
+ */
+function resolveMockRoomActor(config: InternalAxiosRequestConfig, room: MockRoom): MockRoomMember {
+  if (db.authenticated) {
+    const owner = room.members.find((member) => member.userId === CURRENT_USER.id)
+    if (owner) return owner
+  }
+  const member = room.members.find((item) => item.id === db.roomTokens[room.code])
+  if (member) return member
+  forbidden(config, "Bạn không ở trong phòng này")
+}
+
+/** Chuỗi mô tả đề xuất — khớp `describeProposal` của backend (giá trị lạ → "—"). */
+function describeMockProposal(proposal: RoomProposal): string {
+  const sign = proposal.kind === "include" ? "＋" : "－"
+  if (proposal.field === "category")
+    return `${sign} Loại hình: ${categoryLabel(proposal.value as PlaceCategory)}`
+  if (proposal.field === "district") return `${sign} Quận: ${proposal.value}`
+  if (proposal.field === "priceMax") {
+    const level = Number(proposal.value)
+    const label =
+      level === 1 || level === 2 || level === 3 ? priceLevelLabel(level as 1 | 2 | 3) : "—"
+    return `＋ Mức giá tối đa: ${label}`
+  }
+  return `${sign} Từ khoá: ${proposal.value}`
+}
+
+/** Áp đề xuất vào filter — port 1:1 `applyProposalToFilter` của backend. */
+function applyMockProposalToFilter(
+  filter: RoomFilter,
+  proposal: { kind: "include" | "exclude"; field: RoomProposal["field"]; value: string },
+): RoomFilter {
+  const value = proposal.value
+  if (proposal.field === "category") {
+    const category = value as PlaceCategory
+    return proposal.kind === "include"
+      ? {
+          ...filter,
+          categories: [...new Set([...filter.categories, category])],
+          excludedCategories: filter.excludedCategories.filter((item) => item !== category),
+        }
+      : {
+          ...filter,
+          excludedCategories: [...new Set([...filter.excludedCategories, category])],
+          categories: filter.categories.filter((item) => item !== category),
+        }
+  }
+  if (proposal.field === "district") {
+    return proposal.kind === "include"
+      ? {
+          ...filter,
+          districts: [...new Set([...filter.districts, value])],
+          excludedDistricts: filter.excludedDistricts.filter((item) => item !== value),
+        }
+      : {
+          ...filter,
+          excludedDistricts: [...new Set([...filter.excludedDistricts, value])],
+          districts: filter.districts.filter((item) => item !== value),
+        }
+  }
+  if (proposal.field === "priceMax") {
+    if (proposal.kind !== "include") return filter
+    const parsed = Number(value)
+    if (parsed !== 1 && parsed !== 2 && parsed !== 3) return filter
+    return { ...filter, priceMax: parsed as 1 | 2 | 3 }
+  }
+  return proposal.kind === "include"
+    ? { ...filter, includeKeywords: [...new Set([...filter.includeKeywords, value])] }
+    : { ...filter, excludeKeywords: [...new Set([...filter.excludeKeywords, value])] }
+}
+
+const VALID_ROOM_CATEGORIES: ReadonlySet<PlaceCategory> = new Set([
+  "cafe",
+  "restaurant",
+  "street-food",
+  "bakery",
+  "dessert",
+  "bar",
+])
+
+/** Chuẩn hoá giá trị đề xuất theo field — `null` = không hợp lệ (400). */
+function normalizeMockProposalValue(field: RoomProposal["field"], value: string): string | null {
+  if (field === "category") {
+    // Dạng Prisma (`street_food`) được chuẩn hoá về dạng API (`street-food`).
+    const normalized = value.trim().replace(/_/gu, "-")
+    return VALID_ROOM_CATEGORIES.has(normalized as PlaceCategory) ? normalized : null
+  }
+  if (field === "priceMax") return value === "1" || value === "2" || value === "3" ? value : null
+  return value
+}
+
+type Handler = (config: InternalAxiosRequestConfig, params: string[]) => unknown
 interface Route {
   method: string
   pattern: RegExp
@@ -1636,6 +1800,198 @@ const routes: Route[] = [
       if (!notification) notFound(config, "Không tìm thấy thông báo")
       notification.read = true
       return toNotificationDto(notification)
+    },
+  },
+
+  // Phòng lọc nhóm — mục cụ thể đứng trước `/rooms/:code`.
+  {
+    method: "post",
+    pattern: /^\/rooms$/,
+    handler: (config) => {
+      // Tạo phòng cần đăng nhập (khớp backend).
+      if (!db.authenticated) unauthorized(config, "Chưa đăng nhập")
+      const body = parseBody<{ name?: unknown }>(config)
+      const name = typeof body.name === "string" ? body.name.trim() : ""
+      if (name.length > MAX_ROOM_NAME_LENGTH) {
+        badRequest(config, `Tên phòng tối đa ${MAX_ROOM_NAME_LENGTH} ký tự`)
+      }
+
+      const now = new Date().toISOString()
+      const owner: MockRoomMember = {
+        id: `room-member-${++roomMemberSeq}`,
+        displayName: db.me.name,
+        joinedAt: now,
+        userId: CURRENT_USER.id,
+      }
+      const room: MockRoom = {
+        id: `room-${++roomSeq}`,
+        code: generateRoomCode(),
+        name: name || "Phòng lọc nhóm",
+        members: [owner],
+        proposals: [],
+        filter: emptyRoomFilter(),
+        createdAt: now,
+      }
+      db.rooms.push(room)
+      // Mô phỏng Set-Cookie HttpOnly của backend.
+      db.roomTokens[room.code] = owner.id
+      return { ...toRoomDto(room), guestToken: `mock-room-token-${owner.id}` }
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/rooms\/([^/]+)$/,
+    handler: (config, [code]) => {
+      const room = db.rooms.find((item) => item.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      return toRoomDto(room)
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/rooms\/([^/]+)\/join$/,
+    handler: (config, [code]) => {
+      const room = db.rooms.find((item) => item.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+
+      const body = parseBody<{ displayName?: unknown }>(config)
+      const displayName = typeof body.displayName === "string" ? body.displayName.trim() : ""
+      if (!displayName || displayName.length > MAX_MEMBER_NAME_LENGTH) {
+        badRequest(config, "Tên hiển thị không hợp lệ")
+      }
+
+      // "Cookie" cũ khớp thành viên → idempotent, không tạo mới.
+      const tokenMember = room.members.find((member) => member.id === db.roomTokens[room.code])
+      if (tokenMember) {
+        return { room: toRoomDto(room), memberId: tokenMember.id, joined: false }
+      }
+
+      const duplicate = room.members.find(
+        (member) => member.displayName.toLowerCase() === displayName.toLowerCase(),
+      )
+      if (duplicate) conflict(config, "Tên này đã có người dùng trong phòng")
+
+      const member: MockRoomMember = {
+        id: `room-member-${++roomMemberSeq}`,
+        displayName,
+        joinedAt: new Date().toISOString(),
+        userId: null,
+      }
+      room.members.push(member)
+      db.roomTokens[room.code] = member.id
+      return {
+        room: toRoomDto(room),
+        memberId: member.id,
+        joined: true,
+        guestToken: `mock-room-token-${member.id}`,
+      }
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/rooms\/([^/]+)\/proposals$/,
+    handler: (config, [code]) => {
+      const room = db.rooms.find((item) => item.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      const actor = resolveMockRoomActor(config, room)
+
+      const body = parseBody<{ kind?: unknown; field?: unknown; value?: unknown }>(config)
+      const kind = body.kind
+      const field = body.field
+      const rawValue = typeof body.value === "string" ? body.value.trim() : ""
+      if (kind !== "include" && kind !== "exclude") badRequest(config, "Đề xuất không hợp lệ")
+      if (
+        field !== "category" &&
+        field !== "district" &&
+        field !== "priceMax" &&
+        field !== "keyword"
+      ) {
+        badRequest(config, "Đề xuất không hợp lệ")
+      }
+      if (!rawValue || rawValue.length > MAX_ROOM_KEYWORD_LENGTH) {
+        badRequest(config, "Giá trị đề xuất không hợp lệ")
+      }
+      const value = normalizeMockProposalValue(field, rawValue)
+      if (value === null) badRequest(config, "Giá trị đề xuất không hợp lệ")
+
+      room.proposals.unshift({
+        id: `room-proposal-${++roomProposalSeq}`,
+        memberId: actor.id,
+        kind,
+        field,
+        value,
+        status: "open",
+        createdAt: new Date().toISOString(),
+      })
+      console.log("MOCK proposals after", room.code, JSON.stringify(room.proposals))
+      return toRoomDto(room)
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/rooms\/([^/]+)\/proposals\/([^/]+)\/apply$/,
+    handler: (config, [code, proposalId]) => {
+      const room = db.rooms.find((item) => item.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      const actor = resolveMockRoomActor(config, room)
+      const proposal = room.proposals.find((item) => item.id === proposalId)
+      if (!proposal) notFound(config, "Không tìm thấy đề xuất")
+
+      const isOwner = actor.userId !== null && actor.userId === CURRENT_USER.id
+      if (proposal.memberId !== actor.id && !isOwner) {
+        forbidden(config, "Chỉ tác giả đề xuất hoặc chủ phòng mới được áp dụng")
+      }
+      if (proposal.status !== "open") {
+        conflict(config, "Đề xuất đã được áp dụng hoặc đã bị bỏ")
+      }
+
+      proposal.status = "applied"
+      room.filter = applyMockProposalToFilter(room.filter, proposal)
+      return { room: toRoomDto(room), summary: describeMockProposal(proposal) }
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/rooms\/([^/]+)\/proposals\/([^/]+)\/dismiss$/,
+    handler: (config, [code, proposalId]) => {
+      const room = db.rooms.find((item) => item.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      const actor = resolveMockRoomActor(config, room)
+      const proposal = room.proposals.find((item) => item.id === proposalId)
+      if (!proposal) notFound(config, "Không tìm thấy đề xuất")
+
+      const isOwner = actor.userId !== null && actor.userId === CURRENT_USER.id
+      if (proposal.memberId !== actor.id && !isOwner) {
+        forbidden(config, "Chỉ tác giả đề xuất hoặc chủ phòng mới được bỏ qua")
+      }
+      if (proposal.status !== "open") {
+        conflict(config, "Đề xuất đã được áp dụng hoặc đã bị bỏ")
+      }
+
+      proposal.status = "dismissed"
+      return toRoomDto(room)
+    },
+  },
+  {
+    method: "delete",
+    pattern: /^\/rooms\/([^/]+)\/members\/([^/]+)$/,
+    handler: (config, [code, memberId]) => {
+      const room = db.rooms.find((item) => item.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      const actor = resolveMockRoomActor(config, room)
+      const target = room.members.find((item) => item.id === memberId)
+      if (!target) forbidden(config, "Bạn không ở trong phòng này")
+
+      const isOwner = actor.userId !== null && actor.userId === CURRENT_USER.id
+      if (actor.id !== target.id && !isOwner) {
+        forbidden(config, "Chỉ chủ phòng mới được cho người khác rời phòng")
+      }
+
+      room.members = room.members.filter((item) => item.id !== target.id)
+      room.proposals = room.proposals.filter((item) => item.memberId !== target.id)
+      // Mô phỏng xoá cookie khi chính mình rời phòng.
+      if (actor.id === target.id) delete db.roomTokens[room.code]
+      return toRoomDto(room)
     },
   },
 ]

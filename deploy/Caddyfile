@@ -23,12 +23,17 @@ rendez.example.com {
 		file_server
 	}
 
+	# SSE (`GET /api/v1/rooms/:code/events`): nén gzip sẽ đệm event làm stream
+	# trễ/đứt — chỉ nén khi request KHÔNG phải SSE (D-056).
+	@compressible {
+		not path /api/v1/rooms/*/events
+	}
+	encode @compressible gzip
+
 	# Header bảo mật cơ bản (API đã tự gắn một phần qua hono/secure-headers).
 	header {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
 	}
-
-	encode gzip
 }

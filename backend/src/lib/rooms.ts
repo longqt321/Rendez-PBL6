@@ -1,6 +1,8 @@
+import { randomInt } from "node:crypto"
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
-import { isUniqueViolation } from "./errors"
+import { ApiError, isUniqueViolation } from "./errors"
+import { ROOM_TOKEN_TTL_SECONDS, hashRoomToken, issueRoomToken } from "./room-token"
 import {
   CATEGORY_LABEL,
   parseApiCategory,
@@ -19,15 +21,19 @@ import type { Room, RoomFilter, RoomMember, RoomProposal, RoomProposalField } fr
  * chỉ áp dụng cho `include`; rời phòng xoá luôn đề xuất của thành viên đó.
  */
 
-const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+/** Base32 Crockford — bỏ I, L, O, U (dễ nhầm khi đọc/đánh máy). */
+const CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 const CODE_LENGTH = 6
+const CODE_SPACE = CODE_ALPHABET.length ** CODE_LENGTH
 const DEFAULT_ROOM_NAME = "Phòng lọc nhóm"
 
-/** Mã phòng 6 ký tự, bỏ O/0/I/1 (dễ nhầm khi đọc qua điện thoại). */
+/** Mã phòng 6 ký tự base32 Crockford, sinh từ CSPRNG (`randomInt`). */
 export function generateRoomCode(): string {
+  let value = randomInt(0, CODE_SPACE)
   let code = ""
   for (let i = 0; i < CODE_LENGTH; i++) {
-    code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)]
+    code = CODE_ALPHABET[value % CODE_ALPHABET.length] + code
+    value = Math.floor(value / CODE_ALPHABET.length)
   }
   return code
 }
@@ -138,22 +144,29 @@ export async function createRoom(
   ownerId: string,
   name: string | undefined,
   displayName: string,
-): Promise<RoomWithRelations> {
+): Promise<{ room: RoomWithRelations; guestToken: string }> {
+  const guestToken = issueRoomToken()
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = generateRoomCode()
     try {
-      return await prisma.room.create({
+      const room = await prisma.room.create({
         data: {
           code,
           name: name?.trim() || DEFAULT_ROOM_NAME,
           ownerId,
           filter: serializeRoomFilter(createEmptyFilter()),
           members: {
-            create: { userId: ownerId, displayName, isGuest: false },
+            create: {
+              userId: ownerId,
+              displayName,
+              isGuest: false,
+              tokenHash: hashRoomToken(guestToken),
+            },
           },
         },
         include: ROOM_INCLUDE,
       })
+      return { room, guestToken }
     } catch (error) {
       // P2002 = trùng mã phòng; thử mã khác. Lỗi khác phải nổi lên.
       if (isUniqueViolation(error)) continue
@@ -164,27 +177,90 @@ export async function createRoom(
 }
 
 export async function findRoomByCode(code: string): Promise<RoomWithRelations | null> {
-  return prisma.room.findUnique({ where: { code }, include: ROOM_INCLUDE })
+  const room = await prisma.room.findUnique({ where: { code }, include: ROOM_INCLUDE })
+  if (!room) return null
+
+  // TTL token 24h không hoạt động: dọn token của thành viên quá hạn khi load
+  // phòng — token chết không thể dùng để mạo danh vĩnh viễn.
+  const cutoff = new Date(Date.now() - ROOM_TOKEN_TTL_SECONDS * 1000)
+  const staleIds = room.members
+    .filter((member) => member.tokenHash !== null && member.lastSeenAt < cutoff)
+    .map((member) => member.id)
+  if (staleIds.length > 0) {
+    await prisma.roomMember.updateMany({
+      where: { id: { in: staleIds } },
+      data: { tokenHash: null },
+    })
+    return prisma.room.findUnique({ where: { code }, include: ROOM_INCLUDE }) ?? room
+  }
+  return room
 }
 
-/** Thêm thành viên khách; trùng tên (không phân biệt hoa thường) trả thành viên cũ. */
+/** Cập nhật mốc hoạt động của thành viên guest (khi resolve actor thành công). */
+export async function touchMemberSeen(memberId: string): Promise<void> {
+  // `updateMany` idempotent: thành viên vừa bị xoá không sinh lỗi P2025.
+  await prisma.roomMember.updateMany({
+    where: { id: memberId },
+    data: { lastSeenAt: new Date() },
+  })
+}
+
+/**
+ * Thêm thành viên khách — danh tính xác thực bằng guest token (cookie theo
+ * phòng), KHÔNG bằng tên.
+ *
+ * - Token khớp thành viên cũ → trả lại đúng thành viên đó (idempotent thật:
+ *   reload trang vẫn là cùng người, không mạo danh được người khác).
+ * - Trùng tên mà không có token khớp → 409: tên xuất hiện công khai trong DTO
+ *   nên không thể dùng làm credential (chặn IDOR mạo danh).
+ * - Token gốc sinh ở đây và trả về đúng một lần; DB chỉ lưu HMAC-SHA256.
+ */
 export async function joinRoom(
   room: RoomWithRelations,
   displayName: string,
-): Promise<{ room: RoomWithRelations; memberId: string; joined: boolean }> {
+  presentedToken?: string,
+): Promise<{ room: RoomWithRelations; memberId: string; joined: boolean; guestToken?: string }> {
   const name = displayName.trim()
-  const existing = room.members.find(
+
+  // Token cũ khớp thành viên nào đó → chính là người đó quay lại (reload/join
+  // lại): idempotent thật, không tạo thành viên trùng và không thể mạo danh.
+  if (presentedToken) {
+    const hash = hashRoomToken(presentedToken)
+    const known = room.members.find((member) => member.tokenHash === hash)
+    if (known) return { room, memberId: known.id, joined: false }
+  }
+
+  const duplicate = room.members.find(
     (member) => member.displayName.toLowerCase() === name.toLowerCase(),
   )
-  if (existing) return { room, memberId: existing.id, joined: false }
+  if (duplicate) throw new ApiError(409, "Tên này đã có người dùng trong phòng")
 
-  const member = await prisma.roomMember.create({
-    data: { roomId: room.id, displayName: name, isGuest: true },
-    select: { id: true },
-  })
-  const updated = await findRoomByCode(room.code)
-  if (!updated) throw new Error("Phòng biến mất sau khi thêm thành viên")
-  return { room: updated, memberId: member.id, joined: true }
+  const guestToken = issueRoomToken()
+  try {
+    const member = await prisma.roomMember.create({
+      data: {
+        roomId: room.id,
+        displayName: name,
+        isGuest: true,
+        tokenHash: hashRoomToken(guestToken),
+      },
+      select: { id: true },
+    })
+    const updated = await findRoomByCode(room.code)
+    if (!updated) throw new Error("Phòng biến mất sau khi thêm thành viên")
+    return { room: updated, memberId: member.id, joined: true, guestToken }
+  } catch (error) {
+    // Unique (room_id, lower(display_name)) là chốt cuối cho race giữa hai
+    // request join cùng tên: lookup lại và trả thành viên đã có.
+    if (isUniqueViolation(error)) {
+      const existing = room.members.find(
+        (member) => member.displayName.toLowerCase() === name.toLowerCase(),
+      )
+      if (existing) return { room, memberId: existing.id, joined: false }
+      throw new ApiError(409, "Tên này đã có người dùng trong phòng")
+    }
+    throw error
+  }
 }
 
 export async function addProposal(
@@ -282,7 +358,11 @@ export function describeProposal(proposal: {
   }
   if (proposal.field === "district") return `${sign} Quận: ${proposal.value}`
   if (proposal.field === "priceMax") {
-    return `＋ Mức giá tối đa: ${"₫".repeat(Number(proposal.value) || 3)}`
+    // Giá trị lạ thì hiện "—" — KHÔNG tự quy về 3 (trái với applyProposalToFilter,
+    // nơi giá trị lạ bị bỏ qua; mô tả phải phản ánh đúng điều đã xảy ra).
+    const level = Number(proposal.value)
+    const label = level === 1 || level === 2 || level === 3 ? "₫".repeat(level) : "—"
+    return `＋ Mức giá tối đa: ${label}`
   }
   return `${sign} Từ khoá: ${proposal.value}`
 }

@@ -421,3 +421,31 @@ lịch sử; không còn việc mở ở đây.
       seed + build API — cân nhắc khi CI có thời gian chạy dài hơn.
 - [x] **`e2e/.auth/*.json` là file sinh ra khi chạy** — đã kiểm: `.gitignore:44` bỏ qua
       `frontend/e2e/.auth`, không commit session/tài khoản demo.
+
+## 2026-11-11 — Bảo mật phòng lọc nhóm (D-056/D-057) xong, việc phát sinh
+
+- [ ] **SSE chỉ đúng khi API chạy một tiến trình** — subscriber lưu RAM; scale nhiều instance
+      phải chuyển sang LISTEN/NOTIFY của Postgres hoặc Redis.
+- [ ] **`publishRoom` phát version trong RAM** — sau restart tiến trình, version về 0; client
+      đang mở stream không bị ảnh hưởng (vẫn refetch khi có event) nhưng không thể dùng version
+      để chống trùng giữa các instance.
+- [ ] **Apply hai đề xuất KHÁC NHAU song song** vẫn có thể lost-update filter (mỗi transaction
+      đọc `room.filter` rồi ghi đè). Cần `SELECT ... FOR UPDATE` trên hàng `rooms` hoặc cột
+      version khi có nhu cầu thật.
+- [ ] **Kiểm tra Caddyfile tắt buffering cho route SSE** (`deploy/Caddyfile`) — chưa xác minh
+      trong môi trường deploy thật; nếu proxy đệm, event `room-updated` sẽ trễ.
+- [ ] **Rate limit join theo IP** dùng chung NAT có thể chặn nhầm nhóm đông người (20/phút);
+      theo dõi khi có người dùng thật, cân nhắc tăng ngưỡng hoặc key theo mã phòng.
+- [ ] **E2E mock mô phỏng cookie bằng `db.roomTokens`** — không kiểm được thuộc tính
+      HttpOnly/SameSite/Path thật; cần test tích hợp backend (hoặc e2e project backend) để xác
+      nhận header Set-Cookie.
+
+## 2026-11-11 — Lỗi có sẵn (không do thay đổi rooms): `Retry-After` mất khi rate limit
+
+- [ ] `test/infra.test.ts` → "rate limit: vượt ngưỡng POST /session trả 429 kèm Retry-After"
+      FAIL ổn định (đã xác nhận fail cả trên HEAD trước thay đổi rooms bằng `git stash`).
+      Nguyên nhân: `rateLimit` gọi `c.header("Retry-After", ...)` rồi `throw ApiError`; response
+      của `HTTPException` thay thế header của context trong một số trường hợp nên header không
+      tới client. Cần sửa ở `backend/src/lib/rate-limit.ts` (gắn header vào chính `Response` của
+      `ApiError`, hoặc trả response 429 trực tiếp thay vì throw). Ngoài phạm vi việc rooms nên
+      chưa sửa.

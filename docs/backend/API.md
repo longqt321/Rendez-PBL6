@@ -206,21 +206,28 @@ thông báo.
 | POST | `/users/:handle/follow` | ✔ | Idempotent; tự follow → `400`; trả `UserProfile` mới |
 | DELETE | `/users/:handle/follow` | ✔ | Idempotent; trả `UserProfile` mới |
 
-## 9. Phòng lọc nhóm (hợp đồng mới Phase 6)
+## 9. Phòng lọc nhóm (hợp đồng mới Phase 6, bảo mật D-056/D-057)
 
 Trước Phase 6 phòng chỉ sống trong trình duyệt (localStorage + BroadcastChannel). Backend
-giữ nguyên shape `Room` của frontend, thêm `memberId` cho khách.
+giữ nguyên shape `Room` của frontend.
+
+**Danh tính (D-056):** khách tham gia bằng tên và nhận token bí mật qua cookie HttpOnly
+`rendez_room_<code>` (`Path=/api/v1/rooms/<code>`, `SameSite=Lax`, TTL 24h). DB chỉ lưu
+HMAC-SHA256(token, BETTER_AUTH_SECRET) — token gốc KHÔNG bao giờ nằm trong DB hay DTO.
+`memberId` xuất hiện công khai trong DTO nên không phải credential; mọi mutation xác thực
+actor từ phiên đăng nhập hoặc cookie token (`resolveRoomActor`), không đọc `memberId`/
+`actorId` từ query/body.
 
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
-| POST | `/rooms` | ✔ | `{name?}` → `201 Room`; mã 6 ký tự alphabet `A–Z2–9` (bỏ O/0/I/1) |
-| GET | `/rooms/:code?memberId=` | — | `Room`; mã sai → `404` |
-| POST | `/rooms/:code/join` | — | `{displayName}` → `{room, memberId, joined}`; trùng tên → `joined:false` |
-| POST | `/rooms/:code/proposals` | — | `{memberId, kind, field, value}` → `201 Room`; không phải thành viên → `403`; `value` không hợp lệ theo `field` (category lạ, priceMax ngoài 1–3) → `400` |
-| POST | `/rooms/:code/proposals/:id/apply?memberId=` | — | `{room, summary}`; đề xuất đã xử lý → `400` |
-| POST | `/rooms/:code/proposals/:id/dismiss?memberId=` | — | `Room`; filter không đổi |
-| DELETE | `/rooms/:code/members/:memberId?actorId=` | — | `Room`; xoá kèm mọi đề xuất của thành viên. `actorId` phải là thành viên; xoá người khác khi không phải chủ phòng → `403` |
-| GET | `/rooms/:code/events?memberId=` | — | SSE: `event: room` (JSON `Room`), `event: ping` mỗi 15s |
+| POST | `/rooms` | ✔ | `{name?}` → `201 Room + guestToken`; mã 6 ký tự base32 Crockford (bỏ I/L/O/U), `crypto.randomInt` |
+| GET | `/rooms/:code` | — | `Room` (`isMe` tính theo caller); mã sai → `404`; rate limit 240/phút/IP |
+| POST | `/rooms/:code/join` | — | `{displayName}` → `{room, memberId, joined, guestToken?}`; token cũ khớp → `joined:false` (idempotent); trùng tên KHÔNG có token khớp → `409`; rate limit 20/phút/IP |
+| POST | `/rooms/:code/proposals` | — | `{kind, field, value}` → `201 Room`; không phải thành viên → `403`; `value` không hợp lệ theo `field` (category lạ, priceMax ngoài 1–3) → `400` |
+| POST | `/rooms/:code/proposals/:id/apply` | — | `{room, summary}`; chỉ tác giả đề xuất hoặc chủ phòng → `403`; CAS: đề xuất đã xử lý (hoặc apply song song thua cuộc) → `409` |
+| POST | `/rooms/:code/proposals/:id/dismiss` | — | `Room`; quyền như apply; đã xử lý → `409` |
+| DELETE | `/rooms/:code/members/:memberId` | — | `Room`; xoá kèm mọi đề xuất của thành viên; tự rời mình hoặc chủ phòng xoá người khác; vi phạm → `403`; tự rời → xoá cookie token |
+| GET | `/rooms/:code/events` | — | SSE trung tính: `event: room-updated` + `{"version":n}` (KHÔNG isMe/token/memberId — client refetch `GET /rooms/:code`), `event: ping` mỗi 15s |
 
 Quy tắc áp đề xuất (port 1:1 từ `frontend/src/features/rooms/lib/room.ts`):
 
@@ -228,7 +235,7 @@ Quy tắc áp đề xuất (port 1:1 từ `frontend/src/features/rooms/lib/room.
 |---|---|---|
 | `category` | thêm vào `categories`, bỏ khỏi `excludedCategories` | ngược lại |
 | `district` | thêm vào `districts`, bỏ khỏi `excludedDistricts` | ngược lại |
-| `priceMax` | đặt `priceMax` (giá trị lạ → 3) | bỏ qua (không có nghĩa) |
+| `priceMax` | đặt `priceMax` (giá trị lạ → bỏ qua, không tự quy về 3) | bỏ qua (không có nghĩa) |
 | `keyword` | thêm vào `includeKeywords` | thêm vào `excludeKeywords` |
 
 Client chuyển `RoomFilter` sang tham số của `GET /places` (đã có từ Phase 2): `categories`

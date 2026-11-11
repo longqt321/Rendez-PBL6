@@ -48,5 +48,6 @@ export {
   appliedProposalSchema,
   createRoomInputSchema,
   joinRoomInputSchema,
+  joinRoomResponseSchema,
   createProposalInputSchema,
 } from "./room.schema"

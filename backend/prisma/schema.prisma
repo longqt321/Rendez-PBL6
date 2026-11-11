@@ -535,7 +535,11 @@ model RoomMember {
   userId      String?  @map("user_id") @db.Uuid
   displayName String   @map("display_name")
   isGuest     Boolean  @default(true) @map("is_guest")
-  guestToken  String?  @unique @map("guest_token")
+  /// HMAC-SHA256(token, BETTER_AUTH_SECRET) — token gốc chỉ nằm trong cookie
+  /// HttpOnly theo phòng, trả về đúng một lần khi join (D-056).
+  tokenHash   String?  @unique @map("token_hash")
+  /// Mốc hoạt động gần nhất — dọn token quá 24h không dùng khi load phòng.
+  lastSeenAt  DateTime @default(now()) @map("last_seen_at")
   joinedAt    DateTime @default(now()) @map("joined_at")
 
   room      Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
@@ -558,6 +562,9 @@ model RoomProposal {
   field     RoomProposalField
   value     String
   status    RoomProposalStatus @default(open)
+  /// Ai áp đề xuất vào filter (CAS apply — updateMany where status=open).
+  appliedBy String?            @map("applied_by") @db.Uuid
+  appliedAt DateTime?          @map("applied_at")
   createdAt DateTime           @default(now()) @map("created_at")
   updatedAt DateTime           @updatedAt @map("updated_at")
 

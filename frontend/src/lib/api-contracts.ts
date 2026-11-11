@@ -9,6 +9,7 @@ import { reviewSchema } from "@/features/places/types/review.schema"
 import { userProfileSchema } from "@/features/profile/types/profile.schema"
 import { commentSchema } from "@/features/social/types/comment.schema"
 import { postSchema } from "@/features/social/types/post.schema"
+import { appliedProposalSchema, joinRoomResponseSchema, roomSchema } from "@rendez/schema"
 import { z } from "zod"
 import { pageSchema } from "@/types/api-schema"
 
@@ -86,6 +87,23 @@ export const API_CONTRACTS: ApiContract[] = [
   { pattern: /^\/collections\/[^/]+$/, method: "PATCH", schema: collectionSchema },
   { pattern: /^\/collections$/, method: "GET", schema: pageSchema(collectionSummarySchema) },
   { pattern: /^\/collections$/, method: "POST", schema: collectionSchema },
+
+  // Phòng lọc nhóm — mục cụ thể phải đứng trước `:code`.
+  {
+    pattern: /^\/rooms\/[^/]+\/proposals\/[^/]+\/apply$/,
+    method: "POST",
+    schema: appliedProposalSchema,
+  },
+  {
+    pattern: /^\/rooms\/[^/]+\/proposals\/[^/]+\/dismiss$/,
+    method: "POST",
+    schema: roomSchema,
+  },
+  { pattern: /^\/rooms\/[^/]+\/join$/, method: "POST", schema: joinRoomResponseSchema },
+  { pattern: /^\/rooms\/[^/]+\/proposals$/, method: "POST", schema: roomSchema },
+  { pattern: /^\/rooms\/[^/]+\/members\/[^/]+$/, method: "DELETE", schema: roomSchema },
+  { pattern: /^\/rooms\/[^/]+$/, method: "GET", schema: roomSchema },
+  { pattern: /^\/rooms$/, method: "POST", schema: roomSchema },
 ]
 
 /** Tìm hợp đồng khớp path (bỏ query) và method; `undefined` nếu không có. */

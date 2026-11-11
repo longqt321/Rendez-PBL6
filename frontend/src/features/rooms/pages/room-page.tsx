@@ -21,10 +21,9 @@ import { SectionHeading } from "@/components/shared/section-heading"
 import { formatInitials } from "@/lib/format"
 import { ShareButton } from "@/components/shared/share-button"
 import { MAX_MEMBER_NAME_LENGTH } from "@/lib/constants"
-import { useRooms } from "../hooks/use-rooms"
+import { useRooms, type RoomStatus } from "../hooks/use-rooms"
 import { ProposalForm } from "../components/proposal-form"
 import { ProposalList } from "../components/proposal-list"
-import { describeProposal } from "../lib/room"
 
 /** Trang phòng lọc nhóm — `/rooms/:code`. */
 export function RoomPage() {
@@ -32,6 +31,8 @@ export function RoomPage() {
   const [joinName, setJoinName] = useState("")
   const {
     getRoom,
+    getRoomStatus,
+    retryRoom,
     activeCode,
     joinRoom,
     addMyProposal,
@@ -40,19 +41,60 @@ export function RoomPage() {
     leaveRoom,
   } = useRooms()
   const room = getRoom(code)
+  const status: RoomStatus = room ? "ready" : getRoomStatus(code)
 
   /** Tham gia bằng tên nhập tay — báo đúng nguyên nhân khi không vào được. */
-  function handleJoin() {
-    const status = joinRoom(code, joinName)
-    if (status === "duplicate") {
-      toast.error("Tên này đã có người dùng trong phòng — chọn tên khác")
-      return
+  async function handleJoin() {
+    const name = joinName.trim()
+    if (!name) return
+    try {
+      const result = await joinRoom(code, name)
+      if (result === "duplicate") {
+        toast.error("Tên này đã có người dùng trong phòng — chọn tên khác")
+        return
+      }
+      if (result === "not-found") {
+        toast.error("Không tìm thấy phòng này")
+        return
+      }
+      if (result === "already") {
+        toast.success("Bạn đã ở trong phòng này")
+        return
+      }
+      toast.success("Đã vào phòng — kết quả lọc dùng chung")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không vào được phòng")
     }
-    if (status === "not-found") {
-      toast.error("Không tìm thấy phòng này")
-      return
-    }
-    toast.success("Đã vào phòng — kết quả lọc dùng chung")
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-8">
+        <h1 className="sr-only">Đang tải phòng lọc nhóm</h1>
+        <p className="mt-8 text-sm text-muted-foreground" role="status">
+          Đang tải phòng…
+        </p>
+      </div>
+    )
+  }
+
+  if (status === "error") {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-8">
+        <h1 className="sr-only">Không tải được phòng lọc nhóm</h1>
+        <Empty className="mt-8">
+          <EmptyHeader>
+            <EmptyTitle>Không tải được phòng</EmptyTitle>
+            <EmptyDescription>
+              Kết nối tới máy chủ đang gián đoạn. Kiểm tra mạng rồi thử lại.
+            </EmptyDescription>
+          </EmptyHeader>
+          <Button variant="outline" onClick={() => retryRoom(code)}>
+            Thử lại
+          </Button>
+        </Empty>
+      </div>
+    )
   }
 
   if (!room) {
@@ -63,8 +105,7 @@ export function RoomPage() {
           <EmptyHeader>
             <EmptyTitle>Không tìm thấy phòng</EmptyTitle>
             <EmptyDescription>
-              Mã phòng không đúng, hoặc phòng được tạo ở trình duyệt khác. Dữ liệu phòng chỉ lưu
-              trên máy này.
+              Mã phòng không đúng, hoặc phòng đã bị xoá. Hỏi lại bạn bè để nhận mã phòng mới.
             </EmptyDescription>
           </EmptyHeader>
           <Button variant="outline" render={<Link to="/discover" />}>
@@ -77,11 +118,14 @@ export function RoomPage() {
 
   const isActive = activeCode === room.code
 
-  function handleApply(proposalId: string) {
-    const proposal = room?.proposals.find((item) => item.id === proposalId)
-    if (!room || !proposal) return
-    applyProposal(room.code, proposalId)
-    toast.success(`Đã áp dụng: ${describeProposal(proposal)}`)
+  async function handleApply(proposalId: string) {
+    if (!room) return
+    try {
+      const summary = await applyProposal(room.code, proposalId)
+      toast.success(`Đã áp dụng: ${summary}`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không áp dụng được đề xuất")
+    }
   }
 
   return (
@@ -135,8 +179,11 @@ export function RoomPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  leaveRoom(room.code)
-                  toast.success("Đã rời phòng")
+                  void leaveRoom(room.code)
+                    .then(() => toast.success("Đã rời phòng"))
+                    .catch((error: unknown) =>
+                      toast.error(error instanceof Error ? error.message : "Không rời được phòng"),
+                    )
                 }}
               >
                 <LogOutIcon aria-hidden="true" />
@@ -173,8 +220,11 @@ export function RoomPage() {
         <CardContent>
           <ProposalForm
             onSubmit={(input) => {
-              addMyProposal(room.code, input)
-              toast.success("Đã gửi đề xuất cho cả nhóm")
+              void addMyProposal(room.code, input)
+                .then(() => toast.success("Đã gửi đề xuất cho cả nhóm"))
+                .catch((error: unknown) =>
+                  toast.error(error instanceof Error ? error.message : "Không gửi được đề xuất"),
+                )
             }}
           />
         </CardContent>
@@ -186,7 +236,11 @@ export function RoomPage() {
         <ProposalList
           room={room}
           onApply={handleApply}
-          onDismiss={(id) => dismissProposal(room.code, id)}
+          onDismiss={(id) => {
+            void dismissProposal(room.code, id).catch((error: unknown) =>
+              toast.error(error instanceof Error ? error.message : "Không bỏ qua được đề xuất"),
+            )
+          }}
         />
       </section>
     </div>

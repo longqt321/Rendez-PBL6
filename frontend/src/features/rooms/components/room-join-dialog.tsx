@@ -18,41 +18,61 @@ import type { JoinRoomStatus } from "../hooks/use-rooms"
 interface RoomJoinDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** Tạo phòng mới; trả về mã phòng vừa tạo. */
-  onCreate: (name: string) => string
+  /** Tạo phòng mới; trả về mã phòng vừa tạo (Promise vì gọi API). */
+  onCreate: (name: string) => Promise<string>
   /** Tham gia phòng theo mã; trả trạng thái để hiện toast đúng nguyên nhân. */
-  onJoin: (code: string, displayName: string) => JoinRoomStatus
+  onJoin: (code: string, displayName: string) => Promise<JoinRoomStatus>
 }
 
 /**
  * Dialog tạo phòng mới hoặc tham gia phòng theo mã.
  *
- * Demo mock: "tham gia" chỉ là đặt tên hiển thị — app chưa có auth nên mỗi tab
- * là một thành viên, dữ liệu phòng chung qua localStorage.
+ * Tạo phòng cần đăng nhập (server trả 401 nếu chưa); guest tham gia chỉ cần
+ * tên — server đặt cookie HttpOnly để nhận diện thành viên ở các lần sau.
  */
 export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoinDialogProps) {
   const [name, setName] = useState("")
   const [code, setCode] = useState("")
   const [displayName, setDisplayName] = useState("")
+  const [pending, setPending] = useState(false)
 
-  function handleCreate() {
-    const createdCode = onCreate(name)
-    toast.success(`Đã tạo phòng ${createdCode}`)
-    onOpenChange(false)
+  async function handleCreate() {
+    setPending(true)
+    try {
+      const createdCode = await onCreate(name)
+      toast.success(`Đã tạo phòng ${createdCode}`)
+      onOpenChange(false)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không tạo được phòng")
+    } finally {
+      setPending(false)
+    }
   }
 
-  function handleJoin() {
-    const status = onJoin(code.trim().toUpperCase(), displayName)
-    if (status === "not-found") {
-      toast.error("Không tìm thấy phòng với mã này")
-      return
+  async function handleJoin() {
+    setPending(true)
+    try {
+      const status = await onJoin(code.trim().toUpperCase(), displayName)
+      if (status === "not-found") {
+        toast.error("Không tìm thấy phòng với mã này")
+        return
+      }
+      if (status === "duplicate") {
+        toast.error("Tên này đã có người dùng trong phòng — chọn tên khác")
+        return
+      }
+      if (status === "already") {
+        toast.success("Bạn đã ở trong phòng này")
+        onOpenChange(false)
+        return
+      }
+      toast.success(`Đã vào phòng ${code.trim().toUpperCase()}`)
+      onOpenChange(false)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không vào được phòng")
+    } finally {
+      setPending(false)
     }
-    if (status === "duplicate") {
-      toast.error("Tên này đã có người dùng trong phòng — chọn tên khác")
-      return
-    }
-    toast.success(`Đã vào phòng ${code.trim().toUpperCase()}`)
-    onOpenChange(false)
   }
 
   return (
@@ -81,7 +101,7 @@ export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoi
           <FieldDescription>
             Mã phòng sẽ sinh tự động, chia sẻ cho bạn bè để họ vào cùng.
           </FieldDescription>
-          <Button type="button" className="mt-1 w-full" onClick={handleCreate}>
+          <Button type="button" className="mt-1 w-full" onClick={handleCreate} disabled={pending}>
             Tạo phòng
           </Button>
         </Field>
@@ -110,7 +130,13 @@ export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoi
               aria-label="Tên hiển thị của bạn"
             />
           </div>
-          <Button type="button" variant="outline" className="w-full" onClick={handleJoin}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleJoin}
+            disabled={pending}
+          >
             Vào phòng
           </Button>
         </Field>

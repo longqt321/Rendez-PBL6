@@ -68,9 +68,19 @@ export const joinRoomInputSchema = z.object({
   displayName: z.string().trim().min(1, "Tên hiển thị trống").max(40),
 })
 
-/** Body tạo đề xuất. */
+/**
+ * Response join: `guestToken` chỉ có khi vừa tạo thành viên mới — client không
+ * cần đọc (cookie HttpOnly tự gửi), giữ trong hợp đồng để test/CLI dùng được.
+ */
+export const joinRoomResponseSchema = z.object({
+  room: roomSchema,
+  memberId: z.string(),
+  joined: z.boolean(),
+  guestToken: z.string().optional(),
+})
+
+/** Body tạo đề xuất — danh tính lấy từ session/cookie, không từ body. */
 export const createProposalInputSchema = z.object({
-  memberId: z.string().min(1),
   kind: z.enum(["include", "exclude"]),
   field: z.enum(["category", "district", "priceMax", "keyword"]),
   value: z.string().trim().min(1, "Giá trị đề xuất trống").max(80),
