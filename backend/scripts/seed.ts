@@ -1,7 +1,7 @@
 /**
- * Seed idempotent: ưu tiên `backend/data/places-expanded.json` (corpus OSM mở rộng,
- * sinh bởi scripts/build-corpus), không có thì dùng `frontend/data/cold-start/places.json`
- * (491 place gốc).
+ * Seed idempotent: ưu tiên `backend/data/places-expanded.json` (corpus OSM đã lọc,
+ * sinh bởi scripts/build-corpus — hiện 344 POI), không có thì dùng
+ * `frontend/data/cold-start/places.json` (491 place gốc).
  *
  * Nguyên tắc (D-049, K4): KHÔNG bịa số liệu.
  * - `rating`/`reviewCount` không lưu cột — tính bằng COUNT/AVG (D3).
@@ -53,6 +53,7 @@ interface ColdStartDataset {
  * để seed và mock cho cùng kết quả.
  */
 const CATEGORY_MAP: Record<string, PlaceCategory> = {
+  // Nhãn ẩm thực gốc của dataset 491.
   cafe: "cafe",
   "banh-mi": "bakery",
   "banh-ngot": "bakery",
@@ -70,15 +71,44 @@ const CATEGORY_MAP: Record<string, PlaceCategory> = {
   "banh-cen": "street-food",
   "nem-lui": "street-food",
   banh: "bakery",
-  // Nhãn mới từ corpus OSM mở rộng (D-AI-32, D-AI-37, D-AI-38): map về 6 nhóm frontend.
-  "quan-nhau": "restaurant",
-  farm: "restaurant",
-  "sieu-thi": "restaurant",
-  mall: "restaurant",
+  // Nhãn món/quốc gia do build-corpus gán (lexicon + cuisine tag).
+  // Đều là quán ăn → map về restaurant (frontend chỉ có 6 nhóm).
+  "quan-an": "restaurant",
+  "viet-nam": "restaurant",
+  "hai-san": "restaurant",
+  nhat: "restaurant",
+  han: "restaurant",
+  thai: "restaurant",
   trung: "restaurant",
+  "an-do": "restaurant",
+  y: "restaurant",
+  com: "restaurant",
+  pho: "restaurant",
+  bun: "restaurant",
+  "com-ga": "restaurant",
+  "mi-quang": "restaurant",
+  "bun-cha-ca": "restaurant",
+  "bun-mam": "restaurant",
+  "bun-mam-nem": "restaurant",
+  "cao-lau": "restaurant",
   "hu-tieu": "restaurant",
-  nuong: "restaurant",
   chao: "restaurant",
+  nuong: "restaurant",
+  lau: "restaurant",
+  xoi: "restaurant",
+  "goi-ca": "restaurant",
+  chay: "restaurant",
+  "quan-nhau": "restaurant",
+  // Mua sắm — chỉ địa điểm lớn (D-AI-42).
+  "sieu-thi": "restaurant",
+  cho: "restaurant",
+  mall: "restaurant",
+  // Nhãn bị T4b loại khỏi corpus nhưng giữ map đề phòng dataset cũ.
+  "cua-hang-tien-loi": "restaurant",
+  "cua-hang-thuc-pham": "restaurant",
+  "cua-hang-ruou": "restaurant",
+  "tap-hoa": "restaurant",
+  farm: "restaurant",
   // Giải trí (L7) — frontend chỉ có 6 nhóm, map gần nhất về mặt trải nghiệm.
   // KHÔNG có `casino` — đã bỏ khỏi corpus theo yêu cầu user.
   karaoke: "bar",
@@ -89,6 +119,9 @@ const CATEGORY_MAP: Record<string, PlaceCategory> = {
   arcade: "bar",
   "water-park": "bar",
   spa: "restaurant",
+  massage: "restaurant",
+  // Thùng nhiễu — vẫn seed (1.3% corpus) để không mất dữ liệu âm thầm.
+  khac: "restaurant",
 }
 
 /**
@@ -192,6 +225,20 @@ async function main(): Promise<void> {
   const dataset = (await file.json()) as ColdStartDataset
   console.info(`[seed] Đọc ${dataset.places.length} place từ ${datasetPath}`)
 
+  // Chống lệch code ↔ dữ liệu (L-019): corpus do build-corpus sinh mà có nhãn
+  // chưa khai báo trong CATEGORY_MAP thì DỪNG, không map bừa về "restaurant".
+  // Chỉ áp dụng cho corpus mở rộng — dataset gốc 491 có bộ nhãn riêng.
+  if (datasetPath === EXPANDED_PATH) {
+    const unknown = [...new Set(dataset.places.map((place) => place.category))].filter(
+      (category) => !(category in CATEGORY_MAP),
+    )
+    if (unknown.length > 0) {
+      throw new Error(
+        `[seed] Nhãn chưa map trong CATEGORY_MAP: ${unknown.join(", ")} — sửa seed.ts hoặc build-corpus (L-019)`,
+      )
+    }
+  }
+
   // Có ảnh → curated → osm: trang đầu /discover phải giống mock (có ảnh card).
   const places = [...dataset.places].sort((a, b) => seedRank(a) - seedRank(b))
   let images = 0
@@ -271,7 +318,7 @@ async function main(): Promise<void> {
   // Dọn dư liệu: các place tier='osm' KHÔNG còn trong dataset hiện tại là rác
   // từ lần seed trước (corpus OSM thay đổi id mỗi lần build). Chỉ xoá tier='osm'
   // — tier curated/curated-v2 là dữ liệu kiểm tay, KHÔNG BAO GIỜ tự xoá.
-  // notIn giới hạn ~65k tham số của Postgres; corpus hiện ~2k, đủ dư địa.
+  // notIn giới hạn ~65k tham số của Postgres; corpus hiện 344, đủ dư địa.
   const datasetIds = dataset.places.map((p) => p.id)
   const stale = await prisma.place.deleteMany({
     where: { tier: "osm", id: { notIn: datasetIds } },

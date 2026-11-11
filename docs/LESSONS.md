@@ -735,3 +735,108 @@ về "tồn tại" nhưng sai về "dùng được".
    — thứ tự dataset không phải hợp đồng.
 3. Khi thay dataset (491 → 2.726 dòng), phải chạy lại toàn bộ test phụ thuộc dữ
    liệu ngay, không đợi test khác bắn ra.
+
+## L-020 — Nhãn category sinh từ TÊN dính POI lân cận và khách sạn
+
+**Ngày:** 2026-11-11
+**Người dùng chỉ ra:** *"Rà soát cả những địa điểm mà title không hề nói lên loại hình kinh doanh
+của nó. Ví dụ như chỉ có tên 'Sơn', '43 Hòa Phú 9' (Title lại là tên đường, không được), 'Diễm Hồng'…"*
+
+**Lỗi thật (agent phản biện tìm trong corpus 2726 POI):**
+
+| Tên | Gán sai | Vì sao |
+|---|---|---|
+| `Gần Vincom Plaza Ngô Quyền` | `mall` | từ khoá "vincom"/"plaza" — nhưng tên nói **gần** Vincom, không phải Vincom |
+| `Crowne Plaza Danang City Centre by IHG` | `mall` | khớp "plaza" — đây là **khách sạn 5 sao** |
+| `Chợ Mân Thái` | `thai` | chữ "Thái" trong tên đất khớp món Thái |
+| `thegioididong.com` | `com` | "com" ở cuối domain khớp "cơm" |
+| `Oc Tien Sa Hotel` | `hai-san` | "ốc" trong tên khách sạn |
+| `Bia tưởng niệm Phong Nhị - Phong Nhất` | `quan-nhau` | "bia" = bia đá, không phải bia uống |
+| `Nobipet - Siêu Thị Thú Cưng` | `sieu-thi` | "siêu thị" trong tên cửa hàng thú cưng |
+
+**Nguyên nhân gốc:** `assignCategory` quét từ khoá tên **trước** khi xét tag, và không có
+danh sách loại trừ theo ngữ cảnh (vị trí / ngành hàng khác).
+
+**Quy tắc rút ra:**
+1. **Tag OSM quyết định trước, tên chỉ là fallback.** `shop=mall` mới là TTTM; từ khoá
+   "plaza"/"mall" trong tên không đủ.
+2. Tên chứa `gần / near / đối diện / kệ bên / bên cạnh / phía sau` là **mô tả vị trí**,
+   không phải tên cơ sở → không dùng để gán loại hình.
+3. Phải có `nonFoodMarkers` (khách sạn, resort, thú cưng, điện thoại, tưởng niệm, ngân hàng,
+   trạm xăng) chặn trước mọi suy luận từ tên.
+4. Từ khoá một âm tiết ("com", "oc", "bia") phải khớp **trọn từ** và vẫn cần kiểm ngữ cảnh.
+
+## L-021 — Tầng lọc tên phải loại được đúng ví dụ dùng để biện minh cho nó
+
+**Ngày:** 2026-11-11
+**Bối cảnh:** Kế hoạch viết *"phải có `name` không rỗng — 405 POI có rác tên chỉ là số nhà
+(`04 Nguyễn Huy Tự`)"* và thêm luật "tên phải có ≥1 chữ cái". Nhưng `04 Nguyễn Huy Tự`
+**có chữ cái**, nên luật đó loại được **6/2690 = 0,22%** — tầng lọc danh nghĩa.
+
+**Đo được trong corpus:** `388-390 Mẹ Thứ (Đối diện Hội truyền giáo…)`, `741 Ngô Quyền - Đối diện
+Vincom Plaza`, `Bia 265`, `7 Son`, `3C`, `B&B`, `hường`, `nga`, `oanh` đều lọt qua.
+
+**Quy tắc rút ra:**
+1. Mỗi luật lọc phải được kiểm bằng **chính ví dụ đã dùng để biện minh** — nếu ví dụ đó vẫn lọt,
+   luật vô nghĩa. Viết test/assert cho từng ví dụ.
+2. Tầng lọc tên cần **4 luật tách biệt**: địa chỉ (bắt đầu bằng số + không có tên món),
+   ký hiệu (chuỗi chữ cái dài nhất < 2), tên người trơ (1 từ, thuộc danh sách âm tiết tên,
+   không phải tên món), phi ẩm thực.
+3. **Không loại theo "tên người"** — `Bà Dưỡng` (bánh xèo nổi tiếng nhất ĐN), `Bà Mua`,
+   `Cô Sáu` là quán thật. Chỉ loại khi **1 từ + không kính ngữ + không metadata**; có kính ngữ
+   thì chỉ phạt nhẹ.
+4. Mọi tầng lọc phải **đếm lý do loại** (`drop_reasons`) và in ra — không lọc im lặng.
+
+## L-022 — Code đổi nhãn nhưng dữ liệu trên đĩa chưa build lại = mọi phân tích đều sai
+
+**Ngày:** 2026-11-11
+**Bối cảnh:** `build-corpus/main.go` đã đổi `mart` → `sieu-thi` nhưng `places-expanded.json`
+vẫn là bản build cũ. Một agent phản biện đọc code (thấy `sieu-thi`) và đọc dữ liệu (thấy `mart`)
+rồi kết luận "code và dữ liệu lệch nhau"; các phân tích phân bố đều đo trên nhãn cũ.
+
+**Cách phòng tránh:**
+1. `build-corpus` có **`validCategories`**: nhãn lạ ⇒ in lỗi + `os.Exit(1)`, **không ghi file**.
+2. `seed.ts` assert lần hai: mọi category trong corpus phải có trong `CATEGORY_MAP`, nếu không
+   **throw** — không map bừa về `restaurant`.
+3. Sau mỗi lần sửa `assignCategory`/lexicon: **rebuild + chạy `verify-corpus.sh`** trước khi
+   đọc bất kỳ số liệu nào. Số liệu cũ không có giá trị.
+
+## L-023 — `git commit` kéo theo file WIP đang nằm sẵn trong index
+
+**Hiện tượng.** Commit tưởng chỉ chứa 7 file frontend nhưng `git show --stat` cho thấy thêm
+`docs/LESSONS.md` và `docs/bao-cao/BAO-CAO-DO-AN.md` — hai file đang là WIP của người dùng.
+
+**Nguyên nhân gốc.** Trước đó các file này đã được stage sẵn (index không rỗng). `git add`
+chỉ *thêm* đường dẫn, không *thu hẹp* phạm vi commit; `git commit` chốt toàn bộ index.
+
+**Phòng tránh.**
+1. Trước mỗi commit: `git status --short` và phân biệt cột 1 (staged) với cột 2 (unstaged).
+2. Khi chỉ muốn commit một phần: dùng `git commit -- <paths>` hoặc `git restore --staged`
+   các file ngoài phạm vi trước khi commit.
+3. Sau commit: luôn `git show --stat HEAD` để xác nhận đúng file, đúng số dòng.
+
+**Bổ sung (sự cố lặp lại 3 lần trong cùng phiên).** `git restore --staged` chỉ gỡ đúng
+đường dẫn được nêu; file WIP còn sót trong index từ lần `git add` trước vẫn bị commit.
+Quy trình bắt buộc trước mỗi commit:
+
+```bash
+git diff --cached --name-only   # đọc danh sách THẬT SỰ sẽ vào commit
+```
+
+Danh sách này phải khớp đúng phạm vi thay đổi — sai một dòng là dừng lại, gỡ staged
+bằng `git restore --staged <path>` rồi kiểm lại.
+
+**Nguyên nhân gốc thật (đã xác minh, không phải phỏng đoán).** `git diff --cached --name-only`
+in ra đúng 7 file, nhưng commit vẫn chứa `docs/LESSONS.md`. Thủ phạm là hook `pre-commit`
+→ `lint-staged`: nó stash thay đổi chưa stage, chạy prettier, rồi **restore stash kèm
+`--index`**, đưa lại phần staged cũ vào index. Vì vậy kiểm index trước commit là chưa đủ.
+
+**Cách đúng (đã dùng và xác nhận sạch).** Chốt phạm vi commit bằng pathspec tường minh,
+đặt SAU `-m`:
+
+```bash
+git commit -m "feat(x): ..." -- path/a path/b path/c
+```
+
+Pathspec giới hạn commit đúng các file đó, bất kể hook có đưa gì vào index. Sau đó vẫn phải
+`git show --stat HEAD` để đối chiếu.
