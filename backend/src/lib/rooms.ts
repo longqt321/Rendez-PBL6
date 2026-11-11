@@ -1,6 +1,11 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
-import { toApiCategory, toApiProposalField, toPrismaCategory, toPrismaProposalField } from "./enums"
+import {
+  parseApiCategory,
+  toApiProposalField,
+  toPrismaCategory,
+  toPrismaProposalField,
+} from "./enums"
 import type { Room, RoomFilter, RoomMember, RoomProposal, RoomProposalField } from "@rendez/schema"
 
 /**
@@ -59,10 +64,14 @@ export function parseRoomFilter(raw: unknown): RoomFilter {
     priceRaw === 1 || priceRaw === 2 || priceRaw === 3 ? (priceRaw as 1 | 2 | 3) : undefined
 
   return {
-    categories: list(value.categories).map(toApiCategory) as RoomFilter["categories"],
-    excludedCategories: list(value.excludedCategories).map(
-      toApiCategory,
-    ) as RoomFilter["excludedCategories"],
+    // Loại hình lạ (dữ liệu cũ/hỏng) bị bỏ qua thay vì làm sập route — filter
+    // JSONB không được phép biến một phòng thành 500.
+    categories: list(value.categories)
+      .map(parseApiCategory)
+      .filter((item): item is RoomFilter["categories"][number] => item !== null),
+    excludedCategories: list(value.excludedCategories)
+      .map(parseApiCategory)
+      .filter((item): item is RoomFilter["excludedCategories"][number] => item !== null),
     districts: list(value.districts),
     excludedDistricts: list(value.excludedDistricts),
     includeKeywords: list(value.includeKeywords),
@@ -212,6 +221,18 @@ export async function addProposal(
 }
 
 /** Áp đề xuất vào filter chung — port 1:1 `applyProposal` của frontend. */
+/**
+ * Kiểm + chuẩn hoá giá trị đề xuất theo `field` — trả `null` khi không hợp lệ
+ * (route trả 400) thay vì lưu rác vào filter JSONB làm phòng hỏng vĩnh viễn:
+ * `category` phải là loại hình đã biết; `priceMax` phải là 1–3; district/keyword
+ * là chuỗi tuỳ ý (đã trim ở zod).
+ */
+export function normalizeProposalValue(field: RoomProposalField, value: string): string | null {
+  if (field === "category") return parseApiCategory(value)
+  if (field === "priceMax") return value === "1" || value === "2" || value === "3" ? value : null
+  return value
+}
+
 export function applyProposalToFilter(
   filter: RoomFilter,
   proposal: { kind: "include" | "exclude"; field: RoomProposalField; value: string },

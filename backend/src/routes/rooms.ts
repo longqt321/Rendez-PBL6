@@ -18,6 +18,7 @@ import {
   describeProposal,
   findRoomByCode,
   joinRoom,
+  normalizeProposalValue,
   parseRoomFilter,
   serializeRoomFilter,
   toRoomDto,
@@ -118,7 +119,12 @@ export function createRoomsRouter() {
     }
     requireMember(room, parsed.data.memberId)
 
-    const updated = await addProposal(room, parsed.data)
+    const value = normalizeProposalValue(parsed.data.field, parsed.data.value)
+    if (value === null) {
+      throw new ApiError(400, "Giá trị đề xuất không hợp lệ")
+    }
+
+    const updated = await addProposal(room, { ...parsed.data, value })
     const viewer = await getViewer(c)
     const dto = toRoomDto(updated, viewer?.id ?? null, parsed.data.memberId)
     publishRoom(code, dto)

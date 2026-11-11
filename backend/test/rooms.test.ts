@@ -163,6 +163,50 @@ describe("phòng lọc nhóm", () => {
     expect(bad.status).toBe(400)
   })
 
+  test("đề xuất giá trị không hợp lệ trả 400, không lưu rác vào filter", async () => {
+    // Trước đây `value` tự do đi thẳng vào filter JSONB: `category=hack` làm
+    // `toApiCategory` ném lỗi ở lần GET phòng kế tiếp → phòng hỏng vĩnh viễn (500).
+    const badCategory = await call(`/api/v1/rooms/${code}/proposals`, {
+      method: "POST",
+      body: JSON.stringify({
+        memberId: guestMemberId,
+        kind: "include",
+        field: "category",
+        value: "hack",
+      }),
+    })
+    expect(badCategory.status).toBe(400)
+    expect(await badCategory.json()).toEqual({ message: "Giá trị đề xuất không hợp lệ" })
+
+    const badPrice = await call(`/api/v1/rooms/${code}/proposals`, {
+      method: "POST",
+      body: JSON.stringify({
+        memberId: guestMemberId,
+        kind: "include",
+        field: "priceMax",
+        value: "9",
+      }),
+    })
+    expect(badPrice.status).toBe(400)
+
+    // Giá trị dạng Prisma (`street_food`) được chuẩn hoá về dạng API.
+    const normalized = await call(`/api/v1/rooms/${code}/proposals`, {
+      method: "POST",
+      body: JSON.stringify({
+        memberId: guestMemberId,
+        kind: "include",
+        field: "category",
+        value: "street_food",
+      }),
+    })
+    expect(normalized.status).toBe(201)
+    const body = (await normalized.json()) as { proposals: Array<{ value: string }> }
+    expect(body.proposals[0]?.value).toBe("street-food")
+
+    // Phòng vẫn đọc được bình thường sau các đề xuất trên.
+    expect((await call(`/api/v1/rooms/${code}`)).status).toBe(200)
+  })
+
   test("áp đề xuất include/exclude đúng quy tắc filter", async () => {
     const add = async (payload: Record<string, unknown>) => {
       const res = await call(`/api/v1/rooms/${code}/proposals`, {
