@@ -90,6 +90,16 @@ describe("bài đăng", () => {
     postId = post.id
   })
 
+  test("POST /posts caption chứa ký tự NUL trả 400, không phải 500", async () => {
+    const res = await call("/api/v1/posts", {
+      method: "POST",
+      cookie: author.cookie,
+      body: JSON.stringify({ caption: "Bánh xèo\u0000Đà Nẵng" }),
+    })
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ message: "Dữ liệu chứa ký tự không hợp lệ" })
+  })
+
   test("POST /posts caption quá ngắn trả 400", async () => {
     const res = await call("/api/v1/posts", {
       method: "POST",

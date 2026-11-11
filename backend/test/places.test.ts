@@ -117,6 +117,12 @@ describe("GET /places", () => {
     for (const item of dashed.items) expect(item.category).toBe("street-food")
   })
 
+  test("query chứa ký tự NUL trả 400 (Postgres không nhận \\u0000)", async () => {
+    const res = await get("/api/v1/places?district=%00")
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ message: "Dữ liệu chứa ký tự không hợp lệ" })
+  })
+
   test("priceMax ngoài 1–3 bị bỏ qua (không lỗi, không lọc sai)", async () => {
     const all = await getJson<PageJson>("/api/v1/places?priceMax=9")
     const plain = await getJson<PageJson>("/api/v1/places")

@@ -5,6 +5,7 @@ import { bodyLimit } from "hono/body-limit"
 import { secureHeaders } from "hono/secure-headers"
 import { ZodError } from "zod"
 import { env } from "./env"
+import { isNulByteError } from "./lib/errors"
 import { logger } from "./lib/logger"
 import { prisma } from "./lib/prisma"
 import { createApiRouter } from "./routes"
@@ -138,6 +139,11 @@ export function createApp() {
     if (err instanceof ZodError) {
       const message = err.issues[0]?.message ?? "Dữ liệu không hợp lệ"
       return c.json({ message }, 400)
+    }
+
+    // Postgres từ chối ký tự NUL trong text — lỗi đầu vào, không phải hệ thống.
+    if (isNulByteError(err)) {
+      return c.json({ message: "Dữ liệu chứa ký tự không hợp lệ" }, 400)
     }
 
     logger.error(
