@@ -64,6 +64,27 @@ describe("GET /users", () => {
     })
   })
 
+  test("tìm có dấu vẫn khớp (chuẩn hoá 2 phía như mock)", async () => {
+    await app.request("/api/v1/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Forwarded-For": `10.9.${Math.floor(Math.random() * 200)}.${Math.floor(Math.random() * 200)}`,
+      },
+      body: JSON.stringify({
+        name: "Ngọc Ánh",
+        email: `ngocanh-${suffix}@rendez.test`,
+        password: "password123",
+        handle: `ngoc_anh_${suffix}`,
+      }),
+    })
+
+    const res = await app.request(`/api/v1/users?q=${encodeURIComponent("ngọc ánh")}`)
+    const body = (await res.json()) as { items: { name: string }[] }
+
+    expect(body.items.map((item) => item.name)).toContain("Ngọc Ánh")
+  })
+
   test("q không khớp ai trả trang rỗng", async () => {
     const res = await app.request("/api/v1/users?q=zzz-khong-co")
     const body = (await res.json()) as { items: unknown[]; next: string | null }

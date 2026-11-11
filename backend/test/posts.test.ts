@@ -122,6 +122,17 @@ describe("bài đăng", () => {
     expect(postPageSchema.safeParse(await res.json()).success).toBe(true)
   })
 
+  test("GET /posts?q có dấu khớp caption (chuẩn hoá 2 phía như mock)", async () => {
+    const res = await call(`/api/v1/posts?q=${encodeURIComponent("bánh xèo")}`)
+    expect(res.status).toBe(200)
+
+    const body = (await res.json()) as { items: { id: string; caption: string }[] }
+    expect(body.items.map((item) => item.id)).toContain(postId)
+    for (const item of body.items) {
+      expect(item.caption.toLowerCase()).toContain("bánh xèo")
+    }
+  })
+
   test("filter=unplaced chỉ trả bài chưa gắn địa điểm", async () => {
     const body = (await (await call("/api/v1/posts?filter=unplaced")).json()) as {
       items: { placeId: string | null }[]

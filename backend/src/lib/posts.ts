@@ -129,8 +129,11 @@ export async function listPosts(
     )
   }
   if (params.q) {
-    const pattern = `%${params.q.toLowerCase().replace(/[\\%_]/g, (char) => `\\${char}`)}%`
-    conditions.push(Prisma.sql`unaccent(lower(p.caption)) LIKE ${pattern}`)
+    // Chuẩn hoá 2 phía bằng cùng hàm với tìm kiếm địa điểm (migration 10) — mock
+    // so khớp trên `normalizeText(caption)` nên `?q=bánh xèo` phải khớp bài có dấu.
+    conditions.push(
+      Prisma.sql`immutable_search_normalize(p.caption) LIKE ${Prisma.sql`'%' || immutable_search_normalize(${params.q}) || '%'`}`,
+    )
   }
   if (params.cursor) {
     conditions.push(

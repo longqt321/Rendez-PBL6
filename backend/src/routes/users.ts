@@ -48,9 +48,11 @@ export function createUsersRouter() {
     const conditions: Prisma.Sql[] = [Prisma.sql`u.deleted_at IS NULL`]
 
     if (q.length > 0) {
-      const pattern = `%${q.toLowerCase().replace(/[\\%_]/g, (char) => `\\${char}`)}%`
+      // Chuẩn hoá 2 phía (bỏ dấu, dấu câu → space) như `normalizeText` của mock —
+      // nếu chỉ bỏ dấu ở cột thì `?q=ngọc` không khớp.
+      const needle = Prisma.sql`'%' || immutable_search_normalize(${q}) || '%'`
       conditions.push(
-        Prisma.sql`(unaccent(lower(u.name)) LIKE ${pattern} OR unaccent(lower(u.handle)) LIKE ${pattern})`,
+        Prisma.sql`(immutable_search_normalize(u.name) LIKE ${needle} OR immutable_search_normalize(u.handle) LIKE ${needle})`,
       )
     }
     if (cursor) {
