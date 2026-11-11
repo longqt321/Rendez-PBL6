@@ -75,7 +75,7 @@ function titleForPath(pathname: string): string | undefined {
 function useDocumentTitle(pathname: string) {
   useEffect(() => {
     const title = titleForPath(pathname)
-    if (title) document.title = `${title} · Đà Nẵng Ăn & Đi`
+    if (title) document.title = `${title} · Rendez`
   }, [pathname])
 }
 
@@ -146,14 +146,9 @@ function Brand() {
         aria-hidden="true"
         className="grid size-8 place-items-center rounded-control border border-border bg-secondary text-sm font-bold text-secondary-foreground"
       >
-        Đ
+        R
       </span>
-      <span className="font-heading text-lg leading-none font-bold tracking-tight">
-        Đà Nẵng
-        <span className="block text-xs font-medium tracking-[0.18em] uppercase opacity-60">
-          Ăn &amp; Đi
-        </span>
-      </span>
+      <span className="font-heading text-lg leading-none font-bold tracking-tight">Rendez</span>
     </div>
   )
 }

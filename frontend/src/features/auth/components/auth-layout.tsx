@@ -20,8 +20,8 @@ export function AuthLayout({
 }) {
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-sm flex-col justify-center px-4 py-8">
-      <Link to="/discover" className="mb-4 text-lg font-semibold tracking-tight">
-        RendeZ
+      <Link to="/discover" className="mb-4 font-heading text-xl font-bold tracking-tight">
+        Rendez
       </Link>
       <Card>
         <CardContent className="flex flex-col gap-4">
