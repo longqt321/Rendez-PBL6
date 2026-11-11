@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test"
 import {
+  ACCOUNT_EXISTS_SUBJECT,
   RESET_PASSWORD_SUBJECT,
   VERIFY_EMAIL_SUBJECT,
+  buildAccountExistsMail,
   buildResetPasswordMail,
   buildVerifyEmailMail,
 } from "../src/lib/mailer"
@@ -76,5 +78,37 @@ describe("buildVerifyEmailMail", () => {
     })
     expect(mail.html).not.toContain("<img")
     expect(mail.html).toContain("&lt;img")
+  })
+})
+
+describe("buildAccountExistsMail", () => {
+  test("đủ from/to/subject/text/html, chứa link đăng nhập và quên mật khẩu, không có token", () => {
+    const mail = buildAccountExistsMail({
+      to: "user@example.com",
+      name: "Minh Anh",
+      loginUrl: "http://localhost:5173/login",
+      forgotPasswordUrl: "http://localhost:5173/forgot-password",
+    })
+    expect(mail.to).toBe("user@example.com")
+    expect(mail.subject).toBe(ACCOUNT_EXISTS_SUBJECT)
+    expect(typeof mail.from).toBe("string")
+    expect(mail.text).toContain("http://localhost:5173/login")
+    expect(mail.html).toContain("http://localhost:5173/login")
+    expect(mail.html).toContain("http://localhost:5173/forgot-password")
+    // Mail này không được kèm token nào (chống lạm dụng ép gửi link đổi mật khẩu).
+    expect(mail.text).not.toMatch(/token=/u)
+    expect(mail.html).not.toMatch(/token=/u)
+    expect(mail.html).toContain("Chào Minh Anh")
+  })
+
+  test("escape HTML trong tên người dùng", () => {
+    const mail = buildAccountExistsMail({
+      to: "user@example.com",
+      name: '<script>alert("x")</script>',
+      loginUrl: "http://localhost:5173/login",
+      forgotPasswordUrl: "http://localhost:5173/forgot-password",
+    })
+    expect(mail.html).not.toContain("<script>")
+    expect(mail.html).toContain("&lt;script&gt;")
   })
 })

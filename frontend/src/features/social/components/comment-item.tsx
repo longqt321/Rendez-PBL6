@@ -50,7 +50,7 @@ export function CommentItem({ comment, onReply, onDelete }: CommentItemProps) {
           </span>
         </ItemTitle>
 
-        <ItemDescription className="whitespace-pre-line">
+        <ItemDescription className="break-words whitespace-pre-line">
           {comment.replyTo !== null && (
             <span className="font-medium text-foreground">@{comment.replyTo.handle} </span>
           )}

@@ -8,10 +8,17 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useForgotPassword } from "../hooks/use-forgot-password"
+import { useAuthPageTitle } from "../hooks/use-auth-page"
 import { AuthLayout } from "../components/auth-layout"
 
 const forgotSchema = z.object({
-  email: z.string().trim().toLowerCase().pipe(z.email("Email không hợp lệ")),
+  // Rỗng là "chưa nhập", không phải "email sai định dạng" (V1-11).
+  email: z
+    .string()
+    .trim()
+    .min(1, "Cần nhập email")
+    .toLowerCase()
+    .pipe(z.email("Email không hợp lệ")),
 })
 
 type ForgotForm = z.infer<typeof forgotSchema>
@@ -24,6 +31,7 @@ type ForgotForm = z.infer<typeof forgotSchema>
  */
 export function ForgotPasswordPage() {
   const forgot = useForgotPassword()
+  useAuthPageTitle("Quên mật khẩu")
 
   const form = useForm<ForgotForm>({
     resolver: zodResolver(forgotSchema),

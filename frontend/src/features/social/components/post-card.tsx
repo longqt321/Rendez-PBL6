@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Toggle } from "@/components/ui/toggle"
+import { SafeImage } from "@/components/shared/safe-image"
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import { formatCount, formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -49,7 +50,7 @@ export function PostCard({ post }: PostCardProps) {
       </header>
 
       <div className="flex flex-col gap-3 p-4">
-        <p className="text-base leading-relaxed whitespace-pre-line">{post.caption}</p>
+        <p className="text-base leading-relaxed break-words whitespace-pre-line">{post.caption}</p>
 
         {/* Ảnh bài đăng (G5b): 1 ảnh full, ≥2 lưới 2 cột — rỗng thì không render gì. */}
         {post.images.length > 0 ? (
@@ -62,11 +63,10 @@ export function PostCard({ post }: PostCardProps) {
                 to={`/post/${post.id}`}
                 className="block overflow-hidden rounded-md"
               >
-                <img
+                <SafeImage
                   src={url}
                   alt={`Ảnh ${index + 1}/${post.images.length} của bài đăng`}
-                  loading="lazy"
-                  className="aspect-square h-full w-full object-cover"
+                  className="aspect-square h-full w-full"
                 />
               </Link>
             ))}

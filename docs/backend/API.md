@@ -65,7 +65,7 @@ tùy chọn, theo semantics của bản nháp IETF `Idempotency-Key`:
 | POST | `/auth/request-password-reset` | — | `{email, redirectTo?}` | `200 {"status":true}` (luôn thành công) |
 | POST | `/auth/reset-password` | — | `{token, newPassword}` | `200 {"status":true}` / `400` token sai |
 | POST | `/auth/send-verification-email` | — | `{email, callbackURL?}` | `200 {"status":true}` (luôn thành công) — gửi lại mail xác thực |
-| GET | `/auth/verify-email` | — | `?token=&callbackURL=` | `302` redirect về `callbackURL` (thành công không tham số, lỗi kèm `?error=CODE`); `autoSignInAfterVerification` → kèm Set-Cookie phiên |
+| GET | `/auth/verify-email` | — | `?token=&callbackURL=` | `302` redirect về `callbackURL` (thành công giữ nguyên `callbackURL` — FE dùng `/verify-email?verified=1` làm marker, lỗi nối thêm `?error=CODE`); `autoSignInAfterVerification` → kèm Set-Cookie phiên |
 | GET/POST | `/auth/*` | — | do better-auth quản lý | passthrough |
 
 Ràng buộc đầu vào:
@@ -73,11 +73,14 @@ Ràng buộc đầu vào:
 - `name`: 2–40 ký tự (sau trim); `handle`: 3–30, chỉ `[a-z0-9_]`; `password`: 8–128;
   `email`: chuẩn hoá lowercase.
 - Trùng email → `201 {"requiresVerification":true}` (better-auth "generic duplicate" — không lộ
-  email đã tồn tại, cùng response với đăng ký mới); trùng handle →
-  `409 {"message":"Handle đã được sử dụng"}` (kiểm trước khi gọi better-auth vì
+  email đã tồn tại, cùng response với đăng ký mới). Hook `onExistingUserSignUp` gửi mail thật
+  cho chủ tài khoản: **chưa xác thực** → gửi lại link xác thực; **đã xác thực** → mail "tài
+  khoản Rendez của bạn đã tồn tại" kèm link đăng nhập / quên mật khẩu (không kèm token). Trùng
+  handle → `409 {"message":"Handle đã được sử dụng"}` (kiểm trước khi gọi better-auth vì
   better-auth nuốt P2002 của handle thành 422 chung).
 - **Bắt buộc xác thực email (D-056):** đăng ký không tạo phiên; mail xác thực chứa link trỏ
-  tới API rồi redirect về `APP_ORIGIN/verify-email`. Đăng nhập khi chưa xác thực →
+  tới API rồi redirect về `APP_ORIGIN/verify-email?verified=1` (marker để FE không hiện "xác
+  thực thành công" khi mở trang trực tiếp). Đăng nhập khi chưa xác thực →
   `403 {"message":"Email chưa được xác thực. Hãy mở link trong email xác thực (kiểm tra cả mục spam) rồi đăng nhập lại."}`.
   Gửi lại mail: `POST /auth/send-verification-email` (luôn 200 để không lộ email tồn tại).
 - Sai mật khẩu → `401 {"message":"Email hoặc mật khẩu không đúng"}`. Tài khoản đã xoá mềm

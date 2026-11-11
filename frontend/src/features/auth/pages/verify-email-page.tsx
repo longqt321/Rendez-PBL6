@@ -5,16 +5,23 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { useAuthPageTitle } from "../hooks/use-auth-page"
 import { AuthLayout } from "../components/auth-layout"
 import { useSendVerificationEmail } from "../hooks/use-send-verification-email"
+import { mapAuthErrorMessage } from "../lib/auth-error-messages"
 
 /**
  * Trang nhận kết quả xác thực email — `/verify-email`.
  *
  * Link trong mail trỏ tới API (`/api/v1/auth/verify-email?token=…`) — API xác
- * thực xong redirect về đây: thành công thì KHÔNG kèm tham số (và đã set cookie
- * phiên nhờ `autoSignInAfterVerification`), lỗi thì kèm `?error=CODE`
+ * thực xong redirect về đây. `callbackURL` trong mail là
+ * `/verify-email?verified=1` (hằng `VERIFY_EMAIL_CALLBACK_PATH` ở backend):
+ * thành công giữ nguyên `verified=1`; lỗi thì API nối thêm `?error=CODE`
  * (`redirectOnError` trong `dist/api/routes/email-verification.mjs`).
+ *
+ * Vì sao cần `verified=1`: trước đây trang coi "không có ?error=" là thành công
+ * nên mở `/verify-email` trực tiếp (không có token) hay link token sai đều hiện
+ * "Xác thực thành công" — trạng thái giả (V1-03/V6-06).
  *
  * Trang không tự gọi API: việc xác thực đã xong ở phía server trước khi redirect.
  */
@@ -37,10 +44,12 @@ export function VerifyEmailPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const resend = useSendVerificationEmail()
+  useAuthPageTitle("Xác thực email")
   const [email, setEmail] = useState("")
   const errorCode = searchParams.get("error")
+  const verified = searchParams.get("verified") === "1"
 
-  if (!errorCode) {
+  if (verified && !errorCode) {
     return (
       <AuthLayout
         title="Email đã được xác thực"
@@ -69,10 +78,16 @@ export function VerifyEmailPage() {
     )
   }
 
+  // Không có `verified=1` (mở trực tiếp, link cắt mất tham số) hoặc có `?error=`
+  // (token sai/hết hạn) → đều là link không dùng được, kèm form gửi lại email.
+  const reason = errorCode
+    ? errorMessage(errorCode)
+    : "Link không hợp lệ hoặc thiếu token xác thực."
+
   return (
     <AuthLayout
       title="Chưa xác thực được email"
-      description={errorMessage(errorCode)}
+      description={reason}
       footer={
         <Link to="/login" className="text-primary underline-offset-4 hover:underline">
           Quay lại đăng nhập
@@ -111,7 +126,7 @@ export function VerifyEmailPage() {
                 onChange={(event) => setEmail(event.target.value)}
               />
             </Field>
-            {resend.isError && <FieldError>{resend.error.message}</FieldError>}
+            {resend.isError && <FieldError>{mapAuthErrorMessage(resend.error)}</FieldError>}
             <Button
               type="submit"
               variant="outline"

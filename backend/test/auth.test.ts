@@ -23,6 +23,14 @@ beforeAll(async () => {
   process.env.NODE_ENV = "test"
   // `redirectTo` của request-password-reset phải nằm trong trustedOrigins.
   process.env.CORS_ORIGINS = "http://localhost:5173"
+  // Test "PATCH /me từ chối ảnh hồ sơ" giả định R2 chưa cấu hình — máy dev có
+  // thể có R2 trong `.env`, phải ép về rỗng TRƯỚC khi import app/env để test
+  // không phụ thuộc môi trường.
+  process.env.R2_ACCOUNT_ID = ""
+  process.env.R2_ACCESS_KEY_ID = ""
+  process.env.R2_SECRET_ACCESS_KEY = ""
+  process.env.R2_BUCKET = ""
+  process.env.R2_PUBLIC_BASE_URL = ""
 
   const { createApp } = await import("../src/app")
   prisma = (await import("../src/lib/prisma")).prisma
@@ -273,6 +281,10 @@ describe("auth + hồ sơ", () => {
     // dò email không phân biệt được (đã đọc `dist/api/routes/sign-up.mjs`).
     expect(res.status).toBe(201)
     expect(await res.json()).toEqual({ requiresVerification: true })
+    // V1-02: không tạo user mới, không có phiên — và hook onExistingUserSignUp
+    // phải gửi mail (kiểm nhánh ở describe "đăng ký trùng email" cuối file).
+    expect(res.headers.getSetCookie()).toHaveLength(0)
+    expect(await prisma.user.findMany({ where: { email: EMAIL } })).toHaveLength(1)
   })
 
   test("POST /register trùng handle trả 409 {message} — P2002 map đúng trường", async () => {
@@ -376,5 +388,40 @@ describe("quên / đặt lại mật khẩu + xoá tài khoản", () => {
   test("DELETE /me chưa đăng nhập trả 401", async () => {
     const res = await call("/api/v1/me", { method: "DELETE" })
     expect(res.status).toBe(401)
+  })
+})
+
+describe("đăng ký trùng email — gửi mail hướng dẫn (V1-02)", () => {
+  /**
+   * Nhánh quyết định của hook `onExistingUserSignUp` (lib/auth.ts): người dùng
+   * chưa xác thực đang CHỜ mail xác thực thì gửi lại link thật; đã xác thực thì
+   * gửi mail "tài khoản đã tồn tại" (không kèm token). Môi trường test không có
+   * SMTP nên mail không gửi được — nhánh gửi lại vẫn chạy trọn đường
+   * better-auth → mailer (fallback log DEV ONLY), đủ để kiểm hành vi.
+   */
+  test("chưa xác thực → gửi lại link xác thực", async () => {
+    const { notifyExistingUserSignUp } = await import("../src/lib/auth")
+    const email = `trung-chua-verify-${suffix}@rendez.test`
+    const res = await call("/api/v1/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Trùng Chưa Xác Thực",
+        email,
+        password: "password123",
+        handle: `trung_cv_${suffix}`,
+      }),
+    })
+    expect(res.status).toBe(201)
+
+    const user = await prisma.user.findUnique({ where: { email } })
+    expect(user?.emailVerified).toBe(false)
+    expect(await notifyExistingUserSignUp(user!)).toBe("verification-resent")
+  })
+
+  test("đã xác thực → mail 'tài khoản đã tồn tại'", async () => {
+    const { notifyExistingUserSignUp } = await import("../src/lib/auth")
+    const user = await prisma.user.findUnique({ where: { email: EMAIL } })
+    expect(user?.emailVerified).toBe(true)
+    expect(await notifyExistingUserSignUp(user!)).toBe("account-exists-mail")
   })
 })

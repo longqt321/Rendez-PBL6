@@ -77,7 +77,11 @@ export function PlaceDetailPage() {
           title={notFound ? "Không tìm thấy địa điểm" : "Không tải được địa điểm"}
           description={notFound ? "Địa điểm này chưa được đăng hoặc không tồn tại." : undefined}
           onRetry={notFound ? undefined : () => void refetch()}
-        />
+        >
+          {notFound ? (
+            <Button render={<Link to="/discover" />}>Về trang Khám phá</Button>
+          ) : undefined}
+        </ErrorState>
       </div>
     )
   }

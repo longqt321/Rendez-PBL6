@@ -49,13 +49,15 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
 
 /**
  * Gửi lại mail xác thực email. `callbackURL` trỏ về trang `/verify-email` của
- * FE — backend redirect về đó kèm `?error=` khi token sai/hết hạn.
+ * FE kèm `verified=1` — cùng hằng `VERIFY_EMAIL_CALLBACK_PATH` ở backend; backend
+ * nối thêm `?error=` khi token sai/hết hạn. Nhờ `verified=1`, trang phân biệt
+ * được "vừa xác thực xong" với "mở trang trực tiếp" (V1-03).
  * Server luôn trả `{status:true}` để không lộ email có tồn tại hay không.
  */
 export async function sendVerificationEmail(email: string): Promise<void> {
   await api.post("/auth/send-verification-email", {
     email,
-    callbackURL: `${window.location.origin}/verify-email`,
+    callbackURL: `${window.location.origin}/verify-email?verified=1`,
   })
 }
 

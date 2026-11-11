@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import { useResetPassword } from "../hooks/use-reset-password"
+import { useAuthPageTitle } from "../hooks/use-auth-page"
 import { AuthLayout } from "../components/auth-layout"
 import { PasswordInput } from "../components/password-input"
+import { mapAuthErrorMessage } from "../lib/auth-error-messages"
 
 const resetSchema = z
   .object({
@@ -35,6 +37,7 @@ export function ResetPasswordPage() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token") ?? ""
   const reset = useResetPassword()
+  useAuthPageTitle("Đặt lại mật khẩu")
 
   const form = useForm<ResetForm>({
     resolver: zodResolver(resetSchema),
@@ -110,7 +113,8 @@ export function ResetPasswordPage() {
               )}
             </Field>
 
-            {reset.isError && <FieldError>{reset.error.message}</FieldError>}
+            {/* better-auth trả message tiếng Anh thô ("Invalid token") — dịch ở UI (V1-04). */}
+            {reset.isError && <FieldError>{mapAuthErrorMessage(reset.error)}</FieldError>}
 
             <Button
               type="submit"

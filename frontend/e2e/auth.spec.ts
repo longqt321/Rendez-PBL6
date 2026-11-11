@@ -1,8 +1,8 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
 import { e2eAccount } from "./credentials.js"
 
 /**
- * Vòng đời tài khoản (G1): đăng nhập, đăng ký, quên mật khẩu.
+ * Vòng đời tài khoản (G1): đăng nhập, đăng ký, quên mật khẩu, verify email.
  *
  * Tài khoản đăng nhập lấy từ `e2eAccount()`: mock dùng tài khoản dev
  * `me@rendez.test` / `password123` (xem `src/mocks/server.ts`); project backend
@@ -10,9 +10,43 @@ import { e2eAccount } from "./credentials.js"
  */
 test.describe.configure({ mode: "serial" })
 
+/**
+ * Đưa trang về trạng thái KHÁCH rồi mở `/login` bằng điều hướng SPA.
+ *
+ * Vì sao không `page.goto("/login")`: người đã đăng nhập bị chuyển ngay về
+ * `/discover` (V1-09), còn mock dev (`VITE_DEV_BYPASS_AUTH`) coi mọi lần tải
+ * trang là đã đăng nhập. Mock là bộ nhớ trong trang nên phải đăng xuất qua UI
+ * rồi điều hướng SPA — tải lại trang là mock reset về trạng thái đăng nhập.
+ */
+async function openLoginAsGuest(page: Page): Promise<void> {
+  await page.goto("/discover")
+  const menuButton = page.getByRole("button", { name: "Mở menu người dùng" })
+  await menuButton.click()
+  await page.getByRole("menuitem", { name: "Đăng xuất" }).click()
+  // Avatar đổi sang icon khách khi `GET /me` trả 401 — tín hiệu trạng thái thật.
+  await expect(menuButton.locator("svg.lucide-user")).toBeVisible()
+
+  await menuButton.click()
+  await page.getByRole("menuitem", { name: "Đăng nhập" }).click()
+  await expect(page).toHaveURL(/\/login$/u)
+}
+
+/** Giống `openLoginAsGuest` nhưng mở `/register`. */
+async function openRegisterAsGuest(page: Page): Promise<void> {
+  await page.goto("/discover")
+  const menuButton = page.getByRole("button", { name: "Mở menu người dùng" })
+  await menuButton.click()
+  await page.getByRole("menuitem", { name: "Đăng xuất" }).click()
+  await expect(menuButton.locator("svg.lucide-user")).toBeVisible()
+
+  await menuButton.click()
+  await page.getByRole("menuitem", { name: "Đăng ký" }).click()
+  await expect(page).toHaveURL(/\/register$/u)
+}
+
 test("đăng nhập sai mật khẩu hiện lỗi, đúng mật khẩu về trang khám phá", async ({ page }) => {
   const account = e2eAccount()
-  await page.goto("/login")
+  await openLoginAsGuest(page)
 
   await page.getByLabel("Email").fill(account.email)
   await page.getByLabel("Mật khẩu", { exact: true }).fill("sai-mat-khau")
@@ -24,9 +58,32 @@ test("đăng nhập sai mật khẩu hiện lỗi, đúng mật khẩu về tran
   await expect(page).toHaveURL(/\/discover$/u)
 })
 
+test("đã đăng nhập mở /login bị chuyển về /discover", async ({ page }) => {
+  // Mock dev tự đăng nhập — đủ để kiểm redirect (V1-09); project backend cũng
+  // chạy được vì storageState có phiên.
+  await page.goto("/login")
+  await expect(page).toHaveURL(/\/discover$/u)
+})
+
+test("đã đăng nhập mở /login?next=… được đưa về đúng trang next", async ({ page }) => {
+  await page.goto("/login?next=/profile")
+  await expect(page).toHaveURL(/\/profile$/u)
+})
+
+test("?next= không phải path relative thì bị bỏ qua (chống open redirect)", async ({ page }) => {
+  await page.goto("/login?next=https%3A%2F%2Fevil.example.com")
+  await expect(page).toHaveURL(/\/discover$/u)
+})
+
+test("email để trống báo 'Cần nhập email'", async ({ page }) => {
+  await openLoginAsGuest(page)
+  await page.getByRole("button", { name: "Đăng nhập" }).click()
+  await expect(page.getByText("Cần nhập email")).toBeVisible()
+})
+
 test("đăng ký tài khoản mới → hiện màn hình kiểm tra email (không vào app)", async ({ page }) => {
   const handle = `e2e_${Date.now().toString(36).slice(-6)}`
-  await page.goto("/register")
+  await openRegisterAsGuest(page)
 
   await page.getByLabel("Tên hiển thị").fill("E2E Tester")
   await page.getByLabel("Email").fill(`${handle}@rendez.test`)
@@ -53,7 +110,7 @@ test("chưa xác thực email không đăng nhập được; gửi lại mail xo
   const handle = `e2e_${Date.now().toString(36).slice(-6)}`
   const email = `${handle}@rendez.test`
 
-  await page.goto("/register")
+  await openRegisterAsGuest(page)
   await page.getByLabel("Tên hiển thị").fill("E2E Tester")
   await page.getByLabel("Email").fill(email)
   await page.getByLabel("Tên người dùng").fill(handle)
@@ -78,9 +135,17 @@ test("chưa xác thực email không đăng nhập được; gửi lại mail xo
   await expect(page).toHaveURL(/\/discover$/u)
 })
 
-test("trang /verify-email: không lỗi → thành công, có ?error= → hiện lý do", async ({ page }) => {
-  await page.goto("/verify-email")
+test("trang /verify-email: ?verified=1 → thành công, thiếu marker/?error= → link không hợp lệ", async ({
+  page,
+}) => {
+  // Thành công chỉ khi link redirect từ API kèm marker `verified=1`.
+  await page.goto("/verify-email?verified=1")
   await expect(page.getByText("Email đã được xác thực")).toBeVisible()
+
+  // Mở trực tiếp (không có token, không có marker) → KHÔNG được hiện thành công.
+  await page.goto("/verify-email")
+  await expect(page.getByText("Chưa xác thực được email")).toBeVisible()
+  await expect(page.getByLabel("Email")).toBeVisible()
 
   await page.goto("/verify-email?error=TOKEN_EXPIRED")
   await expect(page.getByText("Link xác thực đã hết hạn.")).toBeVisible()

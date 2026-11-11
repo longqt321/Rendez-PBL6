@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router"
-import { ArrowLeftIcon, LockIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react"
+import { ArrowLeftIcon, LockIcon, LogInIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -29,7 +29,8 @@ import { Item, ItemGroup } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ShareButton } from "@/components/shared/share-button"
-import { isNotFoundError } from "@/lib/axios"
+import { isNotFoundError, isUnauthorizedError } from "@/lib/axios"
+import { useMe } from "@/features/profile/hooks/use-me"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { usePlace } from "@/features/places/hooks/use-place"
 import { useCollection } from "../hooks/use-collection"
@@ -116,6 +117,13 @@ export function CollectionDetailPage() {
   const { data: collection, isPending, isError, error, refetch } = useCollection(id ?? "")
   const deleteCollection = useDeleteCollection()
   const [confirming, setConfirming] = useState(false)
+  /**
+   * Bộ sưu tập công khai xem được khi chưa đăng nhập. Guest không được thấy
+   * breadcrumb/nút "Về trang Đã lưu" (`/saved` cần phiên → 401 giả "lỗi mạng");
+   * thay bằng CTA đăng nhập quay lại đúng bộ sưu tập này.
+   */
+  const { data: me, error: meError } = useMe()
+  const isGuest = !me && isUnauthorizedError(meError)
 
   if (!id) return <CollectionNotFound />
 
@@ -160,17 +168,19 @@ export function CollectionDetailPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink render={<Link to="/saved" />}>Đã lưu</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{collection.name}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      {isGuest ? null : (
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink render={<Link to="/saved" />}>Đã lưu</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{collection.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
 
       <Card className="mt-4">
         <CardContent className="flex flex-wrap items-start justify-between gap-3">
@@ -185,7 +195,7 @@ export function CollectionDetailPage() {
               ) : null}
             </h1>
             {collection.description ? (
-              <p className="text-sm whitespace-pre-line text-muted-foreground">
+              <p className="text-sm break-words whitespace-pre-line text-muted-foreground">
                 {collection.description}
               </p>
             ) : null}
@@ -287,10 +297,24 @@ export function CollectionDetailPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Button variant="ghost" size="sm" className="mt-6" onClick={() => void navigate("/saved")}>
-        <ArrowLeftIcon />
-        Về trang Đã lưu
-      </Button>
+      {isGuest ? (
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-6"
+          render={
+            <Link to={`/login?next=${encodeURIComponent(`/collections/${collection.id}`)}`} />
+          }
+        >
+          <LogInIcon />
+          Đăng nhập để lưu bộ sưu tập
+        </Button>
+      ) : (
+        <Button variant="ghost" size="sm" className="mt-6" onClick={() => void navigate("/saved")}>
+          <ArrowLeftIcon />
+          Về trang Đã lưu
+        </Button>
+      )}
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { ImageOffIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { PlacePlaceholder } from "@/components/shared/place-placeholder"
@@ -23,9 +24,13 @@ interface CoverImageProps {
 /**
  * Ảnh bìa địa điểm.
  *
- * Có ảnh thật (`src`) thì dùng ảnh thật. Không có thì hiện **ảnh minh hoạ hệ
- * thống** theo loại quán, kèm nhãn "Ảnh minh hoạ" để người dùng không nhầm với
- * ảnh thật (quyết định D-050). Mọi quán cùng loại dùng chung một hình.
+ * Có ảnh thật (`src`) thì dùng ảnh thật. Không có — hoặc ảnh HỎNG (lỗi tải,
+ * R2 gặp sự cố, ảnh bị xoá khỏi bucket) — thì hiện **ảnh minh hoạ hệ thống**
+ * theo loại quán, kèm nhãn "Ảnh minh hoạ" để người dùng không nhầm với ảnh
+ * thật (quyết định D-050). Mọi quán cùng loại dùng chung một hình.
+ *
+ * Ảnh hỏng không được để lộ icon ảnh vỡ + alt text thô: `onError` chuyển hẳn
+ * sang nhánh minh hoạ, như thể ảnh chưa từng có.
  */
 export function CoverImage({
   src,
@@ -35,19 +40,22 @@ export function CoverImage({
   alt,
   children,
 }: CoverImageProps) {
-  const isIllustration = !src && placeholder !== undefined
+  const [failed, setFailed] = useState(false)
+  // Reset khi đổi ảnh (cùng component mount lại với URL mới, ví dụ sửa hồ sơ).
+  const showImage = src !== undefined && !failed
 
   return (
     <div className={cn("relative overflow-hidden bg-muted", className)} style={{ height }}>
-      {src ? (
+      {showImage ? (
         <img
           src={src}
           alt={alt ?? ""}
           loading="lazy"
           decoding="async"
           className="size-full object-cover"
+          onError={() => setFailed(true)}
         />
-      ) : isIllustration ? (
+      ) : placeholder !== undefined ? (
         <>
           <PlacePlaceholder category={placeholder} label={alt} />
           <Badge
@@ -60,7 +68,7 @@ export function CoverImage({
       ) : (
         <div className="flex size-full flex-col items-center justify-center gap-1 text-muted-foreground">
           <ImageOffIcon className="size-5" aria-hidden="true" />
-          <span className="text-xs">Chưa có ảnh</span>
+          <span className="text-xs">{failed ? "Không tải được ảnh" : "Chưa có ảnh"}</span>
         </div>
       )}
       {children}

@@ -20,7 +20,7 @@ import { usePosts } from "@/features/social/hooks/use-posts"
 import { PostCard } from "@/features/social/components/post-card"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { formatCount } from "@/lib/format"
-import { MOCK_USERS } from "@/mocks/fixtures/users"
+import { useUsersSearch } from "../hooks/use-users-search"
 
 /**
  * Trang tìm kiếm — `/search?q=`.
@@ -29,8 +29,8 @@ import { MOCK_USERS } from "@/mocks/fixtures/users"
  * Ô nhập duy nhất nằm ở topbar (`AppShell`); trang này chỉ đọc `?q=` để tránh hai
  * thanh tìm kiếm cùng lúc. Không có từ khoá → quay về `/discover`.
  *
- * Dùng lại đúng các hook dữ liệu đã có (places/posts): server chịu trách nhiệm
- * lọc theo `q`. Tab Người lọc trên danh sách hồ sơ mock, chưa có endpoint.
+ * Dùng lại đúng các hook dữ liệu đã có (places/posts/users): server chịu trách
+ * nhiệm lọc theo `q`. Tab Người gọi `GET /users?q=` (khớp không dấu).
  */
 export function SearchPage() {
   const [params] = useSearchParams()
@@ -61,12 +61,17 @@ function SearchResults({ query }: { query: string }) {
     refetch: refetchPosts,
   } = usePosts({ filter: "all", q: query })
   const { data: me } = useMe()
+  // Tab Người: tìm trên API thật (`GET /users?q=`), không dùng dữ liệu mẫu.
+  const {
+    data: peopleData,
+    isPending: peoplePending,
+    isError: peopleError,
+    refetch: refetchPeople,
+  } = useUsersSearch(query)
 
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
   const posts = allPosts.filter((post) => post.placeId !== null)
-  const people = Object.values(MOCK_USERS).filter((user) =>
-    `${user.name} ${user.handle}`.toLowerCase().includes(query.toLowerCase()),
-  )
+  const people = peopleData?.pages.flatMap((page) => page.items) ?? []
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
@@ -137,7 +142,19 @@ function SearchResults({ query }: { query: string }) {
         </TabsContent>
 
         <TabsContent value="people" className="mt-4">
-          {people.length === 0 ? (
+          {peoplePending ? (
+            <div className="grid max-w-xl grid-cols-1 gap-2">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} className="h-16 w-full rounded-md" />
+              ))}
+            </div>
+          ) : peopleError ? (
+            <ErrorState
+              variant="plain"
+              title="Không tải được kết quả người dùng"
+              onRetry={() => void refetchPeople()}
+            />
+          ) : people.length === 0 ? (
             <SearchEmptyBlock label="người dùng" />
           ) : (
             <ul className="grid max-w-xl grid-cols-1 gap-2">
@@ -147,7 +164,7 @@ function SearchResults({ query }: { query: string }) {
                   <Item
                     variant="outline"
                     className="transition-colors hover:bg-muted"
-                    render={<Link to={user.isMe ? "/profile" : `/u/${user.handle}`} />}
+                    render={<Link to={`/u/${user.handle}`} />}
                   >
                     <ItemMedia>
                       <Avatar size="lg">

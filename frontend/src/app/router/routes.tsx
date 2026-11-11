@@ -2,6 +2,7 @@ import { lazy } from "react"
 import type { RouteObject } from "react-router"
 import { Navigate } from "react-router"
 import { AppShell } from "@/components/layout/app-shell"
+import { RequireAuth } from "./require-auth"
 import { RouteErrorPage } from "./route-error-page"
 
 /**
@@ -54,6 +55,18 @@ const SettingsPage = lazy(() =>
 )
 const NotFoundPage = lazy(() =>
   import("@/features/not-found/pages/not-found-page").then((m) => ({ default: m.NotFoundPage })),
+)
+const HelpPage = lazy(() =>
+  import("@/features/static/pages/help-page").then((m) => ({ default: m.HelpPage })),
+)
+const AboutPage = lazy(() =>
+  import("@/features/static/pages/about-page").then((m) => ({ default: m.AboutPage })),
+)
+const TermsPage = lazy(() =>
+  import("@/features/static/pages/terms-page").then((m) => ({ default: m.TermsPage })),
+)
+const PrivacyPage = lazy(() =>
+  import("@/features/static/pages/privacy-page").then((m) => ({ default: m.PrivacyPage })),
 )
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/login-page").then((m) => ({ default: m.LoginPage })),
@@ -119,9 +132,27 @@ export const routes: RouteObject[] = [
       { path: "/saved", element: <SavedPage /> },
       { path: "/collections/:id", element: <CollectionDetailPage /> },
       { path: "/rooms/:code", element: <RoomPage /> },
-      { path: "/profile", element: <ProfilePage /> },
+      {
+        path: "/profile",
+        element: (
+          <RequireAuth>
+            <ProfilePage />
+          </RequireAuth>
+        ),
+      },
       { path: "/u/:handle", element: <UserProfilePageRoute /> },
-      { path: "/settings", element: <SettingsPage /> },
+      {
+        path: "/settings",
+        element: (
+          <RequireAuth>
+            <SettingsPage />
+          </RequireAuth>
+        ),
+      },
+      { path: "/help", element: <HelpPage /> },
+      { path: "/about", element: <AboutPage /> },
+      { path: "/terms", element: <TermsPage /> },
+      { path: "/privacy", element: <PrivacyPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

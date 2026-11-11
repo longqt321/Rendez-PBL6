@@ -2,11 +2,17 @@ import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { env } from "../env"
 import { logger } from "./logger"
-import { sendResetPasswordEmail, sendVerifyEmailEmail } from "./mailer"
+import { sendAccountExistsEmail, sendResetPasswordEmail, sendVerifyEmailEmail } from "./mailer"
 import { prisma } from "./prisma"
 
-/** Link xác thực email redirect về trang FE — dùng chung cho mail và route đăng ký. */
-export const VERIFY_EMAIL_CALLBACK_PATH = "/verify-email"
+/**
+ * Link xác thực email redirect về trang FE — dùng chung cho mail và route đăng ký.
+ *
+ * Kèm `verified=1` để trang `/verify-email` phân biệt được "vừa xác thực xong"
+ * với "mở trang trực tiếp / link thiếu token". Trước đây trang không có tham số
+ * nào để kiểm nên luôn hiện "Xác thực thành công" kể cả khi không có token.
+ */
+export const VERIFY_EMAIL_CALLBACK_PATH = "/verify-email?verified=1"
 
 /** URL FE nhận kết quả xác thực (đã nằm trong trustedOrigins). */
 export function verifyEmailCallbackUrl(): string {
@@ -89,6 +95,30 @@ export const auth = betterAuth({
     },
     /** Token reset hết hạn sau 1 giờ (mặc định của better-auth, khai tường minh). */
     resetPasswordTokenExpiresIn: 60 * 60,
+    /**
+     * Đăng ký bằng email ĐÃ có tài khoản.
+     *
+     * better-auth trả response "generic duplicate" (`{ token: null, user }` giả)
+     * để không lộ email tồn tại, và gọi hook này (`dist/api/routes/sign-up.mjs`
+     * dòng 201 — đã đọc source). Trước đây hook không được khai nên không có mail
+     * nào được gửi: người dùng thấy "kiểm tra email" rồi chờ mãi (V1-02).
+     *
+     * Xử lý theo trạng thái tài khoản thật (xem `notifyExistingUserSignUp`):
+     * chưa xác thực → gửi lại link xác thực; đã xác thực → mail "tài khoản đã
+     * tồn tại" kèm lối đăng nhập / đặt lại mật khẩu. Lỗi gửi mail bị nuốt để
+     * response vẫn trung tính (không lộ email tồn tại qua mã lỗi).
+     */
+    onExistingUserSignUp: async ({ user }) => {
+      try {
+        const action = await notifyExistingUserSignUp(user)
+        logger.info(
+          { userId: user.id, action },
+          "Đăng ký với email đã tồn tại — đã gửi mail hướng dẫn",
+        )
+      } catch (error) {
+        logger.error({ err: error, userId: user.id }, "Gửi mail cho đăng ký trùng email thất bại")
+      }
+    },
   },
 
   /**
@@ -162,3 +192,42 @@ export const auth = betterAuth({
 })
 
 export type Auth = typeof auth
+
+/** Hành vi đã thực hiện khi có người đăng ký lại bằng email đã tồn tại (dùng cho test). */
+export type ExistingUserSignUpAction = "verification-resent" | "account-exists-mail"
+
+/**
+ * Gửi mail cho người đăng ký lại bằng email đã tồn tại (V1-02).
+ *
+ * Tách khỏi hook để test được nhánh quyết định mà không cần chạy better-auth.
+ * Người dùng CHƯA xác thực đang chờ mail xác thực → gửi lại link thật (cùng
+ * cơ chế với `/auth/send-verification-email`); đã xác thực → mail "tài khoản
+ * đã tồn tại" chỉ chứa link đăng nhập / quên mật khẩu (không kèm token để
+ * không bị lạm dụng làm công cụ ép gửi link đổi mật khẩu).
+ *
+ * Lỗi SMTP ném ra cho hook log — response đăng ký vẫn là 201 trung tính.
+ */
+export async function notifyExistingUserSignUp(user: {
+  id: string
+  email: string
+  name: string
+  emailVerified: boolean
+}): Promise<ExistingUserSignUpAction> {
+  if (!user.emailVerified) {
+    await auth.api.sendVerificationEmail({
+      body: { email: user.email, callbackURL: verifyEmailCallbackUrl() },
+    })
+    return "verification-resent"
+  }
+  const sent = await sendAccountExistsEmail({
+    to: user.email,
+    name: user.name,
+    loginUrl: new URL("/login", env.APP_ORIGIN).toString(),
+    forgotPasswordUrl: new URL("/forgot-password", env.APP_ORIGIN).toString(),
+  })
+  if (!sent && env.NODE_ENV !== "production") {
+    // Dev chưa có SMTP: không có mail thật, ghi nhận để người vận hành biết.
+    logger.warn({ userId: user.id }, "Đăng ký trùng email đã xác thực — chưa cấu hình SMTP")
+  }
+  return "account-exists-mail"
+}

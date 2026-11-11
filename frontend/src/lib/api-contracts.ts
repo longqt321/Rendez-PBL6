@@ -73,6 +73,7 @@ export const API_CONTRACTS: ApiContract[] = [
   { pattern: /^\/notifications$/, method: "PATCH", schema: z.array(notificationSchema) },
 
   // Hồ sơ người dùng.
+  { pattern: /^\/users$/, method: "GET", schema: pageSchema(userProfileSchema) },
   { pattern: /^\/users\/[^/]+\/posts$/, method: "GET", schema: pageSchema(postSchema) },
   {
     pattern: /^\/users\/[^/]+\/collections$/,

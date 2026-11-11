@@ -12,12 +12,10 @@ import { e2eAccount } from "./credentials.js"
 test("đăng xuất rồi đăng nhập lại qua form /login", async ({ page }) => {
   const account = e2eAccount()
 
-  await page.goto("/login")
-  await page.getByLabel("Email").fill(account.email)
-  await page.getByLabel("Mật khẩu", { exact: true }).fill(account.password)
-  await page.getByRole("button", { name: "Đăng nhập" }).click()
-  await expect(page).toHaveURL(/\/discover$/u)
-
+  // Bắt đầu từ trạng thái đã đăng nhập (storageState của project mock) rồi đăng xuất
+  // qua UI. Không `goto("/login")` trước: từ 2026-11-12 trang auth redirect người đã
+  // đăng nhập về /discover, form bị detach giữa thao tác.
+  await page.goto("/discover")
   const menuButton = page.getByRole("button", { name: "Mở menu người dùng" })
   await menuButton.click()
   await page.getByRole("menuitem", { name: "Đăng xuất" }).click()

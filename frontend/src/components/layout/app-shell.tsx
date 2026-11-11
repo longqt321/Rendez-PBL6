@@ -9,8 +9,10 @@ import {
   SearchIcon,
   SettingsIcon,
   UserIcon,
+  UserPlusIcon,
 } from "lucide-react"
 import { NavLink, Link, Outlet, useLocation, useNavigate } from "react-router"
+import { toast } from "sonner"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { PageLoading } from "@/components/shared/page-loading"
@@ -58,6 +60,10 @@ const PAGE_TITLES: [RegExp, string][] = [
   [/^\/saved$/, "Đã lưu"],
   [/^\/profile$/, "Trang cá nhân"],
   [/^\/settings$/, "Cài đặt"],
+  [/^\/help$/, "Trợ giúp"],
+  [/^\/about$/, "Giới thiệu"],
+  [/^\/terms$/, "Điều khoản sử dụng"],
+  [/^\/privacy$/, "Chính sách bảo mật"],
   // Catch-all cuối cùng: mọi path còn lại là route 404.
   [/^.*$/, "Không tìm thấy trang"],
 ]
@@ -287,10 +293,15 @@ function UserMenu() {
   const { mutate: logout, isPending: isLoggingOut } = useLogout()
   const navigate = useNavigate()
 
-  /** Đăng xuất: gọi server, xoá cache rồi về trang chủ (nơi hiển thị trạng thái khách). */
+  /**
+   * Đăng xuất: gọi server, xoá cache rồi về trang chủ (nơi hiển thị trạng thái
+   * khách). Toast xác nhận để người dùng biết thao tác đã xong (V1-10) — trước
+   * đây menu chỉ đổi sang trạng thái khách, dễ tưởng bấm hụt.
+   */
   const handleLogout = () => {
     logout(undefined, {
       onSuccess: () => {
+        toast.success("Đã đăng xuất")
         void navigate("/")
       },
     })
@@ -369,7 +380,7 @@ function UserMenu() {
                 </DropdownMenuRadioGroup>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
-            <DropdownMenuItem>
+            <DropdownMenuItem render={<Link to="/help" />}>
               <HelpCircleIcon />
               Trợ giúp
             </DropdownMenuItem>
@@ -380,11 +391,17 @@ function UserMenu() {
             </DropdownMenuItem>
           </>
         ) : isUnauthorizedError(error) ? (
-          // Chưa đăng nhập: về trang đăng nhập (form email + password thật).
-          <DropdownMenuItem onClick={() => void navigate("/login")}>
-            <LogInIcon />
-            Đăng nhập
-          </DropdownMenuItem>
+          // Chưa đăng nhập: lối tắt vào cả đăng nhập và đăng ký (V1-10).
+          <>
+            <DropdownMenuItem onClick={() => void navigate("/login")}>
+              <LogInIcon />
+              Đăng nhập
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => void navigate("/register")}>
+              <UserPlusIcon />
+              Đăng ký
+            </DropdownMenuItem>
+          </>
         ) : (
           // Lỗi khác 401 (mạng, 5xx): người dùng vẫn có thể đã đăng nhập — không
           // được hiện "Đăng nhập" như thể phiên đã mất.

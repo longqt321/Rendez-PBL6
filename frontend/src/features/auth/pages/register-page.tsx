@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { Link } from "react-router"
+import { Link, Navigate, useSearchParams } from "react-router"
 import { z } from "zod"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -15,16 +15,24 @@ import {
 } from "@/components/ui/input-group"
 import { Spinner } from "@/components/ui/spinner"
 import { useRegister } from "../hooks/use-register"
+import { useAuthenticatedRedirect, useAuthPageTitle } from "../hooks/use-auth-page"
 import { useSendVerificationEmail } from "../hooks/use-send-verification-email"
 import { AuthLayout } from "../components/auth-layout"
 import { PasswordInput } from "../components/password-input"
+import { safeRedirectPath } from "../lib/safe-redirect"
 import { serverErrorField } from "../lib/server-field-error"
 
 /** Khớp validate backend (`registerInputSchema` trong `routes/auth.ts`). */
 const registerSchema = z
   .object({
     name: z.string().trim().min(2, "Tên cần ít nhất 2 ký tự").max(40, "Tên tối đa 40 ký tự"),
-    email: z.string().trim().toLowerCase().pipe(z.email("Email không hợp lệ")),
+    // Rỗng là "chưa nhập", không phải "email sai định dạng" (V1-11).
+    email: z
+      .string()
+      .trim()
+      .min(1, "Cần nhập email")
+      .toLowerCase()
+      .pipe(z.email("Email không hợp lệ")),
     password: z
       .string()
       .min(8, "Mật khẩu cần ít nhất 8 ký tự")
@@ -54,8 +62,12 @@ const REGISTER_FIELDS = ["name", "email", "handle", "password"] as const
  * hiện màn hình "kiểm tra email" kèm nút gửi lại mail và lối sang đăng nhập.
  */
 export function RegisterPage() {
+  const [searchParams] = useSearchParams()
+  const next = safeRedirectPath(searchParams.get("next"))
   const register = useRegister()
   const resend = useSendVerificationEmail()
+  useAuthPageTitle("Tạo tài khoản")
+
   /** Email vừa đăng ký — dùng cho nút "gửi lại mail xác thực". */
   const [sentTo, setSentTo] = useState<string | null>(null)
 
@@ -63,6 +75,10 @@ export function RegisterPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: { name: "", email: "", password: "", handle: "", confirmPassword: "" },
   })
+
+  // Đã đăng nhập: không cần tạo tài khoản nữa (V1-09).
+  const redirectTo = useAuthenticatedRedirect(next)
+  if (redirectTo) return <Navigate to={redirectTo} replace />
 
   const onSubmit = (values: RegisterForm) => {
     // Chỉ gửi các field backend nhận — `confirmPassword` chỉ dùng để validate.
@@ -94,7 +110,10 @@ export function RegisterPage() {
         footer={
           <span>
             Đã xác thực xong?{" "}
-            <Link to="/login" className="text-primary underline-offset-4 hover:underline">
+            <Link
+              to={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
+              className="text-primary underline-offset-4 hover:underline"
+            >
               Đăng nhập
             </Link>
           </span>
@@ -144,7 +163,10 @@ export function RegisterPage() {
       footer={
         <span>
           Đã có tài khoản?{" "}
-          <Link to="/login" className="text-primary underline-offset-4 hover:underline">
+          <Link
+            to={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
+            className="text-primary underline-offset-4 hover:underline"
+          >
             Đăng nhập
           </Link>
         </span>
@@ -182,7 +204,7 @@ export function RegisterPage() {
               <InputGroupInput
                 id="register-handle"
                 autoComplete="username"
-                placeholder="minhanh.eats"
+                placeholder="minhanh_eats"
                 {...form.register("handle")}
               />
             </InputGroup>

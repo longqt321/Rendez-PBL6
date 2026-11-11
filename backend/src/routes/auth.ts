@@ -238,7 +238,11 @@ export function createAuthRouter() {
    * Từ 2026-11-12 bắt buộc xác thực email: đăng ký thành công KHÔNG tạo phiên,
    * trả `201 { requiresVerification: true }` — FE hiện "kiểm tra email". Trùng
    * email cũng trả response như vậy (better-auth "generic duplicate") để không
-   * lộ email nào đã đăng ký.
+   * lộ email nào đã đăng ký; khác biệt duy nhất là hook
+   * `onExistingUserSignUp` (lib/auth.ts) gửi mail thật cho chủ tài khoản: gửi
+   * lại link xác thực nếu chưa xác thực, hoặc mail "tài khoản đã tồn tại" kèm
+   * lối đăng nhập / đặt lại mật khẩu nếu đã xác thực — người dùng không còn
+   * chờ một email không bao giờ tới (V1-02).
    */
   router.post(
     "/register",

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { Link, useNavigate } from "react-router"
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router"
 import { z } from "zod"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -8,13 +8,21 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/com
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useLogin } from "../hooks/use-login"
+import { useAuthenticatedRedirect, useAuthPageTitle } from "../hooks/use-auth-page"
 import { useSendVerificationEmail } from "../hooks/use-send-verification-email"
 import { AuthLayout } from "../components/auth-layout"
 import { PasswordInput } from "../components/password-input"
+import { safeRedirectPath } from "../lib/safe-redirect"
 import { serverErrorField } from "../lib/server-field-error"
 
 const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().pipe(z.email("Email không hợp lệ")),
+  // Rỗng là "chưa nhập", không phải "email sai định dạng" (V1-11).
+  email: z
+    .string()
+    .trim()
+    .min(1, "Cần nhập email")
+    .toLowerCase()
+    .pipe(z.email("Email không hợp lệ")),
   password: z.string().min(1, "Cần nhập mật khẩu"),
 })
 
@@ -22,16 +30,28 @@ type LoginForm = z.infer<typeof loginSchema>
 
 const LOGIN_FIELDS = ["email", "password"] as const
 
-/** Trang đăng nhập — `/login`. Đăng nhập xong về `/discover`. */
+/**
+ * Trang đăng nhập — `/login`.
+ *
+ * `?next=` (path relative, do route bảo vệ gắn) đưa người dùng về đúng trang
+ * họ định mở sau khi đăng nhập; đã đăng nhập thì không thấy form nữa (V1-09).
+ */
 export function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const next = safeRedirectPath(searchParams.get("next"))
   const login = useLogin()
   const resend = useSendVerificationEmail()
+  useAuthPageTitle("Đăng nhập")
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   })
+
+  // Đã đăng nhập: về đích ngay (next nếu có, không thì trang khám phá).
+  const redirectTo = useAuthenticatedRedirect(next)
+  if (redirectTo) return <Navigate to={redirectTo} replace />
 
   /**
    * Chưa xác thực email (2026-11-12): backend trả 403 với message riêng — hiện
@@ -42,7 +62,7 @@ export function LoginPage() {
   const onSubmit = (values: LoginForm) => {
     login.mutate(values, {
       onSuccess: () => {
-        void navigate("/discover")
+        void navigate(next ?? "/discover")
       },
       onError: (error) => {
         const field = serverErrorField(error.message, LOGIN_FIELDS)
@@ -64,7 +84,10 @@ export function LoginPage() {
       footer={
         <span>
           Chưa có tài khoản?{" "}
-          <Link to="/register" className="text-primary underline-offset-4 hover:underline">
+          <Link
+            to={next ? `/register?next=${encodeURIComponent(next)}` : "/register"}
+            className="text-primary underline-offset-4 hover:underline"
+          >
             Đăng ký
           </Link>
         </span>
