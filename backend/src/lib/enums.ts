@@ -42,6 +42,15 @@ export function toApiCategory(value: string): PlaceCategory {
   return mapped
 }
 
+/**
+ * Đọc giá trị từ query string — nhận cả tên API lẫn tên Prisma; trả `null`
+ * (thay vì throw) khi không phải loại hình đã biết để bộ lọc bỏ qua giá trị rác
+ * thay vì 500 khi cast `::place_category` ở SQL thô.
+ */
+export function parseApiCategory(value: string): PlaceCategory | null {
+  return CATEGORY_TO_API[value] ?? null
+}
+
 export function toPrismaCategory(value: PlaceCategory): string {
   return CATEGORY_TO_PRISMA[value]
 }

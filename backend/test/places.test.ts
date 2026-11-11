@@ -97,6 +97,26 @@ describe("GET /places", () => {
     }
   })
 
+  test("category lạ bị bỏ qua thay vì 500 (mock: không khớp → trang rỗng)", async () => {
+    const unknown = await get("/api/v1/places?category=khong-ton-tai")
+    expect(unknown.status).toBe(200)
+    expect(await unknown.json()).toEqual({ items: [], next: null })
+
+    // Trộn giá trị hợp lệ với rác: chỉ lọc theo giá trị hợp lệ.
+    const mixed = await getJson<PageJson>("/api/v1/places?category=cafe,khong-ton-tai")
+    expect(mixed.items.length).toBeGreaterThan(0)
+    for (const item of mixed.items) expect(item.category).toBe("cafe")
+  })
+
+  test("category nhận cả dạng gạch dưới (street_food) lẫn gạch nối (street-food)", async () => {
+    const dashed = await getJson<PageJson>("/api/v1/places?category=street-food")
+    const underscored = await getJson<PageJson>("/api/v1/places?category=street_food")
+
+    expect(dashed.items.length).toBeGreaterThan(0)
+    expect(underscored.items.map((item) => item.id)).toEqual(dashed.items.map((item) => item.id))
+    for (const item of dashed.items) expect(item.category).toBe("street-food")
+  })
+
   test("priceMax ngoài 1–3 bị bỏ qua (không lỗi, không lọc sai)", async () => {
     const all = await getJson<PageJson>("/api/v1/places?priceMax=9")
     const plain = await getJson<PageJson>("/api/v1/places")

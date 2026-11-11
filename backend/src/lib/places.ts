@@ -1,7 +1,8 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
-import { toApiCategory } from "./enums"
+import { parseApiCategory, toApiCategory } from "./enums"
 import type { Cursor } from "./cursor"
+import type { PlaceCategory } from "@rendez/schema"
 
 /**
  * Truy vấn địa điểm dùng chung cho `GET /places` và `GET /places/map` (A7.9).
@@ -16,10 +17,13 @@ import type { Cursor } from "./cursor"
 
 export interface PlaceFilters {
   q?: string
-  categories: string[]
+  /** Đã chuẩn hoá về tên API — trùng đúng literal của enum trong DB. */
+  categories: PlaceCategory[]
+  /** Query có `category` nhưng toàn giá trị lạ → không địa điểm nào khớp. */
+  categoriesMatchNothing: boolean
   districts: string[]
   priceMax?: number
-  excludeCategories: string[]
+  excludeCategories: PlaceCategory[]
   excludeDistricts: string[]
   includeKeywords: string[]
   excludeKeywords: string[]
@@ -32,6 +36,24 @@ function splitList(raw: string | undefined): string[] {
     .split(",")
     .map((value) => value.trim())
     .filter((value) => value.length > 0 && value !== "all")
+}
+
+/**
+ * Danh sách loại hình từ query — bỏ giá trị lạ thay vì để Postgres báo lỗi
+ * cast `::place_category`. Mock coi giá trị lạ là "không khớp": nếu danh sách
+ * chỉ toàn giá trị lạ thì kết quả phải RỖNG, không phải bỏ lọc.
+ */
+function parseCategoryList(raw: string | undefined): {
+  categories: PlaceCategory[]
+  unmatchedOnly: boolean
+} {
+  const rawValues = splitList(raw)
+  const categories: PlaceCategory[] = []
+  for (const value of rawValues) {
+    const category = parseApiCategory(value)
+    if (category) categories.push(category)
+  }
+  return { categories, unmatchedOnly: rawValues.length > 0 && categories.length === 0 }
 }
 
 /**
@@ -57,12 +79,15 @@ export function parsePlaceFilters(query: Record<string, string | undefined>): Pl
         }
       : undefined
 
+  const category = parseCategoryList(query.category)
+
   return {
     q: query.q?.trim() || undefined,
-    categories: splitList(query.category),
+    categories: category.categories,
+    categoriesMatchNothing: category.unmatchedOnly,
     districts: splitList(query.district),
     priceMax,
-    excludeCategories: splitList(query.excludeCategory),
+    excludeCategories: parseCategoryList(query.excludeCategory).categories,
     excludeDistricts: splitList(query.excludeDistrict),
     includeKeywords: splitList(query.includeKeyword),
     excludeKeywords: splitList(query.excludeKeyword),
@@ -89,6 +114,7 @@ function buildConditions(filters: PlaceFilters): Prisma.Sql[] {
     Prisma.sql`p.deleted_at IS NULL`,
   ]
 
+  if (filters.categoriesMatchNothing) conditions.push(Prisma.sql`FALSE`)
   if (filters.categories.length > 0) {
     conditions.push(
       Prisma.sql`p.category IN (${Prisma.join(
