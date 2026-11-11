@@ -1,6 +1,7 @@
 import { MapPinIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { formatRelativeTime } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import type { Post } from "../types/post"
 
 interface PostPreviewProps {
@@ -36,6 +37,24 @@ export function PostPreview({ post, footer }: PostPreviewProps) {
         </div>
 
         <p className="text-sm leading-relaxed whitespace-pre-line">{post.caption}</p>
+
+        {/* Ảnh bài đăng (G5b) — cùng bố cục với `PostCard`, không bọc link vì
+            component này đã nằm trong trang chi tiết. */}
+        {post.images.length > 0 ? (
+          <div
+            className={cn("grid gap-1", post.images.length === 1 ? "grid-cols-1" : "grid-cols-2")}
+          >
+            {post.images.map((url, index) => (
+              <img
+                key={`${post.id}-${index}`}
+                src={url}
+                alt={`Ảnh ${index + 1}/${post.images.length} của bài đăng`}
+                loading="lazy"
+                className="aspect-square h-full w-full rounded-md object-cover"
+              />
+            ))}
+          </div>
+        ) : null}
 
         {place && (
           <div

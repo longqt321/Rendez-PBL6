@@ -134,7 +134,7 @@ Trường `district`, `imageUrl`, `lat`, `lng`, `status` **vắng mặt** khi kh
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
 | GET | `/posts?filter=&q=&cursor=` | — | `filter` ∈ `all\|unplaced\|mine\|saved\|following`; `mine`/`saved`/`following` cần đăng nhập (401); 5 item/trang; `q` khớp caption không dấu |
-| POST | `/posts` | ✔ | `{caption, placeId?}` → `201 Post`; bài chưa gắn địa điểm được đẩy job phát hiện |
+| POST | `/posts` | ✔ | `{caption, placeId?, images?}` → `201 Post`; tối đa 4 URL ảnh thuộc `posts/<userId>/`; bài chưa gắn địa điểm được đẩy job phát hiện |
 | GET | `/posts/:id` | — | `Post`; 404 nếu đã xoá |
 | PATCH | `/posts/:id/like` | ✔ | `{liked?: boolean}` (mặc định đảo trạng thái), idempotent |
 | PATCH | `/posts/:id/save` | ✔ | `{saved?: boolean}`, idempotent |
@@ -147,15 +147,24 @@ Trường `district`, `imageUrl`, `lat`, `lng`, `status` **vắng mặt** khi kh
 `caption`: 3–500 ký tự. Gắn địa điểm (A7.3): gán `placeId`, publish place nếu chưa, đánh
 dấu đã đọc mọi thông báo `place-suggestion` của bài.
 
+`images` (tuỳ chọn, G5b): tối đa **4** URL tuyệt đối `http(s)`, không trùng nhau. Khi R2 đã
+cấu hình, mỗi URL phải nằm dưới `${R2_PUBLIC_BASE_URL}/posts/<userId>/` — chỉ gắn được ảnh do
+chính mình tải lên (sai prefix/user khác → `400 "Ảnh không hợp lệ hoặc không thuộc tài khoản
+của bạn"`). R2 chưa cấu hình mà client gửi `images` → `400 "Tính năng ảnh chưa được cấu hình"`;
+request không có `images` vẫn chạy bình thường. Bài + ảnh được ghi trong một transaction.
+
 `Post`:
 
 ```json
 {
   "id": "uuid", "author": {"id":"uuid","name":"…","handle":"…","initials":"…"},
   "caption": "…", "place": {"id":"…","name":"…","address":"…","category":"cafe","isPublished":true},
-  "createdAt": "…", "likeCount": 4, "commentCount": 2, "likedByMe": false, "savedByMe": false
+  "createdAt": "…", "likeCount": 4, "commentCount": 2, "likedByMe": false, "savedByMe": false,
+  "images": ["https://cdn.example.com/posts/<userId>/<uuid>.jpg"]
 }
 ```
+
+`images` LUÔN là mảng (rỗng khi bài không có ảnh) — client không phải xử lý `null`.
 
 ## 6. Thông báo
 
@@ -238,6 +247,16 @@ Client chuyển `RoomFilter` sang tham số của `GET /places` (đã có từ P
 - Chưa cấu hình R2 (thiếu `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/
   `R2_BUCKET`) → `503 {"message":"Tính năng upload ảnh chưa được cấu hình"}`.
 - **Chưa xác minh với bucket thật** (không có credentials trong phiên này).
+
+### Luồng đăng ảnh bài viết (G5b)
+
+1. `POST /media {folder:"posts", contentType}` → `201 {uploadUrl, publicUrl, key, expiresAt, headers}`.
+2. Client `PUT uploadUrl` với body là file (giữ nguyên `headers` server trả, kèm `Content-Type`).
+3. `POST /posts {caption, placeId?, images:[publicUrl, …]}` — tối đa 4 ảnh, server kiểm prefix
+   `posts/<userId>/` trước khi lưu vào bảng `post_images` (đúng thứ tự gửi lên).
+
+Mock dev không có storage thật: `POST /media` của mock trả `uploadUrl` host `mock-r2.test` và
+client bỏ qua bước PUT, dùng thẳng `publicUrl`.
 
 ## 11. Mã lỗi thường gặp
 

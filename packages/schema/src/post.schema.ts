@@ -22,4 +22,5 @@ export const postSchema = z.object({
   commentCount: z.number(),
   likedByMe: z.boolean(),
   savedByMe: z.boolean(),
+  images: z.array(z.string()),
 }) satisfies z.ZodType<Post>

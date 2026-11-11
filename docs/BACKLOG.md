@@ -24,8 +24,10 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 
 - [ ] **471/491 địa điểm chưa có ảnh thật** — chỉ 20 quán có ảnh venue. Cần nguồn ảnh hợp
       pháp (chụp thực địa, xin phép quán, hoặc Google Places API có key) trước khi phát hành.
-- [ ] **Tính năng đăng ảnh của người dùng** (upload ảnh check-in) — hiện bỏ hẳn ảnh khỏi bài
-      đăng vì chưa có backend lưu file. Khi có backend, thêm `imageUrl` vào `Post`.
+- [x] **Tính năng đăng ảnh của người dùng** (G5b, 2026-11-11) — `Post.images[]` (tối đa 4,
+      bảng `post_images`), composer tải ảnh qua presigned URL (`POST /media` → PUT R2).
+      Chưa xác minh với bucket R2 thật (không có credentials); prefix `posts/<userId>/` đã được
+      kiểm bằng test với env giả.
 - [ ] **Ảnh bìa hồ sơ** đang là placeholder — cần upload thật.
 - [ ] **Trang tìm kiếm: tab "Mọi người"** chỉ còn tài khoản hiện tại (cold-start không có tài
       khoản ảo). Cần dữ liệu người dùng thật hoặc ẩn tab khi rỗng.

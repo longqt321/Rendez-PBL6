@@ -51,6 +51,28 @@ export function PostCard({ post }: PostCardProps) {
       <div className="flex flex-col gap-3 p-4">
         <p className="text-base leading-relaxed whitespace-pre-line">{post.caption}</p>
 
+        {/* Ảnh bài đăng (G5b): 1 ảnh full, ≥2 lưới 2 cột — rỗng thì không render gì. */}
+        {post.images.length > 0 ? (
+          <div
+            className={cn("grid gap-1", post.images.length === 1 ? "grid-cols-1" : "grid-cols-2")}
+          >
+            {post.images.map((url, index) => (
+              <Link
+                key={`${post.id}-${index}`}
+                to={`/post/${post.id}`}
+                className="block overflow-hidden rounded-md"
+              >
+                <img
+                  src={url}
+                  alt={`Ảnh ${index + 1}/${post.images.length} của bài đăng`}
+                  loading="lazy"
+                  className="aspect-square h-full w-full object-cover"
+                />
+              </Link>
+            ))}
+          </div>
+        ) : null}
+
         {place ? (
           <div className="flex items-center gap-2.5 rounded-md border border-border/70 bg-muted/70 px-3 py-2">
             <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />

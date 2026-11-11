@@ -2689,3 +2689,17 @@ nhất, đúng kế hoạch nhất; ghi ở đây kèm lý do.
 - **`CORS_ORIGINS` mặc định của dev compose gồm cả `http://localhost:5199`** (cổng dev
   server E2E): FE gửi `redirectTo = window.location.origin + /reset-password`, thiếu origin
   này thì better-auth trả 403 và trang quên mật khẩu không hiện thông báo trung tính.
+33. **Ảnh bài đăng: tối đa 4 ảnh, bảng `post_images`, validate prefix (G5b)** (2026-11-11):
+    `Post.images: string[]` luôn là mảng (rỗng khi không có ảnh) — không dùng `null` để client
+    khỏi phân biệt hai trạng thái. `POST /posts` nhận `images?: string[]` tối đa
+    `MAX_POST_IMAGES` (4, hằng chung `@rendez/schema`), không trùng URL; ảnh được ghi cùng bài
+    trong một transaction (`nested create` với `position` theo thứ tự gửi). Bảo mật: mỗi URL
+    phải là `http(s)` tuyệt đối và khi R2 đã cấu hình phải nằm dưới
+    `${R2_PUBLIC_BASE_URL}/posts/<userId>/` — so khớp origin + pathname đã chuẩn hoá (URL tự
+    resolve `..`) thay vì `startsWith` chuỗi thô, tránh `posts/<uid>/../../places/…` lọt qua.
+    R2 chưa cấu hình (hoặc thiếu `R2_PUBLIC_BASE_URL` — không xác thực được ảnh thuộc về ai)
+    mà client gửi ảnh → `400 "Tính năng ảnh chưa được cấu hình"`; request không ảnh không bị
+    ảnh hưởng. Đọc ảnh không N+1: subquery `json_agg(pi.url ORDER BY pi.position)` trong
+    `selectPosts`. FE composer tải ảnh qua presigned (`POST /media` → PUT) lúc bấm "Đăng",
+    503 → ẩn nút upload và giữ composer; mock trả `uploadUrl` host `mock-r2.test` để client
+    bỏ qua PUT (mock không có storage thật). Chưa xác minh với bucket R2 thật.

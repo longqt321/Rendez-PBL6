@@ -36,6 +36,9 @@ export const MAX_CAPTION_LENGTH = 500
 /** Caption tối thiểu để được đăng. */
 export const MIN_CAPTION_LENGTH = 3
 
+/** Số ảnh tối đa của một bài đăng (G5b) — backend từ chối nếu vượt. */
+export const MAX_POST_IMAGES = 4
+
 /** Số ký tự tối thiểu để bắt đầu gợi ý địa điểm trong composer. */
 export const PLACE_SUGGESTION_MIN_CHARS = 8
 

@@ -34,6 +34,8 @@ export interface PostRow {
   comment_count: number
   liked_by_me: boolean
   saved_by_me: boolean
+  /** `json_agg` của `post_images.url` — pg trả mảng string, đôi khi là chuỗi JSON. */
+  images: string[] | string | null
 }
 
 export function toPostDto(row: PostRow) {
@@ -66,7 +68,24 @@ export function toPostDto(row: PostRow) {
     commentCount: Number(row.comment_count),
     likedByMe: row.liked_by_me,
     savedByMe: row.saved_by_me,
+    images: parseImages(row.images),
   }
+}
+
+/** `json_agg` có thể về dạng mảng hoặc chuỗi JSON tuỳ driver — chuẩn hoá một chỗ. */
+function parseImages(value: PostRow["images"]): string[] {
+  if (Array.isArray(value)) return value
+  if (typeof value === "string") {
+    try {
+      const parsed: unknown = JSON.parse(value)
+      return Array.isArray(parsed)
+        ? parsed.filter((url): url is string => typeof url === "string")
+        : []
+    } catch {
+      return []
+    }
+  }
+  return []
 }
 
 export type PostDto = ReturnType<typeof toPostDto>
@@ -84,7 +103,11 @@ function selectPosts(viewerId: string | null): Prisma.Sql {
            (SELECT COUNT(*) FROM post_likes l WHERE l.post_id = p.id)::int AS like_count,
            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id AND c.deleted_at IS NULL)::int AS comment_count,
            EXISTS (SELECT 1 FROM post_likes l WHERE l.post_id = p.id AND l.user_id = ${viewer}) AS liked_by_me,
-           EXISTS (SELECT 1 FROM post_saves s WHERE s.post_id = p.id AND s.user_id = ${viewer}) AS saved_by_me
+           EXISTS (SELECT 1 FROM post_saves s WHERE s.post_id = p.id AND s.user_id = ${viewer}) AS saved_by_me,
+           COALESCE(
+             (SELECT json_agg(pi.url ORDER BY pi.position) FROM post_images pi WHERE pi.post_id = p.id),
+             '[]'::json
+           ) AS images
     FROM posts p
     JOIN users u ON u.id = p.author_id
     LEFT JOIN places pl ON pl.id = p.place_id

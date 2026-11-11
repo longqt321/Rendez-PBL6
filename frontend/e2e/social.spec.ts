@@ -59,3 +59,31 @@ test("tab Đang theo dõi hiện empty state khi chưa theo dõi ai", async ({ p
   await expect(page.getByText("Theo dõi ai đó để thấy bài của họ ở đây.")).toBeVisible()
   await expect(postLinks(page)).toHaveCount(0)
 })
+
+// Ảnh bài đăng (G5b): chọn 2 ảnh → mock cấp presigned URL giả → bài hiện lưới ảnh.
+// Mock không có storage thật nên client bỏ qua bước PUT (host `mock-r2.test`).
+const ONE_PIXEL_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+  "base64",
+)
+
+test("đăng bài kèm ảnh qua composer", async ({ page }) => {
+  await page.goto("/social")
+  const composer = page.getByRole("textbox", { name: "Nội dung bài đăng" })
+  await composer.fill("Bài kiểm tra có ảnh đính kèm")
+
+  const fileChooserPromise = page.waitForEvent("filechooser")
+  await page.getByRole("button", { name: /Thêm ảnh/ }).click()
+  const fileChooser = await fileChooserPromise
+  await fileChooser.setFiles([
+    { name: "anh-1.png", mimeType: "image/png", buffer: ONE_PIXEL_PNG },
+    { name: "anh-2.png", mimeType: "image/png", buffer: ONE_PIXEL_PNG },
+  ])
+
+  // Preview hiện ngay khi chọn, trước khi bấm Đăng.
+  await expect(page.locator('img[alt^="Ảnh sẽ đính kèm"]')).toHaveCount(2)
+
+  await page.getByRole("button", { name: "Đăng", exact: true }).click()
+  await expect(composer).toHaveValue("")
+  await expect(page.locator('img[alt^="Ảnh 1/2 của bài đăng"]').first()).toBeVisible()
+})

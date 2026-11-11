@@ -347,12 +347,30 @@ model Post {
   likes    PostLike[]
   saves    PostSave[]
   comments Comment[]
+  images   PostImage[]
   suggestionNotice PlaceSuggestionNotification?
 
   @@index([createdAt(sort: Desc), id(sort: Desc)])
   @@index([authorId, createdAt(sort: Desc)])
   @@index([placeId])
   @@map("posts")
+}
+
+// ---------------------------------------------------------------------------
+// 7b. post_images — ảnh người dùng tải lên qua presigned URL (G5b)
+// ---------------------------------------------------------------------------
+
+model PostImage {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  url       String
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, position])
+  @@map("post_images")
 }
 
 // ---------------------------------------------------------------------------

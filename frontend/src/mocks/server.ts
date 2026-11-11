@@ -28,6 +28,7 @@ import {
   MAX_PROFILE_BIO_LENGTH,
   MAX_PROFILE_LOCATION_LENGTH,
   MAX_PROFILE_NAME_LENGTH,
+  MAX_POST_IMAGES,
   MAX_REPORT_DETAIL_LENGTH,
   MAX_REVIEW_CONTENT_LENGTH,
   MIN_CAPTION_LENGTH,
@@ -57,6 +58,14 @@ const MOCK_PASSWORD = "password123"
 
 /** Lý do báo cáo hợp lệ — tra cứu O(1) thay vì so khớp mảng. */
 const VALID_REPORT_REASONS: ReadonlySet<string> = new Set(PLACE_REPORT_REASONS)
+
+/** Content-Type ảnh được nhận — khớp `IMAGE_EXTENSIONS` của backend. */
+const MOCK_IMAGE_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+}
 
 /** "Database" trong bộ nhớ của server. Reset khi tải lại trang. */
 const db = {
@@ -330,13 +339,30 @@ function attachPlaceToPost(postId: string, placeId: string): Post | undefined {
 }
 
 function createPost(config: InternalAxiosRequestConfig) {
-  const body = parseBody<{ caption?: string; placeId?: string | null }>(config)
+  const body = parseBody<{ caption?: string; placeId?: string | null; images?: unknown }>(config)
   const caption = (body.caption ?? "").trim()
   if (caption.length < MIN_CAPTION_LENGTH) {
     badRequest(config, `Nội dung bài đăng cần ít nhất ${MIN_CAPTION_LENGTH} ký tự`)
   }
   if (caption.length > MAX_CAPTION_LENGTH) {
     badRequest(config, `Nội dung bài đăng tối đa ${MAX_CAPTION_LENGTH} ký tự`)
+  }
+
+  // Ảnh (G5b): mock coi R2 đã cấu hình nên chỉ kiểm số lượng/định dạng URL —
+  // backend thật còn kiểm prefix `posts/<userId>/` của bucket.
+  const images = body.images === undefined ? [] : body.images
+  if (!Array.isArray(images) || images.some((url) => typeof url !== "string")) {
+    badRequest(config, "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn")
+  }
+  const urls = images as string[]
+  if (urls.length > MAX_POST_IMAGES) {
+    badRequest(config, `Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
+  }
+  if (new Set(urls).size !== urls.length) badRequest(config, "Ảnh bị trùng trong bài đăng")
+  for (const url of urls) {
+    if (!/^https?:\/\//u.test(url)) {
+      badRequest(config, "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn")
+    }
   }
 
   postSeq += 1
@@ -350,9 +376,37 @@ function createPost(config: InternalAxiosRequestConfig) {
     commentCount: 0,
     likedByMe: false,
     savedByMe: false,
+    images: [...urls],
   }
   db.posts.unshift(post)
   return toPostDto(post)
+}
+
+/**
+ * `POST /media` — cấp "presigned URL" giả.
+ *
+ * Mock không có storage thật: `uploadUrl` trỏ host `mock-r2.test` để client biết
+ * mà bỏ qua bước PUT (`upload-post-image.ts`), còn `publicUrl` là URL ảnh giả
+ * dùng thẳng trong bài đăng. Mock coi R2 ĐÃ cấu hình — không trả 503.
+ */
+function createMediaTicket(config: InternalAxiosRequestConfig) {
+  const body = parseBody<{ folder?: unknown; contentType?: unknown }>(config)
+  const folder = body.folder
+  if (folder !== "posts" && folder !== "places") {
+    badRequest(config, "Thư mục không hợp lệ")
+  }
+  const contentType = typeof body.contentType === "string" ? body.contentType : ""
+  const extension = MOCK_IMAGE_EXTENSIONS[contentType]
+  if (!extension) badRequest(config, "Chỉ nhận ảnh JPEG, PNG, WebP hoặc AVIF")
+
+  const id = crypto.randomUUID()
+  return {
+    uploadUrl: `https://mock-r2.test/upload/${id}`,
+    publicUrl: `https://mock-r2.test/${folder}/${CURRENT_USER.id}/${id}.${extension}`,
+    key: `${folder}/${CURRENT_USER.id}/${id}.${extension}`,
+    expiresAt: new Date(Date.now() + 600_000).toISOString(),
+    headers: { "Content-Type": contentType },
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1192,6 +1246,11 @@ const routes: Route[] = [
       })
       return paginate(items.map(toPostDto), cursor ?? null, POSTS_PAGE_SIZE)
     },
+  },
+  {
+    method: "post",
+    pattern: /^\/media$/,
+    handler: (config) => createMediaTicket(config),
   },
   {
     method: "post",

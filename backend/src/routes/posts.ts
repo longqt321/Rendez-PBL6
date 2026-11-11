@@ -1,7 +1,13 @@
 import { Hono } from "hono"
 import { z } from "zod"
-import { MAX_CAPTION_LENGTH, MIN_CAPTION_LENGTH, MAX_REVIEW_CONTENT_LENGTH } from "@rendez/schema"
+import {
+  MAX_CAPTION_LENGTH,
+  MIN_CAPTION_LENGTH,
+  MAX_POST_IMAGES,
+  MAX_REVIEW_CONTENT_LENGTH,
+} from "@rendez/schema"
 import type { AppEnv } from "../app"
+import { env } from "../env"
 import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
@@ -25,7 +31,56 @@ const POSTS_PAGE_SIZE = 5
 const createPostSchema = z.object({
   caption: z.string().trim().min(MIN_CAPTION_LENGTH).max(MAX_CAPTION_LENGTH),
   placeId: z.string().min(1).nullable().optional(),
+  images: z
+    .array(z.string().min(1))
+    .max(MAX_POST_IMAGES, `Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
+    .optional(),
 })
+
+/**
+ * Ảnh bài đăng phải do CHÍNH người gọi tải lên thư mục `posts/<userId>/` của
+ * bucket. Không có bước này thì ai cũng gắn được URL ảnh của người khác (hoặc
+ * URL ngoài) vào bài của mình.
+ *
+ * Trả mảng rỗng khi client không gửi ảnh — request không ảnh không bị ảnh
+ * hưởng bởi việc R2 chưa cấu hình.
+ */
+function validatePostImages(images: string[] | undefined, userId: string): string[] {
+  if (!images || images.length === 0) return []
+  if (images.length > MAX_POST_IMAGES) {
+    throw new ApiError(400, `Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
+  }
+  if (new Set(images).size !== images.length) {
+    throw new ApiError(400, "Ảnh bị trùng trong bài đăng")
+  }
+
+  // Chưa có bucket (hoặc thiếu domain công khai) thì không xác thực được ảnh
+  // thuộc về ai — từ chối thay vì nhận URL tuỳ ý.
+  if (!env.r2Configured || env.R2_PUBLIC_BASE_URL.length === 0) {
+    throw new ApiError(400, "Tính năng ảnh chưa được cấu hình")
+  }
+
+  const base = new URL(env.R2_PUBLIC_BASE_URL)
+  const basePath = base.pathname.replace(/\/$/, "")
+  const expectedPrefix = `${basePath}/posts/${userId}/`
+  const invalid = () => new ApiError(400, "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn")
+
+  for (const url of images) {
+    let parsed: URL
+    try {
+      parsed = new URL(url)
+    } catch {
+      throw invalid()
+    }
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw invalid()
+    // So khớp origin + path đã chuẩn hoá (URL tự resolve `..`) — không chỉ
+    // startsWith chuỗi thô, tránh `posts/<uid>/../../places/...` lọt qua.
+    if (parsed.origin !== base.origin) throw invalid()
+    if (!parsed.pathname.startsWith(expectedPrefix)) throw invalid()
+  }
+
+  return images
+}
 
 const createCommentSchema = z.object({
   body: z.string().trim().min(1, "Nội dung bình luận trống").max(MAX_REVIEW_CONTENT_LENGTH),
@@ -96,8 +151,18 @@ export function createPostsRouter() {
       if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
     }
 
+    const images = validatePostImages(input.images, userId)
+
     const created = await prisma.post.create({
-      data: { authorId: userId, caption: input.caption, placeId: input.placeId ?? null },
+      data: {
+        authorId: userId,
+        caption: input.caption,
+        placeId: input.placeId ?? null,
+        // Bài + ảnh trong MỘT transaction: không có bài "nửa vời" khi insert ảnh lỗi.
+        images: {
+          create: images.map((url, position) => ({ url, position })),
+        },
+      },
       select: { id: true },
     })
 

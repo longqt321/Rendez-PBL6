@@ -26,11 +26,20 @@ export interface Post {
   commentCount: number
   likedByMe: boolean
   savedByMe: boolean
+  /**
+   * URL ảnh công khai, đúng thứ tự người đăng chọn.
+   *
+   * Luôn là mảng (rỗng khi bài không có ảnh) — server không bao giờ trả `null`,
+   * để client khỏi phải phân biệt hai trạng thái "không có ảnh".
+   */
+  images: string[]
 }
 
 export interface CreatePostInput {
   caption: string
   placeId: string | null
+  /** URL ảnh đã tải lên R2 (tối đa `MAX_POST_IMAGES`); bỏ trống = bài chỉ có chữ. */
+  images?: string[]
 }
 
 /** Bộ lọc feed — server lọc, frontend chỉ gửi tham số. */
