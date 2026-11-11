@@ -102,7 +102,7 @@
   `src/lib/share.ts` (Web Share API + fallback copy clipboard + toast).
 - **Đề xuất:** thêm `ShareButton` (icon-only, `aria-label="Chia sẻ bài đăng"`) vào footer của
   `PostCard` và `PostActions` của trang chi tiết, truyền `url={/post/${post.id}}`,
-  `title={Bài đăng của ${post.author.name} trên Đà Nẵng Ăn & Đi}`. Nếu bài có gắn địa điểm,
+  `title={Bài đăng của ${post.author.name} trên Rendez}`. Nếu bài có gắn địa điểm,
   title kèm tên quán để người nhận hiểu ngữ cảnh ngay từ preview tin nhắn.
 - **Giá trị thực:** người dùng thật sẽ **gửi bài cho bạn bè trong 1 chạm**; người nhận mở
   deep-link `/post/:id` → vào thẳng nội dung + quán. Chi phí cực thấp vì toàn bộ hạ tầng có sẵn.

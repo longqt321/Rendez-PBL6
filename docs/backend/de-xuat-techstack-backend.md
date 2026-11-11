@@ -1,4 +1,4 @@
-# Đề xuất tech stack backend — Đà Nẵng Ăn & Đi
+# Đề xuất tech stack backend — Rendez
 
 > [!IMPORTANT]
 > **Tài liệu gốc 2026-11-10, có 2 chỗ đã lỗi thời** — luôn ưu tiên

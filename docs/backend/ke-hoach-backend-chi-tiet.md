@@ -1,4 +1,4 @@
-# Kế hoạch chi tiết triển khai backend — Đà Nẵng Ăn & Đi
+# Kế hoạch chi tiết triển khai backend — Rendez
 
 Ngày: 2026-11-10. Nguồn sự thật: đọc trực tiếp toàn bộ `src/mocks/server.ts` (1.430 dòng),
 8 file `*.schema.ts` zod, `src/lib/api-contracts.ts`, types từng feature, `src/lib/axios.ts`,
