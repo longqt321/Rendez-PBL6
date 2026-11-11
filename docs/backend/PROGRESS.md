@@ -139,6 +139,12 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
     `public.immutable_unaccent` (lỗi 42883 nếu không).
 - `listCommentsForPost` không có `ORDER BY` → thứ tự reply khi trùng `created_at` phụ thuộc
   planner; thêm `ORDER BY c.created_at ASC, c.id ASC` để tất định (02161dd).
+- **Đề xuất phòng lọc nhận giá trị rác**: `POST /rooms/:code/proposals` chỉ kiểm `value` là
+  chuỗi 1–80 ký tự, giá trị đi thẳng vào filter JSONB. `field=category, value=hack` khiến lần
+  `GET /rooms/:code` kế tiếp ném lỗi ở `toApiCategory` → **phòng hỏng vĩnh viễn (500)**.
+  Đã thêm `normalizeProposalValue()` (category phải là loại hình đã biết, priceMax phải 1–3,
+  `street_food` chuẩn hoá về `street-food`) → 400; `parseRoomFilter` bỏ qua loại hình lạ thay vì
+  ném (dữ liệu cũ) (4dcf0ad, +1 test).
 - `detectPlaceSuggestions` quét toàn bộ post chưa gắn địa điểm trong một lần → thêm `take: 50`
   (K6 "batch nhỏ 50 post/lần"); `postId` cụ thể (trigger) không giới hạn (9ea259a).
 - `GET /places/map` kéo cả dataset về RAM rồi `slice(0,300)` → `LIMIT` trong SQL + `COUNT(*)`
@@ -156,7 +162,7 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 | Hạng mục | Kết quả (output thật) |
 | --- | --- |
 | Typecheck FE + BE | 0 lỗi (`bun run typecheck`) |
-| Test backend | **131 pass / 0 fail**, 14 file, 95,93 giây (`bun test --parallel=1`) |
+| Test backend | **132 pass / 0 fail**, 14 file, ~96 giây (`bun test --parallel=1`) |
 | E2E backend thật | **12/12 pass**, 9,1 giây |
 | E2E mock | **13/13 pass**, 16,3 giây |
 | Migration | 10 migration áp dụng sạch trên Postgres 17 (compose + Testcontainers) |
@@ -166,7 +172,8 @@ Trạng thái: `todo` / `doing` / `done` / `blocked`. Commit hash ghi sau khi co
 Lỗi thật đã sửa trong phiên: quyền gắn địa điểm vào bài người khác + thông báo sai người nhận;
 `category` rác gây 500; ký tự NUL gây 500; cursor giả mạo gây 500; thiếu `?sort=top`; tìm kiếm
 có dấu/dấu câu không khớp mock ở cả `/places`, `/posts`, `/users`; job quét không batch;
-`/places/map` tải cả dataset; thứ tự bình luận không tất định khi trùng thời điểm.
+`/places/map` tải cả dataset; thứ tự bình luận không tất định khi trùng thời điểm; đề xuất
+phòng lọc nhận giá trị rác làm phòng 500 vĩnh viễn.
 
 Chưa xác minh (giữ nguyên như báo cáo §4.5): R2 thật, gửi email thật, deploy công khai, SSE
 nhiều instance, hiệu năng ≥ 50k dòng, trình duyệt mobile thật.

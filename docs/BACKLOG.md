@@ -356,9 +356,18 @@ lịch sử; không còn việc mở ở đây.
 - [ ] **`POST /posts` caption chứa ký tự NUL** — đã map SQLSTATE 22021 → 400 ở
       `onError` (624ce5d); về lâu dài có thể thêm middleware strip control chars
       nếu xuất hiện thêm lỗi đầu vào tương tự.
+- [ ] **OpenAPI spec `/doc` + Swagger UI `/ui` (K7)** — routes đăng ký bằng `router.get`
+      thường thay vì `createRoute` của `@hono/zod-openapi` nên chưa sinh spec tự động.
+      Tài liệu hợp đồng hiện là `docs/backend/API.md` (markdown, đủ 52 mục). Muốn có spec
+      3.1 cần chuyển dần route sang `createRoute` (công sức lớn, giá trị chủ yếu cho
+      client codegen).
+
+## Phát hiện 2026-11-11 (audit vòng 5)
+
 - [ ] **Index biểu thức không khai báo được trong Prisma schema** — GIN `pg_trgm`
-      (`places_search_trgm_idx`) và 2 hàm `immutable_unaccent`/`immutable_array_to_string`
-      chỉ có trong migration SQL (từ migration 10 còn thêm `immutable_search_normalize`).
-      `prisma migrate dev` về sau sẽ thấy "drift" và có thể đề
-      nghị xoá; cần ghi chú khi tạo migration mới hoặc chuyển sang `prisma migrate diff`
-      + chỉnh tay. `migrate deploy` (CI/compose) không bị ảnh hưởng.
+      (`places_search_trgm_idx`) và các hàm `immutable_*` chỉ có trong migration SQL.
+      `prisma migrate dev` về sau sẽ thấy "drift" và có thể đề nghị xoá; cần ghi chú khi
+      tạo migration mới hoặc chuyển sang `prisma migrate diff` + chỉnh tay. `migrate deploy`
+      (CI/compose) không bị ảnh hưởng.
+- [ ] **Benchmark `pg_trgm` ở quy mô lớn** — dataset 491 dòng; cần ≥ 50k dòng để đo
+      lợi ích index tìm kiếm.
