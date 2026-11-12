@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Link } from "react-router"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -23,6 +24,15 @@ import { FollowButton } from "./follow-button"
 export function UserSuggestionsSection() {
   const { data: me } = useMe()
   const { data: suggestions, isPending, isError } = useUserSuggestions()
+
+  // Đo hiệu quả gợi ý (tim-nguoi.md §chỉ số): log 1 lần mỗi bộ gợi ý thực sự
+  // hiển thị — key là danh sách handle nên đổi bộ gợi ý mới log lại.
+  const shownKey = (suggestions ?? []).map((s) => s.user.handle).join(",")
+  useEffect(() => {
+    if (shownKey.length > 0) {
+      console.log("suggestion_shown", { handles: shownKey.split(",") })
+    }
+  }, [shownKey])
 
   // Guest: endpoint cần đăng nhập nên hook không chạy — không hiện khối.
   if (!me || isError) return null
@@ -69,7 +79,7 @@ export function UserSuggestionsSection() {
                 </ItemDescription>
               </ItemContent>
               <ItemActions>
-                <FollowButton user={suggestion.user} />
+                <FollowButton user={suggestion.user} source="suggestion" />
               </ItemActions>
             </Item>
           </li>

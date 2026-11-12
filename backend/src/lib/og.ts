@@ -77,7 +77,9 @@ export function safeImageUrl(raw: string | null | undefined): string | null {
   if (!raw) return null
   if (raw.startsWith("/")) return raw
   if (raw.startsWith("https://")) return raw
-  if (raw.startsWith(env.APP_ORIGIN)) return raw
+  // So khớp prefix chặt: `APP_ORIGIN` đúng nguyên vẹn hoặc kèm `/` ngay sau.
+  // Dùng `startsWith(APP_ORIGIN)` thô sẽ cho phép `http://localhost:5173.evil.com/x.png`.
+  if (raw === env.APP_ORIGIN || raw.startsWith(`${env.APP_ORIGIN}/`)) return raw
   return null
 }
 

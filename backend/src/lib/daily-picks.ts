@@ -1,6 +1,5 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
-import { isUniqueViolation } from "./errors"
 import { toPlaceDto } from "./places"
 
 /**
@@ -254,53 +253,58 @@ async function fetchPickCandidates(
 /**
  * Tính + ghi picks của một ngày trong MỘT transaction: job chết giữa chừng
  * (sau khi insert 1–2 row) thì rollback, retry tính lại từ đầu theo `pickDate`
- * và ra đúng cùng bộ 3. Trùng unique constraint (worker khác đã ghi) coi như
- * "đã xử lý", không phải lỗi — pattern của `suggestions-job.ts`.
+ * và ra đúng cùng bộ 3.
  *
- * @returns số slot đã ghi (0 khi hôm nay đã có picks hoặc không đủ ứng viên).
+ * Chạy lại khi ngày đó đã có picks: `createMany({ skipDuplicates: true })` bỏ
+ * qua row trùng unique constraint mà KHÔNG ném lỗi (khác `create`), nên không
+ * cần bắt P2002 ở đây — số row ghi thật lấy từ `count` trả về.
+ *
+ * @returns số slot đã ghi thật (0 khi hôm nay đã có picks hoặc không đủ ứng viên).
  */
 export async function pickDailyPicks(pickDate: string): Promise<number> {
-  try {
-    return await prisma.$transaction(async (tx) => {
-      const [candidateRows, historyRows] = await Promise.all([
-        fetchPickCandidates(tx),
-        tx.dailyPick.findMany({
-          // Chỉ picks TRƯỚC ngày đang tính — picks cùng ngày (kể cả row của
-          // lần chạy dở) không được coi là lịch sử, nếu không retry sẽ ra bộ
-          // khác với lần tính đầy đủ.
-          where: {
-            pickDate: {
-              gte: new Date(`${shiftDate(pickDate, -RECENT_DAYS)}T00:00:00Z`),
-              lt: new Date(`${pickDate}T00:00:00Z`),
-            },
+  return await prisma.$transaction(async (tx) => {
+    const [candidateRows, historyRows] = await Promise.all([
+      fetchPickCandidates(tx),
+      tx.dailyPick.findMany({
+        // Chỉ picks TRƯỚC ngày đang tính — picks cùng ngày (kể cả row của
+        // lần chạy dở) không được coi là lịch sử, nếu không retry sẽ ra bộ
+        // khác với lần tính đầy đủ.
+        //
+        // Cửa sổ `>= pickDate - 7` (8 ngày lịch) CHẶT HƠN thiết kế 1 ngày
+        // (`> current_date - 7` = 7 ngày) một cách có chủ đích: chặn thêm quán
+        // vừa lên đúng 7 ngày trước, tránh cảm giác "quán này lặp lại" mà
+        // không ảnh hưởng khả năng tìm đủ 3 slot.
+        where: {
+          pickDate: {
+            gte: new Date(`${shiftDate(pickDate, -RECENT_DAYS)}T00:00:00Z`),
+            lt: new Date(`${pickDate}T00:00:00Z`),
           },
-          select: { placeId: true, pickDate: true },
-        }),
-      ])
-      const history = historyRows.map((row) => ({
-        placeId: row.placeId,
-        pickDate: row.pickDate.toISOString().slice(0, 10),
-      }))
+        },
+        select: { placeId: true, pickDate: true },
+      }),
+    ])
+    const history = historyRows.map((row) => ({
+      placeId: row.placeId,
+      pickDate: row.pickDate.toISOString().slice(0, 10),
+    }))
 
-      const picked = selectDailyPicks(candidateRows, history, pickDate)
-      if (picked.length === 0) return 0
+    const picked = selectDailyPicks(candidateRows, history, pickDate)
+    if (picked.length === 0) return 0
 
-      // skipDuplicates: job chạy lại không nhân đôi slot (unique constraint chặn).
-      await tx.dailyPick.createMany({
-        data: picked.map((pick) => ({
-          pickDate: new Date(`${pickDate}T00:00:00Z`),
-          position: pick.position,
-          placeId: pick.placeId,
-          reason: pick.reason,
-        })),
-        skipDuplicates: true,
-      })
-      return picked.length
+    // skipDuplicates: job chạy lại không nhân đôi slot (unique constraint chặn).
+    // Đếm `count` thật thay vì `picked.length` để log/return không gây hiểu
+    // nhầm là đã ghi 3 row khi thực tế bỏ qua hết.
+    const { count } = await tx.dailyPick.createMany({
+      data: picked.map((pick) => ({
+        pickDate: new Date(`${pickDate}T00:00:00Z`),
+        position: pick.position,
+        placeId: pick.placeId,
+        reason: pick.reason,
+      })),
+      skipDuplicates: true,
     })
-  } catch (error) {
-    if (isUniqueViolation(error)) return 0
-    throw error
-  }
+    return count
+  })
 }
 
 /** Dòng thô của endpoint — phần place khớp `PlaceRow` của `toPlaceDto`. */

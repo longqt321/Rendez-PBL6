@@ -107,6 +107,7 @@ Ràng buộc đầu vào:
 |---|---|---|---|
 | GET | `/places` | — | `Page<Place>`, 9 item/trang, bộ lọc A7.9; `q` khớp không dấu + bỏ dấu câu |
 | GET | `/places/map` | — | `{items, total}`, chặn 300 item, `total` = số khớp thật |
+| GET | `/places/daily-picks` | — | `{date, items: [{place, reason}]}` — 3 quán job `daily-picks` chọn cho hôm nay (Asia/Ho_Chi_Minh); chưa có picks → `items: []` (200) |
 | GET | `/places/suggestions?q=&limit=` | — | `{suggestions: PlaceSuggestion[]}`; caption < 8 ký tự → rỗng; `limit` 1–10 (mặc định 3) |
 | GET | `/places/saved` | ✔ | `Page<Place>` gộp mọi bộ sưu tập của chính mình, loại trùng |
 | GET | `/places/:id` | — | `Place`; 404 nếu chưa publish/đã xoá |
@@ -333,6 +334,7 @@ client bỏ qua bước PUT, dùng thẳng `publicUrl`.
 | `GET /places/:id` | `public, max-age=60` | kèm `ETag`; `If-None-Match` khớp → `304` không body |
 | `GET /og/place/:id`, `GET /og/post/:id` | `public, max-age=600` (404: `max-age=60`) | HTML meta cho bot preview; nginx `proxy_cache` cache cùng TTL |
 | `GET /places/map` | `public, max-age=30` | kèm `ETag` |
+| `GET /places/daily-picks` | `public, max-age=300` | giống nhau với mọi người; 5 phút ngắn hơn chu kỳ đổi dữ liệu (ngày) |
 | `GET /users/:handle` | `private, max-age=15` | `followedByMe` phụ thuộc người xem |
 | `GET /me`, `PATCH /me` | `no-store` | dữ liệu riêng tư |
 | `GET /users/suggestions` | `no-store` | gợi ý cá nhân hoá hoàn toàn (`followedByMe` + thứ tự theo người xem) |

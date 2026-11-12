@@ -30,6 +30,10 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET phải được đặt}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL phải là URL công khai}
       CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS phải là origin của FE}
+      # Origin FE công khai (https) — API dùng để dựng og:url/canonical và
+      # tuyệt đối hoá ảnh trong HTML meta OG cho bot preview. Prod bắt buộc
+      # domain public https; thiếu sẽ fail-fast thay vì lọt localhost vào meta.
+      APP_ORIGIN: ${APP_ORIGIN:?APP_ORIGIN phải là URL public https của FE}
       DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD phải được đặt}@postgres:5432/${POSTGRES_DB:-rendez}
       # Caddy được gán IP tĩnh trong mạng riêng (xem `networks` dưới) — chỉ IP
       # này được tin khi đọc X-Forwarded-For.

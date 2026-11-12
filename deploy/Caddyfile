@@ -16,6 +16,29 @@ rendez.example.com {
 		reverse_proxy api:8000
 	}
 
+	# ── OG preview cho bot mạng xã hội (xem docs/thiet-ke/chia-se-og-dong.md §6) ──
+	# Bot FB/Zalo/Telegram… không chạy JS nên chỉ đọc meta tĩnh trong index.html.
+	# Matcher dưới đây khớp UA bot đã biết + đúng path chi tiết, rồi rewrite sang
+	# route OG của API để trả HTML meta động. Người dùng thật rơi xuống handle FE.
+	# ĐẶT TRƯỚC handle tĩnh — Caddy xét `handle` theo thứ tự khai báo.
+	@ogplace {
+		path_regexp ogplace ^/discover/([^/]+)$
+		header_regexp UA User-Agent (facebookexternalhit|Facebot|facebookcatalog|meta-externalagent|meta-externalvalidator|Zalo|Twitterbot|slack|WhatsApp|TelegramBot|discordapp|LinkedInBot)
+	}
+	handle @ogplace {
+		rewrite * /api/v1/og/place/{re.ogplace.1}
+		reverse_proxy api:8000
+	}
+
+	@ogpost {
+		path_regexp ogpost ^/post/([^/]+)$
+		header_regexp UA User-Agent (facebookexternalhit|Facebot|facebookcatalog|meta-externalagent|meta-externalvalidator|Zalo|Twitterbot|slack|WhatsApp|TelegramBot|discordapp|LinkedInBot)
+	}
+	handle @ogpost {
+		rewrite * /api/v1/og/post/{re.ogpost.1}
+		reverse_proxy api:8000
+	}
+
 	# Frontend: thư mục dist/ build bằng `bun run build` (Vite).
 	handle {
 		root * /srv/web

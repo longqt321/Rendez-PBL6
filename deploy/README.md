@@ -17,6 +17,9 @@ docker compose -f compose.yaml -f deploy/compose.prod.yml build
 
 # Biến môi trường production (KHÔNG commit):
 cp deploy/.env.example /srv/rendez/.env   # điền giá trị thật
+# Lưu ý: ngoài POSTGRES_PASSWORD/BETTER_AUTH_SECRET/BETTER_AUTH_URL/CORS_ORIGINS,
+# bắt buộc đặt APP_ORIGIN = URL public https của FE (API dùng cho og:url/canonical
+# và tuyệt đối hoá ảnh OG — xem deploy/compose.prod.yml, docs/thiet-ke/chia-se-og-dong.md).
 
 docker compose --env-file /srv/rendez/.env \
   -f compose.yaml -f deploy/compose.prod.yml up -d

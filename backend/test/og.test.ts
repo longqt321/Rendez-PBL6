@@ -81,6 +81,15 @@ describe("unit — dựng HTML meta OG", () => {
     expect(og.safeImageUrl("javascript:alert(1)")).toBeNull()
     expect(og.safeImageUrl("data:text/html,x")).toBeNull()
 
+    // Prefix lỏng (`startsWith(APP_ORIGIN)`) từng cho phép domain mượn origin:
+    // `localhost:5173.evil.com` — phải bị loại để không rơi về ảnh evil.
+    expect(og.safeImageUrl("http://localhost:5173.evil.com/x.png")).toBeNull()
+    // Còn APP_ORIGIN đúng nguyên vẹn hoặc kèm đường dẫn thì hợp lệ.
+    expect(og.safeImageUrl("http://localhost:5173")).toBe("http://localhost:5173")
+    expect(og.safeImageUrl("http://localhost:5173/data/x.png")).toBe(
+      "http://localhost:5173/data/x.png",
+    )
+
     const fallback = og.absoluteImageUrl("javascript:alert(1)", 7)
     expect(fallback).toBe(`http://localhost:5173/og-image.png?v=7`)
 
