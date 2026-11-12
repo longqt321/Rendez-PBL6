@@ -192,6 +192,7 @@ function toPlaceDto(place: MockPlace): Place {
     lat: place.lat,
     lng: place.lng,
     status: place.status,
+    ...(place.openingHours ? { openingHours: place.openingHours } : {}),
   }
 }
 

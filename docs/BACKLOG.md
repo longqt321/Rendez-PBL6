@@ -701,3 +701,19 @@ Nguồn: 3 báo cáo audit độc lập (deployment config / backend / frontend)
       `*@rendez.test`, room/post/review rác vào DB dev (đã dọn 167 user + 6 room test + 32 post
       rác ngày 12/11). Cần `DATABASE_URL` riêng cho test (DB `rendez_test`) hoặc dọn tự động
       trong `test/setup` — nếu không, dữ liệu demo lại bị nhiễm sau mỗi lần chạy test.
+
+## Cold-start data (2026-11-13) — đã làm & còn mở
+
+Đã làm (D-059): tags từ OSM cuisine/tiện ích → **160/344 place có tags**; `openingHours`
+mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ngày, qua nửa đêm).
+
+- [ ] **Sort "Nổi bật" cho cold-start**: sort mặc định `newest` hiện đẩy curated (không
+      tags, ít ảnh) lên trang 1 nên cải thiện tags chưa thấy ngay. Xếp hạng theo độ đầy
+      đủ dữ liệu (ảnh + tags + giờ mở cửa + có mô tả) rồi mới tới mới nhất.
+- [ ] **Tags cho 86 curated**: nguồn curated không có `cuisine`; cần nguồn thật khác
+      (trang quán/website đã có ở `venuePageUrl` 136 place) — không suy từ category để
+      tránh trùng badge loại hình.
+- [ ] **Ảnh cho quán không có ảnh**: 29/344 có ảnh; cân nhắc Wikimedia Commons/Wikidata
+      (raw chỉ 1 wikidata, 0 commons) hoặc chấp nhận ảnh minh hoạ D-050.
+- [ ] **`price_level`**: OSM không có dữ liệu (0/3.223) → lọc giá tiếp tục disabled;
+      chỉ bật khi có nguồn thật.

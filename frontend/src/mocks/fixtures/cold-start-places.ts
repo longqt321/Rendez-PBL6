@@ -40,6 +40,8 @@ interface ColdStartPlace {
   image: string | null
   tier: string
   status: string
+  /** Giờ mở cửa thô từ OSM (dataset curated); `null` = chưa thu thập. */
+  openingHours: string | null
 }
 
 /**
@@ -93,6 +95,7 @@ export const COLD_START_PLACES: MockPlace[] = places.map((raw) => {
     lat: raw.lat ?? undefined,
     lng: raw.lng ?? undefined,
     status: raw.status === "open" || raw.status === "closed" ? raw.status : "unknown",
+    openingHours: raw.openingHours ?? undefined,
   }
 
   return { ...place, publishedAt: UNPUBLISHED_IDS.has(raw.id) ? null : PUBLISHED_AT }

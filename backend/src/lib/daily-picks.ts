@@ -346,7 +346,7 @@ export async function getDailyPicks(pickDate: string): Promise<{
   const rows = await prisma.$queryRaw<DailyPickRow[]>(Prisma.sql`
     SELECT dp.position, dp.reason, p.id, p.name, p.address, p.city, p.district,
            p.category::text AS category, p.tags, p.price_level, p.lat, p.lng,
-           p.status::text AS status, p.created_at,
+           p.status::text AS status, p.opening_hours, p.created_at,
            COALESCE(r.rating, 0)::float8 AS rating,
            COALESCE(r.review_count, 0)::int AS review_count,
            img.url AS image_url, img.height AS image_height

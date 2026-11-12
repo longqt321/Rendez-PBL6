@@ -23,6 +23,7 @@ import { SectionHeading } from "@/components/shared/section-heading"
 import { ShareButton } from "@/components/shared/share-button"
 import { formatCount, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
+import { isOpenNow } from "../lib/opening-hours"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
 import { usePlace } from "../hooks/use-place"
 import { usePlacePosts } from "../hooks/use-place-posts"
@@ -87,6 +88,9 @@ export function PlaceDetailPage() {
     )
   }
 
+  // `null` = không có dữ liệu giờ mở cửa → không hiện badge.
+  const openState = isOpenNow(place.openingHours ?? null)
+
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6 lg:px-8 lg:py-8">
       <Breadcrumb>
@@ -118,6 +122,13 @@ export function PlaceDetailPage() {
             <h1 className="font-heading text-xl font-bold tracking-tight">{place.name}</h1>
             <Badge variant="secondary">{categoryLabel(place.category)}</Badge>
             {place.status === "closed" ? <Badge variant="destructive">Đã đóng cửa</Badge> : null}
+            {openState === true ? (
+              <Badge className="bg-emerald-600 text-white">Đang mở cửa</Badge>
+            ) : openState === false ? (
+              <Badge variant="outline" className="text-muted-foreground">
+                Đang đóng cửa
+              </Badge>
+            ) : null}
           </div>
 
           <p className="flex items-start gap-1.5 text-sm text-muted-foreground">

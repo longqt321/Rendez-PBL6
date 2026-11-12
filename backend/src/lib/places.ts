@@ -212,6 +212,7 @@ interface PlaceRow {
   lat: number | null
   lng: number | null
   status: string
+  opening_hours: string | null
   rating: number
   review_count: number
   image_url: string | null
@@ -229,7 +230,7 @@ interface PlaceRow {
 function selectPlaces(extra: Prisma.Sql = Prisma.empty): Prisma.Sql {
   return Prisma.sql`
   SELECT p.id, p.name, p.address, p.city, p.district, p.category::text AS category, p.tags,
-         p.price_level, p.lat, p.lng, p.status::text AS status, p.created_at,
+         p.price_level, p.lat, p.lng, p.status::text AS status, p.opening_hours, p.created_at,
          COALESCE(r.rating, 0)::float8 AS rating,
          COALESCE(r.review_count, 0)::int AS review_count,
          img.url AS image_url, img.height AS image_height${extra}
@@ -267,6 +268,7 @@ export function toPlaceDto(row: PlaceRow) {
     ...(row.lat !== null ? { lat: row.lat } : {}),
     ...(row.lng !== null ? { lng: row.lng } : {}),
     status: row.status,
+    ...(row.opening_hours ? { openingHours: row.opening_hours } : {}),
   }
 }
 

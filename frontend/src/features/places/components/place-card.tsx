@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { formatCount, formatDistance, formatRating } from "@/lib/format"
+import { isOpenNow } from "../lib/opening-hours"
 import { categoryLabel } from "../lib/category-meta"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
 import type { Place } from "../types/place"
@@ -15,6 +16,11 @@ interface PlaceCardProps {
 }
 
 export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
+  // `null` = không có dữ liệu giờ mở cửa → không hiện badge.
+  const openState = isOpenNow(place.openingHours ?? null)
+  const visibleTags = place.tags.slice(0, 3)
+  const hiddenTagCount = place.tags.length - visibleTags.length
+
   return (
     <Card className="group relative gap-0 p-0 shadow-(--shadow-soft) transition-shadow hover:shadow-(--shadow-raised)">
       {/* Chiều cao ảnh do server trả về (`imageHeight`) → lưới mobile có nhịp masonry. */}
@@ -51,6 +57,19 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
             {formatRating(place.rating)}
           </span>
         ) : null}
+
+        {openState !== null ? (
+          <Badge
+            variant="outline"
+            className={
+              openState
+                ? "absolute top-2 right-2 h-6 border-transparent bg-emerald-600 px-2 text-xs text-white"
+                : "absolute top-2 right-2 h-6 border-border/80 bg-background/80 px-2 text-xs font-medium text-muted-foreground backdrop-blur"
+            }
+          >
+            {openState ? "Đang mở cửa" : "Đã đóng cửa"}
+          </Badge>
+        ) : null}
       </CoverImage>
 
       <CardContent className="flex flex-1 flex-col gap-2 p-4">
@@ -62,6 +81,29 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
             {place.name}
           </Link>
         </h3>
+
+        {visibleTags.length > 0 ? (
+          <ul className="flex flex-wrap gap-1" aria-label="Thẻ gợi ý">
+            {visibleTags.map((tag) => (
+              <li key={tag}>
+                <Badge
+                  variant="outline"
+                  className="h-5 px-1.5 text-[11px] font-normal text-muted-foreground"
+                >
+                  #{tag}
+                </Badge>
+              </li>
+            ))}
+            {hiddenTagCount > 0 ? (
+              <li
+                aria-label={`${hiddenTagCount} thẻ khác`}
+                className="flex h-5 items-center px-1 text-[11px] text-muted-foreground"
+              >
+                +{hiddenTagCount}
+              </li>
+            ) : null}
+          </ul>
+        ) : null}
 
         <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
           <MapPinIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />

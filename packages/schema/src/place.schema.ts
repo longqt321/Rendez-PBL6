@@ -52,6 +52,7 @@ export const placeSchema = z.object({
   lat: z.number().optional(),
   lng: z.number().optional(),
   status: placeStatusSchema.optional(),
+  openingHours: z.string().optional(),
 }) satisfies z.ZodType<Place>
 
 /** Đề xuất địa điểm do server xếp hạng — khớp `PlaceSuggestion`. */
