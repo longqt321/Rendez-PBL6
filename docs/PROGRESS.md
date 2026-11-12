@@ -180,3 +180,40 @@ là một chuỗi bakery; tầng lọc tên chỉ loại 0.22%.
 - [ ] SMTP/Resend thật (mail dev vẫn log link)
 - [ ] Preview FB/Zalo thật (cần domain public)
 - [ ] `bun test` không cờ `--parallel=1` có race không
+
+---
+
+## Phiên 2026-11-13 — demo bảo vệ: search thông minh + quan sát vận hành + card mới
+
+### Commit (main, tuần tự)
+
+| Commit | Nội dung |
+|---|---|
+| `25558ee` | corpus: chuẩn hoá 7 quận + vibes từ OSM + `publishedAt` trải theo hash |
+| `b81a62e` | API: `meta {tookMs, cacheHit, totalResults, didYouMean}`; search không dấu + đồng nghĩa + "Ý bạn là"; `why` daily-picks; `/system/stats` + `/system/reset` |
+| `e6153fd` | FE: card vibes + badge "Mới" + chip "Điểm gợi ý X/100"; "Ý bạn là"; overlay dev Ctrl+Shift+D; ảnh minh hoạ theo hash; count từ `meta` |
+
+### Kết quả verify (ĐÃ XÁC MINH, ngày 2026-11-13)
+
+| Chỉ tiêu | Kết quả |
+|---|---|
+| Backend `bun test --parallel=1` | **289 pass / 0 fail** |
+| Unit test frontend | **146 pass** |
+| e2e Playwright `mock` | **42 pass** |
+| DB | **344 place, 343 published** (`psql` đếm trực tiếp, `deleted_at IS NULL`) |
+| Overlay dev | Chỉ bundle dev (`import.meta.env.PROD` → `null` + tree-shake); Ctrl+Shift+D toggle |
+| `/system` | `GET /system/stats` + `POST /system/reset` (403 khi `NODE_ENV=production`); **FE không có route /system** |
+| Filter quận | Đúng 7 nhãn (phân nhóm xấp xỉ theo quận cũ — D-060) |
+
+### Tài liệu đã cập nhật
+
+- `docs/HUONG-DAN-CHAY-VA-NGHIEM-THU.md` — mục **4.12 Demo bảo vệ** (mục 49–60:
+  search không dấu/sai chính tả/đồng nghĩa, overlay dev, `/system` cold–warm
+  cache, card mới, 7 quận) + TIP cổng dev 5199
+- `docs/PROGRESS.md` — file này
+
+### Chưa làm (đã ghi BACKLOG)
+
+- [ ] 29 ảnh minh hoạ còn lại chờ quota AI reset (hiện manifest có 3: `cafe-1`,
+  `cafe-2`, `quan-an-1`) — xem `docs/BACKLOG.md`
+- [ ] Ranker AI (pairwise logistic), 100 query gán nhãn, thí nghiệm N-1..N-7

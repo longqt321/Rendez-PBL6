@@ -70,6 +70,10 @@ docker exec rendez-postgres psql -U rendez -d rendez -c "select count(*) from pl
 > postgres` rồi `bun run dev:api` (API :8000) và `bun run dev` (Vite :5173) —
 > xem `docs/backend/RUNBOOK.md` mục 2. Phần dưới tài liệu này giả định dùng
 > đường compose ở trên.
+>
+> Nếu container `web` vẫn chạy (chiếm :5173), chạy dev server ở cổng khác:
+> `bun run dev --port 5199 --strictPort`. Cần dev server (không phải bản build
+> tĩnh) để thấy overlay Ctrl+Shift+D — xem mục 4.12.
 
 ---
 
@@ -306,6 +310,117 @@ docker compose --env-file /srv/rendez/.env -f compose.yaml -f deploy/compose.pro
 > [!NOTE]
 > Chỉ sự kiện **đăng xuất** được phát đa tab. Đăng nhập ở tab A không tự đăng
 > nhập tab B — tab B phải thao tác rồi mới thấy phiên mới (phép dò `GET /me`).
+
+### 4.12 Demo bảo vệ — search thông minh, overlay dev, `/system`, card mới
+
+> Mục này bổ sung cho đợt demo bảo vệ (commit `25558ee`, `b81a62e`, `e6153fd`).
+> Các bước đã đối chiếu với source: `backend/src/routes/places.ts`,
+> `backend/src/routes/system.ts`, `backend/src/lib/search-synonyms.ts`,
+> `frontend/src/components/dev/api-debug-overlay.tsx`,
+> `frontend/src/features/places/components/place-card.tsx`,
+> `frontend/src/features/places/lib/danang-districts.ts`.
+
+#### A. Tìm kiếm thông minh
+
+| # | Chức năng | Bước thao tác | Kết quả mong đợi |
+|---|---|---|---|
+| 49 | Tìm không dấu | `/search?q=caphe trung` (hoặc gõ vào ô search) | Ra quán **"Cà phê Trung"** — chuẩn hoá bỏ dấu/dấu câu chạy cả FE lẫn SQL (`immutable_search_normalize`) |
+| 50 | Sai chính tả → "Ý bạn là" | Gõ `caphe trungg` (thừa chữ g) | Trên `/search` hiện dòng **"Ý bạn là Trình cà phê?"** — tên gợi ý là nút bấm được, bấm → tìm lại bằng đúng tên |
+| 51 | Từ đồng nghĩa | Gõ `quan ngon` | Kết quả gồm cả nhóm `quan-an` / `nha hang` / `quan-nhau` (map đồng nghĩa server-side, xem `search-synonyms.ts`) |
+
+#### B. Overlay dev (Ctrl+Shift+D) — "ẩn với user thường"
+
+Overlay chỉ tồn tại ở bản dev: `import.meta.env.PROD` → component trả `null`
+ngay từ ngoài, nhánh dev bị tree-shake khỏi bundle production.
+
+1. Chạy dev server (tránh đụng cổng 5173 của container `web`):
+
+   ```bash
+   bun run dev --port 5199 --strictPort   # Vite :5199, API vẫn :8000 qua proxy
+   ```
+
+   (Đây là cùng lệnh Playwright dùng cho e2e — xem `frontend/playwright.config.ts`.)
+
+2. Mở http://localhost:5199 → bấm **Ctrl+Shift+D** → góc phải dưới hiện overlay
+   mono kiểu:
+
+   ```
+   GET /api/v1/places · 17ms · cache: MISS · 343 kết quả
+   ```
+
+   Số liệu đọc thẳng từ `meta` server trả (`tookMs`, `cacheHit`, `totalResults`,
+   `didYouMean` khi có) — không tự đo lại ở client.
+
+3. **Điểm demo then chốt**: mở bản build PROD (docker `web` :5173) → Ctrl+Shift+D
+   **không hiện gì** — overlay không nằm trong bundle production.
+
+> [!NOTE]
+> Danh sách `/places` hiện chưa có cache ứng dụng nên `cacheHit` luôn `false`
+> (overlay luôn ghi `MISS` cho endpoint này — đúng, không phải lỗi). Cache ứng
+> dụng thật nằm ở `GET /places/suggestions` — xem demo cold/warm ở mục D.
+
+#### C. `/system` — số liệu vận hành
+
+FE **không có route `/system`** (đã grep toàn bộ `frontend/src` — chỉ API).
+Demo bằng curl:
+
+```bash
+# Số liệu: uptime, tổng query, latency TB, tỉ lệ cache hit, đếm venue trong DB
+curl -s http://localhost:8000/api/v1/system/stats | jq
+
+# Xoá bộ đếm trong RAM (KHÔNG xoá dữ liệu DB)
+curl -s -X POST http://localhost:8000/api/v1/system/reset
+```
+
+| # | Chức năng | Bước thao tác | Kết quả mong đợi |
+|---|---|---|---|
+| 52 | Xem số liệu vận hành | `GET /api/v1/system/stats` | JSON có `uptimeMs`, `totalQueries`, `avgLatencyMs`, `cacheHitRatio`, `byEndpoint`, `venues` (total/published/withImages/withTags/withHours) |
+| 53 | Reset chỉ ở dev | `POST /api/v1/system/reset` ở dev → `{ "reset": true }`; ở production (NODE_ENV=production) | **403** "Reset metrics chỉ khả dụng ở môi trường demo/dev" — điểm demo bảo mật |
+
+#### D. Cold vs warm cache (60 giây)
+
+Cache ứng viên gợi ý có TTL **60 giây** (`suggestions.ts`), nên demo phải làm
+trong vòng một phút:
+
+```bash
+# Lần 1 — cold: cacheHit false
+curl -s "http://localhost:8000/api/v1/places/suggestions?q=hôm nay ăn gì" | jq .meta
+# → { "tookMs": …, "cacheHit": false, "totalResults": … }
+
+# Lần 2 ngay sau đó — warm: cacheHit true, tookMs thấp hơn hẳn
+curl -s "http://localhost:8000/api/v1/places/suggestions?q=hôm nay ăn gì" | jq .meta
+# → { "tookMs": …, "cacheHit": true, … }
+```
+
+#### E. Card địa điểm mới
+
+| # | Chức năng | Bước thao tác | Kết quả mong đợi |
+|---|---|---|---|
+| 54 | Chip "Điểm gợi ý" | Mở `/discover`, nhìn 3 card dải **"Gợi ý hôm nay"** | Card có chip ✨ **"Điểm gợi ý X/100"** kèm quận, "Đang mở/Đóng" và tối đa 3 signal — dữ liệu `why` do backend tính (`matchPercent` là điểm chất lượng tuyệt đối, không phải % khớp sở thích) |
+| 55 | Badge "Mới" | Tìm quán được duyệt trong 14 ngày gần nhất (~43 quán) | Badge "Mới" trên card — tính theo `publishedAt`, không phải `createdAt` |
+| 56 | Vibe tags | Nhìn phần thẻ trên card | Tối đa 3 tag hiện, thẻ dư gộp thành "+N" |
+| 57 | Trạng thái mở cửa | So sánh card quán đang mở và quán đã đóng | Badge xanh "Đang mở cửa" / xám "Đã đóng cửa" theo giờ mở cửa |
+| 58 | Ẩn "Chưa có đánh giá" | Nhìn card quán 0 review | **Không** hiện nhãn "Chưa có đánh giá" (chỉ hiện rating khi `reviewCount > 0`) |
+| 59 | Đếm kết quả từ server | Chạy tìm kiếm trống trên `/discover` (khi overlay dev bật) | Overlay ghi **343 kết quả** — số đọc từ `meta.totalResults`, không phải đếm client |
+
+#### F. Bộ lọc quận chuẩn 7 nhãn
+
+| # | Chức năng | Bước thao tác | Kết quả mong đợi |
+|---|---|---|---|
+| 60 | 7 nhãn quận | `/discover` → "Quận" | Đúng 7 nhãn: **Hải Châu, Sơn Trà, Ngũ Hành Sơn, Liên Chiểu, Cẩm Lệ, Hòa Vang, Hoàng Sa** |
+
+> [!WARNING]
+> Nhãn quận là **phân nhóm xấp xỉ theo ranh giới quận cũ** của corpus OSM (các
+> tên cũ Thanh Khê, An Hải, Hòa Cường… đã được gộp/sửa trong DB — quyết định
+> `D-060`). Không coi ranh giới này là ranh giới hành chính chính thức.
+
+#### G. Ảnh minh hoạ theo category
+
+Ảnh đại diện sinh lúc build theo category + hash tên quán (`manifest.json`),
+nên quán cùng category có ảnh khác nhau nhưng ổn định giữa các lần build. Hiện
+manifest mới có **3 ảnh** (`cafe-1`, `cafe-2`, `quan-an-1`); 29 ảnh còn lại chờ
+quota AI reset rồi sinh lại — đã ghi `docs/BACKLOG.md`. Quán chưa có ảnh vẫn
+hiển thị bình thường (placeholder), không phải lỗi.
 
 ---
 
