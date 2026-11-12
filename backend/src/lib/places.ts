@@ -1,7 +1,7 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { parseApiCategory, toApiCategory } from "./enums"
-import type { Cursor } from "./cursor"
+import type { Cursor, PlaceCursor, PlaceSort } from "./cursor"
 import type { PlaceCategory } from "@rendez/schema"
 
 /**
@@ -28,6 +28,14 @@ export interface PlaceFilters {
   includeKeywords: string[]
   excludeKeywords: string[]
   bbox?: { minLng: number; minLat: number; maxLng: number; maxLat: number }
+  /**
+   * Kiểu sắp xếp kết quả (`GET /places`). `distance` cần `lat`/`lng` của người
+   * dùng; thiếu toạ độ hợp lệ thì parse đã rơi về `newest` (không lỗi).
+   */
+  sort: PlaceSort
+  /** Toạ độ người dùng cho `sort=distance` — chỉ có nghĩa khi `sort` là distance. */
+  lat?: number
+  lng?: number
 }
 
 /** Tách danh sách phân tách dấu phẩy, bỏ rỗng và "all" (mock: "all" = không lọc). */
@@ -81,6 +89,26 @@ export function parsePlaceFilters(query: Record<string, string | undefined>): Pl
 
   const category = parseCategoryList(query.category)
 
+  // `sort` lạ/thiếu → `newest` (cùng phong cách: giá trị lạ bị bỏ qua, không 400).
+  const rawSort = query.sort
+  const requestedSort: PlaceSort =
+    rawSort === "rating" || rawSort === "distance" ? rawSort : "newest"
+
+  // Toạ độ phải hữu hạn và đúng miền; thiếu/sai → không có toạ độ.
+  const latRaw = Number(query.lat)
+  const lngRaw = Number(query.lng)
+  const hasCoords =
+    query.lat !== undefined &&
+    query.lng !== undefined &&
+    Number.isFinite(latRaw) &&
+    Number.isFinite(lngRaw) &&
+    latRaw >= -90 &&
+    latRaw <= 90 &&
+    lngRaw >= -180 &&
+    lngRaw <= 180
+  // `sort=distance` mà không có toạ độ dùng được → rơi về `newest`, không lỗi.
+  const sort: PlaceSort = requestedSort === "distance" && !hasCoords ? "newest" : requestedSort
+
   return {
     q: query.q?.trim() || undefined,
     categories: category.categories,
@@ -92,6 +120,8 @@ export function parsePlaceFilters(query: Record<string, string | undefined>): Pl
     includeKeywords: splitList(query.includeKeyword),
     excludeKeywords: splitList(query.excludeKeyword),
     bbox,
+    sort,
+    ...(sort === "distance" ? { lat: latRaw, lng: lngRaw } : {}),
   }
 }
 
@@ -155,7 +185,10 @@ function buildConditions(filters: PlaceFilters): Prisma.Sql[] {
   if (filters.q) {
     conditions.push(keywordCondition(filters.q))
   }
-  if (filters.bbox) {
+  // `sort=distance` KHÔNG dùng bbox (thiết kế mục 3.1): bbox lọc theo khung nhìn
+  // bản đồ, distance sắp theo vị trí người dùng — hai khái niệm khác nhau.
+  // (Hiện chỉ `/places/map` gửi bbox và map bỏ qua sort nên không va chạm.)
+  if (filters.bbox && filters.sort !== "distance") {
     conditions.push(
       Prisma.sql`p.lat IS NOT NULL AND p.lng IS NOT NULL
         AND p.lng BETWEEN ${filters.bbox.minLng} AND ${filters.bbox.maxLng}
@@ -184,14 +217,22 @@ interface PlaceRow {
   image_url: string | null
   image_height: number | null
   created_at: Date
+  /** Chỉ có khi `sort=distance` — khoảng cách Haversine tới người dùng (km). */
+  distance_km?: number | null
 }
 
-const SELECT_PLACES = Prisma.sql`
+/**
+ * Danh sách cột dùng chung. `extra` phải nằm TRONG mệnh đề SELECT (trước
+ * `FROM`) — nối sau `FROM` sẽ bị Postgres hiểu là một FROM item thứ hai và báo
+ * lỗi cú pháp.
+ */
+function selectPlaces(extra: Prisma.Sql = Prisma.empty): Prisma.Sql {
+  return Prisma.sql`
   SELECT p.id, p.name, p.address, p.city, p.district, p.category::text AS category, p.tags,
          p.price_level, p.lat, p.lng, p.status::text AS status, p.created_at,
          COALESCE(r.rating, 0)::float8 AS rating,
          COALESCE(r.review_count, 0)::int AS review_count,
-         img.url AS image_url, img.height AS image_height
+         img.url AS image_url, img.height AS image_height${extra}
   FROM places p
   LEFT JOIN LATERAL (
     SELECT ROUND(AVG(rv.rating)::numeric, 1) AS rating, COUNT(*) AS review_count
@@ -206,6 +247,7 @@ const SELECT_PLACES = Prisma.sql`
     LIMIT 1
   ) img ON true
 `
+}
 
 /** Chuyển dòng thô thành `Place` đúng `placeSchema` (bỏ trường null thay vì gửi null). */
 export function toPlaceDto(row: PlaceRow) {
@@ -230,32 +272,110 @@ export function toPlaceDto(row: PlaceRow) {
 
 export type PlaceDto = ReturnType<typeof toPlaceDto>
 
-/** Một trang địa điểm theo keyset `(created_at, id)` giảm dần (D2). */
+/**
+ * Biểu thức Haversine (km) tới vị trí người dùng — MỘT biểu thức duy nhất dùng
+ * cho cả SELECT, ORDER BY lẫn điều kiện keyset: ba chỗ phải giống hệt nhau,
+ * nếu khác là trùng/sót dòng ở biên phân trang.
+ *
+ * Hằng số 6371 (km) khớp `calculateDistanceKm` phía client; công thức acos và
+ * atan2 là hai dạng Haversine tương đương (chênh ~1e-9 km, dưới ngưỡng test
+ * 0,01 km). Toạ độ truyền qua `Prisma.sql` (không nối chuỗi).
+ */
+function distanceSql(lat: number, lng: number): Prisma.Sql {
+  return Prisma.sql`(6371 * acos(least(1, greatest(-1,
+    cos(radians(${lat})) * cos(radians(p.lat)) * cos(radians(p.lng) - radians(${lng}))
+    + sin(radians(${lat})) * sin(radians(p.lat))
+  ))))`
+}
+
+/** Một trang địa điểm theo keyset giảm dần `(created_at, id)` (D2) hoặc keyset theo `sort`. */
 export async function listPlaces(
   filters: PlaceFilters,
-  cursor: Cursor | null,
+  cursor: PlaceCursor | null,
   pageSize: number,
-): Promise<{ items: PlaceDto[]; next: Cursor | null }> {
+): Promise<{ items: PlaceDto[]; next: PlaceCursor | null }> {
   const conditions = buildConditions(filters)
-  if (cursor) {
-    conditions.push(
-      Prisma.sql`(p.created_at, p.id) < (${cursor.createdAt}::timestamptz, ${cursor.id})`,
-    )
+
+  // Cursor decode đúng nhưng `kind` khác kiểu sắp xếp hiện tại (người dùng đổi
+  // sort, link cũ) → coi như không có cursor, trả trang đầu — xem comment của
+  // `cursor.ts` cho ngoại lệ này.
+  const matchingCursor = cursor && cursor.kind === filters.sort ? cursor : null
+
+  let orderBy: Prisma.Sql
+  let extraSelect: Prisma.Sql = Prisma.empty
+  let keyset: Prisma.Sql | null = null
+
+  switch (filters.sort) {
+    case "rating": {
+      // Biểu thức ORDER BY và keyset phải giống hệt (`COALESCE(r.rating, 0)`).
+      orderBy = Prisma.sql`COALESCE(r.rating, 0) DESC, r.review_count DESC, p.created_at DESC, p.id DESC`
+      if (matchingCursor?.kind === "rating") {
+        keyset = Prisma.sql`(COALESCE(r.rating, 0), r.review_count, p.created_at, p.id)
+          < (${matchingCursor.rating}::float8, ${matchingCursor.reviewCount}::int, ${matchingCursor.createdAt}::timestamptz, ${matchingCursor.id})`
+      }
+      break
+    }
+    case "distance": {
+      // `filters.lat/lng` luôn có khi sort là distance (parse đã rơi về newest).
+      const dist = distanceSql(filters.lat!, filters.lng!)
+      extraSelect = Prisma.sql`, ${dist} AS distance_km`
+      // Quán thiếu toạ độ (NULL) xếp cuối — giống logic client hiện tại.
+      orderBy = Prisma.sql`${dist} ASC NULLS LAST, p.id ASC`
+      if (matchingCursor?.kind === "distance") {
+        // Bẫy SQL: `(distance, id) > (…)` với `distance = NULL` cho kết quả NULL
+        // → WHERE coi là FALSE → quán thiếu toạ độ bị mất ở trang 2+. Phải tách
+        // nhánh: dòng cuối trang trước CÓ toạ độ thì mọi dòng NULL đều thuộc
+        // trang sau (NULL xếp sau tất cả); dòng cuối THIẾU toạ độ thì lấy các
+        // dòng NULL có id lớn hơn (tiebreak trong nhóm NULL là `p.id ASC`).
+        keyset =
+          matchingCursor.distance === null
+            ? Prisma.sql`(${dist} IS NULL AND p.id > ${matchingCursor.id})`
+            : Prisma.sql`((${dist} IS NOT NULL AND (${dist}, p.id) > (${matchingCursor.distance}::float8, ${matchingCursor.id}))
+              OR ${dist} IS NULL)`
+      }
+      break
+    }
+    default: {
+      orderBy = Prisma.sql`p.created_at DESC, p.id DESC`
+      if (matchingCursor?.kind === "newest") {
+        keyset = Prisma.sql`(p.created_at, p.id) < (${matchingCursor.createdAt}::timestamptz, ${matchingCursor.id})`
+      }
+    }
   }
+
+  if (keyset) conditions.push(keyset)
 
   // Lấy dư 1 dòng để biết còn trang sau — không COUNT toàn bộ (đắt, không cần).
   const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-    ${SELECT_PLACES}
+    ${selectPlaces(extraSelect)}
     WHERE ${Prisma.join(conditions, " AND ")}
-    ORDER BY p.created_at DESC, p.id DESC
+    ORDER BY ${orderBy}
     LIMIT ${pageSize + 1}
   `)
 
   const page = rows.slice(0, pageSize)
   const last = page.at(-1)
-  const next = rows.length > pageSize && last ? { createdAt: last.created_at, id: last.id } : null
+  const next = rows.length > pageSize && last ? cursorForSort(filters.sort, last) : null
 
   return { items: page.map(toPlaceDto), next }
+}
+
+/** Cursor của dòng cuối trang, đúng `kind` theo kiểu sắp xếp đang dùng. */
+function cursorForSort(sort: PlaceSort, row: PlaceRow): PlaceCursor {
+  switch (sort) {
+    case "rating":
+      return {
+        kind: "rating",
+        rating: Number(row.rating),
+        reviewCount: Number(row.review_count),
+        createdAt: row.created_at,
+        id: row.id,
+      }
+    case "distance":
+      return { kind: "distance", distance: row.distance_km ?? null, id: row.id }
+    default:
+      return { kind: "newest", createdAt: row.created_at, id: row.id }
+  }
 }
 
 /** Địa điểm trong khung nhìn — không phân trang, chặn trên `limit` (A7.9). */
@@ -269,7 +389,7 @@ export async function listPlacesInMap(
   // riêng thay vì kéo cả dataset về RAM rồi `slice`.
   const [rows, countRows] = await Promise.all([
     prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-      ${SELECT_PLACES}
+      ${selectPlaces()}
       WHERE ${Prisma.join(conditions, " AND ")}
       ORDER BY p.created_at DESC, p.id DESC
       LIMIT ${limit}
@@ -311,7 +431,7 @@ export async function listSavedPlaces(
   }
 
   const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-    ${SELECT_PLACES}
+    ${selectPlaces()}
     WHERE ${Prisma.join(conditions, " AND ")}
     ORDER BY p.created_at DESC, p.id DESC
     LIMIT ${pageSize + 1}
@@ -327,7 +447,7 @@ export async function listSavedPlaces(
 /** Một địa điểm công khai — `null` khi chưa publish/đã xoá (route trả 404). */
 export async function findPublicPlace(id: string): Promise<PlaceDto | null> {
   const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-    ${SELECT_PLACES}
+    ${selectPlaces()}
     WHERE p.id = ${id} AND p.published_at IS NOT NULL AND p.deleted_at IS NULL
     LIMIT 1
   `)

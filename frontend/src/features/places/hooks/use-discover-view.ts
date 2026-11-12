@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { toast } from "sonner"
 import { useUserLocation } from "@/hooks/use-user-location"
 import { useRooms, type JoinRoomStatus } from "@/features/rooms/hooks/use-rooms"
@@ -54,11 +54,21 @@ export function useDiscoverView(): DiscoverView {
     useUserLocation()
   // Phòng lọc nhóm gửi toàn bộ ràng buộc xuống server (server lọc trước khi phân
   // trang) — client không tự lọc lại, tránh hai nguồn sự thật cho cùng một việc.
+  // `sort` + toạ độ cũng xuống server: sắp xếp khoảng cách là việc của server
+  // (đúng trên TOÀN BỘ kết quả phân trang), client chỉ tính `distanceKm` để hiển thị.
   const serverFilters = useMemo(
     () => ({
       category: room ? ("all" as const) : filters.category,
       district: room ? ("all" as const) : filters.district,
       query: room ? "" : filters.query,
+      priceMax: room ? undefined : filters.priceMax === "all" ? undefined : filters.priceMax,
+      sort: filters.sort,
+      // Chỉ gửi toạ độ khi sort là distance; chưa có vị trí thì server tự rơi
+      // về newest, khi toạ độ về thì key đổi → fetch lại đúng thứ tự.
+      coords:
+        filters.sort === "distance" && coordinates
+          ? { lat: coordinates.lat, lng: coordinates.lng }
+          : undefined,
       room: room
         ? {
             categories: room.filter.categories,
@@ -71,8 +81,27 @@ export function useDiscoverView(): DiscoverView {
           }
         : undefined,
     }),
-    [room, filters.category, filters.district, filters.query],
+    [
+      room,
+      filters.category,
+      filters.district,
+      filters.query,
+      filters.priceMax,
+      filters.sort,
+      coordinates,
+    ],
   )
+
+  // Toạ độ lên URL khi `sort=distance` (làm tròn 4 chữ số) để link chia sẻ tái
+  // tạo đúng thứ tự khoảng cách; tắt sort distance thì dọn khỏi URL.
+  const { setCoords } = filters
+  useEffect(() => {
+    if (filters.sort !== "distance") {
+      setCoords(null)
+      return
+    }
+    if (coordinates) setCoords(coordinates)
+  }, [filters.sort, coordinates, setCoords])
 
   const query = useDiscoverPlaces(serverFilters)
 
@@ -81,32 +110,20 @@ export function useDiscoverView(): DiscoverView {
     [query.data],
   )
 
-  // Xử lý tính khoảng cách và sắp xếp khi bật chế độ "Gần đây"
-  const placesWithDistance = useMemo(() => {
-    if (!filters.isNearbyActive || !coordinates) {
-      return rawPlaces.map((place) => ({
+  // Chỉ tính khoảng cách để HIỂN THỊ trên card. Thứ tự do server quyết định
+  // (`sort=distance`) — không `.sort()` phía client nữa: sắp xếp client chỉ đúng
+  // trong số trang đã tải, còn server sắp trên toàn bộ kết quả.
+  const placesWithDistance = useMemo(
+    () =>
+      rawPlaces.map((place) => ({
         place,
         distanceKm:
-          coordinates && place.lat && place.lng
+          coordinates && place.lat !== undefined && place.lng !== undefined
             ? calculateDistanceKm(coordinates.lat, coordinates.lng, place.lat, place.lng)
             : undefined,
-      }))
-    }
-
-    return rawPlaces
-      .map((place) => ({
-        place,
-        distanceKm:
-          place.lat && place.lng
-            ? calculateDistanceKm(coordinates.lat, coordinates.lng, place.lat, place.lng)
-            : undefined,
-      }))
-      .sort((a, b) => {
-        if (a.distanceKm === undefined) return 1
-        if (b.distanceKm === undefined) return -1
-        return a.distanceKm - b.distanceKm
-      })
-  }, [rawPlaces, filters.isNearbyActive, coordinates])
+      })),
+    [rawPlaces, coordinates],
+  )
 
   const sortedPlaces = useMemo(
     () => placesWithDistance.map((item) => item.place),

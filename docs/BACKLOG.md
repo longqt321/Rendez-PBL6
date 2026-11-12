@@ -639,3 +639,16 @@ realtime badge tự tăng qua SSE; bàn phím (Tab/Enter/Escape) ổn; zoom 200%
 
 Đã xác nhận tốt: XSS sạch (payload render thành text), handle có dấu bị chặn với message rõ,
 tên 40 emoji hiển thị OK, /u/<script> escaped an toàn.
+
+## V7-01: Index sắp xếp cho `places` khi corpus lớn
+
+Nguồn: thiết kế `docs/thiet-ke/loc-gia-sap-xep-anh.md` mục 3.4 — với 345 dòng cả 3 sort đều
+seq scan + top-N heapsort (EXPLAIN: newest 1,5 ms / rating 0,9 ms / distance 0,4 ms), không cần
+index. Khi corpus vượt ~5.000 dòng: thêm `@@index([createdAt(sort: Desc), id(sort: Desc)])` cho
+`newest`; cân nhắc denormalize `rating_avg`/`review_count` lên `places` + index cho `rating`.
+
+## V7-02: Resize ảnh người dùng lúc upload lên R2
+
+Nguồn: thiết kế `docs/thiet-ke/loc-gia-sap-xep-anh.md` mục 5.2 phương án D — ảnh user trên R2
+hiện không có biến thể (dùng `src` gốc). Cần presigned PUT cho nhiều URL hoặc job resize hậu kỳ
++ endpoint; ngoài phạm vi vòng lọc-giá-sắp-xếp.

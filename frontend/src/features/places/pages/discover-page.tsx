@@ -65,6 +65,8 @@ export function DiscoverPage() {
                 : filters.district !== "all"
                   ? `Chưa có địa điểm phù hợp tại Quận ${filters.district}. Thử chọn quận khác hoặc xoá bộ lọc.`
                   : "Thử bỏ bộ lọc hoặc tìm bằng từ khoá khác."}
+              {/* Gợi ý đúng nguyên nhân khi filter giá là rào cản duy nhất. */}
+              {filters.priceMax !== "all" ? " Thử chọn mức giá cao hơn." : ""}
             </EmptyDescription>
           </EmptyHeader>
           {/* Đang trong phòng thì bộ lọc chung quyết định kết quả — "Xoá bộ lọc"

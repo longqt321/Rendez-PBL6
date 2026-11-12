@@ -129,7 +129,21 @@ Ràng buộc đầu vào:
 | `includeKeyword` | CSV | Phải có ĐỦ mọi từ khoá (AND) |
 | `excludeKeyword` | CSV | Có bất kỳ từ khoá nào là loại (OR) |
 | `bbox` | `minLng,minLat,maxLng,maxLat` | Chỉ áp dụng khi đủ 4 số hữu hạn |
+| `sort` | `newest` \| `rating` \| `distance` | Kiểu sắp xếp kết quả; giá trị lạ/thiếu → `newest`. **Chỉ áp dụng cho `/places`** — `/places/map` bỏ qua (`sort` không đổi thứ tự pin) |
+| `lat`, `lng` | số thực (−90..90 / −180..180) | Toạ độ người dùng cho `sort=distance`; thiếu/không hữu hạn → `sort=distance` **rơi về `newest`** (không lỗi) |
 | `cursor` | string | Cursor trang kế |
+
+**Sắp xếp (`sort`)** — khoá keyset tương ứng, cursor mang tag `kind`:
+
+| `sort` | ORDER BY | Cursor |
+|---|---|---|
+| `newest` (mặc định) | `created_at DESC, id DESC` | `{kind:"newest", createdAt, id}` |
+| `rating` | `COALESCE(rating,0) DESC, review_count DESC, created_at DESC, id DESC` | `{kind:"rating", rating, reviewCount, createdAt, id}` |
+| `distance` | Haversine tới `lat/lng` ASC, `id ASC`; quán thiếu toạ độ xếp cuối (`NULLS LAST`) | `{kind:"distance", distance, id}` (`distance: null` = dòng cuối thiếu toạ độ) |
+
+- Cursor **cũ** (không tag, dạng `created_at|id`) vẫn đọc được và hiểu là `newest`.
+- Cursor hợp lệ nhưng `kind` khác `sort` hiện tại (người dùng đổi sort, link cũ) → **trả trang đầu**, không 400.
+- Cursor hỏng (base64 sai, thiếu phần, id sai dạng) → `400 {"message":"Cursor không hợp lệ"}`.
 
 `Place` (khớp `placeSchema`):
 

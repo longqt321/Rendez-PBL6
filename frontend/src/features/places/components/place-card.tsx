@@ -23,6 +23,9 @@ export function PlaceCard({ place, distanceKm }: PlaceCardProps) {
         placeholder={place.category}
         height={place.imageHeight}
         alt={placeImageAlt(place)}
+        // Card rộng tối đa ~370 CSS px (3 cột × max-w-6xl) → DPR2 = 740: chọn
+        // 400w mobile (2 cột), 800w desktop; ảnh gốc chỉ cho hero.
+        sizes="(min-width: 768px) 33vw, 50vw"
         className="w-full shrink-0 rounded-t-xl"
       >
         <div className="absolute top-2 left-2 flex flex-wrap gap-1">

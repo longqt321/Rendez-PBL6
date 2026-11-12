@@ -8,6 +8,7 @@ import type { Review } from "@/features/places/types/review"
 import type { Collection, CollectionSummary } from "@/features/collections/types/collection"
 import type { Room, RoomFilter, RoomProposal } from "@/features/rooms/types/room"
 import { categoryLabel } from "@/features/places/lib/category-meta"
+import { calculateDistanceKm } from "@/features/places/lib/danang-districts"
 import { priceLevelLabel } from "@/features/places/lib/price-level"
 import type { Post } from "@/features/social/types/post"
 import type { Comment, CommentSort } from "@/features/social/types/comment"
@@ -226,6 +227,55 @@ function toNotificationDto(notification: AppNotification): AppNotification {
 // ---------------------------------------------------------------------------
 // Nghiệp vụ phía server
 // ---------------------------------------------------------------------------
+
+/**
+ * Sắp xếp kết quả `GET /places` theo `sort` (khớp backend):
+ * - `distance`: Haversine tới người dùng tăng dần, quán thiếu toạ độ cuối —
+ *   dùng CÙNG công thức client `calculateDistanceKm` để thứ tự mock khớp số
+ *   hiển thị trên card.
+ * - `rating`: quán có đánh giá lên đầu (rating giảm), quán 0 review giữ thứ
+ *   tự dataset (= `created_at DESC` của backend).
+ * - Giá trị khác/thiếu → giữ nguyên (newest). `sort=distance` thiếu toạ độ
+ *   hợp lệ → newest (không lỗi), giống backend.
+ */
+function sortPublishedPlaces(items: Place[], sort?: string, lat?: string, lng?: string): Place[] {
+  if (sort === "distance") {
+    const latN = Number(lat)
+    const lngN = Number(lng)
+    const valid =
+      Number.isFinite(latN) &&
+      Number.isFinite(lngN) &&
+      latN >= -90 &&
+      latN <= 90 &&
+      lngN >= -180 &&
+      lngN <= 180
+    if (!valid) return items
+    return [...items].sort((a, b) => {
+      const da =
+        a.lat !== undefined && a.lng !== undefined
+          ? calculateDistanceKm(latN, lngN, a.lat, a.lng)
+          : undefined
+      const db =
+        b.lat !== undefined && b.lng !== undefined
+          ? calculateDistanceKm(latN, lngN, b.lat, b.lng)
+          : undefined
+      if (da === undefined && db === undefined) return 0
+      if (da === undefined) return 1
+      if (db === undefined) return -1
+      return da - db
+    })
+  }
+  if (sort === "rating") {
+    return [...items].sort((a, b) => {
+      const aHas = a.reviewCount > 0
+      const bHas = b.reviewCount > 0
+      if (aHas !== bHas) return aHas ? -1 : 1
+      if (aHas && a.rating !== b.rating) return b.rating - a.rating
+      return 0
+    })
+  }
+  return items
+}
 
 function paginate<T>(items: T[], cursor: string | null, pageSize: number): Page<T> {
   const parsed = cursor === null ? 0 : Number.parseInt(cursor, 10)
@@ -1330,18 +1380,26 @@ const routes: Route[] = [
         excludeDistrict,
         includeKeyword,
         excludeKeyword,
+        sort,
+        lat,
+        lng,
       } = query(config)
       return paginate(
-        listPublishedPlaces({
-          category,
-          district,
-          q,
-          priceMax,
-          excludeCategory,
-          excludeDistrict,
-          includeKeyword,
-          excludeKeyword,
-        }),
+        sortPublishedPlaces(
+          listPublishedPlaces({
+            category,
+            district,
+            q,
+            priceMax,
+            excludeCategory,
+            excludeDistrict,
+            includeKeyword,
+            excludeKeyword,
+          }),
+          sort,
+          lat,
+          lng,
+        ),
         cursor ?? null,
         PLACES_PAGE_SIZE,
       )

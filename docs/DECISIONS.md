@@ -2847,3 +2847,41 @@ Cột `users.email_verified` có từ migration init nhưng luôn `false` — ai
   `docker exec` (không bấm được link trong mail từ e2e); spec luồng xác thực đầy đủ chỉ chạy
   project mock, luồng token thật được phủ ở backend test `test/auth.test.ts`.
 - Người dùng đổi email chưa làm (chưa có tính năng đổi email) — mở lại khi làm.
+
+## D-057: Ảnh responsive cold-start — sinh biến thể WebP lúc build, commit vào repo
+
+**Bối cảnh:** cold transfer `/discover` 3,80 MB; ảnh 1200×900 JPEG trung vị ~271 KB, không
+`srcset` (V6-04 / V2-05). Cần cắt dung lượng không đổi hạ tầng.
+
+**Quyết định:** sinh **2 biến thể WebP (400w/800w)** cho mỗi ảnh cold-start bằng ImageMagick
+(`frontend/scripts/generate-image-variants.sh`, chạy tay khi dataset đổi — không chạy trong
+Docker build), output commit vào `data/cold-start/images/venues/`. `CoverImage` dựng `srcset`
+qua `coldStartSrcSet()` (400w + 800w + ảnh gốc 1200w); `sizes` truyền theo ngữ cảnh (card
+`(min-width: 768px) 33vw, 50vw`, hero `100vw`). Ảnh R2 (người dùng) không srcset — giữ `src` gốc.
+
+**Chặn quên sinh lại:** `scripts/check-image-variants.mjs` chạy trong `pretest` — thiếu biến
+thể fail kèm hướng dẫn.
+
+**Phương án đã xem:** Cloudflare Image Resizing / Worker (trả phí, đổi hạ tầng — bỏ); resize lúc
+upload R2 (cần job hậu kỳ, ghi BACKLOG cho ảnh user); chỉ convert PNG→WebP một kích thước
+(không đạt mục tiêu < 1,5 MB — bỏ).
+
+**Hệ quả:** repo tăng ~3,4 MB (58 file WebP: 400w 864 KB + 800w 2,58 MB); đo được transfer ảnh
+`/discover` giảm 2,61 MB → 0,72 MB (DPR2). Ảnh mới thêm vào dataset phải chạy lại script sinh
+biến thể, nếu không test chặn sẽ fail.
+
+## D-058: `sort` là nguồn sự thật duy nhất cho sắp xếp; `nearby=1` thành alias chỉ-đọc
+
+**Bối cảnh:** "Gần đây" cũ sắp xếp phía client chỉ trong 9 quán đã tải; xoá sort client làm
+link `?nearby=1` mất sắp xếp.
+
+**Quyết định:** `GET /places` nhận `sort=distance` (+ `lat/lng`) — server sắp trên toàn bộ kết
+ quả. `isNearbyActive` là giá trị suy ra (`sort === "distance"`); link `?nearby=1` đọc vào map
+ sang `sort=distance` rồi bị xoá khỏi URL (chuẩn hoá `replace`). Tắt "Gần đây" luôn về
+ `newest` (không nhớ sort cũ). Cursor có tag `kind`; cursor hợp lệ nhưng `kind` ≠ `sort` →
+ trang đầu (ngoại lệ có chủ đích với nguyên tắc "decode sai → 400" — decode ĐÚNG nhưng ngữ
+ cảnh đổi, xem comment `lib/cursor.ts`).
+
+**Hệ quả:** query key của `useDiscoverPlaces` phải chứa `sort`, `priceMax` cá nhân và toạ độ
+làm tròn 4 chữ số (chống GPS jitter); thiếu một trong các trường này là card nhân đôi khi đổi
+sort. Toạ độ được ghi lên URL khi `sort=distance` để link chia sẻ tái tạo đúng thứ tự.

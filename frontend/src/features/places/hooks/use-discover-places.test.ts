@@ -1,6 +1,7 @@
 import { act } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
-import { useDiscoverPlaces } from "./use-discover-places"
+import { discoverQueryKey, useDiscoverPlaces } from "./use-discover-places"
+import { placesQueryParams } from "../api/get-places"
 import type { PlaceCategory } from "../types/place"
 import { renderWithQuery, waitForQuery } from "@/test/query-test-utils"
 
@@ -55,5 +56,98 @@ describe("useDiscoverPlaces", () => {
     for (const place of secondPage?.items ?? []) {
       expect(firstIds.has(place.id)).toBe(false)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Query key phải chứa sort/priceMax/toạ độ (thiết kế mục 4.3.1) — thiếu một
+// trường là react-query nối trang 1 vào `pages` cũ → card nhân đôi khi đổi sort.
+// ---------------------------------------------------------------------------
+describe("discoverQueryKey", () => {
+  const base = { category: "all" as const, query: "" }
+
+  it("đổi sort → key khác", () => {
+    expect(discoverQueryKey({ ...base, sort: "rating" })).not.toEqual(
+      discoverQueryKey({ ...base, sort: "newest" }),
+    )
+    expect(discoverQueryKey({ ...base, sort: "distance" })).not.toEqual(
+      discoverQueryKey({ ...base, sort: "rating" }),
+    )
+  })
+
+  it("đổi priceMax cá nhân → key khác", () => {
+    expect(discoverQueryKey({ ...base, priceMax: 2 })).not.toEqual(
+      discoverQueryKey({ ...base, priceMax: 3 }),
+    )
+    expect(discoverQueryKey({ ...base, priceMax: 2 })).not.toEqual(discoverQueryKey(base))
+  })
+
+  it("toạ độ nhích < 0,0001° → key KHÔNG đổi (chống GPS jitter)", () => {
+    const a = discoverQueryKey({
+      ...base,
+      sort: "distance",
+      coords: { lat: 16.06123, lng: 108.22123 },
+    })
+    const b = discoverQueryKey({
+      ...base,
+      sort: "distance",
+      coords: { lat: 16.06124, lng: 108.22124 },
+    })
+    expect(a).toEqual(b)
+  })
+
+  it("toạ độ khác ≥ 4 chữ số thập phân → key khác", () => {
+    const a = discoverQueryKey({
+      ...base,
+      sort: "distance",
+      coords: { lat: 16.0612, lng: 108.2212 },
+    })
+    const b = discoverQueryKey({
+      ...base,
+      sort: "distance",
+      coords: { lat: 16.0712, lng: 108.2212 },
+    })
+    expect(a).not.toEqual(b)
+  })
+})
+
+describe("placesQueryParams", () => {
+  it("phòng có priceMax thắng filter giá cá nhân", () => {
+    const params = placesQueryParams({
+      category: "all",
+      query: "",
+      priceMax: 1,
+      room: {
+        categories: [],
+        excludedCategories: [],
+        districts: [],
+        excludedDistricts: [],
+        includeKeywords: [],
+        excludeKeywords: [],
+        priceMax: 3,
+      },
+    })
+    expect(params.priceMax).toBe(3)
+  })
+
+  it("sort=distance gửi kèm lat/lng; sort khác không gửi toạ độ", () => {
+    const distance = placesQueryParams({
+      category: "all",
+      query: "",
+      sort: "distance",
+      coords: { lat: 16.06, lng: 108.22 },
+    })
+    expect(distance.sort).toBe("distance")
+    expect(distance.lat).toBe(16.06)
+    expect(distance.lng).toBe(108.22)
+
+    const newest = placesQueryParams({
+      category: "all",
+      query: "",
+      sort: "newest",
+      coords: { lat: 16.06, lng: 108.22 },
+    })
+    expect(newest.sort).toBeUndefined()
+    expect(newest.lat).toBeUndefined()
   })
 })

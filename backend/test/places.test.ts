@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { dailyPicksSchema, pageSchema, placeSchema, postSchema } from "@rendez/schema"
+import { Prisma } from "../generated/prisma/client"
 import { startTestDb, stopTestDb } from "./helpers/pg"
+import { registerVerifiedUser } from "./helpers/auth"
 
 /**
  * Integration test Phase 2 — địa điểm trên Postgres thật + dataset seed 491.
@@ -430,5 +432,210 @@ describe("Daily Picks (Gợi ý hôm nay)", () => {
     expect(res.status).toBe(200)
     const body = (await res.json()) as { items: unknown[] }
     expect(body.items).toEqual([])
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Sắp xếp kết quả (sort) — thiết kế "Lọc theo giá + Sắp xếp + Ảnh responsive"
+// ---------------------------------------------------------------------------
+
+/** Dòng place đủ trường cho test sort (lat/lng/rating/reviewCount). */
+interface SortPlaceJson extends PlaceJson {
+  rating: number
+  reviewCount: number
+  lat?: number
+  lng?: number
+}
+interface SortPageJson {
+  items: SortPlaceJson[]
+  next: string | null
+}
+
+/** Công thức client (`calculateDistanceKm` — atan2 Haversine) để so 2 implementation. */
+function clientDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2)
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+describe("GET /places — sort", () => {
+  const LAT = 16.06
+  const LNG = 108.22
+
+  /** Đi hết các trang của một query — trả danh sách id theo thứ tự trả về. */
+  async function collectAll(query: string): Promise<string[]> {
+    const ids: string[] = []
+    let cursor: string | null = null
+    for (let guard = 0; guard < 200; guard++) {
+      const path: string = `/api/v1/places?${query}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`
+      const page: SortPageJson = await getJson<SortPageJson>(path)
+      ids.push(...page.items.map((item) => item.id))
+      cursor = page.next
+      if (!cursor) return ids
+    }
+    throw new Error("collectAll vượt quá 200 trang — phân trang có thể lặp vô hạn")
+  }
+
+  test("sort lạ → newest (thứ tự giống không sort)", async () => {
+    const plain = await getJson<SortPageJson>("/api/v1/places")
+    const weird = await getJson<SortPageJson>("/api/v1/places?sort=tuyet-voi")
+    expect(weird.items.map((item) => item.id)).toEqual(plain.items.map((item) => item.id))
+  })
+
+  test("sort=distance thiếu lat/lng → newest (không 400)", async () => {
+    const plain = await getJson<SortPageJson>("/api/v1/places")
+    const noCoords = await getJson<SortPageJson>("/api/v1/places?sort=distance")
+    expect(noCoords.items.map((item) => item.id)).toEqual(plain.items.map((item) => item.id))
+
+    // Toạ độ ngoài miền (lat > 90) cũng rơi về newest.
+    const outOfRange = await getJson<SortPageJson>("/api/v1/places?sort=distance&lat=999&lng=0")
+    expect(outOfRange.items.map((item) => item.id)).toEqual(plain.items.map((item) => item.id))
+  })
+
+  test("sort=distance: tăng dần, khớp công thức client, đi hết trang không trùng/sót", async () => {
+    const ids = await collectAll(`sort=distance&lat=${LAT}&lng=${LNG}`)
+
+    // Đủ mọi place đã publish, không trùng.
+    const total = await prisma.place.count({
+      where: { publishedAt: { not: null }, deletedAt: null },
+    })
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(ids.length).toBe(total)
+
+    // Thứ tự tăng dần theo công thức CLIENT (sai số cho phép 0,01 km).
+    // Lấy toạ độ qua các trang để so khoảng cách.
+    let cursor: string | null = null
+    const coords: { lat?: number; lng?: number }[] = []
+    for (let guard = 0; guard < 200; guard++) {
+      const path: string = `/api/v1/places?sort=distance&lat=${LAT}&lng=${LNG}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`
+      const page: SortPageJson = await getJson<SortPageJson>(path)
+      for (const item of page.items) coords.push({ lat: item.lat, lng: item.lng })
+      cursor = page.next
+      if (!cursor) break
+    }
+
+    let previous = -1
+    for (const { lat, lng } of coords) {
+      // Quán thiếu toạ độ xếp cuối — dataset publish đủ toạ độ nên chỉ kiểm khi có.
+      if (lat === undefined || lng === undefined) continue
+      const distance = clientDistanceKm(LAT, LNG, lat, lng)
+      expect(distance).toBeGreaterThanOrEqual(previous - 0.01)
+      previous = distance
+    }
+  })
+
+  test("Haversine SQL khớp công thức client (sai số < 0,01 km)", async () => {
+    const place = await prisma.place.findFirst({
+      where: {
+        publishedAt: { not: null },
+        deletedAt: null,
+        lat: { not: null },
+        lng: { not: null },
+      },
+      select: { id: true, lat: true, lng: true },
+    })
+    if (!place) return
+
+    const rows = await prisma.$queryRaw<{ d: number }[]>(Prisma.sql`
+      SELECT (6371 * acos(least(1, greatest(-1,
+        cos(radians(${LAT})) * cos(radians(p.lat)) * cos(radians(p.lng) - radians(${LNG}))
+        + sin(radians(${LAT})) * sin(radians(p.lat))
+      )))) AS d
+      FROM places p WHERE p.id = ${place.id}
+    `)
+    const sqlKm = Number(rows[0]!.d)
+    const clientKm = clientDistanceKm(LAT, LNG, place.lat!, place.lng!)
+    expect(Math.abs(sqlKm - clientKm)).toBeLessThan(0.01)
+  })
+
+  test("sort=rating: quán có đánh giá lên đầu, 0 review xuống cuối; keyset ổn định", async () => {
+    // Tạo 2 đánh giá thật (qua helper auth — review cần authorId uuid hợp lệ).
+    const user = await registerVerifiedUser(app, prisma, {
+      name: "Người Sort",
+      handle: `sort_rating_${Math.random().toString(36).slice(2, 8)}`,
+    })
+    const targets = await prisma.place.findMany({
+      where: { publishedAt: { not: null }, deletedAt: null },
+      select: { id: true },
+      orderBy: { id: "asc" },
+      take: 2,
+    })
+    await prisma.review.create({
+      data: { placeId: targets[0]!.id, authorId: user.id, rating: 5, content: "test" },
+    })
+    await prisma.review.create({
+      data: { placeId: targets[1]!.id, authorId: user.id, rating: 3, content: "test" },
+    })
+
+    const ids = await collectAll("sort=rating")
+    expect(new Set(ids).size).toBe(ids.length)
+
+    // Trang đầu: quán 5 sao đứng nhất, quán 3 sao nhì.
+    expect(ids[0]).toBe(targets[0]!.id)
+    expect(ids[1]).toBe(targets[1]!.id)
+
+    // Mọi quán có reviewCount > 0 đứng trước quán 0 review.
+    let cursor: string | null = null
+    const pages: SortPageJson[] = []
+    for (let guard = 0; guard < 200; guard++) {
+      const path: string = `/api/v1/places?sort=rating${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`
+      const page: SortPageJson = await getJson<SortPageJson>(path)
+      pages.push(page)
+      cursor = page.next
+      if (!cursor) break
+    }
+    const flat = pages.flatMap((page) => page.items)
+    const firstZero = flat.findIndex((item) => item.reviewCount === 0)
+    if (firstZero >= 0) {
+      for (let index = firstZero; index < flat.length; index++) {
+        expect(flat[index]!.reviewCount).toBe(0)
+      }
+    }
+  })
+
+  test("keyset distance với quán thiếu toạ độ: quán NULL xuất hiện ở trang cuối", async () => {
+    // Dataset publish không có quán thiếu toạ độ — tạo riêng cho nhánh NULL.
+    await prisma.place.create({
+      data: {
+        id: `test-null-coords-${Math.random().toString(36).slice(2, 8)}`,
+        name: "Quán Không Toạ Độ",
+        address: "Đà Nẵng",
+        category: "cafe",
+        publishedAt: new Date(),
+        // lat/lng để trống — đúng nhánh `distance IS NULL`.
+      },
+    })
+
+    const ids = await collectAll("sort=distance&lat=16.06&lng=108.22")
+    const nullPlaceIndex = ids.findIndex((id) => id.startsWith("test-null-coords-"))
+    expect(nullPlaceIndex).toBeGreaterThan(-1)
+    // Quán thiếu toạ độ xếp sau mọi quán có toạ độ → chỉ đứng sau các quán NULL khác.
+    expect(nullPlaceIndex).toBe(ids.length - 1)
+  })
+
+  test("cursor kind khác sort → trả trang đầu (không 400)", async () => {
+    const ratingFirst = await getJson<SortPageJson>("/api/v1/places?sort=rating")
+    // Dùng cursor của sort=rating cho sort=newest — phải trả trang đầu của newest.
+    const mixed = await getJson<SortPageJson>(`/api/v1/places?cursor=${ratingFirst.next}`)
+    const plain = await getJson<SortPageJson>("/api/v1/places")
+    expect(mixed.items.map((item) => item.id)).toEqual(plain.items.map((item) => item.id))
+  })
+
+  test("cursor cũ không kind (created_at|id) vẫn đọc được với sort=newest", async () => {
+    // Cursor legacy: created_at tương lai + id lớn → keyset không loại dòng nào
+    // → trả trang đầu giống không cursor.
+    const legacy = Buffer.from(`${new Date("2999-01-01").toISOString()}|zzzz`, "utf8").toString(
+      "base64url",
+    )
+    const legacyPage = await getJson<SortPageJson>(`/api/v1/places?cursor=${legacy}`)
+    const plain = await getJson<SortPageJson>("/api/v1/places")
+    expect(legacyPage.items.map((item) => item.id)).toEqual(plain.items.map((item) => item.id))
   })
 })

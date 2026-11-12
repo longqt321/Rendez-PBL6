@@ -1,6 +1,12 @@
 import { Hono } from "hono"
 import type { AppEnv } from "../app"
-import { SLUG_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
+import {
+  SLUG_ID_RE,
+  decodeCursor,
+  decodePlaceCursor,
+  encodeCursor,
+  encodePlaceCursor,
+} from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import {
   findPublicPlace,
@@ -48,13 +54,17 @@ export function createPlacesRouter() {
   router.get("/places", async (c) => {
     const filters = parsePlaceFilters(c.req.query())
     const rawCursor = c.req.query("cursor")
-    const cursor = rawCursor ? decodeCursor(rawCursor) : null
-    if (rawCursor && !cursor) {
+    const decoded = rawCursor ? decodePlaceCursor(rawCursor) : null
+    if (rawCursor && !decoded) {
       throw new ApiError(400, "Cursor không hợp lệ")
     }
+    // Cursor hợp lệ nhưng thuộc kiểu sắp xếp khác (đổi sort / link cũ) → trả
+    // trang đầu thay vì 400: đổi sort là hành động hợp lệ, không được làm vỡ
+    // trang. Xem comment ngoại lệ trong `lib/cursor.ts`.
+    const cursor = decoded && decoded.kind === filters.sort ? decoded : null
 
     const page = await listPlaces(filters, cursor, PLACES_PAGE_SIZE)
-    return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
+    return c.json({ items: page.items, next: page.next ? encodePlaceCursor(page.next) : null })
   })
 
   // Đứng trước `/places/:id` — nếu không `:id` sẽ nuốt cả "map"/"saved"/"suggestions".

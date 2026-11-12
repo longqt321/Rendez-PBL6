@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import {
+  ArrowUpDownIcon,
   LayoutGridIcon,
   ListFilterIcon,
   LocateFixedIcon,
@@ -9,6 +10,13 @@ import {
   UsersIcon,
   XIcon,
 } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Alert, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,6 +42,21 @@ const CATEGORY_TABS: { value: PlaceCategory | "all"; label: string }[] = [
   })),
 ]
 
+/** Nhóm "Mức giá" — nghĩa là TỐI ĐA (khớp `priceMax <=` của backend). */
+const PRICE_TABS: { value: "all" | "1" | "2" | "3"; label: string; aria: string }[] = [
+  { value: "all", label: "Tất cả", aria: "Không lọc mức giá" },
+  { value: "1", label: "₫", aria: "Mức giá tối đa 1 (bình dân)" },
+  { value: "2", label: "₫₫", aria: "Mức giá tối đa 2 (trung bình)" },
+  { value: "3", label: "₫₫₫", aria: "Mức giá tối đa 3 (cao cấp)" },
+]
+
+/** Nhãn ngắn của kiểu sắp xếp — hiện trên nút Select. */
+const SORT_LABELS: Record<"newest" | "rating" | "distance", string> = {
+  newest: "Mới nhất",
+  rating: "Đánh giá cao",
+  distance: "Gần tôi",
+}
+
 interface DiscoverToolbarProps {
   view: DiscoverView
   /** Chế độ đang xem — quyết định nút nào sáng trong cụm chuyển Lưới/Bản đồ. */
@@ -51,7 +74,15 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const [joinOpen, setJoinOpen] = useState(false)
+  const [sortOpen, setSortOpen] = useState(false)
   const { filters, room } = view
+
+  // Heuristic client trên dữ liệu ĐÃ TẢI (không cần API mới): dữ liệu thật hiện
+  // toàn `priceLevel = 1` và ~0 review, nên nhóm giá / option rating phải
+  // disabled + chú thích thay vì "giả vờ" có tác dụng. Tự bật khi corpus được
+  // làm giàu (V2-03).
+  const hasPriceVariety = view.placesWithDistance.some(({ place }) => place.priceLevel > 1)
+  const hasRatings = view.placesWithDistance.some(({ place }) => place.reviewCount > 0)
 
   function switchMode(next: "grid" | "map") {
     if (next === mode) return
@@ -66,6 +97,25 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
       filters.setIsNearbyActive(true)
       void view.requestLocation()
     }
+  }
+
+  /**
+   * Đổi sort từ Select. Chọn "Gần tôi" = bật chế độ "Gần đây" (xin quyền vị
+   * trí) — CÙNG một đường ghi `setSort` với toggle, không có state song song
+   * (thiết kế mục 2.2.1: `sort` là nguồn sự thật duy nhất).
+   */
+  function handleSortChange(value: string) {
+    // Base UI không tự đóng menu khi chọn radio item → đóng thủ công để menu
+    // không che toolbar sau khi đổi sort.
+    setSortOpen(false)
+    if (value === "distance") {
+      if (filters.isNearbyActive) return
+      filters.setSort("distance")
+      void view.requestLocation()
+      return
+    }
+    filters.setSort(value === "rating" ? "rating" : "newest")
+    if (filters.isNearbyActive) view.clearLocation()
   }
 
   return (
@@ -174,6 +224,46 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
                 </ToggleGroup>
               </div>
 
+              <div className="flex flex-col gap-2 pt-2">
+                <FieldTitle className="text-sm font-semibold text-muted-foreground">
+                  Mức giá
+                </FieldTitle>
+                {/* "Tối đa" chứ không phải "đúng mức" — khớp `priceMax <=` của backend. */}
+                <ToggleGroup
+                  value={[String(filters.priceMax)]}
+                  onValueChange={(next) => {
+                    const selected = next[0] as "all" | "1" | "2" | "3" | undefined
+                    if (selected) {
+                      filters.setPriceMax(
+                        selected === "all" ? "all" : (Number(selected) as 1 | 2 | 3),
+                      )
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  aria-label="Lọc theo mức giá"
+                  disabled={!hasPriceVariety}
+                  aria-describedby={hasPriceVariety ? undefined : "discover-price-empty-note"}
+                  className="flex-wrap"
+                >
+                  {PRICE_TABS.map((tab) => (
+                    <ToggleGroupItem
+                      key={tab.value}
+                      value={tab.value}
+                      aria-label={tab.aria}
+                      className="h-7 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+                    >
+                      {tab.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+                {!hasPriceVariety ? (
+                  <p id="discover-price-empty-note" className="text-xs text-muted-foreground">
+                    Chưa có dữ liệu phân mức giá — sẽ bật khi quán được cập nhật giá.
+                  </p>
+                ) : null}
+              </div>
+
               {filters.activeFilterCount > 0 ? (
                 <Button
                   variant="ghost"
@@ -237,6 +327,29 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
         ) : null}
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Sắp xếp: giá trị đọc/ghi URL qua useDiscoverFilters (`sort`). */}
+          <DropdownMenu open={sortOpen} onOpenChange={setSortOpen}>
+            <DropdownMenuTrigger
+              render={<Button variant="outline" size="sm" aria-label="Sắp xếp kết quả" />}
+            >
+              <ArrowUpDownIcon className="size-3.5" />
+              <span className="hidden text-xs sm:inline">Sắp xếp:</span>
+              <span className="text-xs">{SORT_LABELS[filters.sort]}</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuRadioGroup value={filters.sort} onValueChange={handleSortChange}>
+                <DropdownMenuRadioItem value="newest">Mới nhất</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="rating" disabled={!hasRatings}>
+                  Đánh giá cao
+                  {!hasRatings ? (
+                    <span className="ml-auto text-xs text-muted-foreground">Chưa có đánh giá</span>
+                  ) : null}
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="distance">Gần tôi</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <ToggleGroup
             value={[mode]}
             onValueChange={(value) => {

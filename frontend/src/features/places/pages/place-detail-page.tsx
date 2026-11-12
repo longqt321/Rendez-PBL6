@@ -108,6 +108,9 @@ export function PlaceDetailPage() {
           height={280}
           className="w-full rounded-t-xl"
           alt={placeImageAlt(place)}
+          // Hero chiếm toàn chiều rộng khung nội dung → 100vw; ưu tiên LCP.
+          sizes="100vw"
+          priority
         />
 
         <CardContent className="flex flex-col gap-2 p-4">
