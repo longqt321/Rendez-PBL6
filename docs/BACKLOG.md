@@ -519,7 +519,7 @@ lịch sử; không còn việc mở ở đây.
 - [x] **V3-01 (chặn luồng follow)**: API JSON trả `Cache-Control: private, max-age=15` —
       bấm "Theo dõi" xong refetch ăn disk cache 15s → nút + số đếm không đổi, người dùng
       bấm lại thành unfollow. API nên `no-store` (chỉ cache GET công khai như /places/:id).
-- [ ] **V3-02 (lớn)**: không có cách tìm người để theo dõi — không user directory/search user;
+- [x] **V3-02 (lớn)**: không có cách tìm người để theo dõi — không user directory/search user;
       tên tác giả trên card là link tới bài chứ không phải hồ sơ; empty state tab "Đang theo
       dõi" không có CTA.
 - [ ] **V3-03 (lớn)**: không sửa/xoá được bài của mình (không menu, không API), không ghim
