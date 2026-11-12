@@ -72,7 +72,7 @@ khảo sát thực tế), 258 điểm còn lại lấy từ OpenStreetMap qua pi
 `backend/scripts/build-corpus`. Bộ dữ liệu thô ban đầu có 3.202 điểm, được lọc xuống 344 theo tiêu
 chí “địa điểm nổi bật”: phải có ít nhất hai tín hiệu kinh doanh thật, loại bỏ các tiện ích nhỏ lẻ
 và giới hạn ba chi nhánh cho mỗi thương hiệu. Quá trình lọc được ghi lại trong
-`docs/ai/filter-funnel.md`. Ngoài ra có 29 ảnh cho 20 địa điểm.
+`docs/ai/filter-funnel.md`. Ngoài ra có 29 ảnh cold-start cho các địa điểm tiêu biểu (87 tệp trên đĩa gồm 58 biến thể WebP).
 
 Về phạm vi kỹ thuật, đồ án tập trung vào backend và cơ sở dữ liệu. Giao diện frontend đã được
 hoàn thiện trước và em dùng nó làm đặc tả hành vi cho API, không sửa giao diện để cho backend dễ
@@ -118,11 +118,11 @@ Hệ thống phục vụ ba nhóm người dùng với nhu cầu khác nhau:
 
 ### 1.2. Yêu cầu chức năng
 
-1. **Xác thực:** đăng ký bằng email và mật khẩu, đăng nhập, đăng xuất, quên và đặt lại mật khẩu,
-   xem và sửa hồ sơ, xoá tài khoản.
+1. **Xác thực:** đăng ký bằng email và mật khẩu, bắt buộc xác thực email trước khi đăng nhập, đăng
+   xuất, quên và đặt lại mật khẩu, xem và sửa hồ sơ, xoá tài khoản.
 2. **Địa điểm:** danh sách có lọc theo từ khoá không dấu, loại hình, khu vực, mức giá và trạng
-   thái; phân trang; bản đồ theo khung nhìn; gợi ý địa điểm theo nội dung đang soạn; chi tiết kèm
-   ảnh và đánh giá.
+   thái; sắp xếp theo mới nhất, đánh giá cao hoặc gần tôi; phân trang; bản đồ theo khung nhìn; gợi
+   ý địa điểm theo nội dung đang soạn; chi tiết kèm ảnh và đánh giá.
 3. **Đánh giá và báo cáo:** mỗi người một đánh giá cho mỗi địa điểm, sửa thì ghi đè; báo cáo sai
    thông tin, quán đã đóng cửa hoặc trùng lặp, có chống gửi trùng.
 4. **Bài đăng:** tạo bài kèm tối đa bốn ảnh và địa điểm tuỳ chọn; like, lưu, bình luận có trả lời,
@@ -136,6 +136,10 @@ Hệ thống phục vụ ba nhóm người dùng với nhu cầu khác nhau:
 8. **Phòng lọc nhóm:** tạo phòng với mã sáu ký tự, tham gia bằng mã mà không bắt buộc tài khoản,
    đề xuất tiêu chí, áp dụng hoặc bỏ qua, rời phòng, đồng bộ tức thời qua SSE.
 9. **Ảnh:** xin URL tải lên có chữ ký (presigned PUT) tới Cloudflare R2.
+10. **Gợi ý hôm nay:** mỗi ngày hệ thống tự chọn ba quán gợi ý hiển thị trên trang khám phá.
+11. **Kết nối xã hội:** gợi ý người nên theo dõi dựa trên dữ liệu công khai; tìm kiếm người dùng.
+12. **Chia sẻ:** khi dán link bài đăng hoặc địa điểm lên mạng xã hội, nền tảng hiển thị đúng tên,
+    ảnh và mô tả qua thẻ Open Graph.
 
 ### 1.3. Yêu cầu phi chức năng
 
@@ -174,12 +178,12 @@ flowchart LR
   end
   subgraph API["Backend Hono :8000"]
     MW["Middleware<br/>requestId · CORS · secure headers · body limit · rate limit"]
-    RT["Routes /api/v1<br/>auth · places · posts · reviews · collections · users · rooms · notifications · media"]
+    RT["Routes /api/v1<br/>auth · places · posts · reviews · collections · users · rooms · notifications · media · og"]
     LIB["Lớp nghiệp vụ<br/>lib/places · posts · collections · users · rooms · notifications"]
-    JOB["pg-boss worker<br/>place-detect (cron 5 phút)"]
+    JOB["pg-boss worker<br/>place-detect (cron 5 phút) · daily-picks (00:05)"]
   end
   subgraph Data["Dữ liệu"]
-    PG[("PostgreSQL 17<br/>25 bảng")]
+    PG[("PostgreSQL 17<br/>27 bảng")]
     R2[("Cloudflare R2<br/>ảnh người dùng")]
   end
   UI --> Vite --> MW --> RT --> LIB --> PG
@@ -239,7 +243,7 @@ cần tên hiển thị, điều này giảm ma sát khi cả nhóm đang đứn
 
 ### 2.2. Thiết kế cơ sở dữ liệu
 
-Cơ sở dữ liệu gồm 25 bảng, trong đó 21 bảng nghiệp vụ và 4 bảng do better-auth quản lý
+Cơ sở dữ liệu gồm 27 bảng, trong đó 22 bảng nghiệp vụ và 4 bảng do better-auth quản lý
 (`sessions`, `accounts`, `verifications` và một phần `users`). Ngoài ra còn bảng
 `_prisma_migrations` của công cụ migration. Các bảng được chia thành bốn vùng: người dùng và xác
 thực, địa điểm và đánh giá, nội dung xã hội, phòng lọc nhóm và thông báo.
@@ -427,6 +431,12 @@ brute-force mà không cần Redis. `idempotency_keys` lưu kết quả của c�
 cặp `(key, user_id)` để chống tạo trùng khi mạng chập chờn. Cả hai đều là bảng phụ, không tham gia
 vào quan hệ nghiệp vụ.
 
+Bảng `daily_picks` lưu ba quán được chọn cho mỗi ngày, gồm `pick_date`, `position`, `place_id` và
+`reason`. Hai ràng buộc unique `(pick_date, position)` và `(pick_date, place_id)` đóng vai trò
+idempotence cho job chọn quán: chạy lại hay hai worker chen nhau đều không sinh thêm slot và không
+lặp quán trong cùng một ngày. Khoá ngoại tới `places` để `RESTRICT` để xoá địa điểm không âm thầm
+làm mất lịch sử gợi ý.
+
 ### 2.3. Thiết kế hợp đồng API
 
 Hợp đồng API được trích từ mock server của frontend và chuyển thành gói `packages/schema` dùng
@@ -442,14 +452,14 @@ chung cho cả hai phía. Các quyết định thiết kế chính:
 | D6  | Lỗi luôn có dạng `{ "message": string }`                         | Frontend hiển thị trực tiếp, không lộ chi tiết nội bộ        |
 | D7  | Monorepo Bun workspaces                                         | Chia sẻ schema, chạy một lệnh cho cả hai phía                |
 
-Backend có 48 route nghiệp vụ tự viết, thêm 2 route health check và một mount `/auth/*` cho
-better-auth. Bảng dưới nhóm các route theo chức năng:
+Backend có 56 route handler, thêm mount `/auth/*` cho better-auth. Bảng dưới nhóm các route theo
+chức năng:
 
 | Nhóm                  | Số route | Ví dụ                                                                                                    |
 | --------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
 | Hạ tầng               | 2        | `GET /healthz`, `GET /readyz`                                                                            |
 | Xác thực và hồ sơ     | 6        | `POST /register`, `POST /session`, `DELETE /session`, `GET/PATCH/DELETE /me`, quên và đặt lại mật khẩu   |
-| Địa điểm              | 6        | `GET /places`, `/places/map`, `/places/suggestions`, `/places/:id`, `/places/:id/posts`, `/places/saved` |
+| Địa điểm              | 6        | `GET /places`, `/places/map`, `/places/suggestions`, `/places/daily-picks`, `/places/:id`, `/places/:id/posts`, `/places/saved` |
 | Đánh giá và báo cáo   | 3        | `GET/POST /places/:id/reviews`, `POST /places/:id/reports`                                               |
 | Bài đăng và bình luận | 10       | `GET/POST /posts`, like, save, gắn địa điểm, comments, like comment, xoá comment                         |
 | Bộ sưu tập            | 8        | CRUD, `PATCH /collections/:id/places`, like                                                              |
@@ -457,6 +467,7 @@ better-auth. Bảng dưới nhóm các route theo chức năng:
 | Thông báo             | 4        | `GET /notifications`, đánh dấu đã đọc, đọc tất cả, `GET /notifications/events` (SSE)                     |
 | Phòng lọc nhóm        | 8        | tạo, xem, join, proposal, apply, dismiss, rời phòng, SSE                                                 |
 | Media                 | 1        | `POST /media` (presigned PUT)                                                                            |
+| Chia sẻ (Open Graph)  | 2        | `GET /og/place/:id`, `GET /og/post/:id` (HTML meta cho bot mạng xã hội)                                  |
 
 ### 2.4. Thiết kế bảo mật
 
@@ -471,7 +482,8 @@ người xem để tính `isMine` hoặc `likedByMe` mà không rò rỉ dữ li
 người khác trả 404 chứ không trả 403, vì trả 403 sẽ tiết lộ sự tồn tại của tài nguyên.
 
 **Chống lạm dụng.** Rate limit theo IP áp cho đăng nhập và đăng ký (20 request mỗi phút), theo
-người dùng áp cho tải ảnh (10 mỗi giờ) và đăng bài (30 mỗi giờ). Body bị giới hạn ở 1 MB. Khi vượt
+người dùng áp cho tải ảnh (10 mỗi giờ), đăng bài (30 mỗi giờ), like (30 mỗi phút), bình luận (10
+mỗi phút) và theo dõi (20 mỗi phút). Body bị giới hạn ở 1 MB. Khi vượt
 ngưỡng, response trả 429 kèm header `Retry-After`.
 
 **Truy vấn và header.** Mọi truy vấn dùng tham số hoá qua `Prisma.sql`, không nối chuỗi. Response
@@ -503,12 +515,12 @@ flowchart TB
   SRC --> R["routes/ (10 file)"]
   SRC --> L["lib/ (truy vấn và nghiệp vụ)"]
   SRC --> I["app.ts · server.ts · env.ts"]
-  BE --> PR["prisma/schema.prisma + 14 migration"]
-  BE --> T["test/ (20 file, 185 test)"]
+  BE --> PR["prisma/schema.prisma + 18 migration"]
+  BE --> T["test/ (25 file, 256 test)"]
   BE --> SC["scripts/seed.ts"]
 ```
 
-Backend có 40 file TypeScript trong `src/`, khoảng 5.400 dòng. Nguyên tắc xuyên suốt là route mỏng
+Backend có 45 file TypeScript trong `src/`, khoảng 7.200 dòng. Nguyên tắc xuyên suốt là route mỏng
 và lib dày: route lo kiểm tra đầu vào và mã HTTP, mọi truy vấn nằm trong `lib/` để tái sử dụng và
 dễ kiểm thử.
 
@@ -776,6 +788,56 @@ Nhóm thứ sáu là hai tính năng nối tiếp phần backend còn thiếu so
 (tối đa bốn ảnh, lưu ở bảng `post_images`) và phòng lọc nhóm dùng API thật thay cho bản demo lưu
 trong localStorage trước đây.
 
+### 3.12. Các tính năng mở rộng hoàn thiện trải nghiệm
+
+Sau khi các luồng chính chạy được với dữ liệu thật, em bổ sung thêm sáu nhóm tính năng để hệ thống
+gần hơn với một sản phẩm có người dùng thật, chứ không chỉ là một API đúng đặc tả.
+
+**Gợi ý hôm nay.** Trang khám phá cần một điểm nhấn mỗi ngày thay vì chỉ là một lưới địa điểm tĩnh.
+Mỗi ngày, job nền pg-boss `daily-picks` chạy lúc 00:05 giờ Việt Nam (ngay sau mốc đổi ngày, cấu hình
+`missed: "once"` để server downtime qua mốc thì chạy bù một lần khi lên) chọn ba quán gợi ý và ghi
+vào bảng `daily_picks`. Job ưu tiên quán có ảnh thật, vì gợi ý kèm ảnh trực quan hơn hẳn gợi ý chỉ
+có tên. Toàn bộ ba slot được ghi trong một transaction: nếu job chết giữa chừng thì không có dữ
+liệu nửa vời của ngày đó, và job chạy lại không sinh bản ghi trùng nhờ hai ràng buộc unique
+`(pick_date, position)` và `(pick_date, place_id)`. Em đã kiểm chứng hành vi này bằng một trigger
+Postgres cố tình báo lỗi giữa giao dịch trong test, xác nhận bảng không còn dòng nào sau rollback.
+Ở phía giao diện, nếu ngày đó không chọn được quán nào thì dải gợi ý được thu gọn im lặng thay vì
+hiển thị một khối rỗng phá vỡ bố cục trang.
+
+**Tìm người và gợi ý theo dõi.** Ngoài tìm kiếm người dùng theo tên và handle, hệ thống gợi ý tối
+đa năm người nên theo dõi dựa trên ba tín hiệu: từng cùng đánh giá một quán, theo dõi chéo (người
+đó theo dõi mình nhưng mình chưa follow lại) và hoạt động trong 30 ngày gần nhất. Toàn bộ chỉ dùng
+dữ liệu công khai, không rò rỉ thông tin riêng tư. Vì truy vấn ứng viên có thể quét toàn bảng khi
+người dùng nhiều, em chặn pool ứng viên ở 500 người mới nhất trước khi chấm điểm, và bổ sung index
+`reviews(author_id)` cho subquery tương quan theo tác giả đánh giá. Số liệu đếm cho cả trang được
+tính bằng một lượt `GROUP BY` thay vì truy vấn từng người, tránh N+1.
+
+**Chia sẻ và preview trên mạng xã hội.** Ứng dụng là SPA, nên khi dán link bài đăng hoặc địa điểm
+lên Facebook, Zalo hay Messenger, bot của các nền tảng này nhận về một trang HTML trống không có
+nội dung để tạo bản xem trước. Em bổ sung hai route `/og/place/:id` và `/og/post/:id`: khi request
+đến từ bot, server trả về HTML chứa thẻ meta Open Graph (tên, ảnh, mô tả) thay vì SPA. Ảnh trong
+thẻ kèm tham số phiên bản, nhờ vậy khi ảnh thay đổi thì nền tảng tải bản mới thay vì dùng bản đã
+cache cũ.
+
+**Lọc mức giá và sắp xếp server-side.** Danh sách địa điểm nhận thêm lọc `priceLevel` và ba kiểu
+sắp xếp: mới nhất, đánh giá cao và gần tôi. Cả ba đều dùng phân trang keyset, mỗi kiểu một dạng
+cursor riêng (mới nhất theo `(created_at, id)`, đánh giá cao theo `(rating, reviewCount, id)`, gần
+tôi theo khoảng cách), giữ nguyên ưu điểm ổn định trang đã trình bày ở mục 2.3. Song song, ảnh
+cold-start được dựng thành nhiều kích thước WebP và giao diện chọn kích thước phù hợp qua `srcset`
+và `sizes`; tổng dung lượng ảnh của trang khám phá giảm khoảng 72%, đáng kể nhất khi xem trên
+điện thoại.
+
+**Bắt buộc xác thực email khi đăng ký.** Trước đây người dùng đăng ký xong là đăng nhập được ngay,
+kể cả với email không có thật. Em bổ sung bước bắt buộc: sau khi đăng ký, tài khoản phải bấm link
+trong email mới đăng nhập được. Với những người dùng đã tạo trước khi bật tính năng, migration
+chỉnh dữ liệu đánh dấu `emailVerified = true` để không ai bị khoá ngoài oan, còn người dùng mới
+vẫn bắt đầu ở trạng thái chưa xác thực.
+
+**Rate limit theo tài khoản cho hành động xã hội.** Trước đây rate limit theo người dùng chỉ áp cho
+tải ảnh và đăng bài. Em mở rộng sang các hành động dễ bị lạm dụng: đăng bài 30 mỗi giờ, like 30 mỗi
+phút, bình luận 10 mỗi phút và theo dõi 20 mỗi phút. Vượt ngưỡng trả 429 kèm `Retry-After`, dùng
+cùng bảng `rate_limits` và cùng cơ chế đã có nên không phát sinh hạ tầng mới.
+
 ---
 
 ## CHƯƠNG 4. KIỂM THỬ VÀ ĐÁNH GIÁ
@@ -787,7 +849,7 @@ flowchart TB
   U["Unit test<br/>hàm thuần: cursor, presign, chuẩn hoá, xếp hạng"]
   I["Integration test<br/>API và Postgres thật (Testcontainers)"]
   C["Contract test<br/>response khớp zod schema dùng chung"]
-  E["E2E<br/>Playwright: 12 spec (22 test) mock và 12 spec (22 test) backend"]
+  E["E2E<br/>Playwright: 16 spec (42 test) mock và 12 spec (22 test) backend"]
   U --> I --> C --> E
 ```
 
@@ -798,36 +860,41 @@ thiểu. Bộ test chạy tuần tự với `--parallel=1` để tránh tranh ch
 
 | Bộ test                   | Số lượng           | Kết quả              | Thời gian   |
 | ------------------------- | ------------------ | -------------------- | ----------- |
-| Backend integration/unit  | 185 test / 20 file | **185 pass, 0 fail** | ~134 giây   |
-| Unit frontend (Vitest)    | 68 test / 17 file  | **68 pass, 0 fail**  | ~3,4 giây   |
+| Backend integration/unit  | 256 test / 25 file | **256 pass, 0 fail** | ~134 giây   |
+| Unit frontend (Vitest)    | 135 test / 29 file | **135 pass, 0 fail** | ~3,4 giây   |
 | E2E với backend thật      | 22 test / 12 spec  | **22 pass, 0 fail**  | ~15 giây    |
-| E2E với mock (hồi quy FE) | 22 test / 12 spec  | **22 pass, 0 fail**  | ~25 giây    |
+| E2E với mock (hồi quy FE) | 42 test / 16 spec  | **42 pass, 0 fail**  | ~25 giây    |
 | Typecheck (FE và BE)      | —                  | 0 lỗi                | ~5 giây     |
 
 Phân bố test backend theo vùng chức năng:
 
 | File                          | Số test | Nội dung                                                                             |
 | ----------------------------- | ------- | ------------------------------------------------------------------------------------ |
-| `places.test.ts`              | 27      | danh sách, lọc, bản đồ, gợi ý, chi tiết, saved, bài gắn địa điểm, cache ETag và 304  |
+| `places.test.ts`              | 39      | danh sách, lọc giá, ba kiểu sắp xếp, bản đồ, gợi ý, chi tiết, saved, bài gắn địa điểm, cache ETag và 304 |
+| `auth.test.ts`                | 25      | đăng ký gồm trùng handle, xác thực email, đăng nhập, quên và đặt lại mật khẩu, xoá tài khoản |
 | `posts.test.ts`               | 25      | feed gồm filter `following`, phân trang, like, save, bình luận, like bình luận       |
-| `rooms.test.ts`               | 20      | tạo và join, token guest, đề xuất, áp dụng CAS, quyền, rời phòng, SSE, rate limit    |
-| `auth.test.ts`                | 16      | đăng ký gồm trùng handle, đăng nhập, quên và đặt lại mật khẩu, xoá tài khoản         |
+| `rooms.test.ts`               | 19      | tạo và join, token guest, đề xuất, áp dụng CAS, quyền, rời phòng, SSE, rate limit    |
 | `collections.test.ts`         | 14      | CRUD, quyền riêng tư, thêm bớt địa điểm, like                                        |
+| `og.test.ts`                  | 11      | HTML Open Graph cho bài và quán, nhận diện bot, ảnh kèm tham số phiên bản            |
+| `posts-images.test.ts`        | 11      | validate URL ảnh, giới hạn số ảnh, quyền sở hữu prefix                               |
+| `users.test.ts`               | 10      | tìm kiếm người dùng                                                                  |
+| `user-suggestions.test.ts`    | 10      | gợi ý theo dõi: quán chung, theo dõi chéo, hoạt động 30 ngày, giới hạn 5 người       |
+| `daily-picks.test.ts`         | 9       | chọn ba quán, ưu tiên ảnh, ghi một transaction, rollback giữa giao dịch, idempotence |
+| `http-cache.test.ts`          | 9       | TTL cache: hit, hết hạn, single-flight, clear, giới hạn số mục                       |
 | `reviews.test.ts`             | 8       | upsert đánh giá, báo cáo, chống trùng                                                |
-| `posts-images.test.ts`        | 8       | validate URL ảnh, giới hạn số ảnh, quyền sở hữu prefix                               |
 | `idempotency.test.ts`         | 8       | replay, 422 khi payload khác, 409 khi đang xử lý, tách theo user                     |
+| `mailer.test.ts`              | 8       | dựng nội dung email xác thực và đặt lại mật khẩu, nhánh chưa cấu hình dịch vụ gửi    |
 | `profile.test.ts`             | 7       | hồ sơ theo handle, tab bài, theo dõi                                                 |
 | `infra.test.ts`               | 7       | body limit, presign, media 503, rate limit                                           |
 | `notifications.test.ts`       | 6       | danh sách, đánh dấu đã đọc, đọc tất cả, 401                                          |
 | `rate-limit-ip.test.ts`       | 6       | tin `X-Forwarded-For` theo `TRUSTED_PROXIES` dạng IP và CIDR                         |
-| `users.test.ts`               | 6       | tìm kiếm người dùng                                                                  |
-| `http-cache.test.ts`          | 5       | TTL cache: hit, hết hạn, single-flight, clear, giới hạn số mục                       |
-| `suggestions-job.test.ts`     | 5       | job phát hiện địa điểm, idempotence                                                  |
 | `enums.test.ts`               | 5       | quy đổi enum API và Prisma, round-trip, giá trị lạ                                   |
-| `rate-limit-user.test.ts`     | 5       | giới hạn theo người dùng cho tải ảnh và đăng bài                                     |
-| `notification-events.test.ts` | 3       | SSE per-user: 401, nhận sự kiện ngay, không lẫn kênh người khác                      |
+| `suggestions-job.test.ts`     | 5       | job phát hiện địa điểm, idempotence                                                  |
+| `media.test.ts`               | 4       | presign PUT khi R2 cấu hình, chặn SVG, chặn folder lạ                                |
 | `health.test.ts`              | 3       | healthz, readyz                                                                      |
-| `media.test.ts`               | 3       | presign PUT khi R2 cấu hình, chặn SVG, chặn folder lạ                                |
+| `notification-events.test.ts` | 3       | SSE per-user: 401, nhận sự kiện ngay, không lẫn kênh người khác                      |
+| `rate-limit-social.test.ts`   | 3       | hạn mức like, bình luận và theo dõi theo tài khoản                                   |
+| `rate-limit-user.test.ts`     | 1       | giới hạn theo người dùng cho tải ảnh và đăng bài                                     |
 
 Em đo độ phủ bằng `bun test --coverage`, tính trên 52 file đo được gồm cả gói schema dùng chung và
 client Prisma sinh sẵn. Độ phủ hàm đạt 92,4% và độ phủ dòng đạt 96,1%; 30 trong 52 file đạt 100%.
@@ -883,10 +950,11 @@ bày như đã hoàn tất.
 | Hạng mục                         | Nguyên nhân                             | Đã làm gì thay thế                                                                                                                  |
 | -------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Tải ảnh lên Cloudflare R2 thật   | Chưa có credentials R2                  | Presigned URL được kiểm bằng unit test với thời điểm giả lập; route trả 503 khi chưa cấu hình; e2e backend kiểm nhánh suy giảm này |
-| Gửi email thật                   | Chưa có SMTP provider                   | Luồng quên và đặt lại mật khẩu chạy thật end-to-end; token reset ghi vào log khi phát triển, production chỉ ghi sự kiện             |
-| Triển khai lên máy chủ công khai | Theo yêu cầu chỉ chuẩn bị, không deploy | `deploy/compose.prod.yml`, `deploy/Caddyfile` và `deploy/backup-db.sh` đã validate; chạy được bằng `docker compose up` trên máy dev |
+| Gửi email thật                   | Chưa cấu hình dịch vụ SMTP (Resend)     | Luồng xác thực email và quên mật khẩu được kiểm bằng test backend; nội dung email được test riêng, token reset ghi vào log khi phát triển |
+| Triển khai lên máy chủ công khai | Theo yêu cầu chỉ chuẩn bị, không deploy | `deploy/compose.prod.yml` và `deploy/backup-db.sh` đã dựng thử trên máy dev; chưa chạy trên máy chủ thật |
+| Chạy `caddy validate`            | Máy phát triển không có binary Caddy    | Cấu hình được soát bằng mắt và đối chiếu tài liệu Caddy; chưa chạy công cụ validate |
+| Preview mạng xã hội thật         | Cần domain công khai để bot truy cập    | Route Open Graph được test backend (nhận diện bot, thẻ meta, tham số phiên bản ảnh); chưa dán link thật lên Facebook/Zalo |
 | TLS và Let's Encrypt thật        | Cần domain công khai trỏ về máy chủ     | Cấu hình Caddy sẵn sàng, chưa chạy thật                                                                                             |
-| Xác thực email khi đăng ký       | Chưa có SMTP                            | `emailVerified` luôn false; đã ghi vào backlog                                                                                      |
 | SSE nhiều instance               | Pub/sub trong bộ nhớ tiến trình         | Ghi rõ hạn chế; hướng phát triển là dùng LISTEN/NOTIFY của Postgres hoặc Redis                                                      |
 | Đệm SSE qua Caddy                | Chưa có môi trường deploy thật          | Đã cấu hình tắt buffering cho route SSE trong Caddyfile, chưa xác minh thực tế                                                      |
 | Hiệu năng ở quy mô lớn           | Dataset hiện tại 344 địa điểm           | Đo latency thực tế trên máy phát triển; benchmark `pg_trgm` ở mức từ 50.000 dòng ghi vào backlog                                    |
@@ -895,10 +963,11 @@ bày như đã hoàn tất.
 ### 4.6. Đánh giá
 
 **Ưu điểm.** Hợp đồng API được kiểm chứng hai chiều: frontend thật chạy với backend thật qua 22
-test e2e, không phải viết lại giao diện. Dữ liệu nhất quán nhờ ràng buộc ở tầng cơ sở dữ liệu như
-unique, khoá ngoại và khoá ghép, thay vì kiểm tra thủ công trong code. Tác vụ nền idempotent và có
-dead-letter queue; migration có phiên bản; có runbook vận hành. Phần bảo mật cơ bản đầy đủ: phiên
-HttpOnly, rate limit, kiểm quyền ở từng route và header bảo mật.
+test e2e, không phải viết lại giao diện, và bộ hồi quy mock 42 test giữ frontend không lệch đặc tả.
+Dữ liệu nhất quán nhờ ràng buộc ở tầng cơ sở dữ liệu như unique, khoá ngoại và khoá ghép, thay vì
+kiểm tra thủ công trong code. Tác vụ nền idempotent và có dead-letter queue; migration có phiên
+bản; có runbook vận hành. Phần bảo mật cơ bản đầy đủ: phiên HttpOnly, rate limit theo IP và theo
+tài khoản, kiểm quyền ở từng route và header bảo mật.
 
 Trong quá trình làm, em tự rà soát theo từng vòng và sửa được nhiều lỗi thật: quyền gắn địa điểm,
 lỗi 500 do enum rác hoặc ký tự NUL, cursor giả mạo, thiếu tham số `?sort=top`, chuẩn hoá tìm kiếm
@@ -912,7 +981,8 @@ updater của React khiến blob URL bị rò rỉ.
 pub/sub trong bộ nhớ nên chỉ đúng khi chạy một instance API. Chưa có trang quản trị để duyệt địa
 điểm và xử lý báo cáo; hiện hệ thống mới ghi nhận báo cáo. Việc áp dụng hai đề xuất khác trường
 cùng lúc vẫn có thể ghi đè lẫn nhau, em đã ghi vào backlog và chưa xử lý vì chưa có nhu cầu thực
-tế.
+tế. Gợi ý hôm nay và gợi ý theo dõi mới có cơ chế chạy đúng, chưa đo được hiệu quả thực tế với
+người dùng thật.
 
 ---
 
@@ -920,10 +990,13 @@ tế.
 
 ### Kết quả đạt được
 
-Đồ án đã hoàn thiện backend và cơ sở dữ liệu cho ứng dụng Rendez: 25 bảng, 14 migration, 48 route
-nghiệp vụ cùng 2 route health check, 185 test backend và 22 test e2e chạy với backend thật đều đạt.
-Toàn bộ hệ thống chạy được bằng một lệnh `docker compose up` với 344 địa điểm thật tại Đà Nẵng,
-được lọc theo tiêu chí “địa điểm nổi bật” từ 3.202 điểm thô của OpenStreetMap.
+Đồ án đã hoàn thiện backend và cơ sở dữ liệu cho ứng dụng Rendez: 27 bảng, 18 migration, 56 route
+handler, 256 test backend, 135 test unit frontend và 42 test e2e với mock cùng 22 test e2e với
+backend thật đều đạt. Ngoài các luồng chính, hệ thống có thêm các tính năng hoàn thiện trải nghiệm:
+gợi ý hôm nay, gợi ý người nên theo dõi, preview mạng xã hội qua Open Graph, lọc giá và sắp xếp
+server-side với ảnh responsive, bắt buộc xác thực email và rate limit theo tài khoản cho hành động
+xã hội. Toàn bộ hệ thống chạy được bằng một lệnh `docker compose up` với 344 địa điểm thật tại Đà
+Nẵng (86 địa điểm tuyển chọn thủ công và 258 điểm từ OpenStreetMap, kèm 29 ảnh gốc — 87 tệp cold-start gồm biến thể WebP).
 
 Ngoài phần chức năng, em cũng hệ thống hoá được quy trình làm việc: từ đặc tả hợp đồng API, thiết
 kế dữ liệu, triển khai, đến kiểm thử và đóng gói. Bộ tài liệu đi kèm gồm kế hoạch, nhật ký quyết
@@ -937,13 +1010,18 @@ Trang quản trị duyệt địa điểm và xử lý báo cáo chưa có.
 
 ### Hướng phát triển
 
-1. Bổ sung trang quản trị duyệt địa điểm, xử lý báo cáo và xác thực email khi đăng ký.
+1. Bổ sung trang quản trị duyệt địa điểm và xử lý báo cáo.
 2. Thay pub/sub trong bộ nhớ bằng LISTEN/NOTIFY của Postgres hoặc Redis để chạy nhiều instance API.
 3. Tích hợp R2 thật và nén ảnh phía client trước khi tải lên.
 4. Bổ sung tìm kiếm toàn văn tiếng Việt bằng `pg_trgm` kết hợp `tsvector`, đo lại hiệu năng ở mức
    từ 50.000 địa điểm.
 5. Viết CI gồm lint, typecheck, test và build image, sau đó triển khai thử trên Fly.io hoặc
    Railway.
+6. Bổ sung hạ tầng analytics đo hiệu quả của gợi ý hôm nay và gợi ý theo dõi (tỷ lệ bấm, tỷ lệ
+   theo dõi sau gợi ý) để tinh chỉnh thuật toán chọn quán.
+7. Thêm phân trang cho trang tìm kiếm người dùng và bài đăng đang dùng giới hạn cứng.
+8. Resize ảnh người dùng lúc tải lên thay vì phục vụ đúng file gốc.
+9. Tách cơ sở dữ liệu riêng cho môi trường test thay vì dùng Testcontainers cho từng file test.
 
 ---
 
@@ -994,6 +1072,10 @@ Trang quản trị duyệt địa điểm và xử lý báo cáo chưa có.
 | 12  | `20261111120000_room_security`                  | Thêm `token_hash`, `last_seen_at`; bỏ cột `guest_token` cũ; unique `(room_id, lower(display_name))`; index `token_hash` |
 | 13  | `20261111130000_post_images`                    | Bảng `post_images` với `ON DELETE CASCADE`                                                                              |
 | 14  | `20261111150000_idempotency_keys`               | Bảng `idempotency_keys` gồm `request_hash`, `status`, `response_status`, `response_body`, `expires_at`                  |
+| 15  | `20261112000000_user_media_urls`                | Thêm cột `cover_url` cho ảnh bìa hồ sơ (`avatar_url` đã có từ migration init)                                            |
+| 16  | `20261112010000_email_verified_backfill`        | Đánh dấu `email_verified = true` cho người dùng cũ khi bật bắt buộc xác thực email                                      |
+| 17  | `20261112020000_daily_picks`                    | Bảng `daily_picks` cho “Gợi ý hôm nay”, unique `(pick_date, position)` và `(pick_date, place_id)`, khoá ngoại `RESTRICT` |
+| 18  | `20261112030000_audit_indexes`                  | Index `reviews(author_id)` cho gợi ý theo dõi; bỏ index `daily_picks(pick_date)` trùng tiền tố unique                    |
 
 Trong quá trình phát triển, migration 9 và 10 từng deploy thất bại ở lần thử đầu vì hàm SQL chưa
 đủ IMMUTABLE và thiếu schema prefix khi Prisma chạy với `search_path` rỗng. Em xử lý bằng

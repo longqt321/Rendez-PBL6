@@ -7,6 +7,16 @@ mức giá, xem trên bản đồ, lưu địa điểm vào bộ sưu tập, đ�
 Frontend hoàn chỉnh, chạy được độc lập bằng mock server in-memory. Backend thật chỉ
 cần implement đúng hợp đồng API ở `../docs/DECISIONS.md` (D-011) rồi tắt mock.
 
+Tính năng mới gần đây:
+
+- **Gợi ý hôm nay**: 3 quán hệ thống chọn mỗi ngày (job nền backend chạy 00:05 giờ VN).
+- **Tìm người & gợi ý theo dõi**: tab Người ở `/search` + khối gợi ý ở `/discover`.
+- **Chia sẻ bài/quán** kèm preview Open Graph cho Facebook/Zalo/Messenger.
+- **Lọc mức giá + sắp xếp** (Mới nhất / Đánh giá cao / Gần tôi) chạy server-side;
+  ảnh responsive WebP.
+- **Bắt buộc xác thực email** trước khi đăng nhập; đăng nhập bằng email.
+- Rate limit hành động xã hội; đồng bộ đăng xuất đa tab.
+
 ## Stack
 
 React 19 · Vite 8 · TypeScript strict · Tailwind CSS 4 · shadcn (base-nova trên
@@ -35,11 +45,12 @@ bun run dev            # http://localhost:5173
 
 Xem `.env.example`.
 
-| Biến                | Ý nghĩa                                                           |
-| ------------------- | ----------------------------------------------------------------- |
-| `VITE_API_BASE_URL` | Base URL API trình duyệt gọi. Mặc định `/api` (đi qua proxy dev). |
-| `VITE_PROXY_TARGET` | Chỉ dùng ở dev server: đích thật của proxy `/api`.                |
-| `VITE_ENABLE_MOCKS` | `true`/`false`. Bỏ trống: dev bật, build production tắt.          |
+| Biến                | Ý nghĩa                                                                                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_BASE_URL` | Base URL API trình duyệt gọi. Mặc định `/api` (đi qua proxy dev).                                                                                                                                                          |
+| `VITE_PROXY_TARGET` | Chỉ dùng ở dev server: đích thật của proxy `/api`.                                                                                                                                                                         |
+| `VITE_ENABLE_MOCKS` | `true`/`false`. Bỏ trống: dev bật, build production tắt.                                                                                                                                                                   |
+| `VITE_APP_ORIGIN`   | Origin công khai của FE (vd `https://rendez.example.com`): canonical/OG + sinh `robots.txt`/`sitemap.xml` lúc build. Dev bỏ trống (mặc định `http://localhost:5173`); build prod bắt buộc đặt đúng — xem `vite.config.ts`. |
 
 ## Mock và chuyển sang backend thật
 
@@ -71,5 +82,6 @@ Quy ước code: `../docs/CONVENTIONS.md`. Quyết định kiến trúc: `../doc
 
 - CI (`.github/workflows/ci.yml`): typecheck → lint → format:check → test → build.
 - Pre-commit (husky + lint-staged): prettier + eslint trên file staged.
-- Test: logic thuần (`lib/format`, `features/rooms/lib/room`) và component có tương tác
+- Test: 135 test pass / 29 file (unit, Vitest). e2e Playwright: 42 test / 16 spec mock.
+- logic thuần (`lib/format`, `features/rooms/lib/room`) và component có tương tác
   (`RatingStars`).
