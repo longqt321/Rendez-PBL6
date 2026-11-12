@@ -53,6 +53,7 @@ export const placeSchema = z.object({
   lng: z.number().optional(),
   status: placeStatusSchema.optional(),
   openingHours: z.string().optional(),
+  publishedAt: z.string().nullable(),
 }) satisfies z.ZodType<Place>
 
 /** Đề xuất địa điểm do server xếp hạng — khớp `PlaceSuggestion`. */
@@ -62,9 +63,18 @@ export const placeSuggestionSchema = z.object({
 }) satisfies z.ZodType<PlaceSuggestion>
 
 /** Một quán trong "Gợi ý hôm nay" — dùng `placeSchema` đầy đủ để FE render `PlaceCard`. */
+export const dailyPickWhySchema = z.object({
+  matchPercent: z.number().int().min(0).max(100),
+  district: z.string().optional(),
+  distanceKm: z.number().nullable(),
+  openNow: z.boolean().nullable(),
+  signals: z.array(z.string()).max(3),
+})
+
 export const dailyPickSchema = z.object({
   place: placeSchema,
   reason: z.string(),
+  why: dailyPickWhySchema.optional(),
 }) satisfies z.ZodType<DailyPick>
 
 /** Payload `GET /places/daily-picks`; `items` rỗng khi job chưa chạy (không phải lỗi). */

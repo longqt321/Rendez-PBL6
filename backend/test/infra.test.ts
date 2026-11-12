@@ -16,6 +16,14 @@ beforeAll(async () => {
   process.env.DATABASE_URL = url
   process.env.LOG_LEVEL = "error"
   process.env.NODE_ENV = "test"
+  // Test này kiểm nhánh CHƯA cấu hình R2 (503). `bun test` chạy nhiều file
+  // chung một process nên biến R2_* do media.test.ts đặt có thể còn sót lại —
+  // xoá tường minh để kết quả không phụ thuộc thứ tự chạy file.
+  delete process.env.R2_ACCOUNT_ID
+  delete process.env.R2_ACCESS_KEY_ID
+  delete process.env.R2_SECRET_ACCESS_KEY
+  delete process.env.R2_BUCKET
+  delete process.env.R2_PUBLIC_BASE_URL
 
   const { createApp } = await import("../src/app")
   prisma = (await import("../src/lib/prisma")).prisma

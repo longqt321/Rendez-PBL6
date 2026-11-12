@@ -141,7 +141,9 @@ describe("GET /places", () => {
   test("category lạ bị bỏ qua thay vì 500 (mock: không khớp → trang rỗng)", async () => {
     const unknown = await get("/api/v1/places?category=khong-ton-tai")
     expect(unknown.status).toBe(200)
-    expect(await unknown.json()).toEqual({ items: [], next: null })
+    const unknownBody = (await unknown.json()) as { items: unknown[]; next: string | null }
+    expect(unknownBody.items).toEqual([])
+    expect(unknownBody.next).toBeNull()
 
     // Trộn giá trị hợp lệ với rác: chỉ lọc theo giá trị hợp lệ.
     const mixed = await getJson<PageJson>("/api/v1/places?category=cafe,khong-ton-tai")
@@ -174,7 +176,9 @@ describe("GET /places", () => {
     const body = await getJson<PageJson>("/api/v1/places?includeKeyword=quang,ga")
 
     for (const item of body.items) {
-      const haystack = `${item.name} ${item.address} ${item.tags.join(" ")}`.toLowerCase()
+      // So trên chuỗi ĐÃ chuẩn hoá (bỏ dấu) — server khớp bằng
+      // `immutable_search_normalize`, nên "quang" khớp "Quảng" và "ga" khớp "Gà".
+      const haystack = normalizeName(`${item.name} ${item.address} ${item.tags.join(" ")}`)
       expect(haystack).toContain("quang")
       expect(haystack).toContain("ga")
     }

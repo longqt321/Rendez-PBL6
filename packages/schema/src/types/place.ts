@@ -34,6 +34,8 @@ export interface Place {
    * có thì không gửi trường này; client tự suy ra trạng thái mở/đóng để hiển thị.
    */
   openingHours?: string
+  /** Ngày duyệt lên /discover (ISO 8601) — FE dùng cho badge "Mới"; null khi chưa duyệt. */
+  publishedAt: string | null
 }
 
 /**
@@ -71,9 +73,28 @@ export interface PlaceSuggestion {
  *
  * Dùng `Place` đầy đủ (không phải `PlaceSummary`) vì FE render lại `PlaceCard`.
  */
+/**
+ * "Vì sao quán này được gợi ý" — server tính từ chính breakdown điểm của thuật
+ * toán daily-picks; client chỉ hiển thị, không tự tính lại.
+ */
+export interface DailyPickWhy {
+  /** Điểm chuẩn hoá (0–100, số nguyên): score/maxScore của thuật toán chọn. */
+  matchPercent: number
+  /** Quận của quán — thiếu khi quán không có dữ liệu quận. */
+  district?: string
+  /** Khoảng cách tới người xem (km) — endpoint daily-picks không có toạ độ người xem nên `null`. */
+  distanceKm: number | null
+  /** Đang mở cửa theo `opening_hours` (Asia/Ho_Chi_Minh); `null` = không biết. */
+  openNow: boolean | null
+  /** Các lý do thật dùng để chọn (ảnh thật, nhiều đánh giá, quán mới…) — tối đa 3. */
+  signals: string[]
+}
+
 export interface DailyPick {
   place: Place
   reason: string
+  /** Optional để không phá consumer cũ chưa đọc trường này. */
+  why?: DailyPickWhy
 }
 
 /** Payload `GET /places/daily-picks` — `date` theo Asia/Ho_Chi_Minh (`YYYY-MM-DD`). */

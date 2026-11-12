@@ -14,6 +14,11 @@ interface AppVariables {
   requestId: string
   /** Id user đang đăng nhập — chỉ có sau middleware `requireAuth`. */
   userId: string
+  /**
+   * Route đặt `true` khi body được phục vụ từ cache ứng dụng — middleware
+   * metrics đọc để đếm `cacheHits` thật (không suy đoán từ latency).
+   */
+  cacheHit?: boolean
 }
 
 export type AppEnv = {

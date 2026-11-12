@@ -56,29 +56,41 @@ export function createUsersRouter() {
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
     const q = c.req.query("q")?.trim() ?? ""
-    const conditions: Prisma.Sql[] = [Prisma.sql`u.deleted_at IS NULL`]
+    const baseConditions: Prisma.Sql[] = [Prisma.sql`u.deleted_at IS NULL`]
 
     if (q.length > 0) {
       // Chuẩn hoá 2 phía (bỏ dấu, dấu câu → space) như `normalizeText` của mock —
       // nếu chỉ bỏ dấu ở cột thì `?q=ngọc` không khớp.
       const needle = Prisma.sql`'%' || immutable_search_normalize(${q}) || '%'`
-      conditions.push(
+      baseConditions.push(
         Prisma.sql`(immutable_search_normalize(u.name) LIKE ${needle} OR immutable_search_normalize(u.handle) LIKE ${needle})`,
       )
     }
+    // COUNT dùng điều kiện gốc (không cursor) — `totalResults` là tổng số khớp
+    // bộ lọc, không phải số item của trang.
+    const conditions = [...baseConditions]
     if (cursor) {
       conditions.push(
         Prisma.sql`(u.created_at, u.id) < (${cursor.createdAt}::timestamptz, ${cursor.id}::uuid)`,
       )
     }
 
-    const rows = await prisma.$queryRaw<UserRow[]>(Prisma.sql`
-      SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url, u.private_profile, u.created_at
-      FROM users u
-      WHERE ${Prisma.join(conditions, " AND ")}
-      ORDER BY u.created_at DESC, u.id DESC
-      LIMIT ${USERS_PAGE_SIZE + 1}
-    `)
+    const startedAt = performance.now()
+    const [rows, countRows] = await Promise.all([
+      prisma.$queryRaw<UserRow[]>(Prisma.sql`
+        SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url, u.private_profile, u.created_at
+        FROM users u
+        WHERE ${Prisma.join(conditions, " AND ")}
+        ORDER BY u.created_at DESC, u.id DESC
+        LIMIT ${USERS_PAGE_SIZE + 1}
+      `),
+      prisma.$queryRaw<{ count: number }[]>(Prisma.sql`
+        SELECT COUNT(*)::int AS count
+        FROM users u
+        WHERE ${Prisma.join(baseConditions, " AND ")}
+      `),
+    ])
+    const tookMs = Math.round(performance.now() - startedAt)
 
     const page = rows.slice(0, USERS_PAGE_SIZE)
     const last = page.at(-1)
@@ -146,6 +158,12 @@ export function createUsersRouter() {
         rows.length > USERS_PAGE_SIZE && last
           ? encodeCursor({ createdAt: last.created_at, id: last.id })
           : null,
+      meta: {
+        tookMs,
+        // Không có cache ứng dụng cho danh sách người dùng → false, không bịa.
+        cacheHit: false,
+        totalResults: Number(countRows[0]?.count ?? 0),
+      },
     })
   })
 
@@ -157,8 +175,16 @@ export function createUsersRouter() {
    * lưu body (kể cả `private, no-cache` vẫn cho trình duyệt lưu — V3-01).
    */
   router.get("/users/suggestions", requireAuth, async (c) => {
+    const startedAt = performance.now()
     const items = await suggestUsersToFollow(c.get("userId"))
-    return noStore(c, { items })
+    const tookMs = Math.round(performance.now() - startedAt)
+    // Toàn bộ gợi ý trả về trong một response (không phân trang) nên
+    // `totalResults` = số item. Không có cache ứng dụng → `cacheHit` false.
+    return noStore(c, {
+      items,
+      next: null,
+      meta: { tookMs, cacheHit: false, totalResults: items.length },
+    })
   })
 
   /** Hồ sơ công khai theo handle — 404 khi không tồn tại (A6.3). */

@@ -27,8 +27,8 @@ export type {
   PlaceSuggestionNotification,
   SystemNotification,
 } from "./types/notification"
-export type { Page } from "./page-types"
-export { pageSchema } from "./page"
+export type { Page, PageMeta } from "./page-types"
+export { pageMetaSchema, pageSchema } from "./page"
 export * from "./constants"
 export {
   placeSchema,

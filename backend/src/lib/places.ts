@@ -1,6 +1,7 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { parseApiCategory, toApiCategory } from "./enums"
+import { normalizeSearchText, synonymVariants } from "./search-synonyms"
 import type { Cursor, PlaceCursor, PlaceSort } from "./cursor"
 import type { PlaceCategory } from "@rendez/schema"
 
@@ -132,12 +133,85 @@ export function parsePlaceFilters(query: Record<string, string | undefined>): Pl
 const HAYSTACK = Prisma.sql`immutable_search_normalize(p.name || ' ' || p.address || ' ' || p.city || ' ' || coalesce(p.district, '') || ' ' || immutable_array_to_string(p.tags, ' '))`
 
 /**
- * Điều kiện LIKE trên haystack. Từ khoá được chuẩn hoá bằng chính hàm SQL của
- * haystack nên `?q=bánh xèo` khớp `Bánh xèo Bà Dương` (mock cũng vậy). Sau
+ * Haystack ĐÃ BỎ TOÀN BỘ khoảng trắng. Vì sao cần: người dùng hay viết dính
+ * ("caphe" thay vì "ca pê"/"ca phe") — LIKE cả chuỗi trên haystack có khoảng
+ * trắng sẽ trượt. So trên bản không khoảng trắng thì "caphe" khớp
+ * "Ca Phe Trung" (→ "caphetrung"). Chỉ là một `replace` trên chuỗi đã chuẩn hoá
+ * nên chi phí thấp; dataset demo ~350 quán, không cần index riêng.
+ */
+const COMPACT_HAYSTACK = Prisma.sql`replace(${HAYSTACK}, ' ', '')`
+
+/**
+ * Điều kiện LIKE trên một haystack. Từ khoá được chuẩn hoá bằng chính hàm SQL
+ * của haystack nên `?q=bánh xèo` khớp `Bánh xèo Bà Dương` (mock cũng vậy). Sau
  * chuẩn hoá từ khoá không còn `%`/`_` nên không thể thành wildcard.
  */
+function likeCondition(haystack: Prisma.Sql, keyword: string): Prisma.Sql {
+  return Prisma.sql`${haystack} LIKE ${Prisma.sql`'%' || immutable_search_normalize(${keyword}) || '%'`}`
+}
+
+/**
+ * Một từ khoá khớp khi haystack chứa nó HOẶC chứa một biến thể đồng nghĩa
+ * (mỗi biến thể là một mệnh đề OR — từ khoá gốc luôn nằm trong danh sách nên
+ * hành vi cũ không mất). Dùng cho `includeKeyword`/`excludeKeyword` — giữ đúng
+ * nghĩa "chứa từ khoá" trên haystack có khoảng trắng.
+ */
 function keywordCondition(keyword: string): Prisma.Sql {
-  return Prisma.sql`${HAYSTACK} LIKE ${Prisma.sql`'%' || immutable_search_normalize(${keyword}) || '%'`}`
+  const variants = [keyword, ...synonymVariants(normalizeSearchText(keyword))]
+  const unique = [...new Set(variants)]
+  return Prisma.sql`(${Prisma.join(
+    unique.map((variant) => likeCondition(HAYSTACK, variant)),
+    " OR ",
+  )})`
+}
+
+/**
+ * Token của `?q=` — như `keywordCondition` và thêm nhánh haystack KHÔNG khoảng
+ * trắng: người dùng hay viết dính ("caphe" thay vì "ca phe"), LIKE cả chuỗi
+ * trên haystack có khoảng trắng sẽ trượt. So trên bản bỏ khoảng trắng thì
+ * "caphe" khớp "Ca Phe Trung" (→ `caphetrung`). Chỉ là một `replace` trên chuỗi
+ * đã chuẩn hoá; dataset demo ~350 quán nên không cần index riêng.
+ */
+function searchTokenCondition(token: string): Prisma.Sql {
+  const variants = [token, ...synonymVariants(normalizeSearchText(token))]
+  const unique = [...new Set(variants)]
+  return Prisma.sql`(${Prisma.join(
+    unique.map(
+      (variant) =>
+        Prisma.sql`(${likeCondition(HAYSTACK, variant)} OR ${likeCondition(COMPACT_HAYSTACK, variant)})`,
+    ),
+    " OR ",
+  )})`
+}
+
+/**
+ * Điều kiện cho `?q=` — tách thành các token và yêu cầu ĐỦ (AND), để
+ * `?q=caphe trung` khớp "Cà phê Trung" (trước đây LIKE cả chuỗi nên trượt khi
+ * thứ tự/từ dư khác). Cụm nguyên bản có trong map đồng nghĩa thì OR thêm nhánh
+ * "khớp một biến thể cụm" (ví dụ "quan ngon" → "quan an"/"nha hang"/"quan nhau").
+ */
+function searchCondition(query: string): Prisma.Sql {
+  const tokens = normalizeSearchText(query)
+    .split(" ")
+    .filter((token) => token.length > 0)
+  // Query chỉ toàn ký tự đặc biệt ("!!!") chuẩn hoá xong rỗng — không có điều
+  // kiện nào hợp lệ. `Prisma.join([])` ném TypeError nên phải trả TRUE thay vì
+  // gọi join trên mảng rỗng (regression đã bị bắt bởi audit).
+  if (tokens.length === 0) return Prisma.sql`TRUE`
+  const tokenConds = tokens.map(searchTokenCondition)
+  const base = Prisma.sql`(${Prisma.join(tokenConds, " AND ")})`
+
+  const phraseVariants = synonymVariants(normalizeSearchText(query))
+  if (phraseVariants.length === 0) return base
+
+  const alternatives = phraseVariants.map((variant) => {
+    const variantTokens = variant.split(" ").filter((token) => token.length > 0)
+    if (variantTokens.length === 0) return null
+    return Prisma.sql`(${Prisma.join(variantTokens.map(searchTokenCondition), " AND ")})`
+  })
+  const validAlternatives = alternatives.filter((item): item is Prisma.Sql => item !== null)
+  if (validAlternatives.length === 0) return base
+  return Prisma.sql`(${base} OR ${Prisma.join(validAlternatives, " OR ")})`
 }
 
 function buildConditions(filters: PlaceFilters): Prisma.Sql[] {
@@ -183,7 +257,7 @@ function buildConditions(filters: PlaceFilters): Prisma.Sql[] {
     )
   }
   if (filters.q) {
-    conditions.push(keywordCondition(filters.q))
+    conditions.push(searchCondition(filters.q))
   }
   // `sort=distance` KHÔNG dùng bbox (thiết kế mục 3.1): bbox lọc theo khung nhìn
   // bản đồ, distance sắp theo vị trí người dùng — hai khái niệm khác nhau.
@@ -213,6 +287,8 @@ interface PlaceRow {
   lng: number | null
   status: string
   opening_hours: string | null
+  /** Ngày duyệt lên /discover — FE dùng cho badge "Mới" (≤14 ngày). */
+  published_at: Date | null
   rating: number
   review_count: number
   image_url: string | null
@@ -230,7 +306,7 @@ interface PlaceRow {
 function selectPlaces(extra: Prisma.Sql = Prisma.empty): Prisma.Sql {
   return Prisma.sql`
   SELECT p.id, p.name, p.address, p.city, p.district, p.category::text AS category, p.tags,
-         p.price_level, p.lat, p.lng, p.status::text AS status, p.opening_hours, p.created_at,
+         p.price_level, p.lat, p.lng, p.status::text AS status, p.opening_hours, p.created_at, p.published_at,
          COALESCE(r.rating, 0)::float8 AS rating,
          COALESCE(r.review_count, 0)::int AS review_count,
          img.url AS image_url, img.height AS image_height${extra}
@@ -269,6 +345,7 @@ export function toPlaceDto(row: PlaceRow) {
     ...(row.lng !== null ? { lng: row.lng } : {}),
     status: row.status,
     ...(row.opening_hours ? { openingHours: row.opening_hours } : {}),
+    publishedAt: row.published_at ? row.published_at.toISOString() : null,
   }
 }
 
@@ -295,9 +372,11 @@ export async function listPlaces(
   filters: PlaceFilters,
   cursor: PlaceCursor | null,
   pageSize: number,
-): Promise<{ items: PlaceDto[]; next: PlaceCursor | null }> {
-  const conditions = buildConditions(filters)
-
+): Promise<{ items: PlaceDto[]; next: PlaceCursor | null; total: number }> {
+  const baseConditions = buildConditions(filters)
+  // Bản sao cho query trang — keyset chỉ áp dụng cho trang hiện tại, COUNT tổng
+  // phải dùng điều kiện gốc để `totalResults` đúng nghĩa "tổng số khớp".
+  const conditions = [...baseConditions]
   // Cursor decode đúng nhưng `kind` khác kiểu sắp xếp hiện tại (người dùng đổi
   // sort, link cũ) → coi như không có cursor, trả trang đầu — xem comment của
   // `cursor.ts` cho ngoại lệ này.
@@ -347,19 +426,27 @@ export async function listPlaces(
 
   if (keyset) conditions.push(keyset)
 
-  // Lấy dư 1 dòng để biết còn trang sau — không COUNT toàn bộ (đắt, không cần).
-  const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-    ${selectPlaces(extraSelect)}
-    WHERE ${Prisma.join(conditions, " AND ")}
-    ORDER BY ${orderBy}
-    LIMIT ${pageSize + 1}
-  `)
+  // Count dùng điều kiện GỐC (không keyset) — `totalResults` là tổng số khớp bộ
+  // lọc, không phải số item của trang này. Chạy song song với query trang.
+  const [rows, countRows] = await Promise.all([
+    prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
+      ${selectPlaces(extraSelect)}
+      WHERE ${Prisma.join(conditions, " AND ")}
+      ORDER BY ${orderBy}
+      LIMIT ${pageSize + 1}
+    `),
+    prisma.$queryRaw<{ count: number }[]>(Prisma.sql`
+      SELECT COUNT(*)::int AS count
+      FROM places p
+      WHERE ${Prisma.join(baseConditions, " AND ")}
+    `),
+  ])
 
   const page = rows.slice(0, pageSize)
   const last = page.at(-1)
   const next = rows.length > pageSize && last ? cursorForSort(filters.sort, last) : null
 
-  return { items: page.map(toPlaceDto), next }
+  return { items: page.map(toPlaceDto), next, total: Number(countRows[0]?.count ?? 0) }
 }
 
 /** Cursor của dòng cuối trang, đúng `kind` theo kiểu sắp xếp đang dùng. */
@@ -472,4 +559,39 @@ export async function findPublicPlaceWithVersion(
   `)
   const row = rows[0]
   return row ? { place: toPlaceDto(row), updatedAt: row.updated_at } : null
+}
+
+/**
+ * Gợi ý "ý bạn là…" khi tìm kiếm không có kết quả: dùng `similarity()` của
+ * pg_trgm trên tên đã chuẩn hoá, lấy ứng viên gần nhất.
+ *
+ * Chỉ so tên (`p.name`) — địa chỉ/tag quá đa dạng, trigram trên tên mới phản
+ * ánh "người dùng định gõ tên quán". Trả `null` khi không có ứng viên đủ gần.
+ *
+ * Hai chặn để không gợi ý vô nghĩa:
+ * - Bỏ ứng viên mà tên chuẩn hoá BẰNG chính query (similarity = 1 nhưng kết
+ *   quả tìm kiếm rỗng là do filter khác, gợi ý lại chính từ người dùng vừa gõ
+ *   là lừa người dùng).
+ * - Ngưỡng 0.45 và tên ≥ 5 ký tự chuẩn hoá: tên ngắn dễ đạt 0.3 một cách
+ *   ngẫu nhiên, gợi ý rác còn tệ hơn không gợi ý.
+ */
+export async function findDidYouMean(query: string): Promise<string | null> {
+  const normalizedQuery = normalizeSearchText(query)
+  if (normalizedQuery.replace(/ /g, "").length < 5) return null
+  const rows = await prisma.$queryRaw<{ name: string }[]>(Prisma.sql`
+    SELECT p.name
+    FROM places p
+    WHERE p.published_at IS NOT NULL AND p.status <> 'closed' AND p.deleted_at IS NULL
+      AND immutable_search_normalize(p.name) <> ${normalizedQuery}
+      AND similarity(
+            immutable_search_normalize(p.name),
+            immutable_search_normalize(${query})
+          ) >= 0.45
+    ORDER BY similarity(
+               immutable_search_normalize(p.name),
+               immutable_search_normalize(${query})
+             ) DESC, p.id ASC
+    LIMIT 1
+  `)
+  return rows[0]?.name ?? null
 }

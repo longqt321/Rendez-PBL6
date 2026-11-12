@@ -1,6 +1,7 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { toPlaceDto } from "./places"
+import { isOpenNow } from "./opening-hours"
 
 /**
  * "Gợi ý hôm nay" (Daily Picks) — thuật toán chọn 3 quán mỗi ngày.
@@ -102,14 +103,60 @@ export interface PickedPlace {
   reason: string
 }
 
+/** Phần dữ liệu thật cần cho việc chấm điểm một quán (dùng lại ở `why`). */
+export interface PickScoreInput {
+  reviewCount: number
+  /** Số ảnh thật của quán — quán curated có ảnh, quán OSM thô thì không. */
+  imageCount: number
+  createdAt: Date
+}
+
+/**
+ * Điểm tối đa lý thuyết của công thức `baseScore`: quán ≥ `REASON_REVIEW_THRESHOLD`
+ * đánh giá, vừa thêm trong 30 ngày, có ảnh thật. Dùng làm mẫu số để quy đổi
+ * `matchPercent` — hằng số của công thức, không phải số liệu bịa theo từng quán.
+ */
+export const PICK_SCORE_MAX = 2 * Math.log(1 + REASON_REVIEW_THRESHOLD) + 1 + 2
+
 /** Điểm cơ bản: review thật được ưu tiên khi có, quán mới cộng thêm. */
-function baseScore(candidate: PickCandidate, newCutoff: string): number {
+function baseScore(candidate: PickScoreInput, newCutoff: string): number {
   const isNew = candidate.createdAt.toISOString().slice(0, 10) >= newCutoff
   // Quán có ảnh thật được cộng điểm: dải gợi ý hiển thị ảnh ngay trên đầu
   // /discover — chọn quán không ảnh là dải toàn placeholder. Cùng điểm với
   // "quán mới" (2) vì ảnh là tín hiệu chất lượng quan trọng nhất hiện có.
   const hasImage = candidate.imageCount > 0 ? 2 : 0
   return 2 * Math.log(1 + candidate.reviewCount) + (isNew ? 1 : 0) + hasImage
+}
+
+/** Điểm của một quán theo đúng `pickDate` — dùng cho `why.matchPercent`. */
+export function pickScore(candidate: PickScoreInput, pickDate: string): number {
+  return baseScore(candidate, shiftDate(pickDate, -NEW_PLACE_DAYS))
+}
+
+/**
+ * `matchPercent` = điểm / điểm tối đa × 100, làm tròn, kẹp 0–100. Số nguyên,
+ * tính từ chính breakdown điểm của thuật toán — client không tự tính lại.
+ */
+export function pickMatchPercent(candidate: PickScoreInput, pickDate: string): number {
+  const percent = Math.round((pickScore(candidate, pickDate) / PICK_SCORE_MAX) * 100)
+  return Math.min(100, Math.max(0, percent))
+}
+
+/**
+ * Các lý do THẬT đang được dùng để chọn quán (tối đa 3), suy trực tiếp từ dữ
+ * liệu: ảnh thật, số đánh giá, quán mới. Không thêm lý do không có căn cứ.
+ */
+export function pickSignals(candidate: PickScoreInput, pickDate: string): string[] {
+  const newCutoff = shiftDate(pickDate, -NEW_PLACE_DAYS)
+  const signals: string[] = []
+  if (candidate.imageCount > 0) signals.push("Có ảnh thật")
+  if (candidate.reviewCount >= REASON_REVIEW_THRESHOLD) signals.push("Nhiều đánh giá")
+  if (candidate.createdAt.toISOString().slice(0, 10) >= newCutoff) signals.push("Quán mới")
+  if (signals.length === 0) {
+    // Không có tín hiệu định lượng nào — nói đúng sự thật thay vì bịa lý do.
+    signals.push("Gợi ý của ngày")
+  }
+  return signals.slice(0, 3)
 }
 
 /** `reason` trung thực từ dữ liệu có thật — không bịa "điểm cao" khi rating = 0. */
@@ -333,22 +380,38 @@ export async function pickDailyPicks(pickDate: string): Promise<number> {
 type DailyPickRow = {
   position: number
   reason: string
+  image_count: number
 } & Parameters<typeof toPlaceDto>[0]
 
 /**
  * Đọc picks của một ngày để trả endpoint — JOIN lại điều kiện visibility nên
  * quán bị unpublish/close giữa ngày chỉ làm dải co lại, không 404.
+ *
+ * Mỗi item kèm `why`: matchPercent tính từ chính công thức chọn quán, `openNow`
+ * parse `opening_hours` (Asia/Ho_Chi_Minh), `signals` là các lý do thật. Không
+ * có toạ độ người xem trong endpoint này nên `distanceKm` luôn `null`.
  */
 export async function getDailyPicks(pickDate: string): Promise<{
   date: string
-  items: { place: ReturnType<typeof toPlaceDto>; reason: string }[]
+  items: {
+    place: ReturnType<typeof toPlaceDto>
+    reason: string
+    why: {
+      matchPercent: number
+      district?: string
+      distanceKm: number | null
+      openNow: boolean | null
+      signals: string[]
+    }
+  }[]
 }> {
   const rows = await prisma.$queryRaw<DailyPickRow[]>(Prisma.sql`
     SELECT dp.position, dp.reason, p.id, p.name, p.address, p.city, p.district,
            p.category::text AS category, p.tags, p.price_level, p.lat, p.lng,
-           p.status::text AS status, p.opening_hours, p.created_at,
+           p.status::text AS status, p.opening_hours, p.created_at, p.published_at,
            COALESCE(r.rating, 0)::float8 AS rating,
            COALESCE(r.review_count, 0)::int AS review_count,
+           COALESCE(img.image_count, 0)::int AS image_count,
            img.url AS image_url, img.height AS image_height
     FROM daily_picks dp
     JOIN places p ON p.id = dp.place_id
@@ -358,7 +421,8 @@ export async function getDailyPicks(pickDate: string): Promise<{
       WHERE rv.place_id = p.id AND rv.deleted_at IS NULL
     ) r ON true
     LEFT JOIN LATERAL (
-      SELECT pi.url, pi.height
+      SELECT pi.url, pi.height,
+             (SELECT COUNT(*) FROM place_images all_pi WHERE all_pi.place_id = p.id) AS image_count
       FROM place_images pi
       WHERE pi.place_id = p.id
       ORDER BY pi.position
@@ -370,6 +434,23 @@ export async function getDailyPicks(pickDate: string): Promise<{
   `)
   return {
     date: pickDate,
-    items: rows.map((row) => ({ place: toPlaceDto(row), reason: row.reason })),
+    items: rows.map((row) => {
+      const input = {
+        reviewCount: Number(row.review_count),
+        imageCount: Number(row.image_count),
+        createdAt: row.created_at,
+      }
+      return {
+        place: toPlaceDto(row),
+        reason: row.reason,
+        why: {
+          matchPercent: pickMatchPercent(input, pickDate),
+          ...(row.district ? { district: row.district } : {}),
+          distanceKm: null,
+          openNow: isOpenNow(row.opening_hours),
+          signals: pickSignals(input, pickDate),
+        },
+      }
+    }),
   }
 }

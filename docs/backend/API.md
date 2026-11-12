@@ -2,7 +2,7 @@
 
 > Trạng thái: Phase 0–8 đã cài đặt và có integration test trên Postgres thật.
 > Mọi route mount dưới `/api/v1` (quyết định K1). Lỗi luôn có shape `{ "message": string }`
-> (D6). Ngày cập nhật: 2026-11-11.
+> (D6). Ngày cập nhật: 2026-11-13.
 
 ## 1. Quy ước chung
 
@@ -13,7 +13,7 @@
 | Định dạng | JSON UTF-8; request có body phải gửi `Content-Type: application/json` |
 | Lỗi | `{ "message": "..." }` + status 400/401/403/404/409/413/429/500 |
 | Request id | Mọi response có header `X-Request-Id` (UUID), log server dùng cùng id |
-| Phân trang | `{ "items": [...], "next": string \| null }`; `next` là cursor opaque base64 (D2) |
+| Phân trang | `{ "items": [...], "next": string \| null, "meta"?: PageMeta }`; `next` là cursor opaque base64 (D2) |
 | Giới hạn body | 1 MB (JSON). Ảnh đi thẳng lên R2 qua presigned URL, không qua API |
 | Rate limit | Vượt ngưỡng → `429` + `Retry-After` (giây) |
 | Idempotency | POST tạo tài nguyên nhận header tùy chọn `Idempotency-Key` (mục 1.3) |
@@ -23,6 +23,30 @@
 
 Cursor là base64url của `created_at|id` — client KHÔNG được parse, chỉ truyền lại
 nguyên văn. Cursor hỏng → `400 {"message":"Cursor không hợp lệ"}`.
+
+### 1.1b. `meta` của endpoint danh sách
+
+`GET /places`, `GET /places/map`, `GET /places/daily-picks`, `GET /users`,
+`GET /users/suggestions` đều gắn `meta` (optional trong `Page<T>` để không phá
+consumer cũ):
+
+```json
+{
+  "items": [],
+  "next": null,
+  "meta": { "tookMs": 12, "cacheHit": false, "totalResults": 343 }
+}
+```
+
+| Trường | Ý nghĩa |
+|---|---|
+| `tookMs` | Số nguyên ms server đo quanh phần truy vấn (`performance.now`) — không phải thời gian mạng |
+| `cacheHit` | `true` **chỉ khi** body phục vụ từ cache ứng dụng (hiện chỉ `/places/suggestions` có cache TTL 60s + single-flight). Các route khác luôn `false` — HTTP cache (`max-age`) không tính |
+| `totalResults` | `COUNT(*)` khớp bộ lọc (KHÔNG phải số item trong trang). `/places/map` giữ thêm trường cũ `total` cùng giá trị |
+| `didYouMean` | Chỉ endpoint tìm kiếm: khi 0 kết quả và `q` dài ≥ 3 → tên quán gần nhất theo `pg_trgm` (similarity ≥ 0.45, tên ≥ 5 ký tự chuẩn hoá, loại ứng viên trùng đúng query), ngược lại `null` |
+
+`/places/suggestions` giữ shape `{suggestions}` và **bổ sung** `meta` cùng nghĩa
+(`totalResults` = số gợi ý trả về).
 
 ### 1.2. Idempotency (`Idempotency-Key`)
 
@@ -107,7 +131,7 @@ Ràng buộc đầu vào:
 |---|---|---|---|
 | GET | `/places` | — | `Page<Place>`, 9 item/trang, bộ lọc A7.9; `q` khớp không dấu + bỏ dấu câu |
 | GET | `/places/map` | — | `{items, total}`, chặn 300 item, `total` = số khớp thật |
-| GET | `/places/daily-picks` | — | `{date, items: [{place, reason}]}` — 3 quán job `daily-picks` chọn cho hôm nay (Asia/Ho_Chi_Minh); chưa có picks → `items: []` (200) |
+| GET | `/places/daily-picks` | — | `{date, items: [{place, reason, why}], next: null, meta}` — 3 quán job `daily-picks` chọn cho hôm nay (Asia/Ho_Chi_Minh); chưa có picks → `items: []` (200) |
 | GET | `/places/suggestions?q=&limit=` | — | `{suggestions: PlaceSuggestion[]}`; caption < 8 ký tự → rỗng; `limit` 1–10 (mặc định 3) |
 | GET | `/places/saved` | ✔ | `Page<Place>` gộp mọi bộ sưu tập của chính mình, loại trùng |
 | GET | `/places/:id` | — | `Place`; 404 nếu chưa publish/đã xoá |
@@ -120,7 +144,7 @@ Ràng buộc đầu vào:
 
 | Tham số | Kiểu | Hành vi |
 |---|---|---|
-| `q` | string | Khớp không dấu trên name + address + city + district + tags |
+| `q` | string | Tìm kiếm nâng cao (mục 4.1b): tách token AND, khớp cả chuỗi dính chữ, mở rộng từ đồng nghĩa; 0 kết quả → `meta.didYouMean` |
 | `category` | CSV | Danh sách loại hình cần có; `all` = bỏ lọc |
 | `district` | CSV | Danh sách quận |
 | `priceMax` | 1–3 | Ngoài khoảng/không phải số → **bỏ lọc** (không lỗi) |
@@ -145,6 +169,28 @@ Ràng buộc đầu vào:
 - Cursor hợp lệ nhưng `kind` khác `sort` hiện tại (người dùng đổi sort, link cũ) → **trả trang đầu**, không 400.
 - Cursor hỏng (base64 sai, thiếu phần, id sai dạng) → `400 {"message":"Cursor không hợp lệ"}`.
 
+### 4.1b. Tìm kiếm nâng cao (`q`)
+
+Truy vấn được chuẩn hoá không dấu (bỏ dấu, `đ`→`d`, dấu câu → khoảng trắng) rồi
+xử lý theo 3 tầng, mỗi tầng chỉ chạy khi tầng trước không đủ:
+
+1. **Token AND**: `q` tách thành các token; một place khớp khi haystack
+   (name + address + city + district + tags, đã chuẩn hoá) chứa ĐỦ mọi token —
+   `?q=caphe trung` khớp "Cà phê Trung".
+2. **Chuỗi dính chữ**: mỗi token còn được so trên haystack ĐÃ BỎ khoảng trắng —
+   `?q=caphe` khớp "Ca Phe Trung" (→ `caphetrung`).
+3. **Từ đồng nghĩa** (`backend/src/lib/search-synonyms.ts`, map tiếng Việt không
+   dấu, có test): cụm nguyên bản có trong map thì OR thêm các biến thể —
+   `quan ngon` → `quan an`/`nha hang`/`quan nhau`; `an dem` → `quan nhau`/`nuong`/`lau`;
+   `ca phe` → `cafe`/`coffee`; `an sang` → `pho`/`banh mi`/`bun`/`chao`;
+   `hai san` → `hai san`/`seafood`; `chay` → `chay`/`vegetarian`. Từ khoá gốc
+   luôn được giữ (chỉ mở rộng, không thay thế).
+
+**Sai chính tả nhẹ**: khi 0 kết quả và `q` dài ≥ 3, server dùng `similarity()`
+của `pg_trgm` trên tên đã chuẩn hoá (ngưỡng ≥ 0.45, tên ≥ 5 ký tự, loại ứng viên trùng đúng
+query — tránh "gợi ý lại chính từ người dùng vừa gõ"; lấy ứng viên gần nhất) và trả
+`meta.didYouMean` = tên quán gợi ý (`null` nếu không có ứng viên đủ gần).
+
 `Place` (khớp `placeSchema`):
 
 ```json
@@ -159,7 +205,33 @@ Ràng buộc đầu vào:
 Trường `district`, `imageUrl`, `lat`, `lng`, `status` **vắng mặt** khi không có dữ liệu
 (không gửi `null`) — client dùng optional chaining.
 
-### 4.2. Đánh giá (A7.4) và báo cáo (A7.5)
+### 4.3. `why` của daily-picks
+
+Mỗi item của `/places/daily-picks` kèm `why` — server tính từ chính breakdown
+điểm của thuật toán chọn quán, client KHÔNG tự tính lại:
+
+```json
+{
+  "why": {
+    "matchPercent": 78,
+    "district": "Hải Châu",
+    "distanceKm": null,
+    "openNow": true,
+    "signals": ["Có ảnh thật", "Nhiều đánh giá"]
+  }
+}
+```
+
+- `matchPercent`: điểm chuẩn hoá `score/maxScore × 100` (số nguyên, 0–100) —
+  mẫu số là điểm tối đa lý thuyết của công thức (≥ 5 đánh giá + quán mới + có ảnh).
+- `district`: quận của quán (vắng mặt khi không có dữ liệu).
+- `distanceKm`: luôn `null` ở endpoint này (không có toạ độ người xem).
+- `openNow`: parse `opening_hours` chuẩn OSM theo giờ Asia/Ho_Chi_Minh
+  (24/7, khung ngày, qua nửa đêm); `null` = không parse được — không suy diễn.
+- `signals`: các lý do thật dùng để chọn (ảnh thật, nhiều đánh giá, quán mới),
+  tối đa 3.
+
+### 4.4. Đánh giá (A7.4) và báo cáo (A7.5)
 
 - `rating`: số nguyên 1–5; `content`: 1–1000 ký tự sau trim. Gửi lại = ghi đè, không tạo
   bản ghi mới. `rating`/`reviewCount` của place **không lưu cột** — tính bằng aggregate
@@ -328,6 +400,35 @@ client bỏ qua bước PUT, dùng thẳng `publicUrl`.
    `users.avatar_url`/`users.cover_url`. `null` = xoá ảnh.
 4. R2 chưa cấu hình mà gửi URL ảnh → `400 {"message":"Tính năng ảnh chưa được cấu hình"}`
    (gửi `null`/bỏ trống vẫn hợp lệ để xoá/giữ nguyên).
+
+## 10b. Vận hành (`/system/*`)
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET | `/system/stats` | — | `200` số liệu vận hành (xem dưới) |
+| POST | `/system/reset` | — | `200 {"reset":true}` — xoá bộ đếm metrics trong RAM, KHÔNG chạm DB; `403` khi `NODE_ENV=production` (chỉ dùng cho demo/dev) |
+
+```json
+{
+  "uptimeMs": 123456,
+  "totalQueries": 42,
+  "avgLatencyMs": 8,
+  "cacheHitRatio": 0.25,
+  "byEndpoint": [{ "route": "GET /places", "count": 30, "avgMs": 7, "cacheHits": 0 }],
+  "venues": { "total": 344, "published": 120, "withImages": 60, "withTags": 344, "withHours": 200 }
+}
+```
+
+- Bộ đếm in-memory theo tiến trình (`backend/src/lib/metrics.ts`), ghi cho mọi
+  request `/api/v1/*` **trừ chính `/system/*`**; `venues` đếm thật từ DB
+  (`COUNT`, không hardcode). `route` lấy từ `routePath` Hono sau khi khớp route
+  (vd `GET /places/:id`); fallback chuẩn hoá segment chứa số/uuid/slug thành `:id`
+  khi không route nào khớp (404).
+- Bảo mật: response chỉ chứa số liệu vận hành (không query string, IP, userId
+  hay nội dung request), nên không lộ dữ liệu người dùng. `POST /system/reset`
+  là thao tác ghi nên gắn rate limit nhẹ 10 lần/phút/IP để chặn vòng lặp làm
+  rỗng số liệu; `GET` chỉ đọc nên không cần. Ngoài ra reset bị chặn `403` khi
+  `NODE_ENV=production` — route này chỉ dành cho demo/dev.
 
 ## 11. Mã lỗi thường gặp
 

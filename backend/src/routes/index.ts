@@ -1,6 +1,8 @@
 import { OpenAPIHono } from "@hono/zod-openapi"
+import { createMiddleware } from "hono/factory"
 import type { AppEnv } from "../app"
 import { auth } from "../lib/auth"
+import { recordRequest } from "../lib/metrics"
 import { createAuthRouter } from "./auth"
 import { createPlacesRouter } from "./places"
 import { createUsersRouter } from "./users"
@@ -11,6 +13,29 @@ import { createCollectionsRouter } from "./collections"
 import { createRoomsRouter } from "./rooms"
 import { createMediaRouter } from "./media"
 import { createOgRouter } from "./og"
+import { createSystemRouter } from "./system"
+
+/**
+ * Đường dẫn request → khoá route cho metrics. Sau `await next()` Hono đã gán
+ * `c.req.routePath` của handler khớp (vd `/places/:id`) — dùng nó làm khoá chuẩn
+ * (không phụ thuộc hình dạng id). Fallback chuẩn hoá từ path thật khi chưa khớp
+ * route nào: thay segment chứa số, uuid, hoặc slug (`banh-xeo-ba-duong`) bằng
+ * `:id` để các request cùng route gộp về một khoá thay vì phình theo từng id.
+ */
+function normalizeRoutePath(path: string): string {
+  const stripped = path.replace(/^\/api\/v1/u, "") || "/"
+  const segments = stripped
+    .split("/")
+    .map((segment) =>
+      segment.length > 0 &&
+      (/\d/u.test(segment) ||
+        /^[0-9a-f-]{36}$/iu.test(segment) ||
+        /^[a-z0-9]+(?:-[a-z0-9]+)+$/u.test(segment))
+        ? ":id"
+        : segment,
+    )
+  return segments.join("/")
+}
 
 /**
  * Router API v1 — mọi route nghiệp vụ mount dưới `/api/v1` (K1).
@@ -20,6 +45,38 @@ import { createOgRouter } from "./og"
  */
 export function createApiRouter() {
   const api = new OpenAPIHono<AppEnv>()
+
+  /**
+   * Metrics mọi request `/api/v1/*` — trừ chính `/system/*` (nếu không, route
+   * quan sát tự làm phình số liệu nó báo cáo). Route gắn `cacheHit` trong
+   * context khi phục vụ từ cache ứng dụng; mặc định false.
+   */
+  api.use(
+    "*",
+    createMiddleware<AppEnv>(async (c, next) => {
+      const startedAt = performance.now()
+      try {
+        await next()
+      } finally {
+        // Bỏ qua chính `/system/*` (route quan sát tự làm phình số liệu nó báo
+        // cáo). `finally` để request lỗi (4xx/5xx) vẫn được đếm — lỗi cũng là
+        // tín hiệu vận hành cần thấy.
+        if (!c.req.path.includes("/system")) {
+          // Sau `next()` Hono đã gán routePath của handler khớp; rỗng/"*" khi
+          // không route nào khớp (404) → fallback chuẩn hoá từ path thật.
+          const matched = c.req.routePath
+          const route = `${c.req.method} ${
+            matched && matched !== "*" ? matched : normalizeRoutePath(c.req.path)
+          }`
+          recordRequest(
+            route,
+            Math.round(performance.now() - startedAt),
+            c.get("cacheHit") ?? false,
+          )
+        }
+      }
+    }),
+  )
 
   /** Liveness của API — không chạm DB (G4). */
   api.get("/healthz", (c) => c.json({ status: "ok" }))
@@ -60,6 +117,9 @@ export function createApiRouter() {
 
   // HTML meta Open Graph cho bot preview (`/og/place/:id`, `/og/post/:id`).
   api.route("/", createOgRouter())
+
+  // Số liệu vận hành cho demo (`/system/stats`, `/system/reset`).
+  api.route("/", createSystemRouter())
 
   return api
 }

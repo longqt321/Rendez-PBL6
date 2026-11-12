@@ -43,10 +43,14 @@ function matchesEtag(header: string, etag: string): boolean {
 export function jsonWithCache(
   c: Context,
   data: unknown,
-  options: { maxAge: number; scope?: "public" | "private" },
+  options: { maxAge: number; scope?: "public" | "private"; etagData?: unknown },
 ): Response {
   const body = JSON.stringify(data)
-  const etag = `"${createHash("sha256").update(body).digest("base64url")}"`
+  // `etagData`: nguồn tính ETag khi body có trường đo lường thay đổi mỗi lần
+  // (`meta.tookMs`) — ETag phải ổn định thì 304 mới hoạt động. Mặc định ETag
+  // tính từ chính body.
+  const etagSource = JSON.stringify(options.etagData ?? data)
+  const etag = `"${createHash("sha256").update(etagSource).digest("base64url")}"`
   const cacheControl =
     options.scope === "private" ? "private, no-cache" : `public, max-age=${options.maxAge}`
 
@@ -86,30 +90,43 @@ export function createTtlCache<T>(options: { ttlMs: number; maxEntries: number }
   const entries = new Map<string, { value: T; expiresAt: number }>()
   const inflight = new Map<string, Promise<T>>()
 
+  /**
+   * Như `get` nhưng báo thêm `hit` — route dùng để gắn `meta.cacheHit`/metrics
+   * mà không đổi hành vi của `get` (các caller cũ không phải sửa gì).
+   */
+  async function getWithStatus(
+    key: string,
+    load: () => Promise<T>,
+  ): Promise<{ value: T; hit: boolean }> {
+    const hit = entries.get(key)
+    if (hit && hit.expiresAt > Date.now()) return { value: hit.value, hit: true }
+
+    const pending = inflight.get(key)
+    if (pending) return { value: await pending, hit: false }
+
+    const promise = load()
+      .then((value) => {
+        entries.set(key, { value, expiresAt: Date.now() + options.ttlMs })
+        if (entries.size > options.maxEntries) {
+          const oldest = entries.keys().next().value
+          if (oldest !== undefined) entries.delete(oldest)
+        }
+        return value
+      })
+      .finally(() => {
+        inflight.delete(key)
+      })
+
+    inflight.set(key, promise)
+    return { value: await promise, hit: false }
+  }
+
   return {
     async get(key: string, load: () => Promise<T>): Promise<T> {
-      const hit = entries.get(key)
-      if (hit && hit.expiresAt > Date.now()) return hit.value
-
-      const pending = inflight.get(key)
-      if (pending) return pending
-
-      const promise = load()
-        .then((value) => {
-          entries.set(key, { value, expiresAt: Date.now() + options.ttlMs })
-          if (entries.size > options.maxEntries) {
-            const oldest = entries.keys().next().value
-            if (oldest !== undefined) entries.delete(oldest)
-          }
-          return value
-        })
-        .finally(() => {
-          inflight.delete(key)
-        })
-
-      inflight.set(key, promise)
-      return promise
+      return (await getWithStatus(key, load)).value
     },
+
+    getWithStatus,
 
     clear(): void {
       entries.clear()
