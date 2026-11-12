@@ -479,24 +479,24 @@ lịch sử; không còn việc mở ở đây.
 
 ## 2026-11-12 — Quét UX qua đêm (vòng 1: auth) — báo cáo QUET-vong1-auth.md
 
-- [ ] **V1-02 (lớn)**: đăng ký email đã tồn tại vẫn hiện màn "kiểm tra email" như thành công
+- [x] **V1-02 (lớn)**: đăng ký email đã tồn tại vẫn hiện màn "kiểm tra email" như thành công
       (API 201 generic-duplicate, không tạo user, không gửi link verify) — người dùng chờ mail
       mãi. Trùng handle lại báo lỗi rõ → không nhất quán. Chọn một: gửi lại link verify cho
       email cũ (resend flow) hoặc trả thông báo "email đã đăng ký".
-- [ ] **V1-01 (lớn)**: guest vào `/profile`, `/settings` thấy lỗi "không tải được hồ sơ — kiểm
+- [x] **V1-01 (lớn)**: guest vào `/profile`, `/settings` thấy lỗi "không tải được hồ sơ — kiểm
       tra kết nối" (401 bị đóng gói thành lỗi mạng), thiếu CTA đăng nhập. Cần redirect
       `/login?next=` hoặc trạng thái "cần đăng nhập".
-- [ ] **V1-03 (lớn)**: `/verify-email` không có token vẫn hiện "xác thực thành công" — trạng
+- [x] **V1-03 (lớn)**: `/verify-email` không có token vẫn hiện "xác thực thành công" — trạng
       thái giả. Thiếu/sai token phải hiện lỗi + nút gửi lại.
-- [ ] **V1-04 (lớn)**: đặt lại mật khẩu token sai → alert "Invalid token" tiếng Anh raw từ API;
+- [x] **V1-04 (lớn)**: đặt lại mật khẩu token sai → alert "Invalid token" tiếng Anh raw từ API;
       cần map sang tiếng Việt.
-- [ ] **V1-05**: nút submit không disable khi pending — double-click đăng nhập tạo 2 POST session.
+- [x] **V1-05**: nút submit không disable khi pending — double-click đăng nhập tạo 2 POST session.
 - [ ] **V1-06 (nhỏ)**: SSE `/notifications/events` lỗi `ERR_INCOMPLETE_CHUNKED_ENCODING` lặp
       ~12s/lần trong console — rà reconnect/backoff + timeout proxy nginx.
 - [ ] **V1-07 (nhỏ)**: vùng chạm input 32px / nút 32–40px < 44px chuẩn mobile.
 - [ ] **V1-08 (nhỏ)**: input lỗi thiếu `aria-invalid` + `aria-describedby`.
-- [ ] **V1-09 (nhỏ)**: đã đăng nhập vẫn mở được `/login`, `/register`; title trang auth thiếu.
-- [ ] **V1-10, V1-11 (gợi ý)**: toast sau đăng xuất; menu guest thiếu "Đăng ký"; "Email không
+- [x] **V1-09 (nhỏ)**: đã đăng nhập vẫn mở được `/login`, `/register`; title trang auth thiếu.
+- [x] **V1-10, V1-11 (gợi ý)**: toast sau đăng xuất; menu guest thiếu "Đăng ký"; "Email không
       hợp lệ" khi để trống nên là "Cần nhập email".
 
 ## 2026-11-12 — Quét UX qua đêm (vòng 2: discover + trang quán) — QUET-vong2-discover.md
@@ -516,7 +516,7 @@ lịch sử; không còn việc mở ở đây.
 
 ## 2026-11-12 — Quét UX qua đêm (vòng 3: social) — QUET-vong3-social.md
 
-- [ ] **V3-01 (chặn luồng follow)**: API JSON trả `Cache-Control: private, max-age=15` —
+- [x] **V3-01 (chặn luồng follow)**: API JSON trả `Cache-Control: private, max-age=15` —
       bấm "Theo dõi" xong refetch ăn disk cache 15s → nút + số đếm không đổi, người dùng
       bấm lại thành unfollow. API nên `no-store` (chỉ cache GET công khai như /places/:id).
 - [ ] **V3-02 (lớn)**: không có cách tìm người để theo dõi — không user directory/search user;
@@ -586,12 +586,12 @@ Số đo chính: TTFB 2–3ms, LCP 400–470ms, CLS≈0; cold transfer /discover
 3 request comments); 0/20 ca tràn ngang 5 breakpoint; 20/20 nút mobile /discover < 44px;
 2 nav trùng aria-label; h1 /discover + /social là sr-only.
 
-- [ ] **V6-01 (lớn)**: like khi offline → UI đổi trạng thái vĩnh viễn, không rollback, không
+- [x] **V6-01 (lớn)**: like khi offline → UI đổi trạng thái vĩnh viễn, không rollback, không
       toast, DB không đổi — người dùng tưởng đã like. Cần xử lý lỗi mutation + rollback
       optimistic + thông báo.
-- [ ] **V6-02 (lớn)**: session hết hạn → like im lặng hoàn toàn (không lỗi, không redirect).
+- [x] **V6-02 (lớn)**: session hết hạn → like im lặng hoàn toàn (không lỗi, không redirect).
       Cần interceptor 401 toàn cục: thông báo + đưa về đăng nhập.
-- [ ] **V6-03 (lớn)**: guest bấm "Theo dõi" không có phản hồi gì.
+- [x] **V6-03 (lớn)**: guest bấm "Theo dõi" không có phản hồi gì.
 - [ ] **V6-04 (perf)**: ảnh card/hero PNG full-size không srcset — chuyển WebP/AVIF + responsive
       srcset + `fetchpriority="high"` cho hero; giảm ~3MB cold load /discover.
 - [ ] **V6-05**: không có service worker / offline state; popup map không vào history (Back
@@ -604,7 +604,7 @@ Tốt (không sửa): tìm kiếm không dấu + phân nhóm tab; trang 404 rout
 realtime badge tự tăng qua SSE; bàn phím (Tab/Enter/Escape) ổn; zoom 200% không tràn;
 0 chuỗi tiếng Anh lọt UI trên 9 trang.
 
-- [ ] **V7-01 (lớn)**: tab "Người" ở /search dùng MOCK_USERS (`search-page.tsx:67`) — tìm
+- [x] **V7-01 (lớn)**: tab "Người" ở /search dùng MOCK_USERS (`search-page.tsx:67`) — tìm
       "quet" (API /users?q= trả user thật) vẫn báo không có; "minhanh" hiện hồ sơ ảo link về
       /profile của chính mình; còn gọi `/api/v1/search?q=` → 404 mỗi lần tìm.
 - [ ] **V7-02 (lớn)**: SEO = 0 — index.html chỉ có title; không meta description/og:*/twitter:*;
@@ -612,27 +612,27 @@ realtime badge tự tăng qua SSE; bàn phím (Tab/Enter/Escape) ổn; zoom 200%
 - [ ] **V7-03 (lớn)**: soft-404 asset — /manifest.json, /favicon.ico, /apple-touch-icon.png,
       /robots.txt, /sitemap.xml, /og-image.png đều trả 200 text/html 160B (SPA fallback nuốt
       mọi path). Sửa fallback chỉ cho path không có phần mở rộng; thêm manifest + og-image thật.
-- [ ] **V7-04 (lớn)**: menu "Trợ giúp" là nút chết (`app-shell.tsx:373`); /help → 404; không có
+- [x] **V7-04 (lớn)**: menu "Trợ giúp" là nút chết (`app-shell.tsx:373`); /help → 404; không có
       /about, /terms, /privacy.
 - [ ] **V7-05 (lớn)**: focus trap rò rỉ ở dialog Bình luận — Tab 12 lần thì 3 lần thoát ra ngoài.
 - [ ] **V7-06..08**: notification follow nhân đôi (5 dòng DB → 5 mục trùng trong tab "Tất cả (8)"),
       mục follow là button không link hồ sơ; empty-state chen vào đầu tab "Tất cả"; SSE
       ERR_INCOMPLETE_CHUNKED_ENCODING ≥14 lần/5 phút (trùng V1-06).
-- [ ] **V7-09/10**: 404 trang quán thiếu CTA về Khám phá; collections public cho guest nhưng
+- [x] **V7-09/10**: 404 trang quán thiếu CTA về Khám phá; collections public cho guest nhưng
       breadcrumb "Đã lưu" dẫn tới 401 giả (trùng V4-12).
 
 ## 2026-11-12 — Quét UX qua đêm (vòng 8: góc mười) — QUET-vong8-goc-muoi.md
 
-- [ ] **V8-07 (lớn)**: đa tab — logout ở tab A, tab B vẫn hiện đăng nhập; like ở tab B → 401
+- [x] **V8-07 (lớn)**: đa tab — logout ở tab A, tab B vẫn hiện đăng nhập; like ở tab B → 401
       im lặng. Cần interceptor 401 toàn cục (clear cache + redirect /login?next) +
       BroadcastChannel đồng bộ đăng xuất.
-- [ ] **V8-01 (lớn)**: bio 160 ký tự không khoảng trắng (dán URL) → vỡ layout toàn trang
+- [x] **V8-01 (lớn)**: bio 160 ký tự không khoảng trắng (dán URL) → vỡ layout toàn trang
       (scrollWidth 1913 desktop / 1521 mobile) — thiếu `break-words` ở /profile và /u/:handle.
-- [ ] **V8-02**: placeholder handle `minhanh.eats` chứa dấu chấm nhưng validate chỉ cho
+- [x] **V8-02**: placeholder handle `minhanh.eats` chứa dấu chấm nhưng validate chỉ cho
       `[a-z0-9_]` — gõ theo gợi ý là lỗi. Đổi placeholder hoặc cho phép dấu chấm.
-- [ ] **V8-03**: ảnh hỏng không có fallback (cover/ảnh bài/popup map) — icon vỡ + alt thô;
+- [x] **V8-03**: ảnh hỏng không có fallback (cover/ảnh bài/popup map) — icon vỡ + alt thô;
       avatar đã có fallback chữ cái đầu, nhân rộng pattern đó.
-- [ ] **V8-04**: like/follow/comment không rate limit (10 click = 10 request 200) — thêm limit
+- [x] **V8-04**: like/follow/comment không rate limit (10 click = 10 request 200) — thêm limit
       như posts-create/media/auth-session; kèm spam notification (V7-06).
 - [ ] **V8-05/06**: Back từ /discover/:id mất vị trí cuộn (trong khi /social giữ đúng);
       tab /social không lưu vào URL nên F5 mất — nhân rộng pattern URL của /discover.
