@@ -11,7 +11,8 @@ export interface PageMeta {
   totalResults: number
   /**
    * Chỉ có ở các endpoint tìm kiếm: khi không có kết quả, tên địa điểm gần nhất
-   * theo `pg_trgm` (ngưỡng similarity ≥ 0.3) để client gợi ý "ý bạn là…".
+   * theo `pg_trgm` (similarity ≥ 0.45, tên ≥ 5 ký tự chuẩn hoá, loại ứng viên trùng đúng
+   * query) để client gợi ý "ý bạn là…".
    */
   didYouMean?: string | null
 }

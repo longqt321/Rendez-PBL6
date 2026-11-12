@@ -64,11 +64,15 @@ export function CoverImage({
   const showImage = src !== undefined && !failed
   // Ảnh minh hoạ AI chỉ dùng khi KHÔNG có ảnh thật; hỏng thì rơi về SVG.
   const [illustrationFailed, setIllustrationFailed] = useState(false)
-  const showIllustration =
-    !showImage && illustrationSrc !== undefined && !illustrationFailed
-  // Chỉ dataset cold-start có biến thể; ảnh R2 dùng `src` gốc.
+  const showIllustration = !showImage && illustrationSrc !== undefined && !illustrationFailed
+  // Chỉ dataset cold-start có biến thể; ảnh R2 dùng `src` gốc. Ảnh minh hoạ
+  // cũng nằm trong dataset (`categories/<nhóm>/<tên>.jpg` có -400/-800.webp)
+  // nên dùng cùng cơ chế — nếu không, card không có ảnh thật sẽ tải JPG ~500KB
+  // và vi phạm ngân sách ảnh (e2e image-budget).
   const responsive =
     src !== undefined && sizes !== undefined ? coldStartSrcSet(src, sizes) : undefined
+  const illustrationResponsive =
+    showIllustration && sizes !== undefined ? coldStartSrcSet(illustrationSrc, sizes) : undefined
 
   return (
     <div className={cn("relative overflow-hidden bg-muted", className)} style={{ height }}>
@@ -87,6 +91,9 @@ export function CoverImage({
         <>
           <img
             src={illustrationSrc}
+            {...(illustrationResponsive
+              ? { srcSet: illustrationResponsive.srcSet, sizes: illustrationResponsive.sizes }
+              : {})}
             alt={alt ?? ""}
             loading={priority ? "eager" : "lazy"}
             decoding="async"

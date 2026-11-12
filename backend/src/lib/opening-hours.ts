@@ -9,6 +9,9 @@
  * - `Mo-Su 08:00-22:00`
  * - `Mo-Fr 07:00-17:30; Sa-Su 08:00-20:00`
  * - nhiều khung giờ cách nhau bởi `;` hoặc `,`, giờ `HH:MM` hoặc `HH:MM:SS`
+ * - LƯU Ý: danh sách ngày ngăn bằng dấu phẩy (`Mo,We-Fr 09:00-17:00`) CHƯA được
+ *   hỗ trợ — chuỗi bị tách theo `,` trước khi parse nên chỉ khung cuối có giờ
+ *   được nhận. Corpus hiện tại không có format này; gặp thì sửa parser.
  * - khung không có ngày (`07:00-22:00`) = áp dụng mọi ngày
  * - khung qua nửa đêm (`22:00-02:00`) tính là mở sang hôm sau
  *
