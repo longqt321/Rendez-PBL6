@@ -189,6 +189,17 @@ request không có `images` vẫn chạy bình thường. Bài + ảnh được 
 
 `images` LUÔN là mảng (rỗng khi bài không có ảnh) — client không phải xử lý `null`.
 
+## 5b. OG preview cho bot mạng xã hội
+
+| Method | Path | Auth | Ghi chú |
+|---|---|---|---|
+| GET | `/og/place/:id` | — | HTML meta Open Graph cho bot preview (nginx sniff UA rồi proxy `/discover/:id` sang đây); 200 kèm `Cache-Control: public, max-age=600`; id sai format/chưa publish/đã xoá → `404` + meta mặc định (`max-age=60`) |
+| GET | `/og/post/:id` | — | Như trên cho bài đăng (`/post/:id`); id phải là uuid, sai → `404` HTML |
+
+Không dùng cho client — trả HTML chỉ gồm thẻ meta, không phải JSON. Người dùng thường
+không bao giờ nhận HTML này (nginx chỉ chuyển bot: `facebookexternalhit`, `Zalo`,
+`meta-externalagent`, …).
+
 ## 6. Thông báo
 
 | Method | Path | Auth | Ghi chú |
@@ -224,6 +235,7 @@ thông báo.
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
 | GET | `/users?q=&cursor=` | — | `Page<UserProfile>` 20/trang, `q` khớp không dấu + bỏ dấu câu |
+| GET | `/users/suggestions` | ✔ | `{ items: { user: UserProfile, reason: string }[] }` tối đa 5; loại chính mình + người đã theo dõi; rỗng = `200 { items: [] }` (không 404); `no-store`. Khai TRƯỚC `/users/:handle` |
 | GET | `/users/:handle` | — | `UserProfile`; 404 nếu không có |
 | GET | `/users/:handle/posts?tab=posts\|saved\|pinned&cursor=` | — | Tab `saved`/`pinned` của người khác → trang RỖNG (không 403) |
 | GET | `/users/:handle/collections` | — | `Page<CollectionSummary>`; ẩn private trừ chính chủ |
@@ -319,8 +331,10 @@ client bỏ qua bước PUT, dùng thẳng `publicUrl`.
 | Endpoint | `Cache-Control` | Ghi chú |
 |---|---|---|
 | `GET /places/:id` | `public, max-age=60` | kèm `ETag`; `If-None-Match` khớp → `304` không body |
+| `GET /og/place/:id`, `GET /og/post/:id` | `public, max-age=600` (404: `max-age=60`) | HTML meta cho bot preview; nginx `proxy_cache` cache cùng TTL |
 | `GET /places/map` | `public, max-age=30` | kèm `ETag` |
 | `GET /users/:handle` | `private, max-age=15` | `followedByMe` phụ thuộc người xem |
 | `GET /me`, `PATCH /me` | `no-store` | dữ liệu riêng tư |
+| `GET /users/suggestions` | `no-store` | gợi ý cá nhân hoá hoàn toàn (`followedByMe` + thứ tự theo người xem) |
 | `GET /notifications`, `PATCH /notifications*` | `no-store` | thay đổi liên tục |
 | `GET /places/suggestions` | — | cache ứng viên 60s trong tiến trình + single-flight; invalidate khi publish place |

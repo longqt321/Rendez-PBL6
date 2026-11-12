@@ -1,3 +1,5 @@
+import { ApiError } from "./errors"
+
 /**
  * Cursor opaque cho phân trang keyset (D2).
  *
@@ -26,6 +28,18 @@ export const SLUG_ID_RE = /^[A-Za-z0-9_-]{1,120}$/
  * khi client sửa cursor.
  */
 export const UUID_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Kiểm `:id` dạng uuid trước khi đưa vào SQL (`::uuid`).
+ *
+ * Đặt ở đây (cạnh `UUID_ID_RE`) để route bài đăng và module OG dùng CÙNG một
+ * cách kiểm — trước đây hàm này nằm riêng trong `routes/posts.ts`, copy sang
+ * module khác là lệch hợp đồng lỗi (404 kèm message nào).
+ */
+export function requireUuid(value: string, message: string): string {
+  if (!UUID_ID_RE.test(value)) throw new ApiError(404, message)
+  return value
+}
 
 export function encodeCursor(cursor: Cursor): string {
   return Buffer.from(`${cursor.createdAt.toISOString()}|${cursor.id}`, "utf8").toString("base64url")

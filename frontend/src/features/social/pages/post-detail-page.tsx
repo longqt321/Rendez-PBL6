@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Toggle } from "@/components/ui/toggle"
 import { SectionHeading } from "@/components/shared/section-heading"
+import { ShareButton } from "@/components/shared/share-button"
 import { formatCount } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { Post } from "../types/post"
@@ -165,6 +166,11 @@ function PostActions({
       >
         <BookmarkIcon className={cn(post.savedByMe && "fill-current")} />
       </Toggle>
+
+      <ShareButton
+        title={post.place ? `Bài viết tại ${post.place.name}` : `Bài viết của ${post.author.name}`}
+        url={`/post/${post.id}`}
+      />
     </div>
   )
 }

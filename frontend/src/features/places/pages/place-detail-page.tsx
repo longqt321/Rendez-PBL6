@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { SectionHeading } from "@/components/shared/section-heading"
+import { ShareButton } from "@/components/shared/share-button"
 import { formatCount, formatRating } from "@/lib/format"
 import { categoryLabel } from "../lib/category-meta"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
@@ -159,6 +160,7 @@ export function PlaceDetailPage() {
                 Đăng bài check-in tại đây
               </Button>
             </CheckInDialog>
+            <ShareButton title={place.name} url={`/discover/${placeId}`} />
             <ReportPlaceDialog place={place}>
               <Button variant="ghost" className="text-muted-foreground">
                 <FlagIcon />

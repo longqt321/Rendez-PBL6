@@ -10,7 +10,7 @@ import {
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { env } from "../env"
-import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
+import { UUID_ID_RE, decodeCursor, encodeCursor, requireUuid } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { idempotency } from "../lib/idempotency"
 import { prisma } from "../lib/prisma"
@@ -82,11 +82,6 @@ const createCommentSchema = z.object({
 
 const toggleSchema = z.object({ liked: z.boolean().optional() })
 const saveSchema = z.object({ saved: z.boolean().optional() })
-
-function requireUuid(value: string, message: string): string {
-  if (!UUID_ID_RE.test(value)) throw new ApiError(404, message)
-  return value
-}
 
 async function readJson(c: { req: { json: () => Promise<unknown> } }): Promise<unknown> {
   return c.req.json().catch(() => null)
