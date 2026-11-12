@@ -2885,3 +2885,33 @@ link `?nearby=1` mất sắp xếp.
 **Hệ quả:** query key của `useDiscoverPlaces` phải chứa `sort`, `priceMax` cá nhân và toạ độ
 làm tròn 4 chữ số (chống GPS jitter); thiếu một trong các trường này là card nhân đôi khi đổi
 sort. Toạ độ được ghi lên URL khi `sort=distance` để link chia sẻ tái tạo đúng thứ tự.
+
+---
+
+## D-059 — Lấp khoảng trống cold-start bằng dữ liệu OSM thật (tags + giờ mở cửa) — 2026-11-13
+
+**Bối cảnh:** cold-start — 0 rating, `tags = []`, card quán trơn trụi. Rà soát raw OSM
+(`backend/data/raw/osm-L6/L7`, 3.223 element) thấy dữ liệu thật bị pipeline bỏ sót:
+`cuisine` 676, `diet:vegetarian` 59, `outdoor_seating` 142, `takeaway` 70,
+`internet_access` 318, `opening_hours` 438. `price_level` OSM **không có** (0/3.223) —
+lọc giá không thể lấp mà không bịa (vi phạm D-049), giữ disabled.
+
+**Quyết định:**
+1. `build-corpus` sinh `tags` từ OSM theo bảng map cuisine→nhãn tiếng Việt (19 nhãn,
+   cuisine lạ bỏ, tối đa 6 tag, dedup + sort) + 4 tag tiện ích (Chay/Ngồi ngoài trời/
+   Mang đi/Wifi). Kết quả: **160/344 place có tags (46,5%)** — toàn bộ thuộc nhóm OSM;
+   86 curated vẫn rỗng vì không có dữ liệu gốc (không bịa).
+2. `opening_hours` (57% coverage) mở qua API: `Place.openingHours` optional (bỏ-null
+   thay vì gửi null, khớp pattern schema), `selectPlaces()` + DTO + query riêng của
+   daily-picks thêm cột.
+3. FE: chip tag tối đa 3 + "+N" trên card; badge "Đang mở cửa/Đã đóng cửa" tính từ
+   `isOpenNow()` (parse `24/7`, range ngày, qua nửa đêm, giờ Asia/Ho_Chi_Minh; lệch
+   format → không hiện badge). 11 unit test mới.
+
+**Hệ quả còn mở (BACKLOG):** trang 1 `/discover` (sort mặc định `newest`) chủ yếu là
+curated — không có tags, nên cải thiện hiển thị chưa thấy ngay ở trang đầu. Cần sort
+"Nổi bật" ưu tiên place giàu dữ liệu (có tags/ảnh/giờ mở cửa) hoặc gán tags curated
+từ nguồn khác có thật.
+
+**Bài học:** dữ liệu "thiếu" ở tầng app không có nghĩa là nguồn gốc thiếu — rà lại raw
+trước khi kết luận phải bịa.

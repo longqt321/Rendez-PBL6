@@ -40,6 +40,8 @@ interface ColdStartPlace {
   collectedAt: string | null
   tier: string | null
   status: string
+  /** Nhãn sinh từ tag OSM thật (build-corpus). Dataset gốc không có → [] */
+  tags?: string[]
 }
 
 interface ColdStartDataset {
@@ -255,7 +257,7 @@ async function main(): Promise<void> {
       district: raw.district,
       category: PRISMA_CATEGORY[CATEGORY_MAP[raw.category] ?? "restaurant"],
       priceLevel: 1,
-      tags: [],
+      tags: raw.tags ?? [],
       lat: raw.lat,
       lng: raw.lng,
       status: toStatus(raw.status),

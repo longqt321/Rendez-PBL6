@@ -69,6 +69,9 @@ type outPlace struct {
 	CollectedAt  *string  `json:"collectedAt"`
 	Tier         *string  `json:"tier"`
 	Status       string   `json:"status"`
+	// Tags: nhãn tiện ích/ẩm thực sinh từ tag OSM thật (cuisine, diet:vegetarian,
+	// outdoor_seating, takeaway, internet_access). Curated giữ nguyên như cũ.
+	Tags []string `json:"tags"`
 	// Quality: điểm 0–100 do build-corpus chấm (tên + metadata + độ mới).
 	// Chỉ dùng để CHỌN quán khi cần cắt bớt, không dùng trong ranker.
 	Quality int `json:"quality"`
@@ -205,6 +208,57 @@ var cuisineMap = map[string]string{
 	"vegetarian": "chay", "vegan": "chay",
 	"noodle": "bun", "breakfast": "quan-an",
 	"sandwich": "banh-mi", "juice": "sinh-to", "smoothie": "sinh-to",
+}
+
+// tagCuisineMap: cuisine OSM → nhãn tiếng Việt cho trường tags. Cuisine lạ
+// KHÔNG có trong map → bỏ (không dịch máy móc bừa — D-049).
+var tagCuisineMap = map[string]string{
+	"vietnamese": "Món Việt", "coffee_shop": "Cà phê", "seafood": "Hải sản",
+	"korean": "Món Hàn", "japanese": "Món Nhật", "indian": "Món Ấn",
+	"pizza": "Pizza", "pasta": "Pizza", "steak_house": "Bít tết",
+	"regional": "Đặc sản địa phương", "burger": "Burger", "asian": "Món Á",
+	"thai": "Món Thái", "mexican": "Món Mexico", "american": "Món Mỹ",
+	"chicken": "Gà rán", "noodle": "Mì/noodle", "vegetarian": "Chay",
+	"chinese": "Món Trung",
+}
+
+// buildTags: sinh tags từ tag OSM thật. Dedup, sort alphabet (thứ tự ổn định),
+// tối đa 6 tag.
+func buildTags(tags map[string]string) []string {
+	set := map[string]bool{}
+	add := func(l string) {
+		if l != "" && !set[l] {
+			set[l] = true
+		}
+	}
+	if c := tags["cuisine"]; c != "" {
+		for _, part := range strings.Split(c, ";") {
+			add(tagCuisineMap[strings.ToLower(strings.TrimSpace(part))])
+		}
+	}
+	switch tags["diet:vegetarian"] {
+	case "yes", "only":
+		add("Chay")
+	}
+	if tags["outdoor_seating"] == "yes" {
+		add("Ngồi ngoài trời")
+	}
+	if tags["takeaway"] == "yes" {
+		add("Mang đi")
+	}
+	switch tags["internet_access"] {
+	case "yes", "wlan":
+		add("Wifi")
+	}
+	out := make([]string, 0, len(set))
+	for l := range set {
+		out = append(out, l)
+	}
+	sort.Strings(out)
+	if len(out) > 6 {
+		out = out[:6]
+	}
+	return out
 }
 
 // ---------- Trọng tâm 12 quận (xấp xỉ — dùng khi thiếu addr:district) ----------
@@ -1339,6 +1393,7 @@ func main() {
 			CollectedAt:  nil,
 			Tier:         &tier,
 			Status:       status,
+			Tags:         buildTags(c.e.Tags),
 			Quality:      q,
 
 			DistrictApprox: districtApprox,
@@ -1493,8 +1548,16 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	distCount := map[string]int{}
 	approxDistrict := 0
 	hasHours, hasPhone, hasCuisine, hasWebsite := 0, 0, 0, 0
+	tagCount := map[string]int{}
+	tagsFilled := 0
 	for _, p := range out {
 		catCount[p.Category]++
+		if len(p.Tags) > 0 {
+			tagsFilled++
+		}
+		for _, t := range p.Tags {
+			tagCount[t]++
+		}
 		if p.District != nil {
 			distCount[*p.District]++
 		}
@@ -1599,6 +1662,13 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	fmt.Printf("- phone        %d (%.1f%%)\n", hasPhone, pct(hasPhone, fn.T6))
 	fmt.Printf("- cuisine      %d (%.1f%%)\n", hasCuisine, pct(hasCuisine, fn.T6))
 	fmt.Printf("- website      %d (%.1f%%)\n", hasWebsite, pct(hasWebsite, fn.T6))
+
+	// ---------- Phân bố tags (sinh từ tag OSM thật) ----------
+	fmt.Println("\n## Tags (từ OSM)")
+	fmt.Printf("- place có tags %d/%d (%.1f%%)\n", tagsFilled, fn.T6, pct(tagsFilled, fn.T6))
+	for _, kv := range topN(tagCount, 15) {
+		fmt.Printf("- %-24s %5d\n", kv.k, kv.v)
+	}
 
 	// ---------- Phân bố điểm chất lượng ----------
 	fmt.Println("\n## Điểm chất lượng (qualityScore 0–100)")
@@ -1756,6 +1826,7 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 			"curated":   len(curated),
 			"osm":       len(out) - len(curated),
 			"cafe_dropped_by_cap": cafeDropped,
+			"tags_filled":         tagsFilled,
 			"district_approx":     approxDistrict,
 			"min_signals":         *minSignals,
 			"max_branch":          *maxBranch,

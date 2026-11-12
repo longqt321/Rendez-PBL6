@@ -174,3 +174,80 @@ Copy output bảng funnel + phân bố từ bước 2 và kết quả cross-chec
 17. **T4b (địa điểm nổi bật)** loại 86% POI thô. Đây là **can thiệp có chủ ý** theo D-AI-42:
     app hướng tới điểm đi chơi, không phải bản đồ tiện ích. Báo cáo phải nêu rõ tỉ lệ loại
     và lý do (`meta.drop_reasons`).
+
+---
+
+## Bổ sung tags từ OSM (2026-11-13)
+
+Trước thay đổi: **0/344** place có `tags`. Sau: **160/344 (46.5%)** — toàn bộ là POI OSM
+(160/273 bản ghi có `osmId`); **86 quán curated vẫn `tags: []`** (dataset gốc không có tag,
+không bịa). `meta.tags_filled = 160`.
+
+### Nguồn tag (chỉ tag thật trong OSM — D-049)
+
+| Tag OSM | Điều kiện | Nhãn sinh ra |
+|---|---|---|
+| `cuisine` (split `;`) | theo bảng map dưới | nhãn món/loại hình |
+| `diet:vegetarian` | `yes`/`only` | `Chay` |
+| `outdoor_seating` | `yes` | `Ngồi ngoài trời` |
+| `takeaway` | `yes` | `Mang đi` |
+| `internet_access` | `yes`/`wlan` | `Wifi` |
+
+### Bảng map cuisine → nhãn
+
+| cuisine | nhãn |
+|---|---|
+| vietnamese | Món Việt |
+| coffee_shop | Cà phê |
+| seafood | Hải sản |
+| korean | Món Hàn |
+| japanese | Món Nhật |
+| indian | Món Ấn |
+| pizza, pasta | Pizza |
+| steak_house | Bít tết |
+| regional | Đặc sản địa phương |
+| burger | Burger |
+| asian | Món Á |
+| thai | Món Thái |
+| mexican | Món Mexico |
+| american | Món Mỹ |
+| chicken | Gà rán |
+| noodle | Mì/noodle |
+| vegetarian | Chay |
+| chinese | Món Trung |
+
+Cuisine ngoài bảng → **bỏ** (không dịch máy móc). Dedup, sort alphabet, tối đa **6 tag**.
+
+### Phân bố thật (trên 344 place)
+
+| Nhãn | Số place |
+|---|---|
+| Wifi | 97 |
+| Món Việt | 63 |
+| Cà phê | 54 |
+| Ngồi ngoài trời | 38 |
+| Mang đi | 23 |
+| Chay | 18 |
+| Pizza | 11 |
+| Bít tết | 8 |
+| Burger | 7 |
+| Hải sản | 7 |
+| Đặc sản địa phương | 7 |
+| Món Á | 6 |
+| Gà rán | 5 |
+| Món Nhật | 5 |
+| Món Hàn | 4 |
+
+Đã kiểm: tập nhãn xuất hiện trong JSON đúng bằng 19 nhãn của bảng map, không có nhãn lạ.
+
+### Lưu ý vận hành
+
+- `backend/scripts/seed.ts` trước đây hardcode `tags: []` → corpus có tags nhưng DB rỗng.
+  Đã sửa thành `tags: raw.tags ?? []` (+ field `tags?: string[]` trong `ColdStartPlace`).
+  **Đây là file ngoài phạm vi `build-corpus/*` nhưng bắt buộc** để tag tới được DB/API.
+- Image `rendez-api-migrator` bake sẵn `seed.ts` cũ: sau khi sửa phải
+  `docker compose build migrate` rồi mới `docker compose run --rm migrate bun run seed`,
+  nếu không seed vẫn ghi `tags: []`.
+- Verify: `select count(*) filter (where tags <> '{}') from places;` → 160/344;
+  `curl -s localhost:5173/api/v1/places/osm-node-8552881467` → `tags: ["Món Á"]`.
+  `noi-cafe` (curated) vẫn `tags: []` — đúng.
