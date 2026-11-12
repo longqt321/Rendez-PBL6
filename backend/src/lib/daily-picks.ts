@@ -82,6 +82,8 @@ export interface PickCandidate {
   category: string
   district: string | null
   reviewCount: number
+  /** Số ảnh thật của quán — quán curated có ảnh, quán OSM thô thì không. */
+  imageCount: number
   createdAt: Date
 }
 
@@ -102,13 +104,18 @@ export interface PickedPlace {
 /** Điểm cơ bản: review thật được ưu tiên khi có, quán mới cộng thêm. */
 function baseScore(candidate: PickCandidate, newCutoff: string): number {
   const isNew = candidate.createdAt.toISOString().slice(0, 10) >= newCutoff
-  return 2 * Math.log(1 + candidate.reviewCount) + (isNew ? 1 : 0)
+  // Quán có ảnh thật được cộng điểm: dải gợi ý hiển thị ảnh ngay trên đầu
+  // /discover — chọn quán không ảnh là dải toàn placeholder. Cùng điểm với
+  // "quán mới" (2) vì ảnh là tín hiệu chất lượng quan trọng nhất hiện có.
+  const hasImage = candidate.imageCount > 0 ? 2 : 0
+  return 2 * Math.log(1 + candidate.reviewCount) + (isNew ? 1 : 0) + hasImage
 }
 
 /** `reason` trung thực từ dữ liệu có thật — không bịa "điểm cao" khi rating = 0. */
 function buildReason(candidate: PickCandidate, newCutoff: string): string {
-  if (candidate.createdAt.toISOString().slice(0, 10) >= newCutoff) return "Quán mới"
   if (candidate.reviewCount >= REASON_REVIEW_THRESHOLD) return "Nhiều đánh giá"
+  if (candidate.imageCount > 0) return "Được chọn lọc"
+  if (candidate.createdAt.toISOString().slice(0, 10) >= newCutoff) return "Quán mới"
   return "Gợi ý của ngày"
 }
 
@@ -144,8 +151,14 @@ export function selectDailyPicks(
     }))
     .sort((a, b) => b.score - a.score || a.key - b.key)
 
+  // Cổng chất lượng: khi corpus có đủ ≥ `limit` quán có ảnh thật thì chỉ chọn
+  // từ nhóm đó — dải gợi ý nằm ngay đầu /discover, chọn quán không ảnh là dải
+  // toàn placeholder. Không đủ thì dùng nguyên pool (corpus quá nhỏ vẫn có picks).
+  const withImages = pool.filter((entry) => entry.candidate.imageCount > 0)
+  const activePool = withImages.length >= limit ? withImages : pool
+
   const byCategory = new Map<string, typeof pool>()
-  for (const entry of pool) {
+  for (const entry of activePool) {
     const list = byCategory.get(entry.candidate.category) ?? []
     list.push(entry)
     byCategory.set(entry.candidate.category, list)
@@ -218,6 +231,7 @@ interface CandidateRow {
   category: string
   district: string | null
   review_count: number
+  image_count: number
   created_at: Date
 }
 
@@ -232,13 +246,19 @@ async function fetchPickCandidates(
 ): Promise<PickCandidate[]> {
   const rows = await client.$queryRaw<CandidateRow[]>(Prisma.sql`
     SELECT p.id, p.category::text AS category, p.district, p.created_at,
-           COALESCE(r.review_count, 0)::int AS review_count
+           COALESCE(r.review_count, 0)::int AS review_count,
+           COALESCE(img.image_count, 0)::int AS image_count
     FROM places p
     LEFT JOIN LATERAL (
       SELECT COUNT(*) AS review_count
       FROM reviews rv
       WHERE rv.place_id = p.id AND rv.deleted_at IS NULL
     ) r ON true
+    LEFT JOIN LATERAL (
+      SELECT COUNT(*) AS image_count
+      FROM place_images pi
+      WHERE pi.place_id = p.id
+    ) img ON true
     WHERE p.published_at IS NOT NULL AND p.status <> 'closed' AND p.deleted_at IS NULL
   `)
   return rows.map((row) => ({
@@ -246,6 +266,7 @@ async function fetchPickCandidates(
     category: row.category,
     district: row.district,
     reviewCount: Number(row.review_count),
+    imageCount: Number(row.image_count),
     createdAt: row.created_at,
   }))
 }

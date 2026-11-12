@@ -78,11 +78,14 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
   const { filters, room } = view
 
   // Heuristic client trên dữ liệu ĐÃ TẢI (không cần API mới): dữ liệu thật hiện
-  // toàn `priceLevel = 1` và ~0 review, nên nhóm giá / option rating phải
-  // disabled + chú thích thay vì "giả vờ" có tác dụng. Tự bật khi corpus được
-  // làm giàu (V2-03).
+  // toàn `priceLevel = 1`, nên nhóm giá phải disabled + chú thích thay vì "giả
+  // vờ" có tác dụng. Tự bật khi corpus được làm giàu (V2-03).
+  //
+  // Lưu ý KHÔNG áp heuristic này cho sort=rating: heuristic chỉ xét 9 quán của
+  // trang hiện tại, trong khi DB có thể có quán có đánh giá ở trang khác —
+  // disabled oan. Server sắp xếp trên TOÀN BỘ kết quả nên sort=rating luôn
+  // chọn được (quán 0 review tự xếp xuống cuối theo thiết kế).
   const hasPriceVariety = view.placesWithDistance.some(({ place }) => place.priceLevel > 1)
-  const hasRatings = view.placesWithDistance.some(({ place }) => place.reviewCount > 0)
 
   function switchMode(next: "grid" | "map") {
     if (next === mode) return
@@ -339,12 +342,7 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuRadioGroup value={filters.sort} onValueChange={handleSortChange}>
                 <DropdownMenuRadioItem value="newest">Mới nhất</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="rating" disabled={!hasRatings}>
-                  Đánh giá cao
-                  {!hasRatings ? (
-                    <span className="ml-auto text-xs text-muted-foreground">Chưa có đánh giá</span>
-                  ) : null}
-                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="rating">Đánh giá cao</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="distance">Gần tôi</DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>

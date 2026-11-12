@@ -25,6 +25,7 @@ function makeCandidates(count: number, categories: string[]): PickCandidate[] {
     category: categories[index % categories.length]!,
     district: `Quận ${String.fromCharCode(65 + (index % 5))}`,
     reviewCount: 0,
+    imageCount: 0,
     createdAt: new Date("2026-01-01T00:00:00Z"),
   }))
 }
@@ -98,5 +99,26 @@ describe("selectDailyPicks", () => {
     // 2026-11-11T18:00Z = 01:00 ngày 12/11 giờ Việt Nam.
     expect(mod.getPickDate(new Date("2026-11-11T18:00:00Z"))).toBe("2026-11-12")
     expect(mod.getPickDate(new Date("2026-11-11T16:00:00Z"))).toBe("2026-11-11")
+  })
+
+  test("7. quán có ảnh thật được ưu tiên trên quán không ảnh cùng điểm", () => {
+    // Dải gợi ý hiển thị ảnh ngay trên đầu /discover — chọn quán OSM không ảnh
+    // thì cả dải toàn placeholder. Ảnh là tín hiệu chất lượng quan trọng nhất.
+    const candidates = makeCandidates(30, ["cafe"])
+    candidates[7]!.imageCount = 2
+    const picked = mod.selectDailyPicks(candidates, [], "2026-11-12")
+    expect(picked[0]?.placeId).toBe("place-7")
+    expect(picked[0]?.reason).toBe("Được chọn lọc")
+  })
+
+  test("8. đủ quán có ảnh thì không chọn quán không ảnh (cổng chất lượng)", () => {
+    // 10 quán có ảnh + 20 quán OSM không ảnh: 3 slot phải thuộc nhóm có ảnh,
+    // kể cả khi round-robin category muốn lấy quán không ảnh cho category nào đó.
+    const candidates = makeCandidates(30, ["cafe", "restaurant", "bar"])
+    for (let index = 0; index < 10; index += 1) candidates[index]!.imageCount = 3
+    const picked = mod.selectDailyPicks(candidates, [], "2026-11-12")
+    for (const pick of picked) {
+      expect(Number(pick.placeId.split("-")[1])).toBeLessThan(10)
+    }
   })
 })
