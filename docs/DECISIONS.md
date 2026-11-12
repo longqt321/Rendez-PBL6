@@ -2915,3 +2915,37 @@ từ nguồn khác có thật.
 
 **Bài học:** dữ liệu "thiếu" ở tầng app không có nghĩa là nguồn gốc thiếu — rà lại raw
 trước khi kết luận phải bịa.
+
+## D-060 — Chuẩn hoá địa giới 7 quận + vibes sinh từ OSM + `publishedAt` trải tất định — 2026-11-13
+
+**Bối cảnh:** bộ lọc "Quận" trộn phường/xã với quận (13 nhãn: Hải Châu, Thanh Khê, An Hải,
+Hòa Cường, Hòa Khánh, Hòa Xuân, An Khê, Hải Vân…), trong khi yêu cầu sản phẩm chốt danh sách
+7 nhãn: Hải Châu, Sơn Trà, Ngũ Hành Sơn, Liên Chiểu, Cẩm Lệ, Hòa Vang, Hoàng Sa. Card cũng thiếu tín hiệu "vibe" và badge "Mới" vô nghĩa vì mọi
+place seed cùng một `published_at`.
+
+**Quyết định:**
+1. `build-corpus` chỉ còn 7 centroid; `normalizeDistrict` map nhãn cũ về phân nhóm:
+   An Hải→Sơn Trà, Hòa Cường→Hải Châu, An Khê→Hải Châu, Thanh Khê→Hải Châu,
+   Hòa Khánh→Liên Chiểu, Hải Vân→Liên Chiểu, Hòa Xuân→Cẩm Lệ.
+   LƯU Ý TRUNG THỰC (audit N4): từ 01/7/2025 Đà Nẵng bãi bỏ cấp quận/huyện (còn
+   phường/xã trực thuộc TP) — "7 quận" là PHÂN NHÓM XẤP XỈ theo quận cũ do yêu cầu
+   sản phẩm chốt, KHÔNG phải đơn vị hành chính hiện hành; Thanh Khê cũ KHÔNG "sáp
+   nhập vào Hải Châu" về hành chính, chỉ là gộp nhóm vì danh sách 7 không có nhãn
+   riêng (khu vực Thanh Khê cũ thành 2 phường Thanh Khê + An Khê trực thuộc TP).
+   District rỗng → centroid gần nhất trong 7 (bỏ ngưỡng 12km cũ), vẫn đánh dấu `districtApprox`.
+   Centroid Hoàng Sa đặt ngoài biển (16.5/112.0) để không POI đất liền nào bị gán nhầm.
+   Kết quả DB: 6 quận có dữ liệu (Hoàng Sa là quận đảo, không có POI OSM), 0 bản ghi rỗng.
+2. `vibes` (≤3) sinh từ tín hiệu OSM thật (`internet_access`+cafe→"Làm việc",
+   `outdoor_seating`→"Ngoài trời", `takeaway`→"Mang đi", bar/pub→"Nhậu nhẹt", karaoke/cinema/
+   arcade→"Giải trí", `diet:vegetarian`→"Chay"). DB chưa có cột riêng → seed GỘP vào `tags`
+   (dedup, tags trước vibes sau); khi có cột riêng thì tách (ghi ở runbook-corpus).
+3. `published_at` trải tất định 0–89 ngày trước mốc seed theo `hash(id)` thay vì một mốc cố
+   định. Lý do: dataset demo gom một lần, nếu cùng ngày thì badge "Mới" (≤14 ngày) hiện trên
+   toàn bộ card — vô nghĩa. Trải theo hash giữ tất định khi seed lại và cho ~15% quán "Mới".
+   KHÔNG dùng `created_at` vì cột đó gánh thứ tự keyset của API.
+4. API mở thêm `Place.publishedAt: string | null` (ISO) để FE tự quyết badge; không gửi
+   `createdAt` (thứ tự nội bộ).
+
+**Hệ quả:** `frontend/src/features/places/lib/danang-districts.ts` phải khớp 7 quận (FE agent
+xử lý cùng phiên). `places.json.bak`/`places.csv`/README tĩnh còn nhãn cũ — không ảnh hưởng
+runtime, dọn khi có dịp.

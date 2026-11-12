@@ -251,3 +251,92 @@ Cuisine ngoài bảng → **bỏ** (không dịch máy móc). Dedup, sort alphab
 - Verify: `select count(*) filter (where tags <> '{}') from places;` → 160/344;
   `curl -s localhost:5173/api/v1/places/osm-node-8552881467` → `tags: ["Món Á"]`.
   `noi-cafe` (curated) vẫn `tags: []` — đúng.
+
+## Chuẩn hóa địa giới 7 quận + vibes (2026-11-13)
+
+### 1. District về 7 đơn vị cấp quận
+
+Corpus cũ có 13 nhãn district (gồm cả đơn vị/phường cũ). Sau sáp nhập hành chính
+2025, Đà Nẵng còn 7 đơn vị cấp quận: **Hải Châu, Sơn Trà, Ngũ Hành Sơn, Liên Chiểu,
+Cẩm Lệ, Hòa Vang, Hoàng Sa**.
+
+Bảng map đơn vị cũ → mới (trong `normalizeDistrict` + `districtCentroids` của
+`backend/scripts/build-corpus/main.go`):
+
+| Nhãn cũ | Nhãn mới | Lý do |
+|---|---|---|
+| An Hải | Sơn Trà | An Hải Đông/Bắc/Tây là phường của Sơn Trà |
+| Hòa Cường | Hải Châu | phường thuộc quận Hải Châu |
+| An Khê | Hải Châu | An Khê thuộc Thanh Khê cũ → Thanh Khê sáp nhập vào Hải Châu |
+| Thanh Khê | Hải Châu | Thanh Khê sáp nhập vào Hải Châu theo NQ 2025 |
+| Hòa Khánh | Liên Chiểu | phường thuộc quận Liên Chiểu |
+| Hải Vân | Liên Chiểu | phường thuộc quận Liên Chiểu |
+| Hòa Xuân | Cẩm Lệ | phường thuộc quận Cẩm Lệ |
+
+- `districtCentroids` chỉ còn 7 centroid. Hoàng Sa là quận đảo → centroid đặt
+  ngoài biển (16.5, 112.0) để không POI đất nào bị gán nhầm.
+- **Bỏ ngưỡng `maxDistrictDist` (12 km)**: mọi venue phải có district thuộc 7
+  đơn vị — district rỗng làm filter theo quận ở FE bỏ sót place. Bản ghi gán theo
+  centroid vẫn `districtApprox=true` (63.1% corpus).
+- Curated (86 place) cũng được chuẩn hóa district theo cùng bảng map; không nhận
+  ra → nearest centroid (tất cả curated đều có toạ độ).
+
+### 2. Vibes (tối đa 3, chỉ từ tín hiệu OSM thật)
+
+Trường mới `vibes: []string` trong corpus, sinh bởi `buildVibes()`:
+
+| Tín hiệu | Vibe |
+|---|---|
+| `internet_access=yes\|wlan` + category `cafe` | Làm việc |
+| `outdoor_seating=yes` | Ngoài trời |
+| `takeaway=yes` | Mang đi |
+| category `quan-nhau` hoặc `amenity=bar\|pub` | Nhậu nhẹt |
+| category `karaoke`/`cinema`/`arcade` | Giải trí |
+| `diet:vegetarian=yes\|only` | Chay |
+
+- KHÔNG suy đoán: cafe không khai `internet_access` → không gán "Làm việc".
+- Place không có tín hiệu → `vibes: []` (card tự ẩn). Curated luôn rỗng.
+- DB chưa có cột riêng → `seed.ts` gộp vibes vào `tags` (dedup, tags trước vibes
+  sau). Khi có cột `vibes` thì tách lại.
+
+### 3. Ảnh minh họa theo hash(name)
+
+- Ảnh AI nằm ở `frontend/public/data/cold-start/images/categories/<group>-<n>.webp|png`
+  (agent khác sinh). Nhóm: cafe, quan-an, hai-san, banh-mi, chay, quan-nhau, giai-tri, mua-sam.
+- `frontend/scripts/copy-cold-start-images.mjs` giờ đồng bộ thêm `categories/`,
+  sinh `categories/manifest.json` dạng `{ "cafe": ["cafe-1.png", ...], ... }` bằng
+  cách ĐỌC THƯ MỤC THẬT (sort tên file để tất định). Thư mục chưa có file →
+  manifest rỗng, không lỗi.
+- Map category → group đầy đủ cho 37 nhãn nằm trong `CATEGORY_IMAGE_GROUP` của
+  script đó: cafe→cafe; hai-san,goi-ca→hai-san; banh-mi,banh,banh-ngot,banh-xeo,
+  banh-beo,banh-khoai,banh-canh,banh-trang-thit-heo→banh-mi; chay→chay;
+  quan-nhau,nem-lui,nuong,lau→quan-nhau; karaoke,cinema,arcade,massage,spa,
+  music-box,bida,bowling,water-park→giai-tri; sieu-thi,cho,mall→mua-sam;
+  còn lại→quan-an.
+
+### 4. Số liệu verify (2026-11-13)
+
+Build: `go build` OK, corpus 344 place (curated 86 + OSM 258).
+
+District TRƯỚC (13 nhãn, có cả đơn vị cũ): Hải Châu, Thanh Khê, Sơn Trà, Ngũ Hành Sơn,
+Liên Chiểu, Cẩm Lệ, Hòa Vang, An Hải, Hòa Cường, Hòa Khánh, Hòa Xuân, An Khê, Hải Vân.
+District SAU (psql `select district, count(*) from places group by 1`):
+
+| district | count |
+|---|---|
+| Hải Châu | 183 |
+| Ngũ Hành Sơn | 74 |
+| Liên Chiểu | 33 |
+| Sơn Trà | 27 |
+| Cẩm Lệ | 25 |
+| Hòa Vang | 2 |
+
+→ 6 giá trị thực tế, tất cả thuộc tập 7 (Hoàng Sa = 0 vì là quận đảo, không có
+POI OSM đất liền). Không có district rỗng/NULL.
+
+Vibes: 100/344 place có vibes (29.1%) — Làm việc 43, Ngoài trời 38, Mang đi 23,
+Chay 18 (tag "Chay" trùng 16 + curated 2), Nhậu nhẹt 9, Giải trí 7.
+DB: `tags <> '{}'` = 166 (160 tags cũ + 6 place chỉ có vibes).
+
+`docker compose build migrate` + `docker compose run --rm migrate bun run seed` →
+`[seed] Xong: 344 place, 29 ảnh (thêm mới 0)`; published = 343 (≥ 300).

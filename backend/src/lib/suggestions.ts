@@ -96,6 +96,19 @@ export function fetchPublishedRankCandidates(): Promise<CandidateRow[]> {
   return publishedCandidatesCache.get("published", () => fetchRankCandidates(true))
 }
 
+/**
+ * Như `fetchPublishedRankCandidates` nhưng báo `cacheHit` — route dùng để gắn
+ * `meta.cacheHit` và đếm metrics mà không phải đoán.
+ */
+export function fetchPublishedRankCandidatesWithStatus(): Promise<{
+  rows: CandidateRow[]
+  cacheHit: boolean
+}> {
+  return publishedCandidatesCache
+    .getWithStatus("published", () => fetchRankCandidates(true))
+    .then(({ value, hit }) => ({ rows: value, cacheHit: hit }))
+}
+
 /** Xoá cache gợi ý — gọi khi dữ liệu place công khai thay đổi (publish). */
 export function invalidateSuggestionCache(): void {
   publishedCandidatesCache.clear()

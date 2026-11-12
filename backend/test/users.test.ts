@@ -37,6 +37,18 @@ describe("GET /users", () => {
     expect(userPageSchema.safeParse(await res.json()).success).toBe(true)
   })
 
+  test("meta có totalResults là COUNT thật (không phải số item trong trang)", async () => {
+    const res = await app.request("/api/v1/users")
+    const body = (await res.json()) as {
+      items: unknown[]
+      meta: { tookMs: number; cacheHit: boolean; totalResults: number }
+    }
+    expect(Number.isInteger(body.meta.tookMs)).toBe(true)
+    expect(body.meta.cacheHit).toBe(false)
+    expect(body.meta.totalResults).toBeGreaterThanOrEqual(body.items.length)
+    expect(body.meta.totalResults).toBe(await prisma.user.count({ where: { deletedAt: null } }))
+  })
+
   test("tìm không dấu khớp tên có dấu", async () => {
     // Tạo user có tên có dấu để tìm.
     await app.request("/api/v1/register", {
@@ -237,6 +249,23 @@ describe("GET /users/suggestions", () => {
     expect(res.status).toBe(200)
     expect(res.headers.get("cache-control")).toBe("no-store")
     expect(userSuggestionsSchema.safeParse(await res.json()).success).toBe(true)
+  })
+
+  test("có meta vận hành: tookMs/totalResults thật, cacheHit false", async () => {
+    const res = await app.request("/api/v1/users/suggestions", {
+      headers: { Cookie: viewer.cookie },
+    })
+    const body = (await res.json()) as {
+      items: unknown[]
+      next: string | null
+      meta: { tookMs: number; cacheHit: boolean; totalResults: number }
+    }
+    expect(body.next).toBeNull()
+    expect(Number.isInteger(body.meta.tookMs)).toBe(true)
+    expect(body.meta.tookMs).toBeGreaterThanOrEqual(0)
+    // Không có cache ứng dụng cho gợi ý người → false, không bịa.
+    expect(body.meta.cacheHit).toBe(false)
+    expect(body.meta.totalResults).toBe(body.items.length)
   })
 
   test("loại chính mình, người đã theo dõi và người đã xoá mềm", async () => {

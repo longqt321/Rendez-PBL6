@@ -75,6 +75,11 @@ type outPlace struct {
 	// Quality: điểm 0–100 do build-corpus chấm (tên + metadata + độ mới).
 	// Chỉ dùng để CHỌN quán khi cần cắt bớt, không dùng trong ranker.
 	Quality int `json:"quality"`
+	// Vibes: tối đa 3 nhãn "không khí" sinh từ tín hiệu OSM THẬT (internet_access,
+	// outdoor_seating, takeaway, diet:vegetarian, amenity=bar/pub, category
+	// quan-nhau/karaoke/cinema/arcade). Không suy đoán — place không có tín hiệu
+	// nào thì vibes rỗng (card tự ẩn). Curated luôn rỗng (không có dữ liệu gốc).
+	Vibes []string `json:"vibes"`
 	// DistrictApprox=true nghĩa là district là PHỎNG ĐOÁN theo centroid gần
 	// nhất, không phải addr:district thật của OSM. Feature f_district của
 	// ranker phải coi những bản ghi này là "xấp xỉ" (ghi rõ trong báo cáo).
@@ -261,22 +266,72 @@ func buildTags(tags map[string]string) []string {
 	return out
 }
 
-// ---------- Trọng tâm 12 quận (xấp xỉ — dùng khi thiếu addr:district) ----------
+// buildVibes: sinh nhãn "không khí" từ tín hiệu OSM THẬT, tối đa 3, thứ tự ưu
+// tiên cố định (Làm việc → Ngoài trời → Mang đi → Nhậu nhẹt → Giải trí → Chay).
+//
+// Nguyên tắc: KHÔNG suy đoán. Cafe không khai internet_access thì KHÔNG gán
+// "Làm việc" (nhiều quán có wifi nhưng OSM không ghi — bịa là sai). Place không
+// có tín hiệu nào → mảng rỗng, card tự ẩn khối vibes.
+func buildVibes(tags map[string]string, cat string) []string {
+	out := make([]string, 0, 3)
+	add := func(v string) {
+		if len(out) >= 3 {
+			return
+		}
+		for _, e := range out {
+			if e == v {
+				return
+			}
+		}
+		out = append(out, v)
+	}
+	switch tags["internet_access"] {
+	case "yes", "wlan":
+		if cat == "cafe" {
+			add("Làm việc")
+		}
+	}
+	if tags["outdoor_seating"] == "yes" {
+		add("Ngoài trời")
+	}
+	if tags["takeaway"] == "yes" {
+		add("Mang đi")
+	}
+	switch tags["amenity"] {
+	case "bar", "pub":
+		add("Nhậu nhẹt")
+	}
+	if cat == "quan-nhau" {
+		add("Nhậu nhẹt")
+	}
+	switch cat {
+	case "karaoke", "cinema", "arcade":
+		add("Giải trí")
+	}
+	switch tags["diet:vegetarian"] {
+	case "yes", "only":
+		add("Chay")
+	}
+	return out
+}
 
+// ---------- Trọng tâm 7 đơn vị cấp quận (xấp xỉ — dùng khi thiếu addr:district) ----------
+//
+// Danh sách 7 đơn vị do yêu cầu sản phẩm chốt: Hải Châu, Sơn Trà, Ngũ Hành Sơn,
+// Liên Chiểu, Cẩm Lệ, Hòa Vang, Hoàng Sa. LƯU Ý TRUNG THỰC: từ 01/7/2025 Đà Nẵng
+// bãi bỏ cấp quận/huyện (còn phường/xã trực thuộc TP), nên đây KHÔNG phải đơn vị
+// hành chính hiện hành mà là PHÂN NHÓM XẤP XỈ theo các quận cũ để lọc demo —
+// Thanh Khê cũ (giáp trung tâm) gộp vào Hải Châu vì danh sách 7 không có nhãn
+// riêng cho nó. Hoàng Sa là đặc khu đảo — centroid đặt ngoài biển xa để không
+// POI đất liền nào bị gán nhầm về đó.
 var districtCentroids = map[string][2]float64{
 	"Hải Châu":     {16.0678, 108.2208},
-	"Thanh Khê":    {16.0640, 108.1900},
 	"Sơn Trà":      {16.1000, 108.2500},
 	"Ngũ Hành Sơn": {16.0200, 108.2500},
 	"Liên Chiểu":   {16.0700, 108.1500},
 	"Cẩm Lệ":       {16.0100, 108.2000},
 	"Hòa Vang":     {16.0000, 108.1000},
-	"An Hải":       {16.0550, 108.2450},
-	"Hòa Cường":    {16.0400, 108.2200},
-	"Hòa Khánh":    {16.0700, 108.1400},
-	"Hòa Xuân":     {16.0000, 108.2200},
-	"An Khê":       {16.0500, 108.1900},
-	"Hải Vân":      {16.1200, 108.2000},
+	"Hoàng Sa":     {16.5000, 112.0000},
 }
 
 var (
@@ -943,17 +998,22 @@ func assignCategory(tags map[string]string, name string) string {
 	return "khac"
 }
 
-// 12 quận chuẩn của dataset. Mọi giá trị khác phải chuẩn hoá về đây.
+// districtCanonical: 7 nhãn phân nhóm do yêu cầu sản phẩm chốt (xấp xỉ theo quận
+// cũ, xem comment trên `districtCentroids`). Thanh Khê cũ không có nhãn riêng —
+// vẫn nhận diện ở normalizeDistrict để map về Hải Châu.
 var districtCanonical = map[string]bool{
-	"Hải Châu": true, "Thanh Khê": true, "Sơn Trà": true,
-	"Ngũ Hành Sơn": true, "Liên Chiểu": true, "Cẩm Lệ": true,
-	"Hòa Vang": true, "An Hải": true, "Hòa Cường": true,
-	"Hòa Khánh": true, "Hòa Xuân": true, "An Khê": true,
-	"Hải Vân": true,
+	"Hải Châu": true, "Sơn Trà": true, "Ngũ Hành Sơn": true,
+	"Liên Chiểu": true, "Cẩm Lệ": true, "Hòa Vang": true,
+	"Hoàng Sa": true,
 }
 
-// Chuẩn hoá addr:district từ OSM (viết không dấu, có tiền tố, sai chính tả).
-// Trả về "" nếu không nhận ra → fallback sang nearest-centroid.
+// Chuẩn hoá addr:district từ OSM (viết không dấu, có tiền tố, sai chính tả,
+// hoặc là đơn vị cũ trước sáp nhập 2025). Trả về "" nếu không nhận ra →
+// fallback sang nearest-centroid trong 7 quận.
+//
+// Map đơn vị cũ (phường/quận trước 2025) → phân nhóm 7 nhãn:
+//   - An Hải → Sơn Trà; Hòa Cường, Thanh Khê (qua An Khê) → Hải Châu
+//   - Hòa Khánh, Hải Vân → Liên Chiểu; Hòa Xuân → Cẩm Lệ
 func normalizeDistrict(s string) string {
 	s = strings.TrimSpace(s)
 	// bỏ tiền tố "Quận " / "Huyện "
@@ -964,16 +1024,20 @@ func normalizeDistrict(s string) string {
 	if districtCanonical[s] {
 		return s
 	}
-	// map không dấu → có dấu
+	// map không dấu → có dấu, gồm cả đơn vị cũ trước sáp nhập 2025
 	ascii := map[string]string{
 		"Hai Chau": "Hải Châu", "Hai Chau District": "Hải Châu",
 		"Ngu Hanh Son": "Ngũ Hành Sơn",
-		"Son Tra":      "Sơn Trà", "Thanh Khe": "Thanh Khê",
-		"Lien Chieu": "Liên Chiểu", "Cam Le": "Cẩm Lệ",
-		"Hoa Vang": "Hòa Vang", "An Hai": "An Hải",
-		"Hoa Cuong": "Hòa Cường", "Hoa Khanh": "Hòa Khánh",
-		"Hoa Xuan": "Hòa Xuân", "An Khe": "An Khê",
-		"Hai Van": "Hải Vân",
+		"Son Tra":      "Sơn Trà", "Lien Chieu": "Liên Chiểu",
+		"Cam Le": "Cẩm Lệ", "Hoa Vang": "Hòa Vang", "Hoang Sa": "Hoàng Sa",
+		// Đơn vị cũ → đơn vị mới sau sáp nhập 2025
+		"An Hai":    "Sơn Trà", // An Hải Đông/Bắc/Tây là phường của Sơn Trà
+		"Hoa Cuong": "Hải Châu",
+		"An Khe":    "Hải Châu", // An Khê thuộc Thanh Khê cũ → gộp nhóm Hải Châu
+		"Thanh Khe": "Hải Châu", // Thanh Khê cũ không có nhãn riêng trong nhóm 7 → gộp Hải Châu
+		"Hoa Khanh": "Liên Chiểu",
+		"Hai Van":   "Liên Chiểu",
+		"Hoa Xuan":  "Cẩm Lệ",
 	}
 	if mapped, ok := ascii[s]; ok {
 		return mapped
@@ -1073,9 +1137,9 @@ func nearestDistrict(lat, lng float64) (string, float64) {
 	return best, bestD
 }
 
-// maxDistrictDist: quá xa centroid gần nhất (ra biển, Hòa Vang sâu) → district
-// phỏng đoán sai nhiều khả năng. Để nil, không bịa.
-const maxDistrictDist = 12000 // mét
+// maxDistrictDist: ĐÃ BỎ NGƯỠNG. Mọi venue phải có district thuộc 7 đơn vị cấp
+// quận — district rỗng làm filter theo quận ở FE bỏ sót place. Vẫn đánh dấu
+// districtApprox=true để ranker biết đây là phỏng đoán theo centroid.
 
 func strPtr(s string) *string {
 	if s == "" {
@@ -1337,16 +1401,11 @@ func main() {
 			district = strPtr(d)
 			geoPrec = "addr-tag"
 		} else {
-			d, dist := nearestDistrict(c.lat, c.lng)
-			if dist > maxDistrictDist {
-				// quá xa mọi centroid → không gán bừa
-				district = nil
-				geoPrec = "none"
-			} else {
-				district = strPtr(d)
-				geoPrec = "district-centroid"
-				districtApprox = true
-			}
+			// Luôn gán quận gần nhất trong 7 đơn vị — không để trống.
+			d, _ := nearestDistrict(c.lat, c.lng)
+			district = strPtr(d)
+			geoPrec = "district-centroid"
+			districtApprox = true
 		}
 		addr := strings.TrimSpace(strings.Join([]string{
 			c.e.Tags["addr:housenumber"], c.e.Tags["addr:street"],
@@ -1394,6 +1453,7 @@ func main() {
 			Tier:         &tier,
 			Status:       status,
 			Tags:         buildTags(c.e.Tags),
+			Vibes:        buildVibes(c.e.Tags, cat),
 			Quality:      q,
 
 			DistrictApprox: districtApprox,
@@ -1425,6 +1485,21 @@ func main() {
 					// Gán sàn 60 (tương đương tên tốt + metadata đầy đủ).
 					if p.Quality < 60 {
 						p.Quality = 60
+					}
+					// Curated không có tag OSM → vibes rỗng (không bịa).
+					p.Vibes = []string{}
+					// Chuẩn hoá district của curated về 7 đơn vị cấp quận. Dataset
+					// gốc còn nhãn cũ (Thanh Khê, An Hải, Hòa Cường...) — map theo
+					// sáp nhập 2025; không nhận ra thì lấy centroid gần nhất.
+					curDistrict := ""
+					if p.District != nil {
+						curDistrict = normalizeDistrict(*p.District)
+					}
+					if curDistrict == "" && p.Lat != nil && p.Lng != nil {
+						curDistrict, _ = nearestDistrict(*p.Lat, *p.Lng)
+					}
+					if curDistrict != "" {
+						p.District = strPtr(curDistrict)
 					}
 					p.mHours = p.OpeningHours != nil && *p.OpeningHours != ""
 					p.mPhone = p.Phone != nil && *p.Phone != ""
@@ -1550,6 +1625,8 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	hasHours, hasPhone, hasCuisine, hasWebsite := 0, 0, 0, 0
 	tagCount := map[string]int{}
 	tagsFilled := 0
+	vibesFilled := 0
+	vibeCount := map[string]int{}
 	for _, p := range out {
 		catCount[p.Category]++
 		if len(p.Tags) > 0 {
@@ -1557,6 +1634,12 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 		}
 		for _, t := range p.Tags {
 			tagCount[t]++
+		}
+		if len(p.Vibes) > 0 {
+			vibesFilled++
+		}
+		for _, v := range p.Vibes {
+			vibeCount[v]++
 		}
 		if p.District != nil {
 			distCount[*p.District]++
@@ -1667,6 +1750,13 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	fmt.Println("\n## Tags (từ OSM)")
 	fmt.Printf("- place có tags %d/%d (%.1f%%)\n", tagsFilled, fn.T6, pct(tagsFilled, fn.T6))
 	for _, kv := range topN(tagCount, 15) {
+		fmt.Printf("- %-24s %5d\n", kv.k, kv.v)
+	}
+
+	// ---------- Phân bố vibes (sinh từ tín hiệu OSM thật) ----------
+	fmt.Println("\n## Vibes (từ tín hiệu OSM)")
+	fmt.Printf("- place có vibes %d/%d (%.1f%%)\n", vibesFilled, fn.T6, pct(vibesFilled, fn.T6))
+	for _, kv := range topN(vibeCount, 10) {
 		fmt.Printf("- %-24s %5d\n", kv.k, kv.v)
 	}
 
@@ -1827,6 +1917,7 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 			"osm":       len(out) - len(curated),
 			"cafe_dropped_by_cap": cafeDropped,
 			"tags_filled":         tagsFilled,
+			"vibes_filled":        vibesFilled,
 			"district_approx":     approxDistrict,
 			"min_signals":         *minSignals,
 			"max_branch":          *maxBranch,

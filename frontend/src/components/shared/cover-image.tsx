@@ -10,6 +10,11 @@ interface CoverImageProps {
   /** URL ảnh THẬT (cold-start/venue). Không có thì hiện ảnh minh hoạ hệ thống. */
   src?: string
   /**
+   * Ảnh minh hoạ AI theo nhóm loại hình (manifest categories) — dùng khi thiếu
+   * ảnh thật. Không có (nhóm chưa sinh ảnh) thì rơi về placeholder SVG.
+   */
+  illustrationSrc?: string
+  /**
    * Loại địa điểm — quyết định hình minh hoạ khi thiếu ảnh thật.
    * Bỏ trống (ví dụ ảnh bìa hồ sơ) thì hiện khung trung tính, không minh hoạ.
    */
@@ -45,6 +50,7 @@ interface CoverImageProps {
  */
 export function CoverImage({
   src,
+  illustrationSrc,
   placeholder,
   height,
   className,
@@ -56,6 +62,10 @@ export function CoverImage({
   const [failed, setFailed] = useState(false)
   // Reset khi đổi ảnh (cùng component mount lại với URL mới, ví dụ sửa hồ sơ).
   const showImage = src !== undefined && !failed
+  // Ảnh minh hoạ AI chỉ dùng khi KHÔNG có ảnh thật; hỏng thì rơi về SVG.
+  const [illustrationFailed, setIllustrationFailed] = useState(false)
+  const showIllustration =
+    !showImage && illustrationSrc !== undefined && !illustrationFailed
   // Chỉ dataset cold-start có biến thể; ảnh R2 dùng `src` gốc.
   const responsive =
     src !== undefined && sizes !== undefined ? coldStartSrcSet(src, sizes) : undefined
@@ -73,6 +83,23 @@ export function CoverImage({
           className="size-full object-cover"
           onError={() => setFailed(true)}
         />
+      ) : showIllustration ? (
+        <>
+          <img
+            src={illustrationSrc}
+            alt={alt ?? ""}
+            loading={priority ? "eager" : "lazy"}
+            decoding="async"
+            className="size-full object-cover"
+            onError={() => setIllustrationFailed(true)}
+          />
+          <Badge
+            variant="outline"
+            className="absolute bottom-2 left-2 border-border/70 bg-background/85 text-[11px] font-medium text-muted-foreground backdrop-blur"
+          >
+            Ảnh minh hoạ
+          </Badge>
+        </>
       ) : placeholder !== undefined ? (
         <>
           <PlacePlaceholder category={placeholder} label={alt} />

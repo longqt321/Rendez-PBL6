@@ -4,7 +4,7 @@
     "chain_dropped": 90,
     "count": 344,
     "curated": 86,
-    "district_approx": 198,
+    "district_approx": 217,
     "drop_reasons": {
       "T2b/dia-chi": 19,
       "T2b/ky-hieu": 4,
@@ -30,7 +30,8 @@
     "min_signals": 2,
     "note": "Sinh tự động từ OSM + dataset gốc curated. district dùng addr-tag hoặc district-centroid (xấp xỉ) — bản ghi phỏng đoán có districtApprox=true.",
     "osm": 258,
-    "tags_filled": 160
+    "tags_filled": 160,
+    "vibes_filled": 100
   },
   "places": [
     {
@@ -58,7 +59,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Món Á"],
-      "quality": 100
+      "quality": 100,
+      "vibes": []
     },
     {
       "id": "osm-node-13288511161",
@@ -86,6 +88,7 @@
       "status": "unknown",
       "tags": ["Chay", "Wifi", "Đặc sản địa phương"],
       "quality": 95,
+      "vibes": ["Chay"],
       "districtApprox": true
     },
     {
@@ -113,13 +116,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Burger", "Chay", "Món Việt", "Ngồi ngoài trời", "Wifi"],
-      "quality": 95
+      "quality": 95,
+      "vibes": ["Làm việc", "Ngoài trời", "Chay"]
     },
     {
       "id": "osm-node-13715453001",
       "name": "TripleCoffee - Bánh Mỳ TôNy",
       "category": "banh",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "70 Đường Phạm Tu",
       "lat": 16.0669803,
       "lng": 108.2404183,
@@ -141,6 +145,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Món Việt", "Món Á", "Ngồi ngoài trời", "Wifi"],
       "quality": 95,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
@@ -168,7 +173,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt", "Ngồi ngoài trời", "Wifi"],
-      "quality": 95
+      "quality": 95,
+      "vibes": ["Làm việc", "Ngoài trời", "Mang đi"]
     },
     {
       "id": "osm-node-4541527689",
@@ -196,6 +202,7 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 94,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -224,13 +231,14 @@
       "status": "unknown",
       "tags": ["Gà rán", "Hải sản", "Món Việt", "Wifi", "Đặc sản địa phương"],
       "quality": 94,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-14172705701",
       "name": "Alt: Plant Based Vegan Café",
       "category": "chay",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "90 Đường Bà Huyện Thanh Quan",
       "lat": 16.0441645,
       "lng": 108.245858,
@@ -252,13 +260,14 @@
       "status": "unknown",
       "tags": ["Ngồi ngoài trời", "Wifi"],
       "quality": 92,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-6570781698",
       "name": "Đồng Tiến Bakery",
       "category": "banh-mi",
-      "district": "Thanh Khê",
+      "district": "Liên Chiểu",
       "address": "575 Đường Điện Biên Phủ",
       "lat": 16.065061,
       "lng": 108.1839569,
@@ -280,6 +289,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 92,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -308,6 +318,7 @@
       "status": "unknown",
       "tags": ["Chay", "Món Việt"],
       "quality": 91,
+      "vibes": ["Chay"],
       "districtApprox": true
     },
     {
@@ -335,13 +346,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Hải sản"],
-      "quality": 90
+      "quality": 90,
+      "vibes": []
     },
     {
       "id": "osm-node-12853200247",
       "name": "Hôm nay Cà phê",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "31 Đường An Thượng 29",
       "lat": 16.0520145,
       "lng": 108.2457243,
@@ -363,13 +375,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Pizza", "Wifi"],
       "quality": 89,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-13736627901",
       "name": "NHIÊN Bistro, and A bit more",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "33 Đường Mỹ Khê 5",
       "lat": 16.0584375,
       "lng": 108.2426875,
@@ -391,13 +404,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Món Việt", "Ngồi ngoài trời"],
       "quality": 89,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-11684513272",
       "name": "Nu Đồ",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "11/1 Đường Lưu Quang Thuận",
       "lat": 16.0409912,
       "lng": 108.245313,
@@ -419,6 +433,7 @@
       "status": "unknown",
       "tags": ["Món Việt", "Ngồi ngoài trời", "Wifi"],
       "quality": 89,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
@@ -447,13 +462,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Món Việt", "Ngồi ngoài trời"],
       "quality": 87,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-13848489601",
       "name": "Spanda Yoga Café",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "Đường An Cư 6",
       "lat": 16.0749373,
       "lng": 108.2417797,
@@ -475,6 +491,7 @@
       "status": "unknown",
       "tags": ["Chay", "Cà phê", "Wifi"],
       "quality": 87,
+      "vibes": ["Làm việc", "Chay"],
       "districtApprox": true
     },
     {
@@ -502,13 +519,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Ngồi ngoài trời", "Wifi"],
-      "quality": 87
+      "quality": 87,
+      "vibes": ["Làm việc", "Ngoài trời"]
     },
     {
       "id": "osm-node-7210857787",
       "name": "My Quang Bà Mua",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "195/2 Đường Nguyễn Văn Thoại",
       "lat": 16.055773,
       "lng": 108.2436587,
@@ -530,6 +548,7 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 85,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -558,13 +577,14 @@
       "status": "unknown",
       "tags": ["Chay", "Món Việt"],
       "quality": 85,
+      "vibes": ["Chay"],
       "districtApprox": true
     },
     {
       "id": "osm-way-1369663882",
       "name": "AEON Mall Đà Nẵng",
       "category": "mall",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "46 Đường Điện Biên Phủ",
       "lat": 16.0665395,
       "lng": 108.2042793,
@@ -586,6 +606,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 84,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -613,7 +634,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 84
+      "quality": 84,
+      "vibes": []
     },
     {
       "id": "osm-node-12603314868",
@@ -641,6 +663,7 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 84,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -669,6 +692,7 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 84,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -697,13 +721,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Wifi"],
       "quality": 84,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-14062977601",
       "name": "Chay Hạnh Phúc Vegan Food",
       "category": "chay",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "04 Đường An Thượng 11",
       "lat": 16.0481366,
       "lng": 108.2425426,
@@ -725,13 +750,14 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 84,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-13755229301",
       "name": "Gấu kafe",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "78/3 Đường Nguyễn Thiện Kế",
       "lat": 16.0596272,
       "lng": 108.2386161,
@@ -753,13 +779,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Gà rán", "Ngồi ngoài trời", "Wifi"],
       "quality": 84,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-10798682806",
       "name": "Làng Tôi - Bánh Khoái Cá Kình Huế",
       "category": "banh-khoai",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "85 Kiệt 227 Đường Nguyễn Văn Thoại",
       "lat": 16.0583075,
       "lng": 108.2443933,
@@ -781,6 +808,7 @@
       "status": "unknown",
       "tags": ["Món Việt", "Wifi"],
       "quality": 84,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -808,7 +836,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Món Việt", "Ngồi ngoài trời"],
-      "quality": 84
+      "quality": 84,
+      "vibes": ["Ngoài trời"]
     },
     {
       "id": "osm-node-13724829101",
@@ -836,6 +865,7 @@
       "status": "unknown",
       "tags": ["Món Nhật", "Wifi"],
       "quality": 84,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -863,7 +893,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Wifi"],
-      "quality": 84
+      "quality": 84,
+      "vibes": ["Làm việc", "Ngoài trời"]
     },
     {
       "id": "osm-node-5804107053",
@@ -891,6 +922,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Món Thái", "Món Việt", "Pizza", "Wifi"],
       "quality": 84,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -919,6 +951,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 83,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -946,7 +979,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 82
+      "quality": 82,
+      "vibes": ["Giải trí"]
     },
     {
       "id": "osm-node-12613011101",
@@ -974,13 +1008,14 @@
       "status": "unknown",
       "tags": ["Món Việt", "Đặc sản địa phương"],
       "quality": 81,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4931134422",
       "name": "Âm Thanh Ánh Sáng - Nết Sound and Lighting",
       "category": "quan-nhau",
-      "district": "Hòa Khánh",
+      "district": "Liên Chiểu",
       "address": "21 Đường Văn Thánh 2",
       "lat": 16.0969303,
       "lng": 108.1355398,
@@ -1002,6 +1037,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 81,
+      "vibes": ["Nhậu nhẹt"],
       "districtApprox": true
     },
     {
@@ -1029,13 +1065,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Burger", "Cà phê", "Món Mỹ"],
-      "quality": 80
+      "quality": 80,
+      "vibes": []
     },
     {
       "id": "osm-node-13608903276",
       "name": "Bâng Glamping",
       "category": "quan-an",
-      "district": null,
+      "district": "Hòa Vang",
       "address": "thôn k4",
       "lat": 16.176422,
       "lng": 107.6966345,
@@ -1044,7 +1081,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/13608903276",
       "image": null,
       "imageKind": null,
@@ -1056,7 +1093,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Chay", "Đặc sản địa phương"],
-      "quality": 80
+      "quality": 80,
+      "vibes": ["Chay"],
+      "districtApprox": true
     },
     {
       "id": "osm-node-11758839350",
@@ -1083,7 +1122,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Món Việt"],
-      "quality": 80
+      "quality": 80,
+      "vibes": []
     },
     {
       "id": "osm-node-10310109109",
@@ -1110,7 +1150,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Chay", "Cà phê", "Ngồi ngoài trời", "Wifi"],
-      "quality": 80
+      "quality": 80,
+      "vibes": ["Ngoài trời", "Chay"]
     },
     {
       "id": "osm-node-11951128766",
@@ -1137,7 +1178,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Món Hàn"],
-      "quality": 80
+      "quality": 80,
+      "vibes": []
     },
     {
       "id": "osm-node-5796473953",
@@ -1165,13 +1207,14 @@
       "status": "unknown",
       "tags": ["Món Thái", "Món Việt", "Wifi"],
       "quality": 80,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4292703357",
       "name": "Quán ăn Hải Trường",
       "category": "hai-san",
-      "district": null,
+      "district": "Liên Chiểu",
       "address": "61 Lý Thánh Tông",
       "lat": 16.2859767,
       "lng": 107.8453883,
@@ -1180,7 +1223,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/4292703357",
       "image": null,
       "imageKind": null,
@@ -1192,7 +1235,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Hải sản", "Mang đi"],
-      "quality": 80
+      "quality": 80,
+      "vibes": ["Mang đi"],
+      "districtApprox": true
     },
     {
       "id": "osm-node-12850675090",
@@ -1219,13 +1264,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Món Việt"],
-      "quality": 80
+      "quality": 80,
+      "vibes": []
     },
     {
       "id": "osm-node-6656196518",
       "name": "Ba Hưng",
       "category": "banh-mi",
-      "district": "Hòa Cường",
+      "district": "Hải Châu",
       "address": "16 Phan Đăng Lưu",
       "lat": 16.0376333,
       "lng": 108.2219097,
@@ -1247,13 +1293,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 79,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-14308864801",
       "name": "Jeremy’s Manufactory",
       "category": "khac",
-      "district": "Hòa Cường",
+      "district": "Ngũ Hành Sơn",
       "address": "30 Đường Nại Nam",
       "lat": 16.0351704,
       "lng": 108.2326286,
@@ -1275,6 +1322,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 79,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -1302,13 +1350,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Wifi"],
-      "quality": 79
+      "quality": 79,
+      "vibes": []
     },
     {
       "id": "osm-node-5273107721",
       "name": "Nhà Hàng Hành Là",
       "category": "viet-nam",
-      "district": null,
+      "district": "Ngũ Hành Sơn",
       "address": "1 Tra Que Village",
       "lat": 15.9025606,
       "lng": 108.3342978,
@@ -1317,7 +1366,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/5273107721",
       "image": null,
       "imageKind": null,
@@ -1329,13 +1378,15 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Chay", "Món Việt", "Wifi"],
-      "quality": 79
+      "quality": 79,
+      "vibes": ["Chay"],
+      "districtApprox": true
     },
     {
       "id": "osm-node-14069782201",
       "name": "PHỞ HOUSE",
       "category": "pho",
-      "district": "Hòa Cường",
+      "district": "Ngũ Hành Sơn",
       "address": "111 Đường Nại Nam 8",
       "lat": 16.0348022,
       "lng": 108.2297232,
@@ -1357,6 +1408,7 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 79,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -1385,13 +1437,14 @@
       "status": "unknown",
       "tags": ["Chay", "Món Việt", "Đặc sản địa phương"],
       "quality": 79,
+      "vibes": ["Chay"],
       "districtApprox": true
     },
     {
       "id": "osm-node-13727214001",
       "name": "Cơ Sở Masage Người Khiếm Thị Trí Thiện",
       "category": "massage",
-      "district": "Hòa Cường",
+      "district": "Hải Châu",
       "address": "160 Đường Nguyễn Hữu Thọ",
       "lat": 16.0435964,
       "lng": 108.2099534,
@@ -1413,6 +1466,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 77,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -1440,7 +1494,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Ngồi ngoài trời", "Wifi"],
-      "quality": 77
+      "quality": 77,
+      "vibes": ["Ngoài trời", "Nhậu nhẹt"]
     },
     {
       "id": "osm-way-693393717",
@@ -1468,13 +1523,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 77,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-12918575654",
       "name": "Westwood Da Nang",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "68 Nguyễn Tư Giản",
       "lat": 16.0474663,
       "lng": 108.2350925,
@@ -1496,13 +1552,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 77,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-14335385417",
       "name": "Đồng Tiến Bakery - 07 Nguyễn Đình Tựu",
       "category": "banh-mi",
-      "district": "Thanh Khê",
+      "district": "Liên Chiểu",
       "address": "07 Nguyễn Đình Tựu",
       "lat": 16.058852,
       "lng": 108.183226,
@@ -1524,6 +1581,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 77,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -1552,6 +1610,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 77,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -1580,13 +1639,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 77,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-14335385447",
       "name": "Đồng Tiến Bakery Văn Tiến Dũng",
       "category": "banh-mi",
-      "district": "Hòa Xuân",
+      "district": "Cẩm Lệ",
       "address": "300 Văn Tiến Dũng",
       "lat": 16.001501,
       "lng": 108.213332,
@@ -1608,6 +1668,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 77,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -1636,13 +1697,14 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 76,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
       "id": "osm-node-6956509385",
       "name": "Bikini Bottom Express An Bang",
       "category": "an-vat",
-      "district": null,
+      "district": "Ngũ Hành Sơn",
       "address": "Đ. Hai Bà Trưng",
       "lat": 15.912816,
       "lng": 108.3402148,
@@ -1651,7 +1713,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/6956509385",
       "image": null,
       "imageKind": null,
@@ -1663,7 +1725,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Burger"],
-      "quality": 75
+      "quality": 75,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-node-5454198622",
@@ -1691,13 +1755,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Pizza"],
       "quality": 75,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4778581323",
       "name": "My Casa",
       "category": "y",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "53 Đường Morrison",
       "lat": 16.0717885,
       "lng": 108.2427211,
@@ -1719,13 +1784,14 @@
       "status": "unknown",
       "tags": ["Pizza", "Wifi"],
       "quality": 75,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-5432960921",
       "name": "SIX ON SIX",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "64 Đường Bà Huyện Thanh Quan",
       "lat": 16.0432955,
       "lng": 108.2441897,
@@ -1747,13 +1813,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Wifi"],
       "quality": 75,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
       "id": "osm-way-699725339",
       "name": "Siêu Thị Co.opmart",
       "category": "sieu-thi",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0666377,
       "lng": 108.1867895,
@@ -1775,13 +1842,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 75,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-way-616910526",
       "name": "Thom's Sourdough Bakery \u0026 Coffee - An Bang Beach",
       "category": "cafe",
-      "district": null,
+      "district": "Ngũ Hành Sơn",
       "address": "91 Nguyễn Phan Vinh",
       "lat": 15.9117198,
       "lng": 108.3411656,
@@ -1790,7 +1858,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:way/616910526",
       "image": null,
       "imageKind": null,
@@ -1802,13 +1870,15 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Chay", "Cà phê", "Mang đi", "Ngồi ngoài trời", "Wifi"],
-      "quality": 75
+      "quality": 75,
+      "vibes": ["Làm việc", "Ngoài trời", "Mang đi"],
+      "districtApprox": true
     },
     {
       "id": "osm-way-1181332013",
       "name": "XLIII Specialty Coffee",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "422 Đường Ngô Thì Sĩ",
       "lat": 16.0480775,
       "lng": 108.2459757,
@@ -1830,6 +1900,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Wifi"],
       "quality": 75,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
@@ -1858,6 +1929,7 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 75,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -1885,13 +1957,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Món Việt"],
-      "quality": 74
+      "quality": 74,
+      "vibes": []
     },
     {
       "id": "osm-node-12002534969",
       "name": "GỐM Garden Coffee",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "8a Đường Mỹ Khê 5",
       "lat": 16.061519,
       "lng": 108.2413131,
@@ -1913,13 +1986,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Wifi"],
       "quality": 74,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
       "id": "osm-node-2988980334",
       "name": "Hương Cau",
       "category": "nhat",
-      "district": "Hòa Cường",
+      "district": "Hải Châu",
       "address": "Số thửa 3-A5.6 2 Thang 9",
       "lat": 16.0482352,
       "lng": 108.2231394,
@@ -1941,13 +2015,14 @@
       "status": "unknown",
       "tags": ["Món Nhật"],
       "quality": 74,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-7090665544",
       "name": "Mưa Coffee",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "28 Đường Châu Thị Vĩnh Tế",
       "lat": 16.052533,
       "lng": 108.2397481,
@@ -1969,6 +2044,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Món Việt", "Wifi"],
       "quality": 74,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
@@ -1996,7 +2072,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Wifi"],
-      "quality": 74
+      "quality": 74,
+      "vibes": ["Làm việc", "Ngoài trời"]
     },
     {
       "id": "osm-node-4464451390",
@@ -2024,13 +2101,14 @@
       "status": "unknown",
       "tags": ["Món Hàn", "Wifi"],
       "quality": 74,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-5485483822",
       "name": "Nhà hàng hải sản Bé Anh",
       "category": "hai-san",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "Lô 14-15 Hồ Nghinh, Phước Mỹ, Sơn Trà, Đà Nẵng, 베트남",
       "lat": 16.0692319,
       "lng": 108.2429913,
@@ -2052,13 +2130,14 @@
       "status": "unknown",
       "tags": ["Hải sản"],
       "quality": 74,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-11906566170",
       "name": "Olivia Pizza",
       "category": "y",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "75 Đường Ngô Thì Sĩ",
       "lat": 16.0477146,
       "lng": 108.2450807,
@@ -2080,13 +2159,14 @@
       "status": "unknown",
       "tags": ["Pizza", "Wifi"],
       "quality": 74,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4430043290",
       "name": "Sofia Restaurant",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "Phạm Văn Đồng",
       "lat": 16.0705038,
       "lng": 108.2423861,
@@ -2108,6 +2188,7 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 74,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -2136,13 +2217,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 73,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-way-1539070264",
       "name": "Phụ kiện 09",
       "category": "mall",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "157 Đường Phan Thanh",
       "lat": 16.0619185,
       "lng": 108.2092284,
@@ -2151,7 +2233,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "addr-tag",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:way/1539070264",
       "image": null,
       "imageKind": null,
@@ -2163,13 +2245,15 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 73
+      "quality": 73,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-way-118674592",
       "name": "Siêu thị GO!",
       "category": "mall",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "255-257 Hùng Vương",
       "lat": 16.0667147,
       "lng": 108.2134713,
@@ -2178,7 +2262,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "addr-tag",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:way/118674592",
       "image": null,
       "imageKind": null,
@@ -2190,13 +2274,15 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 73
+      "quality": 73,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-node-729406475",
       "name": "Trung Nguyên Coffee",
       "category": "cafe",
-      "district": "Hòa Cường",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0311905,
       "lng": 108.2242256,
@@ -2218,13 +2304,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt"],
       "quality": 73,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
       "id": "osm-node-13828339481",
       "name": "Tạp Hoá Cô Bê",
       "category": "sieu-thi",
-      "district": "Hòa Xuân",
+      "district": "Ngũ Hành Sơn",
       "address": "Lưu Quang Vũ",
       "lat": 15.9715387,
       "lng": 108.2375402,
@@ -2246,13 +2333,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 73,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4343966693",
       "name": "An Bang beach village",
       "category": "hai-san",
-      "district": null,
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 15.9156674,
       "lng": 108.3368743,
@@ -2261,7 +2349,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/4343966693",
       "image": null,
       "imageKind": null,
@@ -2273,7 +2361,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Hải sản", "Món Việt"],
-      "quality": 72
+      "quality": 72,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-node-10134824378",
@@ -2300,7 +2390,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 72
+      "quality": 72,
+      "vibes": []
     },
     {
       "id": "osm-way-1278503035",
@@ -2328,13 +2419,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 72,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-12165826954",
       "name": "Highlands Coffee",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "268 Đường Võ Nguyên Giáp",
       "lat": 16.0540151,
       "lng": 108.2473481,
@@ -2356,6 +2448,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 72,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
@@ -2384,13 +2477,14 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 72,
+      "vibes": ["Giải trí"],
       "districtApprox": true
     },
     {
       "id": "osm-way-1208690134",
       "name": "Loving Vegan",
       "category": "chay",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0538574,
       "lng": 108.24453,
@@ -2412,13 +2506,14 @@
       "status": "unknown",
       "tags": ["Chay", "Món Việt"],
       "quality": 72,
+      "vibes": ["Chay"],
       "districtApprox": true
     },
     {
       "id": "osm-node-6109158033",
       "name": "Monsieur Crêpes",
       "category": "y",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0482129,
       "lng": 108.2456498,
@@ -2440,6 +2535,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 72,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -2468,13 +2564,14 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 72,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-11906566169",
       "name": "Olivia Pizza",
       "category": "y",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "309 Hồ nghinh Đường Hồ Nghinh",
       "lat": 16.0627602,
       "lng": 108.2436287,
@@ -2496,13 +2593,14 @@
       "status": "unknown",
       "tags": ["Pizza", "Wifi"],
       "quality": 72,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-11898108670",
       "name": "Paris levain bakery \u0026 cafe",
       "category": "banh-mi",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "112 Đường Trần Bạch Đằng",
       "lat": 16.0546388,
       "lng": 108.2459904,
@@ -2524,6 +2622,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 72,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -2551,7 +2650,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Ngồi ngoài trời", "Wifi"],
-      "quality": 72
+      "quality": 72,
+      "vibes": ["Ngoài trời", "Nhậu nhẹt"]
     },
     {
       "id": "osm-node-5920056999",
@@ -2578,13 +2678,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt", "Wifi"],
-      "quality": 71
+      "quality": 71,
+      "vibes": ["Làm việc", "Mang đi"]
     },
     {
       "id": "osm-node-10779745505",
       "name": "De Nhat Sui Cao Hoàn My - Hoàn My Dumplings King",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "172 Đường Châu Thị Vĩnh Tế",
       "lat": 16.0484989,
       "lng": 108.2410216,
@@ -2606,13 +2707,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 71,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-5570949320",
       "name": "The Fisherman",
       "category": "cafe",
-      "district": null,
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 15.9130907,
       "lng": 108.3412915,
@@ -2621,7 +2723,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/5570949320",
       "image": null,
       "imageKind": null,
@@ -2633,7 +2735,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Burger", "Cà phê", "Pizza"],
-      "quality": 71
+      "quality": 71,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-node-13340074016",
@@ -2660,13 +2764,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt", "Món Á", "Ngồi ngoài trời", "Wifi"],
-      "quality": 70
+      "quality": 70,
+      "vibes": ["Làm việc", "Ngoài trời", "Mang đi"]
     },
     {
       "id": "osm-node-10768346405",
       "name": "Bo De Tam;Bodhicitta",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "117 Đường Ung Văn Khiêm",
       "lat": 16.0512699,
       "lng": 108.2407887,
@@ -2688,6 +2793,7 @@
       "status": "unknown",
       "tags": ["Chay", "Món Việt"],
       "quality": 70,
+      "vibes": ["Chay"],
       "districtApprox": true
     },
     {
@@ -2716,6 +2822,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt", "Wifi"],
       "quality": 70,
+      "vibes": ["Làm việc", "Mang đi"],
       "districtApprox": true
     },
     {
@@ -2744,6 +2851,7 @@
       "status": "unknown",
       "tags": ["Burger", "Bít tết", "Mang đi", "Ngồi ngoài trời", "Wifi"],
       "quality": 70,
+      "vibes": ["Ngoài trời", "Mang đi"],
       "districtApprox": true
     },
     {
@@ -2771,7 +2879,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 70
+      "quality": 70,
+      "vibes": []
     },
     {
       "id": "osm-node-12433230010",
@@ -2799,13 +2908,14 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 70,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-14105254901",
       "name": "M Kitchen",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "44 Đường Phan Tôn",
       "lat": 16.052654,
       "lng": 108.24533,
@@ -2827,6 +2937,7 @@
       "status": "unknown",
       "tags": ["Bít tết", "Wifi"],
       "quality": 70,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -2854,13 +2965,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Chay", "Ngồi ngoài trời"],
-      "quality": 70
+      "quality": 70,
+      "vibes": ["Ngoài trời", "Chay"]
     },
     {
       "id": "osm-node-13597097601",
       "name": "Restaurant Cabanon Palace",
       "category": "y",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "27 - 29 Loseby street",
       "lat": 16.0737327,
       "lng": 108.240949,
@@ -2882,6 +2994,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 70,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -2909,13 +3022,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Mang đi", "Món Mexico"],
-      "quality": 70
+      "quality": 70,
+      "vibes": ["Mang đi"]
     },
     {
       "id": "osm-node-10959238968",
       "name": "Thom's Sourdough Bakery \u0026 Coffee - Tan Thanh Beach",
       "category": "cafe",
-      "district": null,
+      "district": "Ngũ Hành Sơn",
       "address": "41 Nguyễn Phan Vinh",
       "lat": 15.9086547,
       "lng": 108.346936,
@@ -2924,7 +3038,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/10959238968",
       "image": null,
       "imageKind": null,
@@ -2936,13 +3050,15 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Chay", "Cà phê", "Mang đi", "Ngồi ngoài trời", "Wifi"],
-      "quality": 70
+      "quality": 70,
+      "vibes": ["Làm việc", "Ngoài trời", "Mang đi"],
+      "districtApprox": true
     },
     {
       "id": "osm-node-12853200250",
       "name": "Vietnam Daily Group",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "10 Đường An Thượng 29",
       "lat": 16.0523354,
       "lng": 108.2461038,
@@ -2964,13 +3080,14 @@
       "status": "unknown",
       "tags": ["Món Việt", "Ngồi ngoài trời", "Wifi"],
       "quality": 70,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-13165190395",
       "name": "Vietnom Local Eatery",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "97 Mai Thuc Lan",
       "lat": 16.047867,
       "lng": 108.2438751,
@@ -2992,13 +3109,14 @@
       "status": "unknown",
       "tags": ["Chay", "Món Việt", "Ngồi ngoài trời"],
       "quality": 70,
+      "vibes": ["Ngoài trời", "Chay"],
       "districtApprox": true
     },
     {
       "id": "osm-node-13881156000",
       "name": "Yesh!",
       "category": "cafe",
-      "district": null,
+      "district": "Ngũ Hành Sơn",
       "address": "198 Đường Nguyễn Phan Vinh",
       "lat": 15.9150154,
       "lng": 108.3348383,
@@ -3007,7 +3125,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/13881156000",
       "image": null,
       "imageKind": null,
@@ -3019,7 +3137,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Ngồi ngoài trời"],
-      "quality": 70
+      "quality": 70,
+      "vibes": ["Ngoài trời"],
+      "districtApprox": true
     },
     {
       "id": "osm-node-5123239421",
@@ -3047,13 +3167,14 @@
       "status": "unknown",
       "tags": ["Món Việt", "Wifi"],
       "quality": 69,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-7370362779",
       "name": "Cơm trưa, lẫu nướng Rammus",
       "category": "nuong",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "73 Đường Lê Đình Lý",
       "lat": 16.0574296,
       "lng": 108.2115285,
@@ -3062,7 +3183,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "addr-tag",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/7370362779",
       "image": null,
       "imageKind": null,
@@ -3074,7 +3195,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Món Việt"],
-      "quality": 69
+      "quality": 69,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-node-7020359049",
@@ -3101,13 +3224,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Món Á"],
-      "quality": 69
+      "quality": 69,
+      "vibes": []
     },
     {
       "id": "osm-node-5047614532",
       "name": "Quán Ăn Tuk Tuk",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "18 18 Dương Thị Xuân Quys",
       "lat": 16.0426449,
       "lng": 108.2433938,
@@ -3129,13 +3253,14 @@
       "status": "unknown",
       "tags": ["Món Việt", "Wifi"],
       "quality": 69,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-way-683431775",
       "name": "Sandy Hill Spa",
       "category": "spa",
-      "district": null,
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 15.9116628,
       "lng": 108.3403158,
@@ -3144,7 +3269,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:way/683431775",
       "image": null,
       "imageKind": null,
@@ -3156,13 +3281,15 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 69
+      "quality": 69,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-node-12171219561",
       "name": "TaHi Garden",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "64 Đường Mỹ Khê 7",
       "lat": 16.0628735,
       "lng": 108.2386512,
@@ -3184,6 +3311,7 @@
       "status": "unknown",
       "tags": ["Burger", "Cà phê", "Món Việt", "Ngồi ngoài trời", "Wifi"],
       "quality": 69,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
@@ -3211,13 +3339,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Món Việt"],
-      "quality": 69
+      "quality": 69,
+      "vibes": []
     },
     {
       "id": "osm-node-13231908801",
       "name": "Chill Hub - Brunch, Workspace \u0026 More",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0616666,
       "lng": 108.2422633,
@@ -3239,6 +3368,7 @@
       "status": "unknown",
       "tags": ["Ngồi ngoài trời", "Wifi"],
       "quality": 68,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
@@ -3267,13 +3397,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 68,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4199995237",
       "name": "Siêu thị Đặc sản Miền Trung",
       "category": "sieu-thi",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "12 Đường Hoàng Hoa Thám",
       "lat": 16.0705678,
       "lng": 108.2094066,
@@ -3282,7 +3413,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "addr-tag",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/4199995237",
       "image": null,
       "imageKind": null,
@@ -3294,7 +3425,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 68
+      "quality": 68,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-node-14205362232",
@@ -3322,6 +3455,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 67,
+      "vibes": ["Giải trí"],
       "districtApprox": true
     },
     {
@@ -3349,13 +3483,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 67
+      "quality": 67,
+      "vibes": []
     },
     {
       "id": "osm-node-13651515001",
       "name": "Jeremy's Kitchen",
       "category": "khac",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "34 Đường Ngũ Hành Sơn",
       "lat": 16.0519928,
       "lng": 108.2366288,
@@ -3377,13 +3512,14 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 67,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-5485445021",
       "name": "Lam Vien Restaurant",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0422313,
       "lng": 108.2466636,
@@ -3405,6 +3541,7 @@
       "status": "unknown",
       "tags": ["Món Việt"],
       "quality": 67,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -3433,6 +3570,7 @@
       "status": "unknown",
       "tags": ["Món Việt", "Wifi"],
       "quality": 67,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -3460,7 +3598,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 67
+      "quality": 67,
+      "vibes": []
     },
     {
       "id": "osm-node-11542212269",
@@ -3488,6 +3627,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 67,
+      "vibes": ["Nhậu nhẹt"],
       "districtApprox": true
     },
     {
@@ -3516,23 +3656,24 @@
       "status": "unknown",
       "tags": [],
       "quality": 67,
+      "vibes": ["Giải trí"],
       "districtApprox": true
     },
     {
-      "id": "osm-node-5495284627",
+      "id": "osm-node-5485709524",
       "name": "Cafe Đà Phố",
       "category": "cafe",
       "district": "Cẩm Lệ",
-      "address": "Lô 8,9,10 Cách Mạng Tháng Tám",
-      "lat": 16.0201986,
-      "lng": 108.2114943,
+      "address": "8 ngã tư cầu Nguyễn Tri Phương",
+      "lat": 16.0201659,
+      "lng": 108.2114815,
       "phone": "0905537755",
       "openingHours": "Mo-Su 05:30-21:30",
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
       "geoPrecision": "district-centroid",
-      "osmId": "osm:node/5495284627",
+      "osmId": "osm:node/5485709524",
       "image": null,
       "imageKind": null,
       "imageNote": null,
@@ -3544,6 +3685,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 66,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
@@ -3572,6 +3714,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 66,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
@@ -3600,6 +3743,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 66,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
@@ -3628,6 +3772,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 66,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -3656,6 +3801,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 66,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -3684,13 +3830,14 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 66,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
       "id": "osm-node-5293335937",
       "name": "Đổi gió",
       "category": "quan-an",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "258 Nguyễn Văn Linh",
       "lat": 16.0598008,
       "lng": 108.2093536,
@@ -3699,7 +3846,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "addr-tag",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/5293335937",
       "image": null,
       "imageKind": null,
@@ -3711,13 +3858,15 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Mang đi"],
-      "quality": 66
+      "quality": 66,
+      "vibes": ["Mang đi"],
+      "districtApprox": true
     },
     {
       "id": "osm-node-5947469393",
       "name": "Bao An Macrobiotic",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "56 Đường Hoàng Bích Sơn",
       "lat": 16.0753828,
       "lng": 108.2409602,
@@ -3739,6 +3888,7 @@
       "status": "unknown",
       "tags": ["Chay", "Món Việt", "Wifi"],
       "quality": 65,
+      "vibes": ["Chay"],
       "districtApprox": true
     },
     {
@@ -3767,13 +3917,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 65,
+      "vibes": ["Giải trí"],
       "districtApprox": true
     },
     {
       "id": "osm-way-118614280",
       "name": "Chợ Bắc Mỹ An",
       "category": "cho",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0416775,
       "lng": 108.2424764,
@@ -3795,13 +3946,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 65,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-14106869301",
       "name": "NGON DA NANG",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "88B Đường Lê Quang Đạo",
       "lat": 16.049658,
       "lng": 108.24569,
@@ -3823,13 +3975,14 @@
       "status": "unknown",
       "tags": ["Món Việt", "Wifi"],
       "quality": 65,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-5038348824",
       "name": "Andy coffee",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "6-7-8 Hoài Thanh",
       "lat": 16.0469921,
       "lng": 108.2374074,
@@ -3851,13 +4004,14 @@
       "status": "unknown",
       "tags": ["Cà phê"],
       "quality": 64,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4352266089",
       "name": "Babylon Steakgarden",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0417737,
       "lng": 108.2483585,
@@ -3879,6 +4033,7 @@
       "status": "unknown",
       "tags": ["Bít tết"],
       "quality": 64,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -3907,6 +4062,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Wifi"],
       "quality": 64,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
@@ -3935,6 +4091,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Món Hàn", "Món Việt", "Pizza", "Wifi"],
       "quality": 64,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -3962,7 +4119,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Wifi"],
-      "quality": 64
+      "quality": 64,
+      "vibes": ["Làm việc"]
     },
     {
       "id": "osm-node-12811815201",
@@ -3990,13 +4148,14 @@
       "status": "unknown",
       "tags": ["Hải sản", "Món Nhật", "Wifi"],
       "quality": 64,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-14057537001",
       "name": "Madam Thao Vegan Restaurant",
       "category": "chay",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "55-57 Đường An Thượng 29",
       "lat": 16.0516743,
       "lng": 108.2447524,
@@ -4018,13 +4177,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Món Mexico", "Món Việt", "Wifi"],
       "quality": 64,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4339674598",
       "name": "Nhà hàng HanCook",
       "category": "han",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "316 - 318 Hải Phòng",
       "lat": 16.068911,
       "lng": 108.2049831,
@@ -4046,13 +4206,14 @@
       "status": "unknown",
       "tags": ["Món Hàn", "Wifi"],
       "quality": 64,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-13744719202",
       "name": "Nia Coffee",
       "category": "cafe",
-      "district": "Hòa Cường",
+      "district": "Hải Châu",
       "address": "3/14 Đường Phan Thành Tài",
       "lat": 16.053079,
       "lng": 108.2215021,
@@ -4074,6 +4235,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Wifi"],
       "quality": 64,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
@@ -4101,13 +4263,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Pizza"],
-      "quality": 64
+      "quality": 64,
+      "vibes": []
     },
     {
       "id": "osm-node-12635080558",
       "name": "SummerBeach Restaurant",
       "category": "cafe",
-      "district": null,
+      "district": "Ngũ Hành Sơn",
       "address": "72 Đường Nguyễn Phan Vinh",
       "lat": 15.9101403,
       "lng": 108.3446017,
@@ -4116,7 +4279,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/12635080558",
       "image": null,
       "imageKind": null,
@@ -4128,13 +4291,15 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt", "Món Á", "Wifi", "Đặc sản địa phương"],
-      "quality": 64
+      "quality": 64,
+      "vibes": ["Làm việc", "Mang đi"],
+      "districtApprox": true
     },
     {
       "id": "osm-node-13722666902",
       "name": "Tamarind Coffee",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "15 Đường Mỹ Khê 3",
       "lat": 16.0611938,
       "lng": 108.2390339,
@@ -4156,13 +4321,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Wifi"],
       "quality": 64,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-13739882101",
       "name": "Webe Coffee",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "14-16 Đường Nguyễn Hữu Thông",
       "lat": 16.0708125,
       "lng": 108.2419375,
@@ -4184,13 +4350,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời"],
       "quality": 64,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-way-780466790",
       "name": "Chợ An Hải Đông",
       "category": "cho",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "41 Kiệt 38 Lê Hữu Trác",
       "lat": 16.0564476,
       "lng": 108.2388657,
@@ -4212,13 +4379,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 63,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-way-302765734",
       "name": "Lotte Mart",
       "category": "mall",
-      "district": "Hòa Cường",
+      "district": "Ngũ Hành Sơn",
       "address": "06 Đường Nại Nam",
       "lat": 16.0348676,
       "lng": 108.2292317,
@@ -4240,6 +4408,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 63,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -4268,6 +4437,36 @@
       "status": "unknown",
       "tags": [],
       "quality": 63,
+      "vibes": [],
+      "districtApprox": true
+    },
+    {
+      "id": "osm-node-14332676849",
+      "name": "Trung Nguyên Coffee",
+      "category": "cafe",
+      "district": "Hải Châu",
+      "address": null,
+      "lat": 16.0549956,
+      "lng": 108.2413714,
+      "phone": null,
+      "openingHours": null,
+      "description": null,
+      "sources": ["osm"],
+      "geoSource": "osm",
+      "geoPrecision": "district-centroid",
+      "osmId": "osm:node/14332676849",
+      "image": null,
+      "imageKind": null,
+      "imageNote": null,
+      "images": [],
+      "venuePageUrl": null,
+      "verified": false,
+      "collectedAt": null,
+      "tier": "osm",
+      "status": "unknown",
+      "tags": ["Cà phê", "Mang đi", "Món Việt"],
+      "quality": 63,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
@@ -4296,41 +4495,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt"],
       "quality": 63,
-      "districtApprox": true
-    },
-    {
-      "id": "osm-node-14332676849",
-      "name": "Trung Nguyên Coffee",
-      "category": "cafe",
-      "district": "An Hải",
-      "address": null,
-      "lat": 16.0549956,
-      "lng": 108.2413714,
-      "phone": null,
-      "openingHours": null,
-      "description": null,
-      "sources": ["osm"],
-      "geoSource": "osm",
-      "geoPrecision": "district-centroid",
-      "osmId": "osm:node/14332676849",
-      "image": null,
-      "imageKind": null,
-      "imageNote": null,
-      "images": [],
-      "venuePageUrl": null,
-      "verified": false,
-      "collectedAt": null,
-      "tier": "osm",
-      "status": "unknown",
-      "tags": ["Cà phê", "Mang đi", "Món Việt"],
-      "quality": 63,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
       "id": "osm-node-13828351864",
       "name": "Tạp Hoá Bà Cử",
       "category": "sieu-thi",
-      "district": "Hòa Xuân",
+      "district": "Ngũ Hành Sơn",
       "address": "Lưu Quang Vũ",
       "lat": 15.9724345,
       "lng": 108.2403135,
@@ -4352,6 +4524,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 63,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -4380,13 +4553,14 @@
       "status": "unknown",
       "tags": ["Chay"],
       "quality": 62,
+      "vibes": ["Chay"],
       "districtApprox": true
     },
     {
       "id": "osm-node-12617970402",
       "name": "Chickpea Eatery",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0562201,
       "lng": 108.2405601,
@@ -4408,13 +4582,14 @@
       "status": "unknown",
       "tags": ["Đặc sản địa phương"],
       "quality": 62,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-12357498701",
       "name": "Danasol - Eatery Cafe Workspace",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "117 Đường Đặng Vũ Hỷ",
       "lat": 16.0576886,
       "lng": 108.2404305,
@@ -4436,13 +4611,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Gà rán", "Ngồi ngoài trời", "Wifi"],
       "quality": 62,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-13971928007",
       "name": "Little HaNoi Egg Coffee (Da Nang)",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "65 Đường Đỗ Bá",
       "lat": 16.0512083,
       "lng": 108.2448221,
@@ -4464,13 +4640,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Wifi"],
       "quality": 62,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-5699718559",
       "name": "The Pizza Company",
       "category": "y",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "Tầng trệt, Coopmart, 478 Điện Biên Phủ, Q. Thanh Khê, TP, Thanh Khê Đông, Thanh Khê, Đà Nẵng, Vietnam",
       "lat": 16.0667331,
       "lng": 108.1870304,
@@ -4492,6 +4669,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 62,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -4520,6 +4698,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 61,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
@@ -4548,13 +4727,14 @@
       "status": "unknown",
       "tags": ["Ngồi ngoài trời", "Wifi"],
       "quality": 61,
+      "vibes": ["Làm việc", "Ngoài trời"],
       "districtApprox": true
     },
     {
       "id": "osm-node-14058025787",
       "name": "Herbal Spa - Da Nang Branch 1",
       "category": "massage",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "99-101 Phan Tứ",
       "lat": 16.046472,
       "lng": 108.245883,
@@ -4576,13 +4756,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 61,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-13130255701",
       "name": "Latra Juice",
       "category": "khac",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "99A Đường Trần Văn Dư",
       "lat": 16.0423533,
       "lng": 108.2466629,
@@ -4604,13 +4785,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 61,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-6911218676",
       "name": "NEM NƯỚNG THANH HÀ",
       "category": "nem-lui",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "K96/146 Kiệt 96 Điện Biên Phủ",
       "lat": 16.0675559,
       "lng": 108.1964679,
@@ -4619,7 +4801,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "addr-tag",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/6911218676",
       "image": null,
       "imageKind": null,
@@ -4631,7 +4813,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Mang đi", "Wifi"],
-      "quality": 61
+      "quality": 61,
+      "vibes": ["Mang đi"],
+      "districtApprox": true
     },
     {
       "id": "osm-node-13651634201",
@@ -4659,13 +4843,14 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 61,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
       "id": "osm-node-6440031887",
       "name": "VƯỜN NHẬU DIOR",
       "category": "quan-nhau",
-      "district": "Hòa Cường",
+      "district": "Cẩm Lệ",
       "address": "61 Đường Xô Viết Nghệ Tĩnh",
       "lat": 16.0319526,
       "lng": 108.2161623,
@@ -4687,13 +4872,14 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 61,
+      "vibes": ["Nhậu nhẹt"],
       "districtApprox": true
     },
     {
       "id": "osm-node-12464306501",
       "name": "Waffle queen",
       "category": "an-vat",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "68 Đường Châu Thị Vĩnh Tế",
       "lat": 16.0517229,
       "lng": 108.2400797,
@@ -4715,6 +4901,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 61,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -4742,13 +4929,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Món Việt", "Ngồi ngoài trời", "Wifi"],
-      "quality": 60
+      "quality": 60,
+      "vibes": ["Làm việc", "Ngoài trời"]
     },
     {
       "id": "osm-node-11906566069",
       "name": "BaBaBa Japanese Restaurant",
       "category": "nhat",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "333 Đường Hồ Nghinh",
       "lat": 16.0622398,
       "lng": 108.2436944,
@@ -4770,6 +4958,7 @@
       "status": "unknown",
       "tags": ["Món Nhật", "Wifi"],
       "quality": 60,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -4797,7 +4986,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "banhcanhcohoa-477",
@@ -4826,7 +5016,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "banh-mi-ba-lan",
@@ -4853,7 +5044,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "banh-mi-ba-dao",
@@ -4880,7 +5072,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "banh-mi-co-huong",
@@ -4907,7 +5100,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "banh-mi-ong-ty",
@@ -4934,7 +5128,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "banh-trang-kep-di-hoa",
@@ -4961,7 +5156,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "banh-xeo-ba-duong",
@@ -4988,7 +5184,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "banh-xeo-nam-hien",
@@ -5015,13 +5212,14 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "bunbolocui-489",
       "name": "Bún Bò Lò Củi",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "32 Phan Huy Chú, An Hải, Sơn Trà, Đà Nẵng",
       "lat": 16.0539082,
       "lng": 108.2336075,
@@ -5042,13 +5240,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "bunchacahien-488",
       "name": "Bún Chả Cá Hiền",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "9 Nguyễn Thế Lộc, Sơn Trà, Đà Nẵng",
       "lat": 16.0787634,
       "lng": 108.2305575,
@@ -5069,7 +5268,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "bunxuongmaham-474",
@@ -5096,7 +5296,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "bunbohue106vanon-487",
@@ -5123,13 +5324,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "bun-cha-ca-ba-lu",
       "name": "Bún chả cá Bà Lữ",
       "category": "bun-cha-ca",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "319 Hùng Vương",
       "lat": 16.0666617,
       "lng": 108.2111431,
@@ -5150,7 +5352,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "bun-cha-ca-ong-ta",
@@ -5177,13 +5380,14 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "buncangoclien-482",
       "name": "Bún cá Ngọc Liên",
       "category": "quan-an",
-      "district": "Thanh Khê",
+      "district": "Liên Chiểu",
       "address": "379A-B Nguyễn Huệ, Liên Chiểu",
       "lat": 16.0672242,
       "lng": 108.1767731,
@@ -5204,13 +5408,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "buncaphuongteo-483",
       "name": "Bún cá Phượng Tèo",
       "category": "quan-an",
-      "district": "Thanh Khê",
+      "district": "Liên Chiểu",
       "address": "211 Nguyễn Huệ, Liên Chiểu",
       "lat": 16.0679431,
       "lng": 108.1760209,
@@ -5231,7 +5436,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "bun-mam-ba-hang",
@@ -5258,7 +5464,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "bun-mam-van",
@@ -5285,13 +5492,14 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "bepmena-481",
       "name": "Bếp Mẹ Na",
       "category": "an-vat",
-      "district": "An Khê",
+      "district": "Liên Chiểu",
       "address": "119 Nguyễn Đình Tứ, Cẩm Lệ, Đà Nẵng",
       "lat": 16.0487679,
       "lng": 108.1735367,
@@ -5312,13 +5520,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "cafe2424thanhkhe-474",
       "name": "Cafe 24/24 Thanh Khê",
       "category": "cafe",
-      "district": "An Khê",
+      "district": "Hải Châu",
       "address": "366 Nguyễn Đình Tựu, An Khê, Thanh Khê, Đà Nẵng",
       "lat": 16.0524124,
       "lng": 108.1863959,
@@ -5339,13 +5548,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "cherrycoffee-473",
       "name": "Cherry Coffee",
       "category": "cafe",
-      "district": "An Khê",
+      "district": "Cẩm Lệ",
       "address": "211 Lê Trọng Tấn, An Khê, Đà Nẵng",
       "lat": 16.0334737,
       "lng": 108.1802693,
@@ -5366,13 +5576,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "chaolonghong-449",
       "name": "Cháo lòng Hồng",
       "category": "quan-an",
-      "district": "An Khê",
+      "district": "Cẩm Lệ",
       "address": "669 Trường Chinh, Cẩm Lệ, Đà Nẵng",
       "lat": 16.0188307,
       "lng": 108.1939776,
@@ -5393,7 +5604,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "osm-way-1551512249",
@@ -5421,13 +5633,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 60,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-way-1551512250",
       "name": "Chợ Hòa An",
       "category": "cho",
-      "district": "Thanh Khê",
+      "district": "Liên Chiểu",
       "address": null,
       "lat": 16.0589149,
       "lng": 108.1761895,
@@ -5449,6 +5662,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 60,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -5477,6 +5691,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 60,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -5505,13 +5720,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 60,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "caphenhan-472",
       "name": "Cà Phê Nhàn",
       "category": "cafe",
-      "district": "An Khê",
+      "district": "Liên Chiểu",
       "address": "84 Đoàn Hữu Trưng, An Khê, Đà Nẵng",
       "lat": 16.0510279,
       "lng": 108.1790073,
@@ -5532,7 +5748,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "com-ga-a-hai",
@@ -5559,7 +5776,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "com-ga-ba-buoi",
@@ -5586,13 +5804,14 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "comnhanamco12thang-490",
       "name": "Cơm nhà Năm Có 12 Tháng",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "158 Chính Hữu, Sơn Trà, Đà Nẵng",
       "lat": 16.078063,
       "lng": 108.2397556,
@@ -5613,7 +5832,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "dau-ngot-cafe",
@@ -5645,7 +5865,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "osm-way-1540071684",
@@ -5673,6 +5894,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 60,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -5700,7 +5922,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "goicathanhhuongacsananang-485",
@@ -5729,13 +5952,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "goi-ca-nam-o-tan",
       "name": "Gỏi cá Nam Ô Tấn",
       "category": "goi-ca",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "464 Điện Biên Phủ",
       "lat": 16.0669747,
       "lng": 108.1997848,
@@ -5756,7 +5980,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "goi-ca-thanh-huong",
@@ -5783,7 +6008,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "haiman-453",
@@ -5812,13 +6038,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "havana-442",
       "name": "Havana",
       "category": "cafe",
-      "district": "Hòa Cường",
+      "district": "Ngũ Hành Sơn",
       "address": "422 Thăng Long",
       "lat": 16.0298961,
       "lng": 108.2291598,
@@ -5839,7 +6066,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "haisan258-478",
@@ -5868,13 +6096,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "haisantudoii-480",
       "name": "Hải Sản Tự Do II",
       "category": "hai-san",
-      "district": "Hòa Xuân",
+      "district": "Ngũ Hành Sơn",
       "address": "333 Nguyễn Phước Lan, Quận Cẩm Lệ, Đà Nẵng",
       "lat": 16.0172844,
       "lng": 108.2322986,
@@ -5897,7 +6126,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "hai-san-ba-ro",
@@ -5924,7 +6154,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "hai-san-ba-tam",
@@ -5951,7 +6182,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "hai-san-moc-quan",
@@ -5981,7 +6213,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "hai-san-nam-ranh",
@@ -6008,7 +6241,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "hai-san-nam-danh",
@@ -6035,7 +6269,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "ibasho-coffee",
@@ -6062,13 +6297,14 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "ikigaigardencafe-450",
       "name": "Ikigai Garden Cafe",
       "category": "cafe",
-      "district": "Hòa Khánh",
+      "district": "Liên Chiểu",
       "address": "01 Phạm Như Xương",
       "lat": 16.0589055,
       "lng": 108.1553384,
@@ -6089,13 +6325,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "kaycoffee-445",
       "name": "Kay Coffee",
       "category": "cafe",
-      "district": "Hòa Xuân",
+      "district": "Ngũ Hành Sơn",
       "address": "238 Nguyễn Phước Lan, Hoà Xuân, Đà Nẵng",
       "lat": 16.0210063,
       "lng": 108.2269449,
@@ -6118,7 +6355,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "leevinsstudycoffee-477",
@@ -6147,13 +6385,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "laubooty-475",
       "name": "Lẩu Bò O Ty",
       "category": "quan-an",
-      "district": "Hòa Cường",
+      "district": "Hải Châu",
       "address": "290 Đường 2 Tháng 9, Đà Nẵng",
       "lat": 16.0408952,
       "lng": 108.2234325,
@@ -6174,7 +6413,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "mirko-coffee",
@@ -6201,13 +6441,14 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "mirkocoffeechillbeer-493",
       "name": "MIRKO Coffee \u0026 Chill Beer",
       "category": "cafe",
-      "district": "Hòa Khánh",
+      "district": "Liên Chiểu",
       "address": "238 Kinh Dương Vương, Đà Nẵng",
       "lat": 16.0805523,
       "lng": 108.1606379,
@@ -6228,13 +6469,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "osm-node-13165204025",
       "name": "Missteak",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "99 Mai Thuc Lan",
       "lat": 16.0478267,
       "lng": 108.2438843,
@@ -6256,6 +6498,7 @@
       "status": "unknown",
       "tags": ["Bít tết", "Ngồi ngoài trời"],
       "quality": 60,
+      "vibes": ["Ngoài trời"],
       "districtApprox": true
     },
     {
@@ -6283,13 +6526,14 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "miquangcosau-491",
       "name": "Mì Quảng Cô Sáu",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "37-39 Phạm Quang Ảnh, Sơn Trà, Đà Nẵng",
       "lat": 16.0583218,
       "lng": 108.2361347,
@@ -6310,7 +6554,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "miquangtiengquoi-476",
@@ -6339,7 +6584,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "mi-quang-ech-bep-trang",
@@ -6369,7 +6615,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "myquangsonle-492",
@@ -6396,7 +6643,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "my-hanh-seafood",
@@ -6423,7 +6671,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "osm-node-10784775351",
@@ -6450,7 +6699,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Cà phê", "Ngồi ngoài trời", "Wifi"],
-      "quality": 60
+      "quality": 60,
+      "vibes": ["Làm việc", "Ngoài trời"]
     },
     {
       "id": "noi-cafe",
@@ -6477,7 +6727,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "omgarden-469",
@@ -6506,7 +6757,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "p-coffee",
@@ -6533,13 +6785,14 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "papapizza-455",
       "name": "Papa Pizza",
       "category": "quan-an",
-      "district": "Hòa Khánh",
+      "district": "Liên Chiểu",
       "address": "16 Lê Doãn",
       "lat": 16.0674211,
       "lng": 108.1533919,
@@ -6562,7 +6815,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "quanchaytaman-479",
@@ -6591,7 +6845,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "quanghienseoul-452",
@@ -6618,7 +6873,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "quan-mau",
@@ -6645,7 +6901,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "quansontra-479",
@@ -6674,7 +6931,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "quanbanhxeonemnuongathanh-447",
@@ -6701,13 +6959,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "quannhaunhungnguoiban-486",
       "name": "Quán nhậu Những Người Bạn",
       "category": "quan-an",
-      "district": "Hòa Khánh",
+      "district": "Liên Chiểu",
       "address": "10 Hồ Tùng Mậu, phường Hòa Khánh, Liên Chiểu",
       "lat": 16.0769174,
       "lng": 108.1597193,
@@ -6730,13 +6989,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "quannhauxuanlan-475",
       "name": "Quán nhậu Xuân Lan",
       "category": "quan-an",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "16 Trần Lê, gần chợ Hoà Xuân, Cẩm Lệ",
       "lat": 16.0611797,
       "lng": 108.1870793,
@@ -6757,7 +7017,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "quananmen-446",
@@ -6784,7 +7045,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "dac-san-tran",
@@ -6811,7 +7073,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "reply-1988-cafe",
@@ -6838,7 +7101,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "sashibbqbeer-478",
@@ -6867,7 +7131,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "shugardencoffee-443",
@@ -6894,7 +7159,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "tiemcom75s-454",
@@ -6923,7 +7189,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "tiemnuonganlauvanuongsanvuon-484",
@@ -6950,7 +7217,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "trinhcaphe111nguyenhuutho-468",
@@ -6977,13 +7245,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "trinhcaphe334uong29-467",
       "name": "Trình Cà Phê - 334 Đường 2/9",
       "category": "cafe",
-      "district": "Hòa Cường",
+      "district": "Hải Châu",
       "address": "334 Đường 2/9, Hoà Cường, Đà Nẵng",
       "lat": 16.0495153,
       "lng": 108.2223552,
@@ -7006,13 +7275,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "tram247cnlythaitong-456",
       "name": "Trạm 247 - CN Lý Thái Tông",
       "category": "cafe",
-      "district": "Thanh Khê",
+      "district": "Liên Chiểu",
       "address": "187 Lý Thái Tông, Đà Nẵng",
       "lat": 16.0757133,
       "lng": 108.1761402,
@@ -7033,7 +7303,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "tram247cnninhton-458",
@@ -7062,7 +7333,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "tram247cnxovietnghetinh-457",
@@ -7091,7 +7363,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "tram247station1nguhanhson-459",
@@ -7120,13 +7393,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "tram247station2lethanhnghi-460",
       "name": "Trạm 247 - Station 2 Lê Thanh Nghị",
       "category": "cafe",
-      "district": "Hòa Cường",
+      "district": "Hải Châu",
       "address": "206 Lê Thanh Nghị, Tp. Đà Nẵng",
       "lat": 16.0424708,
       "lng": 108.2175454,
@@ -7149,7 +7423,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "wind-garden-coffee",
@@ -7179,7 +7454,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "wonderlust-coffee",
@@ -7209,7 +7485,8 @@
       "tier": "curated",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "xoibachanh-448",
@@ -7236,7 +7513,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "yolobuffet-470",
@@ -7265,7 +7543,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "zonesix214luongnhuhoc-463",
@@ -7292,7 +7571,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "icoffee121anduongvuong-461",
@@ -7321,13 +7601,14 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "ikafe357nguyentatthanh-462",
       "name": "iKafé - 357 Nguyễn Tất Thành",
       "category": "cafe",
-      "district": "Hải Vân",
+      "district": "Liên Chiểu",
       "address": "357 Nguyễn Tất Thành, Đà Nẵng",
       "lat": 16.1104518,
       "lng": 108.132495,
@@ -7350,7 +7631,8 @@
       "tier": "curated-v2",
       "status": "unknown",
       "tags": null,
-      "quality": 60
+      "quality": 60,
+      "vibes": []
     },
     {
       "id": "osm-node-7027674785",
@@ -7378,13 +7660,14 @@
       "status": "unknown",
       "tags": ["Bít tết"],
       "quality": 59,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-13990316802",
       "name": "GEN SUSHI",
       "category": "nhat",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "63 Đường Chính Hữu",
       "lat": 16.0733185,
       "lng": 108.2399272,
@@ -7406,6 +7689,7 @@
       "status": "unknown",
       "tags": ["Món Nhật", "Wifi"],
       "quality": 59,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -7433,7 +7717,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 59
+      "quality": 59,
+      "vibes": []
     },
     {
       "id": "osm-node-13288700377",
@@ -7461,13 +7746,14 @@
       "status": "unknown",
       "tags": ["Bít tết"],
       "quality": 59,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-12101052301",
       "name": "Roadhouse",
       "category": "y",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "203 Đường Lê Quang Đạo",
       "lat": 16.0484009,
       "lng": 108.2462291,
@@ -7489,6 +7775,7 @@
       "status": "unknown",
       "tags": ["Món Mỹ", "Wifi"],
       "quality": 59,
+      "vibes": ["Nhậu nhẹt"],
       "districtApprox": true
     },
     {
@@ -7517,13 +7804,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt"],
       "quality": 58,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
       "id": "osm-node-3564682825",
       "name": "Go! Hypermarket",
       "category": "sieu-thi",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "257 Đường Hùng Vương",
       "lat": 16.0667419,
       "lng": 108.2134262,
@@ -7532,7 +7820,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "addr-tag",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/3564682825",
       "image": null,
       "imageKind": null,
@@ -7544,7 +7832,9 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 58
+      "quality": 58,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-node-10312895500",
@@ -7572,13 +7862,14 @@
       "status": "unknown",
       "tags": ["Bít tết", "Pizza", "Wifi"],
       "quality": 57,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-7085798201",
       "name": "Chula Spa",
       "category": "massage",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "K39/12 Đường Võ Văn Kiệt",
       "lat": 16.0625427,
       "lng": 108.2441796,
@@ -7600,6 +7891,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 57,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -7627,7 +7919,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 57
+      "quality": 57,
+      "vibes": []
     },
     {
       "id": "osm-node-13871242768",
@@ -7654,13 +7947,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 56
+      "quality": 56,
+      "vibes": []
     },
     {
       "id": "osm-node-6172556485",
       "name": "Yến nhi thailand 2",
       "category": "sieu-thi",
-      "district": "An Khê",
+      "district": "Liên Chiểu",
       "address": "12 Nguyễn Huy Tưởng",
       "lat": 16.0556368,
       "lng": 108.1695926,
@@ -7682,13 +7976,14 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 56,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-5604261722",
       "name": "siêu thị Yến Nhi thái lan",
       "category": "sieu-thi",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "25 Thái Thị Bôi",
       "lat": 16.0683727,
       "lng": 108.2008178,
@@ -7710,6 +8005,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 56,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -7738,6 +8034,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 55,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -7766,13 +8063,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Wifi"],
       "quality": 55,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
       "id": "osm-node-7705143785",
       "name": "HT ca phe",
       "category": "cafe",
-      "district": "Hòa Cường",
+      "district": "Cẩm Lệ",
       "address": "12 Đường Hoàng Xuân Nhị",
       "lat": 16.0329206,
       "lng": 108.2173323,
@@ -7794,6 +8092,7 @@
       "status": "unknown",
       "tags": ["Món Mỹ", "Wifi"],
       "quality": 55,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
@@ -7822,13 +8121,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 54,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-10777962706",
       "name": "Hanh Phuc BookCoffee",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "126 Đường Châu Thị Vĩnh Tế",
       "lat": 16.0496739,
       "lng": 108.2406526,
@@ -7850,13 +8150,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Món Việt", "Wifi"],
       "quality": 54,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
       "id": "osm-node-4313932192",
       "name": "Kangaroo Bar - Burger",
       "category": "an-vat",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "218 Hồ Nghinh",
       "lat": 16.0666644,
       "lng": 108.2430919,
@@ -7878,6 +8179,7 @@
       "status": "unknown",
       "tags": ["Burger", "Bít tết", "Cà phê", "Gà rán", "Món Mỹ", "Pizza"],
       "quality": 54,
+      "vibes": ["Nhậu nhẹt"],
       "districtApprox": true
     },
     {
@@ -7906,13 +8208,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Wifi"],
       "quality": 54,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
       "id": "osm-node-6698378752",
       "name": "Highlands Coffee",
       "category": "cafe",
-      "district": "An Khê",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0536062,
       "lng": 108.2023623,
@@ -7934,6 +8237,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt", "Wifi"],
       "quality": 53,
+      "vibes": ["Làm việc", "Mang đi"],
       "districtApprox": true
     },
     {
@@ -7962,6 +8266,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 53,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -7989,13 +8294,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 53
+      "quality": 53,
+      "vibes": []
     },
     {
       "id": "osm-node-7016543285",
       "name": "The Craftsman Cocktail Bar",
       "category": "quan-nhau",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "48 Phan Tứ",
       "lat": 16.0465373,
       "lng": 108.2470111,
@@ -8017,6 +8323,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 52,
+      "vibes": ["Nhậu nhẹt"],
       "districtApprox": true
     },
     {
@@ -8044,7 +8351,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 51
+      "quality": 51,
+      "vibes": ["Nhậu nhẹt"]
     },
     {
       "id": "osm-way-1128027681",
@@ -8072,6 +8380,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 51,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8100,6 +8409,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 51,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8127,7 +8437,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 50
+      "quality": 50,
+      "vibes": []
     },
     {
       "id": "osm-way-1076716232",
@@ -8155,6 +8466,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 50,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8182,7 +8494,8 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 50
+      "quality": 50,
+      "vibes": []
     },
     {
       "id": "osm-way-1164429696",
@@ -8209,13 +8522,14 @@
       "tier": "osm",
       "status": "unknown",
       "tags": [],
-      "quality": 50
+      "quality": 50,
+      "vibes": []
     },
     {
       "id": "osm-way-1314176489",
       "name": "Quà Đà Nẵng",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.052001,
       "lng": 108.2479181,
@@ -8237,13 +8551,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 50,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-11887430532",
       "name": "Siêu thị Bony",
       "category": "sieu-thi",
-      "district": "Hòa Khánh",
+      "district": "Liên Chiểu",
       "address": null,
       "lat": 16.1032212,
       "lng": 108.120006,
@@ -8265,13 +8580,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 50,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-11882946633",
       "name": "Siêu thị Lotte",
       "category": "sieu-thi",
-      "district": "Hòa Cường",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0346664,
       "lng": 108.228866,
@@ -8293,13 +8609,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 50,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-11881377397",
       "name": "Siêu thị Mega Market Đà Nẵng",
       "category": "sieu-thi",
-      "district": "Hòa Cường",
+      "district": "Cẩm Lệ",
       "address": null,
       "lat": 16.0255414,
       "lng": 108.2199075,
@@ -8321,13 +8638,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 50,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-10783641305",
       "name": "AROWANA 88",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "88 Đường Lê Hữu Trác",
       "lat": 16.0582419,
       "lng": 108.2399082,
@@ -8349,13 +8667,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Món Việt", "Wifi"],
       "quality": 49,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
       "id": "osm-node-7272183085",
       "name": "Bien Ngoc",
       "category": "hai-san",
-      "district": null,
+      "district": "Liên Chiểu",
       "address": "Lạc Long Quân",
       "lat": 16.2496728,
       "lng": 108.0750192,
@@ -8364,7 +8683,7 @@
       "description": null,
       "sources": ["osm"],
       "geoSource": "osm",
-      "geoPrecision": "none",
+      "geoPrecision": "district-centroid",
       "osmId": "osm:node/7272183085",
       "image": null,
       "imageKind": null,
@@ -8376,13 +8695,15 @@
       "tier": "osm",
       "status": "unknown",
       "tags": ["Hải sản", "Món Việt", "Wifi"],
-      "quality": 49
+      "quality": 49,
+      "vibes": [],
+      "districtApprox": true
     },
     {
       "id": "osm-node-7284065585",
       "name": "High quality Pho",
       "category": "pho",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "Đường Ngô Quyền",
       "lat": 16.0607278,
       "lng": 108.2343928,
@@ -8404,13 +8725,14 @@
       "status": "unknown",
       "tags": ["Món Việt", "Wifi"],
       "quality": 49,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-6109163975",
       "name": "Mini's Cafe \u0026 Breakfast",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "An Thượng 6",
       "lat": 16.0481205,
       "lng": 108.24525,
@@ -8432,13 +8754,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 49,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-14041058901",
       "name": "VINEGRETTE",
       "category": "cafe",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "Kiệt 16 Mỹ Đa Đông 12",
       "lat": 16.0456605,
       "lng": 108.2468312,
@@ -8460,6 +8783,7 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 49,
+      "vibes": ["Làm việc"],
       "districtApprox": true
     },
     {
@@ -8488,6 +8812,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 48,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8516,13 +8841,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt"],
       "quality": 48,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
       "id": "osm-node-11198985391",
       "name": "IVegan",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0486923,
       "lng": 108.2464076,
@@ -8544,6 +8870,7 @@
       "status": "unknown",
       "tags": ["Chay", "Món Việt"],
       "quality": 47,
+      "vibes": ["Chay"],
       "districtApprox": true
     },
     {
@@ -8572,6 +8899,7 @@
       "status": "unknown",
       "tags": ["Món Á", "Wifi"],
       "quality": 47,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8600,13 +8928,14 @@
       "status": "unknown",
       "tags": ["Wifi"],
       "quality": 46,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-7271270243",
       "name": "Bodhicitta",
       "category": "quan-an",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "23b K18 Nguyen Van Thoai",
       "lat": 16.0527091,
       "lng": 108.238828,
@@ -8628,13 +8957,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 46,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4537564090",
       "name": "Karaoke Chaien",
       "category": "karaoke",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "63 Ung Văn Khiêm",
       "lat": 16.0528698,
       "lng": 108.2402709,
@@ -8656,6 +8986,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 46,
+      "vibes": ["Giải trí"],
       "districtApprox": true
     },
     {
@@ -8684,6 +9015,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 45,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8712,6 +9044,7 @@
       "status": "unknown",
       "tags": ["Món Ấn", "Wifi"],
       "quality": 45,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8740,13 +9073,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 44,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-13860986981",
       "name": "D Mart",
       "category": "sieu-thi",
-      "district": "Hòa Cường",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0400378,
       "lng": 108.2177077,
@@ -8768,6 +9102,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 40,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8796,6 +9131,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 40,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8824,34 +9160,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 40,
-      "districtApprox": true
-    },
-    {
-      "id": "osm-node-13415734901",
-      "name": "Full-Market",
-      "category": "sieu-thi",
-      "district": "An Hải",
-      "address": null,
-      "lat": 16.0739006,
-      "lng": 108.2444362,
-      "phone": null,
-      "openingHours": "24/7",
-      "description": null,
-      "sources": ["osm"],
-      "geoSource": "osm",
-      "geoPrecision": "district-centroid",
-      "osmId": "osm:node/13415734901",
-      "image": null,
-      "imageKind": null,
-      "imageNote": null,
-      "images": [],
-      "venuePageUrl": null,
-      "verified": false,
-      "collectedAt": null,
-      "tier": "osm",
-      "status": "unknown",
-      "tags": [],
-      "quality": 40,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8880,13 +9189,43 @@
       "status": "unknown",
       "tags": [],
       "quality": 40,
+      "vibes": [],
+      "districtApprox": true
+    },
+    {
+      "id": "osm-node-13415734901",
+      "name": "Full-Market",
+      "category": "sieu-thi",
+      "district": "Hải Châu",
+      "address": null,
+      "lat": 16.0739006,
+      "lng": 108.2444362,
+      "phone": null,
+      "openingHours": "24/7",
+      "description": null,
+      "sources": ["osm"],
+      "geoSource": "osm",
+      "geoPrecision": "district-centroid",
+      "osmId": "osm:node/13415734901",
+      "image": null,
+      "imageKind": null,
+      "imageNote": null,
+      "images": [],
+      "venuePageUrl": null,
+      "verified": false,
+      "collectedAt": null,
+      "tier": "osm",
+      "status": "unknown",
+      "tags": [],
+      "quality": 40,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-12167891404",
       "name": "Huong Da",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0636411,
       "lng": 108.2431009,
@@ -8908,6 +9247,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 40,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -8936,13 +9276,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 40,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-10232416717",
       "name": "WinMart",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0396159,
       "lng": 108.2456166,
@@ -8964,13 +9305,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 40,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-6378039485",
       "name": "Markets",
       "category": "viet-nam",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": "29 Đường Lưu Quang Thuận",
       "lat": 16.0402369,
       "lng": 108.2456682,
@@ -8992,6 +9334,7 @@
       "status": "unknown",
       "tags": ["Món Việt", "Wifi"],
       "quality": 39,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -9020,13 +9363,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi"],
       "quality": 38,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
       "id": "osm-node-5699726168",
       "name": "KFC",
       "category": "an-vat",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": "Thanh Khê Đông, Thanh Khê, Da Nang, Vietnam",
       "lat": 16.066512,
       "lng": 108.1870359,
@@ -9048,6 +9392,7 @@
       "status": "unknown",
       "tags": ["Gà rán", "Mang đi"],
       "quality": 37,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
@@ -9076,6 +9421,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi"],
       "quality": 36,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
@@ -9104,13 +9450,14 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi", "Món Việt"],
       "quality": 36,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
       "id": "osm-node-6125276062",
       "name": "Auminimart",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.073743,
       "lng": 108.2422346,
@@ -9132,13 +9479,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 35,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-13990162778",
       "name": "Starbucks",
       "category": "cafe",
-      "district": "Hòa Cường",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0345179,
       "lng": 108.2292664,
@@ -9160,6 +9508,7 @@
       "status": "unknown",
       "tags": ["Cà phê", "Mang đi"],
       "quality": 33,
+      "vibes": ["Mang đi"],
       "districtApprox": true
     },
     {
@@ -9188,13 +9537,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 33,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-12140344101",
       "name": "A-Market",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0723744,
       "lng": 108.2448534,
@@ -9216,6 +9566,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 30,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -9244,13 +9595,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 30,
+      "vibes": ["Giải trí"],
       "districtApprox": true
     },
     {
       "id": "osm-node-14221468719",
       "name": "Full-Market",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.04879,
       "lng": 108.2437919,
@@ -9272,13 +9624,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 30,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-14027134202",
       "name": "K-Market",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0547521,
       "lng": 108.2329237,
@@ -9300,13 +9653,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 30,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-way-1314408205",
       "name": "MoonMilk",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.055634,
       "lng": 108.2448577,
@@ -9328,6 +9682,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 30,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -9356,6 +9711,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 30,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -9384,13 +9740,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 28,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-5030391521",
       "name": "minimart kidoshop",
       "category": "mall",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": "64 Hà Bổng",
       "lat": 16.0662104,
       "lng": 108.2446508,
@@ -9412,13 +9769,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 28,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-12169743833",
       "name": "K-Mart",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 16.0404802,
       "lng": 108.2490041,
@@ -9440,13 +9798,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 20,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-12167716641",
       "name": "Quamientrung",
       "category": "sieu-thi",
-      "district": "An Hải",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.0615508,
       "lng": 108.23668,
@@ -9468,6 +9827,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 20,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -9496,13 +9856,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 20,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-9921313645",
       "name": "Winmart",
       "category": "sieu-thi",
-      "district": "Hòa Xuân",
+      "district": "Ngũ Hành Sơn",
       "address": null,
       "lat": 15.9323352,
       "lng": 108.2546513,
@@ -9524,13 +9885,14 @@
       "status": "unknown",
       "tags": [],
       "quality": 20,
+      "vibes": [],
       "districtApprox": true
     },
     {
       "id": "osm-node-4354025497",
       "name": "tattoo bon",
       "category": "mall",
-      "district": "Thanh Khê",
+      "district": "Hải Châu",
       "address": null,
       "lat": 16.067829,
       "lng": 108.2015993,
@@ -9552,6 +9914,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 20,
+      "vibes": [],
       "districtApprox": true
     },
     {
@@ -9580,6 +9943,7 @@
       "status": "unknown",
       "tags": [],
       "quality": 15,
+      "vibes": [],
       "districtApprox": true
     }
   ]

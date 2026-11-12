@@ -40,8 +40,14 @@ interface ColdStartPlace {
   collectedAt: string | null
   tier: string | null
   status: string
-  /** Nhãn sinh từ tag OSM thật (build-corpus). Dataset gốc không có → [] */
+  /** Nhãn tiện ích/ẩm thực sinh từ tag OSM thật (build-corpus). Dataset gốc không có → [] */
   tags?: string[]
+  /**
+   * Nhãn "không khí" (tối đa 3) sinh từ tín hiệu OSM thật — build-corpus.
+   * DB chưa có cột riêng nên GỘP vào `tags` khi seed (dedup, giữ thứ tự tags
+   * trước, vibes sau). Dataset gốc không có → [].
+   */
+  vibes?: string[]
 }
 
 interface ColdStartDataset {
@@ -181,6 +187,22 @@ function pickUnpublishedIds(places: ColdStartPlace[]): Set<string> {
 const PUBLISHED_AT = new Date("2026-11-09T08:00:00+07:00")
 
 /**
+ * `published_at` trải tất định trong 90 ngày trước `PUBLISHED_AT` theo hash(id).
+ *
+ * Dataset cold-start là dữ liệu demo gom một lần, nếu mọi place cùng một ngày
+ * duyệt thì badge "Mới" (≤14 ngày) hiện trên toàn bộ card — vô nghĩa với người
+ * xem. Trải theo hash giữ tính tất định (seed lại ra cùng kết quả) và cho badge
+ * "Mới" xuất hiện trên ~15% quán, đúng hành vi một sản phẩm đang chạy thật.
+ * Không dùng `created_at` vì cột đó gánh thứ tự keyset của API.
+ */
+function publishedAtFor(id: string): Date {
+  let hash = 0
+  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) % 1_000_003
+  const daysAgo = hash % 90
+  return new Date(PUBLISHED_AT.getTime() - daysAgo * 24 * 60 * 60 * 1_000)
+}
+
+/**
  * `created_at` gán sẵn theo thứ tự dataset (mục đầu mới nhất, cách nhau 1 giây):
  * API trả place theo keyset `(created_at, id)` giảm dần, và mock — đặc tả hành vi —
  * trả theo thứ tự dataset. Không gán thì thứ tự phụ thuộc thời điểm insert,
@@ -205,6 +227,21 @@ const EXPANDED_PATH = join(import.meta.dir, "../data/places-expanded.json")
 
 function toStatus(raw: string): PlaceStatus {
   return raw === "open" || raw === "closed" ? raw : "unknown"
+}
+
+/**
+ * Gộp tags + vibes vào một mảng, bỏ trùng lặp. Vibes đứng sau để không phá
+ * thứ tự tags hiện có; dedup giữ bản xuất hiện ĐẦU TIÊN.
+ */
+function mergeTags(tags: string[], vibes: string[]): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const tag of [...tags, ...vibes]) {
+    if (seen.has(tag)) continue
+    seen.add(tag)
+    out.push(tag)
+  }
+  return out
 }
 
 function toDate(value: string | null): Date | null {
@@ -248,7 +285,7 @@ async function main(): Promise<void> {
   const unpublishedIds = pickUnpublishedIds(places)
 
   for (const raw of places) {
-    const publishedAt = unpublishedIds.has(raw.id) ? null : PUBLISHED_AT
+    const publishedAt = unpublishedIds.has(raw.id) ? null : publishedAtFor(raw.id)
     const data = {
       createdAt: new Date(SEED_BASE_AT.getTime() - index * 1_000),
       name: raw.name,
@@ -257,7 +294,7 @@ async function main(): Promise<void> {
       district: raw.district,
       category: PRISMA_CATEGORY[CATEGORY_MAP[raw.category] ?? "restaurant"],
       priceLevel: 1,
-      tags: raw.tags ?? [],
+      tags: mergeTags(raw.tags ?? [], raw.vibes ?? []),
       lat: raw.lat,
       lng: raw.lng,
       status: toStatus(raw.status),
