@@ -91,21 +91,17 @@ describe("DailyPicksSection", () => {
     )
   })
 
-  it("bấm card gợi ý → log `daily_picks_click` kèm placeId + vị trí (1-based)", async () => {
+  it("bấm card gợi ý → điều hướng tới trang quán", async () => {
     state.value = { isPending: false, isError: false, data: PICKS }
-    const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const user = userEvent.setup()
     renderSection()
 
-    try {
-      await user.click(screen.getByRole("link", { name: "Quán Hai" }))
+    // Tracking analytics thật chưa có (BACKLOG) — card chỉ cần điều hướng đúng.
+    await user.click(screen.getByRole("link", { name: "Quán Hai" }))
 
-      expect(log).toHaveBeenCalledWith("daily_picks_click", {
-        placeId: "place-2",
-        position: 2,
-      })
-    } finally {
-      log.mockRestore()
-    }
+    expect(screen.getByRole("link", { name: "Quán Hai" })).toHaveAttribute(
+      "href",
+      "/discover/place-2",
+    )
   })
 })

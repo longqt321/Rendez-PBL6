@@ -454,3 +454,20 @@ export async function findPublicPlace(id: string): Promise<PlaceDto | null> {
   const row = rows[0]
   return row ? toPlaceDto(row) : null
 }
+
+/**
+ * Như `findPublicPlace` nhưng kèm `updatedAt` — dùng cho OG preview cần gắn
+ * `?v=` vào URL ảnh để bust cache khi dữ liệu đổi. Một query duy nhất thay vì
+ * gọi `findPublicPlace` rồi `findUnique` lần nữa.
+ */
+export async function findPublicPlaceWithVersion(
+  id: string,
+): Promise<{ place: PlaceDto; updatedAt: Date } | null> {
+  const rows = await prisma.$queryRaw<Array<PlaceRow & { updated_at: Date }>>(Prisma.sql`
+    ${selectPlaces(Prisma.sql`, p.updated_at`)}
+    WHERE p.id = ${id} AND p.published_at IS NOT NULL AND p.deleted_at IS NULL
+    LIMIT 1
+  `)
+  const row = rows[0]
+  return row ? { place: toPlaceDto(row), updatedAt: row.updated_at } : null
+}

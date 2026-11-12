@@ -4,9 +4,8 @@ import type { AppEnv } from "../app"
 import { SLUG_ID_RE, requireUuid } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { type OgMeta, notFoundOgMeta, placeOgMeta, postOgMeta, renderOgHtml } from "../lib/og"
-import { findPublicPlace } from "../lib/places"
+import { findPublicPlaceWithVersion } from "../lib/places"
 import { findPost } from "../lib/posts"
-import { prisma } from "../lib/prisma"
 
 /**
  * HTML meta Open Graph cho bot preview (Facebook/Zalo/Messenger…).
@@ -38,15 +37,13 @@ export function createOgRouter() {
     const path = `/discover/${id}`
     if (!SLUG_ID_RE.test(id)) return ogResponse(c, notFoundOgMeta(path), 404)
 
-    const place = await findPublicPlace(id)
-    if (!place) return ogResponse(c, notFoundOgMeta(path), 404)
+    const found = await findPublicPlaceWithVersion(id)
+    if (!found) return ogResponse(c, notFoundOgMeta(path), 404)
 
-    // `findPublicPlace` không trả `updatedAt` — hỏi riêng 1 query nhỏ để gắn
-    // `?v=` vào URL ảnh (bust cache preview của nền tảng khi dữ liệu đổi).
-    const row = await prisma.place.findUnique({ where: { id }, select: { updatedAt: true } })
-    const version = Math.floor((row?.updatedAt ?? new Date()).getTime() / 1000)
+    // `?v=` bust cache preview của nền tảng khi dữ liệu quán đổi.
+    const version = Math.floor(found.updatedAt.getTime() / 1000)
 
-    return ogResponse(c, placeOgMeta(place, version), 200)
+    return ogResponse(c, placeOgMeta(found.place, version), 200)
   })
 
   // Bài đăng dùng uuid — sai format cũng 404 HTML (không phải JSON lỗi).

@@ -26,18 +26,11 @@ import { mapAuthErrorMessage } from "../lib/auth-error-messages"
  * Trang không tự gọi API: việc xác thực đã xong ở phía server trước khi redirect.
  */
 
-/** Mã lỗi better-auth → câu tiếng Việt không dùng thuật ngữ kỹ thuật. */
+/** Mã lỗi better-auth → câu tiếng Việt — dùng chung bảng map của app. */
 function errorMessage(code: string): string {
-  switch (code) {
-    case "TOKEN_EXPIRED":
-      return "Link xác thực đã hết hạn."
-    case "INVALID_TOKEN":
-      return "Link xác thực không hợp lệ."
-    case "USER_NOT_FOUND":
-      return "Không tìm thấy tài khoản cho link này."
-    default:
-      return "Không xác thực được email."
-  }
+  const mapped = mapAuthErrorMessage({ message: code, code })
+  // Mã lạ: `mapAuthErrorMessage` trả lại chính mã — thay bằng câu chung.
+  return mapped === code ? "Không xác thực được email." : mapped
 }
 
 export function VerifyEmailPage() {

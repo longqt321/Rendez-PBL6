@@ -162,7 +162,7 @@ Bước 4 — **Không lặp 7 ngày**: loại ứng viên đã xuất hiện tr
 
 Bước 5 — `reason`: dựng từ dữ liệu có thật — `"Quán mới"` nếu mới thêm; `"Nhiều đánh giá"` nếu `review_count >= 5`; còn lại `"Gợi ý của ngày"` (trung thực, không bịa "điểm cao" khi rating = 0).
 
-**Xáo trộn seeded:** dùng mulberry32 đơn giản (~5 dòng, tự viết trong module, không thêm dependency — DECISIONS 27 tinh thần "không kéo package cho nhu cầu nhỏ").
+**Xáo trộn seeded:** dùng mulberry32 đơn giản (~5 dòng, tự viết trong module, không thêm dependency — tinh thần D-055 "không kéo package cho nhu cầu nhỏ").
 
 ### Kiểm thử thuật toán
 

@@ -3,15 +3,18 @@ import { PlaceCard } from "./place-card"
 import { PlaceCardSkeleton } from "./place-card-skeleton"
 
 /** Nhãn ngày kiểu Việt Nam từ `YYYY-MM-DD`: `Thứ Tư, 12/11`. */
+// `Intl.DateTimeFormat` tạo 1 lần ở module scope — không dựng lại mỗi render.
+const PICK_DATE_FORMAT = new Intl.DateTimeFormat("vi-VN", {
+  weekday: "long",
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: "UTC",
+})
+
 function formatPickDate(date: string): string {
   const time = Date.parse(`${date}T00:00:00Z`)
   if (Number.isNaN(time)) return ""
-  return new Intl.DateTimeFormat("vi-VN", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: "UTC",
-  }).format(time)
+  return PICK_DATE_FORMAT.format(time)
 }
 
 /**
@@ -57,19 +60,11 @@ export function DailyPicksSection() {
       {/* Mobile: hàng ngang cuộn được — không đẩy lưới kết quả xuống quá xa.
           Desktop: lưới 3 cột khớp nhịp lưới bên dưới. */}
       <ul className="-mx-4 mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
-        {data.items.map(({ place, reason }, index) => (
+        {data.items.map(({ place, reason }) => (
           <li key={place.id} className="w-3/4 shrink-0 snap-start sm:w-auto">
-            {/* Đo hiệu quả gợi ý (tim-nguoi.md §chỉ số): chưa có hạ tầng
-                analytics nên chỉ log console khi bấm card. Card bấm được qua
-                overlay `::after` của Link trong PlaceCard — sự kiện nổi lên
-                wrapper này, bấm dòng lý do bên dưới không tính. */}
-            <div
-              onClick={() =>
-                console.log("daily_picks_click", { placeId: place.id, position: index + 1 })
-              }
-            >
-              <PlaceCard place={place} />
-            </div>
+            {/* Đo hiệu quả gợi ý (tim-nguoi.md §chỉ số) cần hạ tầng analytics
+                thật — ghi BACKLOG, không dùng console.log chạy prod. */}
+            <PlaceCard place={place} />
             <p className="mt-1 px-1 text-xs text-muted-foreground">{reason}</p>
           </li>
         ))}

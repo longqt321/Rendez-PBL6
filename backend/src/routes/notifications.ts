@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { streamSSE } from "hono/streaming"
 import type { AppEnv } from "../app"
-import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
+import { UUID_ID_RE, decodeCursor, encodeCursor, requireUuid } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { findNotificationById, listAllNotifications, listNotifications } from "../lib/notifications"
@@ -51,7 +51,7 @@ export function createNotificationsRouter() {
 
   router.patch("/notifications/:id", requireAuth, async (c) => {
     const id = c.req.param("id")
-    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy thông báo")
+    requireUuid(id, "Không tìm thấy thông báo")
 
     const userId = c.get("userId")
     const notification = await prisma.notification.findFirst({

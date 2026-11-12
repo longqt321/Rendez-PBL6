@@ -652,3 +652,48 @@ index. Khi corpus vượt ~5.000 dòng: thêm `@@index([createdAt(sort: Desc), i
 Nguồn: thiết kế `docs/thiet-ke/loc-gia-sap-xep-anh.md` mục 5.2 phương án D — ảnh user trên R2
 hiện không có biến thể (dùng `src` gốc). Cần presigned PUT cho nhiều URL hoặc job resize hậu kỳ
 + endpoint; ngoài phạm vi vòng lọc-giá-sắp-xếp.
+## 2026-11-12 — Kết quả audit cuối (deploy + backend + frontend) đã xử lý
+
+Nguồn: 3 báo cáo audit độc lập (deployment config / backend / frontend) + báo cáo audit tổng
+`da90c4fe`. Đã sửa và verify:
+
+- [x] **B-01 (BLOCKER)**: `deploy/compose.prod.yml` — `api` khai `networks: rendez_net` tường minh
+      nên không còn ở mạng `default`; `postgres`/`migrate` chỉ ở `default` ⇒ API không resolve
+      `postgres`, prod không boot. Đã thêm `networks: [rendez_net]` cho cả hai.
+- [x] **M-01**: `deploy/.env.example` thiếu `APP_ORIGIN` (compose dùng `${APP_ORIGIN:?}` fail-fast).
+- [x] **M-02**: 5 biến `R2_*` không được truyền vào `api.environment` ở prod ⇒ `POST /media` 503.
+- [x] **M-03**: Caddy không mount `frontend/dist` vào `/srv/web` ⇒ prod trắng trang; service `web`
+      vẫn dựng và mở port 5173 (đã tắt bằng `entrypoint: ["true"]`, `restart: "no"`).
+- [x] **M-04**: domain giả `https://rendez.example` hardcode trong `index.html`, `robots.txt`,
+      `sitemap.xml`. Nay dùng `%VITE_APP_ORIGIN%` + plugin Vite sinh `robots.txt`/`sitemap.xml`
+      lúc build; `APP_ORIGIN` truyền qua build arg của Dockerfile/compose.
+- [x] **M-05**: thiếu index `reviews(author_id)` (subquery tương quan trong gợi ý theo dõi) +
+      `fetchCandidates` quét toàn bảng `users`. Đã thêm migration
+      `20261112030000_audit_indexes` và chặn pool ứng viên về 500 người mới nhất.
+- [x] **M-06**: `AvatarImage` không render ở khối "Gợi ý theo dõi" và tab Người của `/search`.
+- [x] **M-07**: `useSetFollow` rollback im lặng — nay `toast.error` như like/comment.
+- [x] **m-01..m-04**: soft-404 Caddy + regex UA `(?i)` + `proxy_buffering off` cho SSE ở nginx.
+- [x] **m-05..m-07**: bỏ `console.log` tracking giả ở 3 chỗ (analytics thật vẫn ở BACKLOG bên
+      dưới), bỏ `<div onClick>` không role, `Intl.DateTimeFormat` ra module scope.
+- [x] **m-08/m-09**: `loginRedirectUrl` dùng lại `safeRedirectPath()`; `verify-email-page` dùng
+      `mapAuthErrorMessage` thay vì tự viết switch.
+- [x] **m-10**: `CoverImage` thiếu `sizes` ở popup bản đồ (260px) và card gợi ý địa điểm (56px).
+- [x] **m-12**: 4 test silent-pass (`if (!x) return`) → `findFirstOrThrow` (thiếu fixture là FAIL).
+- [x] **m-14..m-16**: `docs/backend/API.md` — `DELETE /comments/:id → 200`, `private, no-cache`,
+      thêm bảng rate limit cho posts/like/comment/follow.
+- [x] **m-17**: comment trích sai "DECISIONS 27" (mục 27 là Cache G2) → sửa thành D-055.
+- [x] **m-18**: `/og/place/:id` gộp 2 query thành 1 (`findPublicPlaceWithVersion`).
+- [x] **m-19**: bỏ index thừa `daily_picks_pick_date_idx`; `requireUuid` dùng lại ở
+      `collections`/`rooms`/`notifications` (thêm tham số `status` cho case 403).
+
+## Còn mở (chưa làm — cần quyết định hoặc hạ tầng)
+
+- [ ] **Analytics thật** cho `daily_picks_click`, `suggestion_shown`, `follow_*`: hiện đã bỏ
+      `console.log`; cần endpoint ghi nhận (hoặc dịch vụ ngoài) trước khi đo hiệu quả gợi ý.
+- [ ] **`search-page` phân trang**: `useInfiniteQuery` nhưng không có sentinel/"Tải thêm" ⇒ kẹt
+      trang 1 (20 kết quả).
+- [ ] **`bun test` không cờ**: script đã có `--parallel=1`; chưa xác minh việc gõ `bun test`
+      trực tiếp có race thật hay không (audit nêu nghi vấn, chưa đo lại).
+- [ ] **Caddy**: chưa chạy được `caddy validate`/`caddy adapt` trong môi trường này (không có
+      binary) — config prod mới chỉ được review bằng mắt.
+- [ ] **Resize ảnh người dùng lúc upload R2** (V7-02 ở trên) — vẫn mở.

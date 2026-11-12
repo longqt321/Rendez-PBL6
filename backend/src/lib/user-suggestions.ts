@@ -139,11 +139,18 @@ interface CandidateRow {
 }
 
 /**
- * Gom số đếm thô cho mọi ứng viên trong MỘT query.
+ * Gom số đếm thô cho ứng viên trong MỘT query.
  *
  * Ứng viên: user chưa xoá, không phải chính mình, chưa được mình theo dõi.
  * Người đang theo dõi mình nhưng mình chưa follow lại vẫn đủ điều kiện.
+ *
+ * Chặn chi phí: các subquery tương quan bên dưới chạy cho TỪNG ứng viên, nên
+ * CTE `candidates` giới hạn pool về `CANDIDATE_LIMIT` người mới tham gia trước
+ * (dataset cold-start: người mới là nhóm đáng gợi ý nhất). Không có LIMIT thì
+ * mỗi lần mở /search sẽ quét toàn bộ bảng users × 4 subquery.
  */
+const CANDIDATE_LIMIT = 500
+
 async function fetchCandidates(viewerId: string): Promise<CandidateRow[]> {
   return prisma.$queryRaw<CandidateRow[]>(Prisma.sql`
     WITH my_places AS (
@@ -156,6 +163,19 @@ async function fetchCandidates(viewerId: string): Promise<CandidateRow[]> {
       SELECT cp.place_id FROM collection_places cp
       JOIN collections col ON col.id = cp.collection_id
       WHERE col.owner_id = ${viewerId}::uuid AND col.is_private = false AND col.deleted_at IS NULL
+    ),
+    candidates AS (
+      SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url,
+             u.private_profile, u.created_at
+      FROM users u
+      WHERE u.deleted_at IS NULL
+        AND u.id <> ${viewerId}::uuid
+        AND NOT EXISTS (
+          SELECT 1 FROM follows f
+          WHERE f.follower_id = ${viewerId}::uuid AND f.following_id = u.id
+        )
+      ORDER BY u.created_at DESC
+      LIMIT ${CANDIDATE_LIMIT}
     )
     SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url,
            u.private_profile, u.created_at,
@@ -188,13 +208,7 @@ async function fetchCandidates(viewerId: string): Promise<CandidateRow[]> {
             + (SELECT COUNT(*) FROM reviews r
              WHERE r.author_id = u.id AND r.deleted_at IS NULL
                AND r.created_at > now() - interval '30 days'))::int AS recent_activity
-    FROM users u
-    WHERE u.deleted_at IS NULL
-      AND u.id <> ${viewerId}::uuid
-      AND NOT EXISTS (
-        SELECT 1 FROM follows f
-        WHERE f.follower_id = ${viewerId}::uuid AND f.following_id = u.id
-      )
+    FROM candidates u
   `)
 }
 

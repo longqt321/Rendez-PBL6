@@ -56,8 +56,8 @@ export const UUID_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9
  * cách kiểm — trước đây hàm này nằm riêng trong `routes/posts.ts`, copy sang
  * module khác là lệch hợp đồng lỗi (404 kèm message nào).
  */
-export function requireUuid(value: string, message: string): string {
-  if (!UUID_ID_RE.test(value)) throw new ApiError(404, message)
+export function requireUuid(value: string, message: string, status: 403 | 404 = 404): string {
+  if (!UUID_ID_RE.test(value)) throw new ApiError(status, message)
   return value
 }
 

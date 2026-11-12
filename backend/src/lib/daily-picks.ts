@@ -46,7 +46,8 @@ function shiftDate(pickDate: string, days: number): string {
 }
 
 /**
- * Xáo trộn seeded — mulberry32 (~5 dòng, không thêm dependency, DECISIONS 27).
+ * Xáo trộn seeded — mulberry32 (~5 dòng, không thêm dependency — tinh thần
+ * D-055 "không kéo package cho nhu cầu nhỏ").
  * Seed từ chuỗi (ngày + định danh) nên cùng ngày chạy lại ra cùng thứ tự,
  * khác ngày khác thứ tự.
  */

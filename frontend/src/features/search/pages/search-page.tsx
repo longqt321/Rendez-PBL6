@@ -1,6 +1,6 @@
 import { Link, Navigate, useLocation, useSearchParams } from "react-router"
 import { SearchXIcon, UsersIcon } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import {
@@ -200,6 +200,9 @@ function SearchResults({ query }: { query: string }) {
                   >
                     <ItemMedia>
                       <Avatar size="lg">
+                        {user.avatarUrl && (
+                          <AvatarImage src={user.avatarUrl} alt={`Ảnh đại diện của ${user.name}`} />
+                        )}
                         <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
                           {user.initials}
                         </AvatarFallback>

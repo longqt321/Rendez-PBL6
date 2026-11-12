@@ -196,11 +196,11 @@ describe("GET /places", () => {
   test("chỉ trả place đã publish và không closed", async () => {
     // Chọn động một place chưa publish (file test khác có thể đã publish place
     // cứng trong dataset qua PATCH /posts/:id/place).
-    const unpublished = await prisma.place.findFirst({
+    // `findFirstOrThrow`: thiếu fixture thì test FAIL, không pass rỗng.
+    const unpublished = await prisma.place.findFirstOrThrow({
       where: { publishedAt: null, deletedAt: null },
       select: { id: true, name: true },
     })
-    if (!unpublished) return
 
     const body = await getJson<PageJson>(
       `/api/v1/places?q=${encodeURIComponent(unpublished.name.slice(0, 12))}`,
@@ -243,11 +243,11 @@ describe("GET /places/:id", () => {
 
   test("place chưa publish trả 404", async () => {
     // Chọn động: file test khác có thể đã publish place cứng trong dataset.
-    const unpublished = await prisma.place.findFirst({
+    // `findFirstOrThrow`: thiếu fixture thì test FAIL, không pass rỗng.
+    const unpublished = await prisma.place.findFirstOrThrow({
       where: { publishedAt: null, deletedAt: null },
       select: { id: true },
     })
-    if (!unpublished) return
 
     const res = await get(`/api/v1/places/${unpublished.id}`)
     expect(res.status).toBe(404)
@@ -275,11 +275,11 @@ describe("GET /places/:id/posts", () => {
   })
 
   test("place chưa publish trả 404", async () => {
-    const unpublished = await prisma.place.findFirst({
+    // `findFirstOrThrow`: thiếu fixture thì test FAIL, không pass rỗng.
+    const unpublished = await prisma.place.findFirstOrThrow({
       where: { publishedAt: null, deletedAt: null },
       select: { id: true },
     })
-    if (!unpublished) return
 
     const res = await get(`/api/v1/places/${unpublished.id}/posts`)
     expect(res.status).toBe(404)
@@ -568,7 +568,7 @@ describe("GET /places — sort", () => {
   })
 
   test("Haversine SQL khớp công thức client (sai số < 0,01 km)", async () => {
-    const place = await prisma.place.findFirst({
+    const place = await prisma.place.findFirstOrThrow({
       where: {
         publishedAt: { not: null },
         deletedAt: null,
@@ -577,7 +577,6 @@ describe("GET /places — sort", () => {
       },
       select: { id: true, lat: true, lng: true },
     })
-    if (!place) return
 
     const rows = await prisma.$queryRaw<{ d: number }[]>(Prisma.sql`
       SELECT (6371 * acos(least(1, greatest(-1,

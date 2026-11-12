@@ -180,7 +180,10 @@ Trường `district`, `imageUrl`, `lat`, `lng`, `status` **vắng mặt** khi kh
 | GET | `/posts/:id/comments?sort=new\|top` | — | `{items, next:null}` phẳng: cha rồi reply của nó |
 | POST | `/posts/:id/comments` | ✔ | `{body, parentId?}` → `201 Comment`; reply 1 cấp |
 | PATCH | `/comments/:id/like` | ✔ | `{liked?: boolean}` idempotent |
-| DELETE | `/comments/:id` | ✔ | Chỉ tác giả (403); xoá mềm + cascade reply → `204` |
+| DELETE | `/comments/:id` | ✔ | Chỉ tác giả (403); xoá mềm + cascade reply → `200 {"deleted":true}` |
+
+Rate limit (theo tài khoản, `byUser`): `POST /posts` 30/giờ; like bài/bình luận 30/phút;
+`POST /posts/:id/comments` 10/phút; follow/unfollow 20/phút. Vượt → `429` + `Retry-After`.
 
 `caption`: 3–500 ký tự. Gắn địa điểm (A7.3): gán `placeId`, publish place nếu chưa, đánh
 dấu đã đọc mọi thông báo `place-suggestion` của bài.
@@ -301,7 +304,7 @@ Client chuyển `RoomFilter` sang tham số của `GET /places` (đã có từ P
 
 - Chỉ nhận `image/jpeg|png|webp|avif`; khoá object do server sinh
   (`<folder>/<userId>/<uuid>.<ext>`), không dùng tên client gửi.
-- Presigned PUT sống 600 giây, ký SigV4 (region `auto`). Rate limit 10 request/giờ/IP.
+- Presigned PUT sống 600 giây, ký SigV4 (region `auto`). Rate limit 10 request/giờ/tài khoản (`byUser`).
 - Chưa cấu hình R2 (thiếu `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/
   `R2_BUCKET`) → `503 {"message":"Tính năng upload ảnh chưa được cấu hình"}`.
 - **Chưa xác minh với bucket thật** (không có credentials trong phiên này).
@@ -349,7 +352,7 @@ client bỏ qua bước PUT, dùng thẳng `publicUrl`.
 | `GET /og/place/:id`, `GET /og/post/:id` | `public, max-age=600` (404: `max-age=60`) | HTML meta cho bot preview; nginx `proxy_cache` cache cùng TTL |
 | `GET /places/map` | `public, max-age=30` | kèm `ETag` |
 | `GET /places/daily-picks` | `public, max-age=300` | giống nhau với mọi người; 5 phút ngắn hơn chu kỳ đổi dữ liệu (ngày) |
-| `GET /users/:handle` | `private, max-age=15` | `followedByMe` phụ thuộc người xem |
+| `GET /users/:handle` | `private, no-cache` | `followedByMe` phụ thuộc người xem; buộc revalidate (ETag/304) |
 | `GET /me`, `PATCH /me` | `no-store` | dữ liệu riêng tư |
 | `GET /users/suggestions` | `no-store` | gợi ý cá nhân hoá hoàn toàn (`followedByMe` + thứ tự theo người xem) |
 | `GET /notifications`, `PATCH /notifications*` | `no-store` | thay đổi liên tục |

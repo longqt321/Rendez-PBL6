@@ -85,6 +85,7 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
                   <CoverImage
                     src={place.imageUrl}
                     placeholder={place.category}
+                    sizes="56px"
                     className="size-full"
                     alt={placeImageAlt(place)}
                   />

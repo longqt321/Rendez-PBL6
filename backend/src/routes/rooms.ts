@@ -29,7 +29,7 @@ import {
   type RoomWithRelations,
 } from "../lib/rooms"
 import { getViewer, requireAuth } from "../lib/session"
-import { UUID_ID_RE } from "../lib/cursor"
+import { requireUuid } from "../lib/cursor"
 
 /**
  * Route phòng lọc nhóm (Phase 6) — hợp đồng mới, xem `@rendez/schema` room.
@@ -154,7 +154,7 @@ export function createRoomsRouter() {
   router.post("/rooms/:code/proposals/:proposalId/apply", async (c) => {
     const code = requireCode(c.req.param("code"))
     const proposalId = c.req.param("proposalId") ?? ""
-    if (!UUID_ID_RE.test(proposalId)) throw new ApiError(404, "Không tìm thấy đề xuất")
+    requireUuid(proposalId, "Không tìm thấy đề xuất")
 
     const room = await loadRoom(code)
     const actor = await resolveRoomActor(c, room)
@@ -204,7 +204,7 @@ export function createRoomsRouter() {
   router.post("/rooms/:code/proposals/:proposalId/dismiss", async (c) => {
     const code = requireCode(c.req.param("code"))
     const proposalId = c.req.param("proposalId") ?? ""
-    if (!UUID_ID_RE.test(proposalId)) throw new ApiError(404, "Không tìm thấy đề xuất")
+    requireUuid(proposalId, "Không tìm thấy đề xuất")
 
     const room = await loadRoom(code)
     const actor = await resolveRoomActor(c, room)
@@ -237,7 +237,7 @@ export function createRoomsRouter() {
     const actor = await resolveRoomActor(c, room)
 
     const targetId = c.req.param("memberId")
-    if (!UUID_ID_RE.test(targetId)) throw new ApiError(403, "Bạn không ở trong phòng này")
+    requireUuid(targetId, "Bạn không ở trong phòng này", 403)
     const target = room.members.find((item) => item.id === targetId)
     if (!target) throw new ApiError(403, "Bạn không ở trong phòng này")
 

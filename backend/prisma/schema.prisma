@@ -307,6 +307,7 @@ model Review {
 
   @@unique([placeId, authorId])
   @@index([placeId, createdAt])
+  @@index([authorId])
   @@map("reviews")
 }
 
@@ -671,6 +672,5 @@ model DailyPick {
   @@unique([pickDate, position])
   /// Bất biến nghiệp vụ: một quán không xuất hiện 2 lần trong cùng ngày.
   @@unique([pickDate, placeId])
-  @@index([pickDate])
   @@map("daily_picks")
 }

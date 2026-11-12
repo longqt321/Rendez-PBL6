@@ -148,7 +148,8 @@ test("trang /verify-email: ?verified=1 → thành công, thiếu marker/?error= 
   await expect(page.getByLabel("Email")).toBeVisible()
 
   await page.goto("/verify-email?error=TOKEN_EXPIRED")
-  await expect(page.getByText("Link xác thực đã hết hạn.")).toBeVisible()
+  // Text khớp bảng map dùng chung `auth-error-messages.ts`.
+  await expect(page.getByText("Link đã hết hạn. Hãy yêu cầu link mới.")).toBeVisible()
   await expect(page.getByLabel("Email")).toBeVisible()
 })
 

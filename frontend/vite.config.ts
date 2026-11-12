@@ -18,7 +18,8 @@ function seoOriginPlugin(origin: string): Plugin {
 
   return {
     name: "rendez-seo-origin",
-    apply: "build",
+    // Dev cũng thay (tránh cảnh báo `%VITE_APP_ORIGIN% is not defined` của Vite);
+    // build thì thay + sinh robots/sitemap.
     transformIndexHtml(html) {
       return html.replaceAll("%VITE_APP_ORIGIN%", origin)
     },

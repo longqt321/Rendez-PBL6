@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { InfiniteData } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { followUser, unfollowUser } from "../api/set-follow"
 import { profileQueryKey } from "./use-profile"
 import { userSuggestionsQueryKey } from "@/features/search/hooks/use-user-suggestions"
@@ -87,7 +88,7 @@ export function useSetFollow(handle: string) {
 
       return { previous, searchSnapshots, previousSuggestions }
     },
-    onError: (_error, _vars, context) => {
+    onError: (error, _vars, context) => {
       if (context?.previous !== undefined) {
         queryClient.setQueryData(profileQueryKey(handle), context.previous)
       }
@@ -97,6 +98,9 @@ export function useSetFollow(handle: string) {
       if (context?.previousSuggestions !== undefined) {
         queryClient.setQueryData(userSuggestionsQueryKey(), context.previousSuggestions)
       }
+      // Không im lặng: rollback xong phải báo cho người dùng biết thao tác thất bại
+      // (cùng lớp lỗi V6-01 — trước đây nút tự nhảy về như thể app đơ).
+      toast.error("Không thể cập nhật theo dõi", { description: error.message })
     },
     onSettled: () => {
       // Invalidate theo prefix `["users"]`: làm mới hồ sơ, kết quả tìm kiếm lẫn

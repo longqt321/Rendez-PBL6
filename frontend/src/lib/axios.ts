@@ -2,6 +2,7 @@ import axios from "axios"
 import { toast } from "sonner"
 import { checkApiContract } from "@/lib/api-contracts"
 import { env } from "@/lib/env"
+import { safeRedirectPath } from "@/features/auth/lib/safe-redirect"
 
 /**
  * Cờ tuỳ biến gắn vào request: request CẦN đăng nhập, nên 401 từ nó là dấu hiệu
@@ -121,11 +122,11 @@ export const sessionRedirect = {
 /**
  * URL trang đăng nhập kèm `?next=` để quay lại đúng chỗ sau khi đăng nhập.
  *
- * Chỉ nhận path nội bộ bắt đầu bằng một `/` — `//evil.com` hay URL tuyệt đối bị
- * thay bằng `/` để không thành open redirect.
+ * Dùng lại `safeRedirectPath()` (nguồn duy nhất cho logic chống open redirect —
+ * chặn cả `/\evil.com` lẫn ký tự điều khiển) thay vì tự viết bộ lọc yếu hơn.
  */
 export function loginRedirectUrl(currentPath: string): string {
-  const safe = currentPath.startsWith("/") && !currentPath.startsWith("//") ? currentPath : "/"
+  const safe = safeRedirectPath(currentPath) ?? "/"
   return `/login?next=${encodeURIComponent(safe)}`
 }
 

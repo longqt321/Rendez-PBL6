@@ -443,6 +443,7 @@ function ClusteredPlaceMarkers({
                     placeholder={place.category}
                     height={112}
                     alt={placeImageAlt(place)}
+                    sizes="260px"
                     className="h-full w-full object-cover"
                   />
                   <div className="absolute top-2 left-2 flex gap-1">

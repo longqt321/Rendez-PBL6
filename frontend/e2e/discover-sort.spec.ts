@@ -20,13 +20,11 @@ test("chọn 'Đánh giá cao' → URL sort=rating và request có sort=rating",
   await page.goto("/discover")
   await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible()
 
-  // Option "Đánh giá cao" bị disabled khi dữ liệu chưa có đánh giá — mock cold-start
-  // không seed review, nên chỉ kiểm trạng thái disabled + không đổi URL.
-  await page.getByRole("button", { name: "Sắp xếp kết quả" }).click()
-  const ratingItem = page.getByRole("menuitemradio", { name: /Đánh giá cao/u })
-  await expect(ratingItem).toBeVisible()
-  await expect(ratingItem).toHaveAttribute("aria-disabled", "true")
-  await page.keyboard.press("Escape")
+  // Option luôn chọn được: server sắp xếp trên TOÀN BỘ kết quả, không phụ
+  // thuộc 9 quán của trang hiện tại (heuristic cũ disabled oan khi quán có
+  // đánh giá nằm ở trang khác).
+  await chooseSort(page, "Đánh giá cao")
+  await expect(page).toHaveURL(/sort=rating/u)
 })
 
 test("chọn 'Gần tôi' → sort=distance + lat/lng, toggle 'Gần đây' bật", async ({

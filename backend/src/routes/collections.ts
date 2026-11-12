@@ -3,7 +3,7 @@ import type { Context } from "hono"
 import { z } from "zod"
 import { MAX_COLLECTION_DESCRIPTION_LENGTH, MAX_COLLECTION_NAME_LENGTH } from "@rendez/schema"
 import type { AppEnv } from "../app"
-import { UUID_ID_RE } from "../lib/cursor"
+import { requireUuid } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
 import { idempotency } from "../lib/idempotency"
 import { prisma } from "../lib/prisma"
@@ -91,7 +91,7 @@ export function createCollectionsRouter() {
   /** Chi tiết — private của người khác → 404 (giấu tồn tại, A7.7). */
   router.get("/collections/:id", async (c) => {
     const id = c.req.param("id")
-    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
 
     // Route công khai — tự đọc phiên để tính `isMine`/`likedByMe`.
     const viewer = await getViewer(c)
@@ -103,7 +103,7 @@ export function createCollectionsRouter() {
 
   router.patch("/collections/:id", requireAuth, async (c) => {
     const id = c.req.param("id")
-    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
 
     const userId = c.get("userId")
     await requireOwnedCollection(id, userId)
@@ -122,7 +122,7 @@ export function createCollectionsRouter() {
 
   router.delete("/collections/:id", requireAuth, async (c) => {
     const id = c.req.param("id")
-    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
 
     const userId = c.get("userId")
     await requireOwnedCollection(id, userId)
@@ -136,7 +136,7 @@ export function createCollectionsRouter() {
   /** Like/bỏ like — POST đặt, DELETE bỏ; cấm tự like (A7.7). */
   async function toggleLike(c: Context<AppEnv>, liked: boolean) {
     const id = c.req.param("id") ?? ""
-    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
 
     const userId = c.get("userId")
     const row = await findCollection(id, userId)
@@ -166,7 +166,7 @@ export function createCollectionsRouter() {
   /** Thêm/bớt địa điểm — idempotent, thêm đẩy cuối (A7.7). */
   router.patch("/collections/:id/places", requireAuth, async (c) => {
     const id = c.req.param("id")
-    if (!UUID_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
 
     const userId = c.get("userId")
     await requireOwnedCollection(id, userId)
