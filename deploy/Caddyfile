@@ -23,7 +23,8 @@ rendez.example.com {
 	# ĐẶT TRƯỚC handle tĩnh — Caddy xét `handle` theo thứ tự khai báo.
 	@ogplace {
 		path_regexp ogplace ^/discover/([^/]+)$
-		header_regexp UA User-Agent (facebookexternalhit|Facebot|facebookcatalog|meta-externalagent|meta-externalvalidator|Zalo|Twitterbot|slack|WhatsApp|TelegramBot|discordapp|LinkedInBot)
+		# (?i) — UA không phân biệt hoa/thường (nginx dùng `~*` tương đương).
+		header_regexp UA User-Agent (?i)(facebookexternalhit|facebot|facebookcatalog|meta-externalagent|meta-externalvalidator|zalo|twitterbot|slack|whatsapp|telegrambot|discordapp|linkedinbot)
 	}
 	handle @ogplace {
 		rewrite * /api/v1/og/place/{re.ogplace.1}
@@ -32,11 +33,22 @@ rendez.example.com {
 
 	@ogpost {
 		path_regexp ogpost ^/post/([^/]+)$
-		header_regexp UA User-Agent (facebookexternalhit|Facebot|facebookcatalog|meta-externalagent|meta-externalvalidator|Zalo|Twitterbot|slack|WhatsApp|TelegramBot|discordapp|LinkedInBot)
+		header_regexp UA User-Agent (?i)(facebookexternalhit|facebot|facebookcatalog|meta-externalagent|meta-externalvalidator|zalo|twitterbot|slack|whatsapp|telegrambot|discordapp|linkedinbot)
 	}
 	handle @ogpost {
 		rewrite * /api/v1/og/post/{re.ogpost.1}
 		reverse_proxy api:8000
+	}
+
+	# File tĩnh có phần mở rộng: KHÔNG fallback về index.html — thiếu file phải
+	# trả 404 thật (tránh soft-404 cho bundle cũ, manifest, ảnh hỏng). Tương ứng
+	# `location ~* \.(...)$ { try_files $uri =404; }` của frontend/nginx.conf.
+	@static_files {
+		path *.js *.mjs *.css *.map *.json *.webmanifest *.txt *.xml *.png *.jpg *.jpeg *.gif *.svg *.webp *.avif *.ico *.woff *.woff2 *.ttf *.otf
+	}
+	handle @static_files {
+		root * /srv/web
+		file_server
 	}
 
 	# Frontend: thư mục dist/ build bằng `bun run build` (Vite).

@@ -75,6 +75,9 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        # Origin công khai cho canonical/og + robots.txt/sitemap.xml lúc build.
+        VITE_APP_ORIGIN: ${APP_ORIGIN:-}
     container_name: rendez-web
     ports:
       - "${WEB_PORT:-5173}:80"

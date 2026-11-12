@@ -22,10 +22,12 @@ COPY frontend frontend
 
 # Build production: VITE_API_BASE_URL mặc định "/api/v1" (đường dẫn tương đối —
 # nginx proxy cùng origin nên không vướng CORS). Mock tự tắt khi build prod.
+# VITE_APP_ORIGIN: origin công khai cho canonical/og + robots/sitemap (mặc định localhost).
+ARG VITE_APP_ORIGIN=""
 RUN cd frontend \
-  && bun scripts/copy-cold-start-images.mjs \
-  && bunx tsc -b \
-  && bunx vite build
+  && VITE_APP_ORIGIN="$VITE_APP_ORIGIN" bun scripts/copy-cold-start-images.mjs \
+  && VITE_APP_ORIGIN="$VITE_APP_ORIGIN" bunx tsc -b \
+  && VITE_APP_ORIGIN="$VITE_APP_ORIGIN" bunx vite build
 
 # ---------------------------------------------------------------------------
 # Runtime: nginx + static bundle.
