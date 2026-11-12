@@ -57,9 +57,19 @@ export function DailyPicksSection() {
       {/* Mobile: hàng ngang cuộn được — không đẩy lưới kết quả xuống quá xa.
           Desktop: lưới 3 cột khớp nhịp lưới bên dưới. */}
       <ul className="-mx-4 mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
-        {data.items.map(({ place, reason }) => (
+        {data.items.map(({ place, reason }, index) => (
           <li key={place.id} className="w-3/4 shrink-0 snap-start sm:w-auto">
-            <PlaceCard place={place} />
+            {/* Đo hiệu quả gợi ý (tim-nguoi.md §chỉ số): chưa có hạ tầng
+                analytics nên chỉ log console khi bấm card. Card bấm được qua
+                overlay `::after` của Link trong PlaceCard — sự kiện nổi lên
+                wrapper này, bấm dòng lý do bên dưới không tính. */}
+            <div
+              onClick={() =>
+                console.log("daily_picks_click", { placeId: place.id, position: index + 1 })
+              }
+            >
+              <PlaceCard place={place} />
+            </div>
             <p className="mt-1 px-1 text-xs text-muted-foreground">{reason}</p>
           </li>
         ))}

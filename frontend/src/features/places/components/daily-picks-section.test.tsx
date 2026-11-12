@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router"
 import { describe, expect, it, vi } from "vitest"
 import { DailyPicksSection } from "./daily-picks-section"
@@ -88,5 +89,23 @@ describe("DailyPicksSection", () => {
       "href",
       "/discover/banh-xeo-ba-duong",
     )
+  })
+
+  it("bấm card gợi ý → log `daily_picks_click` kèm placeId + vị trí (1-based)", async () => {
+    state.value = { isPending: false, isError: false, data: PICKS }
+    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    const user = userEvent.setup()
+    renderSection()
+
+    try {
+      await user.click(screen.getByRole("link", { name: "Quán Hai" }))
+
+      expect(log).toHaveBeenCalledWith("daily_picks_click", {
+        placeId: "place-2",
+        position: 2,
+      })
+    } finally {
+      log.mockRestore()
+    }
   })
 })

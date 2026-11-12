@@ -373,25 +373,61 @@ describe("Daily Picks (Gợi ý hôm nay)", () => {
     expect(secondRows.map((row) => row.placeId)).toEqual(firstRows.map((row) => row.placeId))
   })
 
-  test("job chết sau khi insert 1 row → retry ra đúng 3 row, cùng bộ quán", async () => {
-    // Mô phỏng trạng thái dở dang: giữ lại duy nhất slot 1 của lần tính đầy đủ,
-    // xoá 2 slot còn lại rồi chạy lại — transaction/skipDuplicates phải khôi
-    // phục đủ 3 slot với CÙNG bộ quán (tính theo pickDate, không phụ thuộc now()).
-    const fullRows = await prisma.dailyPick.findMany({
-      where: { pickDate: new Date(`${DATE}T00:00:00Z`) },
+  test("job chết giữa chừng → transaction rollback sạch (0 row), retry ra đúng 3 row cùng bộ quán", async () => {
+    const pickDate = new Date(`${DATE}T00:00:00Z`)
+
+    // Bộ quán "chuẩn" của ngày: một lần chạy đầy đủ (transaction thật).
+    await prisma.dailyPick.deleteMany({ where: { pickDate } })
+    expect(await picks.pickDailyPicks(DATE)).toBe(3)
+    const expectedRows = await prisma.dailyPick.findMany({
+      where: { pickDate },
       orderBy: { position: "asc" },
     })
-    await prisma.dailyPick.deleteMany({
-      where: { pickDate: new Date(`${DATE}T00:00:00Z`), position: { gt: 1 } },
-    })
+    expect(expectedRows.map((row) => row.placeId)).toHaveLength(3)
 
-    await picks.pickDailyPicks(DATE)
+    // Xoá sạch để chứng minh rollback: nếu transaction không rollback thì row
+    // dở dang của lần chạy lỗi sẽ còn lại trong DB.
+    await prisma.dailyPick.deleteMany({ where: { pickDate } })
+
+    // Giả lập job chết giữa chừng bằng trigger BEFORE INSERT ném lỗi khi insert
+    // slot 2: `createMany` là 1 INSERT nhiều row, trigger fire từng row nên slot
+    // 1 đã được ghi trước khi lỗi nổ ra — đúng kịch bản "chết sau khi insert 1
+    // row". (Không mock `prisma.$transaction` được: Prisma client là Proxy nên
+    // `spyOn` không chặn được lời gọi từ bên trong module.)
+    await prisma.$executeRawUnsafe(`
+      CREATE OR REPLACE FUNCTION test_fail_pick_second_row() RETURNS trigger AS $$
+        BEGIN
+          IF NEW.position = 2 THEN RAISE EXCEPTION 'simulated job crash'; END IF;
+          RETURN NEW;
+        END;
+      $$ LANGUAGE plpgsql
+    `)
+    await prisma.$executeRawUnsafe(
+      "CREATE TRIGGER test_fail_pick_second_row BEFORE INSERT ON daily_picks " +
+        "FOR EACH ROW EXECUTE FUNCTION test_fail_pick_second_row()",
+    )
+
+    try {
+      await expect(picks.pickDailyPicks(DATE)).rejects.toThrow(/simulated job crash/u)
+
+      // Rollback thật: không còn row nào của ngày đó trong DB.
+      expect(await prisma.dailyPick.count({ where: { pickDate } })).toBe(0)
+    } finally {
+      await prisma.$executeRawUnsafe(
+        "DROP TRIGGER IF EXISTS test_fail_pick_second_row ON daily_picks",
+      )
+      await prisma.$executeRawUnsafe("DROP FUNCTION IF EXISTS test_fail_pick_second_row()")
+    }
+
+    // Lần chạy lại (transaction thật): ghi đủ 3 slot, cùng bộ quán, đúng thứ tự.
+    expect(await picks.pickDailyPicks(DATE)).toBe(3)
     const recovered = await prisma.dailyPick.findMany({
-      where: { pickDate: new Date(`${DATE}T00:00:00Z`) },
+      where: { pickDate },
       orderBy: { position: "asc" },
     })
     expect(recovered).toHaveLength(3)
-    expect(recovered.map((row) => row.placeId)).toEqual(fullRows.map((row) => row.placeId))
+    expect(recovered.map((row) => row.position)).toEqual([1, 2, 3])
+    expect(recovered.map((row) => row.placeId)).toEqual(expectedRows.map((row) => row.placeId))
   })
 
   test("GET /places/daily-picks trả shape + Cache-Control public, max-age=300, 304 khi ETag khớp", async () => {
