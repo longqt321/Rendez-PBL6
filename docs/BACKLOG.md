@@ -697,3 +697,7 @@ Nguồn: 3 báo cáo audit độc lập (deployment config / backend / frontend)
 - [ ] **Caddy**: chưa chạy được `caddy validate`/`caddy adapt` trong môi trường này (không có
       binary) — config prod mới chỉ được review bằng mắt.
 - [ ] **Resize ảnh người dùng lúc upload R2** (V7-02 ở trên) — vẫn mở.
+- [ ] **Test backend chạy trên CHÍNH DB dev** — mỗi lần `bun test` sinh hàng trăm user
+      `*@rendez.test`, room/post/review rác vào DB dev (đã dọn 167 user + 6 room test + 32 post
+      rác ngày 12/11). Cần `DATABASE_URL` riêng cho test (DB `rendez_test`) hoặc dọn tự động
+      trong `test/setup` — nếu không, dữ liệu demo lại bị nhiễm sau mỗi lần chạy test.
