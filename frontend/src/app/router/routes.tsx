@@ -36,6 +36,9 @@ const ProfilePage = lazy(() =>
 const UserProfilePageRoute = lazy(() =>
   import("./user-profile-route").then((m) => ({ default: m.UserProfilePageRoute })),
 )
+const SystemPage = lazy(() =>
+  import("@/features/system/pages/system-page").then((m) => ({ default: m.SystemPage })),
+)
 const SearchPage = lazy(() =>
   import("@/features/search/pages/search-page").then((m) => ({ default: m.SearchPage })),
 )
@@ -149,6 +152,8 @@ export const routes: RouteObject[] = [
           </RequireAuth>
         ),
       },
+      // Trang demo vận hành — không có link trong nav, chỉ mở trực tiếp khi demo.
+      { path: "/system", element: <SystemPage /> },
       { path: "/help", element: <HelpPage /> },
       { path: "/about", element: <AboutPage /> },
       { path: "/terms", element: <TermsPage /> },

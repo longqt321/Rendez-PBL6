@@ -64,6 +64,9 @@ const PAGE_TITLES: [RegExp, string][] = [
   [/^\/about$/, "Giới thiệu"],
   [/^\/terms$/, "Điều khoản sử dụng"],
   [/^\/privacy$/, "Chính sách bảo mật"],
+  // Trang demo vận hành (không có link trong nav) — vẫn cần tiêu đề tab đúng,
+  // nếu không nó rơi vào catch-all 404 và tab ghi sai "Không tìm thấy trang".
+  [/^\/system$/, "Số liệu vận hành"],
   // Catch-all cuối cùng: mọi path còn lại là route 404.
   [/^.*$/, "Không tìm thấy trang"],
 ]

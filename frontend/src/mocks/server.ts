@@ -2151,7 +2151,58 @@ const routes: Route[] = [
       return toRoomDto(room)
     },
   },
+
+  // -------------------------------------------------------------------------
+  // Vận hành /system — demo số liệu của PHIÊN mock (không phải backend thật).
+  // -------------------------------------------------------------------------
+  {
+    method: "get",
+    pattern: /^\/system\/stats$/,
+    handler: () => {
+      const places = db.places
+      const byEndpoint = [...mockMetrics.routes.entries()]
+        .map(([route, count]) => ({ route, count }))
+        .sort((a, b) => b.count - a.count)
+      return {
+        uptimeMs: Date.now() - mockMetrics.startedAt,
+        totalQueries: [...mockMetrics.routes.values()].reduce((sum, count) => sum + count, 0),
+        avgLatencyMs: RESPONSE_DELAY_MS + scenario.delayMs,
+        cacheHitRatio: 0,
+        byEndpoint,
+        venues: {
+          total: places.length,
+          published: places.filter((place) => place.publishedAt !== null).length,
+          withImages: places.filter((place) => place.imageUrl !== undefined).length,
+          withTags: places.filter((place) => place.tags.length > 0).length,
+          withHours: places.filter((place) => place.openingHours !== undefined).length,
+        },
+      }
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/system\/reset$/,
+    handler: () => {
+      mockMetrics.routes.clear()
+      mockMetrics.startedAt = Date.now()
+      return { reset: true }
+    },
+  },
 ]
+
+/**
+ * Bộ đếm request của mock cho trang `/system` (demo vận hành). Đây là số liệu
+ * CỦA PHIÊN mock — không phải số liệu backend thật; trang ghi rõ điều đó.
+ */
+const mockMetrics = {
+  startedAt: Date.now(),
+  routes: new Map<string, number>(),
+}
+
+function recordMockMetric(method: string, path: string): void {
+  const key = `${method.toUpperCase()} ${path}`
+  mockMetrics.routes.set(key, (mockMetrics.routes.get(key) ?? 0) + 1)
+}
 
 export const mockAdapter: AxiosAdapter = async (config) => {
   // Delay gồm cả kịch bản `slow` — giữ nguyên cơ chế cancel signal của `wait`.
@@ -2159,6 +2210,7 @@ export const mockAdapter: AxiosAdapter = async (config) => {
 
   const method = (config.method ?? "get").toLowerCase()
   const path = (config.url ?? "").split("?")[0].replace(/\/$/, "") || "/"
+  recordMockMetric(method, path)
 
   // Kịch bản `offline`: mọi method đều lỗi mạng (status 0, không response).
   if (scenario.offline) networkError(config, "Không có kết nối mạng (kịch bản offline)")
