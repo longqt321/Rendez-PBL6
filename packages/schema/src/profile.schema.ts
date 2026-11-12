@@ -47,4 +47,19 @@ export const updateMeInputSchema = z.object({
   coverUrl: z.string().max(MAX_POST_IMAGE_URL_LENGTH).nullable().optional(),
 })
 
+/**
+ * Một gợi ý người nên theo dõi — `reason` chỉ nói về dữ liệu công khai
+ * (số đếm), không nhúng tên người dùng khác (V3-04).
+ */
+export const userSuggestionSchema = z.object({
+  /** Hồ sơ đầy đủ — FE render nút follow ngay mà không cần gọi thêm request. */
+  user: userProfileSchema,
+  reason: z.string(),
+})
+
+/** Body của `GET /users/suggestions` — tối đa 5 gợi ý, rỗng là hợp lệ (không phải 404). */
+export const userSuggestionsSchema = z.object({
+  items: z.array(userSuggestionSchema).max(5),
+})
+
 export type UpdateMeInput = z.infer<typeof updateMeInputSchema>

@@ -4,10 +4,12 @@ export type {
   PlaceStatus,
   PlaceSummary,
   PlaceSuggestion,
+  DailyPick,
+  DailyPicks,
 } from "./types/place"
 export { PLACE_REPORT_REASONS, type PlaceReport, type PlaceReportReason } from "./types/place-report"
 export type { Review } from "./types/review"
-export type { UserProfile, ProfileTab } from "./types/profile"
+export type { UserProfile, ProfileTab, UserSuggestion } from "./types/profile"
 export type { Author, Post, CreatePostInput, PostFeedFilter } from "./types/post"
 export type { Comment, CommentSort, CreateCommentInput } from "./types/comment"
 export type { Collection, CollectionSummary } from "./types/collection"
@@ -32,6 +34,8 @@ export {
   placeSchema,
   placeSummarySchema,
   placeSuggestionSchema,
+  dailyPickSchema,
+  dailyPicksSchema,
 } from "./place.schema"
 export { postSchema, authorSchema } from "./post.schema"
 export {
@@ -52,7 +56,13 @@ export { commentSchema } from "./comment.schema"
 export { reviewSchema } from "./review.schema"
 export { placeReportSchema } from "./place-report.schema"
 export { notificationSchema } from "./notification.schema"
-export { userProfileSchema, updateMeInputSchema, type UpdateMeInput } from "./profile.schema"
+export {
+  userProfileSchema,
+  userSuggestionSchema,
+  userSuggestionsSchema,
+  updateMeInputSchema,
+  type UpdateMeInput,
+} from "./profile.schema"
 export { collectionSchema, collectionSummarySchema } from "./collection.schema"
 export {
   roomSchema,

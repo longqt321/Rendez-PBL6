@@ -259,6 +259,7 @@ model Place {
   reports         PlaceReport[]
   posts           Post[]
   collectionItems CollectionPlace[]
+  dailyPicks      DailyPick[]
 
   @@index([publishedAt, status])
   @@index([lat, lng])
@@ -648,4 +649,28 @@ model IdempotencyKey {
   @@id([key, userId])
   @@index([expiresAt])
   @@map("idempotency_keys")
+}
+
+// ---------------------------------------------------------------------------
+// 21. daily_picks — "Gợi ý hôm nay": 3 quán mỗi ngày (Daily Picks)
+// ---------------------------------------------------------------------------
+
+model DailyPick {
+  id        String   @id @default(uuid()) @db.Uuid
+  /// Ngày theo Asia/Ho_Chi_Minh — job tính bằng `pickDate` chứ không dùng now().
+  pickDate  DateTime @map("pick_date") @db.Date
+  /// 1..3 — thứ tự hiển thị trên dải gợi ý.
+  position  Int
+  placeId   String   @map("place_id")
+  place     Place    @relation(fields: [placeId], references: [id])
+  /// Lý do ngắn do job dựng từ dữ liệu thật ("Quán mới", "Nhiều đánh giá"…).
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  /// Idempotence: 3 slot/ngày — job chạy lại không nhân đôi slot.
+  @@unique([pickDate, position])
+  /// Bất biến nghiệp vụ: một quán không xuất hiện 2 lần trong cùng ngày.
+  @@unique([pickDate, placeId])
+  @@index([pickDate])
+  @@map("daily_picks")
 }

@@ -10,7 +10,8 @@ import { createActorNotification } from "../lib/notifications"
 import { listPosts } from "../lib/posts"
 import { getViewer, requireAuth } from "../lib/session"
 import { findProfileByHandle, findProfileById, setFollow } from "../lib/users"
-import { jsonWithCache } from "../lib/http-cache"
+import { jsonWithCache, noStore } from "../lib/http-cache"
+import { suggestUsersToFollow } from "../lib/user-suggestions"
 import { rateLimit } from "../lib/rate-limit"
 
 /**
@@ -19,6 +20,9 @@ import { rateLimit } from "../lib/rate-limit"
  * `GET /users?q=` — tìm theo name/handle không dấu (`unaccent`), trả
  * `Page<UserProfile>`. Đếm bài đăng của cả trang bằng một GROUP BY — không N+1
  * (A6.9: số server đếm).
+ *
+ * `GET /users/suggestions` — gợi ý người nên theo dõi (đăng nhập, `no-store`),
+ * thuật toán trong `lib/user-suggestions.ts`.
  *
  * `GET /users/:handle` + `/posts?tab=` + `/collections` — trang cá nhân; tab
  * `saved`/`pinned` của người khác trả RỖNG (khớp mock: chỉ chủ mới xem được).
@@ -143,6 +147,18 @@ export function createUsersRouter() {
           ? encodeCursor({ createdAt: last.created_at, id: last.id })
           : null,
     })
+  })
+
+  /**
+   * Gợi ý người nên theo dõi — phải khai TRƯỚC `/users/:handle`, nếu không
+   * `suggestions` bị nuốt thành handle (cùng pattern `/places/suggestions`).
+   *
+   * `followedByMe` phụ thuộc người xem → `no-store`: không tầng cache nào được
+   * lưu body (kể cả `private, no-cache` vẫn cho trình duyệt lưu — V3-01).
+   */
+  router.get("/users/suggestions", requireAuth, async (c) => {
+    const items = await suggestUsersToFollow(c.get("userId"))
+    return noStore(c, { items })
   })
 
   /** Hồ sơ công khai theo handle — 404 khi không tồn tại (A6.3). */

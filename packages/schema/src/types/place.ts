@@ -60,3 +60,20 @@ export interface PlaceSuggestion {
   /** Lý do ngắn gọn do server sinh để người dùng hiểu vì sao được đề xuất */
   reason: string
 }
+
+/**
+ * Một quán trong dải "Gợi ý hôm nay" — server chọn sẵn, kèm lý do ngắn.
+ *
+ * Dùng `Place` đầy đủ (không phải `PlaceSummary`) vì FE render lại `PlaceCard`.
+ */
+export interface DailyPick {
+  place: Place
+  reason: string
+}
+
+/** Payload `GET /places/daily-picks` — `date` theo Asia/Ho_Chi_Minh (`YYYY-MM-DD`). */
+export interface DailyPicks {
+  date: string
+  /** Tối đa 3 quán; rỗng khi job chưa chạy hoặc chưa đủ ứng viên. */
+  items: DailyPick[]
+}

@@ -1,6 +1,7 @@
 import { PgBoss } from "pg-boss"
 import { env } from "../env"
 import { logger } from "./logger"
+import { getPickDate, pickDailyPicks } from "./daily-picks"
 import { detectPlaceSuggestions } from "./suggestions-job"
 
 /**
@@ -10,12 +11,22 @@ import { detectPlaceSuggestions } from "./suggestions-job"
  * (A7.2); sau khi tạo bài, route đẩy thêm một job cho riêng bài đó để độ trễ
  * thấp. Retry có backoff + dead letter queue; khai báo queue MỘT LẦN lúc khởi
  * động (idempotent), không tạo queue trong request handler.
+ *
+ * Queue `daily-picks` riêng (nghiệp vụ khác, cron riêng — cách pg-boss dùng):
+ * tính 3 quán "Gợi ý hôm nay" lúc 00:05 Asia/Ho_Chi_Minh — chạy ngay sau mốc
+ * đổi ngày để cả ngày đều có picks (chạy muộn hơn sẽ có khung giờ rỗng mỗi sáng).
  */
 
 const QUEUE = "place-detect"
 const DEAD_LETTER_QUEUE = "place-detect-dlq"
 /** Cron 5 phút — khớp A7.2. */
 const CRON = "*/5 * * * *"
+
+const DAILY_PICKS_QUEUE = "daily-picks"
+const DAILY_PICKS_DLQ = "daily-picks-dlq"
+/** 00:05 Asia/Ho_Chi_Minh — ngay sau mốc đổi ngày. */
+const DAILY_PICKS_CRON = "5 0 * * *"
+const DAILY_PICKS_TIME_ZONE = "Asia/Ho_Chi_Minh"
 
 let boss: PgBoss | null = null
 
@@ -42,6 +53,28 @@ export async function startQueue(): Promise<void> {
   })
 
   await instance.schedule(QUEUE, CRON)
+
+  // "Gợi ý hôm nay": retry 5 lần backoff 5→10→20→40→80 phút, hết lượt vào DLQ.
+  // `missed: "once"` — server downtime qua 00:05 thì chạy bù 1 lần khi lên.
+  await instance.createQueue(DAILY_PICKS_DLQ)
+  await instance.createQueue(DAILY_PICKS_QUEUE, {
+    retryLimit: 5,
+    retryDelay: 300,
+    retryBackoff: true,
+    deadLetter: DAILY_PICKS_DLQ,
+  })
+  await instance.work(DAILY_PICKS_QUEUE, async (jobs) => {
+    for (const job of jobs) {
+      const date = getPickDate()
+      const count = await pickDailyPicks(date)
+      logger.info({ jobId: job.id, pickDate: date, count }, "daily-picks xong")
+    }
+  })
+  await instance.schedule(DAILY_PICKS_QUEUE, DAILY_PICKS_CRON, null, {
+    tz: DAILY_PICKS_TIME_ZONE,
+    missed: "once",
+  })
+
   boss = instance
   logger.info({ queue: QUEUE, cron: CRON }, "pg-boss đã khởi động")
 }

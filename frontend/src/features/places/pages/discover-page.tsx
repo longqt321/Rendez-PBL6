@@ -6,6 +6,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { Spinner } from "@/components/ui/spinner"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { DiscoverToolbar } from "../components/discover-toolbar"
+import { DailyPicksSection } from "../components/daily-picks-section"
 import { PlaceCard } from "../components/place-card"
 import { PlaceCardSkeleton } from "../components/place-card-skeleton"
 import { useDiscoverView } from "../hooks/use-discover-view"
@@ -33,6 +34,9 @@ export function DiscoverPage() {
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
       <h1 className="sr-only">Khám phá địa điểm Đà Nẵng</h1>
       <DiscoverToolbar view={view} mode="grid" />
+
+      {/* Dải gợi ý đứng trên lưới, độc lập với trạng thái lưới và bộ lọc. */}
+      <DailyPicksSection />
 
       {view.isPending ? (
         <ul className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3">

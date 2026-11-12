@@ -6,7 +6,7 @@ import { notificationSchema } from "@/features/notification/types/notification.s
 import { placeReportSchema } from "@/features/places/types/place-report.schema"
 import { placeSchema, placeSuggestionSchema } from "@/features/places/types/place.schema"
 import { reviewSchema } from "@/features/places/types/review.schema"
-import { userProfileSchema } from "@/features/profile/types/profile.schema"
+import { userSuggestionsSchema, userProfileSchema } from "@/features/profile/types/profile.schema"
 import { commentSchema } from "@/features/social/types/comment.schema"
 import { postSchema } from "@/features/social/types/post.schema"
 import {
@@ -74,6 +74,8 @@ export const API_CONTRACTS: ApiContract[] = [
 
   // Hồ sơ người dùng.
   { pattern: /^\/users$/, method: "GET", schema: pageSchema(userProfileSchema) },
+  // Gợi ý người theo dõi — phải đứng trước `/users/:handle` (pattern nuốt handle).
+  { pattern: /^\/users\/suggestions$/, method: "GET", schema: userSuggestionsSchema },
   { pattern: /^\/users\/[^/]+\/posts$/, method: "GET", schema: pageSchema(postSchema) },
   {
     pattern: /^\/users\/[^/]+\/collections$/,

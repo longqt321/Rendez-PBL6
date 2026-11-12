@@ -1,4 +1,4 @@
-import { Link, Navigate, useSearchParams } from "react-router"
+import { Link, Navigate, useLocation, useSearchParams } from "react-router"
 import { SearchXIcon, UsersIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ErrorState } from "@/components/shared/error-state"
@@ -21,6 +21,10 @@ import { PostCard } from "@/features/social/components/post-card"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { formatCount } from "@/lib/format"
 import { useUsersSearch } from "../hooks/use-users-search"
+import { useUserSuggestions } from "../hooks/use-user-suggestions"
+import { UserSuggestionsSection } from "../components/user-suggestions-section"
+import { FollowButton } from "../components/follow-button"
+import { loginRedirectUrl } from "@/lib/axios"
 
 /**
  * Trang tìm kiếm — `/search?q=`.
@@ -44,6 +48,7 @@ export function SearchPage() {
 }
 
 function SearchResults({ query }: { query: string }) {
+  const location = useLocation()
   const {
     data: placesData,
     isPending: placesPending,
@@ -68,6 +73,9 @@ function SearchResults({ query }: { query: string }) {
     isError: peopleError,
     refetch: refetchPeople,
   } = useUsersSearch(query)
+  // Dùng lại đúng query của khối gợi ý (cùng key → không gọi thêm request) để
+  // biết có gợi ý hay không khi kết quả rỗng.
+  const { data: suggestions } = useUserSuggestions()
 
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
   const posts = allPosts.filter((post) => post.placeId !== null)
@@ -142,6 +150,8 @@ function SearchResults({ query }: { query: string }) {
         </TabsContent>
 
         <TabsContent value="people" className="mt-4">
+          {/* Khối gợi ý render độc lập với trạng thái kết quả; tự thu gọn khi guest/rỗng/lỗi. */}
+          <UserSuggestionsSection />
           {peoplePending ? (
             <div className="grid max-w-xl grid-cols-1 gap-2">
               {Array.from({ length: 3 }).map((_, index) => (
@@ -155,9 +165,31 @@ function SearchResults({ query }: { query: string }) {
               onRetry={() => void refetchPeople()}
             />
           ) : people.length === 0 ? (
-            <SearchEmptyBlock label="người dùng" />
+            <>
+              <SearchEmptyBlock label="người dùng" />
+              {/* Có gợi ý thì hướng dẫn sang khối bên trên; guest thì mời đăng nhập. */}
+              {me && (suggestions?.length ?? 0) > 0 && (
+                <p className="mt-2 text-center text-sm text-muted-foreground">
+                  Không tìm thấy ai tên này — thử những người được gợi ý bên trên.
+                </p>
+              )}
+              {!me && (
+                <p className="mt-2 text-center text-sm text-muted-foreground">
+                  {/* Guest: mời đăng nhập để xem gợi ý (endpoint cần đăng nhập). */}
+                  <Link
+                    to={loginRedirectUrl(`${location.pathname}${location.search}`)}
+                    className="font-medium text-foreground underline underline-offset-4"
+                  >
+                    Đăng nhập để xem gợi ý theo dõi
+                  </Link>
+                </p>
+              )}
+            </>
           ) : (
-            <ul className="grid max-w-xl grid-cols-1 gap-2">
+            <ul
+              className="grid max-w-xl grid-cols-1 gap-2"
+              aria-label="Kết quả tìm kiếm người dùng"
+            >
               {people.map((user) => (
                 <li key={user.id}>
                   {/* Item tự là thẻ `<a>` qua `render` nên cần hover riêng (`[a]:hover` chỉ áp cho con). */}
@@ -183,10 +215,14 @@ function SearchResults({ query }: { query: string }) {
                       </ItemDescription>
                     </ItemContent>
                     <ItemActions>
-                      <UsersIcon
-                        className="size-4 shrink-0 text-muted-foreground"
-                        aria-hidden="true"
-                      />
+                      {me && user.id === me.id ? (
+                        <UsersIcon
+                          className="size-4 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <FollowButton user={user} />
+                      )}
                     </ItemActions>
                   </Item>
                 </li>

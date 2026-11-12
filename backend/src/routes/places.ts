@@ -13,6 +13,7 @@ import { getViewer, requireAuth } from "../lib/session"
 import { listPosts } from "../lib/posts"
 import { rankPlaceSuggestions } from "../lib/ranking"
 import { jsonWithCache } from "../lib/http-cache"
+import { getDailyPicks, getPickDate } from "../lib/daily-picks"
 import {
   fetchPublishedRankCandidates,
   normalizeCaption,
@@ -78,6 +79,18 @@ export function createPlacesRouter() {
         reason,
       })),
     })
+  })
+
+  /**
+   * "Gợi ý hôm nay" — 3 quán do job `daily-picks` chọn mỗi ngày. Không tham số,
+   * không phụ thuộc người xem; chưa có picks thì trả `items: []` (200, không
+   * phải lỗi) để FE thu gọn dải. Đứng trước `/places/:id`.
+   */
+  router.get("/places/daily-picks", async (c) => {
+    const result = await getDailyPicks(getPickDate())
+    // Công khai, giống nhau với mọi người — 5 phút đủ gánh traffic trong ngày
+    // mà vẫn ngắn hơn chu kỳ đổi dữ liệu (ngày).
+    return jsonWithCache(c, result, { maxAge: 300 })
   })
 
   router.get("/places/map", async (c) => {

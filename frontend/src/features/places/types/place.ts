@@ -8,4 +8,6 @@ export type {
   PlaceStatus,
   PlaceSummary,
   PlaceSuggestion,
+  DailyPick,
+  DailyPicks,
 } from "@rendez/schema"

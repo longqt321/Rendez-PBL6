@@ -2,10 +2,13 @@ import type { UserProfile } from "@/features/profile/types/profile"
 import type { Author } from "@/features/social/types/post"
 
 /**
- * Hồ sơ người dùng đang đăng nhập (demo).
+ * Hồ sơ người dùng (demo).
  *
- * Cold-start không chứa tài khoản ảo nào khác (quyết định D-049): mọi tài khoản
- * khác chỉ xuất hiện khi có người dùng thật đăng ký.
+ * Cold-start chỉ có tài khoản demo của chính mình (quyết định D-049); ba hồ sơ
+ * "u-lan"/"u-hieu"/"u-mai" là dữ liệu mẫu tối thiểu để tab "Người" và khối
+ * "Gợi ý theo dõi" có nội dung để kiểm thử. `setFollow` của mock server sửa
+ * trực tiếp các object này (cùng tham chiếu với `db.users`), nên trạng thái
+ * "Đang theo dõi" luôn nhất quán giữa kết quả tìm kiếm và gợi ý.
  */
 export const MOCK_USERS: Record<string, UserProfile> = {
   "u-me": {
@@ -23,6 +26,57 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     followingCount: 0,
     followedByMe: false,
     isMe: true,
+    privateProfile: false,
+  },
+  "u-lan": {
+    id: "u-lan",
+    name: "Lan Anh",
+    handle: "lananh.cafe",
+    initials: "LA",
+    bio: "Săn cà phê specialty khắp Sài Gòn.",
+    location: "TP. Hồ Chí Minh",
+    avatarUrl: null,
+    coverUrl: null,
+    joinedAt: "2025-06-02T00:00:00+07:00",
+    postCount: 0,
+    followerCount: 0,
+    followingCount: 0,
+    followedByMe: false,
+    isMe: false,
+    privateProfile: false,
+  },
+  "u-hieu": {
+    id: "u-hieu",
+    name: "Hiếu Food",
+    handle: "hieu.food",
+    initials: "HF",
+    bio: "Ăn sập Đà Nẵng, review thật - ăn thật.",
+    location: "Đà Nẵng",
+    avatarUrl: null,
+    coverUrl: null,
+    joinedAt: "2025-08-20T00:00:00+07:00",
+    postCount: 0,
+    followerCount: 0,
+    followingCount: 0,
+    followedByMe: false,
+    isMe: false,
+    privateProfile: false,
+  },
+  "u-mai": {
+    id: "u-mai",
+    name: "Mai Nguyễn",
+    handle: "mai.nguyen",
+    initials: "MN",
+    bio: "Ghi lại mỗi bữa sáng vỉa hè đáng tiền.",
+    location: "Hà Nội",
+    avatarUrl: null,
+    coverUrl: null,
+    joinedAt: "2025-10-11T00:00:00+07:00",
+    postCount: 0,
+    followerCount: 0,
+    followingCount: 0,
+    followedByMe: false,
+    isMe: false,
     privateProfile: false,
   },
 }

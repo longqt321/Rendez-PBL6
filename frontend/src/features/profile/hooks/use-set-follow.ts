@@ -1,12 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import type { InfiniteData } from "@tanstack/react-query"
 import { followUser, unfollowUser } from "../api/set-follow"
 import { profileQueryKey } from "./use-profile"
+import { userSuggestionsQueryKey } from "@/features/search/hooks/use-user-suggestions"
+import type { Page } from "@/types/api"
 import type { UserProfile } from "../types/profile"
+import type { UserSuggestion } from "@rendez/schema"
 
 /**
  * Theo dõi / bỏ theo dõi.
  *
  * Optimistic: đổi `followedByMe` và đếm ngay trong cache, rollback nếu lỗi.
+ *
+ * Patch BA shape cache riêng (duyệt theo từng shape, không gộp một hàm chung —
+ * pattern `patch-post-in-cache.ts`):
+ * - Hồ sơ: object `UserProfile` theo handle.
+ * - Kết quả tìm kiếm: `InfiniteData<Page<UserProfile>>` (key `["users","search",q]`).
+ * - Gợi ý theo dõi: mảng `UserSuggestion[]` (key `["users","suggestions"]`).
  */
 export function useSetFollow(handle: string) {
   const queryClient = useQueryClient()
@@ -26,15 +36,72 @@ export function useSetFollow(handle: string) {
           followerCount: profile.followerCount + (followed ? 1 : -1),
         }
       })
-      return { previous }
+
+      // Kết quả tìm kiếm: mọi query key con của `["users","search"]` (mỗi `q` một key).
+      const searchKeys = queryClient
+        .getQueryCache()
+        .findAll({ queryKey: ["users", "search"] })
+        .map((query) => query.queryKey)
+      const searchSnapshots = searchKeys.map((searchKey) => ({
+        searchKey,
+        data: queryClient.getQueryData<InfiniteData<Page<UserProfile>>>(searchKey),
+      }))
+      for (const { searchKey } of searchSnapshots) {
+        queryClient.setQueryData<InfiniteData<Page<UserProfile>>>(searchKey, (data) => {
+          if (!data) return data
+          return {
+            ...data,
+            pages: data.pages.map((page) => ({
+              ...page,
+              items: page.items.map((user) =>
+                user.handle === handle
+                  ? {
+                      ...user,
+                      followedByMe: followed,
+                      followerCount: user.followerCount + (followed ? 1 : -1),
+                    }
+                  : user,
+              ),
+            })),
+          }
+        })
+      }
+
+      // Gợi ý theo dõi: patch trực tiếp mảng items.
+      const suggestionsKey = userSuggestionsQueryKey()
+      const previousSuggestions = queryClient.getQueryData<UserSuggestion[]>(suggestionsKey)
+      queryClient.setQueryData<UserSuggestion[]>(suggestionsKey, (items) =>
+        items?.map((suggestion) =>
+          suggestion.user.handle === handle
+            ? {
+                ...suggestion,
+                user: {
+                  ...suggestion.user,
+                  followedByMe: followed,
+                  followerCount: suggestion.user.followerCount + (followed ? 1 : -1),
+                },
+              }
+            : suggestion,
+        ),
+      )
+
+      return { previous, searchSnapshots, previousSuggestions }
     },
     onError: (_error, _vars, context) => {
       if (context?.previous !== undefined) {
         queryClient.setQueryData(profileQueryKey(handle), context.previous)
       }
+      for (const snapshot of context?.searchSnapshots ?? []) {
+        queryClient.setQueryData(snapshot.searchKey, snapshot.data)
+      }
+      if (context?.previousSuggestions !== undefined) {
+        queryClient.setQueryData(userSuggestionsQueryKey(), context.previousSuggestions)
+      }
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: profileQueryKey(handle) })
+      // Invalidate theo prefix `["users"]`: làm mới hồ sơ, kết quả tìm kiếm lẫn
+      // gợi ý trong một lần (cùng prefix key).
+      void queryClient.invalidateQueries({ queryKey: ["users"] })
     },
   })
 }

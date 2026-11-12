@@ -1,5 +1,13 @@
 import { z } from "zod"
-import type { Place, PlaceCategory, PlaceStatus, PlaceSuggestion, PlaceSummary } from "./types/place"
+import type {
+  DailyPick,
+  DailyPicks,
+  Place,
+  PlaceCategory,
+  PlaceStatus,
+  PlaceSuggestion,
+  PlaceSummary,
+} from "./types/place"
 
 /** Schema khớp `PlaceCategory` — enum đóng, server quyết định. */
 const placeCategorySchema = z.enum([
@@ -51,3 +59,15 @@ export const placeSuggestionSchema = z.object({
   place: placeSummarySchema,
   reason: z.string(),
 }) satisfies z.ZodType<PlaceSuggestion>
+
+/** Một quán trong "Gợi ý hôm nay" — dùng `placeSchema` đầy đủ để FE render `PlaceCard`. */
+export const dailyPickSchema = z.object({
+  place: placeSchema,
+  reason: z.string(),
+}) satisfies z.ZodType<DailyPick>
+
+/** Payload `GET /places/daily-picks`; `items` rỗng khi job chưa chạy (không phải lỗi). */
+export const dailyPicksSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/u),
+  items: z.array(dailyPickSchema).max(3),
+}) satisfies z.ZodType<DailyPicks>

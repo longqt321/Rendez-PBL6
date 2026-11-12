@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
-import { pageSchema, placeSchema, postSchema } from "@rendez/schema"
+import { dailyPicksSchema, pageSchema, placeSchema, postSchema } from "@rendez/schema"
 import { startTestDb, stopTestDb } from "./helpers/pg"
 
 /**
@@ -10,6 +10,7 @@ import { startTestDb, stopTestDb } from "./helpers/pg"
  */
 let app: Awaited<ReturnType<typeof import("../src/app").createApp>>
 let prisma: typeof import("../src/lib/prisma").prisma
+let picks: typeof import("../src/lib/daily-picks")
 
 const placePageSchema = pageSchema(placeSchema)
 const postPageSchema = pageSchema(postSchema)
@@ -38,6 +39,7 @@ beforeAll(async () => {
 
   const { createApp } = await import("../src/app")
   prisma = (await import("../src/lib/prisma")).prisma
+  picks = await import("../src/lib/daily-picks")
   app = createApp()
 }, 180_000)
 
@@ -340,5 +342,93 @@ describe("cache HTTP (G2)", () => {
     const res = await app.request("/api/v1/places/map")
     expect(res.status).toBe(200)
     expect(res.headers.get("cache-control")).toBe("public, max-age=30")
+  })
+})
+
+describe("Daily Picks (Gợi ý hôm nay)", () => {
+  const DATE = "2020-01-15" // ngày cố định — không phụ thuộc clock của test
+
+  test("pickDailyPicks chạy 2 lần → daily_picks vẫn đúng 3 row, cùng bộ quán (idempotence)", async () => {
+    await prisma.dailyPick.deleteMany({ where: { pickDate: new Date(`${DATE}T00:00:00Z`) } })
+
+    const firstCount = await picks.pickDailyPicks(DATE)
+    expect(firstCount).toBe(3)
+    const firstRows = await prisma.dailyPick.findMany({
+      where: { pickDate: new Date(`${DATE}T00:00:00Z`) },
+      orderBy: { position: "asc" },
+    })
+    expect(firstRows.map((row) => row.placeId)).toEqual([
+      ...new Set(firstRows.map((row) => row.placeId)),
+    ])
+
+    // Chạy lại (mô phỏng retry/hai worker chen nhau) — không nhân đôi, không đổi bộ.
+    await picks.pickDailyPicks(DATE)
+    const secondRows = await prisma.dailyPick.findMany({
+      where: { pickDate: new Date(`${DATE}T00:00:00Z`) },
+      orderBy: { position: "asc" },
+    })
+    expect(secondRows).toHaveLength(3)
+    expect(secondRows.map((row) => row.placeId)).toEqual(firstRows.map((row) => row.placeId))
+  })
+
+  test("job chết sau khi insert 1 row → retry ra đúng 3 row, cùng bộ quán", async () => {
+    // Mô phỏng trạng thái dở dang: giữ lại duy nhất slot 1 của lần tính đầy đủ,
+    // xoá 2 slot còn lại rồi chạy lại — transaction/skipDuplicates phải khôi
+    // phục đủ 3 slot với CÙNG bộ quán (tính theo pickDate, không phụ thuộc now()).
+    const fullRows = await prisma.dailyPick.findMany({
+      where: { pickDate: new Date(`${DATE}T00:00:00Z`) },
+      orderBy: { position: "asc" },
+    })
+    await prisma.dailyPick.deleteMany({
+      where: { pickDate: new Date(`${DATE}T00:00:00Z`), position: { gt: 1 } },
+    })
+
+    await picks.pickDailyPicks(DATE)
+    const recovered = await prisma.dailyPick.findMany({
+      where: { pickDate: new Date(`${DATE}T00:00:00Z`) },
+      orderBy: { position: "asc" },
+    })
+    expect(recovered).toHaveLength(3)
+    expect(recovered.map((row) => row.placeId)).toEqual(fullRows.map((row) => row.placeId))
+  })
+
+  test("GET /places/daily-picks trả shape + Cache-Control public, max-age=300, 304 khi ETag khớp", async () => {
+    const today = picks.getPickDate()
+    await prisma.dailyPick.deleteMany({ where: { pickDate: new Date(`${today}T00:00:00Z`) } })
+    await picks.pickDailyPicks(today)
+
+    const res = await app.request("/api/v1/places/daily-picks")
+    expect(res.status).toBe(200)
+    expect(res.headers.get("cache-control")).toBe("public, max-age=300")
+
+    const body = (await res.json()) as {
+      date: string
+      items: { place: unknown; reason: string }[]
+    }
+    expect(dailyPicksSchema.safeParse(body).success).toBe(true)
+    expect(body.date).toBe(today)
+    expect(body.items).toHaveLength(3)
+    for (const item of body.items) {
+      expect(typeof item.reason).toBe("string")
+      expect(item.reason.length).toBeGreaterThan(0)
+      expect(placeSchema.safeParse(item.place).success).toBe(true)
+    }
+
+    const etag = res.headers.get("etag")
+    expect(etag).toBeTruthy()
+    const cached = await app.request("/api/v1/places/daily-picks", {
+      headers: { "If-None-Match": etag ?? "" },
+    })
+    expect(cached.status).toBe(304)
+  })
+
+  test("chưa có picks cho hôm nay → 200 với items rỗng (không phải lỗi)", async () => {
+    await prisma.dailyPick.deleteMany({
+      where: { pickDate: new Date(`${picks.getPickDate()}T00:00:00Z`) },
+    })
+    const res = await app.request("/api/v1/places/daily-picks")
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: unknown[] }
+    expect(body.items).toEqual([])
   })
 })

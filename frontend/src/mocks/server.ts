@@ -22,6 +22,7 @@ import { CURRENT_USER, ME, MOCK_USERS } from "./fixtures/users"
 import { rankPlaceSuggestions } from "./ranking"
 import { resolveScenario } from "./scenarios"
 import { normalizeText } from "./text"
+import { userSuggestionRoutes } from "./users-suggestions"
 import { formatInitials } from "@/lib/format"
 import { env } from "@/lib/env"
 import {
@@ -55,6 +56,8 @@ import type { MockRoom, MockRoomMember } from "./types"
  */
 
 const PLACES_PAGE_SIZE = 9
+/** Lý do gợi ý của mock — cùng bộ chuỗi server thật dựng từ dữ liệu có thật. */
+const DAILY_PICK_REASONS = ["Gợi ý của ngày", "Quán mới", "Nhiều đánh giá"]
 const POSTS_PAGE_SIZE = 5
 const NOTIFICATIONS_PAGE_SIZE = 20
 
@@ -947,6 +950,7 @@ const scenario = resolveScenario(env.mockScenario)
 /** Route GET trả danh sách — dùng để áp kịch bản `empty`. */
 const LIST_ROUTES: readonly RegExp[] = [
   /^\/places$/,
+  /^\/places\/daily-picks$/,
   /^\/posts$/,
   /^\/notifications$/,
   /^\/users$/,
@@ -1302,6 +1306,8 @@ interface Route {
 }
 
 const routes: Route[] = [
+  // Gợi ý người theo dõi — route `/users/suggestions` phải khớp TRƯỚC `/users/:handle`.
+  ...userSuggestionRoutes,
   {
     method: "get",
     pattern: /^\/places\/suggestions$/,
@@ -1390,6 +1396,23 @@ const routes: Route[] = [
         .filter((place) => savedIds.has(place.id) && isPubliclyVisible(place))
         .map(toPlaceDto)
       return paginate(items, cursor ?? null, PLACES_PAGE_SIZE)
+    },
+  },
+  {
+    method: "get",
+    // Đứng trước `/places/:id` — nếu không `:id` sẽ nuốt "daily-picks".
+    pattern: /^\/places\/daily-picks$/,
+    handler: () => {
+      // Mock không có job hằng ngày: lấy 3 quán công khai đầu tiên, cùng bộ mỗi
+      // lần tải. Ảnh lấy từ MOCK_PLACES (fixture cold-start) như lưới bên dưới.
+      const items = db.places
+        .filter(isPubliclyVisible)
+        .slice(0, 3)
+        .map((place, index) => ({
+          place: toPlaceDto(place),
+          reason: DAILY_PICK_REASONS[index % DAILY_PICK_REASONS.length],
+        }))
+      return { date: new Date().toISOString().slice(0, 10), items }
     },
   },
   {

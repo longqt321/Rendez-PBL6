@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
-import { pageSchema, userProfileSchema } from "@rendez/schema"
+import { pageSchema, userProfileSchema, userSuggestionsSchema } from "@rendez/schema"
 import { startTestDb, stopTestDb } from "./helpers/pg"
 import { registerVerifiedUser } from "./helpers/auth"
 
@@ -132,5 +132,141 @@ describe("GET /users", () => {
     const body = (await res.json()) as { items: { handle: string; isMe: boolean }[] }
     expect(body.items).toHaveLength(1)
     expect(body.items[0]?.isMe).toBe(true)
+  })
+})
+
+/**
+ * `GET /users/suggestions` — integration trên Postgres thật.
+ *
+ * Kiểm: 401 guest, header CHÍNH XÁC `Cache-Control: no-store`, shape khớp
+ * schema, loại chính mình/người đã follow/người đã xoá mềm, `reason` đúng và
+ * **`post_saves` không được tính** vào "Cùng quan tâm" (BLOCKER B1).
+ */
+describe("GET /users/suggestions", () => {
+  let viewer: { cookie: string; id: string }
+  let shared: { cookie: string; id: string }
+  let mutual: { cookie: string; id: string }
+  let followed: { cookie: string; id: string }
+  let removed: { cookie: string; id: string }
+
+  /** IP riêng cho mỗi lần đăng ký — né rate limit đăng ký dùng chung container. */
+  const ip = (index: number) => ({ "X-Forwarded-For": `10.88.0.${index}` })
+
+  beforeAll(async () => {
+    viewer = await registerVerifiedUser(app, prisma, {
+      name: "Người Xem Gợi Ý",
+      handle: `sug_viewer_${suffix}`,
+      headers: ip(1),
+    })
+    shared = await registerVerifiedUser(app, prisma, {
+      name: "Quán Chung",
+      handle: `sug_shared_${suffix}`,
+      headers: ip(2),
+    })
+    mutual = await registerVerifiedUser(app, prisma, {
+      name: "Bạn Chung",
+      handle: `sug_mutual_${suffix}`,
+      headers: ip(3),
+    })
+    followed = await registerVerifiedUser(app, prisma, {
+      name: "Đã Theo Dõi",
+      handle: `sug_followed_${suffix}`,
+      headers: ip(4),
+    })
+    removed = await registerVerifiedUser(app, prisma, {
+      name: "Đã Xoá",
+      handle: `sug_removed_${suffix}`,
+      headers: ip(5),
+    })
+
+    // Tín hiệu công khai: viewer + `shared` cùng review một quán đã publish.
+    const place = await prisma.place.findFirst({
+      where: { publishedAt: { not: null }, deletedAt: null },
+      select: { id: true },
+      orderBy: { id: "asc" },
+    })
+    const placeId = place!.id
+    await prisma.review.create({
+      data: { placeId, authorId: viewer.id, rating: 5, content: "Rất ngon" },
+    })
+    await prisma.review.create({
+      data: { placeId, authorId: shared.id, rating: 4, content: "Ổn" },
+    })
+
+    // Tín hiệu RIÊNG TƯ: cả hai cùng lưu một bài — không được tính vào quán chung.
+    const post = await prisma.post.findFirst({
+      where: { deletedAt: null },
+      select: { id: true },
+      orderBy: { id: "asc" },
+    })
+    if (post) {
+      await prisma.postSave.createMany({
+        data: [
+          { postId: post.id, userId: viewer.id },
+          { postId: post.id, userId: shared.id },
+        ],
+        skipDuplicates: true,
+      })
+    }
+
+    // viewer → followed → mutual: `mutual` có 1 người theo dõi chung.
+    await prisma.follow.createMany({
+      data: [
+        { followerId: viewer.id, followingId: followed.id },
+        { followerId: followed.id, followingId: mutual.id },
+      ],
+      skipDuplicates: true,
+    })
+
+    // `removed` có tín hiệu mạnh nhưng đã xoá mềm → phải bị loại.
+    await prisma.review.create({
+      data: { placeId, authorId: removed.id, rating: 3, content: "Tạm" },
+    })
+    await prisma.user.update({ where: { id: removed.id }, data: { deletedAt: new Date() } })
+  })
+
+  test("guest nhận 401", async () => {
+    const res = await app.request("/api/v1/users/suggestions")
+    expect(res.status).toBe(401)
+  })
+
+  test("trả shape đúng, header chính xác `Cache-Control: no-store`", async () => {
+    const res = await app.request("/api/v1/users/suggestions", {
+      headers: { Cookie: viewer.cookie },
+    })
+    expect(res.status).toBe(200)
+    expect(res.headers.get("cache-control")).toBe("no-store")
+    expect(userSuggestionsSchema.safeParse(await res.json()).success).toBe(true)
+  })
+
+  test("loại chính mình, người đã theo dõi và người đã xoá mềm", async () => {
+    const res = await app.request("/api/v1/users/suggestions", {
+      headers: { Cookie: viewer.cookie },
+    })
+    const body = (await res.json()) as {
+      items: { user: { id: string; followedByMe: boolean } }[]
+    }
+    const ids = body.items.map((item) => item.user.id)
+
+    expect(body.items.length).toBeLessThanOrEqual(5)
+    expect(ids).not.toContain(viewer.id)
+    expect(ids).not.toContain(followed.id)
+    expect(ids).not.toContain(removed.id)
+    for (const item of body.items) expect(item.user.followedByMe).toBe(false)
+  })
+
+  test("reason đúng: quán chung từ nguồn công khai, bạn chung", async () => {
+    const res = await app.request("/api/v1/users/suggestions", {
+      headers: { Cookie: viewer.cookie },
+    })
+    const body = (await res.json()) as {
+      items: { user: { id: string }; reason: string }[]
+    }
+    const reasonById = new Map(body.items.map((item) => [item.user.id, item.reason]))
+
+    // `shared` chỉ có 1 quán chung công khai — post_save chung KHÔNG được cộng
+    // thành 2 (BLOCKER B1: hành vi lưu là riêng tư).
+    expect(reasonById.get(shared.id)).toBe("Cùng quan tâm 1 quán")
+    expect(reasonById.get(mutual.id)).toBe("Có 1 người theo dõi chung")
   })
 })
