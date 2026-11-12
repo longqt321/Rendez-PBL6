@@ -8,9 +8,13 @@ import { defineConfig, loadEnv, type Plugin } from "vite"
 const STATIC_ROUTES = ["", "/discover", "/map", "/login", "/register"]
 
 /**
- * Thay `%VITE_APP_ORIGIN%` trong index.html và sinh `robots.txt` + `sitemap.xml`
+ * Thay token `__APP_ORIGIN__` trong index.html và sinh `robots.txt` + `sitemap.xml`
  * theo origin thật lúc build. Trước đây domain bị hardcode `rendez.example` nên
  * prod công bố canonical/sitemap sai (audit M-04).
+ *
+ * Dùng token riêng thay vì cú pháp `%VITE_APP_ORIGIN%` của Vite: khi biến rỗng,
+ * Vite để nguyên chuỗi `%…%` rồi cố resolve nó như đường dẫn asset → build chết
+ * (`EISDIR`). Token riêng do plugin tự thay nên rỗng vẫn ra URL tương đối.
  */
 function seoOriginPlugin(origin: string): Plugin {
   const escapeXml = (value: string) =>
@@ -18,10 +22,9 @@ function seoOriginPlugin(origin: string): Plugin {
 
   return {
     name: "rendez-seo-origin",
-    // Dev cũng thay (tránh cảnh báo `%VITE_APP_ORIGIN% is not defined` của Vite);
-    // build thì thay + sinh robots/sitemap.
+    // Dev cũng thay để HTML dev có canonical/og đúng origin đang chạy.
     transformIndexHtml(html) {
-      return html.replaceAll("%VITE_APP_ORIGIN%", origin)
+      return html.replaceAll("__APP_ORIGIN__", origin)
     },
     generateBundle() {
       this.emitFile({
