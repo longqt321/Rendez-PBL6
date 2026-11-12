@@ -50,7 +50,8 @@ bun run dev:api             # backend :8000 (cần backend/.env)
 - Kế hoạch triển khai backend: `docs/backend/ke-hoach-backend-chi-tiet.md`.
 - API đã triển khai: `docs/backend/API.md`. Vận hành: `docs/backend/RUNBOOK.md`.
 - Thiết kế tính năng mới: `docs/thiet-ke/` — `goi-y-hom-nay.md`, `tim-nguoi.md`,
-  `chia-se-og-dong.md`, `loc-gia-sap-xep-anh.md`.
+  `chia-se-og-dong.md`, `loc-gia-sap-xep-anh.md`, `xac-thuc-email.md`,
+  `cache-va-phien.md` (cache/phiên/rate limit).
 - Hướng dẫn chạy & nghiệm thu: `docs/HUONG-DAN-CHAY-VA-NGHIEM-THU.md`.
 - Báo cáo kỹ thuật backend: `docs/backend/REPORT.md`. Báo cáo đồ án: `docs/bao-cao/BAO-CAO-DO-AN.md`.
 - Quy ước code: `docs/CONVENTIONS.md`. Bài học: `docs/LESSONS.md`. Tồn đọng: `docs/BACKLOG.md`.

@@ -136,8 +136,8 @@ semantics của bản nháp IETF `Idempotency-Key` (kiểu Stripe):
 ## 8. Tính năng mới 2026-11-11 → 2026-11-12
 
 Thiết kế chi tiết nằm ở `docs/thiet-ke/` (`goi-y-hom-nay.md`, `tim-nguoi.md`,
-`chia-se-og-dong.md`, `loc-gia-sap-xep-anh.md`); quyết định ở `docs/DECISIONS.md`
-D-055..D-058.
+`chia-se-og-dong.md`, `loc-gia-sap-xep-anh.md`, `xac-thuc-email.md`,
+`cache-va-phien.md`); quyết định ở `docs/DECISIONS.md` D-055..D-058.
 
 ### 8.1 Gợi ý hôm nay (daily picks)
 
