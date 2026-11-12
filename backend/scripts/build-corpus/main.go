@@ -315,23 +315,23 @@ func buildVibes(tags map[string]string, cat string) []string {
 	return out
 }
 
-// ---------- Trọng tâm 7 đơn vị cấp quận (xấp xỉ — dùng khi thiếu addr:district) ----------
+// ---------- Trọng tâm 6 quận (xấp xỉ — dùng khi thiếu addr:district) ----------
 //
-// Danh sách 7 đơn vị do yêu cầu sản phẩm chốt: Hải Châu, Sơn Trà, Ngũ Hành Sơn,
-// Liên Chiểu, Cẩm Lệ, Hòa Vang, Hoàng Sa. LƯU Ý TRUNG THỰC: từ 01/7/2025 Đà Nẵng
-// bãi bỏ cấp quận/huyện (còn phường/xã trực thuộc TP), nên đây KHÔNG phải đơn vị
-// hành chính hiện hành mà là PHÂN NHÓM XẤP XỈ theo các quận cũ để lọc demo —
-// Thanh Khê cũ (giáp trung tâm) gộp vào Hải Châu vì danh sách 7 không có nhãn
-// riêng cho nó. Hoàng Sa là đặc khu đảo — centroid đặt ngoài biển xa để không
-// POI đất liền nào bị gán nhầm về đó.
+// Đà Nẵng có 8 đơn vị cấp huyện: 6 quận (Hải Châu, Thanh Khê, Sơn Trà, Ngũ Hành
+// Sơn, Liên Chiểu, Cẩm Lệ) + 2 huyện (Hòa Vang, Hoàng Sa). Ứng dụng CHỈ lọc theo
+// 6 quận — 2 huyện bị loại: Hòa Vang là huyện ngoại thành gần như không có POI
+// ăn uống trong corpus (2/344), Hoàng Sa là huyện đảo không có POI đất liền nào;
+// giữ trong bộ lọc chỉ cho kết quả rỗng, gây hiểu nhầm là app lỗi.
+// LƯU Ý TRUNG THỰC: từ 01/7/2025 Đà Nẵng bãi bỏ cấp quận/huyện (còn phường/xã
+// trực thuộc TP), nên đây là PHÂN NHÓM XẤP XỈ theo quận cũ, không phải đơn vị
+// hành chính hiện hành.
 var districtCentroids = map[string][2]float64{
 	"Hải Châu":     {16.0678, 108.2208},
+	"Thanh Khê":    {16.0450, 108.2050},
 	"Sơn Trà":      {16.1000, 108.2500},
 	"Ngũ Hành Sơn": {16.0200, 108.2500},
 	"Liên Chiểu":   {16.0700, 108.1500},
 	"Cẩm Lệ":       {16.0100, 108.2000},
-	"Hòa Vang":     {16.0000, 108.1000},
-	"Hoàng Sa":     {16.5000, 112.0000},
 }
 
 var (
@@ -998,22 +998,22 @@ func assignCategory(tags map[string]string, name string) string {
 	return "khac"
 }
 
-// districtCanonical: 7 nhãn phân nhóm do yêu cầu sản phẩm chốt (xấp xỉ theo quận
-// cũ, xem comment trên `districtCentroids`). Thanh Khê cũ không có nhãn riêng —
-// vẫn nhận diện ở normalizeDistrict để map về Hải Châu.
+// districtCanonical: 6 nhãn quận (xấp xỉ theo quận cũ, xem comment trên
+// `districtCentroids`).
 var districtCanonical = map[string]bool{
-	"Hải Châu": true, "Sơn Trà": true, "Ngũ Hành Sơn": true,
-	"Liên Chiểu": true, "Cẩm Lệ": true, "Hòa Vang": true,
-	"Hoàng Sa": true,
+	"Hải Châu": true, "Thanh Khê": true, "Sơn Trà": true,
+	"Ngũ Hành Sơn": true, "Liên Chiểu": true, "Cẩm Lệ": true,
 }
 
 // Chuẩn hoá addr:district từ OSM (viết không dấu, có tiền tố, sai chính tả,
 // hoặc là đơn vị cũ trước sáp nhập 2025). Trả về "" nếu không nhận ra →
 // fallback sang nearest-centroid trong 7 quận.
 //
-// Map đơn vị cũ (phường/quận trước 2025) → phân nhóm 7 nhãn:
-//   - An Hải → Sơn Trà; Hòa Cường, Thanh Khê (qua An Khê) → Hải Châu
+// Map đơn vị cũ (phường/quận trước 2025) → phân nhóm 6 quận:
+//   - An Hải → Sơn Trà; Hòa Cường → Hải Châu
 //   - Hòa Khánh, Hải Vân → Liên Chiểu; Hòa Xuân → Cẩm Lệ
+//   - Hòa Vang, Hoàng Sa (2 huyện) → "" để fallback nearest-centroid về quận
+//     gần nhất (dữ liệu POI ở vùng này thuộc lân cận quận nào thì nhận quận đó)
 func normalizeDistrict(s string) string {
 	s = strings.TrimSpace(s)
 	// bỏ tiền tố "Quận " / "Huyện "
@@ -1029,12 +1029,12 @@ func normalizeDistrict(s string) string {
 		"Hai Chau": "Hải Châu", "Hai Chau District": "Hải Châu",
 		"Ngu Hanh Son": "Ngũ Hành Sơn",
 		"Son Tra":      "Sơn Trà", "Lien Chieu": "Liên Chiểu",
-		"Cam Le": "Cẩm Lệ", "Hoa Vang": "Hòa Vang", "Hoang Sa": "Hoàng Sa",
+		"Cam Le": "Cẩm Lệ",
 		// Đơn vị cũ → đơn vị mới sau sáp nhập 2025
 		"An Hai":    "Sơn Trà", // An Hải Đông/Bắc/Tây là phường của Sơn Trà
 		"Hoa Cuong": "Hải Châu",
-		"An Khe":    "Hải Châu", // An Khê thuộc Thanh Khê cũ → gộp nhóm Hải Châu
-		"Thanh Khe": "Hải Châu", // Thanh Khê cũ không có nhãn riêng trong nhóm 7 → gộp Hải Châu
+		"An Khe":    "Thanh Khê", // An Khê là phường thuộc Thanh Khê cũ
+		"Thanh Khe": "Thanh Khê",
 		"Hoa Khanh": "Liên Chiểu",
 		"Hai Van":   "Liên Chiểu",
 		"Hoa Xuan":  "Cẩm Lệ",

@@ -1,18 +1,22 @@
 /**
- * Danh sách quận của Đà Nẵng — chuẩn hoá theo DB (7 đơn vị hành chính).
+ * Bộ lọc quận của Đà Nẵng — CHỈ 6 quận trực thuộc thành phố.
+ *
+ * Đà Nẵng có 8 đơn vị cấp huyện (6 quận + 2 huyện Hòa Vang, Hoàng Sa), nhưng
+ * ứng dụng chỉ lọc theo 6 quận: 2 huyện gần như không có quán trong dữ liệu
+ * (Hòa Vang 2/344, Hoàng Sa 0) — chọn chúng chỉ ra danh sách/map rỗng, người
+ * dùng tưởng app lỗi. POI thuộc 2 huyện được corpus gán về quận gần nhất.
  *
  * Đồng bộ với `build-corpus` (`districtCanonical`) và seed backend: các tên cũ
- * (Thanh Khê, An Hải, Hòa Cường, Hòa Khánh, Hòa Xuân, An Khê, Hải Vân) đã được
- * gộp/sửa trong DB nên KHÔNG nằm ở đây nữa.
+ * (An Hải, Hòa Cường, Hòa Khánh, Hòa Xuân, An Khê, Hải Vân) đã được gộp/sửa
+ * trong DB nên KHÔNG nằm ở đây nữa.
  */
 export const DANANG_DISTRICTS = [
   "Hải Châu",
+  "Thanh Khê",
   "Sơn Trà",
   "Ngũ Hành Sơn",
   "Liên Chiểu",
   "Cẩm Lệ",
-  "Hòa Vang",
-  "Hoàng Sa",
 ] as const
 
 /**

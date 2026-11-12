@@ -2916,17 +2916,20 @@ từ nguồn khác có thật.
 **Bài học:** dữ liệu "thiếu" ở tầng app không có nghĩa là nguồn gốc thiếu — rà lại raw
 trước khi kết luận phải bịa.
 
-## D-060 — Chuẩn hoá địa giới 7 quận + vibes sinh từ OSM + `publishedAt` trải tất định — 2026-11-13
+## D-060 — Chuẩn hoá địa giới 6 quận + vibes sinh từ OSM + `publishedAt` trải tất định — 2026-11-13
 
 **Bối cảnh:** bộ lọc "Quận" trộn phường/xã với quận (13 nhãn: Hải Châu, Thanh Khê, An Hải,
-Hòa Cường, Hòa Khánh, Hòa Xuân, An Khê, Hải Vân…), trong khi yêu cầu sản phẩm chốt danh sách
-7 nhãn: Hải Châu, Sơn Trà, Ngũ Hành Sơn, Liên Chiểu, Cẩm Lệ, Hòa Vang, Hoàng Sa. Card cũng thiếu tín hiệu "vibe" và badge "Mới" vô nghĩa vì mọi
+Hòa Cường, Hòa Khánh, Hòa Xuân, An Khê, Hải Vân…), trong khi yêu cầu sản phẩm chốt CHỈ lọc
+theo 6 quận trực thuộc: Hải Châu, Thanh Khê, Sơn Trà, Ngũ Hành Sơn, Liên Chiểu, Cẩm Lệ
+(2 huyện Hòa Vang + Hoàng Sa bị loại khỏi bộ lọc — gần như không có POI, chọn chỉ ra
+kết quả rỗng; POI thuộc 2 huyện được gán về quận gần nhất). Thanh Khê tách nhãn riêng
+(trước đó gộp Hải Châu) để khớp đúng 6 quận. Card cũng thiếu tín hiệu "vibe" và badge "Mới" vô nghĩa vì mọi
 place seed cùng một `published_at`.
 
 **Quyết định:**
 1. `build-corpus` chỉ còn 7 centroid; `normalizeDistrict` map nhãn cũ về phân nhóm:
-   An Hải→Sơn Trà, Hòa Cường→Hải Châu, An Khê→Hải Châu, Thanh Khê→Hải Châu,
-   Hòa Khánh→Liên Chiểu, Hải Vân→Liên Chiểu, Hòa Xuân→Cẩm Lệ.
+   An Hải→Sơn Trà, Hòa Cường→Hải Châu, Hòa Khánh→Liên Chiểu, Hải Vân→Liên Chiểu,
+   Hòa Xuân→Cẩm Lệ; An Khê/Thanh Khê giữ nhãn "Thanh Khê".
    LƯU Ý TRUNG THỰC (audit N4): từ 01/7/2025 Đà Nẵng bãi bỏ cấp quận/huyện (còn
    phường/xã trực thuộc TP) — "7 quận" là PHÂN NHÓM XẤP XỈ theo quận cũ do yêu cầu
    sản phẩm chốt, KHÔNG phải đơn vị hành chính hiện hành; Thanh Khê cũ KHÔNG "sáp
