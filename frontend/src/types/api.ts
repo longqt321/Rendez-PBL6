@@ -1,1 +1,1 @@
-export type { Page } from "@rendez/schema"
+export type { Page, PageMeta } from "@rendez/schema"

@@ -717,3 +717,25 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       (raw chỉ 1 wikidata, 0 commons) hoặc chấp nhận ảnh minh hoạ D-050.
 - [ ] **`price_level`**: OSM không có dữ liệu (0/3.223) → lọc giá tiếp tục disabled;
       chỉ bật khi có nguồn thật.
+
+## Từ vòng A→D (2026-11-13)
+
+- [ ] **Mở `Place.description` qua API**: corpus đã có `description` (34/344) và seed đã
+      lưu vào DB, nhưng schema/API chưa expose → card chưa hiện "1 dòng mô tả ngắn".
+      Cần thêm field vào `placeSchema` + `toPlaceDto` + mock, rồi FE render line-clamp-1.
+- [ ] **Dữ liệu tĩnh còn nhãn quận cũ**: `frontend/data/cold-start/places.json.bak`,
+      `places.csv`, README — không ảnh hưởng runtime nhưng nên dọn cho nhất quán.
+- [ ] **Ảnh minh họa AI còn thiếu 29/32**: quota image API cạn (reset ~07:21 ngày 13/11),
+      đã có cafe-1/2, quan-an-1. Sinh tiếp rồi chạy lại `copy-cold-start-images.mjs`.
+- [ ] **Cột `vibes` riêng trong DB**: hiện vibes gộp vào `tags` (D-060); tách cột khi
+      cần lọc theo vibe chính xác.
+
+## Từ vòng FE (2026-11-13, card/discover)
+
+- [ ] **Dòng mô tả trên card**: schema/API chưa có `description` (xem mục "Mở
+      `Place.description`" ở trên) → card tạm KHÔNG hiện mô tả; bật khi field lên API.
+- [ ] **Export `DailyPickWhy` từ `@rendez/schema`**: type đã có trong
+      `packages/schema/src/types/place.ts` nhưng chưa re-export ở `index.ts`; FE đang
+      lấy qua `NonNullable<DailyPick["why"]>` — nên export chính thức.
+- [ ] **`publishedAt` trải ngày thật**: seed hiện đồng loạt nên nhiều quán hiện badge
+      "Mới" cùng lúc; cần trải `publishedAt` theo lịch duyệt thật khi có dữ liệu.

@@ -1,24 +1,18 @@
 /**
- * Danh sách phường/khu vực dùng trong dataset (đơn vị hành chính 2025 sau sáp
- * nhập, theo Nominatim — xem D-046). Sắp theo số địa điểm giảm dần.
+ * Danh sách quận của Đà Nẵng — chuẩn hoá theo DB (7 đơn vị hành chính).
  *
- * Đồng bộ với `build-corpus` (`districtCanonical`, 13 giá trị) — corpus OSM
- * hiện có 1 POI "Hòa Vang" nên bổ sung vào đây (D-AI-42).
+ * Đồng bộ với `build-corpus` (`districtCanonical`) và seed backend: các tên cũ
+ * (Thanh Khê, An Hải, Hòa Cường, Hòa Khánh, Hòa Xuân, An Khê, Hải Vân) đã được
+ * gộp/sửa trong DB nên KHÔNG nằm ở đây nữa.
  */
 export const DANANG_DISTRICTS = [
   "Hải Châu",
-  "An Hải",
-  "Ngũ Hành Sơn",
   "Sơn Trà",
-  "Thanh Khê",
-  "Cẩm Lệ",
-  "Hòa Cường",
+  "Ngũ Hành Sơn",
   "Liên Chiểu",
-  "An Khê",
-  "Hòa Khánh",
-  "Hòa Xuân",
+  "Cẩm Lệ",
   "Hòa Vang",
-  "Hải Vân",
+  "Hoàng Sa",
 ] as const
 
 /**

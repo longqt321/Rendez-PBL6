@@ -19,6 +19,7 @@ describe("checkApiContract", () => {
       priceLevel: 2,
       imageSeed: "seed",
       imageHeight: 320,
+      publishedAt: null,
     }
     expect(checkApiContract("GET", "/places/p1", place)).toBeNull()
     expect(
@@ -51,6 +52,7 @@ describe("checkApiContract", () => {
       priceLevel: 2,
       imageSeed: "seed",
       imageHeight: 320,
+      publishedAt: null,
     })
     expect(message).not.toBeNull()
   })
@@ -149,6 +151,7 @@ describe("schema khớp type domain", () => {
       priceLevel: 4,
       imageSeed: "x",
       imageHeight: 100,
+      publishedAt: null,
     })
     expect(result.success).toBe(false)
   })

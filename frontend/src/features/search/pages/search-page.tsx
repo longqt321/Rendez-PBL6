@@ -1,4 +1,4 @@
-import { Link, Navigate, useLocation, useSearchParams } from "react-router"
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router"
 import { SearchXIcon, UsersIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ErrorState } from "@/components/shared/error-state"
@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { PlaceCardSkeleton } from "@/features/places/components/place-card-skeleton"
+import { DidYouMean } from "@/features/places/components/did-you-mean"
 import { usePosts } from "@/features/social/hooks/use-posts"
 import { PostCard } from "@/features/social/components/post-card"
 import { useMe } from "@/features/profile/hooks/use-me"
@@ -49,6 +50,7 @@ export function SearchPage() {
 
 function SearchResults({ query }: { query: string }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const {
     data: placesData,
     isPending: placesPending,
@@ -78,6 +80,8 @@ function SearchResults({ query }: { query: string }) {
   const { data: suggestions } = useUserSuggestions()
 
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
+  // `didYouMean` chỉ có ở endpoint tìm kiếm — server so khớp gần đúng (pg_trgm).
+  const didYouMean = placesData?.pages[0]?.meta?.didYouMean
   const posts = allPosts.filter((post) => post.placeId !== null)
   const people = peopleData?.pages.flatMap((page) => page.items) ?? []
 
@@ -87,6 +91,11 @@ function SearchResults({ query }: { query: string }) {
       <p className="text-sm text-muted-foreground">
         Kết quả cho <span className="font-semibold text-foreground">“{query}”</span>
       </p>
+
+      <DidYouMean
+        suggestion={didYouMean}
+        onSelect={(value) => void navigate(`/search?q=${encodeURIComponent(value)}`)}
+      />
 
       <Tabs defaultValue="places" className="mt-4">
         <TabsList>

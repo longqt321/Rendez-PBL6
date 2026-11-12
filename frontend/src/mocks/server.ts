@@ -193,6 +193,7 @@ function toPlaceDto(place: MockPlace): Place {
     lng: place.lng,
     status: place.status,
     ...(place.openingHours ? { openingHours: place.openingHours } : {}),
+    publishedAt: place.publishedAt,
   }
 }
 
@@ -1385,25 +1386,27 @@ const routes: Route[] = [
         lat,
         lng,
       } = query(config)
-      return paginate(
-        sortPublishedPlaces(
-          listPublishedPlaces({
-            category,
-            district,
-            q,
-            priceMax,
-            excludeCategory,
-            excludeDistrict,
-            includeKeyword,
-            excludeKeyword,
-          }),
-          sort,
-          lat,
-          lng,
-        ),
-        cursor ?? null,
-        PLACES_PAGE_SIZE,
+      const matched = sortPublishedPlaces(
+        listPublishedPlaces({
+          category,
+          district,
+          q,
+          priceMax,
+          excludeCategory,
+          excludeDistrict,
+          includeKeyword,
+          excludeKeyword,
+        }),
+        sort,
+        lat,
+        lng,
       )
+      // Cùng hợp đồng `meta` với backend thật: totalResults là COUNT toàn bộ
+      // kết quả khớp (không phải số item của trang này).
+      return {
+        ...paginate(matched, cursor ?? null, PLACES_PAGE_SIZE),
+        meta: { tookMs: 0, cacheHit: false, totalResults: matched.length },
+      }
     },
   },
   {
@@ -1470,6 +1473,15 @@ const routes: Route[] = [
         .map((place, index) => ({
           place: toPlaceDto(place),
           reason: DAILY_PICK_REASONS[index % DAILY_PICK_REASONS.length],
+          // Mock tính "vì sao" theo cùng hình dạng backend trả (không phải số
+          // liệu thật của thuật toán — chỉ để UI/e2e có dữ liệu hiển thị).
+          why: {
+            matchPercent: 70 - index * 10,
+            district: place.district,
+            distanceKm: null,
+            openNow: null,
+            signals: place.imageUrl ? ["Ảnh thật"] : [],
+          },
         }))
       return { date: new Date().toISOString().slice(0, 10), items }
     },

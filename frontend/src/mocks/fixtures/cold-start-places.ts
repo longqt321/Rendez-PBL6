@@ -78,8 +78,8 @@ const PUBLISHED_AT = "2026-11-09T08:00:00+07:00"
 
 const places: ColdStartPlace[] = coldStartDataset.places
 
-export const COLD_START_PLACES: MockPlace[] = places.map((raw) => {
-  const place: Place = {
+export const COLD_START_PLACES: MockPlace[] = places.map((raw, index) => {
+  const place: Omit<Place, "publishedAt"> = {
     id: raw.id,
     name: raw.name,
     address: raw.address ?? raw.district ?? "Đà Nẵng",
@@ -98,7 +98,13 @@ export const COLD_START_PLACES: MockPlace[] = places.map((raw) => {
     openingHours: raw.openingHours ?? undefined,
   }
 
-  return { ...place, publishedAt: UNPUBLISHED_IDS.has(raw.id) ? null : PUBLISHED_AT }
+  // Trải ngày duyệt để badge "Mới" (14 ngày) có cả quán mới lẫn cũ trong mock.
+  const daysAgo = (index % 6) * 4
+  const publishedAt = UNPUBLISHED_IDS.has(raw.id)
+    ? null
+    : new Date(Date.parse(PUBLISHED_AT) - daysAgo * 24 * 60 * 60 * 1000).toISOString()
+
+  return { ...place, publishedAt }
 })
 
 /**

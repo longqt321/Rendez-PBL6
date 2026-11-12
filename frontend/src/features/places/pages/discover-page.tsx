@@ -6,6 +6,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { Spinner } from "@/components/ui/spinner"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { DiscoverToolbar } from "../components/discover-toolbar"
+import { DidYouMean } from "../components/did-you-mean"
 import { DailyPicksSection } from "../components/daily-picks-section"
 import { PlaceCard } from "../components/place-card"
 import { PlaceCardSkeleton } from "../components/place-card-skeleton"
@@ -34,6 +35,9 @@ export function DiscoverPage() {
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
       <h1 className="sr-only">Khám phá địa điểm Đà Nẵng</h1>
       <DiscoverToolbar view={view} mode="grid" />
+
+      {/* Server gợi ý tên quán gần nhất khi từ khoá không khớp (pg_trgm). */}
+      <DidYouMean suggestion={view.meta?.didYouMean} onSelect={filters.setDraftQuery} />
 
       {/* Dải gợi ý đứng trên lưới, độc lập với trạng thái lưới và bộ lọc. */}
       <DailyPicksSection />

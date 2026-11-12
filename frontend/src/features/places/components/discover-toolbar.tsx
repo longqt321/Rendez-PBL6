@@ -318,8 +318,10 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
           <TooltipContent>Tìm quán gần vị trí hiện tại của bạn</TooltipContent>
         </Tooltip>
 
+        {/* Số lượng từ `meta.totalResults` (COUNT thật của server); meta vắng mặt
+            (API cũ) mới rơi về số item đã tải — không hardcode. */}
         <Badge variant="outline" className="h-6 px-2 text-xs font-normal text-muted-foreground">
-          {view.sortedPlaces.length} địa điểm tại Đà Nẵng
+          {view.meta?.totalResults ?? view.sortedPlaces.length} địa điểm tại Đà Nẵng
         </Badge>
 
         {view.isFetchingNextPage ? (

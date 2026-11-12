@@ -60,11 +60,11 @@ export function DailyPicksSection() {
       {/* Mobile: hàng ngang cuộn được — không đẩy lưới kết quả xuống quá xa.
           Desktop: lưới 3 cột khớp nhịp lưới bên dưới. */}
       <ul className="-mx-4 mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
-        {data.items.map(({ place, reason }) => (
+        {data.items.map(({ place, reason, why }) => (
           <li key={place.id} className="w-3/4 shrink-0 snap-start sm:w-auto">
             {/* Đo hiệu quả gợi ý (tim-nguoi.md §chỉ số) cần hạ tầng analytics
                 thật — ghi BACKLOG, không dùng console.log chạy prod. */}
-            <PlaceCard place={place} />
+            <PlaceCard place={place} why={why} />
             <p className="mt-1 px-1 text-xs text-muted-foreground">{reason}</p>
           </li>
         ))}
