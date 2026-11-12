@@ -32,6 +32,19 @@ import { getViewer, requireAuth } from "../lib/session"
 
 const POSTS_PAGE_SIZE = 5
 
+/**
+ * Chống spam tương tác (V8-04) — đếm theo userId nên nhiều người dùng chung IP
+ * (văn phòng, NAT) không chặn lẫn nhau. Ngưỡng cao hơn thao tác thường nhiều
+ * lần, chỉ chặn spam (10 click liên tiếp như vòng 8 đo được).
+ */
+const LIKE_RATE_LIMIT = rateLimit({ scope: "like", limit: 30, windowSeconds: 60, byUser: true })
+const COMMENT_RATE_LIMIT = rateLimit({
+  scope: "comment",
+  limit: 10,
+  windowSeconds: 60,
+  byUser: true,
+})
+
 const createPostSchema = z.object({
   caption: z.string().trim().min(MIN_CAPTION_LENGTH).max(MAX_CAPTION_LENGTH),
   placeId: z.string().min(1).nullable().optional(),
@@ -222,7 +235,7 @@ export function createPostsRouter() {
   })
 
   /** Like idempotent — gửi `liked` để đặt trạng thái, bỏ trống thì đảo. */
-  router.patch("/posts/:id/like", requireAuth, async (c) => {
+  router.patch("/posts/:id/like", requireAuth, LIKE_RATE_LIMIT, async (c) => {
     const postId = requireUuid(c.req.param("id"), "Không tìm thấy bài đăng")
     const userId = c.get("userId")
     const input = parseOrThrow(toggleSchema, await readJson(c), "Dữ liệu không hợp lệ")
@@ -305,7 +318,7 @@ export function createPostsRouter() {
     return c.json({ items, next: null })
   })
 
-  router.post("/posts/:id/comments", requireAuth, async (c) => {
+  router.post("/posts/:id/comments", requireAuth, COMMENT_RATE_LIMIT, async (c) => {
     const postId = requireUuid(c.req.param("id"), "Không tìm thấy bài đăng")
     const userId = c.get("userId")
     const input = parseOrThrow(createCommentSchema, await readJson(c), "Dữ liệu không hợp lệ")
@@ -343,7 +356,7 @@ export function createPostsRouter() {
     return c.json(comment, 201)
   })
 
-  router.patch("/comments/:id/like", requireAuth, async (c) => {
+  router.patch("/comments/:id/like", requireAuth, LIKE_RATE_LIMIT, async (c) => {
     const commentId = requireUuid(c.req.param("id"), "Không tìm thấy bình luận")
     const userId = c.get("userId")
     const input = parseOrThrow(toggleSchema, await readJson(c), "Dữ liệu không hợp lệ")

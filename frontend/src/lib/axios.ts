@@ -1,6 +1,18 @@
 import axios from "axios"
+import { toast } from "sonner"
 import { checkApiContract } from "@/lib/api-contracts"
 import { env } from "@/lib/env"
+
+/**
+ * Cờ tuỳ biến gắn vào request: request CẦN đăng nhập, nên 401 từ nó là dấu hiệu
+ * mất phiên (interceptor điều hướng `/login?next=`). Mặc định không đặt → 401
+ * của GET được coi là phép dò và bỏ qua im lặng.
+ */
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    authRequired?: boolean
+  }
+}
 
 /**
  * Lỗi API đã chuẩn hoá — UI chỉ cần đọc `message`/`status`.
@@ -82,9 +94,203 @@ export const api = axios.create({
   withCredentials: true,
 })
 
+/** Tên kênh đồng bộ phiên giữa các tab (V8-07). */
+export const SESSION_CHANNEL = "rendez-session"
+
+interface SessionMessage {
+  type: "logout"
+}
+
+/**
+ * Điều hướng khi mất phiên. Tách thành object để test thay được (jsdom không
+ * điều hướng thật) và để chỉnh độ trễ.
+ *
+ * Điều hướng CẢ TRANG thay vì SPA: cache query trong bộ nhớ bị xoá sạch nên
+ * (a) không còn dữ liệu riêng tư của phiên cũ, (b) trang đăng nhập không thấy
+ * `["me"]` cũ rồi đá ngược người dùng về trang cũ. `delayMs` để toast kịp hiện
+ * trước khi trang tải lại — nếu điều hướng ngay, thông báo "Phiên đăng nhập đã
+ * hết hạn" biến mất trước khi người dùng đọc được.
+ */
+export const sessionRedirect = {
+  delayMs: 1_200,
+  to(url: string): void {
+    window.location.assign(url)
+  },
+}
+
+/**
+ * URL trang đăng nhập kèm `?next=` để quay lại đúng chỗ sau khi đăng nhập.
+ *
+ * Chỉ nhận path nội bộ bắt đầu bằng một `/` — `//evil.com` hay URL tuyệt đối bị
+ * thay bằng `/` để không thành open redirect.
+ */
+export function loginRedirectUrl(currentPath: string): string {
+  const safe = currentPath.startsWith("/") && !currentPath.startsWith("//") ? currentPath : "/"
+  return `/login?next=${encodeURIComponent(safe)}`
+}
+
+/**
+ * Request mà 401 KHÔNG có nghĩa "phiên hết hạn" — không được điều hướng.
+ *
+ * Nguyên tắc: **mặc định KHÔNG điều hướng**. Chỉ request do người dùng chủ động
+ * gây ra (mutation) hoặc GET được đánh dấu tường minh `authRequired: true` mới
+ * bị coi là dấu hiệu mất phiên. Lý do: trang công khai bắn nhiều GET có thể trả
+ * 401 với khách (poll `/notifications`, `/saved`, `/me`…); điều hướng theo các
+ * 401 đó sẽ đá khách khỏi `/discover`, `/search`, `/collections` — đúng lỗi F3
+ * phát hiện sau bản đầu của interceptor.
+ *
+ * - `/auth/*`, `/register`, `/session`: 401 là kết quả nghiệp vụ (sai mật khẩu,
+ *   token sai) — điều hướng sẽ tạo vòng lặp ngay trên trang đăng nhập.
+ * - GET/HEAD không có cờ `authRequired`: phép DÒ dữ liệu; khách nhận 401 là
+ *   bình thường (badge thông báo ẩn, danh sách rỗng) — bỏ qua im lặng.
+ */
+export function isSessionProbeRequest(config: {
+  url?: string
+  method?: string
+  authRequired?: boolean
+}): boolean {
+  const path = (config.url ?? "").split("?")[0] ?? ""
+  const method = (config.method ?? "get").toLowerCase()
+  if (path.startsWith("/auth/") || path === "/register" || path === "/session") return true
+  if (method === "get" || method === "head") return config.authRequired !== true
+  return false
+}
+
+/** Request kết thúc phiên (đăng xuất / xoá tài khoản) — cần báo các tab khác. */
+export function isSessionEndingRequest(config: { url?: string; method?: string }): boolean {
+  const path = (config.url ?? "").split("?")[0] ?? ""
+  const method = (config.method ?? "").toLowerCase()
+  return method === "delete" && (path === "/session" || path === "/me")
+}
+
+/** Đã xử lý mất phiên trong tab này chưa — tránh toast/điều hướng lặp. */
+let sessionExpiryHandled = false
+
+/**
+ * Tab này có phiên đăng nhập đang hoạt động hay không — cập nhật từ kết quả
+ * `GET /me` (200 → có; 401 → không). Dùng để chọn đúng thông điệp khi mutation
+ * nhận 401: khách chưa đăng nhập cần lời MỜI, người dùng hết hạn cần lời BÁO.
+ */
+let sessionActive = false
+
+/** Ghi nhận trạng thái phiên sau một phép dò `GET /me`. */
+export function noteSessionState(active: boolean): void {
+  sessionActive = active
+}
+
+/**
+ * Kênh BroadcastChannel dùng chung; `null` khi môi trường không hỗ trợ
+ * (trình duyệt cũ, jsdom bản không có) — khi đó chỉ mất tính năng đồng bộ tab.
+ */
+let sessionChannel: BroadcastChannel | null = null
+
+function getSessionChannel(): BroadcastChannel | null {
+  if (typeof BroadcastChannel === "undefined") return null
+  sessionChannel ??= new BroadcastChannel(SESSION_CHANNEL)
+  return sessionChannel
+}
+
+/**
+ * Báo mất phiên rồi đưa người dùng về trang đăng nhập (giữ đường quay lại).
+ *
+ * Đang ở trang đăng nhập rồi thì không điều hướng nữa (tránh vòng lặp).
+ */
+function clearSessionAndRedirect(notice: { title: string; description: string }) {
+  toast.error(notice.title, { description: notice.description })
+
+  const current = window.location.pathname + window.location.search
+  if (window.location.pathname.startsWith("/login")) return
+  const target = loginRedirectUrl(current)
+  // Trễ để toast kịp đọc; điều hướng cả trang xoá cache query của phiên cũ.
+  window.setTimeout(() => sessionRedirect.to(target), sessionRedirect.delayMs)
+}
+
+/**
+ * Tab khác vừa đăng xuất → tab này cũng mất phiên (cookie dùng chung). Không
+ * làm gì thì UI vẫn hiện đang đăng nhập và mọi thao tác 401 im lặng (V8-07).
+ */
+function handleRemoteLogout() {
+  clearSessionAndRedirect({
+    title: "Bạn đã đăng xuất ở tab khác",
+    description: "Đăng nhập lại để tiếp tục tương tác.",
+  })
+}
+
+getSessionChannel()?.addEventListener("message", (event: MessageEvent) => {
+  if ((event.data as SessionMessage | null | undefined)?.type !== "logout") return
+  handleRemoteLogout()
+})
+
+/** `GET /me` — phép dò phiên; kết quả của nó cập nhật `sessionActive`. */
+function isMeProbe(config: { url?: string; method?: string }): boolean {
+  return (
+    (config.url ?? "").split("?")[0] === "/me" && (config.method ?? "get").toLowerCase() === "get"
+  )
+}
+
+/**
+ * 401 từ một request người dùng chủ động (like/follow/comment…) → không có
+ * phiên hợp lệ. Trước đây lỗi bị nuốt: nút like bật lại mà không nói gì, người
+ * dùng tưởng app hỏng (V6-02, V8-07).
+ *
+ * Thông điệp chia hai trường hợp: khách chưa đăng nhập được MỜI đăng nhập
+ * (V6-03), người dùng vừa mất phiên được BÁO hết hạn.
+ *
+ * Trả về `ApiError` đã chuẩn hoá để interceptor reject tiếp — nhờ vậy hàm này
+ * test được trực tiếp, không phải giả lập mạng.
+ */
+export function handleUnauthorizedResponse(error: unknown): Error {
+  const apiError = toApiError(error)
+  const config = axios.isAxiosError(error) ? error.config : undefined
+  if (config && isMeProbe(config)) noteSessionState(false)
+  if (
+    apiError instanceof ApiError &&
+    apiError.status === 401 &&
+    config &&
+    !isSessionProbeRequest(config) &&
+    !sessionExpiryHandled
+  ) {
+    sessionExpiryHandled = true
+    clearSessionAndRedirect(
+      sessionActive
+        ? {
+            title: "Phiên đăng nhập đã hết hạn",
+            description: "Vui lòng đăng nhập lại để tiếp tục.",
+          }
+        : {
+            title: "Đăng nhập để tiếp tục",
+            description: "Bạn cần đăng nhập để thực hiện thao tác này.",
+          },
+    )
+    sessionActive = false
+  }
+  return apiError
+}
+
+/** Đăng nhập lại thành công → cho phép bắt lỗi 401 của phiên mới. */
+export function resetSessionExpiry(): void {
+  sessionExpiryHandled = false
+  sessionActive = false
+}
+
 api.interceptors.response.use(
-  (response) => response,
-  (error: unknown) => Promise.reject(toApiError(error)),
+  (response) => {
+    const config = response.config
+    if (isMeProbe(config)) noteSessionState(true)
+    if (
+      (config.url ?? "").split("?")[0] === "/session" &&
+      (config.method ?? "").toLowerCase() === "post"
+    ) {
+      resetSessionExpiry()
+    }
+    // Đăng xuất / xoá tài khoản thành công → báo các tab còn mở.
+    if (isSessionEndingRequest(config)) {
+      noteSessionState(false)
+      getSessionChannel()?.postMessage({ type: "logout" } satisfies SessionMessage)
+    }
+    return response
+  },
+  (error: unknown) => Promise.reject(handleUnauthorizedResponse(error)),
 )
 
 /**

@@ -5,7 +5,9 @@ import type { Context } from "hono"
  * Cache HTTP + cache trong tiến trình (G2).
  *
  * - `jsonWithCache`: gắn `ETag` + `Cache-Control`, trả 304 khi client gửi
- *   `If-None-Match` khớp — trình duyệt/CDN không tải lại body không đổi.
+ *   `If-None-Match` khớp — trình duyệt/CDN không tải lại body không đổi. Chỉ
+ *   dùng `max-age` cho dữ liệu công khai; dữ liệu phụ thuộc người xem phải
+ *   `scope: "private"` (revalidate mỗi lần, xem chú thích hàm).
  * - `noStore`: chặn cache cho dữ liệu riêng tư/thay đổi liên tục (`/me`,
  *   `/notifications`).
  * - `createTtlCache`: cache TTL nhỏ trong bộ nhớ + single-flight (nhiều request
@@ -25,6 +27,18 @@ function matchesEtag(header: string, etag: string): boolean {
  *
  * ETag tính từ chính body đã serialize — không phụ thuộc thứ tự cột DB, và tự
  * đổi khi dữ liệu đổi nên không cần invalidate thủ công.
+ *
+ * Hai chế độ, KHÁC nhau về quyền được dùng lại body mà không hỏi server:
+ * - `public` (mặc định): dữ liệu giống nhau với mọi người (địa điểm, danh sách
+ *   quán) → `public, max-age=<n>`, trình duyệt/CDN dùng lại body trong `<n>`
+ *   giây mà không gọi server. Đây là lợi ích cache cần giữ.
+ * - `private`: body phụ thuộc người xem (`followedByMe`, `likedByMe`, tab
+ *   `saved`…) → `private, no-cache`: trình duyệt vẫn LƯU để tiết kiệm băng thông
+ *   nhưng **buộc revalidate** mỗi lần đọc, nên sau mutation (theo dõi, thích)
+ *   lần refetch kế tiếp luôn thấy dữ liệu mới. Trước đây chế độ này cũng gắn
+ *   `max-age=15` nên refetch trong 15 giây trả lại body CŨ từ disk cache — nút
+ *   "Theo dõi" không đổi trạng thái dù DB đã có row (V3-01).
+ *   Không dùng `no-store` để còn giữ được 304 + ETag.
  */
 export function jsonWithCache(
   c: Context,
@@ -33,7 +47,8 @@ export function jsonWithCache(
 ): Response {
   const body = JSON.stringify(data)
   const etag = `"${createHash("sha256").update(body).digest("base64url")}"`
-  const cacheControl = `${options.scope ?? "public"}, max-age=${options.maxAge}`
+  const cacheControl =
+    options.scope === "private" ? "private, no-cache" : `public, max-age=${options.maxAge}`
 
   const ifNoneMatch = c.req.header("if-none-match")
   if (ifNoneMatch && matchesEtag(ifNoneMatch, etag)) {

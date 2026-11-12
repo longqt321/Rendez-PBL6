@@ -11,6 +11,7 @@ import { listPosts } from "../lib/posts"
 import { getViewer, requireAuth } from "../lib/session"
 import { findProfileByHandle, findProfileById, setFollow } from "../lib/users"
 import { jsonWithCache } from "../lib/http-cache"
+import { rateLimit } from "../lib/rate-limit"
 
 /**
  * Route người dùng (T2.6 + T5.3 + T5.4).
@@ -26,6 +27,9 @@ import { jsonWithCache } from "../lib/http-cache"
 
 const USERS_PAGE_SIZE = 20
 const PROFILE_POSTS_PAGE_SIZE = 5
+
+// 20 follow/unfollow mỗi phút/user — chặn spam theo dõi (V8-04).
+const FOLLOW_RATE_LIMIT = rateLimit({ scope: "follow", limit: 20, windowSeconds: 60, byUser: true })
 
 interface UserRow {
   id: string
@@ -147,8 +151,9 @@ export function createUsersRouter() {
     const viewer = await getViewer(c)
     const profile = await findProfileByHandle(handle, viewer?.id ?? null)
     if (!profile) throw new ApiError(404, "Không tìm thấy người dùng")
-    // `followedByMe` phụ thuộc người xem — cache riêng tư theo trình duyệt,
-    // không cho CDN lưu chung.
+    // `followedByMe` phụ thuộc người xem → `private, no-cache` (không `max-age`):
+    // refetch sau khi theo dõi phải revalidate, nếu không trình duyệt trả body cũ
+    // trong cache và nút "Theo dõi" đứng im (V3-01).
     return jsonWithCache(c, profile, { maxAge: 15, scope: "private" })
   })
 
@@ -227,8 +232,10 @@ export function createUsersRouter() {
     return c.json(updated)
   }
 
-  router.post("/users/:handle/follow", requireAuth, (c) => toggleFollow(c, true))
-  router.delete("/users/:handle/follow", requireAuth, (c) => toggleFollow(c, false))
+  router.post("/users/:handle/follow", requireAuth, FOLLOW_RATE_LIMIT, (c) => toggleFollow(c, true))
+  router.delete("/users/:handle/follow", requireAuth, FOLLOW_RATE_LIMIT, (c) =>
+    toggleFollow(c, false),
+  )
 
   return router
 }
