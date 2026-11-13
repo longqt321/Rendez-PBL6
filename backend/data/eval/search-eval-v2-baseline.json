@@ -9,8 +9,8 @@
       "ndcg10": 0.412,
       "mrr": 0.497,
       "zeroRate": 0,
-      "latencyP50Ms": 39,
-      "latencyP95Ms": 63
+      "latencyP50Ms": 38,
+      "latencyP95Ms": 50
     },
     "dense": {
       "p5": 0.534,
@@ -20,7 +20,7 @@
       "mrr": 0.572,
       "zeroRate": 0,
       "latencyP50Ms": 31,
-      "latencyP95Ms": 52
+      "latencyP95Ms": 51
     },
     "hybrid2": {
       "p5": 0.511,
@@ -29,8 +29,8 @@
       "ndcg10": 0.494,
       "mrr": 0.571,
       "zeroRate": 0,
-      "latencyP50Ms": 73,
-      "latencyP95Ms": 106
+      "latencyP50Ms": 71,
+      "latencyP95Ms": 92
     },
     "hybrid3": {
       "p5": 0.873,
@@ -39,8 +39,8 @@
       "ndcg10": 0.861,
       "mrr": 0.906,
       "zeroRate": 0,
-      "latencyP50Ms": 64,
-      "latencyP95Ms": 111
+      "latencyP50Ms": 66,
+      "latencyP95Ms": 89
     }
   },
   "byGroup": {
