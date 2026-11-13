@@ -839,6 +839,12 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       `.env` cục bộ để `VITE_ENABLE_MOCKS=` rỗng làm 17 suite test chết khi
       import axios. Workaround hiện tại: `frontend/.env.test` (gitignored).
       Nên chấp nhận chuỗi rỗng hoặc normalize trong pretest.
+      **Phát hiện thêm (2026-11-14):** `bun` tự nạp `.env` vào process.env lúc
+      build, Vite ưu tiên process env hơn `.env.production` → chuỗi rỗng bị
+      nướng vào bundle production → app trắng trang ("Biến môi trường không
+      hợp lệ") ngay cả khi có `.env.production`. Đã vá tường minh trong
+      `frontend/Dockerfile` (ARG `VITE_ENABLE_MOCKS=false`… + truyền vào
+      `vite build`) — root cause vẫn là schema từ chối chuỗi rỗng.
 - [ ] **`denseCandidates` trả null âm thầm khi encoder lỗi** — production fallback
       lexical là đúng, nhưng trong eval phải cảnh báo to (đã thêm warning trong
       `eval-search.ts`, L-032): chạy 2 eval song song từng cho số liệu sai

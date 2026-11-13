@@ -23,11 +23,24 @@ COPY frontend frontend
 # Build production: VITE_API_BASE_URL mặc định "/api/v1" (đường dẫn tương đối —
 # nginx proxy cùng origin nên không vướng CORS). Mock tự tắt khi build prod.
 # VITE_APP_ORIGIN: origin công khai cho canonical/og + robots/sitemap (mặc định localhost).
+#
+# Ba biến mock PHẢI truyền tường minh: `bun` tự nạp `frontend/.env` vào
+# process.env (dotenv built-in), mà `.env` cục bộ để các biến này rỗng ("") —
+# Vite ưu tiên process env hơn `.env.production`, nên chuỗi rỗng bị nướng vào
+# bundle và zod enum trong `src/lib/env.ts` từ chối lúc runtime (app trắng trang).
+# Giá trị mặc định dưới đây là cấu hình production đúng: mock tắt.
 ARG VITE_APP_ORIGIN=""
+ARG VITE_ENABLE_MOCKS="false"
+ARG VITE_DEV_BYPASS_AUTH="false"
+ARG VITE_MOCK_SCENARIO="ok"
 RUN cd frontend \
   && VITE_APP_ORIGIN="$VITE_APP_ORIGIN" bun scripts/copy-cold-start-images.mjs \
   && VITE_APP_ORIGIN="$VITE_APP_ORIGIN" bunx tsc -b \
-  && VITE_APP_ORIGIN="$VITE_APP_ORIGIN" bunx vite build
+  && VITE_APP_ORIGIN="$VITE_APP_ORIGIN" \
+     VITE_ENABLE_MOCKS="$VITE_ENABLE_MOCKS" \
+     VITE_DEV_BYPASS_AUTH="$VITE_DEV_BYPASS_AUTH" \
+     VITE_MOCK_SCENARIO="$VITE_MOCK_SCENARIO" \
+     bunx vite build
 
 # ---------------------------------------------------------------------------
 # Runtime: nginx + static bundle.
