@@ -22,6 +22,13 @@ import { join } from "node:path"
 import { Prisma } from "../generated/prisma/client"
 import { prisma } from "../src/lib/prisma"
 import { denseCandidates, fuseRrf, listPlaces, parsePlaceFilters } from "../src/lib/places"
+import {
+  holmCorrect,
+  pairedBootstrap,
+  percentile,
+  score,
+  type Metrics,
+} from "../src/lib/eval-metrics"
 
 const EVAL_DIR = join(import.meta.dir, "..", "data", "eval")
 
@@ -171,45 +178,13 @@ async function lexicalTop(q: string, limit: number): Promise<string[]> {
   return rows.map((r) => r.id)
 }
 
-function dcg(grades: number[]): number {
-  return grades.reduce((sum, g, i) => sum + (2 ** g - 1) / Math.log2(i + 2), 0)
-}
-
-interface Metrics {
-  p5: number
-  p10: number
-  recall10: number
-  ndcg10: number
-  mrr: number
-  zeroRate: number
-}
-
-function score(ids: string[], labels: Record<string, number>): Omit<Metrics, "zeroRate"> {
-  const g = ids.slice(0, 10).map((id) => labels[id] ?? 0)
-  const exact = Object.values(labels).filter((v) => v === 2).length
-  const p5 = g.slice(0, 5).filter((v) => v >= 1).length / Math.max(1, Math.min(5, g.length))
-  const p10 = g.filter((v) => v >= 1).length / Math.max(1, g.length)
-  const recall10 =
-    exact === 0 ? 0 : g.slice(0, 10).filter((v) => v === 2).length / Math.min(10, exact)
-  // Query không có venue nào thoả đủ ràng buộc → không có ideal DCG. Phải trả 0:
-  // nếu chia cho `Math.max(1e-9, 0)` thì mọi kết quả grade 1 sẽ cho nDCG khổng lồ.
-  const ndcg10 =
-    exact === 0 ? 0 : dcg(g) / dcg(Array.from({ length: Math.min(10, exact) }, () => 2))
-  const firstExact = g.findIndex((v) => v === 2)
-  const mrr = firstExact === -1 ? 0 : 1 / (firstExact + 1)
-  return { p5, p10, recall10, ndcg10, mrr }
-}
-
-function percentile(values: number[], p: number): number {
-  const sorted = [...values].sort((a, b) => a - b)
-  const idx = Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length))
-  return Math.round(sorted[idx] ?? 0)
-}
-
 /** Số ứng viên mỗi nhánh khi fuse — khớp `HYBRID_POOL` của `lib/places.ts`. */
 const POOL = 50
 
 type ModeName = "lexical" | "dense" | "hybrid2" | "hybrid3"
+
+/** Metrics + zeroRate (tỉ lệ query trả rỗng) — chỉ dùng trong script này. */
+type ModeMetrics = Metrics & { zeroRate: number }
 
 const MODES: ModeName[] = ["lexical", "dense", "hybrid2", "hybrid3"]
 
@@ -232,10 +207,10 @@ async function evaluate(): Promise<void> {
     group: string
     variant?: string
     query: string
-    lexical: Metrics
-    dense: Metrics
-    hybrid2: Metrics
-    hybrid3: Metrics
+    lexical: ModeMetrics
+    dense: ModeMetrics
+    hybrid2: ModeMetrics
+    hybrid3: ModeMetrics
   }[] = []
 
   for (const q of queries) {
@@ -267,7 +242,7 @@ async function evaluate(): Promise<void> {
       hybrid2: fused2,
       hybrid3: page.items.map((p) => p.id),
     }
-    const scored = {} as Record<ModeName, Metrics>
+    const scored = {} as Record<ModeName, ModeMetrics>
     for (const mode of MODES) {
       const ids = results[mode]
       const m = score(ids, qLabels)
@@ -323,6 +298,25 @@ async function evaluate(): Promise<void> {
   const byGroup = agg((row) => row.group)
   const byVariant = agg((row) => row.variant)
 
+  // Kiểm định thống kê: paired bootstrap trên P@5 per-query (cùng query nên paired),
+  // hiệu chỉnh Holm cho đa so sánh. Seeded nên tái lập được giữa các lượt chạy.
+  const comparisons: { label: string; diffs: number[] }[] = [
+    { label: "hybrid3 - hybrid2", diffs: perQuery.map((r) => r.hybrid3.p5 - r.hybrid2.p5) },
+    { label: "hybrid3 - dense", diffs: perQuery.map((r) => r.hybrid3.p5 - r.dense.p5) },
+    { label: "hybrid3 - lexical", diffs: perQuery.map((r) => r.hybrid3.p5 - r.lexical.p5) },
+    { label: "dense - lexical", diffs: perQuery.map((r) => r.dense.p5 - r.lexical.p5) },
+    { label: "hybrid2 - dense", diffs: perQuery.map((r) => r.hybrid2.p5 - r.dense.p5) },
+  ]
+  const boot = comparisons.map((c) => pairedBootstrap(c.diffs))
+  const holm = holmCorrect(boot.map((b) => b.pOneSided))
+  const stats = comparisons.map((c, i) => ({
+    comparison: c.label,
+    meanDelta: Number((boot[i]?.meanDelta ?? 0).toFixed(3)),
+    ci95: `[${(boot[i]?.ciLow ?? 0).toFixed(3)}, ${(boot[i]?.ciHigh ?? 0).toFixed(3)}]`,
+    pRaw: Number((boot[i]?.pOneSided ?? 1).toFixed(4)),
+    pHolm: Number((holm[i] ?? 1).toFixed(4)),
+  }))
+
   console.log(`Bộ test đóng băng v${SET} — ${n} query (freeze ${labels.frozenAt})`)
   console.log("\nChỉ số tổng (trung bình/query):")
   console.table(summary)
@@ -332,10 +326,12 @@ async function evaluate(): Promise<void> {
     console.log("P@5 theo kiểu diễn đạt (cùng ý định, cách ghi khác nhau):")
     console.table(byVariant)
   }
+  console.log("Kiểm định thống kê trên P@5 (paired bootstrap 10k, Holm-corrected):")
+  console.table(stats)
 
   writeFileSync(
     RESULT_FILE,
-    `${JSON.stringify({ summary, byGroup, byVariant, perQuery }, null, 2)}\n`,
+    `${JSON.stringify({ summary, byGroup, byVariant, significance: stats, perQuery }, null, 2)}\n`,
   )
   console.log(`\nĐã ghi ${RESULT_FILE}`)
   process.exit(0)

@@ -116,3 +116,15 @@ giới hạn bởi dữ liệu (tag nghèo, ít venue), không chỉ thuật to�
 
 Quy trình: copy `search-eval-v1.json` → `search-eval-v2.json`, sửa/bổ sung query, chạy
 `--freeze` cho v2, ghi mốc baseline v2 vào tài liệu này. **Không xoá v1** để còn so sánh lịch sử.
+
+## 7. Thống kê + giao thức nghiên cứu
+
+- **Giả thuyết, baseline, quy tắc chống p-hacking, quy tắc annotation**: xem
+  [RESEARCH-PROTOCOL.md](RESEARCH-PROTOCOL.md) — tài liệu đăng ký trước, không thay thế
+  tài liệu này.
+- **Kiểm định thống kê** đã nằm trong `scripts/eval-search.ts`: paired bootstrap 10k trên
+  P@5 per-query + hiệu chỉnh Holm–Bonferroni, in ở cuối mỗi lượt chạy và ghi vào
+  `significance` của file baseline. Seeded (mulberry32) nên tái lập được.
+- **Cảnh báo rò rỉ lexicon (đo 2026-11-13)**: 103/112 query v2 (92%) chứa cụm từ mà
+  `intent-lexicon.ts` bắt trực tiếp. Nhóm rò rỉ P@5 = 0.932; nhóm **không rò rỉ** (9 query)
+  P@5 = **0.200**. Mọi báo cáo dùng bộ Đà Nẵng phải nêu cả hai con số.

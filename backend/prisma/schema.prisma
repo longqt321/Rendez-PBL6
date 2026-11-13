@@ -263,6 +263,7 @@ model Place {
   dailyPicks      DailyPick[]
   embeddings      PlaceEmbedding[]
   interactionEvents InteractionEvent[]
+  affinityCache   AffinityCache?
 
   @@index([publishedAt, status])
   @@index([lat, lng])
@@ -703,6 +704,21 @@ model PlaceEmbedding {
 // (migration 20261113080000). Nguồn học duy nhất cho affinity/ALS/eval;
 // UI hiển thị vẫn đọc các bảng nghiệp vụ (post_likes…), KHÔNG đọc bảng này.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// 24. affinity_cache — item-item affinity tính sẵn (migration 20261113100000).
+// `related` là mảng JSON [{ id, score }] do job `refreshAffinityCache` ghi —
+// KHÔNG mô hình hoá từng item thành bảng con: chỉ đọc nguyên khối theo place.
+// ---------------------------------------------------------------------------
+
+model AffinityCache {
+  placeId    String   @id @map("place_id")
+  place      Place    @relation(fields: [placeId], references: [id])
+  related    Json     @default("[]")
+  computedAt DateTime @default(now()) @map("computed_at")
+
+  @@map("affinity_cache")
+}
 
 model InteractionEvent {
   /// Partitioned PK phải gồm cột partition (created_at).

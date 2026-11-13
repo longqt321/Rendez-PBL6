@@ -9,8 +9,8 @@
       "ndcg10": 0.412,
       "mrr": 0.497,
       "zeroRate": 0,
-      "latencyP50Ms": 38,
-      "latencyP95Ms": 50
+      "latencyP50Ms": 42,
+      "latencyP95Ms": 57
     },
     "dense": {
       "p5": 0.534,
@@ -19,8 +19,8 @@
       "ndcg10": 0.505,
       "mrr": 0.572,
       "zeroRate": 0,
-      "latencyP50Ms": 31,
-      "latencyP95Ms": 51
+      "latencyP50Ms": 35,
+      "latencyP95Ms": 52
     },
     "hybrid2": {
       "p5": 0.511,
@@ -29,8 +29,8 @@
       "ndcg10": 0.494,
       "mrr": 0.571,
       "zeroRate": 0,
-      "latencyP50Ms": 71,
-      "latencyP95Ms": 92
+      "latencyP50Ms": 79,
+      "latencyP95Ms": 109
     },
     "hybrid3": {
       "p5": 0.873,
@@ -39,8 +39,8 @@
       "ndcg10": 0.861,
       "mrr": 0.906,
       "zeroRate": 0,
-      "latencyP50Ms": 66,
-      "latencyP95Ms": 89
+      "latencyP50Ms": 69,
+      "latencyP95Ms": 121
     }
   },
   "byGroup": {
@@ -362,6 +362,43 @@
       "hybrid3P5": 0.28
     }
   },
+  "significance": [
+    {
+      "comparison": "hybrid3 - hybrid2",
+      "meanDelta": 0.363,
+      "ci95": "[0.280, 0.445]",
+      "pRaw": 0,
+      "pHolm": 0
+    },
+    {
+      "comparison": "hybrid3 - dense",
+      "meanDelta": 0.339,
+      "ci95": "[0.263, 0.418]",
+      "pRaw": 0,
+      "pHolm": 0
+    },
+    {
+      "comparison": "hybrid3 - lexical",
+      "meanDelta": 0.45,
+      "ci95": "[0.373, 0.530]",
+      "pRaw": 0,
+      "pHolm": 0
+    },
+    {
+      "comparison": "dense - lexical",
+      "meanDelta": 0.111,
+      "ci95": "[0.046, 0.175]",
+      "pRaw": 0.0005,
+      "pHolm": 0.001
+    },
+    {
+      "comparison": "hybrid2 - dense",
+      "meanDelta": -0.023,
+      "ci95": "[-0.073, 0.025]",
+      "pRaw": 0.8165,
+      "pHolm": 0.8165
+    }
+  ],
   "perQuery": [
     {
       "id": "v2-001",

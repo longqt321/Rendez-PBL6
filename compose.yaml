@@ -85,9 +85,28 @@ services:
       api:
         condition: service_healthy
 
+  # Postgres bench — DB riêng cho benchmark dataset chuẩn (Yelp Open Dataset),
+  # KHÔNG đè dữ liệu Đà Nẵng. Chỉ bật khi chạy benchmark:
+  #   docker compose --profile bench up -d postgres-bench
+  # Port 5434 trên host để không đụng postgres chính (5432).
+  postgres-bench:
+    image: pgvector/pgvector:0.8.7-pg17
+    container_name: rendez-postgres-bench
+    profiles: ["bench"]
+    environment:
+      POSTGRES_USER: rendez
+      POSTGRES_PASSWORD: rendez
+      POSTGRES_DB: rendez
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata-bench:/var/lib/postgresql/data
+
 volumes:
   # `pgdata` là volume cũ (postgres:17-alpine) — giữ tên để rollback thủ công,
   # không service nào dùng; dữ liệu đã migrate sang `pgdata2` (pgvector) qua
   # pg_dump/restore, xem docs/DECISIONS.md.
   pgdata:
   pgdata2:
+  # Volume riêng của DB bench — xoá được mà không ảnh hưởng dữ liệu production.
+  pgdata-bench:
