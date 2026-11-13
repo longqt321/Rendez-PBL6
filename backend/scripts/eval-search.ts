@@ -191,7 +191,10 @@ function score(ids: string[], labels: Record<string, number>): Omit<Metrics, "ze
   const p10 = g.filter((v) => v >= 1).length / Math.max(1, g.length)
   const recall10 =
     exact === 0 ? 0 : g.slice(0, 10).filter((v) => v === 2).length / Math.min(10, exact)
-  const ndcg10 = dcg(g) / Math.max(1e-9, dcg(Array.from({ length: Math.min(10, exact) }, () => 2)))
+  // Query không có venue nào thoả đủ ràng buộc → không có ideal DCG. Phải trả 0:
+  // nếu chia cho `Math.max(1e-9, 0)` thì mọi kết quả grade 1 sẽ cho nDCG khổng lồ.
+  const ndcg10 =
+    exact === 0 ? 0 : dcg(g) / dcg(Array.from({ length: Math.min(10, exact) }, () => 2))
   const firstExact = g.findIndex((v) => v === 2)
   const mrr = firstExact === -1 ? 0 : 1 / (firstExact + 1)
   return { p5, p10, recall10, ndcg10, mrr }

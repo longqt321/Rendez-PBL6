@@ -9,8 +9,8 @@
       "ndcg10": 0.513,
       "mrr": 0.584,
       "zeroRate": 0,
-      "latencyP50Ms": 40,
-      "latencyP95Ms": 54
+      "latencyP50Ms": 41,
+      "latencyP95Ms": 53
     },
     "hybrid": {
       "p5": 0.768,
@@ -19,8 +19,8 @@
       "ndcg10": 0.747,
       "mrr": 0.742,
       "zeroRate": 0,
-      "latencyP50Ms": 68,
-      "latencyP95Ms": 94
+      "latencyP50Ms": 75,
+      "latencyP95Ms": 112
     }
   },
   "byGroup": {
