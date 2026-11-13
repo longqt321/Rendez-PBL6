@@ -83,8 +83,10 @@ export function createPlacesRouter() {
     const tookMs = Math.round(performance.now() - startedAt)
 
     // Tín hiệu tìm kiếm cho recommendation (P0): chỉ ghi khi có `q` thật.
+    // Fire-and-forget — telemetry không được cộng round-trip DB vào latency
+    // của endpoint search (cùng lý do với `place_detail_view`).
     if (filters.q !== undefined && filters.q.trim().length > 0) {
-      await recordEventForRequest(c, "search_query", {
+      void recordEventForRequest(c, "search_query", {
         query: filters.q,
         context: { resultsCount: page.total },
       })

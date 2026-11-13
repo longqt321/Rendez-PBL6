@@ -901,3 +901,20 @@ Alpine dùng musl nên không nạp được `.so`, dù `bun install` vẫn cài
 
 **Phòng tránh.** Trước khi thêm thư viện ML/native vào image Alpine, kiểm tra
 release asset có bản musl không. Với ONNX Runtime: không có → dùng base Debian.
+
+## L-027 — Audit sau triển khai: 3 lỗi "số liệu ảo" và "logic trùng" dễ lọt
+
+**Bối cảnh.** Chạy `code-integrity-audit` sau khi commit hybrid search + event tracking.
+
+**Phát hiện và đã sửa.**
+1. **Số liệu ảo**: `totalResults` trả tổng pool (50) nhưng chỉ render 9 card và
+   `next = null` → FE hiện "50 địa điểm" mà người dùng không xem được. Sửa: trả tối
+   đa 30 item, `total = items.length`.
+2. **Logic trùng**: id ẩn danh guest được đọc/tạo ở cả `lib/events.ts` và
+   interceptor `lib/axios.ts` (hardcode key 2 nơi). Sửa: export `getAnonId()` một nguồn.
+3. **Comment sai nghĩa**: dedupe ghi "5 phút" nhưng key có bucket 5 phút + TTL 10 phút
+   → thực tế 5–10 phút. Sửa: bỏ bucket, TTL đúng 5 phút.
+
+**Phòng tránh.** Với mọi endpoint có `total`/`count`, kiểm tra ngay: con số đó có bằng
+số bản ghi người dùng thực sự truy cập được không (qua phân trang)? Nếu không, hoặc
+sửa phân trang, hoặc trả đúng số đã trả về.

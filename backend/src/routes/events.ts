@@ -33,14 +33,16 @@ const batchSchema = z.object({
   events: z.array(eventSchema).min(1).max(20),
 })
 
-/** Dedupe 5 phút: key = actor|eventType|placeId|bucket. TTL 10 phút. */
-const DEDUPE_TTL_MS = 10 * 60 * 1000
-const DEDUPE_BUCKET_MS = 5 * 60 * 1000
+/**
+ * Dedupe 5 phút: key = actor|eventType|placeId|postId. Không chia bucket thời
+ * gian — bucket làm key đổi ở ranh giới nên event lặp vẫn lọt; TTL trên Map là
+ * đủ và đúng nghĩa "cùng một tương tác trong 5 phút chỉ ghi một lần".
+ */
+const DEDUPE_TTL_MS = 5 * 60 * 1000
 const seen = new Map<string, number>()
 
 function dedupeKey(actor: string, e: z.infer<typeof eventSchema>): string {
-  const bucket = Math.floor(Date.now() / DEDUPE_BUCKET_MS)
-  return `${actor}|${e.eventType}|${e.placeId ?? ""}|${e.postId ?? ""}|${bucket}`
+  return `${actor}|${e.eventType}|${e.placeId ?? ""}|${e.postId ?? ""}`
 }
 
 function pruneSeen(now: number): void {

@@ -38,7 +38,12 @@ function readOrCreateId(storage: Storage | null, key: string): string | undefine
   }
 }
 
-function anonId(): string | undefined {
+/**
+ * Id ẩn danh của guest (localStorage, tạo UUID lần đầu). Dùng chung cho
+ * `emitPlaceClick` và header `x-anon-id` của axios — MỘT nguồn duy nhất để
+ * event FE và event BE gắn cùng một actor.
+ */
+export function getAnonId(): string | undefined {
   return readOrCreateId(getStorage("localStorage"), ANON_ID_KEY)
 }
 
@@ -56,7 +61,7 @@ export function emitPlaceClick(placeId: string): void {
     const event = {
       eventType: "place_click",
       placeId,
-      anonId: anonId(),
+      anonId: getAnonId(),
       sessionId: sessionId(),
     }
     const body = JSON.stringify({ events: [event] })

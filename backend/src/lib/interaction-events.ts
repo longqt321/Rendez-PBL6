@@ -33,7 +33,9 @@ export interface RecordEventInput {
 export async function recordEvent(input: RecordEventInput): Promise<boolean> {
   const weight = weightForEvent(input.eventType)
   if (weight === null) {
-    logger.warn({ eventType: input.eventType }, "event không thuộc taxonomy — bỏ qua")
+    // FE có thể gửi event mới trước khi BE cập nhật taxonomy — không phải lỗi
+    // vận hành, để mức debug tránh spam log warn.
+    logger.debug({ eventType: input.eventType }, "event không thuộc taxonomy — bỏ qua")
     return false
   }
   if (!input.userId && !input.anonId) return false

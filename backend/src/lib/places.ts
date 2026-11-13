@@ -377,12 +377,16 @@ function distanceSql(lat: number, lng: number): Prisma.Sql {
 
 /** Số ứng viên mỗi nhánh (lexical/dense) đưa vào fusion. */
 const HYBRID_POOL = 50
+/**
+ * Số kết quả hybrid tối đa trả về một lần (trang đầu, không có trang sau).
+ * Chọn 30 = 3 trang FE gộp lại — đủ cho nhu cầu khám phá, không phình response.
+ */
+const HYBRID_MAX_RESULTS = 30
 /** Hằng số RRF chuẩn — k lớn làm dịu chênh lệch hạng giữa hai nhánh. */
 const RRF_K = 60
 
 interface DenseCandidate {
   id: string
-  score: number
 }
 
 /**
@@ -392,16 +396,17 @@ interface DenseCandidate {
 async function denseCandidates(query: string, limit: number): Promise<DenseCandidate[] | null> {
   const vec = await embedQuery(query)
   if (!vec) return null
+  const vecLiteral = vectorToLiteral(vec)
   try {
-    const rows = await prisma.$queryRaw<{ place_id: string; score: number }[]>(Prisma.sql`
-      SELECT pe.place_id, 1 - (pe.embedding <=> ${vectorToLiteral(vec)}::vector) AS score
+    const rows = await prisma.$queryRaw<{ place_id: string }[]>(Prisma.sql`
+      SELECT pe.place_id
       FROM place_embeddings pe
       JOIN places p ON p.id = pe.place_id
       WHERE p.published_at IS NOT NULL AND p.status <> 'closed' AND p.deleted_at IS NULL
-      ORDER BY pe.embedding <=> ${vectorToLiteral(vec)}::vector
+      ORDER BY pe.embedding <=> ${vecLiteral}::vector
       LIMIT ${limit}
     `)
-    return rows.map((row) => ({ id: row.place_id, score: Number(row.score) }))
+    return rows.map((row) => ({ id: row.place_id }))
   } catch (err) {
     logger.warn({ err }, "dense search thất bại, fallback lexical")
     return null
@@ -490,7 +495,11 @@ export async function listPlaces(
   if (filters.q && !cursor && filters.sort === "newest") {
     const hybrid = await hybridSearch(filters as PlaceFilters & { q: string })
     if (hybrid) {
-      return { items: hybrid.items.slice(0, pageSize), next: null, total: hybrid.total }
+      // `total = items.length` (không phải tổng pool): FE hiển thị "N địa điểm"
+      // từ totalResults và không có trang sau (RRF không keyset được) — con số
+      // phải khớp đúng số card người dùng xem được, không báo số ảo.
+      const items = hybrid.items.slice(0, HYBRID_MAX_RESULTS)
+      return { items, next: null, total: items.length }
     }
     // encoder lỗi → rơi xuống lexical thuần bên dưới.
   }

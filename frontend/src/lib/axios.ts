@@ -2,6 +2,7 @@ import axios from "axios"
 import { toast } from "sonner"
 import { checkApiContract } from "@/lib/api-contracts"
 import { env } from "@/lib/env"
+import { getAnonId } from "@/lib/events"
 import { safeRedirectPath } from "@/features/auth/lib/safe-redirect"
 
 /**
@@ -98,19 +99,12 @@ export const api = axios.create({
 /**
  * Header `x-anon-id` — id ẩn danh của guest (cùng id BE dùng cho `POST /events`)
  * để BE ghi được tín hiệu search/detail-view của người CHƯA đăng nhập (P0).
- * Lỗi storage bị nuốt trong `readOrCreateId` — không bao giờ chặn request.
+ * Logic đọc/tạo id nằm ở `lib/events.ts` (một nguồn duy nhất); lỗi storage bị
+ * nuốt trong đó — không bao giờ chặn request.
  */
 api.interceptors.request.use((config) => {
-  try {
-    let id = localStorage.getItem("rendez_anon_id")
-    if (!id) {
-      id = crypto.randomUUID()
-      localStorage.setItem("rendez_anon_id", id)
-    }
-    config.headers.set("x-anon-id", id)
-  } catch {
-    /* chế độ riêng tư chặn storage — bỏ qua, guest event sẽ không được ghi */
-  }
+  const id = getAnonId()
+  if (id) config.headers.set("x-anon-id", id)
   return config
 })
 

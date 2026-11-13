@@ -748,11 +748,10 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       có nhu cầu insert qua Prisma model.
 - [ ] **Dedupe `POST /events` là in-memory**: mất tác dụng khi chạy nhiều instance
       API. Hiện 1 instance nên chấp nhận; chuyển sang Redis/Postgres nếu scale.
-- [ ] **Dedupe TTL thực tế ~5 phút**: key chứa bucket 5 phút nên event lặp ở hai
-      bucket liền kề vẫn được ghi; nới bucket hoặc bỏ bucket khi cần đúng 10 phút.
 - [ ] **Hybrid search chỉ áp cho `sort=newest` trang đầu**: `sort=rating|distance`
-      và trang 2+ vẫn lexical thuần (thứ tự RRF không keyset được). Cân nhắc
-      re-rank RRF trên kết quả đã sắp theo sort nếu người dùng phản hồi.
+      và trang 2+ vẫn lexical thuần (thứ tự RRF không keyset được). Trang hybrid
+      trả tối đa 30 kết quả, `total = items.length` (không có trang sau) — nếu cần
+      xem sâu hơn thì thêm cursor offset cho hybrid.
 - [ ] **Chưa có HNSW index cho `place_embeddings`**: 343 vector nên seq scan ~5ms
       là đủ; tạo `USING hnsw (embedding vector_cosine_ops)` khi vượt ~10k venue.
 - [ ] **Golden query set còn nhỏ (16 query)**: mở rộng lên 50+ và bổ sung cột
