@@ -1,0 +1,2510 @@
+{
+  "summary": {
+    "frozenAt": "2026-11-13T15:23:29.208Z",
+    "queries": 58,
+    "lexical": {
+      "p5": 0.497,
+      "p10": 0.41,
+      "recall10": 0.386,
+      "ndcg10": 0.436,
+      "mrr": 0.608,
+      "zeroRate": 0,
+      "latencyP50Ms": 326,
+      "latencyP95Ms": 365
+    },
+    "dense": {
+      "p5": 0.538,
+      "p10": 0.488,
+      "recall10": 0.459,
+      "ndcg10": 0.502,
+      "mrr": 0.693,
+      "zeroRate": 0,
+      "latencyP50Ms": 26,
+      "latencyP95Ms": 38
+    },
+    "hybrid2": {
+      "p5": 0.728,
+      "p10": 0.609,
+      "recall10": 0.579,
+      "ndcg10": 0.64,
+      "mrr": 0.812,
+      "zeroRate": 0,
+      "latencyP50Ms": 354,
+      "latencyP95Ms": 398
+    },
+    "hybrid3": {
+      "p5": 0.514,
+      "p10": 0.459,
+      "recall10": 0.425,
+      "ndcg10": 0.474,
+      "mrr": 0.652,
+      "zeroRate": 0,
+      "latencyP50Ms": 700,
+      "latencyP95Ms": 763
+    }
+  },
+  "byGroup": {
+    "vietnamese-tucson": {
+      "n": 2,
+      "lexicalP5": 0.4,
+      "denseP5": 0,
+      "hybrid2P5": 0.3,
+      "hybrid3P5": 0.2
+    },
+    "thai-tucson": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0.2
+    },
+    "indian-tucson": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0.2,
+      "hybrid3P5": 0.3
+    },
+    "korean-tucson": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0.1,
+      "hybrid3P5": 0.1
+    },
+    "ramen-philadelphia": {
+      "n": 2,
+      "lexicalP5": 0.5,
+      "denseP5": 0.2,
+      "hybrid2P5": 0.5,
+      "hybrid3P5": 0.6
+    },
+    "ramen-tucson": {
+      "n": 2,
+      "lexicalP5": 0.5,
+      "denseP5": 0.4,
+      "hybrid2P5": 0.6,
+      "hybrid3P5": 0.7
+    },
+    "noodles-tucson": {
+      "n": 2,
+      "lexicalP5": 0.9,
+      "denseP5": 0.3,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0.6
+    },
+    "bubble tea-tucson": {
+      "n": 2,
+      "lexicalP5": 0.8,
+      "denseP5": 0.5,
+      "hybrid2P5": 0.8,
+      "hybrid3P5": 0.7
+    },
+    "cheesesteaks-tucson": {
+      "n": 2,
+      "lexicalP5": 0.8,
+      "denseP5": 0,
+      "hybrid2P5": 0.5,
+      "hybrid3P5": 0.2
+    },
+    "vegan-tucson": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 0.4,
+      "hybrid2P5": 0.5,
+      "hybrid3P5": 0.6
+    },
+    "donuts-tucson": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 0.4,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0.5
+    },
+    "breweries-tucson": {
+      "n": 2,
+      "lexicalP5": 0.7,
+      "denseP5": 0.1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0.1
+    },
+    "dive bars-tucson": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 0.1,
+      "hybrid2P5": 0.8,
+      "hybrid3P5": 0.1
+    },
+    "bagels-tucson": {
+      "n": 2,
+      "lexicalP5": 0.6,
+      "denseP5": 0,
+      "hybrid2P5": 0.8,
+      "hybrid3P5": 0.5
+    },
+    "gluten-free-tucson": {
+      "n": 2,
+      "lexicalP5": 0.1,
+      "denseP5": 0.8,
+      "hybrid2P5": 0.8,
+      "hybrid3P5": 0.9
+    },
+    "vietnamese-outdoor-seating": {
+      "n": 2,
+      "lexicalP5": 0.9,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "thai-outdoor-seating": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 1,
+      "hybrid2P5": 0.7,
+      "hybrid3P5": 1
+    },
+    "indian-outdoor-seating": {
+      "n": 2,
+      "lexicalP5": 0.2,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "indian-wifi": {
+      "n": 2,
+      "lexicalP5": 0.4,
+      "denseP5": 0.9,
+      "hybrid2P5": 0.7,
+      "hybrid3P5": 0.1
+    },
+    "korean-outdoor-seating": {
+      "n": 2,
+      "lexicalP5": 0.2,
+      "denseP5": 0.4,
+      "hybrid2P5": 0.5,
+      "hybrid3P5": 0.4
+    },
+    "korean-wifi": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 0.7,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0
+    },
+    "ramen-outdoor-seating": {
+      "n": 2,
+      "lexicalP5": 0.1,
+      "denseP5": 1,
+      "hybrid2P5": 0.9,
+      "hybrid3P5": 1
+    },
+    "ramen-wifi": {
+      "n": 2,
+      "lexicalP5": 0.7,
+      "denseP5": 1,
+      "hybrid2P5": 0.9,
+      "hybrid3P5": 0
+    },
+    "noodles-outdoor-seating": {
+      "n": 2,
+      "lexicalP5": 0.4,
+      "denseP5": 0.9,
+      "hybrid2P5": 0.9,
+      "hybrid3P5": 0.9
+    },
+    "noodles-wifi": {
+      "n": 2,
+      "lexicalP5": 0.9,
+      "denseP5": 0.8,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0.2
+    },
+    "bubble tea-outdoor-seating": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 1,
+      "hybrid2P5": 0.6,
+      "hybrid3P5": 1
+    },
+    "donuts-outdoor-seating": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "breweries-wifi": {
+      "n": 2,
+      "lexicalP5": 0.4,
+      "denseP5": 0.9,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0
+    },
+    "bakery-wifi": {
+      "n": 2,
+      "lexicalP5": 0.9,
+      "denseP5": 0.8,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    }
+  },
+  "byVariant": {
+    "v1": {
+      "n": 29,
+      "lexicalP5": 0.49,
+      "denseP5": 0.559,
+      "hybrid2P5": 0.745,
+      "hybrid3P5": 0.641
+    },
+    "v2": {
+      "n": 29,
+      "lexicalP5": 0.503,
+      "denseP5": 0.517,
+      "hybrid2P5": 0.71,
+      "hybrid3P5": 0.386
+    }
+  },
+  "significance": [
+    {
+      "comparison": "hybrid3 - hybrid2",
+      "meanDelta": -0.214,
+      "ci95": "[-0.331, -0.100]",
+      "pRaw": 0.9999,
+      "pHolm": 1
+    },
+    {
+      "comparison": "hybrid3 - dense",
+      "meanDelta": -0.024,
+      "ci95": "[-0.131, 0.083]",
+      "pRaw": 0.6671,
+      "pHolm": 1
+    },
+    {
+      "comparison": "hybrid3 - lexical",
+      "meanDelta": 0.017,
+      "ci95": "[-0.138, 0.176]",
+      "pRaw": 0.4146,
+      "pHolm": 1
+    },
+    {
+      "comparison": "dense - lexical",
+      "meanDelta": 0.041,
+      "ci95": "[-0.100, 0.183]",
+      "pRaw": 0.2794,
+      "pHolm": 1
+    },
+    {
+      "comparison": "hybrid2 - dense",
+      "meanDelta": 0.19,
+      "ci95": "[0.107, 0.276]",
+      "pRaw": 0,
+      "pHolm": 0
+    }
+  ],
+  "perQuery": [
+    {
+      "id": "yelp-1",
+      "group": "vietnamese-tucson",
+      "variant": "v1",
+      "query": "vietnamese food in Tucson",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.20511666732794356,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.0636207881989517,
+        "mrr": 0.1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.21726071285222984,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.2336508082431053,
+        "mrr": 0.5,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-2",
+      "group": "vietnamese-tucson",
+      "variant": "v2",
+      "query": "best vietnamese food Tucson",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.48834918382520975,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.0636207881989517,
+        "mrr": 0.1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.44270017573363163,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.0636207881989517,
+        "mrr": 0.1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-3",
+      "group": "thai-tucson",
+      "variant": "v1",
+      "query": "thai food in Tucson",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.40853591842579556,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-4",
+      "group": "thai-tucson",
+      "variant": "v2",
+      "query": "best thai food Tucson",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-5",
+      "group": "indian-tucson",
+      "variant": "v1",
+      "query": "indian food in Tucson",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.09478836436955078,
+        "mrr": 0.25,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5384313152574519,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-6",
+      "group": "indian-tucson",
+      "variant": "v2",
+      "query": "best indian food Tucson",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.1388624438735545,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-7",
+      "group": "korean-tucson",
+      "variant": "v1",
+      "query": "korean food in Tucson",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.22009176629808014,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-8",
+      "group": "korean-tucson",
+      "variant": "v2",
+      "query": "best korean food Tucson",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.1388624438735545,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-9",
+      "group": "ramen-philadelphia",
+      "variant": "v1",
+      "query": "ramen in Philadelphia",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.3151625504769836,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.2895229882348574,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5423640154200348,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8643145546088337,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-10",
+      "group": "ramen-philadelphia",
+      "variant": "v2",
+      "query": "best ramen Philadelphia",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.40030566811860463,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.22009176629808014,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.4595326231006953,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.22009176629808014,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-11",
+      "group": "ramen-tucson",
+      "variant": "v1",
+      "query": "ramen in Tucson",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.2583297509898471,
+        "mrr": 0.25,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.39639187290150923,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5384313152574519,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7859162856301584,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-12",
+      "group": "ramen-tucson",
+      "variant": "v2",
+      "query": "best ramen Tucson",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.4690000933206747,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.3746661058764784,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5352543167750637,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.3746661058764784,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-13",
+      "group": "noodles-tucson",
+      "variant": "v1",
+      "query": "noodles in Tucson",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.6987957033953601,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.37850091886658266,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.7222954974312066,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7885497208855956,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-14",
+      "group": "noodles-tucson",
+      "variant": "v2",
+      "query": "best noodles Tucson",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.793584067764911,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.3557772116892464,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7917267193679839,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.3557772116892464,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-15",
+      "group": "bubble tea-tucson",
+      "variant": "v1",
+      "query": "bubble tea in Tucson",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.7116179486056782,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.6,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.5357086937004183,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.6936634693435663,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8701249883466592,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-16",
+      "group": "bubble tea-tucson",
+      "variant": "v2",
+      "query": "best bubble tea Tucson",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5637884576902256,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.3301376494471202,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.6300426811446145,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.3301376494471202,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-17",
+      "group": "cheesesteaks-tucson",
+      "variant": "v1",
+      "query": "cheesesteak in Tucson",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.5555555555555556,
+        "ndcg10": 0.6625493460319365,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4444444444444444,
+        "ndcg10": 0.4241787834006216,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0.4444444444444444,
+        "ndcg10": 0.4988602415115139,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-18",
+      "group": "cheesesteaks-tucson",
+      "variant": "v2",
+      "query": "best cheesesteak Tucson",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.5555555555555556,
+        "ndcg10": 0.670142101782351,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0.4444444444444444,
+        "ndcg10": 0.4853784348193613,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-19",
+      "group": "vegan-tucson",
+      "variant": "v1",
+      "query": "vegan food in Tucson",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.3932783996463063,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.26845503571754253,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7728378251807518,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-20",
+      "group": "vegan-tucson",
+      "variant": "v2",
+      "query": "best vegan food Tucson",
+      "lexical": {
+        "p5": 0,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.14201905717762703,
+        "mrr": 0.16666666666666666,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.24936270394794904,
+        "mrr": 0.25,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5326208815196265,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.24936270394794904,
+        "mrr": 0.25,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-21",
+      "group": "donuts-tucson",
+      "variant": "v1",
+      "query": "donuts in Tucson",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9363792118010483,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.49367903606741653,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.8,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8318477135310891,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-22",
+      "group": "donuts-tucson",
+      "variant": "v2",
+      "query": "best donuts Tucson",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.22009176629808014,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9305687780632227,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.22009176629808014,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-23",
+      "group": "breweries-tucson",
+      "variant": "v1",
+      "query": "brewery in Tucson",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5384313152574519,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.15457433957839825,
+        "mrr": 0.2,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8701249883466592,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.2835149363066189,
+        "mrr": 0.5,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-24",
+      "group": "breweries-tucson",
+      "variant": "v2",
+      "query": "best brewery Tucson",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.6177639991612474,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.07839826897867533,
+        "mrr": 0.16666666666666666,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.7151857987862356,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.07839826897867533,
+        "mrr": 0.16666666666666666,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-25",
+      "group": "dive bars-tucson",
+      "variant": "v1",
+      "query": "dive bar in Tucson",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9305687780632227,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.1388624438735545,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.6906478832608417,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.11004588314904007,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-26",
+      "group": "dive bars-tucson",
+      "variant": "v2",
+      "query": "best dive bar Tucson",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8701249883466592,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.06625422345438903,
+        "mrr": 0.1111111111111111,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.716485063693381,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-27",
+      "group": "bagels-tucson",
+      "variant": "v1",
+      "query": "bagels in Tucson",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.2336508082431053,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.0636207881989517,
+        "mrr": 0.1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.7799082337019198,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-28",
+      "group": "bagels-tucson",
+      "variant": "v2",
+      "query": "best bagels Tucson",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.7059054020403311,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.07336392209936005,
+        "mrr": 0.14285714285714285,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.914856882358379,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.07336392209936005,
+        "mrr": 0.14285714285714285,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-29",
+      "group": "gluten-free-tucson",
+      "variant": "v1",
+      "query": "gluten free food in Tucson",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.6758704024811183,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.6275071330616557,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9363792118010483,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-30",
+      "group": "gluten-free-tucson",
+      "variant": "v2",
+      "query": "best gluten free food Tucson",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.17947710508581732,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.6987957033953601,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.78180487222265,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.6987957033953601,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-31",
+      "group": "vietnamese-outdoor-seating",
+      "variant": "v1",
+      "query": "vietnamese food with outdoor seating",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7791714369672127,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-32",
+      "group": "vietnamese-outdoor-seating",
+      "variant": "v2",
+      "query": "good vietnamese food with outdoor seating",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.727329844310522,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-33",
+      "group": "thai-outdoor-seating",
+      "variant": "v1",
+      "query": "thai food with outdoor seating",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9305687780632227,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.4982710309705436,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9305687780632227,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-34",
+      "group": "thai-outdoor-seating",
+      "variant": "v2",
+      "query": "good thai food with outdoor seating",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8603818544462509,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.5423247252962317,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8603818544462509,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-35",
+      "group": "indian-outdoor-seating",
+      "variant": "v1",
+      "query": "indian food with outdoor seating",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.3822360008387525,
+        "mrr": 0.25,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.866947989864271,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-36",
+      "group": "indian-outdoor-seating",
+      "variant": "v2",
+      "query": "good indian food with outdoor seating",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.39749351961824175,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8630152897016883,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-37",
+      "group": "indian-wifi",
+      "variant": "v1",
+      "query": "indian food with wifi",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.3301376494471202,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7885497208855956,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8454256604216017,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.08514311764162098,
+        "mrr": 0.2,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-38",
+      "group": "indian-wifi",
+      "variant": "v2",
+      "query": "good indian food with wifi",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.3301376494471202,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7280855459907164,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.6691255538181726,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.06943122193677725,
+        "mrr": 0.125,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-39",
+      "group": "korean-outdoor-seating",
+      "variant": "v1",
+      "query": "korean food with outdoor seating",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.22009176629808014,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.5328965452000554,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.49118023727106,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.5328965452000554,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-40",
+      "group": "korean-outdoor-seating",
+      "variant": "v2",
+      "query": "good korean food with outdoor seating",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.1388624438735545,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.35705757165090446,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.2876263497141272,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.35705757165090446,
+        "mrr": 0.5,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-41",
+      "group": "korean-wifi",
+      "variant": "v1",
+      "query": "korean food with wifi",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7917267193679839,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7534494445524137,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.933745776545611,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-42",
+      "group": "korean-wifi",
+      "variant": "v2",
+      "query": "good korean food with wifi",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7909506325094736,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.6,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.5958595188912911,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8643145546088337,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-43",
+      "group": "ramen-outdoor-seating",
+      "variant": "v1",
+      "query": "ramen with outdoor seating",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.20829366581033176,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7909506325094736,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-44",
+      "group": "ramen-outdoor-seating",
+      "variant": "v2",
+      "query": "good ramen with outdoor seating",
+      "lexical": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.06625422345438903,
+        "mrr": 0.1111111111111111,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.6332196796270028,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-45",
+      "group": "ramen-wifi",
+      "variant": "v1",
+      "query": "ramen with wifi",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.933745776545611,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9216017310213247,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-46",
+      "group": "ramen-wifi",
+      "variant": "v2",
+      "query": "good ramen with wifi",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.5333765831998211,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8205228949141825,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-47",
+      "group": "noodles-outdoor-seating",
+      "variant": "v1",
+      "query": "noodles with outdoor seating",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.47842151728792726,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.7975167679274937,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7819835854675756,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.8,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.7975167679274937,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-48",
+      "group": "noodles-outdoor-seating",
+      "variant": "v2",
+      "query": "good noodles with outdoor seating",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.22009176629808014,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7885497208855956,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.7007731679885373,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7885497208855956,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-49",
+      "group": "noodles-wifi",
+      "variant": "v1",
+      "query": "noodles with wifi",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9363792118010483,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7605591431973847,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.22009176629808014,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-50",
+      "group": "noodles-wifi",
+      "variant": "v2",
+      "query": "good noodles with wifi",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7791714369672127,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.6235744328990729,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.933745776545611,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.22009176629808014,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-51",
+      "group": "bubble tea-outdoor-seating",
+      "variant": "v1",
+      "query": "bubble tea with outdoor seating",
+      "lexical": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.07839826897867533,
+        "mrr": 0.16666666666666666,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9216017310213247,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.5907272848394971,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9216017310213247,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-52",
+      "group": "bubble tea-outdoor-seating",
+      "variant": "v2",
+      "query": "good bubble tea with outdoor seating",
+      "lexical": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.07336392209936005,
+        "mrr": 0.14285714285714285,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8603818544462509,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.5483327772244702,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8603818544462509,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-53",
+      "group": "donuts-outdoor-seating",
+      "variant": "v1",
+      "query": "donuts with outdoor seating",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-54",
+      "group": "donuts-outdoor-seating",
+      "variant": "v2",
+      "query": "good donuts with outdoor seating",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-55",
+      "group": "breweries-wifi",
+      "variant": "v1",
+      "query": "brewery with wifi",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.5847192329112587,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8454256604216017,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.933745776545611,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-56",
+      "group": "breweries-wifi",
+      "variant": "v2",
+      "query": "good brewery with wifi",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.2876263497141272,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.92663607790064,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8643145546088337,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-57",
+      "group": "bakery-wifi",
+      "variant": "v1",
+      "query": "bakery",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0,
+        "ndcg10": 0.4403159945512543,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0.45713813838069683,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0.4809850773158472,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0.5136648392596329,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "yelp-58",
+      "group": "bakery-wifi",
+      "variant": "v2",
+      "query": "good bakery",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0,
+        "ndcg10": 0.40158567402264533,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.8,
+        "recall10": 0,
+        "ndcg10": 0.3629269702491369,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0.47963237421866234,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0.5136648392596329,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,765 @@
+{
+  "version": "yelp-1",
+  "queries": [
+    {
+      "id": "yelp-1",
+      "intent": "vietnamese-tucson",
+      "variant": "v1",
+      "query": "vietnamese food in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Vietnamese"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-2",
+      "intent": "vietnamese-tucson",
+      "variant": "v2",
+      "query": "best vietnamese food Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Vietnamese"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-3",
+      "intent": "thai-tucson",
+      "variant": "v1",
+      "query": "thai food in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Thai"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-4",
+      "intent": "thai-tucson",
+      "variant": "v2",
+      "query": "best thai food Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Thai"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-5",
+      "intent": "indian-tucson",
+      "variant": "v1",
+      "query": "indian food in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Indian"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-6",
+      "intent": "indian-tucson",
+      "variant": "v2",
+      "query": "best indian food Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Indian"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-7",
+      "intent": "korean-tucson",
+      "variant": "v1",
+      "query": "korean food in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Korean"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-8",
+      "intent": "korean-tucson",
+      "variant": "v2",
+      "query": "best korean food Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Korean"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-9",
+      "intent": "ramen-philadelphia",
+      "variant": "v1",
+      "query": "ramen in Philadelphia",
+      "constraints": {
+        "tagsAll": [
+          "Ramen"
+        ],
+        "city": [
+          "Philadelphia"
+        ]
+      }
+    },
+    {
+      "id": "yelp-10",
+      "intent": "ramen-philadelphia",
+      "variant": "v2",
+      "query": "best ramen Philadelphia",
+      "constraints": {
+        "tagsAll": [
+          "Ramen"
+        ],
+        "city": [
+          "Philadelphia"
+        ]
+      }
+    },
+    {
+      "id": "yelp-11",
+      "intent": "ramen-tucson",
+      "variant": "v1",
+      "query": "ramen in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Ramen"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-12",
+      "intent": "ramen-tucson",
+      "variant": "v2",
+      "query": "best ramen Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Ramen"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-13",
+      "intent": "noodles-tucson",
+      "variant": "v1",
+      "query": "noodles in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Noodles"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-14",
+      "intent": "noodles-tucson",
+      "variant": "v2",
+      "query": "best noodles Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Noodles"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-15",
+      "intent": "bubble tea-tucson",
+      "variant": "v1",
+      "query": "bubble tea in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Bubble Tea"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-16",
+      "intent": "bubble tea-tucson",
+      "variant": "v2",
+      "query": "best bubble tea Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Bubble Tea"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-17",
+      "intent": "cheesesteaks-tucson",
+      "variant": "v1",
+      "query": "cheesesteak in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Cheesesteaks"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-18",
+      "intent": "cheesesteaks-tucson",
+      "variant": "v2",
+      "query": "best cheesesteak Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Cheesesteaks"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-19",
+      "intent": "vegan-tucson",
+      "variant": "v1",
+      "query": "vegan food in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Vegan"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-20",
+      "intent": "vegan-tucson",
+      "variant": "v2",
+      "query": "best vegan food Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Vegan"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-21",
+      "intent": "donuts-tucson",
+      "variant": "v1",
+      "query": "donuts in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Donuts"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-22",
+      "intent": "donuts-tucson",
+      "variant": "v2",
+      "query": "best donuts Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Donuts"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-23",
+      "intent": "breweries-tucson",
+      "variant": "v1",
+      "query": "brewery in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Breweries"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-24",
+      "intent": "breweries-tucson",
+      "variant": "v2",
+      "query": "best brewery Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Breweries"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-25",
+      "intent": "dive bars-tucson",
+      "variant": "v1",
+      "query": "dive bar in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Dive Bars"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-26",
+      "intent": "dive bars-tucson",
+      "variant": "v2",
+      "query": "best dive bar Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Dive Bars"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-27",
+      "intent": "bagels-tucson",
+      "variant": "v1",
+      "query": "bagels in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Bagels"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-28",
+      "intent": "bagels-tucson",
+      "variant": "v2",
+      "query": "best bagels Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Bagels"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-29",
+      "intent": "gluten-free-tucson",
+      "variant": "v1",
+      "query": "gluten free food in Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Gluten-Free"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-30",
+      "intent": "gluten-free-tucson",
+      "variant": "v2",
+      "query": "best gluten free food Tucson",
+      "constraints": {
+        "tagsAll": [
+          "Gluten-Free"
+        ],
+        "city": [
+          "Tucson"
+        ]
+      }
+    },
+    {
+      "id": "yelp-31",
+      "intent": "vietnamese-outdoor-seating",
+      "variant": "v1",
+      "query": "vietnamese food with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Vietnamese",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-32",
+      "intent": "vietnamese-outdoor-seating",
+      "variant": "v2",
+      "query": "good vietnamese food with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Vietnamese",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-33",
+      "intent": "thai-outdoor-seating",
+      "variant": "v1",
+      "query": "thai food with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Thai",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-34",
+      "intent": "thai-outdoor-seating",
+      "variant": "v2",
+      "query": "good thai food with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Thai",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-35",
+      "intent": "indian-outdoor-seating",
+      "variant": "v1",
+      "query": "indian food with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Indian",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-36",
+      "intent": "indian-outdoor-seating",
+      "variant": "v2",
+      "query": "good indian food with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Indian",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-37",
+      "intent": "indian-wifi",
+      "variant": "v1",
+      "query": "indian food with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Indian",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-38",
+      "intent": "indian-wifi",
+      "variant": "v2",
+      "query": "good indian food with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Indian",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-39",
+      "intent": "korean-outdoor-seating",
+      "variant": "v1",
+      "query": "korean food with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Korean",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-40",
+      "intent": "korean-outdoor-seating",
+      "variant": "v2",
+      "query": "good korean food with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Korean",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-41",
+      "intent": "korean-wifi",
+      "variant": "v1",
+      "query": "korean food with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Korean",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-42",
+      "intent": "korean-wifi",
+      "variant": "v2",
+      "query": "good korean food with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Korean",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-43",
+      "intent": "ramen-outdoor-seating",
+      "variant": "v1",
+      "query": "ramen with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Ramen",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-44",
+      "intent": "ramen-outdoor-seating",
+      "variant": "v2",
+      "query": "good ramen with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Ramen",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-45",
+      "intent": "ramen-wifi",
+      "variant": "v1",
+      "query": "ramen with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Ramen",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-46",
+      "intent": "ramen-wifi",
+      "variant": "v2",
+      "query": "good ramen with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Ramen",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-47",
+      "intent": "noodles-outdoor-seating",
+      "variant": "v1",
+      "query": "noodles with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Noodles",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-48",
+      "intent": "noodles-outdoor-seating",
+      "variant": "v2",
+      "query": "good noodles with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Noodles",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-49",
+      "intent": "noodles-wifi",
+      "variant": "v1",
+      "query": "noodles with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Noodles",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-50",
+      "intent": "noodles-wifi",
+      "variant": "v2",
+      "query": "good noodles with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Noodles",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-51",
+      "intent": "bubble tea-outdoor-seating",
+      "variant": "v1",
+      "query": "bubble tea with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Bubble Tea",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-52",
+      "intent": "bubble tea-outdoor-seating",
+      "variant": "v2",
+      "query": "good bubble tea with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Bubble Tea",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-53",
+      "intent": "donuts-outdoor-seating",
+      "variant": "v1",
+      "query": "donuts with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Donuts",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-54",
+      "intent": "donuts-outdoor-seating",
+      "variant": "v2",
+      "query": "good donuts with outdoor seating",
+      "constraints": {
+        "tagsAll": [
+          "Donuts",
+          "Outdoor Seating"
+        ]
+      }
+    },
+    {
+      "id": "yelp-55",
+      "intent": "breweries-wifi",
+      "variant": "v1",
+      "query": "brewery with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Breweries",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-56",
+      "intent": "breweries-wifi",
+      "variant": "v2",
+      "query": "good brewery with wifi",
+      "constraints": {
+        "tagsAll": [
+          "Breweries",
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-57",
+      "intent": "bakery-wifi",
+      "variant": "v1",
+      "query": "bakery",
+      "constraints": {
+        "category": [
+          "bakery"
+        ],
+        "tagsAll": [
+          "Wifi"
+        ]
+      }
+    },
+    {
+      "id": "yelp-58",
+      "intent": "bakery-wifi",
+      "variant": "v2",
+      "query": "good bakery",
+      "constraints": {
+        "category": [
+          "bakery"
+        ],
+        "tagsAll": [
+          "Wifi"
+        ]
+      }
+    }
+  ]
+}

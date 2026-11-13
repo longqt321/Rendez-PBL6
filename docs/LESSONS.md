@@ -991,3 +991,18 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
 
 **Kiểm tra bằng máy:** script freeze in `exact=` cho từng query — chạy
 `bun run scripts/eval-search.ts --set N --freeze` rồi kiểm phân bố trước khi chốt checksum.
+
+### L-030: Đếm grep "chính mình" rồi kết luận sai tiến trình nền đang chạy
+
+- **Ngày:** 2026-11-13
+- **Triệu chứng:** Kết luận `curl` tải Yelp đang chạy (`PID 207874`) trong khi tiến trình thực sự đã chết từ 11 phút trước ở 76MB. Khi dùng `ps aux | rg -c "curl.*Yelp"`, kết quả là `2` — nhưng `2` đó chính là `bash -c` và `rg`, không phải `curl`. Tôi đọc con số `2` và kết luận "đang chạy" mà không kiểm tra PID thực hay timestamp file.
+- **Nguyên nhân gốc:**
+  1. Dùng grep đếm mà pattern khớp chính lệnh grep/bash wrapper.
+  2. Muốn tin vào kết quả mong đợi (curl đang chạy) nên không kiểm chứng chéo với file size/mtime.
+  3. Lặp lại tư duy của L-028 (kết luận vội trước khi kiểm chứng thực tế).
+- **Cách phòng tránh:**
+  1. Khi kiểm tra tiến trình: dùng `pgrep -x <tên-chính-xác>` (ví dụ `pgrep -x curl`), **không dùng** `ps aux | rg -c`.
+  2. Bắt buộc kiểm chứng chéo 2 nguồn độc lập: **PID còn sống** (`kill -0 <PID>`) VÀ **kích thước/mtime file thay đổi thật sự** (`stat -c %y,%s <file>`).
+  3. Khi chạy lệnh dài hạn qua subagent/task: luôn ghi PID ra file (`$! > pid.txt`) và detach đúng (`setsid nohup ... &`).
+- **Phạm vi áp dụng:** Mọi tác vụ nền, download, benchmark chạy dài.
+

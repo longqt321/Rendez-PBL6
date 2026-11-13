@@ -38,16 +38,31 @@ const SET = (() => {
   const value = idx >= 0 ? Number(process.argv[idx + 1]) : 1
   return Number.isInteger(value) && value >= 1 ? value : 1
 })()
-const QUERIES_FILE = join(EVAL_DIR, `search-eval-v${SET}.json`)
-const LABELS_FILE = join(EVAL_DIR, `search-eval-v${SET}-labels.json`)
-const CHECKSUM_FILE = join(EVAL_DIR, `search-eval-v${SET}.sha256`)
-const RESULT_FILE = join(EVAL_DIR, `search-eval-v${SET}-baseline.json`)
+/**
+ * `--file <tên>.json` dùng bộ tuỳ ý (ví dụ bộ Yelp) — file labels/checksum/baseline
+ * lấy cùng tên. Mặc định theo `--set` như trước, không ảnh hưởng v1/v2.
+ */
+const FILE_BASE = (() => {
+  const idx = process.argv.indexOf("--file")
+  if (idx >= 0) {
+    const raw = process.argv[idx + 1]
+    if (raw) return raw.replace(/\.json$/, "")
+  }
+  return null
+})()
+const BASE = FILE_BASE ?? `search-eval-v${SET}`
+const QUERIES_FILE = join(EVAL_DIR, `${BASE}.json`)
+const LABELS_FILE = join(EVAL_DIR, `${BASE}-labels.json`)
+const CHECKSUM_FILE = join(EVAL_DIR, `${BASE}.sha256`)
+const RESULT_FILE = join(EVAL_DIR, `${BASE}-baseline.json`)
 
 interface Constraints {
   category?: string[]
   tagsAll?: string[]
   tagsAny?: string[]
   district?: string[]
+  /** Thành phố — dùng cho bộ Yelp (dataset không có district). */
+  city?: string[]
   /** Venue mở 24/7 (`opening_hours = '24/7'`). */
   alwaysOpen?: boolean
 }
@@ -98,6 +113,9 @@ function constraintSql(c: Constraints): Prisma.Sql {
   }
   if (c.district?.length) {
     parts.push(Prisma.sql`p.district IN (${Prisma.join(c.district)})`)
+  }
+  if (c.city?.length) {
+    parts.push(Prisma.sql`p.city IN (${Prisma.join(c.city)})`)
   }
   if (c.alwaysOpen) {
     parts.push(Prisma.sql`p.opening_hours = '24/7'`)

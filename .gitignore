@@ -51,3 +51,6 @@ backend/data/raw/
 
 # Backup DB cục bộ (chứa dữ liệu thật, không commit)
 backend/data/backup-*.sql
+
+# Yelp dataset lon - khong commit (chay lai bang scripts/prepare-yelp.ts)
+backend/data/yelp/*.jsonl
