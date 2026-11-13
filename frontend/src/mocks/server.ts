@@ -1003,6 +1003,7 @@ const scenario = resolveScenario(env.mockScenario)
 const LIST_ROUTES: readonly RegExp[] = [
   /^\/places$/,
   /^\/places\/daily-picks$/,
+  /^\/places\/recommended$/,
   /^\/posts$/,
   /^\/notifications$/,
   /^\/users$/,
@@ -1485,6 +1486,17 @@ const routes: Route[] = [
         }))
       return { date: new Date().toISOString().slice(0, 10), items }
     },
+  },
+  {
+    method: "get",
+    // Cá nhân hoá theo lịch sử — mock chưa có dữ liệu tương tác nên trả rỗng;
+    // FE coi rỗng là "ẩn dải". Đứng trước `/places/:id` như daily-picks.
+    pattern: /^\/places\/recommended$/,
+    handler: () => ({
+      items: [],
+      next: null,
+      meta: { tookMs: 0, cacheHit: false, totalResults: 0 },
+    }),
   },
   {
     method: "get",

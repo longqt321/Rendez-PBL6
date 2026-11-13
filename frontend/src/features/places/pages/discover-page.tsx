@@ -10,6 +10,7 @@ import { DidYouMean } from "../components/did-you-mean"
 import { DailyPicksSection } from "../components/daily-picks-section"
 import { PlaceCard } from "../components/place-card"
 import { PlaceCardSkeleton } from "../components/place-card-skeleton"
+import { RecommendedSection } from "../components/recommended-section"
 import { useDiscoverView } from "../hooks/use-discover-view"
 
 /** Chiều cao ảnh cho skeleton — chỉ là hình thức chờ, không phải dữ liệu. */
@@ -41,6 +42,8 @@ export function DiscoverPage() {
 
       {/* Dải gợi ý đứng trên lưới, độc lập với trạng thái lưới và bộ lọc. */}
       <DailyPicksSection />
+      {/* Cá nhân hoá theo lịch sử tương tác — rỗng/chưa có endpoint thì tự ẩn. */}
+      <RecommendedSection />
 
       {view.isPending ? (
         <ul className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3">
