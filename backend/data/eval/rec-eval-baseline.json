@@ -1,0 +1,46 @@
+{
+  "runAt": "2026-11-13T16:04:43.880Z",
+  "dataset": "yelp-phl-tucson",
+  "split": {
+    "evalActors": 26342,
+    "trainEvents": 349590,
+    "catalog": 10403
+  },
+  "methods": {
+    "random": {
+      "recall5": 0.0005,
+      "recall10": 0.001,
+      "recall20": 0.0018,
+      "ndcg10": 0.0004,
+      "mrr": 0.0002
+    },
+    "popularity": {
+      "recall5": 0.0207,
+      "recall10": 0.0331,
+      "recall20": 0.0541,
+      "ndcg10": 0.0179,
+      "mrr": 0.0132
+    },
+    "item-item": {
+      "recall5": 0.0378,
+      "recall10": 0.062,
+      "recall20": 0.096,
+      "ndcg10": 0.0321,
+      "mrr": 0.0231
+    }
+  },
+  "significance": [
+    {
+      "baseline": "random",
+      "meanDelta": 0.0317,
+      "ci95": "[0.030, 0.033]",
+      "p": 0
+    },
+    {
+      "baseline": "popularity",
+      "meanDelta": 0.0142,
+      "ci95": "[0.013, 0.016]",
+      "p": 0
+    }
+  ]
+}

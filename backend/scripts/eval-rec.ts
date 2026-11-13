@@ -24,6 +24,8 @@
  *
  * Chạy: `cd backend && bun run scripts/eval-rec.ts`
  */
+import { writeFileSync } from "node:fs"
+import { join } from "node:path"
 import { computeItemItem, type AffinityEvent, type AffinityItem } from "../src/lib/affinity"
 import { mulberry32, pairedBootstrap, score } from "../src/lib/eval-metrics"
 import { prisma } from "../src/lib/prisma"
@@ -260,6 +262,7 @@ async function main(): Promise<void> {
   console.log(
     `  ${"baseline".padEnd(12)}${"Δ mean".padStart(9)}${"CI95".padStart(20)}${"p".padStart(9)}`,
   )
+  const significance: { baseline: string; meanDelta: number; ci95: string; p: number }[] = []
   for (const baseline of [randomResult, popularityResult]) {
     const diffs = evalActors.map(
       (actor) => itemItemResult.perUser.get(actor)!.ndcg10 - baseline.perUser.get(actor)!.ndcg10,
@@ -269,7 +272,45 @@ async function main(): Promise<void> {
     console.log(
       `  ${baseline.name.padEnd(12)}${bootstrap.meanDelta.toFixed(3).padStart(9)}${ci.padStart(20)}${bootstrap.pOneSided.toFixed(3).padStart(9)}`,
     )
+    significance.push({
+      baseline: baseline.name,
+      meanDelta: Number(bootstrap.meanDelta.toFixed(4)),
+      ci95: ci,
+      p: Number(bootstrap.pOneSided.toFixed(4)),
+    })
   }
+
+  // ---- Lưu baseline JSON để tái lập và so sánh sau này ----------------------
+  const summary = Object.fromEntries(
+    results.map((result) => {
+      const avg = (f: (m: UserMetrics) => number): number =>
+        Number(mean(evalActors.map((actor) => f(result.perUser.get(actor)!))).toFixed(4))
+      return [
+        result.name,
+        {
+          recall5: avg((m) => m.recall5),
+          recall10: avg((m) => m.recall10),
+          recall20: avg((m) => m.recall20),
+          ndcg10: avg((m) => m.ndcg10),
+          mrr: avg((m) => m.mrr),
+        },
+      ]
+    }),
+  )
+  const baselineOut = {
+    runAt: new Date().toISOString(),
+    dataset: process.env["EVAL_DATASET_LABEL"] ?? "db",
+    split: {
+      evalActors: evalActors.length,
+      trainEvents: trainEvents.length,
+      catalog: catalog.length,
+    },
+    methods: summary,
+    significance,
+  }
+  const outFile = join(import.meta.dir, "..", "data", "eval", "rec-eval-baseline.json")
+  writeFileSync(outFile, `${JSON.stringify(baselineOut, null, 2)}\n`)
+  console.log(`\nĐã ghi ${outFile}`)
 }
 
 main()
