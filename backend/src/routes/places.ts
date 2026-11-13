@@ -17,6 +17,7 @@ import {
   parsePlaceFilters,
 } from "../lib/places"
 import { getViewer, requireAuth } from "../lib/session"
+import { recordEventForRequest } from "../lib/interaction-events"
 import { listPosts } from "../lib/posts"
 import { rankPlaceSuggestions } from "../lib/ranking"
 import { jsonWithCache } from "../lib/http-cache"
@@ -81,6 +82,14 @@ export function createPlacesRouter() {
     // trước sẽ báo tookMs thấp hơn thời gian người dùng thực sự chờ.
     const tookMs = Math.round(performance.now() - startedAt)
 
+    // Tín hiệu tìm kiếm cho recommendation (P0): chỉ ghi khi có `q` thật.
+    if (filters.q !== undefined && filters.q.trim().length > 0) {
+      await recordEventForRequest(c, "search_query", {
+        query: filters.q,
+        context: { resultsCount: page.total },
+      })
+    }
+
     // Hiện chưa có cache ứng dụng cho danh sách → `cacheHit` luôn false; không
     // bịa true khi body đến thẳng từ DB.
     return c.json({
@@ -106,6 +115,7 @@ export function createPlacesRouter() {
       fetchPublishedRankCandidatesWithStatus(),
     ])
     const tookMs = Math.round(performance.now() - startedAt)
+
     // Cache ứng dụng của danh sách ứng viên — gắn vào context để middleware
     // metrics đếm `cacheHits` thật (không đoán).
     c.set("cacheHit", candidates.cacheHit)
@@ -137,6 +147,7 @@ export function createPlacesRouter() {
     const startedAt = performance.now()
     const result = await getDailyPicks(getPickDate())
     const tookMs = Math.round(performance.now() - startedAt)
+
     // Công khai, giống nhau với mọi người — 5 phút đủ gánh traffic trong ngày
     // mà vẫn ngắn hơn chu kỳ đổi dữ liệu (ngày). `cacheHit` là cache ỨNG DỤNG
     // (chưa có cho route này) nên false — HTTP cache không tính.
@@ -159,6 +170,7 @@ export function createPlacesRouter() {
     const startedAt = performance.now()
     const result = await listPlacesInMap(filters, MAP_MAX_PLACES)
     const tookMs = Math.round(performance.now() - startedAt)
+
     // Dữ liệu công khai, đổi chậm — cho phép trình duyệt/CDN dùng lại 30 giây.
     // Giữ `total` cũ (FE đang dùng) và thêm `meta` cùng giá trị. ETag bỏ tookMs.
     return jsonWithCache(
@@ -216,6 +228,8 @@ export function createPlacesRouter() {
 
     const place = await findPublicPlace(id)
     if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
+    // Fire-and-forget: telemetry không được cộng round-trip DB vào latency.
+    void recordEventForRequest(c, "place_detail_view", { placeId: id })
     return jsonWithCache(c, place, { maxAge: 60 })
   })
 

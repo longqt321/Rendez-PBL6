@@ -2952,3 +2952,46 @@ place seed cùng một `published_at`.
 **Hệ quả:** `frontend/src/features/places/lib/danang-districts.ts` phải khớp 7 quận (FE agent
 xử lý cùng phiên). `places.json.bak`/`places.csv`/README tĩnh còn nhãn cũ — không ảnh hưởng
 runtime, dọn khi có dịp.
+
+## D-061 — Nền tảng search + rec: pgvector, e5-small self-host, RRF k=60, không dùng rating sao — 2026-11-13
+
+**Bối cảnh:** cần hạ tầng đo lường tương tác (P0) và search ngữ nghĩa (P1) cho giai đoạn
+demo/bảo vệ. Corpus 344 POI, dữ liệu text ngắn (tên + địa chỉ + tags) nên lexical
+(`pg_trgm`) đã tốt với truy vấn đúng từ khoá nhưng hụt khi người dùng gõ câu mô tả
+("quán yên tĩnh để làm việc"). Cần thêm một nhánh dense và cách trộn hai nhánh mà không
+phải huấn luyện ranker.
+
+**Quyết định:**
+1. **Đổi image Postgres sang `pgvector/pgvector:0.8.7-pg17`** thay `postgres:17-alpine`:
+   extension `vector` phải tồn tại TRƯỚC migration tạo `place_embeddings`; dùng image
+   chính thức của pgvector giữ nguyên major 17 nên không phải migrate dữ liệu, không phải
+   build extension trong Dockerfile.
+2. **Embedding self-host `Xenova/multilingual-e5-small`** (384 chiều, lượng tử hoá q8,
+   chạy trong process Bun qua transformers.js): đa ngữ (Việt + Anh lẫn trong tên quán),
+   nhẹ (~120MB) chạy được trên máy dev/CI không cần GPU, không phụ thuộc API ngoài
+   (không tốn phí, không lộ dữ liệu, không bị rate limit khi backfill 344 POI).
+3. **Trộn hai nhánh bằng RRF với k = 60** thay vì cộng điểm có trọng số: RRF chỉ cần
+   thứ hạng nên không phải chuẩn hoá thang điểm giữa `trgm` similarity và cosine — hai
+   đại lượng không cùng đơn vị. k = 60 là hằng số chuẩn của Reciprocal Rank Fusion, làm
+   dịu chênh lệch hạng giữa hai nhánh.
+4. **Fallback lexical**: dense lỗi/không có vector/không có extension → quay về lexical
+   hiện tại, không trả 500. Hybrid chỉ áp cho trang đầu có `?q=` (cursor keyset không
+   mang được thứ tự RRF); trang sau vẫn lexical để không trùng/sót bản ghi.
+5. **KHÔNG dùng rating sao làm tín hiệu recommendation.** Rating hiện có là dữ liệu seed
+   (không phải người dùng thật đánh giá) và số review rất lệch; dùng nó làm trọng số rec
+   sẽ "học" từ dữ liệu bịa và đẩy điểm quán có sao cao lên bất kể hành vi thật. Tín hiệu
+   rec lấy từ `interaction_events` (click/view/save…) do FE phát, cộng thuộc tính địa điểm.
+
+**Hệ quả:**
+- `interaction_events` partition theo tháng, job `event-retention` tạo partition T+1 và
+  xoá partition cũ hơn 180 ngày (event là tín hiệu rec, không phải dữ liệu pháp lý).
+- `POST /api/v1/events` nhận batch ≤ 20, dedupe 5 phút ở tầng ứng dụng (bảng partition
+  không thể có UNIQUE constraint chứa bucket thời gian), luôn trả 202 — telemetry không
+  được làm hỏng trải nghiệm.
+- FE: `frontend/src/lib/events.ts` (`emitPlaceClick`) gửi `place_click` fire-and-forget
+  bằng `sendBeacon`/`fetch keepalive`; `anonId` (localStorage `rendez_anon_id`) +
+  `sessionId` (sessionStorage `rendez_session_id`). Chỉ click, không impression.
+- Chưa có số liệu đánh giá chất lượng hybrid so với lexical thuần — ghi ở BACKLOG.
+
+**Ghi chú số hiệu:** yêu cầu ban đầu gọi quyết định này là "D-049", nhưng `D-049` đã tồn
+tại trong file (Bỏ ảnh món + dữ liệu giả khỏi cold-start) nên ghi tiếp thành D-061.

@@ -21,6 +21,7 @@ import { enqueuePlaceDetect } from "../lib/queue"
 import { invalidateSuggestionCache } from "../lib/suggestions"
 import { rateLimit } from "../lib/rate-limit"
 import { getViewer, requireAuth } from "../lib/session"
+import { recordEvent } from "../lib/interaction-events"
 
 /**
  * Route bài đăng + bình luận (Phase 3).
@@ -265,6 +266,8 @@ export function createPostsRouter() {
       await prisma.postLike.delete({ where: { postId_userId: { postId, userId } } })
     }
 
+    if (liked) await recordEvent({ eventType: "post_like", userId, postId })
+
     const updated = await findPost(postId, userId)
     if (!updated) throw new ApiError(404, "Không tìm thấy bài đăng")
     return c.json(updated)
@@ -293,6 +296,8 @@ export function createPostsRouter() {
     if (!saved && existing) {
       await prisma.postSave.delete({ where: { postId_userId: { postId, userId } } })
     }
+
+    if (saved) await recordEvent({ eventType: "post_save", userId, postId })
 
     const updated = await findPost(postId, userId)
     if (!updated) throw new ApiError(404, "Không tìm thấy bài đăng")
@@ -348,6 +353,7 @@ export function createPostsRouter() {
 
     const comment = await findComment(created.id, userId)
     if (!comment) throw new ApiError(500, "Không tạo được bình luận")
+    await recordEvent({ eventType: "comment_created", userId, postId })
     return c.json(comment, 201)
   })
 

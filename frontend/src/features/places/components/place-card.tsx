@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { formatCount, formatDistance, formatRating } from "@/lib/format"
+import { emitPlaceClick } from "@/lib/events"
 import { isOpenNow } from "../lib/opening-hours"
 import { categoryLabel } from "../lib/category-meta"
 import { useCategoryImage } from "../lib/category-image"
@@ -104,6 +105,7 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
         <h3 className="font-heading text-base leading-tight font-bold">
           <Link
             to={`/discover/${place.id}`}
+            onClick={() => emitPlaceClick(place.id)}
             className="outline-none after:absolute after:inset-0 focus-visible:underline"
           >
             {place.name}
@@ -172,9 +174,7 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
         <div className="mt-auto flex items-center justify-between pt-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             {/* 0 đánh giá: không render gì (tránh nhãn "Chưa có đánh giá" lặp trên mọi card). */}
-            {place.reviewCount > 0 ? (
-              <span>{formatCount(place.reviewCount)} đánh giá</span>
-            ) : null}
+            {place.reviewCount > 0 ? <span>{formatCount(place.reviewCount)} đánh giá</span> : null}
             {distanceKm !== undefined ? (
               <span className="flex items-center gap-0.5 text-xs font-semibold text-primary">
                 <NavigationIcon className="size-3" />

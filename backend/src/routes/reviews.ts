@@ -13,6 +13,7 @@ import { prisma } from "../lib/prisma"
 import { toApiReportReason, toPrismaReportReason } from "../lib/enums"
 import { formatInitials } from "../lib/profile"
 import { getViewer, requireAuth } from "../lib/session"
+import { recordEvent } from "../lib/interaction-events"
 
 /**
  * Route đánh giá + báo cáo địa điểm (Phase 4).
@@ -125,6 +126,9 @@ export function createReviewsRouter() {
     `)
     const row = rows[0]
     if (!row) throw new ApiError(500, "Không lưu được đánh giá")
+    // Tín hiệu review cho recommendation — KHÔNG đưa rating vào context (D-049:
+    // không dùng rating sao làm tín hiệu rec).
+    await recordEvent({ eventType: "review_created", userId, placeId })
     return c.json(toReviewDto(row, userId), 201)
   })
 

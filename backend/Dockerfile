@@ -4,7 +4,7 @@
 # migrator : = builder (có Prisma CLI đúng version) để chạy `prisma migrate deploy`.
 # runtime  : bundle + node_modules (từ builder) + Prisma client.
 
-FROM oven/bun:1.3.14-alpine AS builder
+FROM oven/bun:1.3.14 AS builder
 WORKDIR /app
 
 # Manifest trước để tận dụng cache layer khi chỉ đổi source.
@@ -24,7 +24,8 @@ COPY backend backend
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 RUN cd backend && bunx prisma generate
 
-RUN cd backend && bun build src/server.ts --target bun --outdir dist --external pg-boss
+RUN cd backend && bun build src/server.ts --target bun --outdir dist \
+  --external pg-boss --external sharp --external onnxruntime-node
 
 # ---------------------------------------------------------------------------
 # Migrator: dùng lại builder vì cần `prisma` CLI đúng version trong node_modules.
@@ -42,7 +43,7 @@ CMD ["bunx", "prisma", "migrate", "deploy"]
 # không gộp về /app vì symlink tương đối sẽ gãy.
 # ---------------------------------------------------------------------------
 
-FROM oven/bun:1.3.14-alpine AS runtime
+FROM oven/bun:1.3.14 AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 

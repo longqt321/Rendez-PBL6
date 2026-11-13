@@ -739,3 +739,21 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       lấy qua `NonNullable<DailyPick["why"]>` — nên export chính thức.
 - [ ] **`publishedAt` trải ngày thật**: seed hiện đồng loạt nên nhiều quán hiện badge
       "Mới" cùng lúc; cần trải `publishedAt` theo lịch duyệt thật khi có dữ liệu.
+
+## Từ audit hybrid search (2026-11-13)
+
+- [ ] **Lệch kiểu Prisma ↔ migration `interaction_events`**: `schema.prisma` khai
+      `weight Int` (SQL `smallint`), `id BigInt @default(autoincrement())` (SQL
+      `GENERATED ALWAYS AS IDENTITY`). Mọi ghi hiện đi raw nên không vỡ; chỉnh khi
+      có nhu cầu insert qua Prisma model.
+- [ ] **Dedupe `POST /events` là in-memory**: mất tác dụng khi chạy nhiều instance
+      API. Hiện 1 instance nên chấp nhận; chuyển sang Redis/Postgres nếu scale.
+- [ ] **Dedupe TTL thực tế ~5 phút**: key chứa bucket 5 phút nên event lặp ở hai
+      bucket liền kề vẫn được ghi; nới bucket hoặc bỏ bucket khi cần đúng 10 phút.
+- [ ] **Hybrid search chỉ áp cho `sort=newest` trang đầu**: `sort=rating|distance`
+      và trang 2+ vẫn lexical thuần (thứ tự RRF không keyset được). Cân nhắc
+      re-rank RRF trên kết quả đã sắp theo sort nếu người dùng phản hồi.
+- [ ] **Chưa có HNSW index cho `place_embeddings`**: 343 vector nên seq scan ~5ms
+      là đủ; tạo `USING hnsw (embedding vector_cosine_ops)` khi vượt ~10k venue.
+- [ ] **Golden query set còn nhỏ (16 query)**: mở rộng lên 50+ và bổ sung cột
+      `category=dessert` (hiện 0 venue nên 2 query không đo được).

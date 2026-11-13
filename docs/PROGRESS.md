@@ -217,3 +217,45 @@ là một chuỗi bakery; tầng lọc tên chỉ loại 0.22%.
 - [ ] 29 ảnh minh hoạ còn lại chờ quota AI reset (hiện manifest có 3: `cafe-1`,
   `cafe-2`, `quan-an-1`) — xem `docs/BACKLOG.md`
 - [ ] Ranker AI (pairwise logistic), 100 query gán nhãn, thí nghiệm N-1..N-7
+
+---
+
+## Phiên 2026-11-13 — nền tảng search + rec (P0/P1)
+
+### Đã có trong codebase (ĐÃ XÁC MINH bằng đọc source/migration)
+
+| Hạng mục | Trạng thái | Bằng chứng |
+|---|---|---|
+| Image Postgres có pgvector | ✅ `pgvector/pgvector:0.8.7-pg17` | `compose.yaml` dòng 6 |
+| Bảng `place_embeddings` (vector 384 chiều, e5-small) | ✅ Migration `20261113080000_search_rec_foundation` + model trong `schema.prisma` | `backend/prisma/migrations/.../migration.sql` |
+| Bảng `interaction_events` partition theo tháng | ✅ Cùng migration; `_default` chỉ là lưới an toàn | `backend/src/lib/event-retention.ts` |
+| Endpoint `POST /api/v1/events` (batch ≤20, dedupe 5 phút, luôn 202) | ✅ | `backend/src/routes/events.ts` |
+| Job `event-retention` (tạo partition T+1, xoá partition > 180 ngày) | ✅ | `backend/src/lib/queue.ts`, `backend/src/lib/event-retention.ts` |
+| Hybrid search pgvector + e5-small + RRF k=60, fallback lexical | ✅ Trang đầu khi có `?q=`; trang sau/cursor vẫn lexical | `backend/src/lib/places.ts` (`hybridSearch`, `fuseRrf`) |
+| Embedding query bằng `Xenova/multilingual-e5-small` (384d, q8) self-host | ✅ | `backend/src/lib/embeddings.ts` |
+| FE phát event `place_click` khi bấm card | ✅ Mới thêm phiên này | `frontend/src/lib/events.ts`, `frontend/src/features/places/components/place-card.tsx` |
+
+### Chi tiết FE event emitter
+
+- `frontend/src/lib/events.ts` — `emitPlaceClick(placeId)`: fire-and-forget, ưu tiên
+  `navigator.sendBeacon`, fallback `fetch(..., { keepalive: true, credentials: "include" })`.
+  Không await, không throw (storage bị chặn, mạng lỗi đều nuốt im lặng).
+- `anonId` đọc/tạo UUID ở `localStorage` key `rendez_anon_id`; `sessionId` ở
+  `sessionStorage` key `rendez_session_id`.
+- Chỉ gắn cho CLICK (Link trong card có overlay `after:inset-0` nên bấm bất kỳ đâu trên
+  card đều tính là 1 click). KHÔNG có listener impression/view để tránh nhiễu.
+
+### Chưa xác minh
+
+- [ ] Chạy thật `POST /events` từ FE trên trình duyệt (chưa mở browser trong phiên này)
+- [x] Đo chất lượng hybrid search so với lexical thuần: `scripts/eval-golden.ts`
+      16 golden query — Recall@5 trung bình lexical 0.288 → hybrid 0.462
+      (hybrid thắng 9/16, không thua query nào). Kết quả trong output script.
+
+## Từ vòng hybrid search (2026-11-13)
+
+- Base image API đổi `oven/bun:1.3.14-alpine` → `oven/bun:1.3.14` (Debian) vì
+  `onnxruntime-node` không có binary musl; `sharp` + `onnxruntime-node` được
+  `--external` khỏi bundle Bun (L-025, L-026).
+- Golden eval: Recall@5 trung bình lexical 0.288 → hybrid 0.462 (16 query,
+  hybrid thắng 9, không thua query nào) — `backend/scripts/eval-golden.ts`.

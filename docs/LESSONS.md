@@ -840,3 +840,64 @@ git commit -m "feat(x): ..." -- path/a path/b path/c
 
 Pathspec giới hạn commit đúng các file đó, bất kể hook có đưa gì vào index. Sau đó vẫn phải
 `git show --stat HEAD` để đối chiếu.
+
+## L-024 — Nhanh ≠ ẩu: mọi lệnh trong runbook phải chạy thử trước khi ghi vào tài liệu
+
+**Bối cảnh.** Tài liệu nghiên cứu kiến trúc (search/rec/cold-start) hoàn thành trong 30 phút
+áp lực thời gian. User phản hồi "hoàn thành sớm nhưng không có nghĩa là làm ẩu".
+
+**Lỗi tìm được khi tự rà soát (audit).** Checklist P0 ghi lệnh
+`pg_restore --clean --if-exists` cho bước restore dump vào volume mới. Chạy thật trên
+container tạm mới phát hiện: `--clean` sinh 3 lỗi bị bỏ qua trên bảng nội bộ pg-boss
+(`cannot drop inherited constraint job_common_pkey` — pg-boss dùng table inheritance).
+Dữ liệu vẫn vào đủ nên lỗi này **im lặng**, không ai biết nếu không chạy thử.
+
+**Cách đúng (đã test, 0 lỗi).** DB volume mới là DB rỗng → không cần `--clean`;
+`pg_restore -U rendez -d rendez < dump` thuần, sau đó `CREATE EXTENSION vector`.
+Verify: places=344, users=4, 27 bảng, 3 hàm immutable_*.
+
+**Phòng tránh.**
+- Lệnh trong runbook/checklist là *bài báo cáo kết quả*, không phải kế hoạch —
+  mỗi lệnh phải được chạy thật ít nhất 1 lần trước khi ghi, kèm kết quả quan sát được.
+- Với quy trình phá-hủy-tiềm-năng (dump/restore, đổi image), luôn test trên container
+  tách biệt trước khi chạm vào hạ tầng thật.
+- Con số trích dẫn (tỉ lệ, số dòng file, số model) phải lấy từ lệnh đo tại thời điểm
+  viết, không dùng số ghi nhớ từ phiên trước — số sẽ stale khi tài liệu lớn lên.
+
+## L-025 — Native module trong bundle Bun: phải `--external` + cài dep trực tiếp
+
+**Bối cảnh.** Build image API lần đầu sau khi thêm `@huggingface/transformers`
+(hybrid search). `bun build` bundle JS của `sharp` (dep bắc cầu của transformers)
+vào `dist/server.js`, nhưng native binary `@img/sharp-linuxmusl-x64` không bundle
+được và không resolve được lúc runtime → API crash ngay khi khởi động
+(`Could not load the "sharp" module using the linuxmusl-x64 runtime`).
+
+**Nguyên nhân gốc.** Bun workspace dùng isolated linker: symlink của package nằm
+trong `node_modules/.bun/<pkg>@<ver>/node_modules/`, không có ở top-level
+`node_modules`. Code bundle vào `dist/` không còn nằm cạnh package gốc nên
+require native binary trượt đường dẫn.
+
+**Cách đúng.** Với mọi module có native binary (`sharp`, `onnxruntime-node`):
+1. Thêm `--external <tên>` vào lệnh `bun build` (Dockerfile).
+2. Cài chính nó làm dependency trực tiếp của workspace dùng nó (`bun add sharp`)
+   để symlink tồn tại ở `backend/node_modules` — nơi runtime resolve được.
+
+**Phòng tránh.** Sau khi thêm dep có native addon, luôn rebuild image và xem
+`docker logs` lúc container vừa start trước khi báo xong — lỗi native dep chỉ
+bộc lộ lúc runtime, typecheck không bắt được.
+
+## L-026 — `onnxruntime-node` không chạy trên Alpine (musl)
+
+**Bối cảnh.** Cùng lần build trên: sau khi fix `sharp`, API vẫn crash với
+`Error loading shared library ld-linux-x86-64.so.2` từ
+`onnxruntime-node/bin/napi-v6/linux/x64/libonnxruntime.so.1`.
+
+**Nguyên nhân gốc.** `onnxruntime-node` chỉ phát hành binary glibc cho linux-x64;
+Alpine dùng musl nên không nạp được `.so`, dù `bun install` vẫn cài package.
+
+**Cách đúng.** Đổi base image API từ `oven/bun:1.3.14-alpine` sang
+`oven/bun:1.3.14` (Debian, có glibc). `sharp` chọn đúng binary `linux-x64` glibc
+đã có trong lockfile — không cần cấu hình thêm.
+
+**Phòng tránh.** Trước khi thêm thư viện ML/native vào image Alpine, kiểm tra
+release asset có bản musl không. Với ONNX Runtime: không có → dùng base Debian.

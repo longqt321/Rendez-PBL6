@@ -3,7 +3,7 @@
 # Mật khẩu dưới đây là mặc định DEV, override bằng biến môi trường nếu cần.
 services:
   postgres:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:0.8.7-pg17
     container_name: rendez-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-rendez}
@@ -12,7 +12,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata2:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rendez} -d ${POSTGRES_DB:-rendez}"]
       interval: 5s
@@ -86,4 +86,8 @@ services:
         condition: service_healthy
 
 volumes:
+  # `pgdata` là volume cũ (postgres:17-alpine) — giữ tên để rollback thủ công,
+  # không service nào dùng; dữ liệu đã migrate sang `pgdata2` (pgvector) qua
+  # pg_dump/restore, xem docs/DECISIONS.md.
   pgdata:
+  pgdata2:

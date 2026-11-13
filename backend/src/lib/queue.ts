@@ -3,6 +3,7 @@ import { env } from "../env"
 import { logger } from "./logger"
 import { getPickDate, pickDailyPicks } from "./daily-picks"
 import { detectPlaceSuggestions } from "./suggestions-job"
+import { maintainInteractionPartitions } from "./event-retention"
 
 /**
  * Hàng đợi pg-boss (K6, L4) — chạy trên chính Postgres, không thêm hạ tầng.
@@ -27,6 +28,11 @@ const DAILY_PICKS_DLQ = "daily-picks-dlq"
 /** 00:05 Asia/Ho_Chi_Minh — ngay sau mốc đổi ngày. */
 const DAILY_PICKS_CRON = "5 0 * * *"
 const DAILY_PICKS_TIME_ZONE = "Asia/Ho_Chi_Minh"
+
+const EVENT_RETENTION_QUEUE = "event-retention"
+const EVENT_RETENTION_DLQ = "event-retention-dlq"
+/** 04:00 mỗi ngày — giờ thấp điểm, không tranh việc với cron 5 phút. */
+const EVENT_RETENTION_CRON = "0 4 * * *"
 
 let boss: PgBoss | null = null
 
@@ -71,6 +77,25 @@ export async function startQueue(): Promise<void> {
     }
   })
   await instance.schedule(DAILY_PICKS_QUEUE, DAILY_PICKS_CRON, null, {
+    tz: DAILY_PICKS_TIME_ZONE,
+    missed: "once",
+  })
+
+  // Bảo trì partition `interaction_events`: tạo tháng T+1, xoá partition >180 ngày.
+  await instance.createQueue(EVENT_RETENTION_DLQ)
+  await instance.createQueue(EVENT_RETENTION_QUEUE, {
+    retryLimit: 3,
+    retryDelay: 600,
+    retryBackoff: true,
+    deadLetter: EVENT_RETENTION_DLQ,
+  })
+  await instance.work(EVENT_RETENTION_QUEUE, async (jobs) => {
+    for (const job of jobs) {
+      const result = await maintainInteractionPartitions()
+      logger.info({ jobId: job.id, ...result }, "event-retention xong")
+    }
+  })
+  await instance.schedule(EVENT_RETENTION_QUEUE, EVENT_RETENTION_CRON, null, {
     tz: DAILY_PICKS_TIME_ZONE,
     missed: "once",
   })

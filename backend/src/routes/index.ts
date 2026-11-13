@@ -14,6 +14,7 @@ import { createRoomsRouter } from "./rooms"
 import { createMediaRouter } from "./media"
 import { createOgRouter } from "./og"
 import { createSystemRouter } from "./system"
+import { createEventsRouter } from "./events"
 
 /**
  * Đường dẫn request → khoá route cho metrics. Sau `await next()` Hono đã gán
@@ -120,6 +121,9 @@ export function createApiRouter() {
 
   // Số liệu vận hành cho demo (`/system/stats`, `/system/reset`).
   api.route("/", createSystemRouter())
+
+  // Thu thập sự kiện tương tác (P0 đo lường) — `/events`.
+  api.route("/", createEventsRouter())
 
   return api
 }

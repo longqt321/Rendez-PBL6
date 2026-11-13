@@ -2,6 +2,8 @@ import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { parseApiCategory, toApiCategory } from "./enums"
 import { normalizeSearchText, synonymVariants } from "./search-synonyms"
+import { embedQuery, vectorToLiteral } from "./embeddings"
+import { logger } from "./logger"
 import type { Cursor, PlaceCursor, PlaceSort } from "./cursor"
 import type { PlaceCategory } from "@rendez/schema"
 
@@ -367,12 +369,132 @@ function distanceSql(lat: number, lng: number): Prisma.Sql {
   ))))`
 }
 
+// ---------------------------------------------------------------------------
+// Hybrid search (P1): lexical (pg_trgm LIKE) + dense (pgvector cosine) fused
+// bằng RRF k=60. Chỉ bật khi có `?q=` và không có cursor (trang đầu) — cursor
+// keyset hiện tại không mang được thứ tự RRF, các trang sau vẫn đi lexical.
+// ---------------------------------------------------------------------------
+
+/** Số ứng viên mỗi nhánh (lexical/dense) đưa vào fusion. */
+const HYBRID_POOL = 50
+/** Hằng số RRF chuẩn — k lớn làm dịu chênh lệch hạng giữa hai nhánh. */
+const RRF_K = 60
+
+interface DenseCandidate {
+  id: string
+  score: number
+}
+
+/**
+ * Top-K ứng viên dense theo cosine trên `place_embeddings`. Trả `null` khi
+ * encoder lỗi/không khả dụng — caller fallback thuần lexical, KHÔNG throw.
+ */
+async function denseCandidates(query: string, limit: number): Promise<DenseCandidate[] | null> {
+  const vec = await embedQuery(query)
+  if (!vec) return null
+  try {
+    const rows = await prisma.$queryRaw<{ place_id: string; score: number }[]>(Prisma.sql`
+      SELECT pe.place_id, 1 - (pe.embedding <=> ${vectorToLiteral(vec)}::vector) AS score
+      FROM place_embeddings pe
+      JOIN places p ON p.id = pe.place_id
+      WHERE p.published_at IS NOT NULL AND p.status <> 'closed' AND p.deleted_at IS NULL
+      ORDER BY pe.embedding <=> ${vectorToLiteral(vec)}::vector
+      LIMIT ${limit}
+    `)
+    return rows.map((row) => ({ id: row.place_id, score: Number(row.score) }))
+  } catch (err) {
+    logger.warn({ err }, "dense search thất bại, fallback lexical")
+    return null
+  }
+}
+
+/**
+ * Reciprocal Rank Fusion: score = Σ 1/(k + hạng). Hạng bắt đầu từ 1 ở cả hai
+ * nhánh; venue xuất hiện ở cả hai nhánh được cộng dồn. Tie-break bằng id để
+ * thứ tự ổn định giữa các request.
+ */
+function fuseRrf(lexicalIds: string[], denseIds: string[]): string[] {
+  const scores = new Map<string, number>()
+  const add = (ids: string[]) => {
+    ids.forEach((id, index) => {
+      scores.set(id, (scores.get(id) ?? 0) + 1 / (RRF_K + index + 1))
+    })
+  }
+  add(lexicalIds)
+  add(denseIds)
+  return [...scores.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([id]) => id)
+}
+
+/**
+ * Chạy hybrid cho một bộ filter có `q`. Trả `null` khi dense không khả dụng
+ * (encoder lỗi) — caller dùng luồng lexical thuần. Filter thuộc tính
+ * (district/category/price/keyword/bbox…) áp SAU fusion trên pool ứng viên.
+ *
+ * `total` = số kết quả hybrid sau lọc thuộc tính — pool bị chặn ở
+ * `HYBRID_POOL` ứng viên mỗi nhánh nên con số này là "số khớp trong pool",
+ * không phải tổng toàn tập như lexical (đánh đổi đã ghi ở `listPlaces`).
+ */
+async function hybridSearch(
+  filters: PlaceFilters & { q: string },
+): Promise<{ items: PlaceDto[]; total: number } | null> {
+  const attrConditions = buildConditions({ ...filters, q: undefined })
+  const lexicalConditions = buildConditions(filters)
+  const lexicalRank = Prisma.sql`similarity(${HAYSTACK}, immutable_search_normalize(${filters.q}))`
+
+  const [dense, lexicalRows] = await Promise.all([
+    denseCandidates(filters.q, HYBRID_POOL),
+    // Nhánh lexical: cùng điều kiện với luồng thường, xếp hạng bằng trigram
+    // similarity (dataset ~350 quán nên quét toàn bảng vẫn rẻ).
+    prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+      SELECT p.id
+      FROM places p
+      WHERE ${Prisma.join(lexicalConditions, " AND ")}
+      ORDER BY ${lexicalRank} DESC, p.created_at DESC, p.id DESC
+      LIMIT ${HYBRID_POOL}
+    `),
+  ])
+  if (!dense) return null
+
+  const ranked = fuseRrf(
+    lexicalRows.map((row) => row.id),
+    dense.map((candidate) => candidate.id),
+  )
+  if (ranked.length === 0) return { items: [], total: 0 }
+
+  // Lấy dòng đầy đủ cho pool đã fuse, giữ đúng thứ tự RRF bằng array_position.
+  // Filter thuộc tính áp ở đây (SAU fusion) nên dense có thể đưa venue khớp
+  // ngữ nghĩa vào kết quả kể cả khi lexical trượt từ khoá.
+  const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
+    ${selectPlaces()}
+    WHERE p.id IN (${Prisma.join(ranked.map((id) => Prisma.sql`${id}`))})
+      AND ${Prisma.join(attrConditions, " AND ")}
+    ORDER BY array_position(ARRAY[${Prisma.join(ranked.map((id) => Prisma.sql`${id}`))}]::text[], p.id)
+  `)
+
+  return { items: rows.map(toPlaceDto), total: rows.length }
+}
+
 /** Một trang địa điểm theo keyset giảm dần `(created_at, id)` (D2) hoặc keyset theo `sort`. */
 export async function listPlaces(
   filters: PlaceFilters,
   cursor: PlaceCursor | null,
   pageSize: number,
 ): Promise<{ items: PlaceDto[]; next: PlaceCursor | null; total: number }> {
+  // Hybrid chỉ cho trang đầu (cursor null) VÀ sort mặc định (`newest`): thứ tự
+  // RRF không keyset được, và tôn trọng sort người dùng (rating/distance) quan
+  // trọng hơn lợi điểm hybrid — trang 2+ và sort khác quay về lexical thuần.
+  // `next = null` để không trùng/sót giữa trang hybrid và trang lexical — kết
+  // quả tìm kiếm có `q` bị chặn ở pool HYBRID_POOL ứng viên.
+  if (filters.q && !cursor && filters.sort === "newest") {
+    const hybrid = await hybridSearch(filters as PlaceFilters & { q: string })
+    if (hybrid) {
+      return { items: hybrid.items.slice(0, pageSize), next: null, total: hybrid.total }
+    }
+    // encoder lỗi → rơi xuống lexical thuần bên dưới.
+  }
+
   const baseConditions = buildConditions(filters)
   // Bản sao cho query trang — keyset chỉ áp dụng cho trang hiện tại, COUNT tổng
   // phải dùng điều kiện gốc để `totalResults` đúng nghĩa "tổng số khớp".
@@ -472,6 +594,12 @@ export async function listPlacesInMap(
   filters: PlaceFilters,
   limit: number,
 ): Promise<{ items: PlaceDto[]; total: number }> {
+  // Map cũng dùng hybrid khi có `q` (không phân trang nên không vướng cursor).
+  if (filters.q) {
+    const hybrid = await hybridSearch(filters as PlaceFilters & { q: string })
+    if (hybrid) return { items: hybrid.items.slice(0, limit), total: hybrid.total }
+  }
+
   const conditions = buildConditions(filters)
 
   // `total` = tổng số khớp (mock trả `items.length` trước khi cắt 300), nên đếm

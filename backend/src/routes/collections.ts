@@ -15,6 +15,7 @@ import {
   toCollectionSummary,
 } from "../lib/collections"
 import { getViewer, requireAuth } from "../lib/session"
+import { recordEvent } from "../lib/interaction-events"
 
 /**
  * Route bộ sưu tập (T5.1) — quy tắc A7.7:
@@ -209,6 +210,15 @@ export function createCollectionsRouter() {
 
     const row = await findCollectionById(id, userId)
     if (!row) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
+    // Chỉ lần THÊM mới là tín hiệu "save" — bỏ khỏi bộ sưu tập không phải sở thích.
+    if (member) {
+      await recordEvent({
+        eventType: "place_save",
+        userId,
+        placeId: parsed.data.placeId,
+        context: { collectionId: id },
+      })
+    }
     return c.json(toCollectionDto(row, userId))
   })
 
