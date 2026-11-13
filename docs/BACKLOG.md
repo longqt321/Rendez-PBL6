@@ -800,3 +800,13 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
 - [ ] **Dữ liệu Yelp chiếm ~10.5 GB** (`Yelp-JSON.zip` 4.04 GB + `yelp_dataset.tar`
       4.34 GB + JSONL 1.1 GB) trong `/home/longtran/datasets/yelp` và
       `backend/data/yelp`. Đã gitignore JSONL; cần quyết định giữ hay xoá bản zip/tar.
+
+- [x] **`searchCondition` AND-token với stopword** — ĐÃ SỬA (commit 73940c0): thêm
+      `QUERY_STOPWORDS` EN/VI, query toàn hư từ giữ token gốc. Đo lại: Yelp hybrid3
+      0.514 → 0.886; v2 không regress (0.875).
+- [x] **Lexicon chỉ tiếng Việt** — ĐÃ SỬA (commit 73940c0): thêm 40 entry tiếng Anh
+      trỏ tag Yelp (OR-match nên không ảnh hưởng dữ liệu Đà Nẵng).
+- [ ] **Testcontainer thiếu extension pgvector** — 19/85 test fail với
+      `type "vector" does not exist` khi `prisma migrate deploy` trong container test
+      (`test/helpers/pg.ts` phải chạy `CREATE EXTENSION vector` trước khi migrate).
+      Lỗi hạ tầng test có sẵn, không liên quan thay đổi search.

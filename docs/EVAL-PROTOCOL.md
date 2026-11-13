@@ -150,3 +150,17 @@ tồn tại khi viết query) nên phản ánh năng lực thật — khác vớ
 
 Recommendation trên 701.057 event Yelp (leave-one-out): item-item R@10 0.062 >
 popularity 0.033 > random 0.001, cả hai so sánh p<0.001 (bootstrap 10k, seed 42).
+
+### 8.1 Sau khi sửa stopword + lexicon tiếng Anh (2026-11-13, commit 73940c0)
+
+Sửa 2 lỗi production được track A phơi ra (xem BACKLOG): `searchCondition` bỏ hư từ
+EN/VI khỏi điều kiện AND (query toàn hư từ giữ token gốc); `intent-lexicon` thêm 40
+entry tiếng Anh trỏ tag Yelp. Đo lại trên **cùng checksum**:
+
+| Bộ | hybrid2 P@5 | hybrid3 P@5 | hybrid3 − hybrid2 |
+|---|---|---|---|
+| v2 (Đà Nẵng) | 0.511 | 0.873 → **0.875** | +0.364, p<0.001 (không regress) |
+| Yelp | 0.728 | 0.514 → **0.886** | −0.214 → **+0.159**, p<0.001 |
+
+Độ ổn định variant Yelp: v1 0.903 / v2 0.869 (trước đó v2 chỉ 0.034). Kết luận:
+hybrid3 giờ thắng hybrid2 trên **cả hai** dataset với ý nghĩa thống kê.
