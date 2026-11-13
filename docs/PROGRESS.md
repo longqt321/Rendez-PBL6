@@ -277,3 +277,16 @@ là một chuỗi bakery; tầng lọc tên chỉ loại 0.22%.
 - **Số liệu v2**: lexical P@5 0.456 → hybrid **0.855** (P@10 0.755, R@10 0.847,
   nDCG@10 0.858, MRR 0.914, zeroRate 0, p50 65 ms, p95 90 ms). v1: 0.768 (không
   regression).
+
+## Thiết kế lại bộ eval v2 (2026-11-13)
+
+- Phát hiện selection bias ở bản v2 đầu (L-029): 37% query có ≥30 venue thoả đủ →
+  P@5 cao giả tạo. Thiết kế lại **tại chỗ** (giữ tên v2, không tạo v3).
+- Bộ mới: 112 query, 38 ý định, 7 kiểu diễn đạt; ràng buộc nhiều chiều
+  (category + tag + district). Trung vị venue thoả đủ 15 (bản cũ 15 → nhưng phân bố
+  đuôi ngắn hơn: 22% query ≥30 venue so với 37%).
+- Số liệu: lexical P@5 0.423 → hybrid **0.873** (P@10 0.761, R@10 0.851,
+  nDCG@10 0.861, MRR 0.906, zeroRate 0, p50 64 ms, p95 113 ms).
+- Điểm yếu mới lộ ra: `typo` 0.28, `friends-district` 0.4, `streetfood-district` 0.2,
+  `english` 0.689 — đã ghi BACKLOG.
+- Sửa thêm: header checksum dùng đúng số bộ (`v${SET}`) thay vì hardcode v1.

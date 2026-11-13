@@ -59,22 +59,31 @@ Script verify checksum `<set>.sha256` trước khi chấm: file query hoặc nh�
 
 ## 5. Mốc so sánh
 
-### 5a. v2 — bộ chính (149 query, 30 ý định, đo 2026-11-13)
+### 5a. v2 — bộ chính (112 query, 38 ý định, đo 2026-11-13)
 
-Cùng một bộ nhãn cho cả hai cột; hybrid 3 nhánh với structured weight 2.
+**Thiết kế (v2 được thiết kế lại 2026-11-13 sau khi phát hiện selection bias — L-029):**
+phiên bản đầu của v2 lấy ràng buộc từ chính thuộc tính DB nên 37% query có ≥30 venue
+thoả đủ → điểm cao giả tạo. Bản redesign: ràng buộc **nhiều chiều** (category + tag +
+district), phân bố cân bằng — trung vị số venue thoả đủ = 15, chỉ 22% query có ≥30
+venue thoả, 38% query khó (≤10 venue). Nhãn vẫn suy tự động từ ràng buộc (khách quan).
 
 | Phương pháp | P@5 | P@10 | R@10 | nDCG@10 | MRR | zeroRate | p50 | p95 |
 |---|---|---|---|---|---|---|---|---|
-| Lexical thuần (trigram) | 0.456 | 0.432 | 0.445 | 0.453 | 0.545 | 0 | 37 ms | 52 ms |
-| **Hybrid 3 nhánh** | **0.855** | **0.755** | **0.847** | **0.858** | **0.914** | 0 | 65 ms | 90 ms |
+| Lexical thuần (trigram) | 0.423 | 0.398 | 0.404 | 0.412 | 0.497 | 0 | 33 ms | 51 ms |
+| **Hybrid 3 nhánh** | **0.873** | **0.761** | **0.851** | **0.861** | **0.906** | 0 | 64 ms | 113 ms |
 
-P@5 theo ý định (chỉ nhóm < 0.9): `date` 0.567, `friends` 0.575, `bar` 0.55,
-`korean` 0.68, `district-st` 0.667, `district-cl` 0.467, `district-lc` 0.6,
-`pizza` 0.8, `specialty` 0.8, `japanese` 0.84, `burger` 0.84, `cafe` 0.857.
-Nhóm `always-open` đạt 1.0 sau khi thêm `alwaysOpen` vào nhánh structured.
+> [!WARNING]
+> Không so sánh điểm tổng giữa hai bộ khác phân bố độ khó. Chỉ so v2 với v2 (cùng
+> checksum), hoặc so theo từng ý định với v1.
 
-P@5 theo kiểu diễn đạt: natural 0.904, keyword 0.906, long 0.875, english 0.867,
-no-diacritic 0.855, typo 0.527 (trần thấp do dữ liệu tên quán), with-district 0.686.
+P@5 theo ý định (nhóm < 0.8): `friends-district` 0.4, `streetfood-district` 0.2,
+`korean` 0.65, `japanese` 0.75, `pizza` 0.75, `burger` 0.75, `specialty` 0.75,
+`entertainment` 0.75, `vietnamese` 0.733. Nhóm đạt 1.0: study, outdoor, takeaway,
+veg, streetfood, cafe, wifi, seafood, steak, always-open, mọi district thuần.
+
+P@5 theo kiểu diễn đạt: natural 0.952, keyword 0.962, long 0.937, no-diacritic 1.0,
+with-district 0.765, english 0.689, **typo 0.28** (điểm yếu rõ nhất — trigram trên
+tên quán không bắt được lỗi gõ trong từ khoá ý định).
 
 ### 5b. v1 — lịch sử (50 query, 7 nhóm, đo 2026-11-13)
 

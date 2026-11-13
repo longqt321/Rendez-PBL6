@@ -949,3 +949,45 @@ trong đầu thay vì trên output thực tế. Khi bước sửa bị bỏ dở
 
 **Kiểm tra bằng máy:** trước mỗi báo cáo, chạy lại lệnh `rg` cho từng symbol được
 nhắc tới; `git diff` phải hiện đúng thay đổi được mô tả.
+
+## L-029 — Bộ test sinh từ chính thuộc tính dữ liệu → điểm cao giả tạo
+
+**Ngày:** 2026-11-13
+**Lỗi người dùng chỉ ra:**
+
+> "Sao dataset v2 lại có benchmark cao hơn? Tưởng nó sẽ khó hơn?"
+
+**Đã làm sai gì:**
+
+Bộ v2 đầu tiên (149 query) được tạo bằng cách lấy tag/category/district **có sẵn trong DB**
+làm ràng buộc cho từng query. Hệ quả đo được:
+
+| Chỉ số | v1 (50 query) | v2 cũ (149 query) |
+| --- | --- | --- |
+| Query có ≥30 venue thoả đủ ràng buộc | 24% | **37%** |
+| Query khó (≤10 venue thoả) | 42% | **31%** |
+| Query đạt P@5 = 1.0 | 60% | **75%** |
+
+Với query như `restaurant` (216 venue), `district-hc` (161), `wifi` (96) thì gần như mọi
+danh sách đều đúng → P@5 chạm trần, kéo trung bình lên. Cùng một ý định thì v2 **khó hơn**
+v1 (`date` 0.686 → 0.567, `friends` 0.600 → 0.575), nhưng con số tổng lại cao hơn vì
+**phân bố ý định** bị lệch về nhóm "thuộc tính rộng".
+
+**Vì sao xảy ra:**
+
+Tôi tối ưu cho "nhãn suy được tự động từ DB" (điều kiện để đóng băng khách quan) mà quên
+rằng chính điều đó khiến mọi query đều có một thuộc tính "cắm cờ" mà nhánh structured bắt
+được. Bộ test trở thành bài kiểm tra của nhánh structured, không phải của search.
+
+**Quy tắc rút ra:**
+
+1. Khi thiết kế bộ eval, **kiểm phân bố độ khó trước khi freeze**: đếm số venue thoả đủ
+   ràng buộc cho từng query; mục tiêu trung vị ~10–20, tỉ lệ query có >30 venue thoả ≤25%.
+2. Ràng buộc phải **nhiều chiều** (category + tag + district) thay vì một thuộc tính đơn,
+   để tập đúng nhỏ lại và buộc hệ thống phải xếp hạng thật.
+3. **Không so sánh điểm tổng giữa hai bộ khác phân bố.** Chỉ so sánh theo cùng nhóm ý định,
+   hoặc dùng macro-average theo nhóm.
+4. Ghi cảnh báo này vào tài liệu eval để người đọc sau không hiểu sai con số.
+
+**Kiểm tra bằng máy:** script freeze in `exact=` cho từng query — chạy
+`bun run scripts/eval-search.ts --set N --freeze` rồi kiểm phân bố trước khi chốt checksum.

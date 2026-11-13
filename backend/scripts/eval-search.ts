@@ -135,7 +135,7 @@ async function freeze(): Promise<void> {
   const checksum = sha256(readFileSync(QUERIES_FILE, "utf8") + readFileSync(LABELS_FILE, "utf8"))
   writeFileSync(
     CHECKSUM_FILE,
-    `# search-eval-v1 — ĐÓNG BĂNG. Không sửa 2 file json; tạo v2 nếu cần bộ mới.\n${checksum}\n`,
+    `# search-eval-v${SET} — ĐÓNG BĂNG. Không sửa 2 file json; tạo v${SET + 1} nếu cần bộ mới.\n${checksum}\n`,
   )
   console.log(counts.join("\n"))
   console.log(`\nĐã freeze: ${LABELS_FILE}\nchecksum: ${checksum}`)

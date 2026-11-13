@@ -3031,3 +3031,20 @@ tại trong file (Bỏ ảnh món + dữ liệu giả khỏi cold-start) nên gh
 
 **Số liệu v2 (149 query, đóng băng):** hybrid P@5 0.828 → 0.855, nDCG@10 0.833 →
 0.858, MRR 0.914, p95 90 ms. v1 (50 query): 0.768, không regression.
+
+## D-064 — Thiết kế lại bộ v2 (giữ tên v2): ràng buộc nhiều chiều, phân bố khó cân bằng — 2026-11-13
+
+1. **Vấn đề**: bản v2 đầu (149 query) sinh ràng buộc từ chính thuộc tính DB → 37%
+   query có ≥30 venue thoả đủ, 75% query đạt P@5 = 1.0. Điểm 0.855 không phản ánh
+   chất lượng search mà phản ánh nhánh structured khớp thuộc tính (L-029).
+2. **Redesign tại chỗ, không tạo v3** (theo yêu cầu): 112 query, 38 ý định, ràng buộc
+   **nhiều chiều** (category + tag + district) → trung vị venue thoả đủ 15, 22% query
+   ≥30 venue, 38% query ≤10 venue. Nguồn: `backend/scripts/design-eval-v2.ts`
+   (literal biên soạn tay, không sinh tự động từ dữ liệu).
+3. **Giữ nguyên cơ chế nhãn** (grade 2 = thoả toàn bộ ràng buộc, grade 1 = chỉ thoả
+   category) để vẫn khách quan, tái lập được, và checksum vẫn bảo vệ được.
+4. **Kết quả**: hybrid P@5 0.873, nDCG@10 0.861, R@10 0.851, MRR 0.906, p95 113 ms
+   trên bộ khó hơn. Điểm yếu lộ ra rõ: `typo` 0.28, `friends-district` 0.4,
+   `streetfood-district` 0.2, `english` 0.689.
+5. **Quy tắc đọc số**: không so điểm tổng giữa hai bộ khác phân bố; so theo ý định
+   hoặc theo cùng checksum.
