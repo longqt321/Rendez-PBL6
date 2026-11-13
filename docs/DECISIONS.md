@@ -3011,3 +3011,23 @@ tại trong file (Bỏ ảnh món + dữ liệu giả khỏi cold-start) nên gh
 3. **Không tune theo query**: lexicon chỉ chứa từ vựng dữ liệu + cách gọi phổ
    biến, không chứa câu query cụ thể của bộ eval. Rủi ro overfit ghi nhận ở
    protocol — cần v2 held-out khi tinh chỉnh nhiều vòng.
+
+## D-063 — Trọng số RRF cho nhánh structured + thuộc tính `alwaysOpen` + lexicon bỏ từ đơn mơ hồ — 2026-11-13
+
+1. **Weighted RRF**: nhánh structured nhân trọng số 2 trong `fuseRrf` — khớp đúng
+   thuộc tính người dùng nêu nên đáng tin hơn lexical; cần thiết vì nhóm thuộc tính
+   hiếm (hải sản 7 venue, bar 7 venue) bị danh sách lexical 50 dòng lấn át.
+2. **`alwaysOpen`**: thêm vào `IntentAttributes` + lexicon ("24/7", "24h", "mở cả
+   đêm", "ăn khuya"…). Trong `structuredCandidates`, `opening_hours = '24/7'` là
+   điều kiện khớp nhánh — trước khi sửa, query "quán mở 24/7" không có nhánh nào
+   ưu tiên venue thật sự mở cả ngày (P@5 nhóm always-open 0.067 → 1.0 sau fix).
+3. **Lexicon khớp theo ranh giới từ** (`hasPhrase`) thay vì `includes` thô —
+   "bar" không khớp trong "barbecue".
+4. **Bỏ từ đơn mơ hồ**: `cua` (trùng "cửa"), `ghe` (trùng "ghế"), `mang` (trùng
+   "mang đi"), `banh` (trùng "bánh canh"), `mon an` (quá chung). Thay bằng cụm
+   ≥ 2 từ rõ nghĩa (`hai san`, `tom hum`, `cua ghe`, `mang internet`, `banh mi`).
+   Bài toán homograph: khớp từ đơn mơ hồ từng gán nhầm tag Hải sản cho query
+   "quán nào mở cửa cả đêm để ăn khuya".
+
+**Số liệu v2 (149 query, đóng băng):** hybrid P@5 0.828 → 0.855, nDCG@10 0.833 →
+0.858, MRR 0.914, p95 90 ms. v1 (50 query): 0.768, không regression.

@@ -24,21 +24,33 @@ import { prisma } from "../src/lib/prisma"
 import { listPlaces, parsePlaceFilters } from "../src/lib/places"
 
 const EVAL_DIR = join(import.meta.dir, "..", "data", "eval")
-const QUERIES_FILE = join(EVAL_DIR, "search-eval-v1.json")
-const LABELS_FILE = join(EVAL_DIR, "search-eval-v1-labels.json")
-const CHECKSUM_FILE = join(EVAL_DIR, "search-eval-v1.sha256")
-const RESULT_FILE = join(EVAL_DIR, "search-eval-v1-baseline.json")
+
+/** Phiên bản bộ test: `--set 2` dùng search-eval-v2.json. Mặc định 1. */
+const SET = (() => {
+  const idx = process.argv.indexOf("--set")
+  const value = idx >= 0 ? Number(process.argv[idx + 1]) : 1
+  return Number.isInteger(value) && value >= 1 ? value : 1
+})()
+const QUERIES_FILE = join(EVAL_DIR, `search-eval-v${SET}.json`)
+const LABELS_FILE = join(EVAL_DIR, `search-eval-v${SET}-labels.json`)
+const CHECKSUM_FILE = join(EVAL_DIR, `search-eval-v${SET}.sha256`)
+const RESULT_FILE = join(EVAL_DIR, `search-eval-v${SET}-baseline.json`)
 
 interface Constraints {
   category?: string[]
   tagsAll?: string[]
   tagsAny?: string[]
   district?: string[]
+  /** Venue mở 24/7 (`opening_hours = '24/7'`). */
+  alwaysOpen?: boolean
 }
 
 interface EvalQuery {
   id: string
-  group: string
+  /** v1 dùng `group`, v2 dùng `intent` — cùng nghĩa. */
+  group?: string
+  intent?: string
+  variant?: string
   query: string
   constraints: Constraints
 }
@@ -80,6 +92,9 @@ function constraintSql(c: Constraints): Prisma.Sql {
   if (c.district?.length) {
     parts.push(Prisma.sql`p.district IN (${Prisma.join(c.district)})`)
   }
+  if (c.alwaysOpen) {
+    parts.push(Prisma.sql`p.opening_hours = '24/7'`)
+  }
   return Prisma.join(parts, " AND ")
 }
 
@@ -111,10 +126,10 @@ async function freeze(): Promise<void> {
     const exact = Object.values(g).filter((v) => v === 2).length
     const partial = Object.values(g).filter((v) => v === 1).length
     counts.push(
-      `${q.id} ${q.group.padEnd(8)} exact=${String(exact).padStart(3)} partial=${String(partial).padStart(3)}  ${q.query}`,
+      `${q.id} ${(q.intent ?? q.group ?? "?").padEnd(8)} exact=${String(exact).padStart(3)} partial=${String(partial).padStart(3)}  ${q.query}`,
     )
   }
-  const labels: Labels = { version: 1, frozenAt: new Date().toISOString(), grades }
+  const labels: Labels = { version: SET, frozenAt: new Date().toISOString(), grades }
   writeFileSync(LABELS_FILE, `${JSON.stringify(labels, null, 2)}\n`)
 
   const checksum = sha256(readFileSync(QUERIES_FILE, "utf8") + readFileSync(LABELS_FILE, "utf8"))
@@ -201,6 +216,7 @@ async function evaluate(): Promise<void> {
   const perQuery: {
     id: string
     group: string
+    variant?: string
     query: string
     lexical: Metrics
     hybrid: Metrics
@@ -231,7 +247,8 @@ async function evaluate(): Promise<void> {
 
     perQuery.push({
       id: q.id,
-      group: q.group,
+      group: q.intent ?? q.group ?? "?",
+      variant: q.variant,
       query: q.query,
       lexical: { ...lex, zeroRate: lexIds.length === 0 ? 1 : 0 },
       hybrid: { ...hyb, zeroRate: page.items.length === 0 ? 1 : 0 },
@@ -277,11 +294,29 @@ async function evaluate(): Promise<void> {
     g.hybridP5 = Number((g.hybridP5 / g.n).toFixed(3))
   }
 
-  console.log(`Bộ test đóng băng v1 — ${n} query (freeze ${labels.frozenAt})`)
+  // Theo kiểu diễn đạt — đo độ bền khi người dùng diễn đạt khác cùng ý định.
+  const byVariant: Record<string, { lexicalP5: number; hybridP5: number; n: number }> = {}
+  for (const row of perQuery) {
+    if (!row.variant) continue
+    const v = (byVariant[row.variant] ??= { lexicalP5: 0, hybridP5: 0, n: 0 })
+    v.lexicalP5 += row.lexical.p5
+    v.hybridP5 += row.hybrid.p5
+    v.n++
+  }
+  for (const v of Object.values(byVariant)) {
+    v.lexicalP5 = Number((v.lexicalP5 / v.n).toFixed(3))
+    v.hybridP5 = Number((v.hybridP5 / v.n).toFixed(3))
+  }
+
+  console.log(`Bộ test đóng băng v${SET} — ${n} query (freeze ${labels.frozenAt})`)
   console.log("\nChỉ số tổng (trung bình/query):")
   console.table(summary)
-  console.log("P@5 theo nhóm ý định:")
+  console.log("P@5 theo ý định:")
   console.table(byGroup)
+  if (Object.keys(byVariant).length > 0) {
+    console.log("P@5 theo kiểu diễn đạt (cùng ý định, cách ghi khác nhau):")
+    console.table(byVariant)
+  }
 
   writeFileSync(RESULT_FILE, `${JSON.stringify({ summary, byGroup, perQuery }, null, 2)}\n`)
   console.log(`\nĐã ghi ${RESULT_FILE}`)

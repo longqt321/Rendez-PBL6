@@ -260,3 +260,20 @@ là một chuỗi bakery; tầng lọc tên chỉ loại 0.22%.
   `--external` khỏi bundle Bun (L-025, L-026).
 - Golden eval (bộ tạm 16 query, đã thay bằng bộ đóng băng v1): Recall@5 lexical
   0.288 → hybrid 0.462 — xem `docs/EVAL-PROTOCOL.md` cho bộ chính thức 50 query.
+
+## Bộ eval v2 + sửa lexicon/always-open (2026-11-13)
+
+- **Bộ test v2 đóng băng**: `backend/data/eval/search-eval-v2.json` — 149 query,
+  30 ý định, 7 kiểu diễn đạt (natural 50, keyword 34, long 24, english 12,
+  no-diacritic 11, typo 11, with-district 7). Nhãn + checksum + baseline cùng thư mục.
+  Script chạy bằng `--set 2`; v1 giữ làm lịch sử (`--set 1`).
+- **Sửa `alwaysOpen`**: `structuredCandidates` trước đó bỏ qua `alwaysOpen` (early
+  return khi tags/categories/districts rỗng) nên query "quán mở 24/7" không có nhánh
+  structured. Thêm `p.opening_hours = '24/7'` vào điều kiện khớp → P@5 nhóm
+  always-open 0.067 → 1.0.
+- **Sửa lexicon false positive**: khớp theo ranh giới từ (`hasPhrase`) + bỏ từ đơn
+  mơ hồ (`cua`/`ghe`/`mang`/`banh`/`mon an`). Verify: "quán nào mở cửa cả đêm để ăn
+  khuya" → `alwaysOpen: true`, không còn tag Hải sản.
+- **Số liệu v2**: lexical P@5 0.456 → hybrid **0.855** (P@10 0.755, R@10 0.847,
+  nDCG@10 0.858, MRR 0.914, zeroRate 0, p50 65 ms, p95 90 ms). v1: 0.768 (không
+  regression).

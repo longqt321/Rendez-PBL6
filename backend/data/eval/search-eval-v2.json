@@ -1,0 +1,1485 @@
+{
+  "version": 2,
+  "frozenAt": null,
+  "description": "Bộ đánh giá search ĐÓNG BĂNG v2 — phủ 30 ý định, mỗi ý định nhiều cách diễn đạt (natural/keyword/no-diacritic/typo/english/long/with-district). KHÔNG sửa file này; tạo v3 nếu cần bộ mới.",
+  "labelProtocol": "Nhãn suy từ thuộc tính DB (category/tags/district/opening_hours), không từ kết quả search. grade 2 = thoả TOÀN BỘ ràng buộc; grade 1 = chỉ thoả category khi query có category; grade 0 = còn lại.",
+  "intents": [
+    {
+      "id": "study",
+      "label": "Học/làm việc ở quán cà phê"
+    },
+    {
+      "id": "study-any",
+      "label": "Không gian làm việc (mọi loại hình)"
+    },
+    {
+      "id": "wifi",
+      "label": "Quán có wifi"
+    },
+    {
+      "id": "outdoor",
+      "label": "Không gian ngoài trời"
+    },
+    {
+      "id": "date",
+      "label": "Hẹn hò / lãng mạn"
+    },
+    {
+      "id": "friends",
+      "label": "Tụ tập bạn bè / nhậu"
+    },
+    {
+      "id": "bar",
+      "label": "Quán bar / bia"
+    },
+    {
+      "id": "takeaway",
+      "label": "Mang đi / mua về"
+    },
+    {
+      "id": "veg",
+      "label": "Ăn chay"
+    },
+    {
+      "id": "bakery",
+      "label": "Tiệm bánh"
+    },
+    {
+      "id": "streetfood",
+      "label": "Ăn vặt / đường phố"
+    },
+    {
+      "id": "cafe",
+      "label": "Quán cà phê (chung)"
+    },
+    {
+      "id": "restaurant",
+      "label": "Nhà hàng (chung)"
+    },
+    {
+      "id": "seafood",
+      "label": "Hải sản"
+    },
+    {
+      "id": "pizza",
+      "label": "Pizza"
+    },
+    {
+      "id": "steak",
+      "label": "Bít tết"
+    },
+    {
+      "id": "burger",
+      "label": "Burger"
+    },
+    {
+      "id": "chicken",
+      "label": "Gà rán"
+    },
+    {
+      "id": "japanese",
+      "label": "Món Nhật"
+    },
+    {
+      "id": "korean",
+      "label": "Món Hàn"
+    },
+    {
+      "id": "vietnamese",
+      "label": "Món Việt"
+    },
+    {
+      "id": "specialty",
+      "label": "Đặc sản địa phương"
+    },
+    {
+      "id": "entertainment",
+      "label": "Giải trí"
+    },
+    {
+      "id": "always-open",
+      "label": "Mở 24/7"
+    },
+    {
+      "id": "district-hc",
+      "label": "Địa bàn Hải Châu"
+    },
+    {
+      "id": "district-nhs",
+      "label": "Địa bàn Ngũ Hành Sơn"
+    },
+    {
+      "id": "district-tk",
+      "label": "Địa bàn Thanh Khê"
+    },
+    {
+      "id": "district-lc",
+      "label": "Địa bàn Liên Chiểu"
+    },
+    {
+      "id": "district-st",
+      "label": "Địa bàn Sơn Trà"
+    },
+    {
+      "id": "district-cl",
+      "label": "Địa bàn Cẩm Lệ"
+    }
+  ],
+  "queries": [
+    {
+      "id": "v2-001",
+      "intent": "study",
+      "variant": "natural",
+      "query": "quán cà phê yên tĩnh để học bài",
+      "constraints": {
+        "category": ["cafe"],
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-002",
+      "intent": "study",
+      "variant": "natural",
+      "query": "chỗ ngồi làm việc với laptop",
+      "constraints": {
+        "category": ["cafe"],
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-003",
+      "intent": "study",
+      "variant": "keyword",
+      "query": "cà phê học bài",
+      "constraints": {
+        "category": ["cafe"],
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-004",
+      "intent": "study",
+      "variant": "no-diacritic",
+      "query": "quan ca phe yen tinh de hoc bai",
+      "constraints": {
+        "category": ["cafe"],
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-005",
+      "intent": "study",
+      "variant": "typo",
+      "query": "quán caphe yên tĩnh học pài",
+      "constraints": {
+        "category": ["cafe"],
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-006",
+      "intent": "study",
+      "variant": "english",
+      "query": "coffee shop quiet for studying",
+      "constraints": {
+        "category": ["cafe"],
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-007",
+      "intent": "study",
+      "variant": "long",
+      "query": "tôi cần một quán cà phê yên tĩnh có ổ cắm điện để làm việc cả buổi sáng",
+      "constraints": {
+        "category": ["cafe"],
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-008",
+      "intent": "study",
+      "variant": "with-district",
+      "query": "quán cà phê làm việc ở Hải Châu",
+      "constraints": {
+        "category": ["cafe"],
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-009",
+      "intent": "study-any",
+      "variant": "natural",
+      "query": "chỗ làm việc yên tĩnh",
+      "constraints": {
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-010",
+      "intent": "study-any",
+      "variant": "natural",
+      "query": "quán có wifi để làm việc cả ngày",
+      "constraints": {
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-011",
+      "intent": "study-any",
+      "variant": "keyword",
+      "query": "làm việc nhóm",
+      "constraints": {
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-012",
+      "intent": "study-any",
+      "variant": "no-diacritic",
+      "query": "cho lam viec yen tinh",
+      "constraints": {
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-013",
+      "intent": "study-any",
+      "variant": "long",
+      "query": "nơi nào có bàn rộng và yên tĩnh để tôi làm việc buổi chiều",
+      "constraints": {
+        "tagsAll": ["Làm việc"]
+      }
+    },
+    {
+      "id": "v2-014",
+      "intent": "wifi",
+      "variant": "natural",
+      "query": "quán cà phê có wifi",
+      "constraints": {
+        "tagsAll": ["Wifi"]
+      }
+    },
+    {
+      "id": "v2-015",
+      "intent": "wifi",
+      "variant": "keyword",
+      "query": "wifi mạnh",
+      "constraints": {
+        "tagsAll": ["Wifi"]
+      }
+    },
+    {
+      "id": "v2-016",
+      "intent": "wifi",
+      "variant": "english",
+      "query": "free wifi cafe",
+      "constraints": {
+        "tagsAll": ["Wifi"]
+      }
+    },
+    {
+      "id": "v2-017",
+      "intent": "wifi",
+      "variant": "long",
+      "query": "quán nước nào có internet ổn định để họp online",
+      "constraints": {
+        "tagsAll": ["Wifi"]
+      }
+    },
+    {
+      "id": "v2-018",
+      "intent": "outdoor",
+      "variant": "natural",
+      "query": "quán ngồi ngoài trời",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-019",
+      "intent": "outdoor",
+      "variant": "natural",
+      "query": "chỗ ngồi ngoài trời thoáng mát",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-020",
+      "intent": "outdoor",
+      "variant": "keyword",
+      "query": "sân vườn ngoài trời",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-021",
+      "intent": "outdoor",
+      "variant": "no-diacritic",
+      "query": "quan ngoai troi thoang mat",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-022",
+      "intent": "outdoor",
+      "variant": "english",
+      "query": "outdoor seating cafe",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-023",
+      "intent": "outdoor",
+      "variant": "long",
+      "query": "quán có không gian mở ngoài trời cho gia đình ngồi buổi tối",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-024",
+      "intent": "date",
+      "variant": "natural",
+      "query": "địa điểm hẹn hò buổi tối",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-025",
+      "intent": "date",
+      "variant": "natural",
+      "query": "quán lãng mạn cho buổi hẹn",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-026",
+      "intent": "date",
+      "variant": "keyword",
+      "query": "hẹn hò view đẹp",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-027",
+      "intent": "date",
+      "variant": "with-district",
+      "query": "quán hẹn hò ở Sơn Trà",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-028",
+      "intent": "date",
+      "variant": "no-diacritic",
+      "query": "dia diem hen ho buoi toi",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-029",
+      "intent": "date",
+      "variant": "long",
+      "query": "tìm chỗ lãng mạn ngoài trời để hẹn hò kỷ niệm ngày yêu nhau",
+      "constraints": {
+        "tagsAll": ["Ngoài trời"]
+      }
+    },
+    {
+      "id": "v2-030",
+      "intent": "friends",
+      "variant": "natural",
+      "query": "chỗ vui chơi cùng bạn bè",
+      "constraints": {
+        "tagsAny": ["Nhậu nhẹt", "Giải trí"]
+      }
+    },
+    {
+      "id": "v2-031",
+      "intent": "friends",
+      "variant": "natural",
+      "query": "quán nhậu tối với đồng nghiệp",
+      "constraints": {
+        "tagsAny": ["Nhậu nhẹt", "Giải trí"]
+      }
+    },
+    {
+      "id": "v2-032",
+      "intent": "friends",
+      "variant": "keyword",
+      "query": "tụ tập bạn bè",
+      "constraints": {
+        "tagsAny": ["Nhậu nhẹt", "Giải trí"]
+      }
+    },
+    {
+      "id": "v2-033",
+      "intent": "friends",
+      "variant": "english",
+      "query": "hangout with friends",
+      "constraints": {
+        "tagsAny": ["Nhậu nhẹt", "Giải trí"]
+      }
+    },
+    {
+      "id": "v2-034",
+      "intent": "friends",
+      "variant": "long",
+      "query": "quán nào phù hợp cho nhóm bạn đông người tụ tập cuối tuần",
+      "constraints": {
+        "tagsAny": ["Nhậu nhẹt", "Giải trí"]
+      }
+    },
+    {
+      "id": "v2-035",
+      "intent": "friends",
+      "variant": "no-diacritic",
+      "query": "quan nhau toi voi dong nghiep",
+      "constraints": {
+        "tagsAny": ["Nhậu nhẹt", "Giải trí"]
+      }
+    },
+    {
+      "id": "v2-036",
+      "intent": "bar",
+      "variant": "natural",
+      "query": "quán bar",
+      "constraints": {
+        "category": ["bar"]
+      }
+    },
+    {
+      "id": "v2-037",
+      "intent": "bar",
+      "variant": "keyword",
+      "query": "quán bia",
+      "constraints": {
+        "category": ["bar"]
+      }
+    },
+    {
+      "id": "v2-038",
+      "intent": "bar",
+      "variant": "english",
+      "query": "cocktail bar",
+      "constraints": {
+        "category": ["bar"]
+      }
+    },
+    {
+      "id": "v2-039",
+      "intent": "bar",
+      "variant": "long",
+      "query": "chỗ uống bia rượu với bạn bè buổi tối",
+      "constraints": {
+        "category": ["bar"]
+      }
+    },
+    {
+      "id": "v2-040",
+      "intent": "takeaway",
+      "variant": "natural",
+      "query": "quán cà phê mang đi",
+      "constraints": {
+        "tagsAll": ["Mang đi"]
+      }
+    },
+    {
+      "id": "v2-041",
+      "intent": "takeaway",
+      "variant": "natural",
+      "query": "mua cà phê mang về",
+      "constraints": {
+        "tagsAll": ["Mang đi"]
+      }
+    },
+    {
+      "id": "v2-042",
+      "intent": "takeaway",
+      "variant": "keyword",
+      "query": "take away",
+      "constraints": {
+        "tagsAll": ["Mang đi"]
+      }
+    },
+    {
+      "id": "v2-043",
+      "intent": "takeaway",
+      "variant": "no-diacritic",
+      "query": "quan an mang di",
+      "constraints": {
+        "tagsAll": ["Mang đi"]
+      }
+    },
+    {
+      "id": "v2-044",
+      "intent": "takeaway",
+      "variant": "long",
+      "query": "quán nào bán đồ ăn sáng cho mang đi nhanh gọn",
+      "constraints": {
+        "tagsAll": ["Mang đi"]
+      }
+    },
+    {
+      "id": "v2-045",
+      "intent": "veg",
+      "variant": "natural",
+      "query": "quán ăn chay",
+      "constraints": {
+        "tagsAll": ["Chay"]
+      }
+    },
+    {
+      "id": "v2-046",
+      "intent": "veg",
+      "variant": "natural",
+      "query": "quán chay thanh đạm",
+      "constraints": {
+        "tagsAll": ["Chay"]
+      }
+    },
+    {
+      "id": "v2-047",
+      "intent": "veg",
+      "variant": "keyword",
+      "query": "đồ chay",
+      "constraints": {
+        "tagsAll": ["Chay"]
+      }
+    },
+    {
+      "id": "v2-048",
+      "intent": "veg",
+      "variant": "english",
+      "query": "vegetarian restaurant",
+      "constraints": {
+        "tagsAll": ["Chay"]
+      }
+    },
+    {
+      "id": "v2-049",
+      "intent": "veg",
+      "variant": "long",
+      "query": "nhà hàng chay nào ngon và sạch để mời gia đình",
+      "constraints": {
+        "tagsAll": ["Chay"]
+      }
+    },
+    {
+      "id": "v2-050",
+      "intent": "bakery",
+      "variant": "natural",
+      "query": "tiệm bánh ngọt",
+      "constraints": {
+        "category": ["bakery"]
+      }
+    },
+    {
+      "id": "v2-051",
+      "intent": "bakery",
+      "variant": "natural",
+      "query": "bánh mì ngon",
+      "constraints": {
+        "category": ["bakery"]
+      }
+    },
+    {
+      "id": "v2-052",
+      "intent": "bakery",
+      "variant": "keyword",
+      "query": "bakery",
+      "constraints": {
+        "category": ["bakery"]
+      }
+    },
+    {
+      "id": "v2-053",
+      "intent": "bakery",
+      "variant": "no-diacritic",
+      "query": "tiem banh ngot",
+      "constraints": {
+        "category": ["bakery"]
+      }
+    },
+    {
+      "id": "v2-054",
+      "intent": "bakery",
+      "variant": "long",
+      "query": "tiệm bánh nào mới mở bán bánh mì và bánh ngọt",
+      "constraints": {
+        "category": ["bakery"]
+      }
+    },
+    {
+      "id": "v2-055",
+      "intent": "streetfood",
+      "variant": "natural",
+      "query": "quán ăn vặt",
+      "constraints": {
+        "category": ["street-food"]
+      }
+    },
+    {
+      "id": "v2-056",
+      "intent": "streetfood",
+      "variant": "natural",
+      "query": "đồ ăn đường phố",
+      "constraints": {
+        "category": ["street-food"]
+      }
+    },
+    {
+      "id": "v2-057",
+      "intent": "streetfood",
+      "variant": "keyword",
+      "query": "ăn vặt sinh viên",
+      "constraints": {
+        "category": ["street-food"]
+      }
+    },
+    {
+      "id": "v2-058",
+      "intent": "streetfood",
+      "variant": "english",
+      "query": "street food",
+      "constraints": {
+        "category": ["street-food"]
+      }
+    },
+    {
+      "id": "v2-059",
+      "intent": "streetfood",
+      "variant": "no-diacritic",
+      "query": "quan an vat duong pho",
+      "constraints": {
+        "category": ["street-food"]
+      }
+    },
+    {
+      "id": "v2-060",
+      "intent": "streetfood",
+      "variant": "long",
+      "query": "chỗ ăn vặt giá rẻ cho sinh viên buổi chiều",
+      "constraints": {
+        "category": ["street-food"]
+      }
+    },
+    {
+      "id": "v2-061",
+      "intent": "cafe",
+      "variant": "natural",
+      "query": "quán cà phê",
+      "constraints": {
+        "category": ["cafe"]
+      }
+    },
+    {
+      "id": "v2-062",
+      "intent": "cafe",
+      "variant": "keyword",
+      "query": "cà phê ngon",
+      "constraints": {
+        "category": ["cafe"]
+      }
+    },
+    {
+      "id": "v2-063",
+      "intent": "cafe",
+      "variant": "keyword",
+      "query": "quán nước",
+      "constraints": {
+        "category": ["cafe"]
+      }
+    },
+    {
+      "id": "v2-064",
+      "intent": "cafe",
+      "variant": "english",
+      "query": "coffee",
+      "constraints": {
+        "category": ["cafe"]
+      }
+    },
+    {
+      "id": "v2-065",
+      "intent": "cafe",
+      "variant": "long",
+      "query": "quán cà phê đẹp để ngồi nói chuyện với bạn",
+      "constraints": {
+        "category": ["cafe"]
+      }
+    },
+    {
+      "id": "v2-066",
+      "intent": "restaurant",
+      "variant": "natural",
+      "query": "nhà hàng",
+      "constraints": {
+        "category": ["restaurant"]
+      }
+    },
+    {
+      "id": "v2-067",
+      "intent": "restaurant",
+      "variant": "natural",
+      "query": "quán ăn tối",
+      "constraints": {
+        "category": ["restaurant"]
+      }
+    },
+    {
+      "id": "v2-068",
+      "intent": "restaurant",
+      "variant": "keyword",
+      "query": "quán ăn gia đình",
+      "constraints": {
+        "category": ["restaurant"]
+      }
+    },
+    {
+      "id": "v2-069",
+      "intent": "restaurant",
+      "variant": "long",
+      "query": "nhà hàng nào ngon để đãi khách đến Đà Nẵng",
+      "constraints": {
+        "category": ["restaurant"]
+      }
+    },
+    {
+      "id": "v2-070",
+      "intent": "seafood",
+      "variant": "natural",
+      "query": "quán hải sản",
+      "constraints": {
+        "tagsAll": ["Hải sản"]
+      }
+    },
+    {
+      "id": "v2-071",
+      "intent": "seafood",
+      "variant": "natural",
+      "query": "hải sản tươi ngon",
+      "constraints": {
+        "tagsAll": ["Hải sản"]
+      }
+    },
+    {
+      "id": "v2-072",
+      "intent": "seafood",
+      "variant": "keyword",
+      "query": "tôm cua ghẹ",
+      "constraints": {
+        "tagsAll": ["Hải sản"]
+      }
+    },
+    {
+      "id": "v2-073",
+      "intent": "seafood",
+      "variant": "english",
+      "query": "seafood",
+      "constraints": {
+        "tagsAll": ["Hải sản"]
+      }
+    },
+    {
+      "id": "v2-074",
+      "intent": "seafood",
+      "variant": "no-diacritic",
+      "query": "quan hai san tuoi",
+      "constraints": {
+        "tagsAll": ["Hải sản"]
+      }
+    },
+    {
+      "id": "v2-075",
+      "intent": "pizza",
+      "variant": "natural",
+      "query": "quán pizza",
+      "constraints": {
+        "tagsAll": ["Pizza"]
+      }
+    },
+    {
+      "id": "v2-076",
+      "intent": "pizza",
+      "variant": "keyword",
+      "query": "pizza ngon",
+      "constraints": {
+        "tagsAll": ["Pizza"]
+      }
+    },
+    {
+      "id": "v2-077",
+      "intent": "pizza",
+      "variant": "english",
+      "query": "pizza for group",
+      "constraints": {
+        "tagsAll": ["Pizza"]
+      }
+    },
+    {
+      "id": "v2-078",
+      "intent": "pizza",
+      "variant": "long",
+      "query": "tiệm pizza nào phù hợp cho nhóm bạn đông người",
+      "constraints": {
+        "tagsAll": ["Pizza"]
+      }
+    },
+    {
+      "id": "v2-079",
+      "intent": "steak",
+      "variant": "natural",
+      "query": "quán bít tết",
+      "constraints": {
+        "tagsAll": ["Bít tết"]
+      }
+    },
+    {
+      "id": "v2-080",
+      "intent": "steak",
+      "variant": "keyword",
+      "query": "steak",
+      "constraints": {
+        "tagsAll": ["Bít tết"]
+      }
+    },
+    {
+      "id": "v2-081",
+      "intent": "steak",
+      "variant": "keyword",
+      "query": "bò né",
+      "constraints": {
+        "tagsAll": ["Bít tết"]
+      }
+    },
+    {
+      "id": "v2-082",
+      "intent": "steak",
+      "variant": "long",
+      "query": "quán bít tết ngon cho bữa tối hai người",
+      "constraints": {
+        "tagsAll": ["Bít tết"]
+      }
+    },
+    {
+      "id": "v2-083",
+      "intent": "burger",
+      "variant": "natural",
+      "query": "quán burger",
+      "constraints": {
+        "tagsAll": ["Burger"]
+      }
+    },
+    {
+      "id": "v2-084",
+      "intent": "burger",
+      "variant": "keyword",
+      "query": "hamburger",
+      "constraints": {
+        "tagsAll": ["Burger"]
+      }
+    },
+    {
+      "id": "v2-085",
+      "intent": "burger",
+      "variant": "english",
+      "query": "burger near me",
+      "constraints": {
+        "tagsAll": ["Burger"]
+      }
+    },
+    {
+      "id": "v2-086",
+      "intent": "burger",
+      "variant": "long",
+      "query": "quán burger Mỹ nào ngon ở Đà Nẵng",
+      "constraints": {
+        "tagsAll": ["Burger"]
+      }
+    },
+    {
+      "id": "v2-087",
+      "intent": "chicken",
+      "variant": "natural",
+      "query": "quán gà rán",
+      "constraints": {
+        "tagsAll": ["Gà rán"]
+      }
+    },
+    {
+      "id": "v2-088",
+      "intent": "chicken",
+      "variant": "keyword",
+      "query": "gà rán giòn",
+      "constraints": {
+        "tagsAll": ["Gà rán"]
+      }
+    },
+    {
+      "id": "v2-089",
+      "intent": "chicken",
+      "variant": "english",
+      "query": "fried chicken",
+      "constraints": {
+        "tagsAll": ["Gà rán"]
+      }
+    },
+    {
+      "id": "v2-090",
+      "intent": "chicken",
+      "variant": "long",
+      "query": "quán gà rán cho nhóm bạn ăn trưa",
+      "constraints": {
+        "tagsAll": ["Gà rán"]
+      }
+    },
+    {
+      "id": "v2-091",
+      "intent": "japanese",
+      "variant": "natural",
+      "query": "quán món Nhật",
+      "constraints": {
+        "tagsAll": ["Món Nhật"]
+      }
+    },
+    {
+      "id": "v2-092",
+      "intent": "japanese",
+      "variant": "keyword",
+      "query": "sushi",
+      "constraints": {
+        "tagsAll": ["Món Nhật"]
+      }
+    },
+    {
+      "id": "v2-093",
+      "intent": "japanese",
+      "variant": "keyword",
+      "query": "sashimi",
+      "constraints": {
+        "tagsAll": ["Món Nhật"]
+      }
+    },
+    {
+      "id": "v2-094",
+      "intent": "japanese",
+      "variant": "long",
+      "query": "quán Nhật Bản nào ngon để ăn tối",
+      "constraints": {
+        "tagsAll": ["Món Nhật"]
+      }
+    },
+    {
+      "id": "v2-095",
+      "intent": "korean",
+      "variant": "natural",
+      "query": "quán món Hàn",
+      "constraints": {
+        "tagsAll": ["Món Hàn"]
+      }
+    },
+    {
+      "id": "v2-096",
+      "intent": "korean",
+      "variant": "keyword",
+      "query": "kim chi",
+      "constraints": {
+        "tagsAll": ["Món Hàn"]
+      }
+    },
+    {
+      "id": "v2-097",
+      "intent": "korean",
+      "variant": "keyword",
+      "query": "tokbokki",
+      "constraints": {
+        "tagsAll": ["Món Hàn"]
+      }
+    },
+    {
+      "id": "v2-098",
+      "intent": "korean",
+      "variant": "long",
+      "query": "quán ăn Hàn Quốc ngon cho nhóm bạn",
+      "constraints": {
+        "tagsAll": ["Món Hàn"]
+      }
+    },
+    {
+      "id": "v2-099",
+      "intent": "vietnamese",
+      "variant": "natural",
+      "query": "quán món Việt",
+      "constraints": {
+        "tagsAll": ["Món Việt"]
+      }
+    },
+    {
+      "id": "v2-100",
+      "intent": "vietnamese",
+      "variant": "keyword",
+      "query": "cơm Việt Nam",
+      "constraints": {
+        "tagsAll": ["Món Việt"]
+      }
+    },
+    {
+      "id": "v2-101",
+      "intent": "vietnamese",
+      "variant": "natural",
+      "query": "quán ăn Việt truyền thống",
+      "constraints": {
+        "tagsAll": ["Món Việt"]
+      }
+    },
+    {
+      "id": "v2-102",
+      "intent": "vietnamese",
+      "variant": "no-diacritic",
+      "query": "quan mon viet",
+      "constraints": {
+        "tagsAll": ["Món Việt"]
+      }
+    },
+    {
+      "id": "v2-103",
+      "intent": "vietnamese",
+      "variant": "long",
+      "query": "quán ăn Việt Nam truyền thống cho khách du lịch",
+      "constraints": {
+        "tagsAll": ["Món Việt"]
+      }
+    },
+    {
+      "id": "v2-104",
+      "intent": "specialty",
+      "variant": "natural",
+      "query": "đặc sản Đà Nẵng",
+      "constraints": {
+        "tagsAll": ["Đặc sản địa phương"]
+      }
+    },
+    {
+      "id": "v2-105",
+      "intent": "specialty",
+      "variant": "keyword",
+      "query": "món địa phương",
+      "constraints": {
+        "tagsAll": ["Đặc sản địa phương"]
+      }
+    },
+    {
+      "id": "v2-106",
+      "intent": "specialty",
+      "variant": "natural",
+      "query": "quán đặc sản miền Trung",
+      "constraints": {
+        "tagsAll": ["Đặc sản địa phương"]
+      }
+    },
+    {
+      "id": "v2-107",
+      "intent": "specialty",
+      "variant": "long",
+      "query": "chỗ nào bán đặc sản Đà Nẵng để mua về làm quà",
+      "constraints": {
+        "tagsAll": ["Đặc sản địa phương"]
+      }
+    },
+    {
+      "id": "v2-108",
+      "intent": "entertainment",
+      "variant": "natural",
+      "query": "địa điểm giải trí",
+      "constraints": {
+        "tagsAll": ["Giải trí"]
+      }
+    },
+    {
+      "id": "v2-109",
+      "intent": "entertainment",
+      "variant": "natural",
+      "query": "chỗ vui chơi trong nhà",
+      "constraints": {
+        "tagsAll": ["Giải trí"]
+      }
+    },
+    {
+      "id": "v2-110",
+      "intent": "entertainment",
+      "variant": "keyword",
+      "query": "khu giải trí",
+      "constraints": {
+        "tagsAll": ["Giải trí"]
+      }
+    },
+    {
+      "id": "v2-111",
+      "intent": "entertainment",
+      "variant": "long",
+      "query": "chỗ giải trí trong nhà cho trẻ em và người lớn",
+      "constraints": {
+        "tagsAll": ["Giải trí"]
+      }
+    },
+    {
+      "id": "v2-112",
+      "intent": "always-open",
+      "variant": "natural",
+      "query": "quán mở 24/7",
+      "constraints": {
+        "alwaysOpen": true
+      }
+    },
+    {
+      "id": "v2-113",
+      "intent": "always-open",
+      "variant": "keyword",
+      "query": "quán 24h",
+      "constraints": {
+        "alwaysOpen": true
+      }
+    },
+    {
+      "id": "v2-114",
+      "intent": "always-open",
+      "variant": "long",
+      "query": "quán nào mở cửa cả đêm để ăn khuya",
+      "constraints": {
+        "alwaysOpen": true
+      }
+    },
+    {
+      "id": "v2-115",
+      "intent": "district-hc",
+      "variant": "natural",
+      "query": "quán ăn ở Hải Châu",
+      "constraints": {
+        "district": ["Hải Châu"]
+      }
+    },
+    {
+      "id": "v2-116",
+      "intent": "district-hc",
+      "variant": "keyword",
+      "query": "cà phê Hải Châu",
+      "constraints": {
+        "district": ["Hải Châu"]
+      }
+    },
+    {
+      "id": "v2-117",
+      "intent": "district-hc",
+      "variant": "natural",
+      "query": "nhà hàng quận Hải Châu",
+      "constraints": {
+        "district": ["Hải Châu"]
+      }
+    },
+    {
+      "id": "v2-118",
+      "intent": "district-hc",
+      "variant": "no-diacritic",
+      "query": "quan an hai chau",
+      "constraints": {
+        "district": ["Hải Châu"]
+      }
+    },
+    {
+      "id": "v2-119",
+      "intent": "district-nhs",
+      "variant": "natural",
+      "query": "quán ăn Ngũ Hành Sơn",
+      "constraints": {
+        "district": ["Ngũ Hành Sơn"]
+      }
+    },
+    {
+      "id": "v2-120",
+      "intent": "district-nhs",
+      "variant": "keyword",
+      "query": "cà phê Ngũ Hành Sơn",
+      "constraints": {
+        "district": ["Ngũ Hành Sơn"]
+      }
+    },
+    {
+      "id": "v2-121",
+      "intent": "district-nhs",
+      "variant": "natural",
+      "query": "nhà hàng Non Nước",
+      "constraints": {
+        "district": ["Ngũ Hành Sơn"]
+      }
+    },
+    {
+      "id": "v2-122",
+      "intent": "district-nhs",
+      "variant": "long",
+      "query": "quán ăn gần danh thắng Ngũ Hành Sơn",
+      "constraints": {
+        "district": ["Ngũ Hành Sơn"]
+      }
+    },
+    {
+      "id": "v2-123",
+      "intent": "district-tk",
+      "variant": "natural",
+      "query": "quán ăn Thanh Khê",
+      "constraints": {
+        "district": ["Thanh Khê"]
+      }
+    },
+    {
+      "id": "v2-124",
+      "intent": "district-tk",
+      "variant": "keyword",
+      "query": "cà phê Thanh Khê",
+      "constraints": {
+        "district": ["Thanh Khê"]
+      }
+    },
+    {
+      "id": "v2-125",
+      "intent": "district-tk",
+      "variant": "natural",
+      "query": "quán nhậu Thanh Khê",
+      "constraints": {
+        "district": ["Thanh Khê"]
+      }
+    },
+    {
+      "id": "v2-126",
+      "intent": "district-lc",
+      "variant": "natural",
+      "query": "quán ăn Liên Chiểu",
+      "constraints": {
+        "district": ["Liên Chiểu"]
+      }
+    },
+    {
+      "id": "v2-127",
+      "intent": "district-lc",
+      "variant": "keyword",
+      "query": "cà phê Liên Chiểu",
+      "constraints": {
+        "district": ["Liên Chiểu"]
+      }
+    },
+    {
+      "id": "v2-128",
+      "intent": "district-lc",
+      "variant": "natural",
+      "query": "nhà hàng Liên Chiểu",
+      "constraints": {
+        "district": ["Liên Chiểu"]
+      }
+    },
+    {
+      "id": "v2-129",
+      "intent": "district-st",
+      "variant": "natural",
+      "query": "quán ăn Sơn Trà",
+      "constraints": {
+        "district": ["Sơn Trà"]
+      }
+    },
+    {
+      "id": "v2-130",
+      "intent": "district-st",
+      "variant": "keyword",
+      "query": "cà phê Sơn Trà",
+      "constraints": {
+        "district": ["Sơn Trà"]
+      }
+    },
+    {
+      "id": "v2-131",
+      "intent": "district-st",
+      "variant": "natural",
+      "query": "quán hải sản Sơn Trà",
+      "constraints": {
+        "district": ["Sơn Trà"]
+      }
+    },
+    {
+      "id": "v2-132",
+      "intent": "district-cl",
+      "variant": "natural",
+      "query": "quán ăn Cẩm Lệ",
+      "constraints": {
+        "district": ["Cẩm Lệ"]
+      }
+    },
+    {
+      "id": "v2-133",
+      "intent": "district-cl",
+      "variant": "keyword",
+      "query": "cà phê Cẩm Lệ",
+      "constraints": {
+        "district": ["Cẩm Lệ"]
+      }
+    },
+    {
+      "id": "v2-134",
+      "intent": "district-cl",
+      "variant": "natural",
+      "query": "nhà hàng Cẩm Lệ",
+      "constraints": {
+        "district": ["Cẩm Lệ"]
+      }
+    },
+    {
+      "id": "v2-135",
+      "intent": "cafe",
+      "variant": "typo",
+      "query": "quán cà fê ngon",
+      "constraints": {
+        "category": ["cafe"]
+      }
+    },
+    {
+      "id": "v2-136",
+      "intent": "seafood",
+      "variant": "typo",
+      "query": "quán hải sãn tươi",
+      "constraints": {
+        "tagsAll": ["Hải sản"]
+      }
+    },
+    {
+      "id": "v2-137",
+      "intent": "friends",
+      "variant": "typo",
+      "query": "quán nhạu tối với bạn",
+      "constraints": {
+        "tagsAny": ["Nhậu nhẹt", "Giải trí"]
+      }
+    },
+    {
+      "id": "v2-138",
+      "intent": "veg",
+      "variant": "typo",
+      "query": "quán ăn chai thanh đạm",
+      "constraints": {
+        "tagsAll": ["Chay"]
+      }
+    },
+    {
+      "id": "v2-139",
+      "intent": "bakery",
+      "variant": "typo",
+      "query": "tiệm bánh ngọt mới",
+      "constraints": {
+        "category": ["bakery"]
+      }
+    },
+    {
+      "id": "v2-140",
+      "intent": "streetfood",
+      "variant": "typo",
+      "query": "quán ăn vặt sinh viên",
+      "constraints": {
+        "category": ["street-food"]
+      }
+    },
+    {
+      "id": "v2-141",
+      "intent": "pizza",
+      "variant": "typo",
+      "query": "quán pitsa ngon",
+      "constraints": {
+        "tagsAll": ["Pizza"]
+      }
+    },
+    {
+      "id": "v2-142",
+      "intent": "burger",
+      "variant": "typo",
+      "query": "quán burgger",
+      "constraints": {
+        "tagsAll": ["Burger"]
+      }
+    },
+    {
+      "id": "v2-143",
+      "intent": "japanese",
+      "variant": "typo",
+      "query": "quán sushj",
+      "constraints": {
+        "tagsAll": ["Món Nhật"]
+      }
+    },
+    {
+      "id": "v2-144",
+      "intent": "korean",
+      "variant": "typo",
+      "query": "quán món hàng",
+      "constraints": {
+        "tagsAll": ["Món Hàn"]
+      }
+    },
+    {
+      "id": "v2-145",
+      "intent": "study",
+      "variant": "with-district",
+      "query": "cà phê làm việc ở Ngũ Hành Sơn",
+      "constraints": {
+        "category": ["cafe"],
+        "tagsAll": ["Làm việc"],
+        "district": ["Ngũ Hành Sơn"]
+      }
+    },
+    {
+      "id": "v2-146",
+      "intent": "seafood",
+      "variant": "with-district",
+      "query": "quán hải sản ở Hải Châu",
+      "constraints": {
+        "tagsAll": ["Hải sản"],
+        "district": ["Hải Châu"]
+      }
+    },
+    {
+      "id": "v2-147",
+      "intent": "friends",
+      "variant": "with-district",
+      "query": "quán nhậu ở Hải Châu",
+      "constraints": {
+        "tagsAny": ["Nhậu nhẹt", "Giải trí"],
+        "district": ["Hải Châu"]
+      }
+    },
+    {
+      "id": "v2-148",
+      "intent": "cafe",
+      "variant": "with-district",
+      "query": "quán cà phê ở Cẩm Lệ",
+      "constraints": {
+        "category": ["cafe"],
+        "district": ["Cẩm Lệ"]
+      }
+    },
+    {
+      "id": "v2-149",
+      "intent": "takeaway",
+      "variant": "with-district",
+      "query": "cà phê mang đi ở Thanh Khê",
+      "constraints": {
+        "tagsAll": ["Mang đi"],
+        "district": ["Thanh Khê"]
+      }
+    }
+  ]
+}

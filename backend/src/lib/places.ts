@@ -423,14 +423,19 @@ async function structuredCandidates(
   attrConditions: Prisma.Sql[],
   limit: number,
 ): Promise<string[]> {
-  const { tags, categories, districts } = intent
-  if (tags.length === 0 && categories.length === 0 && districts.length === 0) return []
+  const { tags, categories, districts, alwaysOpen } = intent
+  if (tags.length === 0 && categories.length === 0 && districts.length === 0 && !alwaysOpen)
+    return []
 
   const matches: Prisma.Sql[] = []
   if (categories.length > 0)
     matches.push(Prisma.sql`p.category::text IN (${Prisma.join(categories)})`)
   if (tags.length > 0) matches.push(Prisma.sql`p.tags && ARRAY[${Prisma.join(tags)}]::text[]`)
   if (districts.length > 0) matches.push(Prisma.sql`p.district IN (${Prisma.join(districts)})`)
+  // "Mở 24/7" là thuộc tính nhị phân đọc thẳng từ dữ liệu, không phải suy đoán
+  // ngữ nghĩa — nếu thiếu nó ở đây thì query "quán mở 24/7" không có nhánh nào
+  // ưu tiên venue thật sự mở cả ngày.
+  if (alwaysOpen) matches.push(Prisma.sql`p.opening_hours = '24/7'`)
 
   // Xếp theo số tag khớp (nhiều thuộc tính đúng = sát ý hơn), rồi độ mới.
   // Biểu thức phải nằm trong SELECT với alias — ORDER BY tham số trực tiếp bị
@@ -461,14 +466,14 @@ async function structuredCandidates(
  * nhánh; venue xuất hiện ở cả hai nhánh được cộng dồn. Tie-break bằng id để
  * thứ tự ổn định giữa các request.
  */
-function fuseRrf(...branches: string[][]): string[] {
+function fuseRrf(...branches: { ids: string[]; weight?: number }[]): string[] {
   const scores = new Map<string, number>()
-  const add = (ids: string[]) => {
+  const add = ({ ids, weight = 1 }: { ids: string[]; weight?: number }) => {
     ids.forEach((id, index) => {
-      scores.set(id, (scores.get(id) ?? 0) + 1 / (RRF_K + index + 1))
+      scores.set(id, (scores.get(id) ?? 0) + weight / (RRF_K + index + 1))
     })
   }
-  for (const ids of branches) add(ids)
+  for (const branch of branches) add(branch)
   return [...scores.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .map(([id]) => id)
@@ -511,10 +516,14 @@ async function hybridSearch(
   ])
   if (!dense) return null
 
+  // Nhánh structured có độ chính xác cao (khớp đúng thuộc tính người dùng nêu)
+  // nên nhân trọng số 2 — vẫn là RRF, không phải cộng điểm thủ công; cần thiết
+  // vì nhóm thuộc tính hiếm (hải sản 7 venue, bar 7 venue) nếu để trọng số 1 sẽ
+  // bị danh sách lexical 50 dòng lấn át.
   const ranked = fuseRrf(
-    lexicalRows.map((row) => row.id),
-    dense.map((candidate) => candidate.id),
-    structuredRows,
+    { ids: lexicalRows.map((row) => row.id) },
+    { ids: dense.map((candidate) => candidate.id) },
+    { ids: structuredRows, weight: 2 },
   )
   if (ranked.length === 0) return { items: [], total: 0 }
 

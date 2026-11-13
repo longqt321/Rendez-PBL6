@@ -40,37 +40,49 @@ Nhãn lấy từ **thuộc tính DB**, không từ kết quả search:
 
 ```bash
 cd backend
-bun run scripts/eval-search.ts            # chấm điểm, ghi data/eval/search-eval-v1-baseline.json
-bun run scripts/eval-search.ts --freeze   # CHỈ dùng một lần khi tạo bộ mới
+bun run scripts/eval-search.ts --set 2      # bộ chính (v2, 149 query) — dùng từ nay
+bun run scripts/eval-search.ts --set 1      # bộ lịch sử (v1, 50 query) — kiểm regression
+bun run scripts/eval-search.ts --set 2 --freeze   # CHỈ dùng một lần khi tạo bộ mới
 ```
 
-Kết quả ghi đè `search-eval-v1-baseline.json` — file này là **kết quả mới nhất**, không phải
-lịch sử. Muốn giữ lịch sử thì copy sang `search-eval-v1-baseline-<ngày>.json` trước khi chạy.
+`--set` mặc định 1. Kết quả ghi đè `search-eval-v<set>-baseline.json` — file này là
+**kết quả mới nhất**, không phải lịch sử. Muốn giữ lịch sử thì copy sang
+`search-eval-v<set>-baseline-<ngày>.json` trước khi chạy.
 
-## 5. Mốc so sánh (baseline v1, đo 2026-11-13)
+Script verify checksum `<set>.sha256` trước khi chấm: file query hoặc nhãn bị sửa → in
+`Bộ test đã bị sửa (checksum lệch)` và dừng, không chấm điểm.
 
-50 query, 7 nhóm ý định. Cùng một bộ nhãn cho cả hai cột.
+## 5. Mốc so sánh
+
+### 5a. v2 — bộ chính (149 query, 30 ý định, đo 2026-11-13)
+
+Cùng một bộ nhãn cho cả hai cột; hybrid 3 nhánh với structured weight 2.
+
+| Phương pháp | P@5 | P@10 | R@10 | nDCG@10 | MRR | zeroRate | p50 | p95 |
+|---|---|---|---|---|---|---|---|---|
+| Lexical thuần (trigram) | 0.456 | 0.432 | 0.445 | 0.453 | 0.545 | 0 | 37 ms | 52 ms |
+| **Hybrid 3 nhánh** | **0.855** | **0.755** | **0.847** | **0.858** | **0.914** | 0 | 65 ms | 90 ms |
+
+P@5 theo ý định (chỉ nhóm < 0.9): `date` 0.567, `friends` 0.575, `bar` 0.55,
+`korean` 0.68, `district-st` 0.667, `district-cl` 0.467, `district-lc` 0.6,
+`pizza` 0.8, `specialty` 0.8, `japanese` 0.84, `burger` 0.84, `cafe` 0.857.
+Nhóm `always-open` đạt 1.0 sau khi thêm `alwaysOpen` vào nhánh structured.
+
+P@5 theo kiểu diễn đạt: natural 0.904, keyword 0.906, long 0.875, english 0.867,
+no-diacritic 0.855, typo 0.527 (trần thấp do dữ liệu tên quán), with-district 0.686.
+
+### 5b. v1 — lịch sử (50 query, 7 nhóm, đo 2026-11-13)
 
 | Phương pháp | P@5 | P@10 | R@10 | nDCG@10 | MRR | zeroRate | p50 | p95 |
 |---|---|---|---|---|---|---|---|---|
 | Lexical thuần (trigram) | 0.504 | 0.480 | 0.465 | 0.513 | 0.584 | 0 | 39 ms | 48 ms |
 | Hybrid 2 nhánh (lexical + dense, RRF k=60) | 0.604 | 0.564 | 0.553 | 0.598 | 0.662 | 0 | 76 ms | 143 ms |
-| **Hybrid 3 nhánh (+ structured intent)** | **0.736** | **0.682** | **0.732** | **0.743** | **0.750** | 0 | 73 ms | 94 ms |
+| Hybrid 3 nhánh, structured weight 2 | 0.768 | — | — | — | — | 0 | 68 ms | 94 ms |
 
-P@5 theo nhóm (lexical → hybrid 3 nhánh):
+(v1 đo lại sau khi thêm trọng số 2: P@5 0.736 → 0.768, không regression.)
 
-| Nhóm | n | Lexical | Hybrid 3 nhánh |
-|---|---|---|---|
-| study (học/làm việc) | 8 | 0.800 | 0.875 |
-| date (hẹn hò) | 7 | 0.543 | 0.600 |
-| friends (nhóm bạn/nhậu) | 7 | 0.143 | 0.571 |
-| indoor (trong nhà) | 6 | 0.767 | 0.900 |
-| budget (giá rẻ/mang đi) | 8 | 0.250 | 0.500 |
-| cuisine (món cụ thể) | 10 | 0.500 | 0.900 |
-| district (theo quận) | 4 | 0.600 | 0.800 |
-
-Nhóm còn yếu: `budget` (0.5) và `date` (0.6) — dữ liệu tag `Mang đi` chỉ 23 venue,
-`Ngoài trời` 39 venue nên trần chất lượng bị giới hạn bởi dữ liệu, không chỉ thuật toán.
+Nhóm còn yếu ở cả hai bộ: `date`, `friends`, `bar`, `korean` — trần chất lượng bị
+giới hạn bởi dữ liệu (tag nghèo, ít venue), không chỉ thuật toán.
 
 ## 6. Khi nào được tạo bộ mới
 

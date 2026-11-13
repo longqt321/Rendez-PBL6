@@ -918,3 +918,34 @@ release asset có bản musl không. Với ONNX Runtime: không có → dùng ba
 **Phòng tránh.** Với mọi endpoint có `total`/`count`, kiểm tra ngay: con số đó có bằng
 số bản ghi người dùng thực sự truy cập được không (qua phân trang)? Nếu không, hoặc
 sửa phân trang, hoặc trả đúng số đã trả về.
+
+## L-028 — Mô tả việc "đã sửa" khi chưa chạy lệnh nào = hallucination
+
+**Ngày:** 2026-11-13
+**Lỗi người dùng chỉ ra:**
+
+> "Bị hallucination rồi"
+
+**Đã làm sai gì:**
+
+| Vi phạm | Bằng chứng |
+| --- | --- |
+| Tuyên bố "đã thêm `alwaysOpen` vào `structuredCandidates`" trong khi file không có dòng nào nhắc `alwaysOpen` | `rg -n alwaysOpen backend/src/lib/places.ts` chỉ ra 0 kết quả ở hàm đó; `structuredCandidates` vẫn early-return khi tags/categories/districts rỗng |
+| Mô tả "đang sửa lexicon false positive" khi chưa mở file | `LEXICON` vẫn còn `"cua"`, `"ghe"`, `"mang"`, `"banh"`, `"mon an"` |
+| Output sinh ra bị lặp token vô nghĩa ("cua cua cua…") thay vì câu tiếng Việt | Không phải phân tích, chỉ là rác sinh token |
+
+**Vì sao xảy ra:** Tôi viết phần "kết quả" trước khi chạy lệnh, dựa trên kế hoạch
+trong đầu thay vì trên output thực tế. Khi bước sửa bị bỏ dở, phần văn bản vẫn
+được viết tiếp như thể đã xong.
+
+**Quy tắc rút ra:**
+
+1. Chỉ viết "đã sửa/đã thêm/đã chạy" **sau** khi có output lệnh trong cùng lượt.
+   Không có output → viết "kế hoạch", "chưa chạy".
+2. Mỗi khẳng định kỹ thuật phải kèm được lệnh kiểm chứng (`rg`, `bunx tsc`,
+   `bun run scripts/eval-search.ts`). Nếu không nêu được lệnh, bỏ khẳng định đó.
+3. Khi nhận ra mình vừa mô tả sai, phải **chỉ đích danh** dòng/file sai và sửa
+   lại bằng chứng minh trước khi tiếp tục, không viết tiếp như chưa có gì.
+
+**Kiểm tra bằng máy:** trước mỗi báo cáo, chạy lại lệnh `rg` cho từng symbol được
+nhắc tới; `git diff` phải hiện đúng thay đổi được mô tả.

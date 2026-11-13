@@ -756,3 +756,12 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       là đủ; tạo `USING hnsw (embedding vector_cosine_ops)` khi vượt ~10k venue.
 - [ ] **Golden query set còn nhỏ (16 query)**: mở rộng lên 50+ và bổ sung cột
       `category=dessert` (hiện 0 venue nên 2 query không đo được).
+- [ ] **Nhóm ý định còn yếu do dữ liệu, không do thuật toán** (v2): `date` 0.567,
+      `friends` 0.575, `bar` 0.55, `korean` 0.68, `district-cl` 0.467. Nguyên nhân:
+      tag nghèo (`Nhậu nhẹt` 9, `Món Hàn` 4, `Giải trí` 7 venue) và thiếu thuộc tính
+      "phù hợp hẹn hò / nhóm đông". Cần enrich dữ liệu trước khi tinh chỉnh ranking.
+- [ ] **Kiểu diễn đạt `typo` chỉ đạt P@5 0.527**: trigram trên tên quán không bắt được
+      lỗi gõ trong từ khoá ý định. Cân nhắc sửa lỗi gõ nhẹ (edit distance trên token
+      lexicon) — đo lại trên v2, không sửa bộ test.
+- [ ] **Cần bộ held-out v3** khi đã tinh chỉnh lexicon/ranking nhiều vòng trên v2, để
+      phát hiện overfit (quy tắc ghi ở `docs/EVAL-PROTOCOL.md` mục 6).
