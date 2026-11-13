@@ -1055,3 +1055,31 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
      đáng tin, chạy lại.
   3. Nguyên tắc chung: một hàm production được phép "fallback âm thầm", nhưng
      script đo lường phải biến fallback đó thành lỗi nhìn thấy được.
+
+### L-033: Manifest ảnh minh hoạ liệt kê cả biến thể WebP → srcset nối hậu tố 2 lần → 404
+
+- **Ngày:** 2026-11-14
+- **Triệu chứng:** Người dùng báo "ảnh placeholder cũ vẫn còn trong database". Screenshot
+  cho thấy card "Cafe Caracoli" hiện SVG placeholder (tách cà phê line-art) thay vì ảnh
+  minh hoạ AI; console có 404 `cafe-2-800-400.webp`, `quan-an-1-400-400.webp`.
+- **Điều tra:** DB `place_images` SẠCH (29 dòng, 100% `/data/cold-start/images/venues/*.jpg`,
+  đối chiếu từng URL — đủ file trên đĩa, 0 URL placeholder). Nguyên nhân thật nằm ở FE:
+  `copy-cold-start-images.mjs` sinh manifest bằng cách liệt kê MỌI file ảnh trong thư mục
+  nhóm, bao gồm biến thể `-400.webp`/`-800.webp`. `useCategoryImage` chọn theo hash tên quán
+  → có thể chọn nhầm `cafe-2-800.webp`; `coldStartSrcSet()` lại nối `-400`/`-800` lần nữa
+  trên tên đã kèm kích thước → `cafe-2-800-400.webp` không tồn tại → 404 → `onError` rơi về
+  SVG placeholder D-050 (trông như "ảnh placeholder cũ").
+- **Nguyên nhân gốc:** hai quy ước đặt tên không khớp nhau — script variants sinh
+  `<tên>-<kích thước>.webp` từ ảnh gốc, nhưng script manifest coi mọi file khớp đuôi ảnh
+  là ảnh gốc. Không có test nào chặn việc manifest chứa file biến thể.
+- **Cách sửa:** lọc `/-\d+\.webp$/i` khi sinh manifest (ảnh gốc = jpg/png/webp không kèm
+  kích thước). Verify: container rebuild → manifest chỉ còn `cafe-1.jpg, cafe-2.jpg,
+  quan-an-1.jpg`; `/discover` tải `cafe-1-800.webp`/`quan-an-1-800.webp` thành công
+  (naturalWidth > 0), 0 lỗi 404 ảnh; FE 149/149 pass.
+- **Cách phòng tránh:**
+  1. Khi một pipeline sinh file dẫn xuất (variant, thumbnail), script liệt kê "nguồn"
+     phải lọc rõ file dẫn xuất — không dựa vào "cùng đuôi file là cùng loại".
+  2. Kiểm tra bằng máy: sau khi đổi pipeline ảnh, chạy 1 lần `curl`/evaluate đếm lỗi 404
+     tài nguyên ảnh trên trang thật, không chỉ nhìn "trang vẫn hiện".
+  3. Khi người dùng báo lỗi kèm screenshot, đối chiếu dữ liệu DB TRƯỚC khi kết luận
+     "lỗi nằm ở DB" — lần này DB sạch, lỗi ở FE; nếu sửa DB theo lời dẫn sẽ phá dữ liệu đúng.

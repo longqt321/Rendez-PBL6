@@ -100,6 +100,15 @@ const IMAGE_GROUPS = ["cafe", "quan-an", "hai-san", "banh-mi", "chay", "quan-nha
 /** Đuôi file ảnh được chấp nhận trong manifest. */
 const IMAGE_EXT = /\.(webp|png|jpe?g)$/i
 
+/**
+ * Biến thể kích thước do `generate-image-variants.sh` sinh (`<tên>-400.webp`,
+ * `<tên>-800.webp`). KHÔNG được đưa vào manifest: manifest là danh sách ảnh
+ * GỐC, còn `coldStartSrcSet()` tự dựng `-400`/`-800` từ tên gốc. Nếu lọt vào,
+ * FE chọn nhầm `cafe-2-800.webp` rồi nối thêm hậu tố → `cafe-2-800-400.webp`
+ * (404) → card rơi về SVG placeholder dù ảnh minh hoạ có sẵn (L-033).
+ */
+const SIZE_VARIANT = /-\d+\.webp$/i
+
 /** Liệt kê đệ quy mọi file trong `dir`. */
 async function walk(dir) {
   const entries = await readdir(dir, { withFileTypes: true })
@@ -141,7 +150,7 @@ async function writeCategoryManifest(dir) {
   const manifest = {}
   for (const group of IMAGE_GROUPS) {
     const files = (await listDir(join(dir, group)))
-      .filter((name) => IMAGE_EXT.test(name))
+      .filter((name) => IMAGE_EXT.test(name) && !SIZE_VARIANT.test(name))
       .sort((a, b) => a.localeCompare(b, "en"))
     manifest[group] = files
   }
