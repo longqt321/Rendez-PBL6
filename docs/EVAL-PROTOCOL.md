@@ -128,3 +128,25 @@ Quy trình: copy `search-eval-v1.json` → `search-eval-v2.json`, sửa/bổ sun
 - **Cảnh báo rò rỉ lexicon (đo 2026-11-13)**: 103/112 query v2 (92%) chứa cụm từ mà
   `intent-lexicon.ts` bắt trực tiếp. Nhóm rò rỉ P@5 = 0.932; nhóm **không rò rỉ** (9 query)
   P@5 = **0.200**. Mọi báo cáo dùng bộ Đà Nẵng phải nêu cả hai con số.
+
+## 8. Bộ Yelp (track A — dataset chuẩn công cộng, 2026-11-13)
+
+Bộ `search-eval-yelp.json` (58 query, checksum `718792265c20c0e1283bdd8d366e636d6d63650583a14e32c0a05cf20388d4a0`)
+được sinh bằng `scripts/gen-yelp-queries.ts` theo **quy tắc độ khó định trước**:
+
+- Ràng buộc nhiều chiều (tag chính + city, hoặc tag chính + tag phụ).
+- Chỉ chọn tổ hợp có `exact ∈ [5, 30]` — tiêu chí chỉ dùng metadata, không dùng
+  điểm search → không p-hacking.
+- Phân bố đạt: median exact = 19, 0% query >30 venue, 0 query rỗng.
+
+Chạy: `bun run scripts/eval-search.ts --file search-eval-yelp` với
+`DATABASE_URL` trỏ DB bench (`postgres-bench`, port 5434).
+
+**Kết quả (2026-11-13):** lexical 0.497, dense 0.538, hybrid2 **0.728**, hybrid3 0.514
+(P@5). hybrid2 − dense p<0.001; hybrid3 − hybrid2 Δ −0.214 p<0.001 — hybrid3 kém hơn
+do `searchCondition` AND-token với stopword tiếng Anh + lexicon chỉ tiếng Việt (chi
+tiết ở `docs/BACKLOG.md`). Bộ này **không có rò rỉ lexicon** (lexicon tiếng Anh chưa
+tồn tại khi viết query) nên phản ánh năng lực thật — khác với v2 (92% query rò rỉ).
+
+Recommendation trên 701.057 event Yelp (leave-one-out): item-item R@10 0.062 >
+popularity 0.033 > random 0.001, cả hai so sánh p<0.001 (bootstrap 10k, seed 42).

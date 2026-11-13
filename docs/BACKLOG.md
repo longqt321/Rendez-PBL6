@@ -773,3 +773,30 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
 - [ ] **Cả 4 chế độ đều ≤0.28 ở nhóm `typo`** (v2): không mô hình nào sửa lỗi gõ
       trong từ khoá ý định. Cần edit-distance trên token lexicon trước khi vào
       trigram/embedding.
+
+## Phát hiện khi chạy track A — Yelp Open Dataset (2026-11-13, commit 0f768da)
+
+- [ ] **`searchCondition` yêu cầu AND mọi token → stopword tiếng Anh làm rỗng nhánh
+      lexical** (`places.ts` L196-218). Query `"good donuts with outdoor seating"`
+      đòi venue chứa đồng thời `good`, `with`, `outdoor`, `seating`. Hệ quả đo được:
+      hybrid3 P@5 chỉ 0.514 so với hybrid2 0.728 trên bộ Yelp (Δ −0.214, p<0.001).
+      Hướng sửa: danh sách stopword EN/VI + bỏ token không mang nghĩa trước khi AND.
+      **Đây là thay đổi production — phải đo lại cả v2 và Yelp sau khi sửa.**
+- [ ] **`detectIntentAttributes` chỉ có lexicon tiếng Việt** → query tiếng Anh không
+      kích hoạt được nhánh structured (mất trọng số RRF ×2). Cần lexicon EN hoặc
+      chuyển sang trích thuộc tính đa ngữ trước khi mở rộng thị trường ngoài VN.
+- [ ] **Chưa có annotation người thật (Cohen's κ)** cho cả v2 và bộ Yelp. Nhãn hiện
+      tự suy từ DB. Hội nghị khắt khe thường yêu cầu ≥2 người gán nhãn độc lập + κ.
+- [ ] **Bộ query tiếng Anh (58 câu) chưa qua người bản ngữ duyệt** — do tôi sinh theo
+      quy tắc độ khó định trước; cần review để loại câu phi tự nhiên.
+- [ ] **Chưa chạy Foursquare NYC/TKY** (chuẩn de-facto cho next-POI) và **BEIR**
+      (component retrieval) — hai track bổ sung đã nêu trong `RESEARCH-PROTOCOL.md`.
+- [ ] **Chưa so sánh với baseline học máy** (BPR, LightGCN, SASRec) — hiện chỉ có
+      item-item CF, popularity, random. Kết quả item-item R@10 0.062 là mức tham chiếu
+      thấp, cần baseline mạnh hơn để định vị đóng góp.
+- [ ] **`prepare-yelp.ts` hardcode đường dẫn `/home/longtran/datasets/yelp/...`** làm
+      mặc định — nên chuyển sang biến môi trường bắt buộc hoặc đường dẫn tương đối
+      trước khi chia sẻ repo cho người khác.
+- [ ] **Dữ liệu Yelp chiếm ~10.5 GB** (`Yelp-JSON.zip` 4.04 GB + `yelp_dataset.tar`
+      4.34 GB + JSONL 1.1 GB) trong `/home/longtran/datasets/yelp` và
+      `backend/data/yelp`. Đã gitignore JSONL; cần quyết định giữ hay xoá bản zip/tar.
