@@ -393,8 +393,12 @@ interface DenseCandidate {
 /**
  * Top-K ứng viên dense theo cosine trên `place_embeddings`. Trả `null` khi
  * encoder lỗi/không khả dụng — caller fallback thuần lexical, KHÔNG throw.
+ * Export cho eval script đo chế độ dense-only / hybrid 2 nhánh.
  */
-async function denseCandidates(query: string, limit: number): Promise<DenseCandidate[] | null> {
+export async function denseCandidates(
+  query: string,
+  limit: number,
+): Promise<DenseCandidate[] | null> {
   const vec = await embedQuery(query)
   if (!vec) return null
   const vecLiteral = vectorToLiteral(vec)
@@ -464,9 +468,9 @@ async function structuredCandidates(
 /**
  * Reciprocal Rank Fusion: score = Σ 1/(k + hạng). Hạng bắt đầu từ 1 ở cả hai
  * nhánh; venue xuất hiện ở cả hai nhánh được cộng dồn. Tie-break bằng id để
- * thứ tự ổn định giữa các request.
+ * thứ tự ổn định giữa các request. Export cho eval script đo từng chế độ.
  */
-function fuseRrf(...branches: { ids: string[]; weight?: number }[]): string[] {
+export function fuseRrf(...branches: { ids: string[]; weight?: number }[]): string[] {
   const scores = new Map<string, number>()
   const add = ({ ids, weight = 1 }: { ids: string[]; weight?: number }) => {
     ids.forEach((id, index) => {

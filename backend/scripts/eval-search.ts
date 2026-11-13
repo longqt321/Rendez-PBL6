@@ -21,7 +21,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs"
 import { join } from "node:path"
 import { Prisma } from "../generated/prisma/client"
 import { prisma } from "../src/lib/prisma"
-import { listPlaces, parsePlaceFilters } from "../src/lib/places"
+import { denseCandidates, fuseRrf, listPlaces, parsePlaceFilters } from "../src/lib/places"
 
 const EVAL_DIR = join(import.meta.dir, "..", "data", "eval")
 
@@ -206,110 +206,122 @@ function percentile(values: number[], p: number): number {
   return Math.round(sorted[idx] ?? 0)
 }
 
+/** Số ứng viên mỗi nhánh khi fuse — khớp `HYBRID_POOL` của `lib/places.ts`. */
+const POOL = 50
+
+type ModeName = "lexical" | "dense" | "hybrid2" | "hybrid3"
+
+const MODES: ModeName[] = ["lexical", "dense", "hybrid2", "hybrid3"]
+
 async function evaluate(): Promise<void> {
   const labels = verifyFrozen()
   const queries = loadQueries()
 
-  const totals = {
+  const totals: Record<
+    ModeName,
+    { p5: number; p10: number; recall10: number; ndcg10: number; mrr: number; zero: number }
+  > = {
     lexical: { p5: 0, p10: 0, recall10: 0, ndcg10: 0, mrr: 0, zero: 0 },
-    hybrid: { p5: 0, p10: 0, recall10: 0, ndcg10: 0, mrr: 0, zero: 0 },
+    dense: { p5: 0, p10: 0, recall10: 0, ndcg10: 0, mrr: 0, zero: 0 },
+    hybrid2: { p5: 0, p10: 0, recall10: 0, ndcg10: 0, mrr: 0, zero: 0 },
+    hybrid3: { p5: 0, p10: 0, recall10: 0, ndcg10: 0, mrr: 0, zero: 0 },
   }
-  const lexicalLatency: number[] = []
-  const hybridLatency: number[] = []
+  const latency: Record<ModeName, number[]> = { lexical: [], dense: [], hybrid2: [], hybrid3: [] }
   const perQuery: {
     id: string
     group: string
     variant?: string
     query: string
     lexical: Metrics
-    hybrid: Metrics
+    dense: Metrics
+    hybrid2: Metrics
+    hybrid3: Metrics
   }[] = []
 
   for (const q of queries) {
     const qLabels = labels.grades[q.id] ?? {}
 
+    // Nhánh lexical: lấy pool 50 để hybrid2 fuse được, 10 đầu dùng cho chế độ lexical.
     const t0 = performance.now()
-    const lexIds = await lexicalTop(q.query, 10)
-    lexicalLatency.push(performance.now() - t0)
-    const lex = score(lexIds, qLabels)
+    const lexPool = await lexicalTop(q.query, POOL)
+    latency.lexical.push(performance.now() - t0)
 
+    // Nhánh dense: cùng hàm production, không nhân bản SQL.
     const t1 = performance.now()
-    const page = await listPlaces(parsePlaceFilters({ q: q.query }), null, 10)
-    hybridLatency.push(performance.now() - t1)
-    const hyb = score(
-      page.items.map((p) => p.id),
-      qLabels,
-    )
+    const densePool = (await denseCandidates(q.query, POOL))?.map((c) => c.id) ?? []
+    latency.dense.push(performance.now() - t1)
 
-    for (const key of ["p5", "p10", "recall10", "ndcg10", "mrr"] as const) {
-      totals.lexical[key] += lex[key]
-      totals.hybrid[key] += hyb[key]
+    // Hybrid 2 nhánh = RRF(lexical, dense) — hành vi trước khi có nhánh structured.
+    // Độ trễ tính từ `t0`: gồm cả hai nhánh (chạy tuần tự) + fuse trong RAM.
+    const fused2 = fuseRrf({ ids: lexPool }, { ids: densePool }).slice(0, 10)
+    latency.hybrid2.push(performance.now() - t0)
+
+    // Hybrid 3 nhánh = đúng đường production (`listPlaces` có nhánh structured).
+    const t3 = performance.now()
+    const page = await listPlaces(parsePlaceFilters({ q: q.query }), null, 10)
+    latency.hybrid3.push(performance.now() - t3)
+
+    const results: Record<ModeName, string[]> = {
+      lexical: lexPool.slice(0, 10),
+      dense: densePool.slice(0, 10),
+      hybrid2: fused2,
+      hybrid3: page.items.map((p) => p.id),
     }
-    if (lexIds.length === 0) totals.lexical.zero++
-    if (page.items.length === 0) totals.hybrid.zero++
+    const scored = {} as Record<ModeName, Metrics>
+    for (const mode of MODES) {
+      const ids = results[mode]
+      const m = score(ids, qLabels)
+      scored[mode] = { ...m, zeroRate: ids.length === 0 ? 1 : 0 }
+      for (const key of ["p5", "p10", "recall10", "ndcg10", "mrr"] as const) {
+        totals[mode][key] += m[key]
+      }
+      if (ids.length === 0) totals[mode].zero++
+    }
 
     perQuery.push({
       id: q.id,
       group: q.intent ?? q.group ?? "?",
       variant: q.variant,
       query: q.query,
-      lexical: { ...lex, zeroRate: lexIds.length === 0 ? 1 : 0 },
-      hybrid: { ...hyb, zeroRate: page.items.length === 0 ? 1 : 0 },
+      ...scored,
     })
   }
 
   const n = queries.length
   const avg = (v: number) => Number((v / n).toFixed(3))
-  const summary = {
-    frozenAt: labels.frozenAt,
-    queries: n,
-    lexical: {
-      p5: avg(totals.lexical.p5),
-      p10: avg(totals.lexical.p10),
-      recall10: avg(totals.lexical.recall10),
-      ndcg10: avg(totals.lexical.ndcg10),
-      mrr: avg(totals.lexical.mrr),
-      zeroRate: Number((totals.lexical.zero / n).toFixed(3)),
-      latencyP50Ms: percentile(lexicalLatency, 50),
-      latencyP95Ms: percentile(lexicalLatency, 95),
-    },
-    hybrid: {
-      p5: avg(totals.hybrid.p5),
-      p10: avg(totals.hybrid.p10),
-      recall10: avg(totals.hybrid.recall10),
-      ndcg10: avg(totals.hybrid.ndcg10),
-      mrr: avg(totals.hybrid.mrr),
-      zeroRate: Number((totals.hybrid.zero / n).toFixed(3)),
-      latencyP50Ms: percentile(hybridLatency, 50),
-      latencyP95Ms: percentile(hybridLatency, 95),
-    },
+  const summary: Record<string, unknown> = { frozenAt: labels.frozenAt, queries: n }
+  for (const mode of MODES) {
+    const t = totals[mode]
+    summary[mode] = {
+      p5: avg(t.p5),
+      p10: avg(t.p10),
+      recall10: avg(t.recall10),
+      ndcg10: avg(t.ndcg10),
+      mrr: avg(t.mrr),
+      zeroRate: Number((t.zero / n).toFixed(3)),
+      latencyP50Ms: percentile(latency[mode], 50),
+      latencyP95Ms: percentile(latency[mode], 95),
+    }
   }
 
-  const byGroup: Record<string, { lexicalP5: number; hybridP5: number; n: number }> = {}
-  for (const row of perQuery) {
-    const g = (byGroup[row.group] ??= { lexicalP5: 0, hybridP5: 0, n: 0 })
-    g.lexicalP5 += row.lexical.p5
-    g.hybridP5 += row.hybrid.p5
-    g.n++
+  type GroupAgg = Record<string, Record<string, number>>
+  const agg = (keyOf: (row: (typeof perQuery)[number]) => string | undefined) => {
+    const out: GroupAgg = {}
+    for (const row of perQuery) {
+      const key = keyOf(row)
+      if (!key) continue
+      const g = (out[key] ??= { n: 0 })
+      g.n = (g.n ?? 0) + 1
+      for (const mode of MODES) g[`${mode}P5`] = (g[`${mode}P5`] ?? 0) + row[mode].p5
+    }
+    for (const g of Object.values(out)) {
+      for (const mode of MODES)
+        g[`${mode}P5`] = Number(((g[`${mode}P5`] ?? 0) / (g.n ?? 1)).toFixed(3))
+    }
+    return out
   }
-  for (const g of Object.values(byGroup)) {
-    g.lexicalP5 = Number((g.lexicalP5 / g.n).toFixed(3))
-    g.hybridP5 = Number((g.hybridP5 / g.n).toFixed(3))
-  }
-
-  // Theo kiểu diễn đạt — đo độ bền khi người dùng diễn đạt khác cùng ý định.
-  const byVariant: Record<string, { lexicalP5: number; hybridP5: number; n: number }> = {}
-  for (const row of perQuery) {
-    if (!row.variant) continue
-    const v = (byVariant[row.variant] ??= { lexicalP5: 0, hybridP5: 0, n: 0 })
-    v.lexicalP5 += row.lexical.p5
-    v.hybridP5 += row.hybrid.p5
-    v.n++
-  }
-  for (const v of Object.values(byVariant)) {
-    v.lexicalP5 = Number((v.lexicalP5 / v.n).toFixed(3))
-    v.hybridP5 = Number((v.hybridP5 / v.n).toFixed(3))
-  }
+  const byGroup = agg((row) => row.group)
+  const byVariant = agg((row) => row.variant)
 
   console.log(`Bộ test đóng băng v${SET} — ${n} query (freeze ${labels.frozenAt})`)
   console.log("\nChỉ số tổng (trung bình/query):")
@@ -321,7 +333,10 @@ async function evaluate(): Promise<void> {
     console.table(byVariant)
   }
 
-  writeFileSync(RESULT_FILE, `${JSON.stringify({ summary, byGroup, perQuery }, null, 2)}\n`)
+  writeFileSync(
+    RESULT_FILE,
+    `${JSON.stringify({ summary, byGroup, byVariant, perQuery }, null, 2)}\n`,
+  )
   console.log(`\nĐã ghi ${RESULT_FILE}`)
   process.exit(0)
 }

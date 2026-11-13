@@ -767,3 +767,9 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       không sửa bộ test.
 - [ ] **Cần bộ held-out v3** khi đã tinh chỉnh lexicon/ranking nhiều vòng trên v2, để
       phát hiện overfit (quy tắc ghi ở `docs/EVAL-PROTOCOL.md` mục 6).
+- [ ] **Trọng số RRF 1:1 giữa lexical và dense là sai trên v2**: hybrid2 (0.511) tệ
+      hơn dense-only (0.534) vì nhánh lexical yếu (0.423) kéo dense xuống. Thử
+      weight dense 1.5–2 trong `fuseRrf` và đo lại trên cùng checksum v2.
+- [ ] **Cả 4 chế độ đều ≤0.28 ở nhóm `typo`** (v2): không mô hình nào sửa lỗi gõ
+      trong từ khoá ý định. Cần edit-distance trên token lexicon trước khi vào
+      trigram/embedding.

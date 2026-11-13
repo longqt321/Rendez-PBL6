@@ -69,8 +69,12 @@ venue thoả, 38% query khó (≤10 venue). Nhãn vẫn suy tự động từ r�
 
 | Phương pháp | P@5 | P@10 | R@10 | nDCG@10 | MRR | zeroRate | p50 | p95 |
 |---|---|---|---|---|---|---|---|---|
-| Lexical thuần (trigram) | 0.423 | 0.398 | 0.404 | 0.412 | 0.497 | 0 | 33 ms | 51 ms |
-| **Hybrid 3 nhánh** | **0.873** | **0.761** | **0.851** | **0.861** | **0.906** | 0 | 64 ms | 113 ms |
+| Lexical thuần (trigram) | 0.423 | 0.398 | 0.404 | 0.412 | 0.497 | 0 | 39 ms | 63 ms |
+| Dense thuần (e5-small, cosine) | 0.534 | 0.505 | 0.501 | 0.505 | 0.572 | 0 | 31 ms | 52 ms |
+| Hybrid 2 nhánh (RRF lexical+dense) | 0.511 | 0.482 | 0.485 | 0.494 | 0.571 | 0 | 73 ms | 106 ms |
+| **Hybrid 3 nhánh (+ structured intent)** | **0.873** | **0.761** | **0.851** | **0.861** | **0.906** | 0 | 64 ms | 111 ms |
+
+`hybrid2` chạy tuần tự hai nhánh nên p95 106 ms là cận trên (production chạy song song).
 
 > [!WARNING]
 > Không so sánh điểm tổng giữa hai bộ khác phân bố độ khó. Chỉ so v2 với v2 (cùng
@@ -89,11 +93,17 @@ tên quán không bắt được lỗi gõ trong từ khoá ý định).
 
 | Phương pháp | P@5 | P@10 | R@10 | nDCG@10 | MRR | zeroRate | p50 | p95 |
 |---|---|---|---|---|---|---|---|---|
-| Lexical thuần (trigram) | 0.504 | 0.480 | 0.465 | 0.513 | 0.584 | 0 | 39 ms | 48 ms |
-| Hybrid 2 nhánh (lexical + dense, RRF k=60) | 0.604 | 0.564 | 0.553 | 0.598 | 0.662 | 0 | 76 ms | 143 ms |
-| Hybrid 3 nhánh, structured weight 2 | 0.768 | — | — | — | — | 0 | 68 ms | 94 ms |
+| Lexical thuần (trigram) | 0.504 | 0.480 | 0.465 | 0.513 | 0.584 | 0 | 40 ms | 69 ms |
+| Dense thuần (e5-small, cosine) | 0.596 | 0.558 | 0.545 | 0.584 | 0.627 | 0 | 32 ms | 47 ms |
+| Hybrid 2 nhánh (RRF lexical+dense) | 0.612 | 0.578 | 0.594 | 0.613 | 0.645 | 0 | 74 ms | 101 ms |
+| Hybrid 3 nhánh, structured weight 2 | 0.768 | 0.702 | 0.716 | 0.747 | 0.742 | 0 | 70 ms | 96 ms |
 
 (v1 đo lại sau khi thêm trọng số 2: P@5 0.736 → 0.768, không regression.)
+
+**So sánh v1 → v2 (P@5):** lexical −0.081, dense −0.062, hybrid2 −0.101, hybrid3 **+0.105**.
+Ba mô hình thuần giảm đúng như thiết kế (v2 khó hơn); hybrid3 tăng vì v2 có nhiều query
+nêu thuộc tính rõ ràng — đúng thế mạnh của nhánh structured. Trên v2, hybrid2 tệ hơn
+dense-only (0.511 vs 0.534) → trọng số RRF 1:1 giữa lexical/dense cần xem lại.
 
 Nhóm còn yếu ở cả hai bộ: `date`, `friends`, `bar`, `korean` — trần chất lượng bị
 giới hạn bởi dữ liệu (tag nghèo, ít venue), không chỉ thuật toán.
