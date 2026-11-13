@@ -4,6 +4,7 @@ import { logger } from "./logger"
 import { getPickDate, pickDailyPicks } from "./daily-picks"
 import { detectPlaceSuggestions } from "./suggestions-job"
 import { maintainInteractionPartitions } from "./event-retention"
+import { refreshAffinityCache } from "./affinity"
 
 /**
  * Hàng đợi pg-boss (K6, L4) — chạy trên chính Postgres, không thêm hạ tầng.
@@ -33,6 +34,11 @@ const EVENT_RETENTION_QUEUE = "event-retention"
 const EVENT_RETENTION_DLQ = "event-retention-dlq"
 /** 04:00 mỗi ngày — giờ thấp điểm, không tranh việc với cron 5 phút. */
 const EVENT_RETENTION_CRON = "0 4 * * *"
+
+const AFFINITY_QUEUE = "refresh-affinity"
+const AFFINITY_DLQ = "refresh-affinity-dlq"
+/** 03:30 mỗi ngày — trước event-retention (04:00) để tính trên partition còn đủ. */
+const AFFINITY_CRON = "30 3 * * *"
 
 let boss: PgBoss | null = null
 
@@ -96,6 +102,27 @@ export async function startQueue(): Promise<void> {
     }
   })
   await instance.schedule(EVENT_RETENTION_QUEUE, EVENT_RETENTION_CRON, null, {
+    tz: DAILY_PICKS_TIME_ZONE,
+    missed: "once",
+  })
+
+  // Item-item affinity cho gợi ý cá nhân hoá: tính lại toàn bộ cache mỗi ngày.
+  // `missed: "once"` — server downtime qua 03:30 thì chạy bù khi lên; cache cũ
+  // vẫn dùng được nên không cần chạy bù nhiều lần.
+  await instance.createQueue(AFFINITY_DLQ)
+  await instance.createQueue(AFFINITY_QUEUE, {
+    retryLimit: 3,
+    retryDelay: 600,
+    retryBackoff: true,
+    deadLetter: AFFINITY_DLQ,
+  })
+  await instance.work(AFFINITY_QUEUE, async (jobs) => {
+    for (const job of jobs) {
+      const count = await refreshAffinityCache()
+      logger.info({ jobId: job.id, places: count }, "refresh-affinity xong")
+    }
+  })
+  await instance.schedule(AFFINITY_QUEUE, AFFINITY_CRON, null, {
     tz: DAILY_PICKS_TIME_ZONE,
     missed: "once",
   })

@@ -193,13 +193,31 @@ describe("tìm kiếm nâng cao", () => {
     expect(body.items.map((item) => item.id)).toContain("test-search-coffee-house")
   })
 
-  test("0 kết quả + q dài ≥ 3 → meta.didYouMean là tên quán gần nhất (pg_trgm)", async () => {
+  test("q lỗi chính tả có từ khoá lexicon ('caphe trungg') → hybrid vẫn trả quán đúng", async () => {
     const body = await getJson<ListJson<SearchPlaceJson>>(
       "/api/v1/places?q=" + encodeURIComponent("caphe trungg"),
     )
+    // Hybrid search (P1): token "caphe" được lexicon hiểu là category cafe, nên
+    // thay vì 0 kết quả + "ý bạn là…" như thời lexical thuần, hệ thống trả các
+    // quán cafe — quán người dùng muốn nằm trong kết quả (UX kiểu Google: trả
+    // kết quả cho typo thay vì chỉ gợi ý). didYouMean chỉ còn cho case trượt
+    // hoàn toàn (test dưới).
+    expect(body.items.map((item) => item.id)).toContain("test-search-caphe-trung")
+    expect(body.meta?.didYouMean ?? null).toBeNull()
+  })
+
+  test("0 kết quả + q dài ≥ 3 → meta.didYouMean là tên quán gần nhất (pg_trgm)", async () => {
+    // "banh xeo ba duongg" — typo của "Bánh xèo Bà Dưỡng", không chứa cụm nào
+    // trong lexicon (nếu chứa, hybrid sẽ trả kết quả qua nhánh structured — xem
+    // test trên) và không venue nào LIKE khớp token "duongg" → 0 kết quả,
+    // didYouMean gợi ý tên quán trigram gần nhất. (Trước đây test này dùng
+    // "caphe trungg" nhưng hybrid đã trả kết quả cho query đó.)
+    const body = await getJson<ListJson<SearchPlaceJson>>(
+      "/api/v1/places?q=" + encodeURIComponent("banh xeo ba duongg"),
+    )
     expect(body.items).toEqual([])
     expect(body.meta?.totalResults).toBe(0)
-    expect(body.meta?.didYouMean).toBe("Cà phê Trung")
+    expect(body.meta?.didYouMean).toBe("Bánh xèo Bà Dưỡng")
   })
 
   test("0 kết quả nhưng q quá ngắn (< 3) → didYouMean null", async () => {

@@ -22,6 +22,7 @@ import { listPosts } from "../lib/posts"
 import { rankPlaceSuggestions } from "../lib/ranking"
 import { jsonWithCache } from "../lib/http-cache"
 import { getDailyPicks, getPickDate } from "../lib/daily-picks"
+import { getRecommendedPlaces } from "../lib/recommendations"
 import {
   fetchPublishedRankCandidatesWithStatus,
   normalizeCaption,
@@ -165,6 +166,36 @@ export function createPlacesRouter() {
       },
       { maxAge: 300, etagData: { date: result.date, items: result.items } },
     )
+  })
+
+  /**
+   * Gợi ý cá nhân hoá — item-item affinity từ lịch sử tương tác của actor
+   * (user đăng nhập hoặc khách có `anon_id` do FE sinh). Không có lịch sử →
+   * cold start theo review_count. Đứng trước `/places/:id`.
+   */
+  router.get("/places/recommended", async (c) => {
+    const viewer = await getViewer(c)
+    const rawLimit = Number(c.req.query("limit") ?? 6)
+    const limit = Number.isFinite(rawLimit) ? Math.min(20, Math.max(1, Math.trunc(rawLimit))) : 6
+
+    const startedAt = performance.now()
+    const result = await getRecommendedPlaces(
+      { userId: viewer?.id ?? null, anonId: viewer ? null : (c.req.query("anonId") ?? null) },
+      limit,
+    )
+    const tookMs = Math.round(performance.now() - startedAt)
+
+    return c.json({
+      items: result.items,
+      next: null,
+      meta: {
+        tookMs,
+        cacheHit: false,
+        totalResults: result.items.length,
+        strategy: result.strategy,
+        seedCount: result.seedCount,
+      },
+    })
   })
 
   router.get("/places/map", async (c) => {

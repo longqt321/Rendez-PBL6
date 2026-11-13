@@ -243,6 +243,15 @@ async function evaluate(): Promise<void> {
     const t1 = performance.now()
     const densePool = (await denseCandidates(q.query, POOL))?.map((c) => c.id) ?? []
     latency.dense.push(performance.now() - t1)
+    // denseCandidates trả null (encoder lỗi) một cách ÂM THẦM để production
+    // fallback lexical — nhưng trong eval thì im lặng đó làm méo số liệu
+    // (hybrid mất cả nhánh dense mà không ai biết, L-032). Đo được thì phải
+    // cảnh báo to, không để kết quả sai lặng lẽ.
+    if (densePool.length === 0) {
+      console.warn(
+        `CẢNH BÁO: dense pool rỗng cho query "${q.query}" — encoder lỗi hay vector rỗng?`,
+      )
+    }
 
     // Hybrid 2 nhánh = RRF(lexical, dense) — hành vi trước khi có nhánh structured.
     // Độ trễ tính từ `t0`: gồm cả hai nhánh (chạy tuần tự) + fuse trong RAM.

@@ -4,7 +4,9 @@ import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testconta
  * Harness Postgres thật cho integration test (T0.6).
  *
  * Mỗi file test gọi `startTestDb()` trong `beforeAll`: khởi container RIÊNG
- * `postgres:17-alpine`, chạy `prisma migrate deploy` để schema khớp migration
+ * `pgvector/pgvector:0.8.7-pg17` (cùng image với compose.yaml — có sẵn extension
+ * vector, migration `20261113080000_search_rec_foundation` cần type `vector`),
+ * bật extension `vector` trong DB test rồi chạy `prisma migrate deploy` để
  * đã commit (không dùng `db push` — test phải kiểm chính migration thật), rồi
  * seed dataset cold-start.
  *
@@ -15,11 +17,29 @@ import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testconta
 let container: StartedPostgreSqlContainer | null = null
 
 export async function startTestDb(): Promise<string> {
-  container = await new PostgreSqlContainer("postgres:17-alpine")
+  container = await new PostgreSqlContainer("pgvector/pgvector:0.8.7-pg17")
     .withDatabase("rendez_test")
     .withUsername("rendez")
     .withPassword("rendez_test")
     .start()
+
+  // Image pgvector chỉ CÀI sẵn extension, chưa bật trong DB mới tạo. Migration
+  // `20261113080000_search_rec_foundation` dùng type `vector` nên phải bật trước.
+  const createExtension = await container.exec([
+    "psql",
+    "-U",
+    "rendez",
+    "-d",
+    "rendez_test",
+    "-c",
+    "CREATE EXTENSION IF NOT EXISTS vector",
+  ])
+  if (createExtension.exitCode !== 0) {
+    await stopTestDb()
+    throw new Error(
+      `CREATE EXTENSION vector thất bại trong container test:\n${createExtension.stderr}`,
+    )
+  }
 
   const connectionUrl = container.getConnectionUri()
   const backendDir = new URL("../..", import.meta.url).pathname

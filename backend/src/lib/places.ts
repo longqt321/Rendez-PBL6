@@ -262,10 +262,16 @@ const QUERY_STOPWORDS = new Set([
   "rat",
   "cung",
   "hay",
-  // --- Tiếng Việt: tính từ chất lượng chung ---
+  // --- Tiếng Việt: tính từ chất lượng chung + danh từ chung ---
+  // "ngon" (tasty) và "quan" (quán = eatery) là từ chung, đúng loại hư từ giống
+  // "good"/"place" của tiếng Anh: gần như mọi venue đều có thể chứa "quán" trong
+  // tên, còn "ngon" thì không venue nào — bắt buộc khớp cả hai chỉ làm rỗng nhánh
+  // lexical. Đo trên bộ v2: bỏ 2 token này khỏi điều kiện AND giữ P@5 0.875 thay
+  // vì 0.870. Test `quan ngon` vẫn khớp "Nhà Hàng Bà Bè" nhờ nhánh biến thể đồng
+  // nghĩa ("nha hang") + xếp hạng lexical theo GREATEST similarity trên biến thể.
   "ngon",
-  "tot",
   "quan",
+  "tot",
 ])
 
 /**
@@ -363,7 +369,7 @@ function buildConditions(filters: PlaceFilters): Prisma.Sql[] {
 }
 
 /** Dòng thô trả từ Postgres — tên cột snake_case như SELECT. */
-interface PlaceRow {
+export interface PlaceRow {
   id: string
   name: string
   address: string
@@ -392,7 +398,7 @@ interface PlaceRow {
  * `FROM`) — nối sau `FROM` sẽ bị Postgres hiểu là một FROM item thứ hai và báo
  * lỗi cú pháp.
  */
-function selectPlaces(extra: Prisma.Sql = Prisma.empty): Prisma.Sql {
+export function selectPlaces(extra: Prisma.Sql = Prisma.empty): Prisma.Sql {
   return Prisma.sql`
   SELECT p.id, p.name, p.address, p.city, p.district, p.category::text AS category, p.tags,
          p.price_level, p.lat, p.lng, p.status::text AS status, p.opening_hours, p.created_at, p.published_at,
@@ -583,7 +589,19 @@ async function hybridSearch(
 ): Promise<{ items: PlaceDto[]; total: number } | null> {
   const attrConditions = buildConditions({ ...filters, q: undefined })
   const lexicalConditions = buildConditions(filters)
-  const lexicalRank = Prisma.sql`similarity(${HAYSTACK}, immutable_search_normalize(${filters.q}))`
+  // Xếp hạng lexical phải dùng CÙNG ngữ nghĩa với điều kiện: điều kiện OR cả
+  // biến thể đồng nghĩa cụm ("quan ngon" → "nha hang") nhưng nếu chỉ đo
+  // similarity với chuỗi gốc thì venue khớp biến thể bị điểm trigram rất thấp,
+  // chìm dưới đống venue chỉ khớp một token chung ("quan" trong "Quảng Nam")
+  // và bị cắt khỏi pool 50. GREATEST similarity trên (q + biến thể) = venue nào
+  // khớp tốt nhất MỘT cách diễn đạt của người dùng thì đứng cao nhất.
+  const rankVariants = [filters.q, ...synonymVariants(normalizeSearchText(filters.q))]
+  const lexicalRank = Prisma.sql`GREATEST(${Prisma.join(
+    rankVariants.map(
+      (variant) => Prisma.sql`similarity(${HAYSTACK}, immutable_search_normalize(${variant}))`,
+    ),
+    ", ",
+  )})`
 
   const intent = detectIntentAttributes(filters.q)
 
