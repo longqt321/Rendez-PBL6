@@ -1006,3 +1006,52 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
   3. Khi chạy lệnh dài hạn qua subagent/task: luôn ghi PID ra file (`$! > pid.txt`) và detach đúng (`setsid nohup ... &`).
 - **Phạm vi áp dụng:** Mọi tác vụ nền, download, benchmark chạy dài.
 
+
+### L-031: Thêm "ngon"/"quan" vào QUERY_STOPWORDS làm gãy 2 test search
+
+- **Ngày:** 2026-11-13 → 2026-11-14
+- **Triệu chứng:** Sau commit 73940c0 (thêm stopword EN/VI), test
+  `"quan ngon" khớp "Nhà Hàng Bà Bè"` fail (fixture bị cắt khỏi 30 kết quả) và
+  test `"caphe trungg" → 0 kết quả + didYouMean` fail (structured nhánh lexicon
+  trả 30 quán cafe).
+- **Nguyên nhân gốc:**
+  1. Tôi đưa "ngon"/"quan" vào `QUERY_STOPWORDS` vì nghĩ "ngon" là tính từ chất
+     lượng chung — nhưng sau đó lại đổi ý bỏ chúng ra ngoài vì "từ có nghĩa",
+     rồi lại phải đưa vào. Sự lăn tăn này cho thấy tôi sửa stopword theo cảm
+     tính, không đo bằng eval lẫn chạy test search trước khi commit.
+  2. Lỗi thật sự nằm ở chỗ khác: **xếp hạng lexical chỉ đo similarity với chuỗi
+     gốc**, trong khi điều kiện lọc OR cả biến thể đồng nghĩa cụm
+     ("quan ngon" → "nha hang"). Venue khớp qua biến thể có điểm trigram rất
+     thấp so với chuỗi gốc → chìm dưới đống venue chỉ khớp một token chung
+     ("quan" trong "Quảng Nam") và bị cắt khỏi `HYBRID_MAX_RESULTS` = 30.
+- **Cách sửa đúng:** giữ "ngon"/"quan" làm stopword (chúng đúng nghĩa hư từ:
+  "quán" = eatery như "place" tiếng Anh, "ngon" = tasty như "good") và sửa
+  xếp hạng: `GREATEST(similarity(haystack, q), similarity(haystack, variant1), …)`
+  — venue khớp tốt nhất MỘT cách diễn đạt của người dùng thì đứng cao nhất.
+  Đo lại: v2 hybrid3 0.875 (không đổi), Yelp 0.886 (không đổi), 16/16 demo-api.
+- **Cách phòng tránh:**
+  1. Mỗi lần đổi `QUERY_STOPWORDS`/lexicon: chạy `bun test test/demo-api.test.ts`
+     TRƯỚC khi commit, không chỉ dựa vào eval.
+  2. Điều kiện lọc và xếp hạng phải dùng CÙNG tập biến thể — nếu filter OR biến
+     thể thì rank cũng phải tính điểm cho biến thể đó.
+  3. Khi test fail sau thay đổi, đừng vội sửa test hay đổi stopword theo ý muốn:
+     log pool/rank (DEBUG_SEARCH) để tìm cơ chế thật trước.
+
+### L-032: Chạy 2 eval song song cho số liệu sai (dense rỗng âm thầm)
+
+- **Ngày:** 2026-11-14
+- **Triệu chứng:** Chạy `eval-search --set 2` (v2) và `--file search-eval-yelp`
+  song song trên 2 DB khác nhau. Yelp hybrid3 P@5 ra 0.869 thay vì 0.886; chạy
+  lại tuần tự thì về đúng 0.886. v2 cũng lệch (0.870 vs 0.875 — nguyên nhân này
+  là stopword, xem L-031, nhưng lần chạy song song che mất tín hiệu thật).
+- **Nguyên nhân gốc:** `denseCandidates` trả `null` (→ mảng rỗng trong eval) khi
+  `embedQuery` lỗi. Dưới tải CPU khi 2 script cùng chạy, encoder lỗi → nhánh
+  dense âm thầm rỗng → hybrid mất 1 nhánh mà script không báo gì. Eval đo số
+  liệu "đúng hệ thống lúc đó" chứ không phải số liệu của code.
+- **Cách phòng tránh:**
+  1. Eval luôn chạy TUẦN TỰ — đây là benchmark, không phải workload production.
+  2. Đã thêm warning to trong `eval-search.ts` khi dense pool rỗng cho một query:
+     `CẢNH BÁO: dense pool rỗng cho query "..."`. Thấy warning → kết quả không
+     đáng tin, chạy lại.
+  3. Nguyên tắc chung: một hàm production được phép "fallback âm thầm", nhưng
+     script đo lường phải biến fallback đó thành lỗi nhìn thấy được.

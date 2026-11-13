@@ -806,7 +806,41 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       0.514 → 0.886; v2 không regress (0.875).
 - [x] **Lexicon chỉ tiếng Việt** — ĐÃ SỬA (commit 73940c0): thêm 40 entry tiếng Anh
       trỏ tag Yelp (OR-match nên không ảnh hưởng dữ liệu Đà Nẵng).
-- [ ] **Testcontainer thiếu extension pgvector** — 19/85 test fail với
-      `type "vector" does not exist` khi `prisma migrate deploy` trong container test
-      (`test/helpers/pg.ts` phải chạy `CREATE EXTENSION vector` trước khi migrate).
-      Lỗi hạ tầng test có sẵn, không liên quan thay đổi search.
+- [x] **Testcontainer thiếu extension pgvector** — ĐÃ SỬA: `test/helpers/pg.ts` đổi
+      image `pgvector/pgvector:0.8.7-pg17` + chạy `CREATE EXTENSION vector` trước
+      `prisma migrate deploy`. Verify: migrate thành công, từng file test chạy riêng
+      đều pass (demo-api 16/16, places 39/39, media 4/4, posts-images 11/11,
+      users 12/12, rate-limit 7/7).
+
+## Phát hiện khi nối recommendation vào production (2026-11-14)
+
+- [x] **item-item CF chưa nối vào API** — ĐÃ SỬA: `GET /places/recommended`
+      (`routes/places.ts`) gọi `getRecommendedPlaces` (`lib/recommendations.ts`),
+      nhánh affinity đọc `affinity_cache` (trước đây là dead code), job nền
+      `refresh-affinity` chạy 03:30 Asia/Ho_Chi_Minh (`lib/queue.ts`), FE thêm
+      section "Gợi ý cho bạn" trên Discover. Verify: script
+      `scripts/verify-affinity.ts` PASS trên DB bench (strategy=affinity,
+      seedCount=3, đúng 2 place liên quan dự đoán); HTTP thật qua container
+      rebuild trả `meta.strategy` đúng (xem báo cáo ngày 2026-11-14).
+- [ ] **`hybridSearch` final filter không lọc lại theo `q`**: nhánh structured
+      (lexicon → category/tag) có thể đưa venue KHÔNG khớp text vào kết quả
+      (`attrConditions` build với `q: undefined`). Hệ quả: query lỗi chính tả
+      "caphe trungg" trả 30 quán cafe thay vì 0 + didYouMean. Đây là hành vi
+      "trả kết quả cho typo" kiểu Google — chấp nhận có chủ đích (test
+      demo-api đã cập nhật theo hợp đồng này), nhưng nếu muốn chặt hơn thì lọc
+      lại `q` ở final filter và đo lại cả 2 bộ eval.
+- [ ] **Full suite `bun test` bị nhiễu chéo giữa các file**: `prisma` là
+      singleton tạo từ `DATABASE_URL` lúc import — file đầu tiên chạy quyết định
+      DB cho mọi file sau (bun test chạy 1 process). 21/286 fail khi chạy full,
+      nhưng từng file chạy riêng đều pass (đã verify 6 file). Hướng sửa: chạy
+      mỗi file 1 process (`bun test ./test/x.test.ts` từng file, hoặc chuyển
+      sang vitest pool=forks), hoặc xoá singleton.
+- [ ] **`.env` schema từ chối chuỗi rỗng** (FE `src/lib/env.ts` + BE env schema):
+      `.env` cục bộ để `VITE_ENABLE_MOCKS=` rỗng làm 17 suite test chết khi
+      import axios. Workaround hiện tại: `frontend/.env.test` (gitignored).
+      Nên chấp nhận chuỗi rỗng hoặc normalize trong pretest.
+- [ ] **`denseCandidates` trả null âm thầm khi encoder lỗi** — production fallback
+      lexical là đúng, nhưng trong eval phải cảnh báo to (đã thêm warning trong
+      `eval-search.ts`, L-032): chạy 2 eval song song từng cho số liệu sai
+      (Yelp 0.869 thay vì 0.886) vì dense rỗng dưới tải CPU. Quy tắc: eval luôn
+      chạy tuần tự.
