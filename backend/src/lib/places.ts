@@ -3,6 +3,7 @@ import { prisma } from "./prisma"
 import { parseApiCategory, toApiCategory } from "./enums"
 import { normalizeSearchText, synonymVariants } from "./search-synonyms"
 import { embedQuery, vectorToLiteral } from "./embeddings"
+import { detectIntentAttributes } from "./intent-lexicon"
 import { logger } from "./logger"
 import type { Cursor, PlaceCursor, PlaceSort } from "./cursor"
 import type { PlaceCategory } from "@rendez/schema"
@@ -414,19 +415,60 @@ async function denseCandidates(query: string, limit: number): Promise<DenseCandi
 }
 
 /**
+ * Ứng viên từ thuộc tính có cấu trúc do `detectIntentAttributes` trích ra.
+ * Trả mảng rỗng khi query không nêu thuộc tính nào — RRF giữ nguyên 2 nhánh.
+ */
+async function structuredCandidates(
+  intent: ReturnType<typeof detectIntentAttributes>,
+  attrConditions: Prisma.Sql[],
+  limit: number,
+): Promise<string[]> {
+  const { tags, categories, districts } = intent
+  if (tags.length === 0 && categories.length === 0 && districts.length === 0) return []
+
+  const matches: Prisma.Sql[] = []
+  if (categories.length > 0)
+    matches.push(Prisma.sql`p.category::text IN (${Prisma.join(categories)})`)
+  if (tags.length > 0) matches.push(Prisma.sql`p.tags && ARRAY[${Prisma.join(tags)}]::text[]`)
+  if (districts.length > 0) matches.push(Prisma.sql`p.district IN (${Prisma.join(districts)})`)
+
+  // Xếp theo số tag khớp (nhiều thuộc tính đúng = sát ý hơn), rồi độ mới.
+  // Biểu thức phải nằm trong SELECT với alias — ORDER BY tham số trực tiếp bị
+  // Postgres hiểu là ordinal cột (`ORDER BY position 0 is not in select list`).
+  const tagOverlap =
+    tags.length > 0
+      ? Prisma.sql`(SELECT count(*) FROM unnest(p.tags) AS t(tag) WHERE t.tag = ANY(ARRAY[${Prisma.join(tags)}]::text[]))`
+      : Prisma.sql`0`
+
+  try {
+    const rows = await prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+      SELECT p.id, ${tagOverlap} AS overlap
+      FROM places p
+      WHERE ${Prisma.join(attrConditions, " AND ")}
+        AND (${Prisma.join(matches, " OR ")})
+      ORDER BY overlap DESC, p.published_at DESC NULLS LAST, p.id ASC
+      LIMIT ${limit}
+    `)
+    return rows.map((row) => row.id)
+  } catch (err) {
+    logger.warn({ err }, "structured retrieval thất bại, bỏ nhánh này")
+    return []
+  }
+}
+
+/**
  * Reciprocal Rank Fusion: score = Σ 1/(k + hạng). Hạng bắt đầu từ 1 ở cả hai
  * nhánh; venue xuất hiện ở cả hai nhánh được cộng dồn. Tie-break bằng id để
  * thứ tự ổn định giữa các request.
  */
-function fuseRrf(lexicalIds: string[], denseIds: string[]): string[] {
+function fuseRrf(...branches: string[][]): string[] {
   const scores = new Map<string, number>()
   const add = (ids: string[]) => {
     ids.forEach((id, index) => {
       scores.set(id, (scores.get(id) ?? 0) + 1 / (RRF_K + index + 1))
     })
   }
-  add(lexicalIds)
-  add(denseIds)
+  for (const ids of branches) add(ids)
   return [...scores.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .map(([id]) => id)
@@ -448,7 +490,9 @@ async function hybridSearch(
   const lexicalConditions = buildConditions(filters)
   const lexicalRank = Prisma.sql`similarity(${HAYSTACK}, immutable_search_normalize(${filters.q}))`
 
-  const [dense, lexicalRows] = await Promise.all([
+  const intent = detectIntentAttributes(filters.q)
+
+  const [dense, lexicalRows, structuredRows] = await Promise.all([
     denseCandidates(filters.q, HYBRID_POOL),
     // Nhánh lexical: cùng điều kiện với luồng thường, xếp hạng bằng trigram
     // similarity (dataset ~350 quán nên quét toàn bảng vẫn rẻ).
@@ -459,12 +503,18 @@ async function hybridSearch(
       ORDER BY ${lexicalRank} DESC, p.created_at DESC, p.id DESC
       LIMIT ${HYBRID_POOL}
     `),
+    // Nhánh structured: người dùng nêu đúng thuộc tính có trong dữ liệu ("quán
+    // chay", "hải sản", "ở Sơn Trà") → lấy venue khớp tag/category/district,
+    // xếp theo SỐ thuộc tính khớp rồi mới tới độ mới. Không hard filter: nhận
+    // sai từ khoá cũng chỉ làm nhánh này rỗng, không đẩy kết quả về 0.
+    structuredCandidates(intent, attrConditions, HYBRID_POOL),
   ])
   if (!dense) return null
 
   const ranked = fuseRrf(
     lexicalRows.map((row) => row.id),
     dense.map((candidate) => candidate.id),
+    structuredRows,
   )
   if (ranked.length === 0) return { items: [], total: 0 }
 

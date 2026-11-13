@@ -248,14 +248,15 @@ là một chuỗi bakery; tầng lọc tên chỉ loại 0.22%.
 ### Chưa xác minh
 
 - [ ] Chạy thật `POST /events` từ FE trên trình duyệt (chưa mở browser trong phiên này)
-- [x] Đo chất lượng hybrid search so với lexical thuần: `scripts/eval-golden.ts`
-      16 golden query — Recall@5 trung bình lexical 0.288 → hybrid 0.462
-      (hybrid thắng 9/16, không thua query nào). Kết quả trong output script.
+- [x] Bộ test search ĐÓNG BĂNG v1 (50 query, 7 nhóm ý định, checksum bảo vệ) —
+      `docs/EVAL-PROTOCOL.md`. Baseline: lexical P@5 0.504 → hybrid 2 nhánh 0.604 →
+      hybrid 3 nhánh (+ structured intent) **0.736**; nDCG@10 0.743; p95 94 ms.
+      Script `scripts/eval-search.ts` từ chối chấm điểm nếu bộ test bị sửa.
 
 ## Từ vòng hybrid search (2026-11-13)
 
 - Base image API đổi `oven/bun:1.3.14-alpine` → `oven/bun:1.3.14` (Debian) vì
   `onnxruntime-node` không có binary musl; `sharp` + `onnxruntime-node` được
   `--external` khỏi bundle Bun (L-025, L-026).
-- Golden eval: Recall@5 trung bình lexical 0.288 → hybrid 0.462 (16 query,
-  hybrid thắng 9, không thua query nào) — `backend/scripts/eval-golden.ts`.
+- Golden eval (bộ tạm 16 query, đã thay bằng bộ đóng băng v1): Recall@5 lexical
+  0.288 → hybrid 0.462 — xem `docs/EVAL-PROTOCOL.md` cho bộ chính thức 50 query.

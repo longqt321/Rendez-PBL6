@@ -1,0 +1,1115 @@
+{
+  "summary": {
+    "frozenAt": "2026-11-13T06:23:34.093Z",
+    "queries": 50,
+    "lexical": {
+      "p5": 0.504,
+      "p10": 0.48,
+      "recall10": 0.465,
+      "ndcg10": 0.513,
+      "mrr": 0.584,
+      "zeroRate": 0,
+      "latencyP50Ms": 43,
+      "latencyP95Ms": 74
+    },
+    "hybrid": {
+      "p5": 0.736,
+      "p10": 0.682,
+      "recall10": 0.732,
+      "ndcg10": 0.743,
+      "mrr": 0.75,
+      "zeroRate": 0,
+      "latencyP50Ms": 82,
+      "latencyP95Ms": 162
+    }
+  },
+  "byGroup": {
+    "study": {
+      "lexicalP5": 0.8,
+      "hybridP5": 0.875,
+      "n": 8
+    },
+    "date": {
+      "lexicalP5": 0.543,
+      "hybridP5": 0.6,
+      "n": 7
+    },
+    "friends": {
+      "lexicalP5": 0.143,
+      "hybridP5": 0.571,
+      "n": 7
+    },
+    "indoor": {
+      "lexicalP5": 0.767,
+      "hybridP5": 0.9,
+      "n": 6
+    },
+    "budget": {
+      "lexicalP5": 0.25,
+      "hybridP5": 0.5,
+      "n": 8
+    },
+    "cuisine": {
+      "lexicalP5": 0.5,
+      "hybridP5": 0.9,
+      "n": 10
+    },
+    "district": {
+      "lexicalP5": 0.6,
+      "hybridP5": 0.8,
+      "n": 4
+    }
+  },
+  "perQuery": [
+    {
+      "id": "s01",
+      "group": "study",
+      "query": "quán cà phê yên tĩnh để học bài",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.6,
+        "recall10": 0.2,
+        "ndcg10": 0.42094679210822467,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s02",
+      "group": "study",
+      "query": "chỗ ngồi làm việc với laptop có wifi",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s03",
+      "group": "study",
+      "query": "quán cà phê làm việc ở Hải Châu",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0.9,
+        "ndcg10": 0.9477344873475498,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s04",
+      "group": "study",
+      "query": "cà phê yên tĩnh làm việc buổi sáng",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.92663607790064,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s05",
+      "group": "study",
+      "query": "quán có wifi để làm việc cả ngày",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s06",
+      "group": "study",
+      "query": "cà phê học bài ở Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.3,
+        "recall10": 0.1,
+        "ndcg10": 0.2047945210321659,
+        "mrr": 0.2,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s07",
+      "group": "study",
+      "query": "quán cà phê phù hợp làm việc nhóm",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s08",
+      "group": "study",
+      "query": "chỗ làm việc yên tĩnh ở Thanh Khê",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 0.2890648263178878,
+        "mrr": 0.1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s09",
+      "group": "date",
+      "query": "địa điểm hẹn hò buổi tối",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.2240055615151755,
+        "mrr": 0.5,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s10",
+      "group": "date",
+      "query": "quán cà phê lãng mạn ngoài trời",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8364586133797035,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.914856882358379,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s11",
+      "group": "date",
+      "query": "nhà hàng có chỗ ngồi ngoài trời cho buổi hẹn",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.5,
+        "recall10": 0.3,
+        "ndcg10": 0.30186459548591205,
+        "mrr": 0.14285714285714285,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.2,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.3827160388385181,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s12",
+      "group": "date",
+      "query": "quán ngồi ngoài trời view đẹp",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s13",
+      "group": "date",
+      "query": "cà phê hẹn hò ở Sơn Trà",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.6,
+        "recall10": 0.5,
+        "ndcg10": 0.5413312431779351,
+        "mrr": 0.14285714285714285,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.6290629667872605,
+        "mrr": 0.16666666666666666,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s14",
+      "group": "date",
+      "query": "địa điểm lãng mạn ngoài trời ở Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7849818707050382,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s15",
+      "group": "date",
+      "query": "quán ăn tối ngoài trời cho hai người",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0.4,
+        "ndcg10": 0.48653040671645686,
+        "mrr": 0.2,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.4,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.49667571720465353,
+        "mrr": 0.5,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s16",
+      "group": "friends",
+      "query": "chỗ vui chơi cùng bạn bè cuối tuần",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7967610662472991,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s17",
+      "group": "friends",
+      "query": "quán nhậu tối với đồng nghiệp",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8888888888888888,
+        "ndcg10": 0.9292442392789194,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s18",
+      "group": "friends",
+      "query": "quán bia nhậu nhẹt tối",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.14285714285714285,
+        "ndcg10": 0.08274602130532004,
+        "mrr": 0.1111111111111111,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s19",
+      "group": "friends",
+      "query": "địa điểm giải trí trong nhà cho nhóm bạn",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.5714285714285714,
+        "ndcg10": 0.6773676006644394,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 1,
+        "ndcg10": 0.9911205770005564,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s20",
+      "group": "friends",
+      "query": "quán nhậu ngoài trời ở Hải Châu",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s21",
+      "group": "friends",
+      "query": "tụ tập bạn bè ăn uống ngoài trời",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.40350157154648025,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.14201905717762703,
+        "mrr": 0.16666666666666666,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s22",
+      "group": "friends",
+      "query": "quán nhậu bình dân cho nhóm đông người",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8888888888888888,
+        "ndcg10": 0.9292442392789194,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s23",
+      "group": "indoor",
+      "query": "quán cà phê trong nhà tránh mưa",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0.2,
+        "ndcg10": 0.2674958631932079,
+        "mrr": 0.14285714285714285,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0.5,
+        "ndcg10": 0.7070743061385583,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s24",
+      "group": "indoor",
+      "query": "quán ăn trong nhà có điều hoà",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0.3333333333333333,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0.3333333333333333,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s25",
+      "group": "indoor",
+      "query": "cà phê ngồi trong nhà ở Cẩm Lệ",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.2857142857142857,
+        "ndcg10": 0.6875929625773157,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.8,
+        "p10": 0.8,
+        "recall10": 0.7142857142857143,
+        "ndcg10": 0.6890704085056482,
+        "mrr": 0.5,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s26",
+      "group": "indoor",
+      "query": "quán ăn trong nhà ở Liên Chiểu",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.5,
+        "ndcg10": 0.683299199598456,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s27",
+      "group": "indoor",
+      "query": "quán cà phê có wifi ở Thanh Khê",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.6,
+        "recall10": 1,
+        "ndcg10": 1.4340237218490028,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.6,
+        "p10": 0.8,
+        "recall10": 1,
+        "ndcg10": 1.252922174060589,
+        "mrr": 0.1111111111111111,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s28",
+      "group": "indoor",
+      "query": "nhà hàng trong nhà cho gia đình",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.5747915663739762,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s29",
+      "group": "budget",
+      "query": "quán ăn giá rẻ gần đây",
+      "lexical": {
+        "p5": 0,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.1356854453911663,
+        "mrr": 0.125,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s30",
+      "group": "budget",
+      "query": "quán ăn vặt đường phố",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s31",
+      "group": "budget",
+      "query": "quán cà phê mang đi nhanh",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7503359712972107,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s32",
+      "group": "budget",
+      "query": "bánh mì bánh ngọt mua mang đi",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5033242827953464,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s33",
+      "group": "budget",
+      "query": "quán ăn nhanh bình dân ở Hải Châu",
+      "lexical": {
+        "p5": 0,
+        "p10": 0.2,
+        "recall10": 0.2222222222222222,
+        "ndcg10": 0.157873529284268,
+        "mrr": 0.16666666666666666,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s34",
+      "group": "budget",
+      "query": "cà phê take away ở Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.2,
+        "ndcg10": 0.33916020527361607,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.6,
+        "ndcg10": 0.6739577727076378,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s35",
+      "group": "budget",
+      "query": "tiệm bánh ngọt gần đây",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.3667028183788342,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s36",
+      "group": "budget",
+      "query": "quán ăn vặt sinh viên giá rẻ",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.6,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.6843830725976617,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s37",
+      "group": "cuisine",
+      "query": "quán hải sản tươi ngon",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.2,
+        "recall10": 0.2857142857142857,
+        "ndcg10": 0.18579376046299725,
+        "mrr": 0.2,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.8571428571428571,
+        "ndcg10": 0.8936633189697701,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s38",
+      "group": "cuisine",
+      "query": "quán ăn chay thanh đạm",
+      "lexical": {
+        "p5": 0,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.0636207881989517,
+        "mrr": 0.1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8603818544462509,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s39",
+      "group": "cuisine",
+      "query": "quán pizza ngon cho nhóm",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.382414714083678,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s40",
+      "group": "cuisine",
+      "query": "quán bít tết steak",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.625,
+        "ndcg10": 0.7322538581500235,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s41",
+      "group": "cuisine",
+      "query": "quán burger Mỹ",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.5714285714285714,
+        "ndcg10": 0.49994852578093474,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s42",
+      "group": "cuisine",
+      "query": "quán gà rán",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0.4,
+        "ndcg10": 0.5531464700081437,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 1,
+        "ndcg10": 0.9669850519151654,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s43",
+      "group": "cuisine",
+      "query": "quán món Nhật sushi",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.3,
+        "recall10": 0.6,
+        "ndcg10": 0.7227265726449517,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.5,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s44",
+      "group": "cuisine",
+      "query": "quán món Hàn kim chi",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.25,
+        "ndcg10": 0.3903800499921017,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.8,
+        "p10": 0.4,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s45",
+      "group": "cuisine",
+      "query": "quán đặc sản địa phương Đà Nẵng",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.6,
+        "recall10": 0.8571428571428571,
+        "ndcg10": 0.8029816832868507,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.6,
+        "p10": 0.5,
+        "recall10": 0.7142857142857143,
+        "ndcg10": 0.775280526014407,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s46",
+      "group": "cuisine",
+      "query": "quán món Việt Nam truyền thống",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9363792118010483,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s47",
+      "group": "district",
+      "query": "quán cà phê ở Sơn Trà",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.4,
+        "recall10": 0.125,
+        "ndcg10": 0.15973099793122303,
+        "mrr": 0.1111111111111111,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.43156646315027763,
+        "mrr": 0.5,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s48",
+      "group": "district",
+      "query": "nhà hàng ở Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9305687780632227,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s49",
+      "group": "district",
+      "query": "quán ăn ở Liên Chiểu",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 1,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7788065869851873,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s50",
+      "group": "district",
+      "query": "quán cà phê ở Cẩm Lệ",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.14285714285714285,
+        "ndcg10": 0.13743816645714543,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      },
+      "hybrid": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7142857142857143,
+        "ndcg10": 0.6706154566448144,
+        "mrr": 0.5,
+        "zeroRate": 0
+      }
+    }
+  ]
+}

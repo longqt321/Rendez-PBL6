@@ -2995,3 +2995,19 @@ phải huấn luyện ranker.
 
 **Ghi chú số hiệu:** yêu cầu ban đầu gọi quyết định này là "D-049", nhưng `D-049` đã tồn
 tại trong file (Bỏ ảnh món + dữ liệu giả khỏi cold-start) nên ghi tiếp thành D-061.
+
+## D-062 — Bộ test search đóng băng v1 + nhánh structured intent — 2026-11-13
+
+1. **Đóng băng bộ eval**: 50 query, 7 nhóm ý định, nhãn suy từ thuộc tính DB
+   (grade 2 = thoả toàn bộ ràng buộc, grade 1 = chỉ thoả category). Checksum
+   sha256(queries+labels) bảo vệ — script từ chối chấm khi file bị sửa. Nhãn
+   chốt tại thời điểm freeze nên venue mới thêm không đổi thang đo. Quy tắc:
+   sửa bộ test = tạo v2, không sửa v1 (docs/EVAL-PROTOCOL.md).
+2. **Thêm nhánh structured retrieval** vào RRF (nhánh thứ 3): `intent-lexicon.ts`
+   trích tag/category/district từ câu query bằng từ vựng lấy từ chính dữ liệu
+   (23 tag + 5 category), đưa vào RRF như một nhánh xếp theo số tag khớp.
+   Không hard filter — nhận sai chỉ làm nhánh rỗng. Kết quả trên bộ đóng băng:
+   P@5 0.604 → 0.736, nDCG@10 0.598 → 0.743, p95 143 → 94 ms.
+3. **Không tune theo query**: lexicon chỉ chứa từ vựng dữ liệu + cách gọi phổ
+   biến, không chứa câu query cụ thể của bộ eval. Rủi ro overfit ghi nhận ở
+   protocol — cần v2 held-out khi tinh chỉnh nhiều vòng.

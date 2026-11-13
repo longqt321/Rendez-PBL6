@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "frozenAt": "2026-11-13",
+  "description": "Bộ đánh giá search ĐÓNG BĂNG v1. KHÔNG sửa file này. Muốn thêm/sửa query thì tạo search-eval-v2.json + cập nhật EVAL_PROTOCOL.md.",
+  "labelProtocol": "Nhãn suy ra từ thuộc tính DB (category/tags/district/price_level), không phải từ kết quả search. grade 2 = thoả TOÀN BỘ ràng buộc; grade 1 = chỉ thoả ràng buộc loại hình (category) khi query có category; grade 0 = còn lại.",
+  "queries": [
+    {
+      "id": "s01",
+      "group": "study",
+      "query": "quán cà phê yên tĩnh để học bài",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Làm việc"] }
+    },
+    {
+      "id": "s02",
+      "group": "study",
+      "query": "chỗ ngồi làm việc với laptop có wifi",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Làm việc", "Wifi"] }
+    },
+    {
+      "id": "s03",
+      "group": "study",
+      "query": "quán cà phê làm việc ở Hải Châu",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Làm việc"], "district": ["Hải Châu"] }
+    },
+    {
+      "id": "s04",
+      "group": "study",
+      "query": "cà phê yên tĩnh làm việc buổi sáng",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Làm việc"] }
+    },
+    {
+      "id": "s05",
+      "group": "study",
+      "query": "quán có wifi để làm việc cả ngày",
+      "constraints": { "tagsAll": ["Làm việc", "Wifi"] }
+    },
+    {
+      "id": "s06",
+      "group": "study",
+      "query": "cà phê học bài ở Ngũ Hành Sơn",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Làm việc"], "district": ["Ngũ Hành Sơn"] }
+    },
+    {
+      "id": "s07",
+      "group": "study",
+      "query": "quán cà phê phù hợp làm việc nhóm",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Làm việc"] }
+    },
+    {
+      "id": "s08",
+      "group": "study",
+      "query": "chỗ làm việc yên tĩnh ở Thanh Khê",
+      "constraints": { "tagsAll": ["Làm việc"], "district": ["Thanh Khê"] }
+    },
+
+    {
+      "id": "s09",
+      "group": "date",
+      "query": "địa điểm hẹn hò buổi tối",
+      "constraints": { "tagsAll": ["Ngoài trời"] }
+    },
+    {
+      "id": "s10",
+      "group": "date",
+      "query": "quán cà phê lãng mạn ngoài trời",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Ngoài trời"] }
+    },
+    {
+      "id": "s11",
+      "group": "date",
+      "query": "nhà hàng có chỗ ngồi ngoài trời cho buổi hẹn",
+      "constraints": { "category": ["restaurant"], "tagsAll": ["Ngoài trời"] }
+    },
+    {
+      "id": "s12",
+      "group": "date",
+      "query": "quán ngồi ngoài trời view đẹp",
+      "constraints": { "tagsAll": ["Ngồi ngoài trời"] }
+    },
+    {
+      "id": "s13",
+      "group": "date",
+      "query": "cà phê hẹn hò ở Sơn Trà",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Ngoài trời"], "district": ["Sơn Trà"] }
+    },
+    {
+      "id": "s14",
+      "group": "date",
+      "query": "địa điểm lãng mạn ngoài trời ở Ngũ Hành Sơn",
+      "constraints": { "tagsAll": ["Ngoài trời"], "district": ["Ngũ Hành Sơn"] }
+    },
+    {
+      "id": "s15",
+      "group": "date",
+      "query": "quán ăn tối ngoài trời cho hai người",
+      "constraints": { "category": ["restaurant"], "tagsAll": ["Ngoài trời"] }
+    },
+
+    {
+      "id": "s16",
+      "group": "friends",
+      "query": "chỗ vui chơi cùng bạn bè cuối tuần",
+      "constraints": { "tagsAny": ["Giải trí", "Nhậu nhẹt"] }
+    },
+    {
+      "id": "s17",
+      "group": "friends",
+      "query": "quán nhậu tối với đồng nghiệp",
+      "constraints": { "tagsAll": ["Nhậu nhẹt"] }
+    },
+    {
+      "id": "s18",
+      "group": "friends",
+      "query": "quán bia nhậu nhẹt tối",
+      "constraints": { "category": ["bar"] }
+    },
+    {
+      "id": "s19",
+      "group": "friends",
+      "query": "địa điểm giải trí trong nhà cho nhóm bạn",
+      "constraints": { "tagsAll": ["Giải trí"] }
+    },
+    {
+      "id": "s20",
+      "group": "friends",
+      "query": "quán nhậu ngoài trời ở Hải Châu",
+      "constraints": { "tagsAll": ["Nhậu nhẹt", "Ngoài trời"], "district": ["Hải Châu"] }
+    },
+    {
+      "id": "s21",
+      "group": "friends",
+      "query": "tụ tập bạn bè ăn uống ngoài trời",
+      "constraints": { "category": ["restaurant"], "tagsAll": ["Ngoài trời"] }
+    },
+    {
+      "id": "s22",
+      "group": "friends",
+      "query": "quán nhậu bình dân cho nhóm đông người",
+      "constraints": { "tagsAll": ["Nhậu nhẹt"] }
+    },
+
+    {
+      "id": "s23",
+      "group": "indoor",
+      "query": "quán cà phê trong nhà tránh mưa",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Wifi"] }
+    },
+    {
+      "id": "s24",
+      "group": "indoor",
+      "query": "quán ăn trong nhà có điều hoà",
+      "constraints": { "category": ["restaurant"], "tagsAll": ["Wifi"] }
+    },
+    {
+      "id": "s25",
+      "group": "indoor",
+      "query": "cà phê ngồi trong nhà ở Cẩm Lệ",
+      "constraints": { "category": ["cafe"], "district": ["Cẩm Lệ"] }
+    },
+    {
+      "id": "s26",
+      "group": "indoor",
+      "query": "quán ăn trong nhà ở Liên Chiểu",
+      "constraints": { "category": ["restaurant"], "district": ["Liên Chiểu"] }
+    },
+    {
+      "id": "s27",
+      "group": "indoor",
+      "query": "quán cà phê có wifi ở Thanh Khê",
+      "constraints": { "category": ["cafe"], "tagsAll": ["Wifi"], "district": ["Thanh Khê"] }
+    },
+    {
+      "id": "s28",
+      "group": "indoor",
+      "query": "nhà hàng trong nhà cho gia đình",
+      "constraints": { "category": ["restaurant"] }
+    },
+
+    {
+      "id": "s29",
+      "group": "budget",
+      "query": "quán ăn giá rẻ gần đây",
+      "constraints": { "category": ["street-food"] }
+    },
+    {
+      "id": "s30",
+      "group": "budget",
+      "query": "quán ăn vặt đường phố",
+      "constraints": { "category": ["street-food"] }
+    },
+    {
+      "id": "s31",
+      "group": "budget",
+      "query": "quán cà phê mang đi nhanh",
+      "constraints": { "tagsAll": ["Mang đi"] }
+    },
+    {
+      "id": "s32",
+      "group": "budget",
+      "query": "bánh mì bánh ngọt mua mang đi",
+      "constraints": { "category": ["bakery"] }
+    },
+    {
+      "id": "s33",
+      "group": "budget",
+      "query": "quán ăn nhanh bình dân ở Hải Châu",
+      "constraints": { "category": ["street-food"], "district": ["Hải Châu"] }
+    },
+    {
+      "id": "s34",
+      "group": "budget",
+      "query": "cà phê take away ở Ngũ Hành Sơn",
+      "constraints": { "tagsAll": ["Mang đi"], "district": ["Ngũ Hành Sơn"] }
+    },
+    {
+      "id": "s35",
+      "group": "budget",
+      "query": "tiệm bánh ngọt gần đây",
+      "constraints": { "category": ["bakery"] }
+    },
+    {
+      "id": "s36",
+      "group": "budget",
+      "query": "quán ăn vặt sinh viên giá rẻ",
+      "constraints": { "category": ["street-food"] }
+    },
+
+    {
+      "id": "s37",
+      "group": "cuisine",
+      "query": "quán hải sản tươi ngon",
+      "constraints": { "tagsAll": ["Hải sản"] }
+    },
+    {
+      "id": "s38",
+      "group": "cuisine",
+      "query": "quán ăn chay thanh đạm",
+      "constraints": { "tagsAll": ["Chay"] }
+    },
+    {
+      "id": "s39",
+      "group": "cuisine",
+      "query": "quán pizza ngon cho nhóm",
+      "constraints": { "tagsAll": ["Pizza"] }
+    },
+    {
+      "id": "s40",
+      "group": "cuisine",
+      "query": "quán bít tết steak",
+      "constraints": { "tagsAll": ["Bít tết"] }
+    },
+    {
+      "id": "s41",
+      "group": "cuisine",
+      "query": "quán burger Mỹ",
+      "constraints": { "tagsAll": ["Burger"] }
+    },
+    {
+      "id": "s42",
+      "group": "cuisine",
+      "query": "quán gà rán",
+      "constraints": { "tagsAll": ["Gà rán"] }
+    },
+    {
+      "id": "s43",
+      "group": "cuisine",
+      "query": "quán món Nhật sushi",
+      "constraints": { "tagsAll": ["Món Nhật"] }
+    },
+    {
+      "id": "s44",
+      "group": "cuisine",
+      "query": "quán món Hàn kim chi",
+      "constraints": { "tagsAll": ["Món Hàn"] }
+    },
+    {
+      "id": "s45",
+      "group": "cuisine",
+      "query": "quán đặc sản địa phương Đà Nẵng",
+      "constraints": { "tagsAll": ["Đặc sản địa phương"] }
+    },
+    {
+      "id": "s46",
+      "group": "cuisine",
+      "query": "quán món Việt Nam truyền thống",
+      "constraints": { "tagsAll": ["Món Việt"] }
+    },
+
+    {
+      "id": "s47",
+      "group": "district",
+      "query": "quán cà phê ở Sơn Trà",
+      "constraints": { "category": ["cafe"], "district": ["Sơn Trà"] }
+    },
+    {
+      "id": "s48",
+      "group": "district",
+      "query": "nhà hàng ở Ngũ Hành Sơn",
+      "constraints": { "category": ["restaurant"], "district": ["Ngũ Hành Sơn"] }
+    },
+    {
+      "id": "s49",
+      "group": "district",
+      "query": "quán ăn ở Liên Chiểu",
+      "constraints": { "district": ["Liên Chiểu"] }
+    },
+    {
+      "id": "s50",
+      "group": "district",
+      "query": "quán cà phê ở Cẩm Lệ",
+      "constraints": { "category": ["cafe"], "district": ["Cẩm Lệ"] }
+    }
+  ]
+}
