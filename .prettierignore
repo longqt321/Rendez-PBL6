@@ -1,0 +1,3 @@
+# Bộ eval đóng băng: checksum tính trên BYTES gốc — prettier không được format lại
+backend/data/eval/*.json
+backend/data/eval/*.sha256

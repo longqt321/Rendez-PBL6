@@ -52,6 +52,11 @@ bun run scripts/eval-search.ts --set 2 --freeze   # CHỈ dùng một lần khi 
 Script verify checksum `<set>.sha256` trước khi chấm: file query hoặc nhãn bị sửa → in
 `Bộ test đã bị sửa (checksum lệch)` và dừng, không chấm điểm.
 
+> [!IMPORTANT]
+> Checksum tính trên **bytes gốc** của 2 file json, nên `backend/data/eval/*.json` đã được
+> đưa vào `.prettierignore` — nếu `lint-staged` (pre-commit) format lại file, checksum lệch
+> và script từ chối chấm điểm dù nội dung không đổi.
+
 ## 5. Mốc so sánh
 
 ### 5a. v2 — bộ chính (149 query, 30 ý định, đo 2026-11-13)
