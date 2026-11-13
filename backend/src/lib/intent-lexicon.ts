@@ -103,6 +103,64 @@ const LEXICON: LexiconEntry[] = [
   { phrases: ["lien chieu"], districts: ["Liên Chiểu"] },
   { phrases: ["son tra", "ban dao son tra"], districts: ["Sơn Trà"] },
   { phrases: ["cam le"], districts: ["Cẩm Lệ"] },
+
+  // --- Tiếng Anh (dùng cho dataset Yelp — track A) ---
+  // Cùng một cụm có thể trỏ nhiều tag: mỗi dataset chỉ khớp tag nó thật sự có
+  // (`tags && ARRAY[...]` là OR), nên thêm tag tiếng Anh KHÔNG làm hỏng dữ liệu
+  // Đà Nẵng và ngược lại. Từ vựng lấy từ tag của chính dataset Yelp, không lấy
+  // từ câu truy vấn eval (bộ query đã freeze trước khi thêm khối này).
+  // --- Thuộc tính tiện ích / không gian ---
+  { phrases: ["outdoor seating", "patio", "outside seating"], tags: ["Outdoor Seating"] },
+  { phrases: ["takeout", "take out", "to go"], tags: ["Takeout"] },
+  { phrases: ["good for groups", "group friendly"], tags: ["Good for Groups"] },
+  { phrases: ["happy hour"], tags: ["Happy Hour"] },
+  { phrases: ["reservation", "reservations", "book a table"], tags: ["Reservations"] },
+  { phrases: ["table service", "waiter service"], tags: ["Waiter Service"] },
+  // --- Chế độ ăn ---
+  { phrases: ["vegetarian", "veggie"], tags: ["Vegetarian"] },
+  { phrases: ["vegan"], tags: ["Vegan"] },
+  { phrases: ["gluten free", "gluten-free"], tags: ["Gluten-Free"] },
+  // --- Món ăn / loại hình ẩm thực ---
+  { phrases: ["seafood", "fish and chips"], tags: ["Seafood", "Hải sản"] },
+  { phrases: ["steak", "steakhouse"], tags: ["Steakhouses", "Bít tết"] },
+  { phrases: ["burger", "burgers", "hamburger"], tags: ["Burgers", "Burger"] },
+  { phrases: ["barbecue", "bbq", "ribs"], tags: ["Barbeque"] },
+  { phrases: ["chicken wings", "wings"], tags: ["Chicken Wings"] },
+  { phrases: ["sandwich", "sandwiches"], tags: ["Sandwiches"] },
+  { phrases: ["salad"], tags: ["Salad"] },
+  { phrases: ["deli", "delis"], tags: ["Delis"] },
+  { phrases: ["ramen"], tags: ["Ramen"] },
+  { phrases: ["noodle", "noodles"], tags: ["Noodles"] },
+  { phrases: ["bubble tea", "boba"], tags: ["Bubble Tea"] },
+  { phrases: ["cheesesteak", "cheese steak"], tags: ["Cheesesteaks"] },
+  { phrases: ["food truck"], tags: ["Food Trucks"] },
+  { phrases: ["pizza"], tags: ["Pizza"] },
+  { phrases: ["sushi", "japanese"], tags: ["Japanese", "Món Nhật"] },
+  { phrases: ["korean", "kimchi"], tags: ["Korean", "Món Hàn"] },
+  { phrases: ["vietnamese", "pho"], tags: ["Vietnamese", "Món Việt"] },
+  { phrases: ["thai"], tags: ["Thai", "Món Á"] },
+  { phrases: ["indian", "curry"], tags: ["Indian"] },
+  { phrases: ["chinese"], tags: ["Chinese"] },
+  { phrases: ["italian"], tags: ["Italian"] },
+  { phrases: ["mexican", "taco", "tacos", "burrito"], tags: ["Mexican"] },
+  { phrases: ["breakfast", "brunch"], tags: ["Breakfast & Brunch"] },
+  { phrases: ["diner", "diners"], tags: ["Diners"] },
+  { phrases: ["soup"], tags: ["Soup"] },
+  { phrases: ["bagel", "bagels"], tags: ["Bagels"] },
+  { phrases: ["hot dog", "hot dogs"], tags: ["Hot Dogs"] },
+  { phrases: ["fast food"], tags: ["Fast Food"] },
+  { phrases: ["dessert", "sweets"], tags: ["Desserts"] },
+  { phrases: ["donut", "donuts", "doughnut"], tags: ["Donuts"] },
+  { phrases: ["ice cream", "frozen yogurt"], tags: ["Ice Cream & Frozen Yogurt"] },
+  { phrases: ["smoothie", "juice bar"], tags: ["Juice Bars & Smoothies"] },
+  // --- Bar / đồ uống ---
+  { phrases: ["cocktail bar", "cocktails"], tags: ["Cocktail Bars"] },
+  { phrases: ["sports bar"], tags: ["Sports Bars"] },
+  { phrases: ["pub", "pubs"], tags: ["Pubs"] },
+  { phrases: ["brewery", "breweries", "craft beer"], tags: ["Breweries"] },
+  { phrases: ["wine bar", "wine bars"], tags: ["Wine Bars"] },
+  { phrases: ["dive bar"], tags: ["Dive Bars"] },
+  { phrases: ["coffee shop", "coffeehouse"], categories: ["cafe"] },
 ]
 
 /** Bỏ dấu tiếng Việt + lowercase, giữ khoảng trắng — khớp với `normalizeSearchText`. */

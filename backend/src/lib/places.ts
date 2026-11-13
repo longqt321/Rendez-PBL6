@@ -188,27 +188,113 @@ function searchTokenCondition(token: string): Prisma.Sql {
 }
 
 /**
+ * Hư từ bị bỏ khỏi điều kiện AND của `?q=`.
+ *
+ * Vì sao cần: `searchCondition` yêu cầu venue chứa ĐỦ mọi token. Người dùng gõ
+ * tự nhiên ("good pizza for takeout", "quán ăn ngon") nên hư từ và tính từ chất
+ * lượng chung bị đem đi so khớp trên tên/địa chỉ/tag — gần như không venue nào
+ * chứa "good"/"with", nên nhánh lexical rỗng dù ý định rõ ràng. Đo được trên bộ
+ * Yelp: hybrid3 P@5 0.514 so với hybrid2 0.728 (xem docs/EVAL-PROTOCOL.md mục 8).
+ *
+ * Nguyên tắc chọn: chỉ nhận token KHÔNG BAO GIỜ là tên riêng/loại hình, và loại
+ * hẳn từ mơ hồ giữa hai ngôn ngữ:
+ * - "an" (mạo từ EN) trùng "ăn" (VN) → KHÔNG bỏ.
+ * - "la" (mạo từ) trùng "La" trong tên quán → KHÔNG bỏ.
+ * - "ban" (bạn/bán) mơ hồ → KHÔNG bỏ.
+ * - "cua" (của) trùng "cua" (con cua) → KHÔNG bỏ.
+ */
+const QUERY_STOPWORDS = new Set([
+  // --- Tiếng Anh: hư từ ---
+  "a",
+  "the",
+  "in",
+  "at",
+  "near",
+  "me",
+  "my",
+  "with",
+  "for",
+  "of",
+  "to",
+  "and",
+  "or",
+  "is",
+  "are",
+  "be",
+  "on",
+  "by",
+  "from",
+  "where",
+  "what",
+  "get",
+  "some",
+  "something",
+  // --- Tiếng Anh: tính từ chất lượng chung (không phải tên riêng) ---
+  "good",
+  "best",
+  "great",
+  "nice",
+  "top",
+  "cheap",
+  "place",
+  "places",
+  "spot",
+  "spots",
+  "tonight",
+  "dinner",
+  "lunch",
+  // --- Tiếng Việt: hư từ (đã bỏ dấu) ---
+  "o",
+  "tai",
+  "gan",
+  "nao",
+  "gi",
+  "khong",
+  "va",
+  "voi",
+  "de",
+  "thi",
+  "mot",
+  "nhung",
+  "cac",
+  "toi",
+  "minh",
+  "rat",
+  "cung",
+  "hay",
+  // --- Tiếng Việt: tính từ chất lượng chung ---
+  "ngon",
+  "tot",
+  "quan",
+])
+
+/**
  * Điều kiện cho `?q=` — tách thành các token và yêu cầu ĐỦ (AND), để
  * `?q=caphe trung` khớp "Cà phê Trung" (trước đây LIKE cả chuỗi nên trượt khi
  * thứ tự/từ dư khác). Cụm nguyên bản có trong map đồng nghĩa thì OR thêm nhánh
  * "khớp một biến thể cụm" (ví dụ "quan ngon" → "quan an"/"nha hang"/"quan nhau").
  */
 function searchCondition(query: string): Prisma.Sql {
-  const tokens = normalizeSearchText(query)
-    .split(" ")
-    .filter((token) => token.length > 0)
+  const normalized = normalizeSearchText(query)
+  const allTokens = normalized.split(" ").filter((token) => token.length > 0)
   // Query chỉ toàn ký tự đặc biệt ("!!!") chuẩn hoá xong rỗng — không có điều
   // kiện nào hợp lệ. `Prisma.join([])` ném TypeError nên phải trả TRUE thay vì
   // gọi join trên mảng rỗng (regression đã bị bắt bởi audit).
-  if (tokens.length === 0) return Prisma.sql`TRUE`
+  if (allTokens.length === 0) return Prisma.sql`TRUE`
+  const meaningful = allTokens.filter((token) => !QUERY_STOPWORDS.has(token))
+  // Query toàn hư từ ("good place") → giữ token gốc: bỏ hết thì điều kiện thành
+  // TRUE và trả cả bảng, tệ hơn hẳn việc giữ điều kiện cũ.
+  const tokens = meaningful.length > 0 ? meaningful : allTokens
   const tokenConds = tokens.map(searchTokenCondition)
   const base = Prisma.sql`(${Prisma.join(tokenConds, " AND ")})`
 
-  const phraseVariants = synonymVariants(normalizeSearchText(query))
+  const phraseVariants = synonymVariants(normalized)
   if (phraseVariants.length === 0) return base
 
   const alternatives = phraseVariants.map((variant) => {
-    const variantTokens = variant.split(" ").filter((token) => token.length > 0)
+    const variantTokens = variant
+      .split(" ")
+      .filter((token) => token.length > 0 && !QUERY_STOPWORDS.has(token))
     if (variantTokens.length === 0) return null
     return Prisma.sql`(${Prisma.join(variantTokens.map(searchTokenCondition), " AND ")})`
   })
