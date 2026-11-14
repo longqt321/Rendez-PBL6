@@ -29,6 +29,8 @@ export interface Place {
   lng?: number
   /** Quán còn hoạt động hay không — thiếu/không rõ thì server không gửi trường này. */
   status?: PlaceStatus
+  /** Mô tả ngắn của địa điểm (từ dataset) — server không có thì không gửi. */
+  description?: string
   /**
    * Giờ mở cửa thô (chuẩn OSM: "24/7", "Mo-Su 08:00-22:00", …) — server không
    * có thì không gửi trường này; client tự suy ra trạng thái mở/đóng để hiển thị.
