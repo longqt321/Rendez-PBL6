@@ -35,6 +35,10 @@ const reportInputSchema = z.object({
   detail: z.string().trim().max(MAX_REPORT_DETAIL_LENGTH).optional(),
 })
 
+/** Số review trả về tối đa cho `GET /places/:id/reviews` (query `limit`). */
+const DEFAULT_REVIEW_LIMIT = 50
+const MAX_REVIEW_LIMIT = 100
+
 interface ReviewRow {
   id: string
   place_id: string
@@ -87,10 +91,17 @@ export function createReviewsRouter() {
     const placeId = c.req.param("id")
     await requirePublicPlace(placeId)
 
+    // Parse `limit` giống routes/places.ts — giá trị rác về mặc định, cap 100.
+    const rawLimit = Number(c.req.query("limit") ?? DEFAULT_REVIEW_LIMIT)
+    const limit = Number.isFinite(rawLimit)
+      ? Math.min(MAX_REVIEW_LIMIT, Math.max(1, Math.trunc(rawLimit)))
+      : DEFAULT_REVIEW_LIMIT
+
     const rows = await prisma.$queryRaw<ReviewRow[]>(Prisma.sql`
       ${SELECT_REVIEWS}
       WHERE r.place_id = ${placeId} AND r.deleted_at IS NULL
       ORDER BY r.created_at DESC, r.id DESC
+      LIMIT ${limit}
     `)
 
     // Route công khai — phải tự đọc phiên để tính `isMine` (không có requireAuth).

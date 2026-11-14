@@ -76,16 +76,27 @@ export function toCollectionSummary(row: CollectionRow, targetPlaceId?: string |
   }
 }
 
+/** Số bộ sưu tập trả về tối đa khi liệt kê (mặc định 50, cap 100). */
+export const DEFAULT_COLLECTION_LIMIT = 50
+const MAX_COLLECTION_LIMIT = 100
+
 /** Bộ sưu tập của một user (đã lọc private theo quyền xem). */
 export async function listCollectionsOfOwner(
   ownerId: string,
   viewerId: string | null,
+  limit: number = DEFAULT_COLLECTION_LIMIT,
 ): Promise<CollectionRow[]> {
+  // Chặn limit rác / âm / vượt cap — cùng cách parse với routes/places.ts.
+  const safeLimit = Number.isFinite(limit)
+    ? Math.min(MAX_COLLECTION_LIMIT, Math.max(1, Math.trunc(limit)))
+    : DEFAULT_COLLECTION_LIMIT
+
   return prisma.$queryRaw<CollectionRow[]>(Prisma.sql`
     ${selectCollection(viewerId)}
     WHERE c.owner_id = ${ownerId}::uuid AND c.deleted_at IS NULL
       AND (c.is_private = false OR c.owner_id = ${Prisma.sql`${viewerId}::uuid`})
     ORDER BY c.created_at DESC, c.id DESC
+    LIMIT ${safeLimit}
   `)
 }
 

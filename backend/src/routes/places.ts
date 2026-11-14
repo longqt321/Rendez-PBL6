@@ -105,6 +105,9 @@ export function createPlacesRouter() {
   // Đứng trước `/places/:id` — nếu không `:id` sẽ nuốt cả "map"/"saved"/"suggestions".
   router.get("/places/suggestions", async (c) => {
     const caption = c.req.query("q") ?? ""
+    // Chặn query dài bất thường (lạm dụng/đo hiệu năng) — caption hợp lệ là
+    // nội dung bài đăng, không bao giờ tới 500 ký tự.
+    if (caption.length > 500) return c.json({ suggestions: [] })
     if (caption.trim().length < MIN_CAPTION_CHARS) return c.json({ suggestions: [] })
 
     const rawLimit = Number(c.req.query("limit") ?? DEFAULT_SUGGESTIONS)

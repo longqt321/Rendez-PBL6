@@ -180,11 +180,25 @@ export async function listNotifications(
   }
 }
 
-/** Toàn bộ thông báo của user (dùng cho PATCH /notifications — khớp mock). */
+/**
+ * Các thông báo VỪA được `PATCH /notifications` đánh dấu đã đọc.
+ *
+ * Route đánh dấu hàng loạt bằng một `updateMany` duy nhất nên mọi dòng trong lô
+ * nhận CÙNG một mốc `read_at`; mốc đó cũng là `read_at` lớn nhất của user. Nhờ
+ * vậy chỉ cần lấy các dòng có `read_at` bằng mốc lớn nhất thay vì trả toàn bộ
+ * thông báo (kể cả thông báo cũ đã đọc từ trước).
+ *
+ * Lưu ý: khi user không còn thông báo chưa đọc, `updateMany` không đổi dòng nào
+ * nên hàm trả về lô đọc gần nhất (mốc lớn nhất hiện có).
+ */
 export async function listAllNotifications(userId: string): Promise<NotificationDto[]> {
   const rows = await prisma.$queryRaw<NotificationRow[]>(Prisma.sql`
     ${SELECT_NOTIFICATIONS}
     WHERE n.user_id = ${userId}::uuid
+      AND n.read_at IS NOT NULL
+      AND n.read_at = (
+        SELECT MAX(read_at) FROM notifications WHERE user_id = ${userId}::uuid
+      )
     ORDER BY n.created_at DESC, n.id DESC
   `)
   return rows.map(toNotificationDto)
