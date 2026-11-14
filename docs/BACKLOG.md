@@ -866,9 +866,11 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       route chuyển trạng thái, chưa có admin routes.
 - [x] **`POST /events` validate `placeId`** — 400 nếu không tồn tại + `events.test.ts` (`14f306e`).
 - [x] **SSE guest reconnect loop** — FE chỉ mở stream khi đã đăng nhập (`003e6b3`).
-- [ ] **Upload media chưa kiểm size/magic bytes** (V3-05) — nguy cơ cao.
-- [ ] **`use-rooms.ts` (~328 dòng) tự quản cache** thay vì TanStack Query — rủi ro stale data.
-- [x] **A11y label** `proposal-form.tsx` (`003e6b3`). Marker bản đồ vẫn chưa focus được bằng bàn phím.
+- [x] **Xoá đánh giá của chính mình (Review Delete)** — endpoint `DELETE /places/:id/reviews` (soft-delete, 204 No Content, commit `e325a1e`) + hook `useDeleteReview` và giao diện xác nhận xóa trên cả `ReviewForm` và `ReviewItem` (commit `9962769`).
+- [x] **Upload media kiểm tra MIME whitelist & kích thước file (V3-05)** — chặn tải lên định dạng nguy hiểm, enforce giới hạn tối đa 5MB, đưa `content-length` vào SigV4 signed headers để Cloudflare R2 / S3 tự động ngắt kết nối khi vượt ngưỡng, sanitize đuôi tệp và object key chống path traversal (commit `23cffcb`).
+- [x] **Marker bản đồ keyboard-focusable** (`places-map.tsx`) — biến Leaflet pin và cluster marker thành interactive button (`role="button"`, `tabindex="0"`, focus rings, `keyboard={true}`), hỗ trợ phím `Enter` và `Space` để kích hoạt popup/chọn địa điểm hoặc zoom cluster (commit `8358be7`, test fix `a16d44e`).
+- [x] **A11y label** `proposal-form.tsx` (`003e6b3`). Marker bản đồ đã focus được bằng bàn phím.
+- [x] **Upload media chưa kiểm size/magic bytes** (V3-05) — đã xử lý tại commit `23cffcb`.
 - [ ] **Dataset `categories/` ảnh minh hoạ AI + script `copy-cold-start-images.mjs`** không còn
       được FE dùng sau khi chuyển placeholder tối giản (commit `40f62ea`) — có thể bỏ copy để
       giảm bundle/image budget; cần quyết định xoá hẳn.
