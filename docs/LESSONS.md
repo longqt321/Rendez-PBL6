@@ -1101,3 +1101,19 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
      tương tác (đã vừa nhắn tin).
   3. Nếu vẫn lỡ hỏi và không có phản hồi, coi câu trả lời mặc định đầu tiên
      ("Recommended") là đã được duyệt và tiếp tục — không đợi timeout.
+
+## L-035 — 2026-11-14: Đề xuất gamification trong danh mục tính năng (AI slop)
+
+- **Hiện tượng:** khi được yêu cầu nghiên cứu và đề xuất tính năng mới, agent đưa
+  gamification (huy hiệu ẩm thực, danh hiệu "Thánh Ăn Vặt", radar vị giác, điểm số
+  sưu tầm) vào danh mục đề xuất chính.
+- **Nguyên nhân gốc:** tối ưu cho "danh sách tính năng trông ấn tượng" thay vì giá trị
+  thực dụng; gamification là mẫu phổ biến trong dữ liệu huấn luyện nên dễ bị chọn mặc
+  định khi brainstorm. Người dùng chỉ ra đây là xu hướng "AI slop" — chỉ mang giá trị
+  tinh thần ngắn hạn, không giải quyết nhu cầu cốt lõi.
+- **Cách phòng tránh:**
+  1. Khi đề xuất tính năng, tự hỏi: "Tính năng này giải quyết công việc thực tế nào
+     mà người dùng lặp lại thường xuyên?" Nếu chỉ trả lời được "tạo động lực / giá trị
+     tinh thần" — loại bỏ hoặc hạ thấp ưu tiên.
+  2. Với Rendez: đề xuất phải xoay quanh tra cứu, quyết định, lập kế hoạch, chia sẻ —
+     không đề xuất huy hiệu/điểm số/danh hiệu/biểu đồ vanity.
