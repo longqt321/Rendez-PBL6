@@ -142,7 +142,7 @@ export function PlaceDetailPage() {
             <Badge variant="secondary">{categoryLabel(place.category)}</Badge>
             {place.status === "closed" ? <Badge variant="destructive">Đã đóng cửa</Badge> : null}
             {openState === true ? (
-              <Badge className="bg-emerald-600 text-white">Đang mở cửa</Badge>
+              <Badge className="bg-open text-white">Đang mở cửa</Badge>
             ) : openState === false ? (
               <Badge variant="outline" className="text-muted-foreground">
                 Đang đóng cửa
@@ -154,6 +154,10 @@ export function PlaceDetailPage() {
             <MapPinIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {formatLocation(place.address, place.city)}
           </p>
+
+          {place.description ? (
+            <p className="text-sm leading-relaxed text-muted-foreground">{place.description}</p>
+          ) : null}
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             {place.reviewCount > 0 ? (

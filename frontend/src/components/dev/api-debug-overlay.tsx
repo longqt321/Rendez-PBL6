@@ -70,7 +70,7 @@ function ApiDebugOverlayInner() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed right-2 bottom-2 z-50 max-w-[calc(100vw-1rem)] rounded-md border border-border bg-background/95 px-2 py-1 font-mono text-[11px] leading-5 text-muted-foreground shadow-(--shadow-soft) backdrop-blur"
+      className="fixed right-2 bottom-2 z-50 max-w-[calc(100vw-1rem)] rounded-md border border-border bg-background/95 px-2 py-1 font-mono text-xs leading-5 text-muted-foreground shadow-(--shadow-soft) backdrop-blur"
     >
       {latest ? (
         <>

@@ -66,6 +66,8 @@
 
   /* Màu sao đánh giá — một token duy nhất cho mọi chỗ hiển thị điểm số. */
   --color-star: var(--star);
+  /* Màu trạng thái "Đang mở cửa" — xanh lá trầm, đủ tương phản trên nền badge trắng. */
+  --color-open: var(--open);
 }
 
 /* ==========================================================================
@@ -106,6 +108,7 @@
   --ring: oklch(0.56 0.07 258);
   /* Sao đánh giá: vàng hổ phách ấm, đủ tương phản trên nền sáng. */
   --star: oklch(0.72 0.16 75);
+  --open: oklch(0.53 0.13 155);
   --chart-1: oklch(0.475 0.088 258);
   --chart-2: oklch(0.56 0.09 200);
   --chart-3: oklch(0.52 0.155 25);
@@ -145,6 +148,7 @@
   --input: oklch(0.36 0.01 255);
   --ring: oklch(0.7 0.08 258);
   --star: oklch(0.8 0.15 80);
+  --open: oklch(0.72 0.13 155);
   --chart-1: oklch(0.72 0.098 258);
   --chart-2: oklch(0.72 0.085 200);
   --chart-3: oklch(0.68 0.145 25);
@@ -185,6 +189,7 @@
   --input: oklch(0.822 0.018 80);
   --ring: oklch(0.52 0.12 35);
   --star: oklch(0.68 0.14 70);
+  --open: oklch(0.5 0.12 155);
   --chart-1: oklch(0.52 0.12 35);
   --chart-2: oklch(0.6 0.08 80);
   --chart-3: oklch(0.48 0.06 120);
@@ -223,6 +228,7 @@
   --input: oklch(0.4 0.014 55);
   --ring: oklch(0.7 0.105 40);
   --star: oklch(0.79 0.13 75);
+  --open: oklch(0.75 0.12 155);
   --sidebar: oklch(0.285 0.015 55);
   --sidebar-foreground: oklch(0.898 0.014 85);
   --sidebar-primary: oklch(0.7 0.105 40);

@@ -89,7 +89,7 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
             variant="outline"
             className={
               openState
-                ? "absolute top-2 right-2 h-6 border-transparent bg-emerald-600 px-2 text-xs text-white"
+                ? "absolute top-2 right-2 h-6 border-transparent bg-open px-2 text-xs text-white"
                 : "absolute top-2 right-2 h-6 border-border/80 bg-background/80 px-2 text-xs font-medium text-muted-foreground backdrop-blur"
             }
           >
@@ -115,7 +115,7 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
               <li key={tag}>
                 <Badge
                   variant="outline"
-                  className="h-5 px-1.5 text-[11px] font-normal text-muted-foreground"
+                  className="h-5 px-1.5 text-xs font-normal text-muted-foreground"
                 >
                   #{tag}
                 </Badge>
@@ -124,7 +124,7 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
             {hiddenTagCount > 0 ? (
               <li
                 aria-label={`${hiddenTagCount} thẻ khác`}
-                className="flex h-5 items-center px-1 text-[11px] text-muted-foreground"
+                className="flex h-5 items-center px-1 text-xs text-muted-foreground"
               >
                 +{hiddenTagCount}
               </li>
@@ -141,7 +141,7 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
           <div className="flex flex-wrap items-center gap-1" aria-label="Vì sao gợi ý">
             <Badge
               variant="secondary"
-              className="h-5 gap-1 px-1.5 text-[11px] font-medium text-secondary-foreground"
+              className="h-5 gap-1 px-1.5 text-xs font-medium text-secondary-foreground"
             >
               <SparklesIcon className="size-3" aria-hidden="true" />
               {/* matchPercent là điểm chất lượng tuyệt đối (score/maxScore), không
@@ -149,10 +149,10 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
               Điểm gợi ý {why.matchPercent}/100
             </Badge>
             {why.district ? (
-              <span className="text-[11px] text-muted-foreground">{why.district}</span>
+              <span className="text-xs text-muted-foreground">{why.district}</span>
             ) : null}
             {why.openNow !== null ? (
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 · {why.openNow ? "Đang mở" : "Đóng"}
               </span>
             ) : null}
@@ -160,7 +160,7 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
               <Badge
                 key={signal}
                 variant="outline"
-                className="h-5 px-1.5 text-[11px] font-normal text-muted-foreground"
+                className="h-5 px-1.5 text-xs font-normal text-muted-foreground"
               >
                 {signal}
               </Badge>
