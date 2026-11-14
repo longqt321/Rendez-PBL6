@@ -143,6 +143,35 @@ export function createReviewsRouter() {
     return c.json(toReviewDto(row, userId), 201)
   })
 
+  /**
+   * Xoá đánh giá của chính mình tại địa điểm (204 No Content).
+   *
+   * 1 user chỉ có tối đa 1 review cho mỗi place (`@@unique([placeId, authorId])`).
+   * Dùng soft-delete (`deletedAt = now`) để bảo toàn audit trail và đồng bộ với
+   * bộ lọc `deleted_at IS NULL` của hệ thống (aggregate rating, GET reviews).
+   * Nếu không tìm thấy review hoặc place không công khai → 404.
+   */
+  router.delete("/places/:id/reviews", requireAuth, async (c) => {
+    const placeId = c.req.param("id")
+    await requirePublicPlace(placeId)
+
+    const userId = c.get("userId")
+    const existing = await prisma.review.findFirst({
+      where: { placeId, authorId: userId, deletedAt: null },
+      select: { id: true },
+    })
+    if (!existing) {
+      throw new ApiError(404, "Không tìm thấy đánh giá")
+    }
+
+    await prisma.review.update({
+      where: { id: existing.id },
+      data: { deletedAt: new Date() },
+    })
+
+    return c.body(null, 204)
+  })
+
   /** Báo cáo địa điểm — 1 người 1 lý do 1 lần cho mỗi địa điểm (A7.5). */
   router.post("/places/:id/reports", requireAuth, async (c) => {
     const placeId = c.req.param("id")
