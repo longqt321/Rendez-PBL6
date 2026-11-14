@@ -1117,3 +1117,21 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
      tinh thần" — loại bỏ hoặc hạ thấp ưu tiên.
   2. Với Rendez: đề xuất phải xoay quanh tra cứu, quyết định, lập kế hoạch, chia sẻ —
      không đề xuất huy hiệu/điểm số/danh hiệu/biểu đồ vanity.
+
+## L-036 — 2026-11-14: Đề xuất tính năng sai mô hình sản phẩm (đặt bàn, tag tiện ích)
+
+- **Hiện tượng:** khi đề xuất tính năng cho Rendez, agent đưa vào "Gọi đặt bàn",
+  nút gọi quán, và bộ lọc tag tiện ích (Wifi / Làm việc / Ngoài trời). Người dùng
+  chỉ ra Rendez là website **gợi ý địa điểm đi chơi/hẹn hò**, không hợp tác với
+  quán nên không thể đặt bàn; và tag tiện ích không phải ngôn ngữ người đi chơi dùng.
+- **Nguyên nhân gốc:** tối ưu theo "tính năng phổ biến của app ăn uống" thay vì đọc
+  kỹ định vị sản phẩm và mô hình kinh doanh (không có quan hệ đối tác quán). Dữ liệu
+  có cột `phone`/`tags` nên agent suy ra ngay "phải làm tính năng dùng chúng".
+- **Cách phòng tránh:**
+  1. Trước khi đề xuất, viết rõ 1 câu định vị sản phẩm và **mô hình kinh doanh**
+     (có/không đối tác quán, có/không giao dịch). Tính năng nào cần quan hệ đối tác
+     hoặc dữ liệu vận hành mà dự án không có → loại.
+  2. Sự tồn tại của một cột dữ liệu KHÔNG phải lý do để phơi nó ra UI. Hỏi: "người
+     dùng có tự nói bằng từ này khi tìm nơi đi chơi không?".
+  3. Với Rendez: tính năng phải phục vụ chuỗi *tìm nơi đi → chọn giữa vài nơi →
+     lên lộ trình → rủ người đi cùng*.
