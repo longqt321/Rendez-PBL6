@@ -891,3 +891,7 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       runner tách process (vitest pool=forks) hoặc xoá singleton.
 - [ ] **Marker bản đồ keyboard-focusable** (`places-map.tsx:208-250`) — chưa làm.
 - [ ] **Xoá dataset `categories/` + script copy** không còn dùng sau placeholder tối giản.
+- [ ] **SSE `/notifications/events` vẫn đứt với user đã đăng nhập** — sau guest-gate
+      (`003e6b3`), console vẫn thấy `ERR_INCOMPLETE_CHUNKED_ENCODING` lặp khi user đăng nhập
+      mở stream (verify 2026-11-14 12:01). Cần điều tra nginx dev proxy buffering/keepalive
+      hoặc backoff reconnect có giới hạn số lần.
