@@ -1,5 +1,5 @@
 {
-  "$comment": "Cụm không được xuất hiện trong src/features/, src/components/, src/stores/. Nguồn: docs/LESSONS.md L-001 (không đưa logic backend lên frontend), L-005 (một trạng thái một nơi giữ; trạng thái rỗng phải có đích đến) và L-006 (viền/bóng không dùng --foreground). Cho phép ở src/mocks/ (server giả lập) và docs/.",
+  "$comment": "Cụm không được xuất hiện trong src/features/, src/components/, src/stores/. Nguồn: docs/LESSONS.md L-001 (không đưa logic backend lên frontend), L-005 (một trạng thái một nơi giữ; trạng thái rỗng phải có đích đến) và L-006 (viền/bóng không dùng --foreground). Cho phép ở src/mocks/ (server giả lập) và docs/. L-034: cấm ask_question trong phiên tự chủ.",
   "phrases": [
     "rankPlaceSuggestions",
     "runPlaceDetection",
@@ -12,6 +12,7 @@
     "mô phỏng thuật toán",
     "Bắt đầu gõ để tìm kiếm",
     "border-2 border-foreground",
-    "shadow-[4px_4px_0_0_var(--foreground)]"
+    "shadow-[4px_4px_0_0_var(--foreground)]",
+    "ask_question"
   ]
 }

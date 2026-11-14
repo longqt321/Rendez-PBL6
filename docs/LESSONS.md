@@ -1083,3 +1083,21 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
      tài nguyên ảnh trên trang thật, không chỉ nhìn "trang vẫn hiện".
   3. Khi người dùng báo lỗi kèm screenshot, đối chiếu dữ liệu DB TRƯỚC khi kết luận
      "lỗi nằm ở DB" — lần này DB sạch, lỗi ở FE; nếu sửa DB theo lời dẫn sẽ phá dữ liệu đúng.
+
+## L-034 — 2026-11-14: Phiên tự chủ bị treo vì hỏi người dùng qua ask_question
+
+- **Hiện tượng:** phiên `/goal` tự chủ nhiều giờ (02:40→12:00) bị dừng gần 8 tiếng ở câu
+  `ask_question` (02:37) — người dùng đi ngủ, không trả lời; phiên chỉ tiếp tục khi tool
+  timeout trả kết quả mặc định lúc 10:52. Kết quả: gần như toàn bộ cửa sổ phát triển bị
+  bỏ phí, chỉ kịp làm phần cuối.
+- **Nguyên nhân gốc:** nhầm vai trò phiên — phiên dài do người dùng khởi động bằng lệnh
+  tự chủ (`/goal`) là phiên **tự quyết định**: người dùng không có mặt, mọi câu hỏi phải
+  tự trả lời bằng quyết định kỹ thuật có ghi lý do, không được chặn chờ.
+- **Cách phòng tránh:**
+  1. Trong phiên tự chủ (khởi động bằng `/goal` hoặc người dùng nói rõ "tự quyết định /
+     chạy nhiều giờ"): **cấm `ask_question`** — quyết định mọi điểm mơ hồ theo phương án
+     an toàn nhất và ghi quyết định + lý do vào báo cáo/DECISIONS.
+  2. Chỉ dùng `ask_question` trong phiên đối thoại thông thường, khi người dùng đang
+     tương tác (đã vừa nhắn tin).
+  3. Nếu vẫn lỡ hỏi và không có phản hồi, coi câu trả lời mặc định đầu tiên
+     ("Recommended") là đã được duyệt và tiếp tục — không đợi timeout.
