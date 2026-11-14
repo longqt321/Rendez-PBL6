@@ -9,6 +9,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empt
 import { formatCoordinate } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { OSM_TILE_LAYER_PROPS } from "../lib/map-tiles"
+import { formatLocation } from "../lib/format-location"
 import type { Place } from "../types/place"
 
 interface PlaceMiniMapProps {
@@ -116,9 +117,7 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
         <span>
           Tọa độ: {formatCoordinate(place.lat)}, {formatCoordinate(place.lng)}
         </span>
-        <span>
-          {place.address}, {place.city}
-        </span>
+        <span>{formatLocation(place.address, place.city)}</span>
       </div>
     </div>
   )

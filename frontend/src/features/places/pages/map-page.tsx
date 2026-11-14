@@ -49,6 +49,13 @@ export function MapPage() {
           title="Không tải được danh sách địa điểm"
           onRetry={view.refetch}
         />
+      ) : mapQuery.isError ? (
+        // Lỗi khi kéo/zoom bản đồ: giữ khung bản đồ, báo lỗi thay vì im lặng.
+        <ErrorState
+          className="mt-10"
+          title="Không tải được địa điểm trong vùng xem"
+          onRetry={() => void mapQuery.refetch()}
+        />
       ) : view.sortedPlaces.length === 0 ? (
         <Empty className="mt-10 border border-dashed border-border">
           <EmptyHeader>

@@ -1,6 +1,8 @@
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router"
 import { SearchXIcon, UsersIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import {
@@ -26,6 +28,7 @@ import { useUserSuggestions } from "../hooks/use-user-suggestions"
 import { UserSuggestionsSection } from "../components/user-suggestions-section"
 import { FollowButton } from "../components/follow-button"
 import { loginRedirectUrl } from "@/lib/axios"
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 
 /**
  * Trang tìm kiếm — `/search?q=`.
@@ -56,9 +59,18 @@ function SearchResults({ query }: { query: string }) {
     isPending: placesPending,
     isError: placesError,
     refetch: refetchPlaces,
+    hasNextPage: placesHasNextPage,
+    isFetchingNextPage: placesFetchingNext,
+    fetchNextPage: fetchNextPlaces,
   } = useDiscoverPlaces({
     category: "all",
     query,
+  })
+  // Cùng cơ chế cuộn vô hạn với `/discover`: sentinel lọt viewport thì tải trang kế.
+  const placesSentinelRef = useInfiniteScroll({
+    hasNextPage: placesHasNextPage,
+    isFetchingNextPage: placesFetchingNext,
+    fetchNextPage: () => void fetchNextPlaces(),
   })
   // `q` được lọc server-side (GET /posts?q=); lọc client chỉ giữ bài có gắn địa điểm.
   const {
@@ -129,6 +141,27 @@ function SearchResults({ query }: { query: string }) {
                 </li>
               ))}
             </ul>
+          )}
+          {!placesPending && !placesError && places.length > 0 && (
+            <>
+              <div ref={placesSentinelRef} aria-hidden="true" className="h-px w-full" />
+              {placesHasNextPage ? (
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => void fetchNextPlaces()}
+                    disabled={placesFetchingNext}
+                  >
+                    {placesFetchingNext ? <Spinner aria-label="Đang tải thêm địa điểm" /> : null}
+                    {placesFetchingNext ? "Đang tải…" : "Tải thêm"}
+                  </Button>
+                </div>
+              ) : (
+                <p className="mt-6 text-center text-sm text-muted-foreground">
+                  Đã hiển thị hết kết quả địa điểm.
+                </p>
+              )}
+            </>
           )}
         </TabsContent>
 

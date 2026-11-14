@@ -37,15 +37,26 @@ import { SaveToCollectionDialog } from "@/features/collections/components/save-t
 import { PlaceMiniMap } from "../components/place-mini-map"
 import { CheckInDialog } from "../components/check-in-dialog"
 import { ReportPlaceDialog } from "../components/report-place-dialog"
+import { formatLocation } from "../lib/format-location"
 
 /** Trang chi tiết địa điểm — `/discover/:id`. */
 export function PlaceDetailPage() {
   const { id } = useParams()
   const placeId = id ?? ""
   const { data: place, isPending, isError, error, refetch } = usePlace(placeId)
-  const { data: postsData, isPending: postsPending } = usePlacePosts(placeId)
+  const {
+    data: postsData,
+    isPending: postsPending,
+    isError: postsError,
+    refetch: refetchPosts,
+  } = usePlacePosts(placeId)
   const posts = postsData?.pages.flatMap((page) => page.items) ?? []
-  const { data: reviews, isPending: reviewsPending } = usePlaceReviews(placeId)
+  const {
+    data: reviews,
+    isPending: reviewsPending,
+    isError: reviewsError,
+    refetch: refetchReviews,
+  } = usePlaceReviews(placeId)
   const { data: me } = useMe()
   const [editingReview, setEditingReview] = useState<Review | null>(null)
   const [showReviewForm, setShowReviewForm] = useState(false)
@@ -134,7 +145,7 @@ export function PlaceDetailPage() {
 
           <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
             <MapPinIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {place.address}, {place.city}
+            {formatLocation(place.address, place.city)}
           </p>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -229,6 +240,12 @@ export function PlaceDetailPage() {
 
             {reviewsPending ? (
               <p className="py-8 text-center text-sm text-muted-foreground">Đang tải đánh giá…</p>
+            ) : reviewsError ? (
+              <ErrorState
+                variant="plain"
+                title="Không tải được đánh giá"
+                onRetry={() => void refetchReviews()}
+              />
             ) : reviews && reviews.length > 0 ? (
               <ItemGroup className="gap-3">
                 {reviews.map((review) => (
@@ -255,6 +272,12 @@ export function PlaceDetailPage() {
         <TabsContent value="posts" className="mt-4">
           {postsPending ? (
             <p className="py-8 text-center text-sm text-muted-foreground">Đang tải bài đăng…</p>
+          ) : postsError ? (
+            <ErrorState
+              variant="plain"
+              title="Không tải được bài đăng"
+              onRetry={() => void refetchPosts()}
+            />
           ) : posts.length === 0 ? (
             <Empty className="mt-2">
               <EmptyHeader>
