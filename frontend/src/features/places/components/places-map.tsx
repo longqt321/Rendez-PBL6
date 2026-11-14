@@ -214,8 +214,8 @@ function createPlacePinIcon(
     : ""
 
   const html = `
-    <div class="group flex cursor-pointer items-center gap-1.5" role="img" aria-label="${escapeHtml(place.name)}">
-      <span class="flex size-7 shrink-0 items-center justify-center rounded-full text-white shadow-md ring-2 ring-background transition-transform duration-200 ${
+    <div class="group flex cursor-pointer items-center gap-1.5 focus-visible:outline-none" role="button" tabindex="0" aria-label="${escapeHtml(place.name)}">
+      <span class="flex size-7 shrink-0 items-center justify-center rounded-full text-white shadow-md ring-2 ring-background transition-transform duration-200 group-focus-visible:ring-4 group-focus-visible:ring-primary/60 ${
         isSelected ? "scale-110 ring-4 ring-primary/40" : "group-hover:scale-110"
       }" style="background-color: ${meta.color}">
         ${categoryIconSvg(place.category, 14)}
@@ -241,7 +241,7 @@ function createPlacePinIcon(
 function createClusterIcon(count: number) {
   const size = count >= 50 ? 52 : count >= 10 ? 44 : 36
   const html = `
-    <div class="flex items-center justify-center rounded-full bg-primary font-heading font-bold text-primary-foreground shadow-lg ring-4 ring-primary/25 transition-transform duration-200 hover:scale-105" style="width: ${size}px; height: ${size}px; font-size: ${size >= 44 ? 14 : 12}px">
+    <div class="flex items-center justify-center rounded-full bg-primary font-heading font-bold text-primary-foreground shadow-lg ring-4 ring-primary/25 transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/60" style="width: ${size}px; height: ${size}px; font-size: ${size >= 44 ? 14 : 12}px" role="button" tabindex="0" aria-label="${count} địa điểm — bấm để phóng to">
       ${count}
     </div>
   `
@@ -393,17 +393,28 @@ function ClusteredPlaceMarkers({
 
         if (isClusterProperties(props)) {
           const { cluster_id: clusterId, point_count: pointCount } = props
+          const expandCluster = () => {
+            // Phóng tới đúng mức zoom mà cụm này tách ra (chuẩn supercluster).
+            const expansionZoom = Math.min(index.getClusterExpansionZoom(clusterId), 18)
+            map.flyTo([lat, lng], expansionZoom, { duration: 0.5 })
+          }
+
           return (
             <Marker
               key={`cluster-${clusterId}`}
               position={[lat, lng]}
+              keyboard={true}
               icon={createClusterIcon(pointCount)}
               title={`${pointCount} địa điểm — bấm để phóng to`}
+              alt={`${pointCount} địa điểm — bấm để phóng to`}
               eventHandlers={{
-                click: () => {
-                  // Phóng tới đúng mức zoom mà cụm này tách ra (chuẩn supercluster).
-                  const expansionZoom = Math.min(index.getClusterExpansionZoom(clusterId), 18)
-                  map.flyTo([lat, lng], expansionZoom, { duration: 0.5 })
+                click: expandCluster,
+                keydown: (e) => {
+                  const key = e.originalEvent.key
+                  if (key === "Enter" || key === " " || key === "Spacebar") {
+                    e.originalEvent.preventDefault()
+                    expandCluster()
+                  }
                 },
               }}
             />
@@ -418,10 +429,19 @@ function ClusteredPlaceMarkers({
             : undefined
         const showLabel = labeledIds.has(place.id)
 
+        const handleSelectPlace = () => {
+          onSelectPlace?.(place)
+          const marker = markerRefs.current[place.id]
+          if (marker && typeof marker.isPopupOpen === "function" && !marker.isPopupOpen()) {
+            marker.openPopup()
+          }
+        }
+
         return (
           <Marker
             key={place.id}
             position={[place.lat!, place.lng!]}
+            keyboard={true}
             icon={createPlacePinIcon(place, { isSelected, showLabel, distanceKm })}
             title={place.name}
             alt={place.name}
@@ -429,8 +449,13 @@ function ClusteredPlaceMarkers({
               markerRefs.current[place.id] = ref
             }}
             eventHandlers={{
-              click: () => {
-                onSelectPlace?.(place)
+              click: handleSelectPlace,
+              keydown: (e) => {
+                const key = e.originalEvent.key
+                if (key === "Enter" || key === " " || key === "Spacebar") {
+                  e.originalEvent.preventDefault()
+                  handleSelectPlace()
+                }
               },
             }}
           >
