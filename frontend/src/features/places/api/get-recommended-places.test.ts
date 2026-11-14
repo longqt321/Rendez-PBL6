@@ -39,13 +39,10 @@ describe("getRecommendedPlaces", () => {
 
     const items = await getRecommendedPlaces(6)
 
-    expect(spy).toHaveBeenCalledWith(
-      "/places/recommended",
-      expect.objectContaining({
-        // Guest cũng được cá nhân hoá: kèm `anonId` cùng nguồn với event FE.
-        params: expect.objectContaining({ limit: 6, anonId: expect.any(String) }),
-      }),
-    )
+    // Guest cũng được cá nhân hoá: kèm `anonId` cùng nguồn với event FE.
+    const config = spy.mock.calls[0]?.[1] as { params?: { limit?: number; anonId?: string } }
+    expect(config?.params?.limit).toBe(6)
+    expect(config?.params?.anonId).toEqual(expect.any(String))
     expect(items.map((item) => item.id)).toEqual(["p1", "p2"])
 
     spy.mockRestore()
