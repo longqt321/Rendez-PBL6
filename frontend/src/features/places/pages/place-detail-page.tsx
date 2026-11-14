@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
 import { CameraIcon, FlagIcon, MapPinIcon, StarIcon, FolderPlusIcon } from "lucide-react"
 import {
@@ -38,6 +38,7 @@ import { PlaceMiniMap } from "../components/place-mini-map"
 import { CheckInDialog } from "../components/check-in-dialog"
 import { ReportPlaceDialog } from "../components/report-place-dialog"
 import { formatLocation } from "../lib/format-location"
+import { recordPlaceView } from "../lib/recently-viewed"
 
 /** Trang chi tiết địa điểm — `/discover/:id`. */
 export function PlaceDetailPage() {
@@ -58,6 +59,12 @@ export function PlaceDetailPage() {
     refetch: refetchReviews,
   } = usePlaceReviews(placeId)
   const { data: me } = useMe()
+
+  // Ghi lịch sử "Bạn vừa xem" khi địa điểm tải xong (chỉ id, không lưu dữ liệu
+  // địa điểm — dải "Bạn vừa xem" fetch lại theo id, tránh bản sao dữ liệu cũ).
+  useEffect(() => {
+    if (place?.id !== undefined) recordPlaceView(place.id)
+  }, [place?.id])
   const [editingReview, setEditingReview] = useState<Review | null>(null)
   const [showReviewForm, setShowReviewForm] = useState(false)
   const myReview = reviews?.find((review) => review.isMine) ?? null
