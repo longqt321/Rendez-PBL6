@@ -58,10 +58,12 @@ rendez.example.com {
 		file_server
 	}
 
-	# SSE (`GET /api/v1/rooms/:code/events`): nén gzip sẽ đệm event làm stream
-	# trễ/đứt — chỉ nén khi request KHÔNG phải SSE (D-056).
+	# SSE (`GET /api/v1/rooms/:code/events`, `GET /api/v1/notifications/events`):
+	# nén gzip sẽ đệm event làm stream trễ/đứt — chỉ nén khi request KHÔNG phải
+	# SSE (D-056).
 	@compressible {
 		not path /api/v1/rooms/*/events
+		not path /api/v1/notifications/events
 	}
 	encode @compressible gzip
 

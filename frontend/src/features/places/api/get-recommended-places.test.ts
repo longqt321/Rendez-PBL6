@@ -42,7 +42,8 @@ describe("getRecommendedPlaces", () => {
     expect(spy).toHaveBeenCalledWith(
       "/places/recommended",
       expect.objectContaining({
-        params: { limit: 6 },
+        // Guest cũng được cá nhân hoá: kèm `anonId` cùng nguồn với event FE.
+        params: expect.objectContaining({ limit: 6, anonId: expect.any(String) }),
       }),
     )
     expect(items.map((item) => item.id)).toEqual(["p1", "p2"])

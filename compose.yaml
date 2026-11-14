@@ -60,6 +60,11 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:5199}
       # Origin FE công khai — dùng để dựng og:url/og:image tuyệt đối cho HTML bot.
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost:5173}
+      # Trong compose, API luôn đứng sau reverse proxy (service `web`/Caddy) trên
+      # mạng nội bộ — phải tin các IP đó thì rate limit mới thấy IP người dùng
+      # thật thay vì IP của proxy (mặc định rỗng = gộp mọi user vào một bucket).
+      # 172.16.0.0/12 là dải mạng bridge mặc định của Docker.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.16.0.0/12}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
