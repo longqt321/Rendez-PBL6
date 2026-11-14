@@ -850,3 +850,33 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       `eval-search.ts`, L-032): chạy 2 eval song song từng cho số liệu sai
       (Yelp 0.869 thay vì 0.886) vì dense rỗng dưới tải CPU. Quy tắc: eval luôn
       chạy tuần tự.
+
+## Phát hiện từ audit 2026-11-14 (session /goal) — chưa làm
+
+- [ ] **`GET /places/:id/reviews` không có LIMIT/phân trang** (`routes/reviews.ts:90-94`) — place
+      nhiều review sẽ trả toàn bộ. Nên keyset pagination qua `lib/cursor.ts`.
+- [ ] **`GET /posts/:id/comments` không có LIMIT** (`lib/comments.ts:84-88`).
+- [ ] **`PATCH /notifications` trả toàn bộ notification** thay vì chỉ mục vừa cập nhật
+      (`lib/notifications.ts:184-191`).
+- [ ] **`GET /users/:handle/collections` không có LIMIT** (`lib/collections.ts:84-89`).
+- [ ] **`privateProfile` lưu nhưng không được enforce** (`routes/users.ts:53-100`,
+      `lib/users.ts:61-71`) — profile riêng tư vẫn xem được bài/collection.
+- [ ] **Schema chết**: `Place.moderationStatus/moderatedBy/moderatedAt/moderationNote/
+      createdBy/updatedBy` (`schema.prisma:246-252`) không dùng; `PlaceReport.status` không có
+      route chuyển trạng thái, chưa có admin routes.
+- [ ] **`POST /events` nhận `placeId` tuỳ ý** (string ≤128, `routes/events.ts:21-30`) — place
+      không tồn tại vẫn ghi vào `interaction_events`, làm bẩn dữ liệu huấn luyện affinity;
+      chưa có test file cho route này.
+- [ ] **SSE `/notifications/events` reconnect loop ~12s khi guest** (V1-06) — console lỗi
+      `ERR_INCOMPLETE_CHUNKED_ENCODING` lặp; guest không nên mở stream này hoặc cần backoff.
+- [ ] **Upload media chưa kiểm size/magic bytes** (V3-05) — nguy cơ cao.
+- [ ] **`use-rooms.ts` (~328 dòng) tự quản cache** thay vì TanStack Query — rủi ro stale data.
+- [ ] **A11y**: `proposal-form.tsx:149-159` label thiếu `htmlFor`/`id`; marker bản đồ
+      (`places-map.tsx:208-250`) không focus được bằng bàn phím.
+- [ ] **Dataset `categories/` ảnh minh hoạ AI + script `copy-cold-start-images.mjs`** không còn
+      được FE dùng sau khi chuyển placeholder tối giản (commit `40f62ea`) — có thể bỏ copy để
+      giảm bundle/image budget; cần quyết định xoá hẳn.
+- [ ] **Test pollution dev DB**: 46 user `*@rendez.test`, place `test-null-coords-mcgklm` —
+      cần script dọn + tách `DATABASE_URL` cho test.
+- [ ] **Search cap 30 kết quả** (`HYBRID_MAX_RESULTS = 30`, `lib/places.ts:477`) — thiết kế
+      rerank hybrid; nếu muốn phân trang sâu cần rethink (hiện FE đã hiện đủ 30 + "Tải thêm").

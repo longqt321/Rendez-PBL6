@@ -2384,6 +2384,22 @@ hệ thống, và **được lặp lại giữa các quán cùng loại — tuy�
 
 - Hình minh hoạ chưa được người dùng xem và góp ý thẩm mỹ — cần duyệt bằng mắt.
 
+### Sửa đổi (2026-11-14)
+
+Người dùng phản hồi: bộ ảnh minh hoạ AI sinh theo nhóm trông giống ảnh thật và badge
+"Ảnh minh hoạ" gây nhiễu (326/346 place không có ảnh thật nên gần như mọi card đều là
+minh hoạ). Quyết định mới (thay mục 1–5 ở trên):
+
+1. `PlacePlaceholder` chuyển sang **placeholder tối giản**: nền gradient token theme
+   (`from-muted to-secondary/70`), chữ cái đầu tên quán cỡ lớn + tên quán, không tải
+   file ảnh nào.
+2. **Bỏ hẳn nhánh ảnh minh hoạ AI** trong `CoverImage` (kể cả badge "Ảnh minh hoạ") và
+   xoá `lib/category-image.ts` — dataset `categories/` không còn được FE dùng.
+3. `placeImageAlt()` đổi thành "Chưa có ảnh của {tên quán}" (placeholder đã hiện tên
+   ngay trên khung).
+
+Chi tiết triển khai: commit `40f62ea`.
+
 ## D-051 — Rà soát "chắp vá/hack" D-049 + D-050: 9 vấn đề đã sửa
 
 **Ngày:** 2026-11-10
