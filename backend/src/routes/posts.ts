@@ -33,6 +33,10 @@ import { recordEvent } from "../lib/interaction-events"
 
 const POSTS_PAGE_SIZE = 5
 
+/** Giới hạn bình luận mỗi lần đọc — mặc định 50, trần 100 (chặn payload quá lớn). */
+const DEFAULT_COMMENTS_LIMIT = 50
+const MAX_COMMENTS_LIMIT = 100
+
 /**
  * Chống spam tương tác (V8-04) — đếm theo userId nên nhiều người dùng chung IP
  * (văn phòng, NAT) không chặn lẫn nhau. Ngưỡng cao hơn thao tác thường nhiều
@@ -181,6 +185,39 @@ export function createPostsRouter() {
   })
 
   /**
+   * Xoá CỨNG bài đăng của chính mình (FE đã có dialog xác nhận).
+   *
+   * Dữ liệu liên quan do khoá ngoại `ON DELETE CASCADE` của schema Prisma dọn
+   * (comments + comment_likes, post_likes, post_saves, post_images,
+   * place_suggestion_notifications); `interaction_events.post_id` là
+   * `ON DELETE SET NULL` nên log tương tác được giữ lại. Bảng `notifications`
+   * chỉ trỏ tới bài qua payload JSONB (không FK) → phải xoá tay trong CÙNG
+   * transaction, nếu không người nhận bấm vào sẽ gặp bài 404.
+   *
+   * Repo không có role admin (User không có cột role) → chỉ chủ bài được xoá.
+   */
+  router.delete("/posts/:id", requireAuth, async (c) => {
+    const postId = requireUuid(c.req.param("id"), "Không tìm thấy bài đăng")
+    const userId = c.get("userId")
+
+    const post = await prisma.post.findFirst({
+      where: { id: postId, deletedAt: null },
+      select: { id: true, authorId: true },
+    })
+    if (!post) throw new ApiError(404, "Không tìm thấy bài đăng")
+    if (post.authorId !== userId) throw new ApiError(403, "Không phải bài đăng của bạn")
+
+    await prisma.$transaction([
+      prisma.notification.deleteMany({
+        where: { payload: { path: ["postId"], equals: postId } },
+      }),
+      prisma.post.delete({ where: { id: postId } }),
+    ])
+
+    return c.body(null, 204)
+  })
+
+  /**
    * Gắn địa điểm vào bài — side effects A7.3 trong MỘT transaction:
    * gán placeId, publish place nếu chưa, đánh dấu đã đọc mọi thông báo đề xuất
    * của bài này.
@@ -312,9 +349,16 @@ export function createPostsRouter() {
     })
     if (!post) throw new ApiError(404, "Không tìm thấy bài đăng")
 
+    // `limit` parse an toàn như routes/places.ts: số lạ (NaN) coi như mặc định,
+    // kẹp trong khoảng [1, MAX_COMMENTS_LIMIT]. Shape response giữ nguyên `{ items }`.
+    const rawLimit = Number(c.req.query("limit") ?? DEFAULT_COMMENTS_LIMIT)
+    const limit = Number.isFinite(rawLimit)
+      ? Math.min(MAX_COMMENTS_LIMIT, Math.max(1, Math.trunc(rawLimit)))
+      : DEFAULT_COMMENTS_LIMIT
+
     const viewer = await getViewer(c)
     const sort = parseCommentSort(c.req.query("sort"))
-    const items = await listCommentsForPost(postId, viewer?.id ?? null, sort)
+    const items = await listCommentsForPost(postId, viewer?.id ?? null, sort, limit)
     return c.json({ items, next: null })
   })
 

@@ -75,11 +75,18 @@ function selectComments(viewerId: string | null): Prisma.Sql {
   `
 }
 
-/** Toàn bộ bình luận còn sống của một bài — đủ để xếp hạng + ghép reply ở JS. */
+/**
+ * Toàn bộ bình luận còn sống của một bài — đủ để xếp hạng + ghép reply ở JS.
+ *
+ * `limit` áp dụng lên danh sách phẳng SAU khi ghép reply (mặc định 50, trần 100
+ * ở route). Cắt giữa cha và reply vẫn an toàn: `replyTo` của reply lấy từ dữ
+ * liệu SQL của chính nó, không phụ thuộc cha còn nằm trong kết quả hay không.
+ */
 export async function listCommentsForPost(
   postId: string,
   viewerId: string | null,
   sort: CommentSort = "new",
+  limit?: number,
 ): Promise<CommentDto[]> {
   const rows = await prisma.$queryRaw<CommentRow[]>(Prisma.sql`
     ${selectComments(viewerId)}
@@ -115,7 +122,7 @@ export async function listCommentsForPost(
     replies.sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
     for (const reply of replies) items.push(toCommentDto(reply, viewerId))
   }
-  return items
+  return limit === undefined ? items : items.slice(0, limit)
 }
 
 /** Bình luận còn sống theo id — `null` khi không tồn tại/đã xoá. */
