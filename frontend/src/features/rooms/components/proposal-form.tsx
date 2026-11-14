@@ -152,9 +152,10 @@ export function ProposalForm({ onSubmit }: ProposalFormProps) {
       </div>
 
       <Field>
-        <FieldLabel>Giá trị</FieldLabel>
+        <FieldLabel htmlFor="proposal-value">Giá trị</FieldLabel>
         {field === "keyword" ? (
           <Input
+            id="proposal-value"
             maxLength={MAX_ROOM_KEYWORD_LENGTH}
             placeholder="Ví dụ: hải sản, bánh xèo…"
             autoComplete="off"
