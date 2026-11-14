@@ -3064,3 +3064,35 @@ tại trong file (Bỏ ảnh món + dữ liệu giả khỏi cold-start) nên gh
    `streetfood-district` 0.2, `english` 0.689.
 5. **Quy tắc đọc số**: không so điểm tổng giữa hai bộ khác phân bố; so theo ý định
    hoặc theo cùng checksum.
+
+## D-065 — Nguồn sự thật duy nhất cho dữ liệu vị trí (places) — 2026-11-14
+
+### Vấn đề
+Tồn tại 4 kho dữ liệu vị trí song song và chồng chéo:
+- `frontend/data/cold-start/places.json.bak` (1.701, thô chưa lọc)
+- `frontend/data/cold-start/places.json` (491, đã lọc cold-start)
+- `backend/data/places-expanded.json` (344, corpus OSM qua build-corpus)
+- DB `places` (347, bao gồm 3 bản ghi test/rác)
+
+Review tool (D-048) chỉ duyệt `places.json`, chưa áp được vào DB → hai bộ quyết định khác nhau, không rõ cái nào là nguồn sự thật.
+
+### Quyết định
+1. **`backend/data/places-expanded.json` là nguồn sự thật duy nhất (source of truth)** cho dữ liệu vị trí. `places.json` và `places.json.bak` chuyển sang trạng thái archive (chỉ đọc, không dùng làm nguồn seed).
+2. `seed.ts` ưu tiên đọc `places-expanded.json` (đã có) → DB luôn đồng bộ với file này.
+3. DB phải khớp 100% với `places-expanded.json` (upsert theo `id`, không tạo trùng). Các bản ghi test/rác không được để lại trong DB.
+4. Review tool bổ sung cờ `--data <file>` để duyệt dataset khác `places.json` (mặc định), và `--state <file>` để overlay quyết định riêng theo dataset. Khi dùng `--data`, overlay mặc định ghi vào `<file>.review-state.json` để không trộn phán quyết giữa hai bộ.
+5. Quy trình duyệt: chạy tool → duyệt từng place → xuất báo cáo phán quyết → admin xem báo cáo → áp vào DB qua SQL (cập nhật `status`, `moderation_status`, `duplicate_of`...). Không tự động áp.
+
+### Hành động đã thực hiện (2026-11-14)
+- Backup toàn bộ vào `backup/locations/20261114/` (db_dump + 6 file JSON).
+- Xoá 3 bản ghi test/rác khỏi DB (`og-unpublished-2a2iz7`, `og-unpublished-3crtpk`, `test-null-coords-vh5uzt`).
+- DB giờ khớp chính xác 344/344 với `places-expanded.json`.
+- `review-server.mjs` đã bổ sung `--data` / `--state` và chạy được với corpus 344 place (image serving 200, path traversal 404).
+
+### Cách chạy review tool trên nguồn sự thật
+```
+cd frontend
+node scripts/cold-start/review-server.mjs --data ../backend/data/places-expanded.json --port 5199
+# mở http://localhost:5199, duyệt từng place (phím 1-5, S, U, N)
+# quyết định lưu vào backend/data/places-expanded.json.review-state.json
+```

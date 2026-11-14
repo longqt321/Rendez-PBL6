@@ -8,24 +8,49 @@
  * đụng code app, không ảnh hưởng production.
  *
  * Chạy: node scripts/cold-start/review-server.mjs [--port 5198]
+ *       node scripts/cold-start/review-server.mjs --data ../backend/data/places-expanded.json
  * Mở:  http://localhost:5198
+ *
+ * `--data` duyệt dataset khác `places.json` (mặc định). Khi dùng `--data`, overlay
+ * quyết định mặc định ghi cạnh file đó (`<file>.review-state.json`) để không trộn
+ * phán quyết giữa hai bộ dữ liệu; có thể chỉ định rõ bằng `--state <file>`.
  */
 import { createServer } from "node:http"
 import { readFile, writeFile, rename, stat } from "node:fs/promises"
 import { existsSync } from "node:fs"
-import { dirname, extname, join, normalize, sep } from "node:path"
+import { dirname, extname, join, normalize, resolve, sep } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const root = join(scriptDir, "../..")
 const dataDir = join(root, "data/cold-start")
 const imagesDir = join(dataDir, "images")
-const placesFile = join(dataDir, "places.json")
-const stateFile = join(dataDir, "review-state.json")
 const uiFile = join(scriptDir, "review-ui.html")
 
 const portArg = process.argv.indexOf("--port")
 const PORT = portArg > -1 ? Number(process.argv[portArg + 1]) : 5198
+
+/**
+ * `--data <file>` cho phép duyệt một dataset KHÁC `places.json` — dùng để duyệt
+ * corpus đang là nguồn sự thật (`backend/data/places-expanded.json`, 344 place)
+ * thay vì dataset cold-start gốc (491). Đường dẫn tương đối tính từ thư mục
+ * `frontend/` để giữ thói quen chạy cũ.
+ *
+ * `--state <file>` tương ứng: quyết định của mỗi dataset phải nằm ở overlay
+ * riêng, nếu không hai bộ sẽ ghi đè phán quyết lên nhau theo id trùng.
+ */
+function argValue(flag) {
+  const index = process.argv.indexOf(flag)
+  return index > -1 ? process.argv[index + 1] : undefined
+}
+
+const dataArg = argValue("--data")
+const placesFile = dataArg ? resolve(root, dataArg) : join(dataDir, "places.json")
+const stateFile = argValue("--state")
+  ? resolve(root, argValue("--state"))
+  : dataArg
+    ? `${placesFile}.review-state.json`
+    : join(dataDir, "review-state.json")
 
 /** Trường client cần để duyệt — bỏ `imageNote`/`collectedAt` cho nhẹ payload. */
 const FIELDS = [
@@ -180,6 +205,7 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Review tool: http://localhost:${PORT}`)
+  console.log(`  dataset: ${placesFile}`)
   console.log(`  ${places.length} địa điểm · đã duyệt ${Object.keys(state.decisions).length}`)
-  console.log("  Ctrl+C để dừng (quyết định đã lưu vào data/cold-start/review-state.json)")
+  console.log(`  Ctrl+C để dừng (quyết định đã lưu vào ${stateFile})`)
 })

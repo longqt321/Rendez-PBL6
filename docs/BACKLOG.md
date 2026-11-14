@@ -897,3 +897,11 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       (`003e6b3`), console vẫn thấy `ERR_INCOMPLETE_CHUNKED_ENCODING` lặp khi user đăng nhập
       mở stream (verify 2026-11-14 12:01). Cần điều tra nginx dev proxy buffering/keepalive
       hoặc backoff reconnect có giới hạn số lần.
+
+## Luồng dữ liệu vị trí (D-065) — việc còn lại
+
+- [ ] **Duyệt 344 place trong DB qua review tool** — chạy `node scripts/cold-start/review-server.mjs --data ../backend/data/places-expanded.json --port 5199`, duyệt `ok`/`not-exists`/`duplicate`/`wrong-address`, rồi xuất báo cáo trước khi áp vào DB.
+- [ ] **Sửa 210 place có `geo_precision = district-centroid`** — toạ độ chỉ là tâm quận, không phải vị trí quán; cần geocode lại hoặc đánh dấu "vị trí tương đối" trên UI.
+- [ ] **Xử lý 11 nhóm tên trùng** (WinMart x4, Highlands x3, Starbucks x3, Trung Nguyên x3, Olivia Pizza x2, Mirko Coffee x2, The Coffee House x2, Hancook x2, Cộng Cà Phê x2) — phân biệt chi nhánh vs trùng lặp thật.
+- [ ] **Loại địa điểm không phù hợp định vị** (siêu thị WinMart/Full Market, cửa hàng tiện lợi) khỏi danh sách gợi ý đi chơi/hẹn hò.
+- [ ] **Archive hoá `places.json` (491) và `places.json.bak` (1.701)** — thêm ghi chú "chỉ đọc" trong README để không ai seed nhầm.

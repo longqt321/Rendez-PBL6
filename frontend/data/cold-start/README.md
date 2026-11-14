@@ -104,3 +104,18 @@ Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc l�
 2. Xác minh giờ mở cửa/SĐT (chỉ một phần POI có tag).
 3. Bổ sung ảnh thật cho quán `curated-v2` (hiện dùng ảnh món đại diện).
 4. Giấy phép ảnh quán (Foody/Google Maps) — cần xin phép trước khi phát hành công khai.
+
+## ⚠️ Trạng thái: ARCHIVE (từ 2026-11-14, D-065)
+
+`places.json` (491) và `places.json.bak` (1.701) trong thư mục này **không còn là
+nguồn sự thật**. Nguồn duy nhất để seed DB là `backend/data/places-expanded.json`
+(344 place, corpus OSM đã qua build-corpus).
+
+Chỉ đọc các file này để tra cứu lịch sử; không sửa và không dùng để seed.
+
+Duyệt dữ liệu hiện hành:
+
+```
+cd frontend
+node scripts/cold-start/review-server.mjs --data ../backend/data/places-expanded.json --port 5199
+```
