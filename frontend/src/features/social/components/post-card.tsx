@@ -1,20 +1,36 @@
 import { useState } from "react"
 import { Link } from "react-router"
-import { BookmarkIcon, HeartIcon, MapPinIcon, MessageCircleIcon, SparklesIcon } from "lucide-react"
+import {
+  BookmarkIcon,
+  HeartIcon,
+  MapPinIcon,
+  MessageCircleIcon,
+  MoreHorizontalIcon,
+  SparklesIcon,
+  Trash2Icon,
+} from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Toggle } from "@/components/ui/toggle"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { SafeImage } from "@/components/shared/safe-image"
 import { categoryLabel } from "@/features/places/lib/category-meta"
+import { useMe } from "@/features/profile/hooks/use-me"
 import { formatCount, formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useSetPostLiked } from "../hooks/use-set-post-liked"
 import { useSetPostSaved } from "../hooks/use-set-post-saved"
 import { PostCommentsInline } from "./post-comments-inline"
 import { CommentThread } from "./comment-thread"
+import { PostDeleteDialog } from "./post-delete-dialog"
 import type { Post } from "../types/post"
 
 interface PostCardProps {
@@ -25,6 +41,11 @@ export function PostCard({ post }: PostCardProps) {
   const setLiked = useSetPostLiked()
   const setSaved = useSetPostSaved()
   const [commentsOpen, setCommentsOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const { data: me } = useMe()
+
+  // `Post` không có `isMine` — xác định bằng so khớp tác giả với người dùng hiện tại.
+  const isMine = me !== undefined && post.author.id === me.id
 
   // Địa điểm do server nhúng kèm — không tra cứu id ở client.
   const place = post.place
@@ -47,6 +68,23 @@ export function PostCard({ post }: PostCardProps) {
             @{post.author.handle} · {formatRelativeTime(post.createdAt)}
           </p>
         </div>
+        {isMine ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon-xs" aria-label="Tuỳ chọn bài đăng">
+                  <MoreHorizontalIcon />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
+                Xoá bài
+                <Trash2Icon />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
       </header>
 
       <div className="flex flex-col gap-3 p-4">
@@ -125,6 +163,8 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Thread đầy đủ — nút Bình luận ở footer cũng mở cùng thread. */}
       <CommentThread post={post} open={commentsOpen} onOpenChange={setCommentsOpen} />
+
+      <PostDeleteDialog postId={post.id} open={deleteOpen} onClose={() => setDeleteOpen(false)} />
     </Card>
   )
 }
