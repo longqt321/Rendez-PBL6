@@ -137,4 +137,57 @@ describe("POST /media khi R2 đã cấu hình", () => {
     })
     expect(res.status).toBe(400)
   })
+
+  test("file size vượt quá giới hạn 5MB trả 400", async () => {
+    const cookie = (
+      await registerVerifiedUser(app, prisma, {
+        name: "Người Quá Khổ",
+        email: `media_size_${suffix}@rendez.test`,
+        handle: `media_size_${suffix}`,
+      })
+    ).cookie
+
+    // 5MB + 1 byte
+    const res = await call("/api/v1/media", {
+      method: "POST",
+      cookie,
+      body: JSON.stringify({
+        folder: "posts",
+        contentType: "image/jpeg",
+        contentLength: 5 * 1024 * 1024 + 1,
+      }),
+    })
+    expect(res.status).toBe(400)
+    expect(((await res.json()) as { message: string }).message).toContain("5MB")
+  })
+
+  test("file hợp lệ kèm contentLength sinh signed headers gồm content-length", async () => {
+    const cookie = (
+      await registerVerifiedUser(app, prisma, {
+        name: "Người Chuẩn Size",
+        email: `media_len_${suffix}@rendez.test`,
+        handle: `media_len_${suffix}`,
+      })
+    ).cookie
+
+    const res = await call("/api/v1/media", {
+      method: "POST",
+      cookie,
+      body: JSON.stringify({
+        folder: "posts",
+        contentType: "image/png",
+        contentLength: 1024 * 500, // 500KB
+      }),
+    })
+    expect(res.status).toBe(201)
+
+    const body = (await res.json()) as {
+      uploadUrl: string
+      headers: Record<string, string>
+    }
+    const url = new URL(body.uploadUrl)
+    expect(url.searchParams.get("X-Amz-SignedHeaders")).toBe("content-length;content-type;host")
+    expect(body.headers["Content-Type"]).toBe("image/png")
+    expect(body.headers["Content-Length"]).toBe(String(1024 * 500))
+  })
 })

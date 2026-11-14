@@ -60,6 +60,7 @@ export interface PresignPutParams {
   /** Thời điểm ký — tham số để test tất định. */
   now?: Date
   contentType?: string
+  contentLength?: number
 }
 
 export interface PresignedUpload {
@@ -84,12 +85,18 @@ export function presignPut(config: R2Config, params: PresignPutParams): Presigne
   const canonicalUri = encodePath(`/${config.bucket}/${params.key}`)
   const scope = `${dateStamp}/${REGION}/${SERVICE}/aws4_request`
 
-  // Có contentType thì ký luôn `content-type` — client không thể đổi kiểu file
-  // sau khi đã xin URL (chặn đẩy nội dung khác loại vào đúng object ảnh).
-  const signedHeaders = params.contentType ? "content-type;host" : "host"
-  const canonicalHeaders = params.contentType
-    ? `content-type:${params.contentType}\nhost:${host}\n`
-    : `host:${host}\n`
+  // Có contentType / contentLength thì ký luôn vào signed headers — client
+  // không thể đổi kiểu file hay size sau khi đã xin URL (chặn lạm dụng dung lượng & format).
+  const headersToSign: Record<string, string> = { host }
+  if (params.contentType) headersToSign["content-type"] = params.contentType
+  if (params.contentLength !== undefined)
+    headersToSign["content-length"] = String(params.contentLength)
+
+  const sortedHeaderNames = Object.keys(headersToSign).sort()
+  const signedHeaders = sortedHeaderNames.join(";")
+  const canonicalHeaders = sortedHeaderNames
+    .map((name) => `${name}:${headersToSign[name]}\n`)
+    .join("")
 
   const query: Record<string, string> = {
     "X-Amz-Algorithm": ALGORITHM,
@@ -123,12 +130,16 @@ export function presignPut(config: R2Config, params: PresignPutParams): Presigne
   const url = `https://${host}${canonicalUri}?${canonicalQuery}&X-Amz-Signature=${signature}`
   const publicBase = config.publicBaseUrl.replace(/\/$/, "")
 
+  const headers: Record<string, string> = {}
+  if (params.contentType) headers["Content-Type"] = params.contentType
+  if (params.contentLength !== undefined) headers["Content-Length"] = String(params.contentLength)
+
   return {
     url,
     publicUrl: publicBase ? `${publicBase}/${params.key}` : url.split("?")[0]!,
     key: params.key,
     expiresAt: new Date(now.getTime() + params.expiresInSeconds * 1000).toISOString(),
-    headers: params.contentType ? { "Content-Type": params.contentType } : {},
+    headers,
   }
 }
 

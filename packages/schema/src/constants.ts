@@ -47,6 +47,9 @@ export const IMAGE_CONTENT_TYPES = [
   "image/avif",
 ] as const
 
+/** Kích thước file media upload tối đa (5MB). */
+export const MAX_MEDIA_FILE_SIZE = 5 * 1024 * 1024
+
 /** Số ký tự tối thiểu để bắt đầu gợi ý địa điểm trong composer. */
 export const PLACE_SUGGESTION_MIN_CHARS = 8
 

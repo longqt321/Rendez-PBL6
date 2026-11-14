@@ -1,5 +1,6 @@
 import { Hono } from "hono"
 import { z } from "zod"
+import { MAX_MEDIA_FILE_SIZE } from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { ApiError } from "../lib/errors"
 import { env } from "../env"
@@ -20,6 +21,18 @@ const FOLDERS = ["posts", "places", "avatars", "covers"] as const
 const mediaInputSchema = z.object({
   folder: z.enum(FOLDERS),
   contentType: z.string().min(1),
+  contentLength: z
+    .number()
+    .int()
+    .positive()
+    .max(MAX_MEDIA_FILE_SIZE, "Kích thước ảnh tối đa 5MB")
+    .optional(),
+  size: z
+    .number()
+    .int()
+    .positive()
+    .max(MAX_MEDIA_FILE_SIZE, "Kích thước ảnh tối đa 5MB")
+    .optional(),
 })
 
 /** Presigned PUT sống 10 phút — đủ tải ảnh 3G, ngắn để giảm lạm dụng. */
@@ -45,6 +58,11 @@ export function createMediaRouter() {
         throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
       }
 
+      const contentLength = parsed.data.contentLength ?? parsed.data.size
+      if (contentLength !== undefined && contentLength > MAX_MEDIA_FILE_SIZE) {
+        throw new ApiError(400, "Kích thước ảnh tối đa 5MB")
+      }
+
       const extension = extensionForContentType(parsed.data.contentType)
       if (!extension) {
         throw new ApiError(400, "Chỉ nhận ảnh JPEG, PNG, WebP hoặc AVIF")
@@ -64,6 +82,7 @@ export function createMediaRouter() {
           key,
           expiresInSeconds: UPLOAD_TTL_SECONDS,
           contentType: parsed.data.contentType,
+          contentLength,
         },
       )
 
