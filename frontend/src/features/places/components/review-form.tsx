@@ -1,5 +1,6 @@
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { SendIcon } from "lucide-react"
+import { SendIcon, Trash2Icon } from "lucide-react"
 import { Controller, useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
 import { toast } from "sonner"
@@ -13,6 +14,7 @@ import { formatNumber } from "@/lib/format"
 import type { Review } from "../types/review"
 import { useUpsertReview } from "../hooks/use-upsert-review"
 import { RatingStars } from "./rating-stars"
+import { ReviewDeleteDialog } from "./review-delete-dialog"
 
 interface ReviewFormProps {
   placeId: string
@@ -43,6 +45,7 @@ type ReviewFormValues = z.infer<typeof reviewSchema>
  * kèm. Gửi lại đánh giá đã có là ghi đè (một người một đánh giá mỗi địa điểm).
  */
 export function ReviewForm({ placeId, myReview, authorInitials, onDone }: ReviewFormProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const form = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
@@ -65,56 +68,79 @@ export function ReviewForm({ placeId, myReview, authorInitials, onDone }: Review
   }
 
   return (
-    <form
-      onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
-      className="flex flex-col gap-3"
-    >
-      <div className="flex items-center gap-3">
-        <Avatar size="lg">
-          <AvatarFallback>{authorInitials}</AvatarFallback>
-        </Avatar>
-        <Field data-invalid={!!form.formState.errors.rating}>
-          <FieldLabel className="text-sm font-medium">
-            {myReview ? "Đánh giá của bạn" : "Chia sẻ trải nghiệm của bạn"}
-          </FieldLabel>
-          <Controller
-            control={form.control}
-            name="rating"
-            render={({ field }) => <RatingStars value={field.value} onChange={field.onChange} />}
-          />
-          <FieldError errors={[form.formState.errors.rating]} />
-        </Field>
-      </div>
-      <Field data-invalid={!!form.formState.errors.content}>
-        <FieldLabel htmlFor="review-content" className="sr-only">
-          Nội dung đánh giá
-        </FieldLabel>
-        <Textarea
-          id="review-content"
-          {...form.register("content")}
-          aria-invalid={!!form.formState.errors.content}
-          placeholder="Vị ngon, không gian, giá cả… chỉ bằng chữ thôi (không đính kèm ảnh hoặc file)"
-          className="min-h-24"
-          maxLength={MAX_REVIEW_CONTENT_LENGTH}
-        />
-        <FieldError errors={[form.formState.errors.content]} />
-      </Field>
-      <div className="flex items-center justify-between gap-2">
-        <FieldDescription>
-          {formatNumber(content.length)}/{formatNumber(MAX_REVIEW_CONTENT_LENGTH)}
-        </FieldDescription>
-        <div className="flex items-center gap-2">
-          {onDone ? (
-            <Button type="button" variant="ghost" onClick={onDone} disabled={upsert.isPending}>
-              Huỷ
-            </Button>
-          ) : null}
-          <Button type="submit" disabled={upsert.isPending}>
-            {upsert.isPending ? <Spinner aria-label="Đang lưu đánh giá" /> : <SendIcon />}
-            {myReview ? "Cập nhật" : "Gửi đánh giá"}
-          </Button>
+    <>
+      <form
+        onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
+        className="flex flex-col gap-3"
+      >
+        <div className="flex items-center gap-3">
+          <Avatar size="lg">
+            <AvatarFallback>{authorInitials}</AvatarFallback>
+          </Avatar>
+          <Field data-invalid={!!form.formState.errors.rating}>
+            <FieldLabel className="text-sm font-medium">
+              {myReview ? "Đánh giá của bạn" : "Chia sẻ trải nghiệm của bạn"}
+            </FieldLabel>
+            <Controller
+              control={form.control}
+              name="rating"
+              render={({ field }) => <RatingStars value={field.value} onChange={field.onChange} />}
+            />
+            <FieldError errors={[form.formState.errors.rating]} />
+          </Field>
         </div>
-      </div>
-    </form>
+        <Field data-invalid={!!form.formState.errors.content}>
+          <FieldLabel htmlFor="review-content" className="sr-only">
+            Nội dung đánh giá
+          </FieldLabel>
+          <Textarea
+            id="review-content"
+            {...form.register("content")}
+            aria-invalid={!!form.formState.errors.content}
+            placeholder="Vị ngon, không gian, giá cả… chỉ bằng chữ thôi (không đính kèm ảnh hoặc file)"
+            className="min-h-24"
+            maxLength={MAX_REVIEW_CONTENT_LENGTH}
+          />
+          <FieldError errors={[form.formState.errors.content]} />
+        </Field>
+        <div className="flex items-center justify-between gap-2">
+          <FieldDescription>
+            {formatNumber(content.length)}/{formatNumber(MAX_REVIEW_CONTENT_LENGTH)}
+          </FieldDescription>
+          <div className="flex items-center gap-2">
+            {myReview ? (
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={upsert.isPending}
+              >
+                <Trash2Icon />
+                Xoá đánh giá
+              </Button>
+            ) : null}
+            {onDone ? (
+              <Button type="button" variant="ghost" onClick={onDone} disabled={upsert.isPending}>
+                Huỷ
+              </Button>
+            ) : null}
+            <Button type="submit" disabled={upsert.isPending}>
+              {upsert.isPending ? <Spinner aria-label="Đang lưu đánh giá" /> : <SendIcon />}
+              {myReview ? "Cập nhật" : "Gửi đánh giá"}
+            </Button>
+          </div>
+        </div>
+      </form>
+
+      {myReview ? (
+        <ReviewDeleteDialog
+          placeId={placeId}
+          open={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onDeleted={onDone}
+        />
+      ) : null}
+    </>
   )
 }

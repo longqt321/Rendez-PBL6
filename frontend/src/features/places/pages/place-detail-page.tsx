@@ -32,6 +32,7 @@ import { useMe } from "@/features/profile/hooks/use-me"
 import { isNotFoundError } from "@/lib/axios"
 import { ReviewForm } from "../components/review-form"
 import { ReviewItem } from "../components/review-item"
+import { ReviewDeleteDialog } from "../components/review-delete-dialog"
 import type { Review } from "../types/review"
 import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
 import { PlaceMiniMap } from "../components/place-mini-map"
@@ -67,6 +68,7 @@ export function PlaceDetailPage() {
   }, [place?.id])
   const [editingReview, setEditingReview] = useState<Review | null>(null)
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [deletingReview, setDeletingReview] = useState<Review | null>(null)
   const myReview = reviews?.find((review) => review.isMine) ?? null
   const reviewFormVisible = showReviewForm || editingReview !== null
 
@@ -264,6 +266,7 @@ export function PlaceDetailPage() {
                     key={review.id}
                     review={review}
                     onEdit={review.isMine ? setEditingReview : undefined}
+                    onDelete={review.isMine ? setDeletingReview : undefined}
                   />
                 ))}
               </ItemGroup>
@@ -332,6 +335,17 @@ export function PlaceDetailPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <ReviewDeleteDialog
+        placeId={placeId}
+        open={deletingReview !== null}
+        onClose={() => setDeletingReview(null)}
+        onDeleted={() => {
+          if (editingReview?.id === deletingReview?.id) {
+            closeReviewForm()
+          }
+        }}
+      />
     </div>
   )
 }

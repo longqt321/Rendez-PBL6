@@ -784,6 +784,28 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
   return toReviewDto(review)
 }
 
+function deleteReview(config: InternalAxiosRequestConfig, placeId: string): void {
+  const place = findPlace(placeId)
+  if (!place || place.publishedAt === null) notFound(config, "Không tìm thấy địa điểm")
+
+  const idx = db.reviews.findIndex(
+    (review) => review.placeId === placeId && review.author.id === CURRENT_USER.id,
+  )
+  if (idx === -1) notFound(config, "Không tìm thấy đánh giá")
+
+  const removed = db.reviews[idx]
+  db.reviews.splice(idx, 1)
+
+  if (place.reviewCount > 1) {
+    place.rating = (place.rating * place.reviewCount - removed.rating) / (place.reviewCount - 1)
+    place.reviewCount -= 1
+    place.rating = Math.round(place.rating * 10) / 10
+  } else {
+    place.rating = 0
+    place.reviewCount = 0
+  }
+}
+
 /**
  * Tạo bộ sưu tập rỗng cho người dùng hiện tại.
  *
@@ -1520,6 +1542,11 @@ const routes: Route[] = [
     method: "post",
     pattern: /^\/places\/([^/]+)\/reviews$/,
     handler: (config, [placeId]) => createReview(config, placeId),
+  },
+  {
+    method: "delete",
+    pattern: /^\/places\/([^/]+)\/reviews$/,
+    handler: (config, [placeId]) => deleteReview(config, placeId),
   },
   {
     method: "post",
