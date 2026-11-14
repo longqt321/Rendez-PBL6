@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { render } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { PlacesMap } from "./places-map"
@@ -10,15 +11,39 @@ vi.mock("next-themes", () => ({
 
 // Mock react-router
 vi.mock("react-router", () => ({
-  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+  Link: ({ children, ...props }: { children: ReactNode; [key: string]: unknown }) => (
+    <a {...props}>{children}</a>
+  ),
 }))
+
+interface MockMarkerProps {
+  children?: ReactNode
+  icon?: { options?: { html?: string } }
+  title?: string
+  alt?: string
+  keyboard?: boolean
+  eventHandlers?: {
+    keydown?: (event: { originalEvent: unknown }) => void
+    click?: (event: unknown) => void
+  }
+}
 
 // Mock react-leaflet
 vi.mock("react-leaflet", () => {
   return {
-    MapContainer: ({ children }: any) => <div data-testid="map-container">{children}</div>,
+    MapContainer: ({ children }: { children: ReactNode }) => (
+      <div data-testid="map-container">{children}</div>
+    ),
     TileLayer: () => <div data-testid="tile-layer" />,
-    Marker: ({ children, icon, title, alt, keyboard, eventHandlers, ...props }: any) => (
+    Marker: ({
+      children,
+      icon,
+      title,
+      alt,
+      keyboard,
+      eventHandlers,
+      ...props
+    }: MockMarkerProps) => (
       <div
         data-testid="map-marker"
         data-title={title}
@@ -41,7 +66,7 @@ vi.mock("react-leaflet", () => {
         {children}
       </div>
     ),
-    Popup: ({ children }: any) => <div data-testid="map-popup">{children}</div>,
+    Popup: ({ children }: { children: ReactNode }) => <div data-testid="map-popup">{children}</div>,
     useMap: () => ({
       flyTo: vi.fn(),
       getZoom: () => 13,
