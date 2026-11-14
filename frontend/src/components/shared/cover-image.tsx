@@ -1,24 +1,20 @@
 import { useState } from "react"
 import { ImageOffIcon } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { PlacePlaceholder } from "@/components/shared/place-placeholder"
 import { coldStartSrcSet } from "@/components/shared/cold-start-srcset"
 import type { PlaceCategory } from "@/features/places/types/place"
 import { cn } from "@/lib/utils"
 
 interface CoverImageProps {
-  /** URL ảnh THẬT (cold-start/venue). Không có thì hiện ảnh minh hoạ hệ thống. */
+  /** URL ảnh THẬT (cold-start/venue). Không có thì hiện placeholder tối giản. */
   src?: string
   /**
-   * Ảnh minh hoạ AI theo nhóm loại hình (manifest categories) — dùng khi thiếu
-   * ảnh thật. Không có (nhóm chưa sinh ảnh) thì rơi về placeholder SVG.
-   */
-  illustrationSrc?: string
-  /**
-   * Loại địa điểm — quyết định hình minh hoạ khi thiếu ảnh thật.
-   * Bỏ trống (ví dụ ảnh bìa hồ sơ) thì hiện khung trung tính, không minh hoạ.
+   * Loại địa điểm — placeholder tối giản dùng làm nhãn đọc màn hình khi thiếu
+   * ảnh thật. Bỏ trống (ví dụ ảnh bìa hồ sơ) thì hiện khung trung tính.
    */
   placeholder?: PlaceCategory
+  /** Tên địa điểm — placeholder hiện chữ cái đầu + tên khi thiếu ảnh thật. */
+  name?: string
   /** Chiều cao cố định cho masonry; bỏ trống thì theo tỉ lệ khung */
   height?: number
   className?: string
@@ -41,17 +37,17 @@ interface CoverImageProps {
  * Ảnh bìa địa điểm.
  *
  * Có ảnh thật (`src`) thì dùng ảnh thật. Không có — hoặc ảnh HỎNG (lỗi tải,
- * R2 gặp sự cố, ảnh bị xoá khỏi bucket) — thì hiện **ảnh minh hoạ hệ thống**
- * theo loại quán, kèm nhãn "Ảnh minh hoạ" để người dùng không nhầm với ảnh
- * thật (quyết định D-050). Mọi quán cùng loại dùng chung một hình.
+ * R2 gặp sự cố, ảnh bị xoá khỏi bucket) — thì hiện **placeholder tối giản**
+ * (gradient + chữ cái đầu + tên quán, quyết định D-050). Không còn ảnh minh
+ * hoạ AI dùng chung theo nhóm loại hình.
  *
  * Ảnh hỏng không được để lộ icon ảnh vỡ + alt text thô: `onError` chuyển hẳn
- * sang nhánh minh hoạ, như thể ảnh chưa từng có.
+ * sang nhánh placeholder, như thể ảnh chưa từng có.
  */
 export function CoverImage({
   src,
-  illustrationSrc,
   placeholder,
+  name,
   height,
   className,
   alt,
@@ -62,17 +58,9 @@ export function CoverImage({
   const [failed, setFailed] = useState(false)
   // Reset khi đổi ảnh (cùng component mount lại với URL mới, ví dụ sửa hồ sơ).
   const showImage = src !== undefined && !failed
-  // Ảnh minh hoạ AI chỉ dùng khi KHÔNG có ảnh thật; hỏng thì rơi về SVG.
-  const [illustrationFailed, setIllustrationFailed] = useState(false)
-  const showIllustration = !showImage && illustrationSrc !== undefined && !illustrationFailed
-  // Chỉ dataset cold-start có biến thể; ảnh R2 dùng `src` gốc. Ảnh minh hoạ
-  // cũng nằm trong dataset (`categories/<nhóm>/<tên>.jpg` có -400/-800.webp)
-  // nên dùng cùng cơ chế — nếu không, card không có ảnh thật sẽ tải JPG ~500KB
-  // và vi phạm ngân sách ảnh (e2e image-budget).
+  // Chỉ dataset cold-start có biến thể ảnh; ảnh R2 dùng `src` gốc.
   const responsive =
     src !== undefined && sizes !== undefined ? coldStartSrcSet(src, sizes) : undefined
-  const illustrationResponsive =
-    showIllustration && sizes !== undefined ? coldStartSrcSet(illustrationSrc, sizes) : undefined
 
   return (
     <div className={cn("relative overflow-hidden bg-muted", className)} style={{ height }}>
@@ -87,36 +75,8 @@ export function CoverImage({
           className="size-full object-cover"
           onError={() => setFailed(true)}
         />
-      ) : showIllustration ? (
-        <>
-          <img
-            src={illustrationSrc}
-            {...(illustrationResponsive
-              ? { srcSet: illustrationResponsive.srcSet, sizes: illustrationResponsive.sizes }
-              : {})}
-            alt={alt ?? ""}
-            loading={priority ? "eager" : "lazy"}
-            decoding="async"
-            className="size-full object-cover"
-            onError={() => setIllustrationFailed(true)}
-          />
-          <Badge
-            variant="outline"
-            className="absolute bottom-2 left-2 border-border/70 bg-background/85 text-[11px] font-medium text-muted-foreground backdrop-blur"
-          >
-            Ảnh minh hoạ
-          </Badge>
-        </>
       ) : placeholder !== undefined ? (
-        <>
-          <PlacePlaceholder category={placeholder} label={alt} />
-          <Badge
-            variant="outline"
-            className="absolute bottom-2 left-2 border-border/70 bg-background/85 text-[11px] font-medium text-muted-foreground backdrop-blur"
-          >
-            Ảnh minh hoạ
-          </Badge>
-        </>
+        <PlacePlaceholder category={placeholder} name={name} label={alt} />
       ) : (
         <div className="flex size-full flex-col items-center justify-center gap-1 text-muted-foreground">
           <ImageOffIcon className="size-5" aria-hidden="true" />

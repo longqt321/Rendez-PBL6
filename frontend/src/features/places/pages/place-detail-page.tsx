@@ -109,6 +109,7 @@ export function PlaceDetailPage() {
         <CoverImage
           src={place.imageUrl}
           placeholder={place.category}
+          name={place.name}
           height={280}
           className="w-full rounded-t-xl"
           alt={placeImageAlt(place)}

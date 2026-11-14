@@ -441,6 +441,7 @@ function ClusteredPlaceMarkers({
                   <CoverImage
                     src={place.imageUrl}
                     placeholder={place.category}
+                    name={place.name}
                     height={112}
                     alt={placeImageAlt(place)}
                     sizes="260px"

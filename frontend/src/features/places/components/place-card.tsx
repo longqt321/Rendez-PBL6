@@ -8,7 +8,6 @@ import { formatCount, formatDistance, formatRating } from "@/lib/format"
 import { emitPlaceClick } from "@/lib/events"
 import { isOpenNow } from "../lib/opening-hours"
 import { categoryLabel } from "../lib/category-meta"
-import { useCategoryImage } from "../lib/category-image"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
 import type { DailyPick, Place } from "../types/place"
 
@@ -40,8 +39,6 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
   const openState = isOpenNow(place.openingHours ?? null)
   const visibleTags = place.tags.slice(0, 3)
   const hiddenTagCount = place.tags.length - visibleTags.length
-  // Ảnh minh hoạ theo nhóm loại hình; nhóm chưa có ảnh → undefined (placeholder SVG).
-  const illustrationSrc = useCategoryImage(place.category, place.name)
   const isNew = isRecentlyPublished(place.publishedAt)
 
   return (
@@ -49,8 +46,8 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
       {/* Chiều cao ảnh do server trả về (`imageHeight`) → lưới mobile có nhịp masonry. */}
       <CoverImage
         src={place.imageUrl}
-        illustrationSrc={illustrationSrc}
         placeholder={place.category}
+        name={place.name}
         height={place.imageHeight}
         alt={placeImageAlt(place)}
         // Card rộng tối đa ~370 CSS px (3 cột × max-w-6xl) → DPR2 = 740: chọn
