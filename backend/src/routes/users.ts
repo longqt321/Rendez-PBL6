@@ -9,7 +9,12 @@ import { listCollectionsOfOwner, toCollectionSummary } from "../lib/collections"
 import { createActorNotification } from "../lib/notifications"
 import { listPosts } from "../lib/posts"
 import { getViewer, requireAuth } from "../lib/session"
-import { findProfileByHandle, findProfileById, setFollow } from "../lib/users"
+import {
+  canViewPrivateContent,
+  findProfileByHandle,
+  findProfileById,
+  setFollow,
+} from "../lib/users"
 import { jsonWithCache, noStore } from "../lib/http-cache"
 import { suggestUsersToFollow } from "../lib/user-suggestions"
 import { rateLimit } from "../lib/rate-limit"
@@ -210,6 +215,11 @@ export function createUsersRouter() {
     const viewerId = viewer?.id ?? null
     const profile = await findProfileByHandle(handle, viewerId)
     if (!profile) throw new ApiError(404, "Không tìm thấy người dùng")
+    // Hồ sơ riêng tư: bài đăng chỉ chủ sở hữu xem được (kể cả tab saved/pinned,
+    // vốn đã chặn người khác bằng trang rỗng — chặn sớm bằng 403 cho gọn).
+    if (!canViewPrivateContent(profile.id, profile.privateProfile, viewerId)) {
+      throw new ApiError(403, "Hồ sơ này ở chế độ riêng tư")
+    }
 
     const tab = c.req.query("tab") ?? "posts"
     const rawCursor = c.req.query("cursor")
@@ -245,6 +255,10 @@ export function createUsersRouter() {
     const viewerId = viewer?.id ?? null
     const profile = await findProfileByHandle(handle, viewerId)
     if (!profile) throw new ApiError(404, "Không tìm thấy người dùng")
+    // Hồ sơ riêng tư: bộ sưu tập chỉ chủ sở hữu xem được.
+    if (!canViewPrivateContent(profile.id, profile.privateProfile, viewerId)) {
+      throw new ApiError(403, "Hồ sơ này ở chế độ riêng tư")
+    }
 
     const rows = await listCollectionsOfOwner(profile.id, viewerId)
     return c.json({ items: rows.map((row) => toCollectionSummary(row)), next: null })

@@ -57,6 +57,21 @@ async function countProfile(userId: string, viewerId: string | null, row: Profil
   )
 }
 
+/**
+ * Người xem có được xem NỘI DUNG RIÊNG của hồ sơ không (bài đăng, bộ sưu tập).
+ *
+ * Hồ sơ `privateProfile` chỉ chủ sở hữu xem được nội dung riêng; khách chưa
+ * đăng nhập cũng bị chặn. Phần cơ bản của hồ sơ (tên, avatar, handle) vẫn công
+ * khai — chỉ endpoint trả dữ liệu riêng mới phải kiểm tra hàm này.
+ */
+export function canViewPrivateContent(
+  ownerId: string,
+  privateProfile: boolean,
+  viewerId: string | null,
+): boolean {
+  return !privateProfile || viewerId === ownerId
+}
+
 /** Hồ sơ theo handle — `null` khi không tồn tại/đã xoá (route trả 404). */
 export async function findProfileByHandle(
   handle: string,

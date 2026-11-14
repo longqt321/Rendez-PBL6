@@ -3,6 +3,7 @@ import { z } from "zod"
 import type { AppEnv } from "../app"
 import { EVENT_TO_KIND } from "../lib/interaction-weights"
 import { recordEvent } from "../lib/interaction-events"
+import { prisma } from "../lib/prisma"
 import { rateLimit } from "../lib/rate-limit"
 import { getViewer } from "../lib/session"
 
@@ -64,6 +65,26 @@ export function createEventsRouter() {
       const parsed = batchSchema.safeParse(raw)
       if (!parsed.success) {
         return c.json({ accepted: 0, recorded: 0, error: "payload không hợp lệ" }, 400)
+      }
+
+      // `interaction_events.place_id` là FK tới `places(id)` — id rác sẽ làm FK
+      // violation và event bị bỏ âm thầm. Kiểm tồn tại một lần cho cả batch
+      // (chỉ cần tồn tại, không cần published — event cho bản nháp vẫn hợp lệ).
+      const placeIds = [
+        ...new Set(
+          parsed.data.events
+            .map((event) => event.placeId)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ]
+      if (placeIds.length > 0) {
+        const found = await prisma.place.findMany({
+          where: { id: { in: placeIds } },
+          select: { id: true },
+        })
+        if (found.length !== placeIds.length) {
+          return c.json({ accepted: 0, recorded: 0, error: "placeId không tồn tại" }, 400)
+        }
       }
 
       const now = Date.now()
