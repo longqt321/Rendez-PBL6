@@ -60,8 +60,11 @@ export function parsePlaceFilters(query: Record<string, string | undefined>): Pl
 
   const sort: PlaceSort = requestedSort === "distance" && !hasCoords ? "newest" : requestedSort
 
+  const rawQ = query.q?.trim()
+  const q = rawQ && rawQ.length > 0 ? rawQ.slice(0, 100) : undefined
+
   return {
-    q: query.q?.trim() || undefined,
+    q,
     categories: category.categories,
     categoriesMatchNothing: category.unmatchedOnly,
     districts: splitList(query.district),

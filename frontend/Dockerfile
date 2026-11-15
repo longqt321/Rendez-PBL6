@@ -1,34 +1,23 @@
-# FE RendeZ — build bằng Bun, serve bằng nginx (T-web).
+# syntax=docker/dockerfile:1.7
+# FE RendeZ — Production Multi-stage Build bằng Bun & serve qua Nginx Alpine.
 #
-# builder : cài deps workspace, chép ảnh cold-start, build production (tsc + vite).
-# runtime : nginx phục vụ static + reverse proxy "/api" → service `api` (compose).
-#
-# Lưu ý: script prebuild dùng `node`, nhưng image oven/bun không có node —
-# chạy trực tiếp bằng `bun` (script chỉ dùng node:fs/path, tương thích Bun).
+# builder : cài deps workspace bằng BuildKit cache mount, pre-build asset, tsc + vite build.
+# runtime : nginx alpine tối giản phục vụ SPA + proxy nội bộ /api.
 
 FROM oven/bun:1.3.14-alpine AS builder
 WORKDIR /app
 
-# Manifest trước để tận dụng cache layer khi chỉ đổi source.
 COPY package.json bun.lock ./
 COPY packages packages
 COPY backend/package.json backend/
 COPY frontend/package.json frontend/
-# Cài đủ workspace (root khai báo cả backend — phải có manifest của nó,
-# nhưng chỉ cài dependency của frontend + schema để layer cache tốt).
-RUN bun install --frozen-lockfile --filter frontend
+
+# Cache bun global package cache
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile --filter frontend
 
 COPY frontend frontend
 
-# Build production: VITE_API_BASE_URL mặc định "/api/v1" (đường dẫn tương đối —
-# nginx proxy cùng origin nên không vướng CORS). Mock tự tắt khi build prod.
-# VITE_APP_ORIGIN: origin công khai cho canonical/og + robots/sitemap (mặc định localhost).
-#
-# Ba biến mock PHẢI truyền tường minh: `bun` tự nạp `frontend/.env` vào
-# process.env (dotenv built-in), mà `.env` cục bộ để các biến này rỗng ("") —
-# Vite ưu tiên process env hơn `.env.production`, nên chuỗi rỗng bị nướng vào
-# bundle và zod enum trong `src/lib/env.ts` từ chối lúc runtime (app trắng trang).
-# Giá trị mặc định dưới đây là cấu hình production đúng: mock tắt.
 ARG VITE_APP_ORIGIN=""
 ARG VITE_ENABLE_MOCKS="false"
 ARG VITE_DEV_BYPASS_AUTH="false"
@@ -43,7 +32,7 @@ RUN cd frontend \
      bunx vite build
 
 # ---------------------------------------------------------------------------
-# Runtime: nginx + static bundle.
+# Runtime: Nginx Alpine
 # ---------------------------------------------------------------------------
 
 FROM nginx:1.27-alpine AS runtime

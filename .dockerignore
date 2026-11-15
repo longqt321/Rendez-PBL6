@@ -15,3 +15,8 @@ frontend/.env*
 deploy/.env*
 *.pem
 *.key
+backend/data/yelp
+backend/data/raw
+backend/data/archive
+backup
+

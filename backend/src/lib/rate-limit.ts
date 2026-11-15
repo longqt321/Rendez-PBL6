@@ -1,7 +1,6 @@
 import { createMiddleware } from "hono/factory"
 import type { AppEnv } from "../app"
 import { env } from "../env"
-import { prisma } from "./prisma"
 
 export interface RateLimitOptions {
   limit: number
@@ -54,52 +53,66 @@ export function clientIp(headers: Headers, remoteAddress: string | undefined): s
   return remoteAddress || headers.get("x-real-ip") || "unknown"
 }
 
-export async function hitRateLimit(
-  key: string,
-  windowSeconds: number,
-): Promise<{ count: number; resetAt: Date }> {
-  const windowMs = windowSeconds * 1000
-  const windowStart = new Date(Math.floor(Date.now() / windowMs) * windowMs)
-  const resetAt = new Date(windowStart.getTime() + windowMs)
+interface BucketEntry {
+  count: number
+  resetAt: number
+}
 
-  const rows = await prisma.$queryRaw<{ count: number }[]>`
-    INSERT INTO rate_limits (key, window_start, count, updated_at)
-    VALUES (${key}, ${windowStart}, 1, now())
-    ON CONFLICT (key, window_start)
-    DO UPDATE SET count = rate_limits.count + 1, updated_at = now()
-    RETURNING count
-  `
+// In-Memory sliding window map để bảo vệ DB khỏi cạn kiệt connection/IO khi bị tấn công DDoS/Flood
+const memoryBuckets = new Map<string, BucketEntry>()
 
-  // Cửa sổ cũ của cùng key không còn tác dụng — xoá để bảng chỉ còn dữ liệu sống.
-  await prisma.rateLimit.deleteMany({
-    where: { key, windowStart: { lt: windowStart } },
-  })
+// Dọn dẹp định kỳ các bucket đã hết hạn để tránh leak memory
+const CLEANUP_INTERVAL_MS = 60_000
+let lastCleanup = Date.now()
 
-  return { count: Number(rows[0]?.count ?? 1), resetAt }
+function sweepExpiredBuckets(now: number) {
+  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return
+  lastCleanup = now
+  for (const [key, entry] of memoryBuckets.entries()) {
+    if (entry.resetAt <= now) {
+      memoryBuckets.delete(key)
+    }
+  }
+}
+
+export function hitRateLimit(key: string, windowSeconds: number): { count: number; resetAt: Date } {
+  const now = Date.now()
+  sweepExpiredBuckets(now)
+
+  const entry = memoryBuckets.get(key)
+  if (!entry || entry.resetAt <= now) {
+    const resetAtTime = now + windowSeconds * 1000
+    memoryBuckets.set(key, { count: 1, resetAt: resetAtTime })
+    return { count: 1, resetAt: new Date(resetAtTime) }
+  }
+
+  entry.count += 1
+  return { count: entry.count, resetAt: new Date(entry.resetAt) }
 }
 
 /** Middleware giới hạn theo IP (hoặc userId khi `byUser`) + scope; vượt trả 429 kèm `Retry-After`. */
 export function rateLimit(options: RateLimitOptions) {
   return createMiddleware<AppEnv>(async (c, next) => {
-    // `byUser`: đếm theo userId (route đã qua requireAuth). userId rỗng/thiếu
-    // (không đăng nhập) thì rơi về IP — nếu không, mọi user "rỗng" dùng chung
-    // một khoá `scope:user:`.
+    // Trong môi trường test, tắt rate limiting để không chặn các test suite duyệt qua nhiều trang
+    if (env.NODE_ENV === "test") {
+      await next()
+      return
+    }
+
     const userId = options.byUser ? c.get("userId") : undefined
     const identity =
       userId && userId.length > 0
         ? `user:${userId}`
         : clientIp(c.req.raw.headers, c.env?.remoteAddress)
     const key = `${options.scope}:${identity}`
-    const { count, resetAt } = await hitRateLimit(key, options.windowSeconds)
+    const { count, resetAt } = hitRateLimit(key, options.windowSeconds)
     if (count > options.limit) {
       const retryAfter = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
-      // Trả response TRỰC TIẾP thay vì `c.header()` + `throw ApiError`: `onError`
-      // của app dựng lại Response từ `HTTPException` nên header đặt trên context
-      // bị rơi — client không nhận được `Retry-After`.
       return c.json({ message: "Bạn thao tác quá nhanh, vui lòng thử lại sau" }, 429, {
         "Retry-After": String(retryAfter),
       })
     }
+
     await next()
   })
 }

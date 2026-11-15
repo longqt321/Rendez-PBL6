@@ -18,6 +18,7 @@ import {
 } from "../lib/places"
 import { getViewer, requireAuth } from "../lib/session"
 import { recordEventForRequest } from "../lib/interaction-events"
+import { rateLimit } from "../lib/rate-limit"
 import { listPosts } from "../lib/posts"
 import { rankPlaceSuggestions } from "../lib/ranking"
 import { jsonWithCache } from "../lib/http-cache"
@@ -44,49 +45,53 @@ const MIN_CAPTION_CHARS = 8
 export function createPlacesRouter() {
   const router = new Hono<AppEnv>()
 
-  router.get("/places", async (c) => {
-    const filters = parsePlaceFilters(c.req.query())
-    const rawCursor = c.req.query("cursor")
-    const decoded = rawCursor ? decodePlaceCursor(rawCursor) : null
-    if (rawCursor && !decoded) {
-      throw new ApiError(400, "Cursor không hợp lệ")
-    }
-    // Cursor hợp lệ nhưng thuộc kiểu sắp xếp khác (đổi sort / link cũ) → trả
-    // trang đầu thay vì 400: đổi sort là hành động hợp lệ, không được làm vỡ
-    // trang. Xem comment ngoại lệ trong `lib/cursor.ts`.
-    const cursor = decoded && decoded.kind === filters.sort ? decoded : null
+  router.get(
+    "/places",
+    rateLimit({ scope: "places-list", limit: 120, windowSeconds: 60 }),
+    async (c) => {
+      const filters = parsePlaceFilters(c.req.query())
+      const rawCursor = c.req.query("cursor")
+      const decoded = rawCursor ? decodePlaceCursor(rawCursor) : null
+      if (rawCursor && !decoded) {
+        throw new ApiError(400, "Cursor không hợp lệ")
+      }
+      // Cursor hợp lệ nhưng thuộc kiểu sắp xếp khác (đổi sort / link cũ) → trả
+      // trang đầu thay vì 400: đổi sort là hành động hợp lệ, không được làm vỡ
+      // trang. Xem comment ngoại lệ trong `lib/cursor.ts`.
+      const cursor = decoded && decoded.kind === filters.sort ? decoded : null
 
-    const startedAt = performance.now()
-    const page = await listPlaces(filters, cursor, PLACES_PAGE_SIZE)
+      const startedAt = performance.now()
+      const page = await listPlaces(filters, cursor, PLACES_PAGE_SIZE)
 
-    // "Ý bạn là…": chỉ khi tìm kiếm KHÔNG có kết quả nào và từ khoá đủ dài để
-    // trigram có ý nghĩa (ngắn hơn là so khớp ngẫu nhiên).
-    const didYouMean =
-      page.total === 0 && filters.q !== undefined && filters.q.trim().length >= 3
-        ? await findDidYouMean(filters.q)
-        : null
-    // Đo SAU didYouMean: đó cũng là một query DB thật trong cùng response, đo
-    // trước sẽ báo tookMs thấp hơn thời gian người dùng thực sự chờ.
-    const tookMs = Math.round(performance.now() - startedAt)
+      // "Ý bạn là…": chỉ khi tìm kiếm KHÔNG có kết quả nào và từ khoá đủ dài để
+      // trigram có ý nghĩa (ngắn hơn là so khớp ngẫu nhiên).
+      const didYouMean =
+        page.total === 0 && filters.q !== undefined && filters.q.trim().length >= 3
+          ? await findDidYouMean(filters.q)
+          : null
+      // Đo SAU didYouMean: đó cũng là một query DB thật trong cùng response, đo
+      // trước sẽ báo tookMs thấp hơn thời gian người dùng thực sự chờ.
+      const tookMs = Math.round(performance.now() - startedAt)
 
-    // Tín hiệu tìm kiếm cho recommendation (P0): chỉ ghi khi có `q` thật.
-    // Fire-and-forget — telemetry không được cộng round-trip DB vào latency
-    // của endpoint search (cùng lý do với `place_detail_view`).
-    if (filters.q !== undefined && filters.q.trim().length > 0) {
-      void recordEventForRequest(c, "search_query", {
-        query: filters.q,
-        context: { resultsCount: page.total },
+      // Tín hiệu tìm kiếm cho recommendation (P0): chỉ ghi khi có `q` thật.
+      // Fire-and-forget — telemetry không được cộng round-trip DB vào latency
+      // của endpoint search (cùng lý do với `place_detail_view`).
+      if (filters.q !== undefined && filters.q.trim().length > 0) {
+        void recordEventForRequest(c, "search_query", {
+          query: filters.q,
+          context: { resultsCount: page.total },
+        })
+      }
+
+      // Hiện chưa có cache ứng dụng cho danh sách → `cacheHit` luôn false; không
+      // bịa true khi body đến thẳng từ DB.
+      return c.json({
+        items: page.items,
+        next: page.next ? encodePlaceCursor(page.next) : null,
+        meta: { tookMs, cacheHit: false, totalResults: page.total, didYouMean },
       })
-    }
-
-    // Hiện chưa có cache ứng dụng cho danh sách → `cacheHit` luôn false; không
-    // bịa true khi body đến thẳng từ DB.
-    return c.json({
-      items: page.items,
-      next: page.next ? encodePlaceCursor(page.next) : null,
-      meta: { tookMs, cacheHit: false, totalResults: page.total, didYouMean },
-    })
-  })
+    },
+  )
 
   // Đứng trước `/places/:id` — nếu không `:id` sẽ nuốt cả "map"/"saved"/"suggestions".
   router.get("/places/suggestions", async (c) => {
