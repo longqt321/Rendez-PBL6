@@ -16,13 +16,6 @@ import { createOgRouter } from "./og"
 import { createSystemRouter } from "./system"
 import { createEventsRouter } from "./events"
 
-/**
- * Đường dẫn request → khoá route cho metrics. Sau `await next()` Hono đã gán
- * `c.req.routePath` của handler khớp (vd `/places/:id`) — dùng nó làm khoá chuẩn
- * (không phụ thuộc hình dạng id). Fallback chuẩn hoá từ path thật khi chưa khớp
- * route nào: thay segment chứa số, uuid, hoặc slug (`banh-xeo-ba-duong`) bằng
- * `:id` để các request cùng route gộp về một khoá thay vì phình theo từng id.
- */
 function normalizeRoutePath(path: string): string {
   const stripped = path.replace(/^\/api\/v1/u, "") || "/"
   const segments = stripped
@@ -38,20 +31,9 @@ function normalizeRoutePath(path: string): string {
   return segments.join("/")
 }
 
-/**
- * Router API v1 — mọi route nghiệp vụ mount dưới `/api/v1` (K1).
- *
- * Tách khỏi `app.ts` để app factory chỉ lo hạ tầng (middleware, error, docs) và
- * router chỉ lo route. Phase 1 trở đi thêm route vào đây theo feature.
- */
 export function createApiRouter() {
   const api = new OpenAPIHono<AppEnv>()
 
-  /**
-   * Metrics mọi request `/api/v1/*` — trừ chính `/system/*` (nếu không, route
-   * quan sát tự làm phình số liệu nó báo cáo). Route gắn `cacheHit` trong
-   * context khi phục vụ từ cache ứng dụng; mặc định false.
-   */
   api.use(
     "*",
     createMiddleware<AppEnv>(async (c, next) => {

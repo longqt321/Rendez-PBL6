@@ -17,14 +17,6 @@ import {
 import { getViewer, requireAuth } from "../lib/session"
 import { recordEvent } from "../lib/interaction-events"
 
-/**
- * Route bộ sưu tập (T5.1) — quy tắc A7.7:
- * - Thêm/bớt địa điểm idempotent, thêm đẩy xuống CUỐI (position tăng dần).
- * - Cấm tự like bộ sưu tập của mình (400); private của người khác → 404.
- * - Sửa/xoá: chỉ owner (403).
- * - `?placeId=` nhúng `containsPlace` (A6.5 — chỉ khi có query).
- */
-
 const createCollectionSchema = z.object({
   name: z.string().trim().min(1, "Tên bộ sưu tập trống").max(MAX_COLLECTION_NAME_LENGTH),
   description: z.string().trim().max(MAX_COLLECTION_DESCRIPTION_LENGTH).optional(),
@@ -42,10 +34,6 @@ const setPlacesSchema = z.object({
   member: z.boolean().optional(),
 })
 
-/**
- * Kiểm quyền sửa/xoá bộ sưu tập — MỘT nơi duy nhất (trước đây 4 route chép tay
- * cùng một khối findFirst + so ownerId, sửa quy tắc là phải sửa 4 chỗ).
- */
 async function requireOwnedCollection(id: string, userId: string): Promise<void> {
   const collection = await prisma.collection.findFirst({
     where: { id, deletedAt: null },
@@ -58,7 +46,6 @@ async function requireOwnedCollection(id: string, userId: string): Promise<void>
 export function createCollectionsRouter() {
   const router = new Hono<AppEnv>()
 
-  /** Bộ sưu tập của chính mình, mới tạo trước. */
   router.get("/collections", requireAuth, async (c) => {
     const userId = c.get("userId")
     const placeId = c.req.query("placeId") || null
@@ -89,7 +76,6 @@ export function createCollectionsRouter() {
     return c.json(toCollectionDto(row, userId), 201)
   })
 
-  /** Chi tiết — private của người khác → 404 (giấu tồn tại, A7.7). */
   router.get("/collections/:id", async (c) => {
     const id = c.req.param("id")
     requireUuid(id, "Không tìm thấy bộ sưu tập")
@@ -134,7 +120,6 @@ export function createCollectionsRouter() {
     return c.json(true)
   })
 
-  /** Like/bỏ like — POST đặt, DELETE bỏ; cấm tự like (A7.7). */
   async function toggleLike(c: Context<AppEnv>, liked: boolean) {
     const id = c.req.param("id") ?? ""
     requireUuid(id, "Không tìm thấy bộ sưu tập")
@@ -164,7 +149,6 @@ export function createCollectionsRouter() {
   router.post("/collections/:id/like", requireAuth, (c) => toggleLike(c, true))
   router.delete("/collections/:id/like", requireAuth, (c) => toggleLike(c, false))
 
-  /** Thêm/bớt địa điểm — idempotent, thêm đẩy cuối (A7.7). */
   router.patch("/collections/:id/places", requireAuth, async (c) => {
     const id = c.req.param("id")
     requireUuid(id, "Không tìm thấy bộ sưu tập")

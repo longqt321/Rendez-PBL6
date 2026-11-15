@@ -5,12 +5,6 @@ interface ReportReasonMeta {
   description: string
 }
 
-/**
- * Nhãn hiển thị của từng lý do báo cáo.
- *
- * Chỉ chứa dữ liệu để hiển thị; danh sách lý do hợp lệ nằm ở
- * `PLACE_REPORT_REASONS` (types) để client và server dùng chung.
- */
 export const REPORT_REASON_META: Record<PlaceReportReason, ReportReasonMeta> = {
   closed: {
     label: "Quán đã đóng cửa",

@@ -24,10 +24,8 @@ import {
  * (P2002 được coi là "đã xử lý", không phải lỗi).
  */
 
-/** Số gợi ý mỗi thông báo — khớp mock (`rankPlaceSuggestions(..., 3)`). */
 const SUGGESTIONS_PER_NOTIFICATION = 3
 
-/** Batch nhỏ mỗi lần chạy (K6: 50 post/lần) — không giữ query/transaction dài. */
 const BATCH_SIZE = 50
 
 export async function detectPlaceSuggestions(postId?: string): Promise<number> {

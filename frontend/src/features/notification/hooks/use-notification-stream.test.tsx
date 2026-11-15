@@ -5,16 +5,6 @@ import type { ReactNode } from "react"
 import { createTestQueryClient } from "@/test/query-test-utils"
 import { useNotificationStream } from "./use-notification-stream"
 
-/**
- * Test kênh SSE thông báo — mock `useMe` và EventSource (không mock axios):
- *
- * - Guest (chưa đăng nhập) KHÔNG được mở `GET /notifications/events` — server
- *   ngắt stream guest rồi EventSource tự reconnect lặp vô hạn
- *   (ERR_INCOMPLETE_CHUNKED_ENCODING). Guest vẫn thấy thông báo nhờ poll 60s.
- * - Đã đăng nhập → mở đúng URL stream.
- * - Unmount/đăng xuất → stream đóng.
- */
-
 const state = vi.hoisted((): { me: { id: string } | undefined } => ({ me: { id: "u-me" } }))
 
 vi.mock("@/features/profile/hooks/use-me", () => ({

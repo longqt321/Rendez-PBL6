@@ -5,11 +5,6 @@ import { describe, expect, it } from "vitest"
 import type { ReactNode } from "react"
 import { useDiscoverFilters } from "./use-discover-filters"
 
-/**
- * Bộ lọc lưu trên URL nên test bọc `MemoryRouter`. Đọc URL hiện hành bằng
- * `useLocation` TRONG cùng component callback (wrapper của `renderHook` không
- * được render gì ngoài `{children}` — thêm sibling làm hook không commit).
- */
 function renderFilters(initialUrl: string) {
   const result = renderHook(
     () => ({

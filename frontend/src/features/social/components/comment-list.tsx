@@ -13,11 +13,10 @@ interface CommentListProps {
   sort: CommentSort
   onReply: (comment: Comment) => void
   onDelete: (comment: Comment) => void
-  /** Chiều cao tối đa của vùng cuộn — khác nhau giữa inline và thread. */
+
   className?: string
 }
 
-/** Danh sách bình luận phẳng theo thứ tự server trả về (reply nằm sau cha). */
 export function CommentList({ postId, sort, onReply, onDelete, className }: CommentListProps) {
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useComments(
     postId,

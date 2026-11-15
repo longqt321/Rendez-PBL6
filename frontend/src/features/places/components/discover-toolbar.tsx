@@ -42,7 +42,6 @@ const CATEGORY_TABS: { value: PlaceCategory | "all"; label: string }[] = [
   })),
 ]
 
-/** Nhóm "Mức giá" — nghĩa là TỐI ĐA (khớp `priceMax <=` của backend). */
 const PRICE_TABS: { value: "all" | "1" | "2" | "3"; label: string; aria: string }[] = [
   { value: "all", label: "Tất cả", aria: "Không lọc mức giá" },
   { value: "1", label: "₫", aria: "Mức giá tối đa 1 (bình dân)" },
@@ -50,7 +49,6 @@ const PRICE_TABS: { value: "all" | "1" | "2" | "3"; label: string; aria: string 
   { value: "3", label: "₫₫₫", aria: "Mức giá tối đa 3 (cao cấp)" },
 ]
 
-/** Nhãn ngắn của kiểu sắp xếp — hiện trên nút Select. */
 const SORT_LABELS: Record<"newest" | "rating" | "distance", string> = {
   newest: "Mới nhất",
   rating: "Đánh giá cao",
@@ -59,17 +57,10 @@ const SORT_LABELS: Record<"newest" | "rating" | "distance", string> = {
 
 interface DiscoverToolbarProps {
   view: DiscoverView
-  /** Chế độ đang xem — quyết định nút nào sáng trong cụm chuyển Lưới/Bản đồ. */
+
   mode: "grid" | "map"
 }
 
-/**
- * Thanh lọc dùng chung cho `/discover` và `/map`.
- *
- * Hai trang là hai cách nhìn của cùng một bộ lọc: bộ lọc nằm trên URL nên
- * chuyển qua lại (nút Lưới/Bản đồ, hoặc nav) không mất search/filter. Đang ở
- * trong phòng lọc nhóm thì bộ lọc cá nhân bị ẩn — cả nhóm cùng nhìn một kết quả.
- */
 export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -102,11 +93,6 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
     }
   }
 
-  /**
-   * Đổi sort từ Select. Chọn "Gần tôi" = bật chế độ "Gần đây" (xin quyền vị
-   * trí) — CÙNG một đường ghi `setSort` với toggle, không có state song song
-   * (thiết kế mục 2.2.1: `sort` là nguồn sự thật duy nhất).
-   */
   function handleSortChange(value: string) {
     // Base UI không tự đóng menu khi chọn radio item → đóng thủ công để menu
     // không che toolbar sau khi đổi sort.

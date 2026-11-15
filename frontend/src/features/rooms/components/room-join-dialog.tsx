@@ -18,18 +18,12 @@ import type { JoinRoomStatus } from "../hooks/use-rooms"
 interface RoomJoinDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** Tạo phòng mới; trả về mã phòng vừa tạo (Promise vì gọi API). */
+
   onCreate: (name: string) => Promise<string>
-  /** Tham gia phòng theo mã; trả trạng thái để hiện toast đúng nguyên nhân. */
+
   onJoin: (code: string, displayName: string) => Promise<JoinRoomStatus>
 }
 
-/**
- * Dialog tạo phòng mới hoặc tham gia phòng theo mã.
- *
- * Tạo phòng cần đăng nhập (server trả 401 nếu chưa); guest tham gia chỉ cần
- * tên — server đặt cookie HttpOnly để nhận diện thành viên ở các lần sau.
- */
 export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoinDialogProps) {
   const [name, setName] = useState("")
   const [code, setCode] = useState("")

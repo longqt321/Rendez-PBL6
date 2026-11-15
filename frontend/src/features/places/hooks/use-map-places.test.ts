@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { snapBounds } from "./use-map-places"
 
-/**
- * Cache bản đồ dựa vào khung đã làm tròn — test chốt hành vi "kéo nhẹ không
- * đổi khoá cache, vùng khác nhau thì khoá khác nhau" (quyết định D-052).
- */
 describe("snapBounds", () => {
   it("kéo nhẹ trong cùng ô lưới → cùng khung (cache hit)", () => {
     const base = { minLat: 16.0512, minLng: 108.2013, maxLat: 16.0648, maxLng: 108.2201 }

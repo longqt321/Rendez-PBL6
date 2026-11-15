@@ -6,16 +6,10 @@ import { useUserCollections } from "@/features/collections/hooks/use-collection"
 
 interface ProfileCollectionGridProps {
   handle: string
-  /** Xem trang của chính mình — đổi câu chữ khi trống. */
+
   isMe: boolean
 }
 
-/**
- * Tab "Bộ sưu tập" ở trang cá nhân.
- *
- * Server đã ẩn bộ sưu tập riêng tư của người khác; ở trang của mình thì thấy cả
- * bộ riêng tư (có badge khoá).
- */
 export function ProfileCollectionGrid({ handle, isMe }: ProfileCollectionGridProps) {
   const { data: collections, isPending, isError } = useUserCollections(handle)
 

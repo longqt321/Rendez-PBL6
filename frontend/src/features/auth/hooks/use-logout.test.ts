@@ -5,10 +5,6 @@ import { useMe } from "@/features/profile/hooks/use-me"
 import { useLogin } from "./use-login"
 import { useLogout } from "./use-logout"
 
-/**
- * Test chạy qua mock adapter thật (`src/mocks/server.ts`): đăng xuất tắt phiên
- * mock nên `GET /me` trả 401, đăng nhập lại bật phiên trở lại.
- */
 describe("useLogout", () => {
   it("đăng xuất → GET /me trả 401 (chưa đăng nhập)", async () => {
     const client = createTestQueryClient()

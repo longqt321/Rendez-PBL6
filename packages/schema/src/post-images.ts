@@ -1,18 +1,5 @@
 import { MAX_POST_IMAGES } from "./constants"
 
-/**
- * Kiểm URL ảnh của một bài đăng — MỘT nguồn logic cho backend và mock server.
- *
- * Ảnh phải do chính người đăng tải lên thư mục `posts/<userId>/` của bucket:
- * không có ràng buộc này thì ai cũng gắn được URL ảnh của người khác (hoặc URL
- * ngoài) vào bài của mình.
- *
- * Hàm thuần (không phụ thuộc env/HTTP) để cả `routes/posts.ts` (ném `ApiError`)
- * lẫn `mocks/server.ts` (ném lỗi 400 của adapter) cùng gọi — tránh hai bản
- * validate lệch nhau.
- */
-
-/** URL ảnh dài hơn mức này là bất thường (URL công khai R2 luôn ngắn hơn nhiều). */
 export const MAX_POST_IMAGE_URL_LENGTH = 2048
 
 export const POST_IMAGE_INVALID_MESSAGE = "Ảnh không hợp lệ hoặc không thuộc tài khoản của bạn"

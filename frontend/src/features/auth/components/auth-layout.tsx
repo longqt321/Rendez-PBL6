@@ -2,11 +2,6 @@ import type { ReactNode } from "react"
 import { Link } from "react-router"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 
-/**
- * Layout dùng chung cho các trang xác thực (`/login`, `/register`,
- * `/forgot-password`, `/reset-password`) — nằm ngoài `AppShell` vì người dùng
- * chưa đăng nhập, không cần thanh điều hướng đầy đủ.
- */
 export function AuthLayout({
   title,
   description,

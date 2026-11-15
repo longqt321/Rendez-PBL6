@@ -3,11 +3,6 @@ import { getSavedPlaces } from "../api/get-saved-places"
 
 export const savedPlacesQueryKey = ["places", "saved"] as const
 
-/**
- * Địa điểm đã lưu (nằm trong bộ sưu tập của tôi), phân trang theo cursor —
- * cùng cơ chế với feed bài đăng; không đọc toàn bộ danh sách một lần vì
- * backend thật sẽ cắt theo trang.
- */
 export function useSavedPlacesQuery() {
   return useInfiniteQuery({
     queryKey: savedPlacesQueryKey,
@@ -17,7 +12,6 @@ export function useSavedPlacesQuery() {
   })
 }
 
-/** Danh sách địa điểm đã tải của tab "Địa điểm" — phẳng hoá các trang server trả về. */
 export function useSavedPlaces() {
   const query = useSavedPlacesQuery()
   return {

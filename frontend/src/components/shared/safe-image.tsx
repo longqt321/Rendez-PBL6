@@ -5,20 +5,12 @@ import { cn } from "@/lib/utils"
 interface SafeImageProps {
   src: string
   alt: string
-  /** Class cho khung ngoài — giữ nguyên bố cục khi ảnh hỏng. */
+
   className?: string
-  /** Class cho thẻ `<img>` (ví dụ `object-cover`, bo góc). */
+
   imgClassName?: string
 }
 
-/**
- * Ảnh người dùng đăng (bài đăng…) có fallback khi ảnh hỏng.
- *
- * Ảnh R2 gặp sự cố hoặc bị xoá không được để lộ icon ảnh vỡ + alt text thô:
- * `onError` thay ảnh bằng khung trung tính kèm icon, giữ đúng kích thước khung
- * nên lưới bài đăng không xê dịch. Alt vẫn được công bố qua `role="img"` +
- * `aria-label` để trình đọc màn hình không mất ngữ cảnh.
- */
 export function SafeImage({ src, alt, className, imgClassName }: SafeImageProps) {
   const [failed, setFailed] = useState(false)
 

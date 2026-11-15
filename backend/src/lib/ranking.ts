@@ -1,16 +1,6 @@
 import type { PlaceCategory } from "@rendez/schema"
 import { CATEGORY_LABEL } from "./enums"
 
-/**
- * Xếp hạng địa điểm phù hợp với nội dung bài đăng — port 1:1 từ
- * `frontend/src/mocks/ranking.ts` (A7.1).
- *
- * Khác biệt duy nhất: chuỗi đã được chuẩn hoá (bỏ dấu, lowercase, dấu câu →
- * khoảng trắng) bằng `immutable_search_normalize()` của Postgres ở tầng SQL thay
- * vì `normalizeText` của JS — một nguồn chuẩn hoá duy nhất, không lặp logic
- * tiếng Việt ở 2 nơi. Trọng số, thứ tự xét, cách ghép `reason` giữ nguyên.
- */
-
 const STOP_WORDS = new Set([
   "va",
   "cua",
@@ -38,7 +28,6 @@ const STOP_WORDS = new Set([
   "an",
 ])
 
-/** Từ khoá loại hình — dữ liệu của server, không phải của UI. */
 const CATEGORY_KEYWORDS: Record<PlaceCategory, string[]> = {
   cafe: ["ca phe", "cafe", "coffee", "quan nuoc"],
   restaurant: ["quan an", "nha hang", "an com", "com tam", "bun bo", "pho", "lau"],
@@ -48,13 +37,12 @@ const CATEGORY_KEYWORDS: Record<PlaceCategory, string[]> = {
   bar: ["bar", "bia", "cocktail", "rooftop", "pub"],
 }
 
-/** Ứng viên đã chuẩn hoá sẵn — SQL tính `*Norm`, ranking chỉ so khớp. */
 export interface RankCandidate {
   id: string
   category: PlaceCategory
   rating: number
   reviewCount: number
-  /** Tên gốc để hiển thị trong `reason` khi cần. */
+
   city: string
   nameNorm: string
   addressNorm: string

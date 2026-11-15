@@ -2,13 +2,6 @@ import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { formatInitials } from "./profile"
 
-/**
- * Truy vấn bộ sưu tập (T5.1) — dùng `Prisma.sql` tham số hoá, không nối chuỗi.
- *
- * `placeIds` giữ thứ tự thêm (`collection_places.position` tăng dần), đếm like
- * bằng COUNT thật, `likedByMe` bằng EXISTS theo user đang gọi.
- */
-
 export interface CollectionRow {
   id: string
   name: string
@@ -114,7 +107,6 @@ export async function findCollection(
   return rows[0] ?? null
 }
 
-/** Đọc lại một bộ sưu tập sau mutation (không áp bộ lọc private — caller đã kiểm quyền). */
 export async function findCollectionById(
   id: string,
   viewerId: string | null,

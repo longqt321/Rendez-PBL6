@@ -5,7 +5,6 @@ export function usersSearchQueryKey(q: string) {
   return ["users", "search", q] as const
 }
 
-/** Tìm người dùng cho tab Người của trang Tìm kiếm — phân trang cursor. */
 export function useUsersSearch(q: string) {
   return useInfiniteQuery({
     queryKey: usersSearchQueryKey(q),

@@ -8,13 +8,6 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 
-/**
- * Ô nhập mật khẩu kèm nút hiện/ẩn dùng `InputGroup` có sẵn trong `components/ui`.
- *
- * Nút bấm đổi `type` của input giữa `password`/`text`. Icon con mắt không nền,
- * hoà vào viền ô nhập (chuẩn phổ biến của ô mật khẩu); `aria-label` + `aria-pressed`
- * để trình đọc màn hình biết trạng thái.
- */
 export function PasswordInput({ className, ...props }: React.ComponentProps<"input">) {
   const [visible, setVisible] = useState(false)
 

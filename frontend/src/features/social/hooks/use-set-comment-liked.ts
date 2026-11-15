@@ -4,12 +4,6 @@ import { isUnauthorizedError } from "@/lib/axios"
 import { setCommentLiked } from "../api/set-comment-liked"
 import type { CommentSort } from "../types/comment"
 
-/**
- * Thích / bỏ thích bình luận.
- *
- * Optimistic: đổi ngay trong mọi cache bình luận của bài, rollback nếu server
- * lỗi. Số đếm cuối cùng luôn lấy từ server.
- */
 export function useSetCommentLiked(postId: string) {
   const queryClient = useQueryClient()
 

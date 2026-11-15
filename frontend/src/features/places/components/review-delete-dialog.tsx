@@ -17,7 +17,6 @@ interface ReviewDeleteDialogProps {
   onDeleted?: () => void
 }
 
-/** Hộp thoại xác nhận xoá đánh giá của chính mình. */
 export function ReviewDeleteDialog({ placeId, open, onClose, onDeleted }: ReviewDeleteDialogProps) {
   const deleteReviewMutation = useDeleteReview(placeId)
 

@@ -17,7 +17,6 @@ interface PostDeleteDialogProps {
   onClose: () => void
 }
 
-/** Xác nhận xoá bài đăng — `AlertDialog` có sẵn, không tự dựng. */
 export function PostDeleteDialog({ postId, open, onClose }: PostDeleteDialogProps) {
   const deletePost = useDeletePost()
 

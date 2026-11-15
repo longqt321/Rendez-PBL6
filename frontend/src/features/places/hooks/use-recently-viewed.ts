@@ -3,11 +3,6 @@ import { getPlace } from "../api/get-place-detail"
 import { getRecentlyViewedIds, RECENTLY_VIEWED_LIMIT } from "../lib/recently-viewed"
 import type { Place } from "../types/place"
 
-/**
- * Địa điểm "Bạn vừa xem" — fetch song song theo id đã lưu (tối đa
- * `RECENTLY_VIEWED_LIMIT`). Id lỗi (404: đã bị gỡ/hạ publish) bị bỏ khỏi kết
- * quả, không làm hỏng cả dải.
- */
 export function useRecentlyViewed(excludeId?: string) {
   return useQuery({
     queryKey: ["recently-viewed", getRecentlyViewedIds().join(","), excludeId ?? ""],

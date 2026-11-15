@@ -2,12 +2,6 @@ import "@testing-library/jest-dom/vitest"
 import { cleanup } from "@testing-library/react"
 import { afterEach, vi } from "vitest"
 
-/**
- * Setup dùng chung cho mọi test.
- *
- * jsdom thiếu vài API trình duyệt mà component dùng (`matchMedia`), nên mock ở
- * đây thay vì rải mock trong từng test.
- */
 afterEach(() => {
   cleanup()
 })

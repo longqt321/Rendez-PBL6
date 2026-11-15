@@ -2,16 +2,6 @@ import type { PlaceCategory } from "@/features/places/types/place"
 import type { MockPlace } from "./fixtures/cold-start-places"
 import { normalizeText } from "./text"
 
-/**
- * Xếp hạng địa điểm phù hợp với nội dung bài đăng.
- *
- * ĐÂY LÀ LOGIC PHÍA SERVER. Toàn bộ phần chấm điểm, so khớp mờ, chọn top N nằm ở
- * đây và chỉ chạy bên trong `src/mocks/server.ts`. Frontend không import file này;
- * nó chỉ nhận mảng `PlaceSuggestion` đã xếp hạng sẵn qua API.
- *
- * Khi có backend thật, file này bị xoá cùng `src/mocks/`.
- */
-
 const STOP_WORDS = new Set([
   "va",
   "cua",
@@ -39,7 +29,6 @@ const STOP_WORDS = new Set([
   "an",
 ])
 
-/** Từ khoá loại hình — dữ liệu của server, không phải của UI. */
 const CATEGORY_KEYWORDS: Record<PlaceCategory, string[]> = {
   cafe: ["ca phe", "cafe", "coffee", "quan nuoc"],
   restaurant: ["quan an", "nha hang", "an com", "com tam", "bun bo", "pho", "lau"],

@@ -30,16 +30,6 @@ import { FollowButton } from "../components/follow-button"
 import { loginRedirectUrl } from "@/lib/axios"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 
-/**
- * Trang tìm kiếm — `/search?q=`.
- *
- * Từ khoá nằm trong URL nên F5, back/forward và link chia sẻ đều giữ kết quả.
- * Ô nhập duy nhất nằm ở topbar (`AppShell`); trang này chỉ đọc `?q=` để tránh hai
- * thanh tìm kiếm cùng lúc. Không có từ khoá → quay về `/discover`.
- *
- * Dùng lại đúng các hook dữ liệu đã có (places/posts/users): server chịu trách
- * nhiệm lọc theo `q`. Tab Người gọi `GET /users?q=` (khớp không dấu).
- */
 export function SearchPage() {
   const [params] = useSearchParams()
   const query = (params.get("q") ?? "").trim()

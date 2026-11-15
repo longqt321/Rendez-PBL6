@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 import { renderWithQuery, waitForQuery } from "@/test/query-test-utils"
 import { useUsersSearch } from "./use-users-search"
 
-/** Test chạy qua mock adapter (axios thật + mockAdapter), không mock module api. */
 describe("useUsersSearch", () => {
   it("tìm theo từ khoá trả về đúng người khớp tên/handle", async () => {
     const { result } = renderWithQuery(() => useUsersSearch("minh anh"))

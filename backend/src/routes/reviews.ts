@@ -15,16 +15,6 @@ import { formatInitials } from "../lib/profile"
 import { getViewer, requireAuth } from "../lib/session"
 import { recordEvent } from "../lib/interaction-events"
 
-/**
- * Route đánh giá + báo cáo địa điểm (Phase 4).
- *
- * - `POST /places/:id/reviews` upsert 1 user 1 review/place (A7.4). `rating`/
- *   `reviewCount` của place KHÔNG lưu cột — tính bằng aggregate khi đọc
- *   (`lib/places.ts`), nên không có nguy cơ lệch số.
- * - `GET /places/:id/reviews` mới nhất trước.
- * - `POST /places/:id/reports` unique (place, reason, reporter) (A7.5).
- */
-
 const reviewInputSchema = z.object({
   rating: z.number().int().min(1).max(5),
   content: z.string().trim().min(1, "Nội dung đánh giá trống").max(MAX_REVIEW_CONTENT_LENGTH),
@@ -35,7 +25,6 @@ const reportInputSchema = z.object({
   detail: z.string().trim().max(MAX_REPORT_DETAIL_LENGTH).optional(),
 })
 
-/** Số review trả về tối đa cho `GET /places/:id/reviews` (query `limit`). */
 const DEFAULT_REVIEW_LIMIT = 50
 const MAX_REVIEW_LIMIT = 100
 
@@ -50,7 +39,6 @@ interface ReviewRow {
   author_handle: string
 }
 
-/** SELECT dùng chung cho list + sau khi upsert — một nơi dựng DTO. */
 const SELECT_REVIEWS = Prisma.sql`
   SELECT r.id, r.place_id, r.rating, r.content, r.created_at,
          u.id AS author_id, u.name AS author_name, u.handle AS author_handle
@@ -75,7 +63,6 @@ function toReviewDto(row: ReviewRow, viewerId: string | null) {
   }
 }
 
-/** Place phải tồn tại và đã publish — nếu không thì 404 (A6.6). */
 async function requirePublicPlace(placeId: string): Promise<void> {
   const place = await prisma.place.findFirst({
     where: { id: placeId, publishedAt: { not: null }, deletedAt: null },

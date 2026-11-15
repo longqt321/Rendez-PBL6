@@ -1,7 +1,6 @@
 import { z } from "zod"
 import type { Collection, CollectionSummary } from "./types/collection"
 
-/** Bản rút gọn khi liệt kê bộ sưu tập — khớp `CollectionSummary`. */
 export const collectionSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -15,7 +14,6 @@ export const collectionSummarySchema = z.object({
   likedByMe: z.boolean(),
 }) satisfies z.ZodType<CollectionSummary>
 
-/** Bộ sưu tập đầy đủ — khớp `Collection`. */
 export const collectionSchema = z.object({
   id: z.string(),
   name: z.string(),

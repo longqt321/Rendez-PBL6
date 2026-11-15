@@ -26,17 +26,10 @@ const STATUS_LABEL: Record<RoomProposal["status"], string> = {
   dismissed: "Đã bỏ qua",
 }
 
-/** Tên thành viên đã đề xuất — "Bạn" cho chính người dùng. */
 function memberName(room: Room, memberId: string): string {
   return room.members.find((member) => member.id === memberId)?.displayName ?? "Thành viên"
 }
 
-/**
- * Danh sách đề xuất của cả phòng.
- *
- * Ai cũng bấm được "Áp dụng" — nhóm bạn 4–8 người không cần phân quyền
- * (cùng lý do với nghiên cứu DX-9.4: host offline vẫn phải chốt được).
- */
 export function ProposalList({ room, onApply, onDismiss }: ProposalListProps) {
   const open = room.proposals.filter((proposal) => proposal.status === "open")
   const resolved = room.proposals.filter((proposal) => proposal.status !== "open")

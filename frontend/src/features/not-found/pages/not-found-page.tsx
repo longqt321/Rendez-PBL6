@@ -10,7 +10,6 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 
-/** Trang 404 — mọi route không khớp. Render trong `AppShell` để người lạc vẫn còn điều hướng. */
 export function NotFoundPage() {
   return (
     <div className="flex min-h-[60dvh] items-center justify-center px-4 py-10">

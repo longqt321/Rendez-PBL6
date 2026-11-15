@@ -15,12 +15,10 @@ const POST_TABS: ProfileTab[] = ["posts", "pinned", "saved"]
 const TAB_VALUES = ["posts", "pinned", "saved", "collections"] as const
 type TabValue = (typeof TAB_VALUES)[number]
 
-/** `?tab=` là chuỗi tuỳ ý từ URL — chỉ nhận giá trị nằm trong danh sách tab. */
 function isTabValue(value: string | null): value is TabValue {
   return TAB_VALUES.some((tab) => tab === value)
 }
 
-/** Tabs Bài đăng / Đã ghim / Đã lưu / Bộ sưu tập — đồng bộ với query `?tab=`. */
 export function ProfileTabs({ profile }: ProfileTabsProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const rawTab = searchParams.get("tab")
@@ -56,7 +54,6 @@ export function ProfileTabs({ profile }: ProfileTabsProps) {
   )
 }
 
-/** Hồ sơ riêng tư: server chặn 403 dữ liệu riêng — hiển thị trạng thái khoá thay vì lỗi. */
 function PrivateProfileNotice() {
   return (
     <Empty className="mt-2">

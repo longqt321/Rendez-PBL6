@@ -18,13 +18,6 @@ import {
 import { z } from "zod"
 import { pageSchema } from "@/types/api-schema"
 
-/**
- * Hợp đồng response API — dùng cho contract test khi mock bật.
- *
- * Mỗi mục ghép một pattern path với schema zod tương ứng; `method` bỏ trống
- * nghĩa là áp dụng cho mọi method. Không throw: interceptor chỉ `console.error`
- * để lệch hợp đồng lộ ra khi dev mà không làm vỡ UI.
- */
 export interface ApiContract {
   pattern: RegExp
   method?: string
@@ -35,7 +28,6 @@ const suggestionsResponseSchema = z.object({
   suggestions: z.array(placeSuggestionSchema),
 })
 
-/** `POST /media` — URL PUT đã ký + `publicUrl` để gắn vào bài đăng. */
 const mediaTicketSchema = z.object({
   uploadUrl: z.string(),
   publicUrl: z.string(),
@@ -44,7 +36,6 @@ const mediaTicketSchema = z.object({
   headers: z.record(z.string(), z.string()),
 })
 
-/** Bảng route theo đúng các endpoint của mock server. */
 export const API_CONTRACTS: ApiContract[] = [
   // Địa điểm — mục cụ thể phải đứng trước `:id`.
   { pattern: /^\/places\/suggestions$/, method: "GET", schema: suggestionsResponseSchema },
@@ -114,7 +105,6 @@ export const API_CONTRACTS: ApiContract[] = [
   { pattern: /^\/rooms$/, method: "POST", schema: createRoomResponseSchema },
 ]
 
-/** Tìm hợp đồng khớp path (bỏ query) và method; `undefined` nếu không có. */
 export function findContract(method: string, url: string): ApiContract | undefined {
   const path = url.split("?")[0]
   const upperMethod = method.toUpperCase()
@@ -124,7 +114,6 @@ export function findContract(method: string, url: string): ApiContract | undefin
   )
 }
 
-/** Trả về thông điệp lỗi hợp đồng đầu tiên, hoặc `null` nếu hợp lệ/không áp dụng. */
 export function checkApiContract(method: string, url: string, data: unknown): string | null {
   const contract = findContract(method, url)
   if (!contract) return null

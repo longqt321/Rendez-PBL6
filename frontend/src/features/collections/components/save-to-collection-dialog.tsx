@@ -36,10 +36,6 @@ interface SaveToCollectionDialogProps {
   children: React.ReactElement
 }
 
-/**
- * Dialog chọn bộ sưu tập để lưu/bỏ một địa điểm, kèm form tạo nhanh bộ sưu tập
- * mới. Mỗi mục là một Item với Switch — bật/tắt cập nhật thành viên ngay (idempotent).
- */
 export function SaveToCollectionDialog({
   placeId,
   placeName,

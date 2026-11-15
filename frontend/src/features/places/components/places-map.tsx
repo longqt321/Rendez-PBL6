@@ -27,73 +27,47 @@ interface PlacesMapProps {
   onSelectPlace?: (place: Place) => void
   userCoordinates?: { lat: number; lng: number } | null
   className?: string
-  /** Chiều cao bản đồ (mặc định 100% hoặc giá trị h-...) */
+
   height?: string
-  /**
-   * Báo khung nhìn sau khi người dùng pan/zoom xong (đã debounce). Có callback
-   * này thì bản đồ tự nạp pin theo vùng đang xem.
-   */
+
   onViewportChange?: (bounds: MapBounds) => void
-  /**
-   * Đổi giá trị này để yêu cầu căn lại tầm nhìn (ví dụ khi đổi bộ lọc). Không
-   * truyền thì bản đồ chỉ căn một lần lúc mở.
-   */
+
   fitKey?: string
-  /** Đang tải pin của vùng xem — nhãn đếm đổi thành trạng thái đang tải. */
+
   isPlacesLoading?: boolean
-  /**
-   * Tổng số địa điểm khớp trong khung (server trả). Lớn hơn `places.length` khi
-   * vượt chặn trên — nhãn đếm phải nói rõ "x/y" thay vì giấu phần bị cắt.
-   */
+
   totalPlaces?: number
 }
 
-/**
- * Từ mức zoom này trở lên mới cân nhắc hiện tên quán cạnh pin — ở zoom thấp
- * chữ sẽ chồng lên nhau (bài toán 286 pin phủ kín Đà Nẵng). Dưới ngưỡng này
- * chỉ quán nổi bật (`TOP_LABEL_COUNT`) và quán đang chọn được hiện tên.
- */
 const LABEL_MIN_ZOOM = 17
 
-/** Số quán được ưu tiên hiện tên ở zoom thấp: điểm đánh giá cao nhất trong khung. */
 const TOP_LABEL_COUNT = 8
 
-/** Bán kính gom cụm (px) — mốc chuẩn của supercluster, đủ tách cụm khi zoom. */
 const CLUSTER_RADIUS = 60
 
-/** Zoom tối đa còn gom cụm; từ mức này trở lên mọi pin tách rời nhau. */
 const CLUSTER_MAX_ZOOM = 16
 
-/** Ước lượng bề rộng nhãn để tính chồng lấn mà không cần đo DOM. */
 const LABEL_CHAR_WIDTH = 6.5
 const LABEL_BASE_WIDTH = 24
 
-/** Thuộc tính gắn vào từng điểm trước khi đưa vào supercluster. */
 interface ClusterPointProps {
   place: Place
 }
 
-/** Thuộc tính của một cụm do supercluster sinh ra. */
 interface ClusterProperties {
   cluster: true
   cluster_id: number
   point_count: number
 }
 
-/**
- * Kiểu feature sau khi `getClusters` trả về. Typings của supercluster để nửa
- * "cụm" thành `any` (AnyProps) nên khai báo lại tường minh ở đây.
- */
 type ClusterOrPointFeature = Feature<Point, ClusterProperties> | Feature<Point, ClusterPointProps>
 
-/** Type guard: feature là cụm hay pin lẻ (typings supercluster để nửa cụm là `any`). */
 function isClusterProperties(
   props: ClusterProperties | ClusterPointProps,
 ): props is ClusterProperties {
   return "cluster" in props && props.cluster === true
 }
 
-/** Escape chuỗi trước khi nhét vào HTML của `divIcon` (tên quán do người dùng nhập). */
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -103,12 +77,6 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;")
 }
 
-/**
- * Căn tầm nhìn — mỗi `fitKey` chỉ căn MỘT lần, và chỉ căn khi đã có điểm để căn
- * (guard `fittedKeyRef`). Nhờ guard này, phụ thuộc `places` là an toàn: dữ liệu
- * về sau khi bộ lọc đổi sẽ căn lại đúng một lần, không tạo vòng lặp
- * "căn → khung nhìn đổi → nạp vùng mới → căn lại…".
- */
 function MapBoundsUpdater({
   places,
   selectedPlace,
@@ -149,11 +117,6 @@ function MapBoundsUpdater({
   return null
 }
 
-/**
- * Báo khung nhìn hiện tại mỗi khi người dùng pan/zoom xong (lẫn lúc mở bản đồ).
- * Việc làm chậm 300ms nằm ở `map-page` (`useDebounce` của `@uidotdev/usehooks`)
- * — component này chỉ đọc sự kiện của Leaflet và báo giá trị, không tự điều phối.
- */
 function ViewportReporter({ onChange }: { onChange: (bounds: MapBounds) => void }) {
   // Giữ callback mới nhất trong ref để `emit` ổn định (không re-run effect khi
   // parent render lại), đồng thời không cần eslint-disable exhaustive-deps.
@@ -183,12 +146,6 @@ function ViewportReporter({ onChange }: { onChange: (bounds: MapBounds) => void 
   return null
 }
 
-/**
- * Pin của một quán: chấm tròn màu theo category + icon loại hình, nhìn là biết
- * quán gì. Tên quán chỉ hiện ở zoom cao / khi chọn / quán nổi bật (`showLabel`).
- *
- * Leaflet `divIcon` chỉ nhận chuỗi HTML — không render JSX ở đây được.
- */
 function createPlacePinIcon(
   place: Place,
   {

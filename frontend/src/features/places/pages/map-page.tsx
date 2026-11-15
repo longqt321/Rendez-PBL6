@@ -12,18 +12,6 @@ import { useDiscoverView } from "../hooks/use-discover-view"
 import { useMapPlaces } from "../hooks/use-map-places"
 import type { MapBounds } from "../api/get-map-places"
 
-/**
- * Trang bản đồ — `/map`: xem kết quả lọc trên bản đồ toàn màn hình.
- *
- * Cùng một bộ lọc với `/discover` (qua `useDiscoverView`, bộ lọc nằm trên URL)
- * nên chuyển giữa hai trang không mất search/filter — đúng yêu cầu "map là một
- * mục riêng nhưng vẫn giữ nguyên bộ lọc".
- *
- * Pin nạp **theo khung nhìn**: người dùng pan/zoom tới đâu, server trả pin tới
- * đó (`GET /places/map?bbox=…`) — không còn phụ thuộc trang đầu của danh sách
- * chung (trước đây bản đồ chỉ thấy ~9 quán đầu, dồn về Hải Châu). Cache theo
- * khung đã làm tròn nằm ở `useMapPlaces` nên lướt qua lại không gọi lại API.
- */
 export function MapPage() {
   const view = useDiscoverView()
   const { filters, room } = view

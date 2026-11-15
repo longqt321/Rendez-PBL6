@@ -1,20 +1,6 @@
 import { createHash } from "node:crypto"
 import type { Context } from "hono"
 
-/**
- * Cache HTTP + cache trong tiến trình (G2).
- *
- * - `jsonWithCache`: gắn `ETag` + `Cache-Control`, trả 304 khi client gửi
- *   `If-None-Match` khớp — trình duyệt/CDN không tải lại body không đổi. Chỉ
- *   dùng `max-age` cho dữ liệu công khai; dữ liệu phụ thuộc người xem phải
- *   `scope: "private"` (revalidate mỗi lần, xem chú thích hàm).
- * - `noStore`: chặn cache cho dữ liệu riêng tư/thay đổi liên tục (`/me`,
- *   `/notifications`).
- * - `createTtlCache`: cache TTL nhỏ trong bộ nhớ + single-flight (nhiều request
- *   cùng key chỉ chạy loader một lần). Không thêm dependency (DECISIONS 27).
- */
-
-/** So khớp `If-None-Match` với ETag hiện tại (hỗ trợ danh sách và tiền tố `W/`). */
 function matchesEtag(header: string, etag: string): boolean {
   return header
     .split(",")
@@ -22,24 +8,6 @@ function matchesEtag(header: string, etag: string): boolean {
     .some((value) => value === etag || value === "*")
 }
 
-/**
- * Trả JSON kèm `ETag` + `Cache-Control`; 304 (không body) khi ETag không đổi.
- *
- * ETag tính từ chính body đã serialize — không phụ thuộc thứ tự cột DB, và tự
- * đổi khi dữ liệu đổi nên không cần invalidate thủ công.
- *
- * Hai chế độ, KHÁC nhau về quyền được dùng lại body mà không hỏi server:
- * - `public` (mặc định): dữ liệu giống nhau với mọi người (địa điểm, danh sách
- *   quán) → `public, max-age=<n>`, trình duyệt/CDN dùng lại body trong `<n>`
- *   giây mà không gọi server. Đây là lợi ích cache cần giữ.
- * - `private`: body phụ thuộc người xem (`followedByMe`, `likedByMe`, tab
- *   `saved`…) → `private, no-cache`: trình duyệt vẫn LƯU để tiết kiệm băng thông
- *   nhưng **buộc revalidate** mỗi lần đọc, nên sau mutation (theo dõi, thích)
- *   lần refetch kế tiếp luôn thấy dữ liệu mới. Trước đây chế độ này cũng gắn
- *   `max-age=15` nên refetch trong 15 giây trả lại body CŨ từ disk cache — nút
- *   "Theo dõi" không đổi trạng thái dù DB đã có row (V3-01).
- *   Không dùng `no-store` để còn giữ được 304 + ETag.
- */
 export function jsonWithCache(
   c: Context,
   data: unknown,

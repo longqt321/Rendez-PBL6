@@ -7,10 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Spinner } from "@/components/ui/spinner"
 import { api, toApiError } from "@/lib/axios"
 
-/**
- * Số liệu vận hành trả bởi `GET /system/stats` — khớp `backend/src/routes/system.ts`.
- * Giữ dạng rộng (không schema chặt) vì trang này chỉ hiển thị, không suy diễn.
- */
 interface SystemStats {
   uptimeMs: number
   totalQueries: number
@@ -26,14 +22,6 @@ interface SystemStats {
   }
 }
 
-/**
- * Trang vận hành `/system` — CHỈ DÙNG KHI DEMO BẢO VỆ (không có link trong nav).
- *
- * Số liệu đọc thẳng từ server (`GET /api/v1/system/stats` — đếm thật từ tiến
- * trình API và COUNT thật từ DB), không hardcode. Nút "Đặt lại" gọi
- * `POST /system/reset` để xoá bộ đếm trong RAM — dùng để demo cold vs warm
- * cache: reset → gọi `/places/suggestions` (cache MISS) → gọi lại (cache HIT).
- */
 export function SystemPage() {
   const queryClient = useQueryClient()
 

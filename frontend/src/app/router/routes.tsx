@@ -5,11 +5,6 @@ import { AppShell } from "@/components/layout/app-shell"
 import { RequireAuth } from "./require-auth"
 import { RouteErrorPage } from "./route-error-page"
 
-/**
- * Trang được tách chunk theo route (`React.lazy`) — bundle khởi động chỉ còn
- * shell + trang đầu tiên, các trang nặng (bản đồ/Leaflet, social) tải khi cần.
- * `Suspense` fallback nằm trong `AppShell` nên mọi route con đều có.
- */
 const DiscoverPage = lazy(() =>
   import("@/features/places/pages/discover-page").then((m) => ({ default: m.DiscoverPage })),
 )
@@ -91,10 +86,6 @@ const VerifyEmailPage = lazy(() =>
   import("@/features/auth/pages/verify-email-page").then((m) => ({ default: m.VerifyEmailPage })),
 )
 
-/**
- * `AppShell` là layout route duy nhất: mọi trang con render qua `<Outlet />`,
- * lỗi ở bất kỳ route con nào được `errorElement` bắt lại.
- */
 export const routes: RouteObject[] = [
   {
     path: "/",

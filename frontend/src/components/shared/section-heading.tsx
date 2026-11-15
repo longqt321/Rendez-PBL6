@@ -1,12 +1,6 @@
 import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
-/**
- * Tiêu đề nhóm nội dung — dùng chung cho mọi khu vực có nhiều nhóm.
- *
- * Trước đây khối class này bị copy ở `notification-page` (2 lần) và
- * `post-composer` (1 lần, biến thể có icon).
- */
 export function SectionHeading({
   children,
   icon,

@@ -12,22 +12,11 @@ import {
 } from "./enums"
 import type { Room, RoomFilter, RoomMember, RoomProposal, RoomProposalField } from "@rendez/schema"
 
-/**
- * Phòng lọc nhóm (Phase 6) — port logic `frontend/src/features/rooms/lib/room.ts`
- * sang server, lưu ở Postgres thay cho localStorage.
- *
- * Quy tắc giữ nguyên: thêm đề xuất mới nhất lên đầu; áp đề xuất include thì
- * thêm vào danh sách chọn và bỏ khỏi danh sách loại (và ngược lại); `priceMax`
- * chỉ áp dụng cho `include`; rời phòng xoá luôn đề xuất của thành viên đó.
- */
-
-/** Base32 Crockford — bỏ I, L, O, U (dễ nhầm khi đọc/đánh máy). */
 const CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 const CODE_LENGTH = 6
 const CODE_SPACE = CODE_ALPHABET.length ** CODE_LENGTH
 const DEFAULT_ROOM_NAME = "Phòng lọc nhóm"
 
-/** Mã phòng 6 ký tự base32 Crockford, sinh từ CSPRNG (`randomInt`). */
 export function generateRoomCode(): string {
   let value = randomInt(0, CODE_SPACE)
   let code = ""
@@ -49,7 +38,6 @@ export function createEmptyFilter(): RoomFilter {
   }
 }
 
-/** Đọc filter JSONB của DB thành `RoomFilter` — dữ liệu cũ thiếu khoá thì bù rỗng. */
 export function parseRoomFilter(raw: unknown): RoomFilter {
   const base = createEmptyFilter()
   if (typeof raw !== "object" || raw === null) return base
@@ -78,7 +66,6 @@ export function parseRoomFilter(raw: unknown): RoomFilter {
   }
 }
 
-/** Ghi filter xuống JSONB — enum loại hình lưu dạng Prisma (`street_food`). */
 export function serializeRoomFilter(filter: RoomFilter): Prisma.InputJsonValue {
   return {
     categories: filter.categories.map(toPrismaCategory),
@@ -98,12 +85,6 @@ const ROOM_INCLUDE = {
 
 type RoomWithRelations = Prisma.RoomGetPayload<{ include: typeof ROOM_INCLUDE }>
 
-/**
- * Dựng DTO `Room`.
- *
- * `isMe` xác định theo hai đường: thành viên gắn tài khoản (so `userId` với
- * người đang gọi) hoặc khách (client giữ `memberId` và gửi lại trong query).
- */
 export function toRoomDto(
   room: RoomWithRelations,
   viewerId: string | null,
@@ -139,7 +120,6 @@ export function toRoomDto(
   }
 }
 
-/** Tạo phòng — sinh mã và thử lại khi trùng (unique ở DB là chốt cuối). */
 export async function createRoom(
   ownerId: string,
   name: string | undefined,
@@ -196,7 +176,6 @@ export async function findRoomByCode(code: string): Promise<RoomWithRelations | 
   return room
 }
 
-/** Cập nhật mốc hoạt động của thành viên guest (khi resolve actor thành công). */
 export async function touchMemberSeen(memberId: string): Promise<void> {
   // `updateMany` idempotent: thành viên vừa bị xoá không sinh lỗi P2025.
   await prisma.roomMember.updateMany({
@@ -205,16 +184,6 @@ export async function touchMemberSeen(memberId: string): Promise<void> {
   })
 }
 
-/**
- * Thêm thành viên khách — danh tính xác thực bằng guest token (cookie theo
- * phòng), KHÔNG bằng tên.
- *
- * - Token khớp thành viên cũ → trả lại đúng thành viên đó (idempotent thật:
- *   reload trang vẫn là cùng người, không mạo danh được người khác).
- * - Trùng tên mà không có token khớp → 409: tên xuất hiện công khai trong DTO
- *   nên không thể dùng làm credential (chặn IDOR mạo danh).
- * - Token gốc sinh ở đây và trả về đúng một lần; DB chỉ lưu HMAC-SHA256.
- */
 export async function joinRoom(
   room: RoomWithRelations,
   displayName: string,
@@ -281,12 +250,6 @@ export async function addProposal(
   return updated
 }
 
-/**
- * Kiểm + chuẩn hoá giá trị đề xuất theo `field` — trả `null` khi không hợp lệ
- * (route trả 400) thay vì lưu rác vào filter JSONB làm phòng hỏng vĩnh viễn:
- * `category` phải là loại hình đã biết; `priceMax` phải là 1–3; district/keyword
- * là chuỗi tuỳ ý (đã trim ở zod).
- */
 export function normalizeProposalValue(field: RoomProposalField, value: string): string | null {
   if (field === "category") return parseApiCategory(value)
   if (field === "priceMax") return value === "1" || value === "2" || value === "3" ? value : null
@@ -345,7 +308,6 @@ export function applyProposalToFilter(
     : { ...filter, excludeKeywords: [...new Set([...filter.excludeKeywords, value])] }
 }
 
-/** Mô tả ngắn để client hiện toast — khớp `describeProposal` của frontend. */
 export function describeProposal(proposal: {
   kind: "include" | "exclude"
   field: RoomProposalField

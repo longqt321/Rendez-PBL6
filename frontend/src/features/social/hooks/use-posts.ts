@@ -5,12 +5,6 @@ export function postsQueryKey({ filter, q }: GetPostsParams) {
   return ["posts", filter, q?.trim() || ""] as const
 }
 
-/**
- * Feed cộng đồng, phân trang theo cursor.
- *
- * Server lọc theo `filter`/`q` và phân trang; client không tự lọc dữ liệu đã tải.
- * Dùng `useInfinitePosts()` để lấy mảng phẳng các bài đã tải.
- */
 export function usePostsQuery(params: GetPostsParams) {
   return useInfiniteQuery({
     queryKey: postsQueryKey(params),
@@ -20,7 +14,6 @@ export function usePostsQuery(params: GetPostsParams) {
   })
 }
 
-/** Danh sách bài đã tải của feed — phẳng hoá các trang server trả về. */
 export function usePosts(params: GetPostsParams) {
   const query = usePostsQuery(params)
   return {

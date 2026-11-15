@@ -3,59 +3,39 @@ import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { toUserProfile } from "./profile"
 
-/**
- * Gợi ý người nên theo dõi (`GET /users/suggestions`).
- *
- * Tách hai phần như `daily-picks`:
- * - SQL chỉ *gom số đếm thô* cho mọi ứng viên trong MỘT batch (không N+1).
- * - `rankSuggestions` thuần hàm: tính điểm, `reason`, tiebreak hash theo ngày,
- *   cắt 5 người — test unit chạy trực tiếp không cần DB.
- *
- * Tín hiệu CHỈ lấy từ nguồn công khai (review, bài đăng gắn địa điểm, collection
- * công khai). KHÔNG dùng `post_saves`/collection riêng tư: suy ra "hai người cùng
- * quan tâm quán X" từ hành vi lưu riêng tư là rò rỉ dữ liệu (BLOCKER B1).
- */
-
-/** Trọng số điểm tín hiệu — hằng số named, không cấu hình qua env. */
 const SHARED_PLACE_WEIGHT = 3.0
 const MUTUAL_FOLLOW_WEIGHT = 2.0
 const RECENT_ACTIVITY_WEIGHT = 1.5
 const NEW_USER_WEIGHT = 0.5
 
-/** Số gợi ý tối đa — khớp `userSuggestionsSchema` (`max(5)`). */
 export const MAX_SUGGESTIONS = 5
 
-/** Cửa sổ "hoạt động gần đây" / "tài khoản mới" — 30 ngày. */
 const RECENT_WINDOW_DAYS = 30
 
 const DAY_MS = 86_400_000
 
-/** Ứng viên với số đếm thô — đúng dữ liệu SQL trả về, chưa tính điểm. */
 export interface SuggestionCandidate {
   id: string
-  /** Số quán chung từ nguồn công khai (review, bài gắn địa điểm, collection công khai). */
+
   sharedPlaces: number
-  /** Số người tôi theo dõi mà cũng theo dõi ứng viên này. */
+
   mutualFollows: number
-  /** Ứng viên đang theo dõi tôi (gợi ý tốt nhất khi tôi chưa follow lại). */
+
   followsMe: boolean
-  /** Số bài đăng + review của họ trong 30 ngày qua. */
+
   recentActivity: number
   createdAt: Date
 }
 
-/** Kết quả xếp hạng — route dùng `id` để lấy hồ sơ đầy đủ + `reason` để hiển thị. */
 export interface RankedSuggestion {
   id: string
   reason: string
 }
 
-/** Ngày hôm nay dạng UTC `YYYY-MM-DD` — chỉ dùng xoay tiebreak, không mang nghĩa nghiệp vụ. */
 export function getSuggestionDate(now: Date = new Date()): string {
   return now.toISOString().slice(0, 10)
 }
 
-/** Tài khoản tạo trong 30 ngày tính tới `today` (tính cả ngày hôm nay). */
 function isNewUser(createdAt: Date, today: string): boolean {
   const endOfToday = Date.parse(`${today}T00:00:00Z`) + DAY_MS
   const age = endOfToday - createdAt.getTime()

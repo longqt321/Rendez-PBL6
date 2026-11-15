@@ -6,17 +6,6 @@ import { metricsSnapshot, resetMetrics } from "../lib/metrics"
 import { rateLimit } from "../lib/rate-limit"
 import { ApiError } from "../lib/errors"
 
-/**
- * Route vận hành `/system/*` (demo kỹ thuật) — CHỈ trả số liệu vận hành:
- * uptime, số request, latency trung bình, tỉ lệ cache hit và số đếm venue.
- *
- * Bảo mật: không có query string, IP, userId hay nội dung request nào trong
- * response (metrics chỉ đếm theo route), nên không lộ dữ liệu người dùng.
- * `POST /system/reset` là thao tác ghi (xoá bộ đếm trong RAM) nên gắn rate limit
- * nhẹ theo IP để một client không thể liên tục làm rỗng số liệu quan sát.
- */
-
-/** 10 lần reset/phút/IP — đủ cho thao tác tay, chặn vòng lặp phá số liệu. */
 const RESET_RATE_LIMIT = rateLimit({ scope: "system-reset", limit: 10, windowSeconds: 60 })
 
 interface VenueCountRow {
@@ -27,7 +16,6 @@ interface VenueCountRow {
   with_hours: number
 }
 
-/** Đếm venue thật trong DB — một query, không hardcode số nào. */
 async function countVenues(): Promise<{
   total: number
   published: number
@@ -76,7 +64,6 @@ export function createSystemRouter() {
     })
   })
 
-  /** Xoá bộ đếm trong RAM — KHÔNG xoá dữ liệu DB. */
   router.post("/system/reset", RESET_RATE_LIMIT, (c) => {
     // Thao tác GHI công khai chỉ chấp nhận được ở môi trường demo/dev; ở
     // production ai cũng gọi được là lỗ hổng quan sát (ai cũng xoá số liệu

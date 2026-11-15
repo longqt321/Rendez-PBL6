@@ -23,25 +23,11 @@ import { rateLimit } from "../lib/rate-limit"
 import { getViewer, requireAuth } from "../lib/session"
 import { recordEvent } from "../lib/interaction-events"
 
-/**
- * Route bài đăng + bình luận (Phase 3).
- *
- * Hợp đồng (Phần A): feed `Page<Post>` với filter all|unplaced|mine|saved,
- * like/save idempotent, gắn địa điểm có side effect A7.3, bình luận phẳng
- * lồng 1 cấp (A7.6). GET công khai; mutation cần đăng nhập.
- */
-
 const POSTS_PAGE_SIZE = 5
 
-/** Giới hạn bình luận mỗi lần đọc — mặc định 50, trần 100 (chặn payload quá lớn). */
 const DEFAULT_COMMENTS_LIMIT = 50
 const MAX_COMMENTS_LIMIT = 100
 
-/**
- * Chống spam tương tác (V8-04) — đếm theo userId nên nhiều người dùng chung IP
- * (văn phòng, NAT) không chặn lẫn nhau. Ngưỡng cao hơn thao tác thường nhiều
- * lần, chỉ chặn spam (10 click liên tiếp như vòng 8 đo được).
- */
 const LIKE_RATE_LIMIT = rateLimit({ scope: "like", limit: 30, windowSeconds: 60, byUser: true })
 const COMMENT_RATE_LIMIT = rateLimit({
   scope: "comment",

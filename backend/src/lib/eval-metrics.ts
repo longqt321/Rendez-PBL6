@@ -1,8 +1,3 @@
-/**
- * Metrics đánh giá retrieval dùng chung — MỘT nguồn duy nhất cho mọi script eval
- * (`eval-search.ts`, `eval-rec.ts`, benchmark dataset chuẩn). Không phụ thuộc DB.
- */
-
 export interface Metrics {
   p5: number
   p10: number
@@ -15,11 +10,6 @@ export function dcg(grades: number[]): number {
   return grades.reduce((sum, g, i) => sum + (2 ** g - 1) / Math.log2(i + 2), 0)
 }
 
-/**
- * Chấm một danh sách id kết quả theo nhãn grade (2 = thoả đủ, 1 = gần đúng).
- * Query không có venue nào thoả đủ ràng buộc → nDCG = 0 (không có ideal DCG;
- * chia cho `Math.max(1e-9, 0)` sẽ cho nDCG khổng lồ với kết quả grade 1).
- */
 export function score(ids: string[], labels: Record<string, number>): Omit<Metrics, "zeroRate"> {
   const g = ids.slice(0, 10).map((id) => labels[id] ?? 0)
   const exact = Object.values(labels).filter((v) => v === 2).length
@@ -40,7 +30,6 @@ export function percentile(values: number[], p: number): number {
   return Math.round(sorted[idx] ?? 0)
 }
 
-/** mulberry32 — RNG seeded, tái lập được. Cùng thuật toán với `daily-picks.ts`. */
 export function mulberry32(seed: number): () => number {
   let state = seed >>> 0
   return () => {
@@ -55,14 +44,10 @@ export interface BootstrapResult {
   meanDelta: number
   ciLow: number
   ciHigh: number
-  /** p one-sided: xác suất bootstrap chênh lệch ≤ 0 (H1: mean > 0). */
+
   pOneSided: number
 }
 
-/**
- * Paired bootstrap trên các chênh lệch per-query (mẫu = cùng query nên paired).
- * Seeded → cùng đầu vào ra cùng kết quả, tái lập được giữa các lượt chạy.
- */
 export function pairedBootstrap(diffs: number[], iterations = 10_000, seed = 42): BootstrapResult {
   if (diffs.length === 0) return { meanDelta: 0, ciLow: 0, ciHigh: 0, pOneSided: 1 }
   const meanDelta = diffs.reduce((s, x) => s + x, 0) / diffs.length
@@ -83,7 +68,6 @@ export function pairedBootstrap(diffs: number[], iterations = 10_000, seed = 42)
   }
 }
 
-/** Holm–Bonferroni: hiệu chỉnh p cho đa so sánh, giữ thứ tự đầu vào. */
 export function holmCorrect(pValues: number[]): number[] {
   const order = pValues.map((p, i) => ({ p, i })).sort((a, b) => a.p - b.p)
   const m = pValues.length

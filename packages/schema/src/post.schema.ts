@@ -2,7 +2,6 @@ import { placeSummarySchema } from "./place.schema"
 import { z } from "zod"
 import type { Author, Post } from "./types/post"
 
-/** Người đăng rút gọn — khớp `Author`. */
 export const authorSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -10,7 +9,6 @@ export const authorSchema = z.object({
   initials: z.string(),
 }) satisfies z.ZodType<Author>
 
-/** Bài đăng trong feed — khớp `Post`. */
 export const postSchema = z.object({
   id: z.string(),
   author: authorSchema,

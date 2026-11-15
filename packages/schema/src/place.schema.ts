@@ -9,7 +9,6 @@ import type {
   PlaceSummary,
 } from "./types/place"
 
-/** Schema khớp `PlaceCategory` — enum đóng, server quyết định. */
 const placeCategorySchema = z.enum([
   "cafe",
   "restaurant",
@@ -19,10 +18,8 @@ const placeCategorySchema = z.enum([
   "bar",
 ]) satisfies z.ZodType<PlaceCategory>
 
-/** Schema khớp `PlaceStatus` — thiếu/không rõ thì server không gửi trường này. */
 const placeStatusSchema = z.enum(["open", "closed", "unknown"]) satisfies z.ZodType<PlaceStatus>
 
-/** Bản rút gọn server nhúng vào bài đăng và đề xuất — khớp `PlaceSummary`. */
 export const placeSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -35,7 +32,6 @@ export const placeSummarySchema = z.object({
   lng: z.number().optional(),
 }) satisfies z.ZodType<PlaceSummary>
 
-/** Địa điểm đầy đủ dùng cho lưới /discover — khớp `Place`. */
 export const placeSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -56,13 +52,11 @@ export const placeSchema = z.object({
   publishedAt: z.string().nullable(),
 }) satisfies z.ZodType<Place>
 
-/** Đề xuất địa điểm do server xếp hạng — khớp `PlaceSuggestion`. */
 export const placeSuggestionSchema = z.object({
   place: placeSummarySchema,
   reason: z.string(),
 }) satisfies z.ZodType<PlaceSuggestion>
 
-/** Một quán trong "Gợi ý hôm nay" — dùng `placeSchema` đầy đủ để FE render `PlaceCard`. */
 export const dailyPickWhySchema = z.object({
   matchPercent: z.number().int().min(0).max(100),
   district: z.string().optional(),
@@ -77,7 +71,6 @@ export const dailyPickSchema = z.object({
   why: dailyPickWhySchema.optional(),
 }) satisfies z.ZodType<DailyPick>
 
-/** Payload `GET /places/daily-picks`; `items` rỗng khi job chưa chạy (không phải lỗi). */
 export const dailyPicksSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/u),
   items: z.array(dailyPickSchema).max(3),

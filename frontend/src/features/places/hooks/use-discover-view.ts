@@ -12,18 +12,18 @@ import { useDiscoverFilters, type DiscoverFiltersState } from "./use-discover-fi
 
 export interface DiscoverView {
   filters: DiscoverFiltersState
-  /** Phòng lọc nhóm đang hoạt động (nếu có) — mọi trang nhìn cùng một kết quả lọc. */
+
   room: Room | undefined
-  /** Tạo phòng và trả về mã phòng (dùng cho dialog mời). */
+
   createRoom: (name: string) => Promise<string>
-  /** Vào phòng theo mã; trả trạng thái để UI báo đúng nguyên nhân. */
+
   joinRoom: (code: string, displayName: string) => Promise<JoinRoomStatus>
   leaveRoom: () => void
   coordinates: { lat: number; lng: number } | null
   isLocating: boolean
   locationError: string | null
   locationGate: React.ReactNode
-  /** Tắt "Gần đây" cũng phải dọn vị trí đã xin quyền — tránh giữ GPS chạy nền. */
+
   clearLocation: () => void
   requestLocation: () => void
   isPending: boolean
@@ -32,26 +32,15 @@ export interface DiscoverView {
   hasNextPage: boolean
   isFetchingNextPage: boolean
   fetchNextPage: () => void
-  /** Danh sách đã lọc (kể cả bộ lọc phòng) + khoảng cách, sắp xếp khi bật "Gần đây". */
+
   placesWithDistance: { place: Place; distanceKm?: number }[]
   sortedPlaces: Place[]
-  /**
-   * Metadata vận hành của trang đầu tiên (tookMs/cacheHit/totalResults/didYouMean)
-   * — nguồn DUY NHẤT cho số lượng kết quả hiển thị, không đếm item đã tải.
-   */
+
   meta: PageMeta | undefined
-  /**
-   * Bộ lọc đã quy về tham số server (gồm ràng buộc phòng). Bản đồ dùng lại đúng
-   * bộ này để kết quả hai màn hình không lệch nhau.
-   */
+
   serverFilters: DiscoverFilters
 }
 
-/**
- * Toàn bộ trạng thái và dữ liệu của màn hình khám phá — dùng chung cho
- * `/discover` (lưới) và `/map` (bản đồ): hai cách nhìn của cùng một bộ lọc,
- * nên logic lọc chỉ tồn tại một chỗ duy nhất.
- */
 export function useDiscoverView(): DiscoverView {
   const filters = useDiscoverFilters()
   const { activeCode, getRoom, createRoom, joinRoom, leaveRoom } = useRooms()

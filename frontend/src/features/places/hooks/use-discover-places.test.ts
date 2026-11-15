@@ -14,10 +14,6 @@ const VALID_CATEGORIES: PlaceCategory[] = [
   "bar",
 ]
 
-/**
- * Test hook dữ liệu chạy qua mock adapter (axios thật + `mockAdapter` của
- * `src/mocks/server.ts`) — không mock module api.
- */
 describe("useDiscoverPlaces", () => {
   it("trang đầu trả về địa điểm có shape đúng Place", async () => {
     const { result } = renderWithQuery(() => useDiscoverPlaces({ category: "all", query: "" }))

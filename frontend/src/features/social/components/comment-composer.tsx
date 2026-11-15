@@ -10,16 +10,11 @@ import type { Comment } from "../types/comment"
 
 interface CommentComposerProps {
   postId: string
-  /** Bình luận đang được trả lời; null = bình luận gốc. */
+
   replyTo: Comment | null
   onCancelReply: () => void
 }
 
-/**
- * Ô soạn bình luận — `Textarea` tự giãn nhờ `field-sizing-content`.
- *
- * Gửi lỗi: `toast.error()` và giữ nguyên nội dung đã gõ.
- */
 export function CommentComposer({ postId, replyTo, onCancelReply }: CommentComposerProps) {
   const [body, setBody] = useState("")
   const createComment = useCreateComment(postId)

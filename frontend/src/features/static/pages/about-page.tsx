@@ -1,7 +1,6 @@
 import { Link } from "react-router"
 import { StaticPage, StaticSection } from "../components/static-page"
 
-/** Trang Giới thiệu — `/about`. */
 export function AboutPage() {
   return (
     <StaticPage

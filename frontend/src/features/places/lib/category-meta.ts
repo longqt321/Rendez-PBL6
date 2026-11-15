@@ -2,25 +2,12 @@ import type { PlaceCategory } from "../types/place"
 
 interface CategoryMeta {
   label: string
-  /**
-   * Màu chủ đạo của pin trên bản đồ (hex). Dùng inline style trong `divIcon`
-   * vì pin là chuỗi HTML dựng lúc runtime — class màu của Tailwind sẽ không
-   * được quét nếu chỉ xuất hiện trong chuỗi template.
-   */
+
   color: string
-  /**
-   * Nội dung SVG (lucide, stroke theo `currentColor`) vẽ trong pin — pin nhìn
-   * là biết quán gì mà không cần đọc chữ.
-   */
+
   icon: string
 }
 
-/**
- * Nhãn hiển thị của loại hình địa điểm.
- *
- * Chỉ chứa dữ liệu để hiển thị. Các từ khoá dùng cho việc so khớp/xếp hạng
- * thuộc về server (`src/mocks/ranking.ts`), không nằm ở đây.
- */
 export const CATEGORY_META: Record<PlaceCategory, CategoryMeta> = {
   cafe: {
     label: "Cà phê",
@@ -58,11 +45,6 @@ export function categoryLabel(category: PlaceCategory): string {
   return CATEGORY_META[category].label
 }
 
-/**
- * SVG hoàn chỉnh của icon category — dùng trong pin trên bản đồ (`divIcon`
- * chỉ nhận chuỗi HTML) và trong legend. `currentColor` ăn theo màu chữ của
- * phần tử bọc ngoài.
- */
 export function categoryIconSvg(category: PlaceCategory, size = 14): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CATEGORY_META[category].icon}</svg>`
 }

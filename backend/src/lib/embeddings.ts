@@ -1,15 +1,3 @@
-/**
- * Embedding văn bản bằng `Xenova/multilingual-e5-small` (384 chiều, q8).
- *
- * E5 yêu cầu prefix: `query: ` cho truy vấn tìm kiếm, `passage: ` cho tài liệu
- * (địa điểm). Mean pooling + L2 normalize — chuẩn của pipeline feature-extraction
- * với `pooling: "mean", normalize: true`.
- *
- * Ràng buộc an toàn: KHÔNG BAO GIỜ throw ra ngoài caller — mọi lỗi (model tải
- * thất bại, ONNX runtime lỗi, OOM…) bị nuốt và trả `null`/mảng null; caller
- * (`lib/places.ts`) tự fallback về lexical. Warm-up chạy lúc import để lần
- * request đầu không chịu chi phí tải model (~vài trăm ms).
- */
 import { pipeline, type FeatureExtractionPipeline, env } from "@huggingface/transformers"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -17,14 +5,8 @@ import { logger } from "./logger"
 
 const MODEL_ID = "Xenova/multilingual-e5-small"
 
-/**
- * Thư mục cache model. Mặc định `./.cache` tương đối với bundle — trong image
- * runtime chạy user `bun` nên `/app/backend/.cache` không ghi được (EACCES).
- * Dùng thư mục tạm của hệ điều hành (luôn ghi được) hoặc biến môi trường khi
- * muốn giữ cache qua các lần restart (mount volume).
- */
 env.cacheDir = process.env.TRANSFORMERS_CACHE_DIR ?? join(tmpdir(), "rendez-transformers-cache")
-/** Cache query embedding — giới hạn để không phình RAM khi traffic lớn. */
+
 const QUERY_CACHE_MAX = 100
 
 let extractor: FeatureExtractionPipeline | null = null
@@ -58,7 +40,6 @@ void (async () => {
   }
 })()
 
-/** Mean pooling trên last_hidden_state rồi L2 normalize — trả mảng JS thường. */
 async function encode(texts: string[]): Promise<Float32Array[] | null> {
   const pipe = await getExtractor()
   if (!pipe) return null
@@ -83,17 +64,8 @@ async function encode(texts: string[]): Promise<Float32Array[] | null> {
   }
 }
 
-/**
- * Cache query embedding (LRU đơn giản bằng Map — giữ thứ tự chèn, xoá phần tử
- * cũ nhất khi vượt giới hạn). Query lặp lại (autocomplete gõ dần) không phải
- * encode lại (~26–49ms/lần).
- */
 const queryCache = new Map<string, Float32Array>()
 
-/**
- * Embed một query tìm kiếm (prefix `query: `). Trả `null` khi encoder lỗi —
- * caller fallback lexical, không bao giờ throw.
- */
 export async function embedQuery(text: string): Promise<Float32Array | null> {
   const cached = queryCache.get(text)
   if (cached) return cached

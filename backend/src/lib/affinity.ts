@@ -1,25 +1,6 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 
-/**
- * Item-item collaborative filtering từ `interaction_events` (P1 — rec cold-start).
- *
- * Ý tưởng: mỗi actor (user đã đăng nhập hoặc khách có `anon_id`) là một vector
- * thưa trên không gian place, giá trị = tổng weight của các event trên place đó.
- * Chuẩn hoá L2 từng vector rồi lấy tích vô hướng giữa hai place trên cùng actor
- * — chính là cosine similarity giữa hai item trong không gian actor.
- *
- * Vì sao cosine trên vector actor chứ không phải cosine trên vector item:
- * - Actor "nặng" (nhiều event) không được phép lấn át actor chỉ có 1 event.
- * - Không cần thư viện ML: dữ liệu ở quy mô hiện tại (vài chục nghìn event)
- *   tính trong bộ nhớ là đủ; ALS/embedding để dành khi số event lớn hơn.
- *
- * Quy ước tín hiệu (xem `interaction-weights.ts`): weight dương = quan tâm,
- * weight âm = loại trừ. Event `weight = 0` (ví dụ `onboarding_skipped`) không
- * mang tín hiệu sở thích nên bị bỏ hoàn toàn.
- */
-
-/** Một dòng event đã chuẩn hoá — khớp cột của `interaction_events`. */
 export interface AffinityEvent {
   userId: string | null
   anonId: string | null
@@ -27,31 +8,22 @@ export interface AffinityEvent {
   weight: number
 }
 
-/** Một place liên quan tới place đang xét. */
 export interface AffinityItem {
   id: string
-  /** Cosine similarity trong khoảng (0, 1] — chỉ giữ giá trị dương. */
+
   score: number
 }
 
 export interface ComputeItemItemOptions {
-  /** Số place liên quan tối đa cho mỗi place. Mặc định 20. */
   topK?: number
 }
 
-/** Top-K mặc định khi ghi cache — đủ cho "quán tương tự" + rec theo affinity. */
 const DEFAULT_TOP_K = 20
 
-/** Cửa sổ dữ liệu của cache: 90 ngày gần nhất (sở thích cũ không còn đại diện). */
 const CACHE_WINDOW_DAYS = 90
 
-/** Số dòng mỗi câu INSERT — tránh câu SQL quá dài với hàng nghìn place. */
 const INSERT_CHUNK_SIZE = 500
 
-/**
- * Khoá actor của một event: user đã đăng nhập ưu tiên `userId`, khách dùng
- * `anon:${anonId}` (tiền tố để không đụng id user thật). Không có cả hai → bỏ.
- */
 function actorKey(event: AffinityEvent): string | null {
   if (event.userId) return event.userId
   if (event.anonId) return `anon:${event.anonId}`

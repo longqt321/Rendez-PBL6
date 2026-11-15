@@ -3,16 +3,8 @@ import { useRecommendedPlaces } from "../hooks/use-recommended-places"
 import { PlaceCard } from "./place-card"
 import { PlaceCardSkeleton } from "./place-card-skeleton"
 
-/** Số thẻ chờ khớp `limit` mặc định của hook. */
 const RECOMMENDED_LIMIT = 6
 
-/**
- * Dải "Gợi ý cho bạn" trên /discover — cá nhân hoá theo lịch sử tương tác.
- *
- * Tính năng "thêm": endpoint chưa có / rỗng / lỗi thì thu gọn im lặng (kể cả
- * heading) để không làm hỏng trang chính. Bộ lọc của lưới bên dưới không tác
- * động dải này.
- */
 export function RecommendedSection() {
   const { data, isPending, isError } = useRecommendedPlaces(RECOMMENDED_LIMIT)
 

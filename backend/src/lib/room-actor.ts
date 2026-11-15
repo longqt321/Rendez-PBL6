@@ -6,19 +6,11 @@ import { getViewer } from "./session"
 import { hashRoomToken, readRoomToken } from "./room-token"
 import { touchMemberSeen, type RoomWithRelations } from "./rooms"
 
-/**
- * Danh tính người thao tác trong một phòng — xác thực từ session/cookie, KHÔNG
- * bao giờ từ `memberId`/`actorId` client khai trong query/body (chặn IDOR).
- *
- * Thứ tự: session user (nếu có member liên kết) → guest token trong cookie
- * HttpOnly của đúng phòng. Không khớp cả hai → 403.
- */
 export interface RoomActor {
   memberId: string
   isOwner: boolean
 }
 
-/** Phần xác thực thuần (không đọc session) — dùng lại khi route đã có viewer. */
 function actorFromViewer(
   c: Context<AppEnv>,
   room: RoomWithRelations,
@@ -51,7 +43,6 @@ export async function resolveRoomActor(
   return actor
 }
 
-/** Như `resolveRoomActor` nhưng route đọc công khai: không danh tính → `null`. */
 export function tryResolveRoomActor(
   c: Context<AppEnv>,
   room: RoomWithRelations,

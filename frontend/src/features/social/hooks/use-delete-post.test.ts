@@ -3,11 +3,6 @@ import { QueryClient } from "@tanstack/react-query"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { toast } from "sonner"
 
-/**
- * Mock module api — không gọi mạng. Điểm cần xác nhận: gọi đúng endpoint qua
- * hàm api, invalidate query key `["posts", …]` khi thành công và toast lỗi khi
- * thất bại.
- */
 const deletePost = vi.hoisted(() => vi.fn())
 
 vi.mock("../api/delete-post", () => ({
@@ -21,7 +16,6 @@ vi.mock("sonner", () => ({
 import { useDeletePost } from "./use-delete-post"
 import { renderWithQuery, waitForQuery } from "@/test/query-test-utils"
 
-/** Hai query nằm dưới tiền tố `["posts"]` — cả hai phải bị invalidate. */
 const FEED_KEYS = [
   ["posts", "all", ""],
   ["posts", "mine", ""],

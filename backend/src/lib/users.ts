@@ -2,14 +2,6 @@ import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { toUserProfile } from "./profile"
 
-/**
- * Truy vấn hồ sơ người dùng (T5.3 + T5.4).
- *
- * Đếm follower/following bằng COUNT thật (D3) trên bảng `follows`; `postCount`
- * bằng COUNT bài chưa xoá. Một query cho counts — không N+1.
- */
-
-/** Dòng hồ sơ rút gọn trả từ SQL (snake_case như SELECT). */
 interface ProfileRow {
   id: string
   name: string
@@ -57,13 +49,6 @@ async function countProfile(userId: string, viewerId: string | null, row: Profil
   )
 }
 
-/**
- * Người xem có được xem NỘI DUNG RIÊNG của hồ sơ không (bài đăng, bộ sưu tập).
- *
- * Hồ sơ `privateProfile` chỉ chủ sở hữu xem được nội dung riêng; khách chưa
- * đăng nhập cũng bị chặn. Phần cơ bản của hồ sơ (tên, avatar, handle) vẫn công
- * khai — chỉ endpoint trả dữ liệu riêng mới phải kiểm tra hàm này.
- */
 export function canViewPrivateContent(
   ownerId: string,
   privateProfile: boolean,
@@ -72,7 +57,6 @@ export function canViewPrivateContent(
   return !privateProfile || viewerId === ownerId
 }
 
-/** Hồ sơ theo handle — `null` khi không tồn tại/đã xoá (route trả 404). */
 export async function findProfileByHandle(
   handle: string,
   viewerId: string | null,

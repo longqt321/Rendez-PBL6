@@ -6,7 +6,6 @@ interface CommentSortToggleProps {
   onValueChange: (value: CommentSort) => void
 }
 
-/** Chọn thứ tự bình luận — server nhận `sort`, client không tự sắp xếp. */
 export function CommentSortToggle({ value, onValueChange }: CommentSortToggleProps) {
   return (
     <ToggleGroup

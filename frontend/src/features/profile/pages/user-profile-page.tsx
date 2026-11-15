@@ -9,7 +9,6 @@ interface UserProfilePageProps {
   handle: string
 }
 
-/** Trang cá nhân của người khác — `/u/:handle`. */
 export function UserProfilePage({ handle }: UserProfilePageProps) {
   const { data: profile, isPending, isError } = useProfile(handle)
 

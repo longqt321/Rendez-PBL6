@@ -17,7 +17,6 @@ interface CommentDeleteDialogProps {
   onClose: () => void
 }
 
-/** Xác nhận xoá bình luận — `AlertDialog` có sẵn, không tự dựng. */
 export function CommentDeleteDialog({ postId, comment, onClose }: CommentDeleteDialogProps) {
   const deleteComment = useDeleteComment(postId)
 

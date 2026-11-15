@@ -35,37 +35,26 @@ interface PostComposerProps {
   onCreated?: () => void
 }
 
-/** Ảnh đang chờ tải lên — preview tạo bằng `URL.createObjectURL`. */
 interface PendingImage {
   id: string
   file: File
   previewUrl: string
 }
 
-/**
- * Ô soạn bài.
- *
- * Khi người dùng gõ, frontend hỏi server (`GET /places/suggestions`) và chỉ hiển
- * thị những gì server trả về. Không có bước xử lý nào chạy trên client.
- *
- * Ảnh (G5b): chọn file → khi bấm "Đăng" mới xin URL PUT đã ký (`POST /media`)
- * và tải từng ảnh lên R2, rồi gửi mảng `publicUrl` kèm bài đăng. Server từ chối
- * URL không thuộc thư mục của chính người đăng.
- */
 export function PostComposer({ onCreated }: PostComposerProps) {
   const [caption, setCaption] = useState("")
   const [selectedPlace, setSelectedPlace] = useState<PlaceSummary | null>(null)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [images, setImages] = useState<PendingImage[]>([])
   const [uploading, setUploading] = useState(false)
-  /** `POST /media` trả 503 — môi trường chưa có R2, ẩn nút upload. */
+
   const [mediaUnavailable, setMediaUnavailable] = useState(false)
   const captionId = useId()
   const suggestionsPanelId = useId()
   const fileInputId = useId()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageSeq = useRef(0)
-  /** Chặn submit lặp khi upload ảnh còn đang chạy (trước cả `isPending`). */
+
   const submittingRef = useRef(false)
 
   const debouncedCaption = useDebouncedValue(caption, 450)

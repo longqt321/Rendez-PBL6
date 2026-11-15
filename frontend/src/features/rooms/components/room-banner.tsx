@@ -19,7 +19,6 @@ interface RoomBannerProps {
   onLeave: () => void
 }
 
-/** Nhãn các ràng buộc đang có hiệu lực — chỉ hiện cái đã đặt, không hiện mặc định. */
 function filterLabels(room: Room): string[] {
   const { filter } = room
   const labels: string[] = []

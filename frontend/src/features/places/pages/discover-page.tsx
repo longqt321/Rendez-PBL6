@@ -14,15 +14,8 @@ import { RecommendedSection } from "../components/recommended-section"
 import { RecentlyViewedSection } from "../components/recently-viewed-section"
 import { useDiscoverView } from "../hooks/use-discover-view"
 
-/** Chiều cao ảnh cho skeleton — chỉ là hình thức chờ, không phải dữ liệu. */
 const SKELETON_HEIGHTS = [320, 400, 280, 360, 440, 300, 380, 340, 420]
 
-/**
- * Trang khám phá — `/discover`: dạng lưới.
- *
- * Chia sẻ toàn bộ bộ lọc với `/map` qua `useDiscoverView` (bộ lọc nằm trên URL),
- * nên chuyển giữa hai trang không mất search/filter.
- */
 export function DiscoverPage() {
   const view = useDiscoverView()
   const { filters, room } = view

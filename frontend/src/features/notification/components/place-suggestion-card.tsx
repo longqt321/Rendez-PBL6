@@ -25,12 +25,6 @@ interface PlaceSuggestionCardProps {
   notification: PlaceSuggestionNotification
 }
 
-/**
- * Thẻ "Đề xuất thêm địa điểm".
- *
- * Danh sách đề xuất (đã xếp hạng) và trạng thái địa điểm hiện tại của bài đều do
- * server cung cấp. Component chỉ render và gửi lựa chọn của người dùng lên server.
- */
 export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) {
   const updatePlace = useUpdatePostPlace()
 

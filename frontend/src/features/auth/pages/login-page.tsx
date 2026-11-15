@@ -30,12 +30,6 @@ type LoginForm = z.infer<typeof loginSchema>
 
 const LOGIN_FIELDS = ["email", "password"] as const
 
-/**
- * Trang đăng nhập — `/login`.
- *
- * `?next=` (path relative, do route bảo vệ gắn) đưa người dùng về đúng trang
- * họ định mở sau khi đăng nhập; đã đăng nhập thì không thấy form nữa (V1-09).
- */
 export function LoginPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -53,10 +47,6 @@ export function LoginPage() {
   const redirectTo = useAuthenticatedRedirect(next)
   if (redirectTo) return <Navigate to={redirectTo} replace />
 
-  /**
-   * Chưa xác thực email (2026-11-12): backend trả 403 với message riêng — hiện
-   * nút gửi lại mail xác thực thay vì chỉ báo lỗi đăng nhập chung.
-   */
   const needsVerification = login.isError && /chưa được xác thực/i.test(login.error.message)
 
   const onSubmit = (values: LoginForm) => {
@@ -71,7 +61,6 @@ export function LoginPage() {
     })
   }
 
-  /** Lỗi server nhắc đúng một field thì đã gắn lên field đó, không lặp lại cuối form. */
   const formError =
     login.isError && !serverErrorField(login.error.message, LOGIN_FIELDS)
       ? login.error.message

@@ -1,25 +1,10 @@
 import type { PlaceCategory } from "@/features/places/types/place"
 
-/**
- * Placeholder tối giản cho địa điểm chưa có ảnh thật (quyết định D-050).
- *
- * Thay cho bộ ảnh minh hoạ theo nhóm loại hình: nền gradient trầm (token
- * theme, tự đổi theo sáng/tối), chữ cái đầu tên quán cỡ lớn và tên quán —
- * gọn, không tải file, không gây cảm giác đây là ảnh thật.
- */
-
 interface PlacePlaceholderProps {
-  /** Loại địa điểm — chỉ dùng cho nhãn đọc màn hình khi không có tên. */
   category?: PlaceCategory
-  /**
-   * Tên địa điểm — hiện chữ cái đầu + tên. Bỏ trống (ví dụ ảnh bìa hồ sơ)
-   * thì chỉ hiện nền gradient.
-   */
+
   name?: string
-  /**
-   * Mô tả cho trình đọc màn hình. Có nhãn (hoặc có tên) thì khung được công bố
-   * như một ảnh (`role="img"`); không có thì coi là trang trí.
-   */
+
   label?: string
 }
 

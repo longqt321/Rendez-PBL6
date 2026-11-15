@@ -7,23 +7,18 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Post } from "@/features/social/types/post"
 
-/**
- * Chiều cao skeleton luân phiên theo cột (260/320/380px) — khớp `imageHeight`
- * của fixture bài đăng, để skeleton không nhảy layout khi dữ liệu về.
- */
 const POST_SKELETON_HEIGHTS = ["h-65", "h-80", "h-95"] as const
 
 interface ProfilePostGridProps {
   posts: Post[]
   isPending: boolean
-  /** Lỗi tải — hiện thông báo + nút thử lại thay vì "chưa có bài" (gây hiểu nhầm). */
+
   isError?: boolean
   onRetry?: () => void
   emptyTitle: string
   emptyDescription: string
 }
 
-/** Lưới bài đăng 2 cột mobile / 3 cột PC — mỗi ô là ảnh với chiều cao riêng. */
 export function ProfilePostGrid({
   posts,
   isPending,

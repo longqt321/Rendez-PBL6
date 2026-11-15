@@ -4,7 +4,6 @@ import { placeSchema } from "@/features/places/types/place.schema"
 import { postSchema } from "@/features/social/types/post.schema"
 import { pageSchema } from "@/types/api-schema"
 
-/** Response hợp lệ phải qua được safeParse — không sinh thông điệp lỗi. */
 describe("checkApiContract", () => {
   it("response hợp lệ → không lỗi", () => {
     const place = {
@@ -130,7 +129,6 @@ describe("checkApiContract", () => {
   })
 })
 
-/** Schema suy từ type phải khớp: pageSchema(Post) parse được Post thật. */
 describe("schema khớp type domain", () => {
   it("pageSchema(postSchema) khớp Page<Post>", () => {
     const page = pageSchema(postSchema)

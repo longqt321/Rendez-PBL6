@@ -5,7 +5,6 @@ export function profileQueryKey(handle: string) {
   return ["users", handle] as const
 }
 
-/** Hồ sơ công khai theo handle. */
 export function useProfile(handle: string) {
   return useQuery({
     queryKey: profileQueryKey(handle),

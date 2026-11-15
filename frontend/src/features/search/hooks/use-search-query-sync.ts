@@ -3,28 +3,13 @@ import { useLocation, useNavigate, useSearchParams } from "react-router"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { FILTER_SHARED_PATHS } from "@/components/layout/nav-items"
 
-/**
- * Đồng bộ ô tìm kiếm duy nhất ở topbar với `?q=` của `/search`.
- *
- * - Ở `/search`: gõ → ghi `?q=` sau 300 ms (`replace`) để kết quả cập nhật liền,
- *   không làm rối lịch sử.
- * - Ở trang khác: không tự ghi URL; chỉ điều hướng khi bấm Enter.
- * - Xoá hết từ khoá khi đang ở `/search` → về `/discover`, vì trang tìm kiếm
- *   không còn gì để hiển thị.
- *
- * `lastWritten` giữ giá trị cuối cùng hook này tự ghi vào URL, nhờ đó phân biệt
- * "URL đổi vì mình vừa ghi" (bỏ qua) với "URL đổi từ bên ngoài" (nạp lại ô nhập).
- */
 export function useSearchQuerySync() {
   const navigate = useNavigate()
   const location = useLocation()
   const [params, setParams] = useSearchParams()
 
   const isSearchPage = location.pathname === "/search"
-  /**
-   * `/discover` và `/map` dùng chung `?q=` làm từ khoá lọc — ô tìm kiếm ở topbar
-   * phải hiện đúng từ khoá đó, nếu không người dùng thấy ô trống dù kết quả đang lọc.
-   */
+
   const isFilterPage = FILTER_SHARED_PATHS.includes(location.pathname)
   const urlQuery = isSearchPage || isFilterPage ? (params.get("q") ?? "") : ""
 

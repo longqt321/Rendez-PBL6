@@ -2,14 +2,6 @@ import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { formatInitials } from "./profile"
 
-/**
- * Truy vấn bình luận (A7.6) — lồng 1 cấp, xoá mềm.
- *
- * Trả PHẲNG: cha kèm reply ngay sau cha (reply theo thời gian tăng dần) —
- * client không tự ghép cây (A6.7). `replyTo` do server suy ra từ cha, kể cả
- * cha đã xoá mềm → `replyTo: null`.
- */
-
 export interface CommentRow {
   id: string
   post_id: string
@@ -51,15 +43,12 @@ export function toCommentDto(row: CommentRow, viewerId: string | null) {
 
 export type CommentDto = ReturnType<typeof toCommentDto>
 
-/** Cách sắp xếp bình luận cấp 1 — khớp mock (`sort=new|top`). */
 export type CommentSort = "new" | "top"
 
-/** Chuẩn hoá `?sort=` — giá trị lạ coi như "new" (mock cũng vậy). */
 export function parseCommentSort(raw: string | undefined): CommentSort {
   return raw === "top" ? "top" : "new"
 }
 
-/** SELECT dùng chung cho list + find — tên cột snake_case như SELECT. */
 function selectComments(viewerId: string | null): Prisma.Sql {
   const viewer = Prisma.sql`${viewerId}::uuid`
   return Prisma.sql`

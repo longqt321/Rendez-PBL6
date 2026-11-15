@@ -13,7 +13,6 @@ interface ReviewItemProps {
   onDelete?: (review: Review) => void
 }
 
-/** Một đánh giá trong danh sách — chỉ hiển thị; nút sửa/xoá chỉ nhận khi `isMine`. */
 export function ReviewItem({ review, onEdit, onDelete }: ReviewItemProps) {
   return (
     <Item

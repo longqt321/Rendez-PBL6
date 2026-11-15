@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { getRecentlyViewedIds, recordPlaceView, RECENTLY_VIEWED_LIMIT } from "./recently-viewed"
 
-/**
- * jsdom cung cấp localStorage thật cho mỗi file test — xoá sạch trước mỗi test
- * để các case không nhìn thấy lịch sử của nhau.
- */
 beforeEach(() => {
   localStorage.clear()
 })

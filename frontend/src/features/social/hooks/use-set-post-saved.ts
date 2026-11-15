@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { setPostSaved } from "../api/set-post-saved"
 import { patchPostInCache } from "./patch-post-in-cache"
 
-/** Lưu / bỏ lưu bài đăng — optimistic như `useSetPostLiked`. */
 export function useSetPostSaved() {
   const queryClient = useQueryClient()
 

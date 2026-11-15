@@ -23,12 +23,6 @@ const forgotSchema = z.object({
 
 type ForgotForm = z.infer<typeof forgotSchema>
 
-/**
- * Trang quên mật khẩu — `/forgot-password`.
- *
- * Server luôn trả thành công dù email có tồn tại hay không (chống dò email),
- * nên UI cũng luôn hiện thông báo trung tính sau khi gửi.
- */
 export function ForgotPasswordPage() {
   const forgot = useForgotPassword()
   useAuthPageTitle("Quên mật khẩu")

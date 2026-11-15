@@ -2,31 +2,20 @@ import { api } from "@/lib/axios"
 import type { Page } from "@/types/api"
 import type { Place, PlaceCategory } from "../types/place"
 
-/** Kiểu sắp xếp của `/discover` — khớp hợp đồng `GET /places` (sort/lat/lng). */
 export type DiscoverSort = "newest" | "rating" | "distance"
 
 export interface DiscoverFilters {
   category: PlaceCategory | "all"
-  /** `"all"` = không lọc quận (khi gọi API thì bỏ trống tham số). */
+
   district?: string
   query: string
-  /**
-   * Mức giá tối đa của cá nhân (1–3). Phòng lọc nhóm có `priceMax` riêng và
-   * LUÔN thắng filter cá nhân (xem `placesQueryParams`).
-   */
+
   priceMax?: 1 | 2 | 3
-  /** Kiểu sắp xếp — bỏ trống = `newest`. */
+
   sort?: DiscoverSort
-  /**
-   * Toạ độ người dùng cho `sort=distance`. Chỉ gửi khi có vị trí; server thiếu
-   * toạ độ sẽ rơi về `newest` (không lỗi).
-   */
+
   coords?: { lat: number; lng: number }
-  /**
-   * Ràng buộc của phòng lọc nhóm — server lọc trước khi phân trang nên kết quả
-   * của mọi thành viên giống hệt nhau. Giá trị nhiều phần tử phân tách bằng
-   * dấu phẩy; bỏ trống khi không có phòng.
-   */
+
   room?: {
     categories: PlaceCategory[]
     excludedCategories: PlaceCategory[]
@@ -41,11 +30,6 @@ export interface DiscoverFilters {
 const joinList = (values: string[]): string | undefined =>
   values.length > 0 ? values.join(",") : undefined
 
-/**
- * Dựng query params server từ bộ lọc — nguồn duy nhất cho cả danh sách lưới
- * (`getPlaces`) lẫn bản đồ (`getMapPlaces`) nên hai màn hình không bao giờ lệch
- * cách quy đổi bộ lọc (đặc biệt là ràng buộc phòng).
- */
 export function placesQueryParams(filters: DiscoverFilters) {
   const room = filters.room
   return {
@@ -76,11 +60,6 @@ export function placesQueryParams(filters: DiscoverFilters) {
   }
 }
 
-/**
- * `GET /places` — danh sách địa điểm đã được duyệt lên /discover.
- *
- * Server lo việc lọc và phân trang; client chỉ chuyền lại `cursor` mà server trả về.
- */
 export async function getPlaces(
   filters: DiscoverFilters,
   cursor: string | null,

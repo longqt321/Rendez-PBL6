@@ -6,38 +6,25 @@ import { detectPlaceSuggestions } from "./suggestions-job"
 import { maintainInteractionPartitions } from "./event-retention"
 import { refreshAffinityCache } from "./affinity"
 
-/**
- * Hàng đợi pg-boss (K6, L4) — chạy trên chính Postgres, không thêm hạ tầng.
- *
- * Queue `place-detect` chạy cron 5 phút để phát hiện địa điểm cho bài chưa gắn
- * (A7.2); sau khi tạo bài, route đẩy thêm một job cho riêng bài đó để độ trễ
- * thấp. Retry có backoff + dead letter queue; khai báo queue MỘT LẦN lúc khởi
- * động (idempotent), không tạo queue trong request handler.
- *
- * Queue `daily-picks` riêng (nghiệp vụ khác, cron riêng — cách pg-boss dùng):
- * tính 3 quán "Gợi ý hôm nay" lúc 00:05 Asia/Ho_Chi_Minh — chạy ngay sau mốc
- * đổi ngày để cả ngày đều có picks (chạy muộn hơn sẽ có khung giờ rỗng mỗi sáng).
- */
-
 const QUEUE = "place-detect"
 const DEAD_LETTER_QUEUE = "place-detect-dlq"
-/** Cron 5 phút — khớp A7.2. */
+
 const CRON = "*/5 * * * *"
 
 const DAILY_PICKS_QUEUE = "daily-picks"
 const DAILY_PICKS_DLQ = "daily-picks-dlq"
-/** 00:05 Asia/Ho_Chi_Minh — ngay sau mốc đổi ngày. */
+
 const DAILY_PICKS_CRON = "5 0 * * *"
 const DAILY_PICKS_TIME_ZONE = "Asia/Ho_Chi_Minh"
 
 const EVENT_RETENTION_QUEUE = "event-retention"
 const EVENT_RETENTION_DLQ = "event-retention-dlq"
-/** 04:00 mỗi ngày — giờ thấp điểm, không tranh việc với cron 5 phút. */
+
 const EVENT_RETENTION_CRON = "0 4 * * *"
 
 const AFFINITY_QUEUE = "refresh-affinity"
 const AFFINITY_DLQ = "refresh-affinity-dlq"
-/** 03:30 mỗi ngày — trước event-retention (04:00) để tính trên partition còn đủ. */
+
 const AFFINITY_CRON = "30 3 * * *"
 
 let boss: PgBoss | null = null
@@ -131,7 +118,6 @@ export async function startQueue(): Promise<void> {
   logger.info({ queue: QUEUE, cron: CRON }, "pg-boss đã khởi động")
 }
 
-/** Đẩy job cho một bài vừa tạo — lỗi queue không được làm hỏng request. */
 export async function enqueuePlaceDetect(postId: string): Promise<void> {
   if (!boss) return
   try {

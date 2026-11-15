@@ -10,23 +10,6 @@ import { AuthLayout } from "../components/auth-layout"
 import { useSendVerificationEmail } from "../hooks/use-send-verification-email"
 import { mapAuthErrorMessage } from "../lib/auth-error-messages"
 
-/**
- * Trang nhận kết quả xác thực email — `/verify-email`.
- *
- * Link trong mail trỏ tới API (`/api/v1/auth/verify-email?token=…`) — API xác
- * thực xong redirect về đây. `callbackURL` trong mail là
- * `/verify-email?verified=1` (hằng `VERIFY_EMAIL_CALLBACK_PATH` ở backend):
- * thành công giữ nguyên `verified=1`; lỗi thì API nối thêm `?error=CODE`
- * (`redirectOnError` trong `dist/api/routes/email-verification.mjs`).
- *
- * Vì sao cần `verified=1`: trước đây trang coi "không có ?error=" là thành công
- * nên mở `/verify-email` trực tiếp (không có token) hay link token sai đều hiện
- * "Xác thực thành công" — trạng thái giả (V1-03/V6-06).
- *
- * Trang không tự gọi API: việc xác thực đã xong ở phía server trước khi redirect.
- */
-
-/** Mã lỗi better-auth → câu tiếng Việt — dùng chung bảng map của app. */
 function errorMessage(code: string): string {
   const mapped = mapAuthErrorMessage({ message: code, code })
   // Mã lạ: `mapAuthErrorMessage` trả lại chính mã — thay bằng câu chung.

@@ -18,7 +18,7 @@ import { ReviewDeleteDialog } from "./review-delete-dialog"
 
 interface ReviewFormProps {
   placeId: string
-  /** Đánh giá hiện có của người dùng (nếu đã đánh giá) — có thì form ở chế độ sửa. */
+
   myReview: Review | null
   authorInitials: string
   onDone?: () => void

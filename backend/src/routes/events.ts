@@ -26,7 +26,7 @@ const eventSchema = z.object({
   query: z.string().max(200).optional(),
   context: z.record(z.string(), z.unknown()).optional(),
   sessionId: z.string().max(64).optional(),
-  /** Guest id do FE sinh (localStorage), hash/opaque — không PII. */
+
   anonId: z.string().min(8).max(64).optional(),
 })
 
@@ -34,11 +34,6 @@ const batchSchema = z.object({
   events: z.array(eventSchema).min(1).max(20),
 })
 
-/**
- * Dedupe 5 phút: key = actor|eventType|placeId|postId. Không chia bucket thời
- * gian — bucket làm key đổi ở ranh giới nên event lặp vẫn lọt; TTL trên Map là
- * đủ và đúng nghĩa "cùng một tương tác trong 5 phút chỉ ghi một lần".
- */
 const DEDUPE_TTL_MS = 5 * 60 * 1000
 const seen = new Map<string, number>()
 

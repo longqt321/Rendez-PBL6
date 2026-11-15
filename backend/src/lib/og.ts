@@ -3,42 +3,26 @@ import { env } from "../env"
 import type { PlaceDto } from "./places"
 import type { PostDto } from "./posts"
 
-/**
- * Dựng HTML meta Open Graph cho bot preview (Facebook/Zalo/Messenger…).
- *
- * nginx sniff User-Agent rồi proxy 2 route `/discover/:id`, `/post/:id` sang
- * API; người dùng thường vẫn nhận SPA tĩnh như cũ. Meta trả cho bot là ĐÚNG nội
- * dung thật của trang (tên quán, caption, ảnh thật) — không phải cloaking.
- *
- * Escape HTML: dùng tagged template `html` của `hono/html` cho MỌI giá trị nội
- * suy từ DB — không nối chuỗi, không `raw()`. Ảnh phải qua whitelist scheme
- * (`https://`, `APP_ORIGIN`, đường dẫn nội bộ `/`); scheme lạ rơi về ảnh mặc định.
- *
- * CSP `default-src 'none'` của `secureHeaders` (app.ts) áp cho cả route này là
- * chủ ý: HTML preview chỉ có thẻ meta, không tải JS/CSS/font nào.
- */
-
 const DEFAULT_TITLE = "Rendez — Ăn gì hôm nay ở Đà Nẵng?"
 const DEFAULT_DESCRIPTION =
   "Khám phá, lưu và chia sẻ địa điểm ăn uống ở Đà Nẵng cùng bạn bè — bản đồ, phòng đi ăn và bỏ phiếu chọn quán."
-/** Ảnh mặc định nằm trong `frontend/public/` — phục vụ bởi container web. */
+
 const FALLBACK_IMAGE = "/og-image.png"
-/** Độ dài description hiển thị gọn trong preview mạng xã hội. */
+
 const MAX_DESCRIPTION_LENGTH = 160
 
 export interface OgMeta {
   title: string
   description: string
-  /** Đường dẫn công khai của trang (`/discover/<id>`, `/post/<id>`). */
+
   path: string
-  /** URL ảnh gốc (có thể tương đối) — `null` = dùng ảnh mặc định. */
+
   image: string | null
   type: "website" | "article"
-  /** Epoch giây của `updatedAt`/`createdAt` — gắn `?v=` để bust cache preview. */
+
   version: number
 }
 
-/** Meta mặc định khi quán/bài không tồn tại hoặc chưa publish (status 404). */
 export function notFoundOgMeta(path: string): OgMeta {
   return {
     title: DEFAULT_TITLE,
@@ -50,10 +34,6 @@ export function notFoundOgMeta(path: string): OgMeta {
   }
 }
 
-/**
- * Cắt caption về tối đa `max` ký tự, cắt tại khoảng trắng gần nhất và không
- * cắt đôi cặp surrogate (emoji) — preview không bị nửa ký tự lỗi.
- */
 export function truncateDescription(text: string, max = MAX_DESCRIPTION_LENGTH): string {
   if (text.length <= max) return text
 

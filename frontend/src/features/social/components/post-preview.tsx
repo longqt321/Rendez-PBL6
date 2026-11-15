@@ -7,16 +7,10 @@ import type { Post } from "../types/post"
 
 interface PostPreviewProps {
   post: Post
-  /** Vùng hành động (thích/lưu…) đặt dưới phần chú thích — khác nhau giữa thread và trang chi tiết. */
+
   footer?: React.ReactNode
 }
 
-/**
- * Khối xem trước một bài đăng: ảnh, tác giả, chú thích, địa điểm.
- *
- * Dùng chung cho cột trái của thread bình luận và trang `/post/:id` để hai nơi
- * không phải tự dựng lại cùng một bố cục.
- */
 export function PostPreview({ post, footer }: PostPreviewProps) {
   const place = post.place
 

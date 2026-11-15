@@ -1,13 +1,6 @@
 import { useEffect } from "react"
 import { useMe } from "@/features/profile/hooks/use-me"
 
-/**
- * Tiêu đề tab cho trang xác thực.
- *
- * Các trang `/login`, `/register`… nằm NGOÀI `AppShell` nên không đi qua
- * `useDocumentTitle` của shell (trước đây tab giữ tiêu đề cũ "Khám phá · Rendez"
- * hoặc mặc định "Rendez" — V1-09).
- */
 export function useAuthPageTitle(title: string): void {
   useEffect(() => {
     document.title = `${title} · Rendez`

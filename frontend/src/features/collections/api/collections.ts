@@ -3,17 +3,11 @@ import { idempotencyHeaders } from "@/lib/idempotency"
 import type { Page } from "@/types/api"
 import type { Collection, CollectionSummary } from "../types/collection"
 
-/** `GET /collections` — bộ sưu tập của người dùng hiện tại, mới tạo trước. */
 export async function getCollections(params?: { placeId?: string }): Promise<CollectionSummary[]> {
   const { data } = await api.get<Page<CollectionSummary>>("/collections", { params })
   return data.items
 }
 
-/**
- * `GET /users/:handle/collections` — bộ sưu tập công khai của một người.
- *
- * Server lo việc ẩn bộ sưu tập riêng tư; client chỉ render đúng những gì nhận được.
- */
 export async function getUserCollections(handle: string): Promise<CollectionSummary[]> {
   const { data } = await api.get<Page<CollectionSummary>>(`/users/${handle}/collections`)
   return data.items

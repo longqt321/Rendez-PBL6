@@ -22,7 +22,6 @@ import { PasswordInput } from "../components/password-input"
 import { safeRedirectPath } from "../lib/safe-redirect"
 import { serverErrorField } from "../lib/server-field-error"
 
-/** Khớp validate backend (`registerInputSchema` trong `routes/auth.ts`). */
 const registerSchema = z
   .object({
     name: z.string().trim().min(2, "Tên cần ít nhất 2 ký tự").max(40, "Tên tối đa 40 ký tự"),
@@ -55,12 +54,6 @@ type RegisterForm = z.infer<typeof registerSchema>
 
 const REGISTER_FIELDS = ["name", "email", "handle", "password"] as const
 
-/**
- * Trang đăng ký — `/register`.
- *
- * Đăng ký xong backend KHÔNG tạo phiên (bắt buộc xác thực email, 2026-11-12):
- * hiện màn hình "kiểm tra email" kèm nút gửi lại mail và lối sang đăng nhập.
- */
 export function RegisterPage() {
   const [searchParams] = useSearchParams()
   const next = safeRedirectPath(searchParams.get("next"))
@@ -68,7 +61,6 @@ export function RegisterPage() {
   const resend = useSendVerificationEmail()
   useAuthPageTitle("Tạo tài khoản")
 
-  /** Email vừa đăng ký — dùng cho nút "gửi lại mail xác thực". */
   const [sentTo, setSentTo] = useState<string | null>(null)
 
   const form = useForm<RegisterForm>({
@@ -96,7 +88,6 @@ export function RegisterPage() {
     )
   }
 
-  /** Lỗi server nhắc đúng một field thì đã gắn lên field đó, không lặp lại cuối form. */
   const formError =
     register.isError && !serverErrorField(register.error.message, REGISTER_FIELDS)
       ? register.error.message

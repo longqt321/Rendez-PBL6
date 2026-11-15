@@ -4,13 +4,6 @@ import type { Page } from "@/types/api"
 import type { Place } from "../types/place"
 import { getRecommendedPlaces } from "./get-recommended-places"
 
-/**
- * Test hàm api chạy với `api.get` bị spy — không mock module, interceptor của
- * axios thật vẫn chạy. Endpoint `/places/recommended` do backend bổ sung sau
- * nên hợp đồng test là: 200 có items / 200 rỗng / lỗi (404…) → `[]`.
- */
-
-/** Fixture tối thiểu khớp `Place` — test chỉ quan tâm số lượng và id. */
 function makePlace(id: string): Place {
   return {
     id,

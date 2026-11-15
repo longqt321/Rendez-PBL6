@@ -1,14 +1,20 @@
-# PROGRESS — phiên 2026-11-11
+# PROGRESS — Cập nhật phiên 2026-11-15
 
-## Trạng thái hiện tại (19:00): **corpus 344 POI đã seed, sẵn sàng kiểm thử**
+## Trạng thái hiện tại: **Dataset 358 địa điểm mới đã seed, Docker multi-stage & auto-seed sẵn sàng**
 
-| Hạng mục | Trạng thái |
-|---|---|
-| Pipeline data (fetch → build → seed) | ✅ Xong, đã xác minh bằng output thật |
-| Corpus | **344 POI**, 86 curated, 258 OSM |
-| Docs | ✅ Đã đồng bộ |
-| Backend / Frontend | ✅ Đã đồng bộ (category map, seed) |
-| **Phần AI search** | ⬜ **Chưa bắt đầu** |
+| Hạng mục | Trạng thái | Ghi chú |
+|---|---|---|
+| Dataset chính thức | ✅ **358 địa điểm** | Thu thập từ web search, làm giàu bởi Go tool `dn-places-enricher`, geocoded đầy đủ 6 quận |
+| Archive dữ liệu cũ | ✅ Đã lưu trữ | `backend/data/archive/places-expanded-344-legacy.json` |
+| Cơ sở dữ liệu live | ✅ **358 POI** | Seed thành công vào PostgreSQL 17 (volume `pgdata2`), 0 stale places |
+| Docker Multi-stage | ✅ Đã tối ưu | Stage `migrator` tự động deploy migration & seed nếu DB mới, bảo mật context `.dockerignore` |
+| Typecheck & Test | ✅ **100% Pass** | Monorepo typecheck pass, Frontend 37 files (170/170 tests), Backend og tests (11/11 tests) |
+
+---
+
+# Lịch sử — phiên 2026-11-11
+
+## Trạng thái (19:00): **corpus 344 POI đã seed, sẵn sàng kiểm thử**
 
 ---
 
@@ -290,3 +296,27 @@ là một chuỗi bakery; tầng lọc tên chỉ loại 0.22%.
 - Điểm yếu mới lộ ra: `typo` 0.28, `friends-district` 0.4, `streetfood-district` 0.2,
   `english` 0.689 — đã ghi BACKLOG.
 - Sửa thêm: header checksum dùng đúng số bộ (`v${SET}`) thay vì hardcode v1.
+
+## Sửa thuật toán Search & Recommendation — D-067 (2026-11-15)
+
+- **Bối cảnh:** người dùng báo search tệ ("P Coffee" hạng 14; "trinh ca phe" mất
+  "Trình Cà Phê"). Đo trên DB thật: `place_embeddings` = 0/358, `reviews` = 7,
+  `affinity_cache` = 2 → dense nhánh chết, cold-start rec xếp theo alphabet.
+- **Phát hiện phụ (quan trọng):** bộ eval v1/v2 đã **lỗi thời** sau D-066 — nhãn trỏ
+  343 place id của dataset cũ, **0/343 còn trong DB** → eval v2 cho điểm 0 cho mọi
+  phương pháp. Bảng "mốc so sánh" 0.873 trong EVAL-PROTOCOL là số lịch sử, không
+  phản ánh code hiện tại.
+- **Tạo bộ eval v3** (127 query = 112 v2 + 15 query entity), nhãn entity suy từ tên
+  venue qua `expectName`; harness `eval-search.ts` bổ sung chấm nhãn theo tên.
+- **Search:** thêm nhánh exact-name (weight 5) + prefix-name (weight 3); field-boost
+  lexical (name ×3); entity routing bằng chính kết quả nhánh name (khớp tên → tắt
+  structured); dense rỗng không còn làm mất hybrid.
+- **Recommendation cold-start:** điểm composite (Bayesian rating + verified/tier +
+  độ đầy đủ + độ mới), nhiễu theo giờ, cap 3 venue/category. KHÔNG dùng trường
+  `quality` (không có trong DB).
+- **Kết quả eval v3 (127 query):** P@5 0.360→0.384, P@10 0.347→0.370,
+  R@10 0.302→0.331, nDCG 0.298→0.339, MRR 0.312→0.358. Nhóm entity P@5
+  0.383→0.437; MRR các query tên quán từng sai (P Coffee, Trình Cà Phê, trinh ca
+  phe, Acacia Café, Bánh mì Bà Lan, Bánh mì Ông Tý) đều 0.00–0.50 → **1.00**.
+  Không nhóm/variant nào giảm điểm.
+- **Test:** `places.test.ts` + `search-synonyms.test.ts` 43/43 pass, typecheck sạch.

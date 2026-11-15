@@ -2,22 +2,13 @@ import { useEffect, useRef } from "react"
 import { useIntersectionObserver } from "@uidotdev/usehooks"
 
 interface UseInfiniteScrollOptions {
-  /** Còn dữ liệu để tải hay không */
   hasNextPage: boolean
   isFetchingNextPage: boolean
   fetchNextPage: () => void
-  /** Khoảng cách (px) trước khi chạm đáy thì bắt đầu tải */
+
   rootMargin?: string
 }
 
-/**
- * Tự động gọi `fetchNextPage` khi phần tử sentinel lọt vào viewport.
- *
- * Dùng `useIntersectionObserver` của `@uidotdev/usehooks` (đã cài) thay vì tự
- * dựng `IntersectionObserver` + `useEffect`.
- *
- * Trả về callback ref — gắn vào một `<div>` ở cuối danh sách.
- */
 export function useInfiniteScroll({
   hasNextPage,
   isFetchingNextPage,

@@ -3,10 +3,6 @@ import { placeSchema } from "@rendez/schema"
 import { useDailyPicks } from "./use-daily-picks"
 import { renderWithQuery, waitForQuery } from "@/test/query-test-utils"
 
-/**
- * Test hook dữ liệu chạy qua mock adapter (axios thật + `mockAdapter`) — không
- * mock module api. Mock trả 3 quán công khai đầu tiên của fixture cold-start.
- */
 describe("useDailyPicks", () => {
   it("trả 3 gợi ý khớp shape Place + reason", async () => {
     const { result } = renderWithQuery(() => useDailyPicks())

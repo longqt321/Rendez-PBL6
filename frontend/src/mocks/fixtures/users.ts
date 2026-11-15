@@ -1,15 +1,6 @@
 import type { UserProfile } from "@/features/profile/types/profile"
 import type { Author } from "@/features/social/types/post"
 
-/**
- * Hồ sơ người dùng (demo).
- *
- * Cold-start chỉ có tài khoản demo của chính mình (quyết định D-049); ba hồ sơ
- * "u-lan"/"u-hieu"/"u-mai" là dữ liệu mẫu tối thiểu để tab "Người" và khối
- * "Gợi ý theo dõi" có nội dung để kiểm thử. `setFollow` của mock server sửa
- * trực tiếp các object này (cùng tham chiếu với `db.users`), nên trạng thái
- * "Đang theo dõi" luôn nhất quán giữa kết quả tìm kiếm và gợi ý.
- */
 export const MOCK_USERS: Record<string, UserProfile> = {
   "u-me": {
     id: "u-me",
@@ -81,13 +72,6 @@ export const MOCK_USERS: Record<string, UserProfile> = {
   },
 }
 
-/** Người dùng đang đăng nhập. */
 export const ME = MOCK_USERS["u-me"]
 
-/**
- * Tác giả dạng rút gọn cho bài đăng / bình luận.
- *
- * `Author` là tập con các trường của `UserProfile`, nên suy thẳng từ `MOCK_USERS`
- * thay vì khai báo lại.
- */
 export const CURRENT_USER: Author = ME

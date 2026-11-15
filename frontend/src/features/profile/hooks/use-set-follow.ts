@@ -8,17 +8,6 @@ import type { Page } from "@/types/api"
 import type { UserProfile } from "../types/profile"
 import type { UserSuggestion } from "@rendez/schema"
 
-/**
- * Theo dõi / bỏ theo dõi.
- *
- * Optimistic: đổi `followedByMe` và đếm ngay trong cache, rollback nếu lỗi.
- *
- * Patch BA shape cache riêng (duyệt theo từng shape, không gộp một hàm chung —
- * pattern `patch-post-in-cache.ts`):
- * - Hồ sơ: object `UserProfile` theo handle.
- * - Kết quả tìm kiếm: `InfiniteData<Page<UserProfile>>` (key `["users","search",q]`).
- * - Gợi ý theo dõi: mảng `UserSuggestion[]` (key `["users","suggestions"]`).
- */
 export function useSetFollow(handle: string) {
   const queryClient = useQueryClient()
 

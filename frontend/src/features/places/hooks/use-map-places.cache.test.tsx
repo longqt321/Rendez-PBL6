@@ -4,13 +4,6 @@ import type { ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { MapBounds } from "../api/get-map-places"
 
-/**
- * Cache bản đồ (D-052): kéo qua kéo lại một vùng KHÔNG được gọi lại API.
- *
- * Đếm số lần gọi `getMapPlaces` (mock adapter chặn trước network nên không đếm
- * được request HTTP — phải đếm ở tầng API). Mock có signature đầy đủ nên
- * `mock.calls` được type kiểm tra, không cần cast.
- */
 vi.mock("../api/get-map-places", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../api/get-map-places")>()
   return { ...actual, getMapPlaces: vi.fn(actual.getMapPlaces) }

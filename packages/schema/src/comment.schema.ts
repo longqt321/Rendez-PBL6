@@ -2,7 +2,6 @@ import { authorSchema } from "./post.schema"
 import { z } from "zod"
 import type { Comment } from "./types/comment"
 
-/** Bình luận của một bài đăng — khớp `Comment`. */
 export const commentSchema = z.object({
   id: z.string(),
   postId: z.string(),

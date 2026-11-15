@@ -5,23 +5,12 @@ import { env } from "@/lib/env"
 import { getAnonId } from "@/lib/events"
 import { safeRedirectPath } from "@/features/auth/lib/safe-redirect"
 
-/**
- * Cờ tuỳ biến gắn vào request: request CẦN đăng nhập, nên 401 từ nó là dấu hiệu
- * mất phiên (interceptor điều hướng `/login?next=`). Mặc định không đặt → 401
- * của GET được coi là phép dò và bỏ qua im lặng.
- */
 declare module "axios" {
   export interface AxiosRequestConfig {
     authRequired?: boolean
   }
 }
 
-/**
- * Lỗi API đã chuẩn hoá — UI chỉ cần đọc `message`/`status`.
- *
- * Backend trả `{ message }` hoặc `{ detail }` (FastAPI) đều được nhận; lỗi mạng
- * (timeout, mất kết nối) có `status = 0`.
- */
 export class ApiError extends Error {
   readonly status: number
   readonly code?: string
@@ -34,26 +23,14 @@ export class ApiError extends Error {
   }
 }
 
-/**
- * Lỗi 404 từ server — tài nguyên không tồn tại (khác lỗi mạng/5xx, nơi thử lại
- * có ích). Trang chi tiết dùng để chọn "không tìm thấy" hay "không tải được".
- */
 export function isNotFoundError(error: unknown): boolean {
   return error instanceof ApiError && error.status === 404
 }
 
-/**
- * Lỗi 401 từ server — chưa đăng nhập. Không retry: phiên không tự khôi phục,
- * thử lại cũng chỉ 401; UI dùng để hiện trạng thái "chưa đăng nhập".
- */
 export function isUnauthorizedError(error: unknown): boolean {
   return error instanceof ApiError && error.status === 401
 }
 
-/**
- * Chuyển mọi lỗi axios thành `ApiError` (hoặc giữ nguyên `Error` khác).
- * Tách khỏi interceptor để test được mà không cần gọi mạng.
- */
 export function toApiError(error: unknown): Error {
   if (!axios.isAxiosError(error)) {
     return error instanceof Error ? error : new Error("Lỗi không xác định")
@@ -74,10 +51,6 @@ export function toApiError(error: unknown): Error {
   return new ApiError(message, status, code)
 }
 
-/**
- * Adapter mock chỉ nạp ở dev (`VITE_ENABLE_MOCKS !== "false"`). Điều kiện dùng
- * `import.meta.env.DEV` trực tiếp để Vite loại `src/mocks/` khỏi bundle production.
- */
 const mockAdapter =
   import.meta.env.DEV && env.enableMocks ? (await import("@/mocks/server")).mockAdapter : undefined
 
@@ -88,43 +61,22 @@ export const api = axios.create({
   },
   timeout: 10_000,
   adapter: mockAdapter,
-  /**
-   * Cookie phiên + cookie guest token phòng (`rendez_room_<code>`) phải đi kèm.
-   * Cùng origin qua proxy Vite thì trình duyệt tự gửi; bật `withCredentials` để
-   * trường hợp `VITE_API_BASE_URL` là origin khác cũng hoạt động đúng.
-   */
+
   withCredentials: true,
 })
 
-/**
- * Header `x-anon-id` — id ẩn danh của guest (cùng id BE dùng cho `POST /events`)
- * để BE ghi được tín hiệu search/detail-view của người CHƯA đăng nhập (P0).
- * Logic đọc/tạo id nằm ở `lib/events.ts` (một nguồn duy nhất); lỗi storage bị
- * nuốt trong đó — không bao giờ chặn request.
- */
 api.interceptors.request.use((config) => {
   const id = getAnonId()
   if (id) config.headers.set("x-anon-id", id)
   return config
 })
 
-/** Tên kênh đồng bộ phiên giữa các tab (V8-07). */
 export const SESSION_CHANNEL = "rendez-session"
 
 interface SessionMessage {
   type: "logout"
 }
 
-/**
- * Điều hướng khi mất phiên. Tách thành object để test thay được (jsdom không
- * điều hướng thật) và để chỉnh độ trễ.
- *
- * Điều hướng CẢ TRANG thay vì SPA: cache query trong bộ nhớ bị xoá sạch nên
- * (a) không còn dữ liệu riêng tư của phiên cũ, (b) trang đăng nhập không thấy
- * `["me"]` cũ rồi đá ngược người dùng về trang cũ. `delayMs` để toast kịp hiện
- * trước khi trang tải lại — nếu điều hướng ngay, thông báo "Phiên đăng nhập đã
- * hết hạn" biến mất trước khi người dùng đọc được.
- */
 export const sessionRedirect = {
   delayMs: 1_200,
   to(url: string): void {
@@ -132,12 +84,6 @@ export const sessionRedirect = {
   },
 }
 
-/**
- * URL trang đăng nhập kèm `?next=` để quay lại đúng chỗ sau khi đăng nhập.
- *
- * Dùng lại `safeRedirectPath()` (nguồn duy nhất cho logic chống open redirect —
- * chặn cả `/\evil.com` lẫn ký tự điều khiển) thay vì tự viết bộ lọc yếu hơn.
- */
 export function loginRedirectUrl(currentPath: string): string {
   const safe = safeRedirectPath(currentPath) ?? "/"
   return `/login?next=${encodeURIComponent(safe)}`
@@ -170,32 +116,20 @@ export function isSessionProbeRequest(config: {
   return false
 }
 
-/** Request kết thúc phiên (đăng xuất / xoá tài khoản) — cần báo các tab khác. */
 export function isSessionEndingRequest(config: { url?: string; method?: string }): boolean {
   const path = (config.url ?? "").split("?")[0] ?? ""
   const method = (config.method ?? "").toLowerCase()
   return method === "delete" && (path === "/session" || path === "/me")
 }
 
-/** Đã xử lý mất phiên trong tab này chưa — tránh toast/điều hướng lặp. */
 let sessionExpiryHandled = false
 
-/**
- * Tab này có phiên đăng nhập đang hoạt động hay không — cập nhật từ kết quả
- * `GET /me` (200 → có; 401 → không). Dùng để chọn đúng thông điệp khi mutation
- * nhận 401: khách chưa đăng nhập cần lời MỜI, người dùng hết hạn cần lời BÁO.
- */
 let sessionActive = false
 
-/** Ghi nhận trạng thái phiên sau một phép dò `GET /me`. */
 export function noteSessionState(active: boolean): void {
   sessionActive = active
 }
 
-/**
- * Kênh BroadcastChannel dùng chung; `null` khi môi trường không hỗ trợ
- * (trình duyệt cũ, jsdom bản không có) — khi đó chỉ mất tính năng đồng bộ tab.
- */
 let sessionChannel: BroadcastChannel | null = null
 
 function getSessionChannel(): BroadcastChannel | null {
@@ -204,11 +138,6 @@ function getSessionChannel(): BroadcastChannel | null {
   return sessionChannel
 }
 
-/**
- * Báo mất phiên rồi đưa người dùng về trang đăng nhập (giữ đường quay lại).
- *
- * Đang ở trang đăng nhập rồi thì không điều hướng nữa (tránh vòng lặp).
- */
 function clearSessionAndRedirect(notice: { title: string; description: string }) {
   toast.error(notice.title, { description: notice.description })
 
@@ -219,10 +148,6 @@ function clearSessionAndRedirect(notice: { title: string; description: string })
   window.setTimeout(() => sessionRedirect.to(target), sessionRedirect.delayMs)
 }
 
-/**
- * Tab khác vừa đăng xuất → tab này cũng mất phiên (cookie dùng chung). Không
- * làm gì thì UI vẫn hiện đang đăng nhập và mọi thao tác 401 im lặng (V8-07).
- */
 function handleRemoteLogout() {
   clearSessionAndRedirect({
     title: "Bạn đã đăng xuất ở tab khác",
@@ -235,24 +160,12 @@ getSessionChannel()?.addEventListener("message", (event: MessageEvent) => {
   handleRemoteLogout()
 })
 
-/** `GET /me` — phép dò phiên; kết quả của nó cập nhật `sessionActive`. */
 function isMeProbe(config: { url?: string; method?: string }): boolean {
   return (
     (config.url ?? "").split("?")[0] === "/me" && (config.method ?? "get").toLowerCase() === "get"
   )
 }
 
-/**
- * 401 từ một request người dùng chủ động (like/follow/comment…) → không có
- * phiên hợp lệ. Trước đây lỗi bị nuốt: nút like bật lại mà không nói gì, người
- * dùng tưởng app hỏng (V6-02, V8-07).
- *
- * Thông điệp chia hai trường hợp: khách chưa đăng nhập được MỜI đăng nhập
- * (V6-03), người dùng vừa mất phiên được BÁO hết hạn.
- *
- * Trả về `ApiError` đã chuẩn hoá để interceptor reject tiếp — nhờ vậy hàm này
- * test được trực tiếp, không phải giả lập mạng.
- */
 export function handleUnauthorizedResponse(error: unknown): Error {
   const apiError = toApiError(error)
   const config = axios.isAxiosError(error) ? error.config : undefined
@@ -281,7 +194,6 @@ export function handleUnauthorizedResponse(error: unknown): Error {
   return apiError
 }
 
-/** Đăng nhập lại thành công → cho phép bắt lỗi 401 của phiên mới. */
 export function resetSessionExpiry(): void {
   sessionExpiryHandled = false
   sessionActive = false
@@ -307,11 +219,6 @@ api.interceptors.response.use(
   (error: unknown) => Promise.reject(handleUnauthorizedResponse(error)),
 )
 
-/**
- * Contract test response khi mock bật: đối chiếu `response.data` với schema zod
- * của endpoint. Lệch hợp đồng chỉ `console.error` — không throw, không làm vỡ UI.
- * Chỉ đăng ký khi mock bật (dev) để production không chịu chi phí kiểm tra.
- */
 if (env.enableMocks) {
   api.interceptors.response.use((response) => {
     const method = (response.config.method ?? "get").toUpperCase()

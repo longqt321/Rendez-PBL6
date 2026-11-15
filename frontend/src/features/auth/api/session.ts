@@ -1,20 +1,6 @@
 import { api } from "@/lib/axios"
 import type { UserProfile } from "@/features/profile/types/profile"
 
-/**
- * API xác thực (Phase G1 — vòng đời tài khoản).
- *
- * - `POST /session` — đăng nhập email + password, trả hồ sơ + Set-Cookie.
- * - `POST /register` — đăng ký; từ 2026-11-12 bắt buộc xác thực email nên trả
- *   `{requiresVerification: true}` (201) và KHÔNG có phiên.
- * - `POST /auth/send-verification-email` — gửi lại mail xác thực (luôn 200 để
- *   không lộ email có tồn tại).
- * - `POST /auth/request-password-reset` — luôn trả `{status:true}` (không lộ
- *   email tồn tại); token reset được gửi qua email (dev: log ở backend).
- * - `POST /auth/reset-password` — đặt lại mật khẩu bằng token.
- * - `DELETE /me` — xoá tài khoản (xoá mềm ở backend) rồi đăng xuất.
- */
-
 export interface LoginInput {
   email: string
   password: string
@@ -32,7 +18,6 @@ export interface ResetPasswordInput {
   newPassword: string
 }
 
-/** Đăng ký xong phải xác thực email — backend không tạo phiên. */
 export interface RegisterResult {
   requiresVerification: true
 }
@@ -47,13 +32,6 @@ export async function register(input: RegisterInput): Promise<RegisterResult> {
   return data
 }
 
-/**
- * Gửi lại mail xác thực email. `callbackURL` trỏ về trang `/verify-email` của
- * FE kèm `verified=1` — cùng hằng `VERIFY_EMAIL_CALLBACK_PATH` ở backend; backend
- * nối thêm `?error=` khi token sai/hết hạn. Nhờ `verified=1`, trang phân biệt
- * được "vừa xác thực xong" với "mở trang trực tiếp" (V1-03).
- * Server luôn trả `{status:true}` để không lộ email có tồn tại hay không.
- */
 export async function sendVerificationEmail(email: string): Promise<void> {
   await api.post("/auth/send-verification-email", {
     email,

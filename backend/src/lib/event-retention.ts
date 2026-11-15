@@ -1,20 +1,8 @@
 import { prisma } from "./prisma"
 import { logger } from "./logger"
 
-/**
- * Bảo trì partition cho `interaction_events` (P0):
- * - Tạo trước partition tháng T+1 (để event ghi đúng mốc đổi tháng không rơi
- *   vào `_default` — bảng `_default` chỉ là lưới an toàn, không để phình).
- * - Xoá partition cũ hơn RETENTION_DAYS ngày (event chỉ là tín hiệu rec, không
- *   phải dữ liệu pháp lý — giữ 180 ngày là đủ và giữ DB gọn).
- *
- * Idempotent: chạy lại không lỗi (`IF NOT EXISTS` / kiểm tra trước khi drop).
- * Lỗi chỉ log — job cron ngày mai sẽ thử lại, không được làm rớt tiến trình.
- */
-
 const RETENTION_DAYS = 180
 
-/** `2026-11` → `interaction_events_2026_11`. */
 function partitionName(year: number, month: number): string {
   return `interaction_events_${year}_${String(month).padStart(2, "0")}`
 }

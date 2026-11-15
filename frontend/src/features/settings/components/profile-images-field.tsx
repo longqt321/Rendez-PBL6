@@ -18,18 +18,6 @@ import { isMediaUnavailableError, requestMediaUpload, uploadMediaFile } from "@/
 import { useUpdateMe } from "@/features/profile/hooks/use-update-me"
 import type { UserProfile } from "@/features/profile/types/profile"
 
-/**
- * Tải ảnh đại diện + ảnh bìa hồ sơ (T7.1).
- *
- * Chọn file → xin URL PUT đã ký (`POST /media`, thư mục `avatars`/`covers`) →
- * PUT thẳng lên R2 → `PATCH /me` ghi URL mới. Lưu ngay khi chọn ảnh (không đợi
- * bấm "Lưu thay đổi") vì form chỉ quản lý trường chữ — ảnh là URL do media
- * service cấp, lưu trễ sẽ phải giữ file trong state qua các lần submit.
- *
- * R2 chưa cấu hình (503): tắt cả hai nút và giữ placeholder — cùng suy giảm
- * nhẹ nhàng với nút upload ảnh của composer.
- */
-
 type ImageKind = "avatar" | "cover"
 
 const FOLDER_BY_KIND = { avatar: "avatars", cover: "covers" } as const

@@ -3,7 +3,6 @@ import type { Page } from "@/types/api"
 import type { Post } from "@/features/social/types/post"
 import type { Place } from "../types/place"
 
-/** `GET /places/:id` — chi tiết địa điểm (server chỉ trả địa điểm đã publish). */
 export async function getPlace(id: string, signal?: AbortSignal): Promise<Place> {
   const { data } = await api.get<Place>(`/places/${id}`, { signal })
   return data

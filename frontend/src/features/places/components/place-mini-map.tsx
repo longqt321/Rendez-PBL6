@@ -16,13 +16,6 @@ interface PlaceMiniMapProps {
   place: Place
 }
 
-/**
- * Pin của lucide `MapPin` dạng chuỗi SVG.
- *
- * Leaflet `divIcon` chỉ nhận chuỗi HTML nên không render JSX được ở đây; dựng
- * chuỗi SVG thủ công (cùng cách `places-map.tsx` làm) thay vì kéo `react-dom/server`
- * vào bundle trình duyệt. `currentColor` ăn theo `text-primary-foreground` của khung.
- */
 const MAP_PIN_SVG = `
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"

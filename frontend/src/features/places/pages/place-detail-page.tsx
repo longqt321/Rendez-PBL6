@@ -41,7 +41,6 @@ import { ReportPlaceDialog } from "../components/report-place-dialog"
 import { formatLocation } from "../lib/format-location"
 import { recordPlaceView } from "../lib/recently-viewed"
 
-/** Trang chi tiết địa điểm — `/discover/:id`. */
 export function PlaceDetailPage() {
   const { id } = useParams()
   const placeId = id ?? ""

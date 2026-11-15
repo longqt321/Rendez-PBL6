@@ -1,15 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { isOpenNow } from "./opening-hours"
 
-/**
- * Mốc kiểm thử: tuần 2024-01-01 (Thứ hai) → 2024-01-07 (Chủ nhật).
- * Việt Nam = UTC+7, nên `T03:30:00Z` = 10:30 sáng thứ hai tại VN.
- */
 const MON = "2024-01-01" // Thứ hai
 const SAT = "2024-01-06" // Thứ bảy
 const SUN = "2024-01-07" // Chủ nhật
 
-/** Giờ Việt Nam (HH:MM) trong ngày `day` → Date tương ứng. */
 function vn(day: string, time: string): Date {
   return new Date(`${day}T${time}:00+07:00`)
 }

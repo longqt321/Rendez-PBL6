@@ -10,13 +10,6 @@ import { userSuggestionsQueryKey } from "@/features/search/hooks/use-user-sugges
 import { profileQueryKey } from "./use-profile"
 import { useSetFollow } from "./use-set-follow"
 
-/**
- * `useSetFollow` phải patch đúng CẢ HAI shape cache ngoài hồ sơ:
- * - kết quả tìm kiếm: `InfiniteData<Page<UserProfile>>` (key `["users","search",q]`);
- * - gợi ý theo dõi: mảng `UserSuggestion[]` (key `["users","suggestions"]`).
- *
- * Không mock module api — mutation đi qua mock adapter thật.
- */
 const PROFILE: UserProfile = {
   id: "u-lan",
   name: "Lan Anh",

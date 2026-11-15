@@ -27,12 +27,6 @@ const resetSchema = z
 
 type ResetForm = z.infer<typeof resetSchema>
 
-/**
- * Trang đặt lại mật khẩu — `/reset-password?token=…`.
- *
- * Link trong email trỏ thẳng về đây kèm `token`; thiếu token thì không cho gửi
- * (tránh gọi API chắc chắn lỗi).
- */
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token") ?? ""

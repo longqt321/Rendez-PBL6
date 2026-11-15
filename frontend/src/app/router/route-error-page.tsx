@@ -11,12 +11,6 @@ import {
 } from "@/components/ui/empty"
 import { formatNumber } from "@/lib/format"
 
-/**
- * Trang lỗi của router — hiển thị khi một route con ném lỗi.
- *
- * `errorElement` thay thế chính element của layout route nên trang này tự căn
- * giữa màn hình, không dựa vào `AppShell`.
- */
 export function RouteErrorPage() {
   const error = useRouteError()
   const status = isRouteErrorResponse(error) ? error.status : null

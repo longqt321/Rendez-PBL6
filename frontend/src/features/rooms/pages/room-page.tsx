@@ -25,7 +25,6 @@ import { useRooms, type RoomStatus } from "../hooks/use-rooms"
 import { ProposalForm } from "../components/proposal-form"
 import { ProposalList } from "../components/proposal-list"
 
-/** Trang phòng lọc nhóm — `/rooms/:code`. */
 export function RoomPage() {
   const { code = "" } = useParams<{ code: string }>()
   const [joinName, setJoinName] = useState("")
@@ -43,7 +42,6 @@ export function RoomPage() {
   const room = getRoom(code)
   const status: RoomStatus = room ? "ready" : getRoomStatus(code)
 
-  /** Tham gia bằng tên nhập tay — báo đúng nguyên nhân khi không vào được. */
   async function handleJoin() {
     const name = joinName.trim()
     if (!name) return

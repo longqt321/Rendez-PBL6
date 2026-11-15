@@ -6,15 +6,6 @@ import type {
 import type { NotificationKind } from "./notifications"
 import type { PlaceCategory, PlaceReportReason, RoomProposalField } from "@rendez/schema"
 
-/**
- * Quy đổi enum giữa API (gạch nối, khớp `@rendez/schema`) và Prisma (gạch dưới).
- *
- * MỘT NƠI DUY NHẤT: trước đây mỗi file tự viết `replace(/_/g,"-")` hoặc tệ hơn là
- * `as never` — sai với enum có `@map` (`wrong-info`, `priceMax`) và không ai phát hiện
- * cho tới khi gặp giá trị thật.
- */
-
-/** `street_food` (Prisma) ↔ `street-food` (API) — bảng tường minh, không cast tự do. */
 const CATEGORY_TO_PRISMA: Record<PlaceCategory, string> = {
   cafe: "cafe",
   restaurant: "restaurant",

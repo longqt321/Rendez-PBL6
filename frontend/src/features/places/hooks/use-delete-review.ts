@@ -3,13 +3,6 @@ import { toast } from "sonner"
 import { deleteReview } from "../api/delete-review"
 import type { Review } from "../types/review"
 
-/**
- * Xoá đánh giá của chính người dùng hiện tại tại địa điểm.
- *
- * Invalidate các queries liên quan:
- * - `["places", placeId, "reviews"]`
- * - `["places", placeId]` (và tiền tố `["places"]` để làm mới danh sách / rating quán).
- */
 export function useDeleteReview(placeId: string) {
   const queryClient = useQueryClient()
 

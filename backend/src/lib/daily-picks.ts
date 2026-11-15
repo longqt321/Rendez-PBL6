@@ -3,44 +3,20 @@ import { prisma } from "./prisma"
 import { toPlaceDto } from "./places"
 import { isOpenNow } from "./opening-hours"
 
-/**
- * "Gợi ý hôm nay" (Daily Picks) — thuật toán chọn 3 quán mỗi ngày.
- *
- * Tách hai phần:
- * - `selectDailyPicks` thuần hàm (không DB) — test unit chạy trực tiếp.
- * - `pickDailyPicks` / `getDailyPicks` — đọc/ghi DB, job pg-boss gọi.
- *
- * Tín hiệu chỉ dựa trên dữ liệu có thật (category, district, review_count,
- * created_at, lịch sử picks) — không dùng rating/tags vì dataset cold-start
- * gần như không có (1 review, 0 tag). Đa dạng là tiêu chí chính khi điểm gần
- * như bằng nhau.
- */
-
-/** Mốc đổi ngày — server luôn tính theo Asia/Ho_Chi_Minh, một chỗ duy nhất. */
 const TIME_ZONE = "Asia/Ho_Chi_Minh"
 
-/** Số slot mỗi ngày — khớp `dailyPicksSchema` (`max(3)`). */
 export const DAILY_PICKS_COUNT = 3
 
-/** Cửa sổ không lặp quán — 7 ngày gần nhất. */
 const RECENT_DAYS = 7
 
-/** Quán thêm trong 30 ngày tính tới `pickDate` được cộng điểm "quán mới". */
 const NEW_PLACE_DAYS = 30
 
-/** Ngưỡng "Nhiều đánh giá" khi dựng `reason`. */
 const REASON_REVIEW_THRESHOLD = 5
 
-/**
- * Ngày hôm nay theo Asia/Ho_Chi_Minh — `en-CA` cho đúng `YYYY-MM-DD`.
- * Job truyền `pickDate` vào thuật toán, KHÔNG dùng `now()` trong tính toán
- * nên retry cùng ngày luôn ra cùng kết quả.
- */
 export function getPickDate(now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(now)
 }
 
-/** Ngày cách `days` trước `pickDate` (định dạng `YYYY-MM-DD`). */
 function shiftDate(pickDate: string, days: number): string {
   const time = Date.parse(`${pickDate}T00:00:00Z`) + days * 86_400_000
   return new Date(time).toISOString().slice(0, 10)

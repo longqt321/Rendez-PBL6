@@ -28,7 +28,6 @@ interface CommentItemProps {
   onDelete: (comment: Comment) => void
 }
 
-/** Một mục bình luận — dựng bằng `Item` theo đúng mục đích thiết kế của nó. */
 export function CommentItem({ comment, onReply, onDelete }: CommentItemProps) {
   const setLiked = useSetCommentLiked(comment.postId)
 

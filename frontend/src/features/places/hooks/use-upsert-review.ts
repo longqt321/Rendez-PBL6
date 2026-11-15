@@ -3,12 +3,6 @@ import { upsertReview } from "../api/upsert-review"
 import type { UpsertReviewInput } from "../api/upsert-review"
 import type { Review } from "../types/review"
 
-/**
- * Gửi đánh giá (tạo mới hoặc ghi đè đánh giá cũ của chính người dùng).
- *
- * Server là nguồn sự thật — sau khi xác nhận, thay bản ghi của người dùng trong
- * cache rồi làm mới lại query để đảm bảo khớp.
- */
 export function useUpsertReview(placeId: string) {
   const queryClient = useQueryClient()
 

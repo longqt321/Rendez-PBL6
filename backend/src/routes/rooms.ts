@@ -31,24 +31,10 @@ import {
 import { getViewer, requireAuth } from "../lib/session"
 import { requireUuid } from "../lib/cursor"
 
-/**
- * Route phòng lọc nhóm (Phase 6) — hợp đồng mới, xem `@rendez/schema` room.
- *
- * Danh tính: session user (chủ phòng) hoặc guest token trong cookie HttpOnly
- * theo phòng (`lib/room-token.ts`). KHÔNG đọc `memberId`/`actorId` từ query hay
- * body — mọi mutation đi qua `resolveRoomActor`.
- *
- * SSE chỉ phát `event: room-updated` + `{version}` (trung tính); client tự
- * `GET /rooms/:code` để nhận DTO tính `isMe` theo đúng danh tính của nó.
- */
-
-/** Base32 Crockford: 0-9, A-H, J, K, M, N, P-T, V-Z (bỏ I, L, O, U). */
 const CODE_RE = /^[0-9A-HJKMNP-TV-Z]{6}$/
 
-/** Nhịp heartbeat giữ kết nối SSE sống qua proxy (15s). */
 const SSE_HEARTBEAT_MS = 15_000
 
-/** Giới hạn đọc/join theo IP — dùng bảng rate_limits sẵn có (như /session). */
 const READ_RATE_LIMIT = { scope: "rooms-read", limit: 240, windowSeconds: 60 } as const
 const JOIN_RATE_LIMIT = { scope: "rooms-join", limit: 20, windowSeconds: 60 } as const
 
@@ -64,7 +50,6 @@ async function loadRoom(code: string): Promise<RoomWithRelations> {
   return room
 }
 
-/** DTO cho một người xem cụ thể — `isMe` tính từ session hoặc guest token. */
 async function roomDtoFor(c: Context<AppEnv>, room: RoomWithRelations): Promise<Room> {
   const viewer = await getViewer(c)
   const actor = tryResolveRoomActor(c, room, viewer)
@@ -74,7 +59,6 @@ async function roomDtoFor(c: Context<AppEnv>, room: RoomWithRelations): Promise<
 export function createRoomsRouter() {
   const router = new Hono<AppEnv>()
 
-  /** Tạo phòng — chủ phòng là thành viên đầu tiên (cần đăng nhập). */
   router.post("/rooms", requireAuth, async (c) => {
     const raw = await c.req.json().catch(() => ({}))
     const parsed = createRoomInputSchema.safeParse(raw ?? {})
@@ -92,14 +76,12 @@ export function createRoomsRouter() {
     return c.json({ ...dto, guestToken }, 201)
   })
 
-  /** Trạng thái phòng — công khai với ai có mã (guest được). */
   router.get("/rooms/:code", rateLimit(READ_RATE_LIMIT), async (c) => {
     const code = requireCode(c.req.param("code"))
     const room = await loadRoom(code)
     return c.json(await roomDtoFor(c, room))
   })
 
-  /** Tham gia bằng tên hiển thị — token cũ khớp thì idempotent, trùng tên → 409. */
   router.post("/rooms/:code/join", rateLimit(JOIN_RATE_LIMIT), async (c) => {
     const code = requireCode(c.req.param("code"))
     const room = await loadRoom(code)
@@ -124,7 +106,6 @@ export function createRoomsRouter() {
     })
   })
 
-  /** Thêm đề xuất — chỉ thành viên của phòng (danh tính từ session/cookie). */
   router.post("/rooms/:code/proposals", async (c) => {
     const code = requireCode(c.req.param("code"))
     const room = await loadRoom(code)
@@ -146,11 +127,6 @@ export function createRoomsRouter() {
     return c.json(await roomDtoFor(c, updated), 201)
   })
 
-  /**
-   * Áp đề xuất vào filter chung — CAS bằng `updateMany where status=open`:
-   * hai request song song chỉ một thắng, request còn lại nhận 409.
-   * Quyền: tác giả đề xuất hoặc chủ phòng (D-057).
-   */
   router.post("/rooms/:code/proposals/:proposalId/apply", async (c) => {
     const code = requireCode(c.req.param("code"))
     const proposalId = c.req.param("proposalId") ?? ""
@@ -200,7 +176,6 @@ export function createRoomsRouter() {
     })
   })
 
-  /** Bỏ qua đề xuất — không đổi filter; quyền như apply. */
   router.post("/rooms/:code/proposals/:proposalId/dismiss", async (c) => {
     const code = requireCode(c.req.param("code"))
     const proposalId = c.req.param("proposalId") ?? ""
@@ -225,12 +200,6 @@ export function createRoomsRouter() {
     return c.json(await roomDtoFor(c, updated))
   })
 
-  /**
-   * Rời phòng — xoá thành viên và mọi đề xuất của họ (khớp `leaveRoom`).
-   *
-   * Actor lấy từ session/cookie; mỗi thành viên chỉ rời được chính mình, chủ
-   * phòng (theo `room.ownerId`) được xoá người khác. Rời chính mình → xoá cookie.
-   */
   router.delete("/rooms/:code/members/:memberId", async (c) => {
     const code = requireCode(c.req.param("code"))
     const room = await loadRoom(code)
@@ -255,13 +224,6 @@ export function createRoomsRouter() {
     return c.json(toRoomDto(updated, viewer?.id ?? null, null))
   })
 
-  /**
-   * SSE — báo "phòng vừa đổi" bằng `event: room-updated` + `{version}`.
-   *
-   * Payload trung tính: không `isMe`, không `memberId`/token của actor. Client
-   * nhận event rồi refetch `GET /rooms/:code` (server tính `isMe` per-viewer).
-   * Subscribe TRƯỚC khi đọc version để không mất update giữa hai bước.
-   */
   router.get("/rooms/:code/events", async (c) => {
     const code = requireCode(c.req.param("code"))
     await loadRoom(code)

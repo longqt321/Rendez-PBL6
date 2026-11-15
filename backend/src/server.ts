@@ -11,20 +11,13 @@ await startQueue()
 
 const server = Bun.serve({
   port: env.PORT,
-  /**
-   * Truyền địa chỉ socket vào app để rate limit biết request đến từ đâu — chỉ
-   * khi đó `X-Forwarded-For` mới được tin (và chỉ từ `TRUSTED_PROXIES`).
-   */
+
   fetch: (request, bunServer) =>
     app.fetch(request, { remoteAddress: bunServer.requestIP(request)?.address ?? "" }),
 })
 
 logger.info({ port: server.port, env: env.NODE_ENV }, "API đã khởi động")
 
-/**
- * Graceful shutdown (G5): ngừng nhận request mới → đóng queue → đóng Prisma.
- * Thứ tự quan trọng: job đang chạy phải dùng được Prisma trước khi nó đóng.
- */
 let shuttingDown = false
 async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return

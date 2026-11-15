@@ -4,14 +4,6 @@ import { toApiCategory } from "./enums"
 import type { Cursor } from "./cursor"
 import { formatInitials } from "./profile"
 
-/**
- * Truy vấn bài đăng (Phase 3) — feed, chi tiết, like/save, gắn địa điểm.
- *
- * Đếm `likeCount`/`commentCount` bằng COUNT thật (D3), `likedByMe`/`savedByMe`
- * bằng EXISTS theo user đang gọi — một query, không N+1. Địa điểm được nhúng
- * kèm `PlaceSummary` (A6.1) để FE không phải tra cứu id.
- */
-
 export type PostFilter = "all" | "unplaced" | "mine" | "saved" | "following"
 
 export interface PostRow {
@@ -34,7 +26,7 @@ export interface PostRow {
   comment_count: number
   liked_by_me: boolean
   saved_by_me: boolean
-  /** `json_agg` của `post_images.url` — pg trả mảng string, đôi khi là chuỗi JSON. */
+
   images: string[] | string | null
 }
 
@@ -72,7 +64,6 @@ export function toPostDto(row: PostRow) {
   }
 }
 
-/** `json_agg` có thể về dạng mảng hoặc chuỗi JSON tuỳ driver — chuẩn hoá một chỗ. */
 function parseImages(value: PostRow["images"]): string[] {
   if (Array.isArray(value)) {
     return value.filter((url): url is string => typeof url === "string")
@@ -92,7 +83,6 @@ function parseImages(value: PostRow["images"]): string[] {
 
 export type PostDto = ReturnType<typeof toPostDto>
 
-/** SELECT dùng chung — tham số `viewerId` (null khi chưa đăng nhập). */
 function selectPosts(viewerId: string | null): Prisma.Sql {
   const viewer = Prisma.sql`${viewerId}::uuid`
   return Prisma.sql`

@@ -13,12 +13,6 @@ import { PostCard } from "@/features/social/components/post-card"
 import { useCollections } from "@/features/collections/hooks/use-collection"
 import { CollectionCard } from "@/features/collections/components/collection-card"
 
-/**
- * Trang bài đã lưu — `/saved`.
- *
- * Tab "Bài đăng" dùng `GET /posts?filter=saved` (server lọc `savedByMe`). Tab "Bộ sưu
- * tập" là danh sách bộ sưu tập của người dùng (xem chi tiết tại /collections/:id).
- */
 export function SavedPage() {
   const {
     posts: savedPosts,

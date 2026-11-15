@@ -7,22 +7,10 @@ import { type OgMeta, notFoundOgMeta, placeOgMeta, postOgMeta, renderOgHtml } fr
 import { findPublicPlaceWithVersion } from "../lib/places"
 import { findPost } from "../lib/posts"
 
-/**
- * HTML meta Open Graph cho bot preview (Facebook/Zalo/Messenger…).
- *
- * nginx sniff User-Agent rồi proxy `/discover/:id` và `/post/:id` sang đây khi
- * UA khớp bot; người dùng thường không bao giờ chạm route này. Trả HTML chỉ có
- * thẻ meta + `Cache-Control` để CDN phía trước (nếu có) cache đúng.
- *
- * Không requireAuth, không rate limit — đọc dữ liệu công khai, nginx đã cache
- * trước API (xem tài liệu thiết kế, mục 5).
- */
-
 const CACHE_SECONDS = 600
-/** 404 cache ngắn để quán mới publish sớm có preview đúng. */
+
 const NOT_FOUND_CACHE_SECONDS = 60
 
-/** Trả HTML meta kèm Cache-Control; 404 dùng meta mặc định của site. */
 async function ogResponse(c: Context<AppEnv>, meta: OgMeta, status: 200 | 404): Promise<Response> {
   const maxAge = status === 200 ? CACHE_SECONDS : NOT_FOUND_CACHE_SECONDS
   return c.html(await renderOgHtml(meta), status, { "Cache-Control": `public, max-age=${maxAge}` })

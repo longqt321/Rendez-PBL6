@@ -26,7 +26,6 @@ interface CommentThreadProps {
   onOpenChange: (open: boolean) => void
 }
 
-/** Thread đầy đủ: PC dùng `Dialog` 2 cột, mobile dùng `Drawer` kéo xuống để đóng. */
 export function CommentThread({ post, open, onOpenChange }: CommentThreadProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)", { noSsr: true })
 

@@ -1,10 +1,3 @@
-/**
- * Ghép địa chỉ hiển thị từ `address` + `city` mà không lặp tên thành phố.
- *
- * Dữ liệu import có `address` đã chứa thành phố ở cuối ("52/8 Ông Ích Đường,
- * Cẩm Lệ, Đà Nẵng") hoặc trùng hẳn `city` ("Đà Nẵng") → nối thẳng sẽ thành
- * "…, Đà Nẵng, Đà Nẵng".
- */
 export function formatLocation(address: string, city: string): string {
   const parts = address
     .split(",")

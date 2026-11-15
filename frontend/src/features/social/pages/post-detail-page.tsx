@@ -26,12 +26,6 @@ import { useSetPostSaved } from "../hooks/use-set-post-saved"
 import { CommentThreadPanel } from "../components/comment-thread-panel"
 import { PostPreview } from "../components/post-preview"
 
-/**
- * Trang chi tiết một bài đăng — `/post/:id`.
- *
- * PC chia 2 cột: bài đăng bên trái, bình luận bên phải (cuộn riêng). Mobile xếp dọc
- * vì đây là một trang, không phải overlay — không dùng Drawer như thread bình luận.
- */
 export function PostDetailPage() {
   const { id } = useParams()
   const postId = id ?? ""

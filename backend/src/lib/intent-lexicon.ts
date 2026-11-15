@@ -1,26 +1,12 @@
-/**
- * Rule intent parse: cụm từ tiếng Việt → thuộc tính có cấu trúc của venue.
- *
- * Vì sao cần: dense retrieval giỏi "ý định mơ hồ" nhưng kém khi người dùng nêu
- * ĐÚNG một thuộc tính có trong dữ liệu ("quán chay", "hải sản", "ở Sơn Trà").
- * Nhánh structured biến các cụm đó thành điều kiện tag/category/district, đưa
- * vào RRF như nhánh thứ ba — không hard filter (tránh 0 kết quả khi nhận sai).
- *
- * Từ vựng lấy từ chính dữ liệu: 23 tag và 5 category đang có trong DB + cách
- * người Việt hay gọi. KHÔNG chứa câu truy vấn cụ thể của bộ eval — thêm từ mới
- * phải dựa trên từ vựng dữ liệu, không dựa trên một query đang chấm điểm.
- */
-
 export interface IntentAttributes {
   tags: string[]
   categories: string[]
   districts: string[]
-  /** Người dùng cần quán mở 24/7 / ăn khuya. */
+
   alwaysOpen: boolean
 }
 
 interface LexiconEntry {
-  /** Cụm so khớp trên chuỗi đã chuẩn hoá (không dấu, chữ thường). */
   phrases: string[]
   tags?: string[]
   categories?: string[]
@@ -28,7 +14,6 @@ interface LexiconEntry {
   alwaysOpen?: boolean
 }
 
-/** Tên quận trong dữ liệu — dùng cho cả lexicon lẫn kiểm tra đầu vào. */
 export const DISTRICT_NAMES = [
   "Hải Châu",
   "Ngũ Hành Sơn",
@@ -163,7 +148,6 @@ const LEXICON: LexiconEntry[] = [
   { phrases: ["coffee shop", "coffeehouse"], categories: ["cafe"] },
 ]
 
-/** Bỏ dấu tiếng Việt + lowercase, giữ khoảng trắng — khớp với `normalizeSearchText`. */
 function fold(text: string): string {
   return text
     .normalize("NFD")
@@ -175,10 +159,6 @@ function fold(text: string): string {
     .trim()
 }
 
-/**
- * Khớp cụm theo RANH GIỚI TỪ trên chuỗi đã fold, không phải `includes` thô:
- * "bar" không được khớp trong "barbecue", "cafe" không khớp trong "cafeteria".
- */
 function hasPhrase(folded: string, phrase: string): boolean {
   let from = 0
   for (;;) {
@@ -191,10 +171,6 @@ function hasPhrase(folded: string, phrase: string): boolean {
   }
 }
 
-/**
- * Trích thuộc tính có cấu trúc từ câu truy vấn. Trả mảng rỗng khi không khớp
- * (nhánh structured bị bỏ qua, hybrid giữ nguyên hành vi cũ).
- */
 export function detectIntentAttributes(query: string): IntentAttributes {
   const folded = fold(query)
   const tags = new Set<string>()

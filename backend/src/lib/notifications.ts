@@ -5,13 +5,6 @@ import type { Cursor } from "./cursor"
 import { formatInitials } from "./profile"
 import { publishNotification } from "./notification-events"
 
-/**
- * Thông báo (A6.4) — payload JSONB theo `kind`, DTO là union 3 nhánh.
- *
- * `postPlaceId` của thông báo `place-suggestion` do server tính từ bài đăng
- * hiện tại (FE không tự tra cứu).
- */
-
 export type NotificationKind = "place-suggestion" | "like" | "comment" | "follow" | "system"
 
 interface ActorPayload {
@@ -41,11 +34,6 @@ export interface NotificationRow {
   post_place_id: string | null
 }
 
-/**
- * Ghi thông báo cho hành động like/comment/follow.
- *
- * Không tự thông báo cho chính mình (like bài của mình) — mock cũng không sinh.
- */
 export async function createActorNotification(params: {
   userId: string
   kind: "like" | "comment" | "follow"
@@ -103,7 +91,6 @@ export async function createSuggestionNotification(params: {
   return created.id
 }
 
-/** Chuyển dòng DB thành DTO đúng `notificationSchema`. */
 export function toNotificationDto(row: NotificationRow) {
   const base = {
     id: row.id,
@@ -144,7 +131,6 @@ export function toNotificationDto(row: NotificationRow) {
 
 export type NotificationDto = ReturnType<typeof toNotificationDto>
 
-/** SELECT dùng chung cho mọi cách đọc thông báo (trang, tất cả, theo id). */
 const SELECT_NOTIFICATIONS = Prisma.sql`
   SELECT n.id, n.type::text AS type, n.payload, n.read_at, n.created_at,
          p.place_id AS post_place_id
@@ -152,7 +138,6 @@ const SELECT_NOTIFICATIONS = Prisma.sql`
   LEFT JOIN posts p ON p.id = NULLIF(n.payload->>'postId', '')::uuid
 `
 
-/** Trang thông báo của một user, mới nhất trước. */
 export async function listNotifications(
   userId: string,
   cursor: Cursor | null,

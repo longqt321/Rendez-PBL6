@@ -2,13 +2,6 @@ import { useEffect, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import type { PageMeta } from "@/types/api"
 
-/**
- * Overlay dev: request list gần nhất + metadata server (`meta`).
- *
- * Bật/tắt bằng Ctrl+Shift+D. Chỉ tồn tại ở dev — bản PROD trả `null` ngay từ
- * component ngoài nên không có listener/hook nào chạy. Dữ liệu đọc thẳng từ
- * react-query cache (không gọi thêm API, không tự đo lại thời gian).
- */
 export function ApiDebugOverlay() {
   // `import.meta.env.PROD` được Vite thay bằng hằng số lúc build → nhánh này bị
   // tree-shake khỏi bundle production.
@@ -21,7 +14,6 @@ interface LatestRequest {
   meta: PageMeta
 }
 
-/** Nhãn endpoint từ query key `["places", category, district, query, …]`. */
 function describePlacesRequest(key: readonly unknown[]): string {
   const query = typeof key[3] === "string" ? key[3] : ""
   return query ? `GET /api/v1/places?q=${encodeURIComponent(query)}` : "GET /api/v1/places"

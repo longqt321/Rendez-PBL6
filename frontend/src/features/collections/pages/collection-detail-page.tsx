@@ -40,12 +40,11 @@ import { EditCollectionDialog } from "../components/edit-collection-dialog"
 
 interface CollectionPlaceItemProps {
   placeId: string
-  /** Chỉ chủ sở hữu mới có nút bỏ địa điểm khỏi bộ sưu tập. */
+
   canRemove: boolean
   collectionId: string
 }
 
-/** Một địa điểm trong bộ sưu tập — tra riêng qua cache địa điểm. */
 function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPlaceItemProps) {
   const { data: place, isPending } = usePlace(placeId)
   const setPlace = useSetCollectionPlace()

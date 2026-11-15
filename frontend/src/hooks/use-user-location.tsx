@@ -11,12 +11,6 @@ const GEOLOCATION_OPTIONS: PositionOptions = {
   enableHighAccuracy: true,
 }
 
-/**
- * Vị trí hiện tại của người dùng — chỉ hỏi quyền khi gọi `requestLocation()`.
- *
- * `locationGate` phải được render trong cây: nó vô hình, chỉ tồn tại để mount
- * `GeolocationWatcher` sau khi người dùng đã yêu cầu định vị.
- */
 export function useUserLocation() {
   const [requested, setRequested] = useState(false)
   const [geo, setGeo] = useState<GeolocationState | null>(null)

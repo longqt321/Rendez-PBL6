@@ -4,7 +4,6 @@ import { ProfileHeader } from "../components/profile-header"
 import { ProfileTabs } from "../components/profile-tabs"
 import { useMe } from "../hooks/use-me"
 
-/** Trang cá nhân của bản thân — `/profile`. */
 export function ProfilePage() {
   const { data: profile, isPending, isError, refetch } = useMe()
 

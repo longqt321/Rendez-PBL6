@@ -1,24 +1,12 @@
 import { createHash, createHmac } from "node:crypto"
 import { IMAGE_CONTENT_TYPES } from "@rendez/schema"
 
-/**
- * Presigned PUT cho Cloudflare R2 (S3-compatible) — T7.1.
- *
- * Tự cài SigV4 bằng `node:crypto` thay vì kéo `@aws-sdk/*` (không nằm trong
- * danh sách dependency đã chốt). Chỉ ký đúng một thứ cần thiết: URL PUT có hạn
- * để client tải ảnh thẳng lên R2, server không nhận file.
- *
- * Chưa xác minh với bucket thật (chưa có credentials) — xem REPORT.md mục
- * "CHƯA XÁC MINH". Thuật toán theo tài liệu AWS SigV4 cho presigned URL.
- */
-
 const ALGORITHM = "AWS4-HMAC-SHA256"
 const SERVICE = "s3"
-/** R2 dùng region `auto` cho mọi bucket. */
+
 const REGION = "auto"
 const UNSIGNED_PAYLOAD = "UNSIGNED-PAYLOAD"
 
-/** Mã hoá theo chuẩn AWS: encodeURIComponent + các ký tự `!'()*` phải mã hoá. */
 function awsUriEncode(value: string): string {
   return encodeURIComponent(value).replace(
     /[!'()*]/g,

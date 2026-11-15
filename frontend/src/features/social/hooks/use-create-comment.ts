@@ -3,12 +3,6 @@ import { createComment } from "../api/create-comment"
 import { patchPostInCache } from "./patch-post-in-cache"
 import type { Comment, CreateCommentInput } from "../types/comment"
 
-/**
- * Gửi bình luận mới.
- *
- * Sau khi server xác nhận: chèn bình luận vào đầu cache (sort=new) và tăng
- * `commentCount` của bài trong cache feed. Server vẫn là nguồn sự thật.
- */
 export function useCreateComment(postId: string) {
   const queryClient = useQueryClient()
 

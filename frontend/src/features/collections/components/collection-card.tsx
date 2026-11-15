@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { formatCount, formatRelativeTime } from "@/lib/format"
 import type { CollectionSummary } from "../types/collection"
 
-/** Thẻ bộ sưu tập trong lưới tab Bộ sưu tập — bấm mở chi tiết. */
 export function CollectionCard({ collection }: { collection: CollectionSummary }) {
   return (
     <Card className="relative gap-0 py-0">

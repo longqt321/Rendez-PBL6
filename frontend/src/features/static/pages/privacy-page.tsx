@@ -1,12 +1,6 @@
 import { Link } from "react-router"
 import { StaticPage, StaticSection } from "../components/static-page"
 
-/**
- * Trang Chính sách bảo mật — `/privacy`.
- *
- * Bản nháp mô tả đúng dữ liệu app đang thu thập (email, hồ sơ, ảnh, nội dung
- * công khai). Chủ dự án cần rà lại trước khi dùng cho production.
- */
 export function PrivacyPage() {
   return (
     <StaticPage

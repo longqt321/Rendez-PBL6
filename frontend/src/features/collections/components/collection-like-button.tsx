@@ -9,12 +9,6 @@ interface CollectionLikeButtonProps {
   collection: Collection
 }
 
-/**
- * Nút thả tim bộ sưu tập.
- *
- * Bộ sưu tập của chính mình thì chỉ hiện số tim (không bấm được) — server cũng
- * từ chối tự thả tim. Optimistic nên số đổi ngay khi bấm.
- */
 export function CollectionLikeButton({ collection }: CollectionLikeButtonProps) {
   const setLike = useSetCollectionLike(collection.id)
 

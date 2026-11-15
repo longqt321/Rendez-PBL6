@@ -5,63 +5,22 @@ export interface Cursor {
   id: string
 }
 
-/**
- * Cursor của `GET /places` — có **tag kiểu** (`kind`) để không trộn khoá giữa
- * các kiểu sắp xếp (`newest`/`rating`/`distance`, mục 3.2 của thiết kế):
- * - `newest`   → `newest|<created_at ISO>|<id>`
- * - `rating`   → `rating|<rating>|<review_count>|<created_at ISO>|<id>`
- * - `distance` → `distance|<km hoặc rỗng>|<id>` (rỗng = dòng cuối thiếu toạ độ)
- *
- * Cursor **cũ** (chỉ `created_at|id`, không tag) đọc thành `newest` — link và
- * phiên infinite-scroll đang mở không vỡ khi triển khai thay đổi này.
- *
- * Decode **sai** (base64 hỏng, thiếu phần, số không hữu hạn, id sai dạng) →
- * `null` để route trả 400 thay vì lặng lẽ trả trang đầu.
- *
- * NGOẠI LỆ có chủ đích: cursor decode ĐÚNG nhưng `kind` khác kiểu sắp xếp hiện
- * tại (người dùng đổi sort, hoặc link cũ mang cursor của sort khác) thì route
- * coi như **không có cursor** và trả trang đầu. Trả 400 ở đây sẽ làm vỡ trang
- * với một hành động hoàn toàn hợp lệ (đổi sort); trả trang đầu chỉ tốn một
- * request thừa. Nguyên tắc "không lặng lẽ" chỉ áp cho cursor decode SAI.
- */
 export type PlaceCursor =
   | { kind: "newest"; createdAt: Date; id: string }
   | { kind: "rating"; rating: number; reviewCount: number; createdAt: Date; id: string }
   | { kind: "distance"; distance: number | null; id: string }
 
-/** Kiểu sắp xếp hỗ trợ cho `GET /places` — trùng tên tag của `PlaceCursor`. */
 export type PlaceSort = PlaceCursor["kind"]
 
-/**
- * Id dạng slug: place dùng slug (`mirkocoffeechillbeer-493`), post/user dùng
- * uuid — nên chỉ kiểm "không rỗng, không khoảng trắng, độ dài hợp lý" thay vì
- * ép uuid (ép uuid sẽ làm cursor của places không decode được).
- *
- * Export để route kiểm `:id` của place dùng CÙNG một regex — trước đây
- * `routes/places.ts` khai lại y hệt, sửa một nơi quên nơi kia là lệch hợp đồng.
- */
 export const SLUG_ID_RE = /^[A-Za-z0-9_-]{1,120}$/
 
-/**
- * Id dạng uuid — bắt buộc cho cursor của tài nguyên lưu khoá chính uuid
- * (post, user, thông báo). Không kiểm thì `::uuid` trong SQL ném lỗi cast → 500
- * khi client sửa cursor.
- */
 export const UUID_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-/**
- * Kiểm `:id` dạng uuid trước khi đưa vào SQL (`::uuid`).
- *
- * Đặt ở đây (cạnh `UUID_ID_RE`) để route bài đăng và module OG dùng CÙNG một
- * cách kiểm — trước đây hàm này nằm riêng trong `routes/posts.ts`, copy sang
- * module khác là lệch hợp đồng lỗi (404 kèm message nào).
- */
 export function requireUuid(value: string, message: string, status: 403 | 404 = 404): string {
   if (!UUID_ID_RE.test(value)) throw new ApiError(status, message)
   return value
 }
 
-/** Số hữu hạn từ chuỗi cursor — `null` khi rỗng/không phải số. */
 function parseFiniteNumber(raw: string): number | null {
   if (raw === "") return null
   const value = Number(raw)

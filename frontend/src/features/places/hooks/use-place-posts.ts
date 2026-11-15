@@ -5,7 +5,6 @@ export function placePostsQueryKey(id: string) {
   return ["places", id, "posts"] as const
 }
 
-/** Bài đăng gắn địa điểm — phân trang cursor của server. */
 export function usePlacePosts(id: string) {
   return useInfiniteQuery({
     queryKey: placePostsQueryKey(id),

@@ -26,12 +26,6 @@ const FIELD_TABS: { value: RoomProposalField; label: string }[] = [
   { value: "keyword", label: "Từ khoá" },
 ]
 
-/**
- * Form đề xuất include/exclude của thành viên hiện tại.
- *
- * Không tự áp dụng — đề xuất rơi vào danh sách chung để cả nhóm thấy và quyết
- * định (nút Áp dụng nằm ở danh sách đề xuất), đúng mô hình "mỗi người đề xuất".
- */
 export function ProposalForm({ onSubmit }: ProposalFormProps) {
   const [kind, setKind] = useState<"include" | "exclude">("include")
   const [field, setField] = useState<RoomProposalField>("category")

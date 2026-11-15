@@ -1,12 +1,6 @@
 import { Link } from "react-router"
 import { StaticPage, StaticSection } from "../components/static-page"
 
-/**
- * Trang Trợ giúp — `/help`.
- *
- * Trả lời các câu hỏi người dùng mới gặp nhiều nhất; mỗi câu dẫn thẳng tới
- * trang liên quan thay vì chỉ giải thích suông.
- */
 export function HelpPage() {
   return (
     <StaticPage

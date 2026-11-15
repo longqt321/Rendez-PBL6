@@ -5,27 +5,8 @@ import type { AppEnv } from "../app"
 import { ApiError } from "./errors"
 import { prisma } from "./prisma"
 
-/**
- * Idempotency cho mutation quan trọng (K2).
- *
- * Theo IETF draft `Idempotency-Key` (và cách Stripe làm):
- * - Lần đầu: chèn hàng `pending` (nguyên tử bằng `ON CONFLICT DO NOTHING`),
- *   chạy handler, lưu response 2xx để replay.
- * - Cùng key + cùng payload khi hàng `completed` → trả lại đúng status/body cũ,
- *   kèm header `Idempotency-Replayed: true`.
- * - Cùng key nhưng payload khác → 422 (client lỗi, không phải server).
- * - Cùng key khi request trước còn đang xử lý (`pending`) → 409.
- * - Response 4xx ĐƯỢC lưu (kết quả tất định, key gắn với payload — giống
- *   Stripe/IETF); response 5xx KHÔNG lưu để client retry được.
- *
- * Header là tuỳ chọn — thiếu thì middleware bỏ qua, route chạy như cũ (không
- * phá client cũ/test hiện có). Phải đặt SAU `requireAuth` vì khoá theo user.
- */
-
-/** TTL 24 giờ — đủ dài cho retry của client, đủ ngắn để bảng không phình. */
 const TTL_MS = 24 * 60 * 60 * 1000
 
-/** Giới hạn độ dài key (UUID là 36; cho phép tới 64 cho client khác). */
 const MAX_KEY_LENGTH = 64
 
 function hashBody(body: string): string {

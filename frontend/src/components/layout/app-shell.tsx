@@ -45,7 +45,6 @@ import { env } from "@/lib/env"
 import { cn } from "@/lib/utils"
 import { FILTER_SHARED_PATHS, NAV_ITEMS, type NavItem } from "./nav-items"
 
-/** Tiêu đề theo path — một nguồn duy nhất, khớp các route ở `routes.tsx`. */
 const PAGE_TITLES: [RegExp, string][] = [
   [/^\/discover\/[^/]+$/, "Địa điểm"],
   [/^\/post\/[^/]+$/, "Bài đăng"],
@@ -71,16 +70,11 @@ const PAGE_TITLES: [RegExp, string][] = [
   [/^.*$/, "Không tìm thấy trang"],
 ]
 
-/** Tiêu đề tab trình duyệt cho path hiện tại; `undefined` → giữ tiêu đề mặc định. */
 function titleForPath(pathname: string): string | undefined {
   const match = PAGE_TITLES.find(([pattern]) => pattern.test(pathname))
   return match?.[1]
 }
 
-/**
- * Gắn tiêu đề tab trình duyệt theo trang — gọi một lần ở `AppShell` (một nghiệp
- * vụ một chỗ); trang động (địa điểm, bài đăng) dùng tiêu đề chung của nhóm.
- */
 function useDocumentTitle(pathname: string) {
   useEffect(() => {
     const title = titleForPath(pathname)

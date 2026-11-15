@@ -29,13 +29,6 @@ interface CheckInDialogProps {
   children: React.ReactElement
 }
 
-/**
- * Đăng bài check-in tại một địa điểm.
- *
- * Địa điểm được gắn sẵn và không thể bỏ (khác `PostComposer` ở /social) — đây là
- * check-in, nên `placeId` luôn có giá trị. Sau khi đăng, làm mới tab "Bài đăng"
- * của trang địa điểm để bài mới xuất hiện ngay.
- */
 export function CheckInDialog({ place, children }: CheckInDialogProps) {
   const [open, setOpen] = useState(false)
   const [caption, setCaption] = useState("")

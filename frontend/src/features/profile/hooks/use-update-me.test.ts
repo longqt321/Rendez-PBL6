@@ -4,7 +4,6 @@ import { renderWithQuery, waitForQuery } from "@/test/query-test-utils"
 import { useMe } from "./use-me"
 import { useUpdateMe } from "./use-update-me"
 
-/** Test chạy qua mock adapter (axios thật + mockAdapter), không mock module api. */
 describe("useUpdateMe", () => {
   it("lưu hồ sơ thành công → server trả hồ sơ đã cập nhật", async () => {
     const { result } = renderWithQuery(() => useUpdateMe())

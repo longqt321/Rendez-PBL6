@@ -19,21 +19,6 @@ import { jsonWithCache, noStore } from "../lib/http-cache"
 import { suggestUsersToFollow } from "../lib/user-suggestions"
 import { rateLimit } from "../lib/rate-limit"
 
-/**
- * Route người dùng (T2.6 + T5.3 + T5.4).
- *
- * `GET /users?q=` — tìm theo name/handle không dấu (`unaccent`), trả
- * `Page<UserProfile>`. Đếm bài đăng của cả trang bằng một GROUP BY — không N+1
- * (A6.9: số server đếm).
- *
- * `GET /users/suggestions` — gợi ý người nên theo dõi (đăng nhập, `no-store`),
- * thuật toán trong `lib/user-suggestions.ts`.
- *
- * `GET /users/:handle` + `/posts?tab=` + `/collections` — trang cá nhân; tab
- * `saved`/`pinned` của người khác trả RỖNG (khớp mock: chỉ chủ mới xem được).
- * `POST/DELETE /users/:handle/follow` — idempotent, cấm tự theo dõi (400).
- */
-
 const USERS_PAGE_SIZE = 20
 const PROFILE_POSTS_PAGE_SIZE = 5
 

@@ -6,7 +6,6 @@ export function commentsQueryKey(postId: string, sort: CommentSort) {
   return ["comments", postId, sort] as const
 }
 
-/** Danh sách bình luận phân trang cursor — server sắp xếp theo `sort`. */
 export function useComments(postId: string, sort: CommentSort) {
   return useInfiniteQuery({
     queryKey: commentsQueryKey(postId, sort),

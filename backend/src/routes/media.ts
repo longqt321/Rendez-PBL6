@@ -8,14 +8,6 @@ import { rateLimit } from "../lib/rate-limit"
 import { buildObjectKey, extensionForContentType, presignPut } from "../lib/r2"
 import { requireAuth } from "../lib/session"
 
-/**
- * Upload ảnh (T7.1) — API không nhận file: trả URL PUT đã ký để client tải thẳng
- * lên R2 (H5: ảnh đi qua presigned nên body limit không áp dụng cho ảnh).
- *
- * Chỉ các thư mục hợp lệ; contentType phải là ảnh — chặn client đẩy HTML/SVG lên
- * bucket công khai. Khoá object do server sinh, không dùng tên client gửi.
- */
-
 const FOLDERS = ["posts", "places", "avatars", "covers"] as const
 
 const mediaInputSchema = z.object({
@@ -35,7 +27,6 @@ const mediaInputSchema = z.object({
     .optional(),
 })
 
-/** Presigned PUT sống 10 phút — đủ tải ảnh 3G, ngắn để giảm lạm dụng. */
 const UPLOAD_TTL_SECONDS = 600
 
 export function createMediaRouter() {

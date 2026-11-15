@@ -1,12 +1,6 @@
 import { z } from "zod"
 import type { Room, RoomFilter, RoomMember, RoomProposal } from "./types/room"
 
-/**
- * Schema phòng lọc nhóm (Phase 6) — khớp `Room` và các phần tử con.
- *
- * Hợp đồng mới: trước Phase 6 phòng chỉ sống trong trình duyệt, không có API.
- */
-
 const placeCategoryEnum = z.enum([
   "cafe",
   "restaurant",
@@ -58,28 +52,18 @@ export const appliedProposalSchema = z.object({
   summary: z.string(),
 })
 
-/** Body tạo phòng — tên tuỳ chọn, rỗng thì server đặt mặc định. */
 export const createRoomInputSchema = z.object({
   name: z.string().trim().max(80).optional(),
 })
 
-/**
- * Response tạo phòng: DTO phòng + `guestToken` của owner (cookie HttpOnly tự
- * gửi; trường này chỉ để test/CLI dùng).
- */
 export const createRoomResponseSchema = roomSchema.extend({
   guestToken: z.string(),
 })
 
-/** Body tham gia phòng — guest không cần tài khoản (D5). */
 export const joinRoomInputSchema = z.object({
   displayName: z.string().trim().min(1, "Tên hiển thị trống").max(40),
 })
 
-/**
- * Response join: `guestToken` chỉ có khi vừa tạo thành viên mới — client không
- * cần đọc (cookie HttpOnly tự gửi), giữ trong hợp đồng để test/CLI dùng được.
- */
 export const joinRoomResponseSchema = z.object({
   room: roomSchema,
   memberId: z.string(),
@@ -87,7 +71,6 @@ export const joinRoomResponseSchema = z.object({
   guestToken: z.string().optional(),
 })
 
-/** Body tạo đề xuất — danh tính lấy từ session/cookie, không từ body. */
 export const createProposalInputSchema = z.object({
   kind: z.enum(["include", "exclude"]),
   field: z.enum(["category", "district", "priceMax", "keyword"]),

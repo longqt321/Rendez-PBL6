@@ -2,12 +2,6 @@ import { HistoryIcon } from "lucide-react"
 import { useRecentlyViewed } from "../hooks/use-recently-viewed"
 import { PlaceCard } from "./place-card"
 
-/**
- * Dải "Bạn vừa xem" trên /discover — đọc lịch sử xem cục bộ (localStorage).
- *
- * Chưa xem gì / lỗi / rỗng thì thu gọn hoàn toàn (kể cả heading) để không làm
- * trang chính bị trống. Không phụ thuộc bộ lọc của lưới bên dưới.
- */
 export function RecentlyViewedSection() {
   const { data, isPending, isError } = useRecentlyViewed()
 

@@ -10,13 +10,6 @@ interface FollowButtonProps {
   user: UserProfile
 }
 
-/**
- * Nút "Theo dõi"/"Đang theo dõi" dùng chung cho kết quả tìm kiếm và khối gợi ý.
- *
- * Điểm DUY NHẤT xử lý guest (V6-03): bấm khi chưa đăng nhập → điều hướng
- * `/login?next=<path hiện tại + query>` thay vì im lặng. `loginRedirectUrl` có
- * sẵn đã encode `next` và chặn open redirect — không tự dựng chuỗi.
- */
 export function FollowButton({ user }: FollowButtonProps) {
   const setFollow = useSetFollow(user.handle)
   const navigate = useNavigate()

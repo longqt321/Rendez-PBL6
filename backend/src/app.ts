@@ -9,39 +9,22 @@ import { logger } from "./lib/logger"
 import { prisma } from "./lib/prisma"
 import { createApiRouter } from "./routes"
 
-/** Biến gắn theo request — middleware đặt, handler/onError đọc. */
 interface AppVariables {
   requestId: string
-  /** Id user đang đăng nhập — chỉ có sau middleware `requireAuth`. */
+
   userId: string
-  /**
-   * Route đặt `true` khi body được phục vụ từ cache ứng dụng — middleware
-   * metrics đọc để đếm `cacheHits` thật (không suy đoán từ latency).
-   */
+
   cacheHit?: boolean
 }
 
 export type AppEnv = {
   Variables: AppVariables
-  /**
-   * Thông tin do tầng runtime truyền vào (`server.ts` lấy từ socket). Test gọi
-   * `app.request()` trực tiếp nên trường này có thể vắng — xem `clientIp()`.
-   */
+
   Bindings: { remoteAddress?: string }
 }
 
-/**
- * App factory — tách khỏi `server.ts` để test gọi `app.request()` trực tiếp
- * (không mở cổng, không cần Postgres cho `/healthz`).
- *
- * Phase 0 chỉ có health check + hạ tầng lỗi/log. Không có route nghiệp vụ.
- */
 export function createApp() {
   const app = new OpenAPIHono<AppEnv>({
-    /**
-     * Lỗi validate của `@hono/zod-openapi` không đi qua `onError` — hook này
-     * đổi shape về `{ message }` cho khớp `toApiError` của FE (D6).
-     */
     defaultHook: (result, c) => {
       if (!result.success) {
         const message = result.error.issues[0]?.message ?? "Dữ liệu không hợp lệ"
@@ -113,13 +96,8 @@ export function createApp() {
     else logger.info(payload, "request")
   })
 
-  /** Liveness — không chạm DB, dùng cho load balancer/rolling deploy (G4). */
   app.get("/healthz", (c) => c.json({ status: "ok" }))
 
-  /**
-   * Readiness — `SELECT 1` tới DB (G4). Dùng cho deploy: chỉ nhận traffic khi
-   * DB trả lời. Không kiểm pg-boss ở đây vì job queue sống trong cùng DB.
-   */
   app.get("/readyz", async (c) => {
     try {
       await prisma.$queryRaw`SELECT 1`

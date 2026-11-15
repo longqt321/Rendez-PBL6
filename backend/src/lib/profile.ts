@@ -1,11 +1,5 @@
 import type { User } from "../../generated/prisma/client"
 
-/**
- * Chữ cái đầu của tên để hiện trong `AvatarFallback`: "Nguyễn Yến" → "NY".
- *
- * Port 1:1 từ `frontend/src/lib/format.ts#formatInitials` — server tính thay vì
- * tin client để mọi nơi hiển thị (header, comment, review) thống nhất.
- */
 export function formatInitials(name: string): string {
   return name
     .trim()
@@ -15,7 +9,6 @@ export function formatInitials(name: string): string {
     .join("")
 }
 
-/** Cột tối thiểu để dựng hồ sơ — cho phép truyền dòng SQL rút gọn, không cần cả model. */
 export type ProfileSource = Pick<
   User,
   | "id"
@@ -29,12 +22,6 @@ export type ProfileSource = Pick<
   | "createdAt"
 >
 
-/**
- * Hồ sơ công khai — khớp `userProfileSchema` của `@rendez/schema` (A2).
- *
- * `isMe`/`followedByMe` gán theo user đang gọi request (A6.3). Đếm là số
- * server đếm (A6.9) — caller truyền số đã query, không hardcode.
- */
 export function toUserProfile(
   user: ProfileSource,
   viewerId: string | null,

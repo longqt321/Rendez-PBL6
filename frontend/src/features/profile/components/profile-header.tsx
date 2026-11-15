@@ -14,7 +14,6 @@ interface ProfileHeaderProps {
   profile: UserProfile
 }
 
-/** Ảnh bìa + avatar 96px đè lên + tên/bio + stats + nút Theo dõi hoặc Sửa. */
 export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const setFollow = useSetFollow(profile.handle)
 

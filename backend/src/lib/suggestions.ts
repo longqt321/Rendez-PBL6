@@ -5,14 +5,6 @@ import type { RankCandidate } from "./ranking"
 import { createTtlCache } from "./http-cache"
 
 /**
- * Gợi ý địa điểm cho nội dung đang soạn (T2.4) — phần SQL của A7.1.
- *
- * Chuẩn hoá chuỗi bằng `immutable_search_normalize()` (một nguồn duy nhất với
- * tìm kiếm địa điểm/bài đăng/người dùng) để ranking chỉ so khớp trên chuỗi đã
- * chuẩn hoá.
- */
-
-/**
  * Biểu thức chuẩn hoá — dùng CHÍNH hàm SQL `immutable_search_normalize` của
  * migration 20261111090000 (khớp `normalizeText` của mock). Trước đây file này
  * viết lại biểu thức riêng bằng `unaccent()` + regex: kết quả trùng hôm nay,
@@ -123,7 +115,6 @@ export function invalidateSuggestionCache(): void {
   return rows[0]?.normalized ?? ""
 }
 
-/** Ứng viên ranking kèm dòng thô để dựng `PlaceSummary` sau khi chấm điểm. */
 export interface SuggestionCandidate extends RankCandidate {
   row: CandidateRow
 }
@@ -143,11 +134,6 @@ export function toSuggestionCandidate(row: CandidateRow): SuggestionCandidate {
   }
 }
 
-/**
- * `PlaceSummary` nhúng trong gợi ý — MỘT nơi dựng cho cả route
- * `GET /places/suggestions` và job phát hiện địa điểm (trước đây hai nơi chép
- * tay cùng một object, sửa một bên là lệch hợp đồng).
- */
 export function toSuggestionPlaceSummary(row: CandidateRow, isPublished: boolean) {
   return {
     id: row.id,

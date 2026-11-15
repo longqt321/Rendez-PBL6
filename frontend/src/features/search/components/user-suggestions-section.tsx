@@ -13,13 +13,6 @@ import { useMe } from "@/features/profile/hooks/use-me"
 import { useUserSuggestions } from "../hooks/use-user-suggestions"
 import { FollowButton } from "./follow-button"
 
-/**
- * Khối "Gợi ý theo dõi" của tab Người.
- *
- * Render độc lập với trạng thái kết quả tìm kiếm (kể cả khi kết quả loading/lỗi),
- * nhưng **thu gọn im lặng** khi guest/rỗng/lỗi: gợi ý là tính năng "thêm",
- * không được phá trang tìm kiếm.
- */
 export function UserSuggestionsSection() {
   const { data: me } = useMe()
   const { data: suggestions, isPending, isError } = useUserSuggestions()

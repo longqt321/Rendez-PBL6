@@ -1,13 +1,6 @@
 import { Link } from "react-router"
 import { StaticPage, StaticSection } from "../components/static-page"
 
-/**
- * Trang Điều khoản sử dụng — `/terms`.
- *
- * Bản nháp nội dung pháp lý cơ bản, phản ánh đúng những gì app đang làm (tài
- * khoản, nội dung người dùng đăng, ảnh tải lên). Chủ dự án cần rà lại trước khi
- * dùng cho production.
- */
 export function TermsPage() {
   return (
     <StaticPage

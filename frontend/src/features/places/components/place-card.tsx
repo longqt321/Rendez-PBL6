@@ -11,10 +11,8 @@ import { categoryLabel } from "../lib/category-meta"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
 import type { DailyPick, Place } from "../types/place"
 
-/** "Vì sao gợi ý" do server tính — client chỉ hiển thị, không tự suy ra. */
 type PickWhy = NonNullable<DailyPick["why"]>
 
-/** Badge "Mới" chỉ tính trên ngày DUYỆT (publishedAt), không phải createdAt. */
 const NEW_PLACE_DAYS = 14
 
 function isRecentlyPublished(publishedAt: string | null): boolean {
@@ -27,10 +25,7 @@ function isRecentlyPublished(publishedAt: string | null): boolean {
 interface PlaceCardProps {
   place: Place
   distanceKm?: number
-  /**
-   * Lý do gợi ý từ `GET /places/daily-picks` — chỉ dải "Gợi ý hôm nay" truyền;
-   * vắng mặt (optional) thì chip "Vì sao gợi ý?" tự ẩn.
-   */
+
   why?: PickWhy
 }
 

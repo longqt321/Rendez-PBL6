@@ -11,11 +11,6 @@ interface PostCommentsInlineProps {
   post: Post
 }
 
-/**
- * 2 bình luận mới nhất ngay dưới bài + nút mở thread đầy đủ.
- *
- * Danh sách và thread dùng chung một cache react-query — mở thread không tải lại.
- */
 export function PostCommentsInline({ post }: PostCommentsInlineProps) {
   const [threadOpen, setThreadOpen] = useState(false)
   const { data } = useComments(post.id, "new")

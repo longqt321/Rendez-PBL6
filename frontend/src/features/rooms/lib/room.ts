@@ -3,12 +3,6 @@ import { priceLevelLabel } from "@/features/places/lib/price-level"
 import type { PlaceCategory } from "@/features/places/types/place"
 import type { RoomProposal } from "../types/room"
 
-/**
- * Chuỗi mô tả một đề xuất, dùng cho danh sách đề xuất — vd "＋ Loại hình: Cà phê".
- *
- * Toast khi áp đề xuất dùng `summary` do server trả (một nguồn sự thật); hàm
- * này chỉ phục vụ hiển thị danh sách trên client.
- */
 export function describeProposal(proposal: RoomProposal): string {
   const sign = proposal.kind === "include" ? "＋" : "－"
   if (proposal.field === "category")

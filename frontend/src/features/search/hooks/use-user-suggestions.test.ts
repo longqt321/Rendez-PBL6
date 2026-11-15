@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 import { renderWithQuery, waitForQuery } from "@/test/query-test-utils"
 import { useUserSuggestions } from "./use-user-suggestions"
 
-/** Test chạy qua mock adapter (axios thật + mockAdapter), không mock module api. */
 describe("useUserSuggestions", () => {
   it("đã đăng nhập → trả gợi ý kèm hồ sơ + lý do", async () => {
     const { result } = renderWithQuery(() => useUserSuggestions())

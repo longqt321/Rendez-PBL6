@@ -4,13 +4,6 @@ import { usePosts } from "./use-posts"
 import { waitForQuery, renderWithQuery } from "@/test/query-test-utils"
 import { seedPosts } from "@/test/seed-posts"
 
-/**
- * Test hook dữ liệu chạy qua mock adapter (axios thật + `mockAdapter` của
- * `src/mocks/server.ts`) — không mock module api.
- *
- * Feed cold-start rỗng (không có bài bịa), nên mỗi test tự đăng bài qua API
- * trước khi kiểm tra.
- */
 describe("usePosts", () => {
   it("trang đầu trả về bài đăng có shape đúng Post", async () => {
     await seedPosts(2, "Bài kiểm tra shape")

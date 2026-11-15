@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { getPlaces, type DiscoverFilters } from "../api/get-places"
 
-/** Toạ độ làm tròn 4 chữ số thập phân (~11 m) — chống GPS jitter tạo key mới. */
 const roundCoord = (value: number | undefined): string | null =>
   value === undefined ? null : value.toFixed(4)
 

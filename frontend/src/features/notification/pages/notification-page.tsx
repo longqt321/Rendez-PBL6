@@ -35,7 +35,6 @@ import { useMarkNotificationRead } from "../hooks/use-mark-notification-read"
 import { useNotifications } from "../hooks/use-notifications"
 import type { ActorNotification, AppNotification, SystemNotification } from "../types/notification"
 
-/** Thông báo không phải đề xuất địa điểm — tương tác hoặc hệ thống. */
 type OtherNotification = Exclude<AppNotification, { kind: "place-suggestion" }>
 
 const ACTOR_META = {
@@ -44,13 +43,6 @@ const ACTOR_META = {
   follow: { icon: UserPlusIcon, text: "đã bắt đầu theo dõi bạn" },
 } as const
 
-/**
- * Một hàng thông báo tương tác (thích / bình luận / theo dõi).
- *
- * Hai nhánh trước đây — `<button>` khi thông báo không gắn bài, `<Link>` khi có —
- * lặp lại đúng một khối nội dung; nay chỉ khác phần tử bọc ngoài, chọn qua
- * prop `render` của `Item`.
- */
 function NotificationRow({ notification }: { notification: ActorNotification }) {
   const markRead = useMarkNotificationRead()
   const meta = ACTOR_META[notification.kind]

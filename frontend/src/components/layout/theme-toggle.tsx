@@ -8,7 +8,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-/** Nút đổi chế độ sáng/tối dạng dropdown — 2 lựa chọn, dấu tích đánh dấu chế độ đang dùng. */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
 

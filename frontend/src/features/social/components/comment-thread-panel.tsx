@@ -7,16 +7,10 @@ import { CommentSortToggle } from "./comment-sort-toggle"
 
 interface CommentThreadPanelProps {
   postId: string
-  /** Lớp bổ sung cho vùng cuộn — thread trong Dialog cần `flex-1`, trang chi tiết thì không. */
+
   listClassName?: string
 }
 
-/**
- * Vùng bình luận đầy đủ: chọn thứ tự, danh sách, ô soạn, hộp thoại xoá.
- *
- * Tách khỏi `CommentThread` để trang `/post/:id` dùng lại đúng một cách hiển thị
- * bình luận, không phải dựng bản thứ hai.
- */
 export function CommentThreadPanel({ postId, listClassName }: CommentThreadPanelProps) {
   const [sort, setSort] = useState<"new" | "top">("new")
   const [replyTo, setReplyTo] = useState<Comment | null>(null)

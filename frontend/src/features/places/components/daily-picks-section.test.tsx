@@ -5,13 +5,6 @@ import { describe, expect, it, vi } from "vitest"
 import { DailyPicksSection } from "./daily-picks-section"
 import type { DailyPicks, Place } from "../types/place"
 
-/**
- * Test trạng thái hiển thị của dải "Gợi ý hôm nay": loading → skeleton, rỗng/lỗi
- * → thu gọn im lặng (không heading mồ côi), có dữ liệu → heading + 3 PlaceCard.
- *
- * Mock hook (không mock axios) để điều khiển từng trạng thái — dữ liệu thật đi
- * qua mock adapter được phủ ở `use-daily-picks.test.ts`.
- */
 const state = vi.hoisted(() => ({
   value: {} as {
     data?: DailyPicks

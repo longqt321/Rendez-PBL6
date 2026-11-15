@@ -5,20 +5,6 @@ import { prisma } from "./prisma"
 import { weightForEvent } from "./interaction-weights"
 import { getViewer } from "./session"
 
-/**
- * Ghi một sự kiện tương tác vào `interaction_events` (P0 — hạ tầng đo lường).
- *
- * Nguyên tắc:
- * - **Không bao giờ làm hỏng request chính**: mọi lỗi chỉ ghi log rồi bỏ qua
- *   (cùng tinh thần `enqueuePlaceDetect` — bài đã lưu thì cron xử lý lại).
- * - Event không thuộc taxonomy (`weightForEvent` trả null) bị bỏ, không ghi
- *   trọng số đoán mò.
- * - `place_id`/`post_id` là FK thật; id không tồn tại thì bỏ event thay vì để
- *   Postgres ném lỗi FK (client có thể gửi id cũ đã bị xoá).
- *
- * Bảng là partitioned (theo tháng) — dùng raw insert để không phụ thuộc model
- * Prisma với composite PK `(id, created_at)`.
- */
 export interface RecordEventInput {
   eventType: string
   userId?: string | null

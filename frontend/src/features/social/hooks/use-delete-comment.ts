@@ -2,12 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { deleteComment } from "../api/delete-comment"
 import { patchPostInCache } from "./patch-post-in-cache"
 
-/**
- * Xoá bình luận.
- *
- * Server xoá mềm và trả danh sách đã cập nhật; client ghi đè cache bằng
- * response đó (bình luận xoá thành placeholder "đã xoá") và giảm commentCount.
- */
 export function useDeleteComment(postId: string) {
   const queryClient = useQueryClient()
 

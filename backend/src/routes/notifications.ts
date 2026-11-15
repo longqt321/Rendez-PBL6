@@ -9,18 +9,8 @@ import { requireAuth } from "../lib/session"
 import { noStore } from "../lib/http-cache"
 import { notificationVersion, subscribeNotifications } from "../lib/notification-events"
 
-/**
- * Route thông báo (T4.5) — `GET /notifications`, `PATCH /notifications`
- * (đánh dấu tất cả đã đọc), `PATCH /notifications/:id`, `GET /notifications/events`
- * (SSE per-user, G6.3).
- *
- * Truy vấn nằm ở `lib/notifications.ts` (một nơi dựng DTO + SELECT) — route chỉ
- * kiểm quyền và gọi lib, không tự viết lại SQL.
- */
-
 const NOTIFICATIONS_PAGE_SIZE = 20
 
-/** Nhịp heartbeat giữ kết nối SSE sống qua proxy (15s). */
 const SSE_HEARTBEAT_MS = 15_000
 
 export function createNotificationsRouter() {
@@ -38,7 +28,6 @@ export function createNotificationsRouter() {
     })
   })
 
-  /** Đánh dấu tất cả đã đọc — trả danh sách sau cập nhật (khớp mock). */
   router.patch("/notifications", requireAuth, async (c) => {
     const userId = c.get("userId")
     await prisma.notification.updateMany({
@@ -67,13 +56,6 @@ export function createNotificationsRouter() {
     return c.json(updated)
   })
 
-  /**
-   * SSE — báo "bạn vừa có thông báo mới" bằng `event: notification-created` +
-   * `{version}`. Payload trung tính; client tự refetch `GET /notifications`.
-   *
-   * Chỉ chính chủ (requireAuth) mở được kênh của mình — không có userId trên
-   * URL/query nên không thể nghe trộm kênh người khác.
-   */
   router.get("/notifications/events", requireAuth, (c) => {
     const userId = c.get("userId")
 

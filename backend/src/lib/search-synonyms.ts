@@ -1,18 +1,3 @@
-/**
- * Từ đồng nghĩa tiếng Việt cho tìm kiếm địa điểm (`GET /places?q=`).
- *
- * Nguồn gốc: tập từ khoá người dùng thật sự gõ trong demo (khảo sát nội bộ
- * nhóm sản phẩm, 2026-11-12) — mỗi khoá gốc là cách nói phổ biến, giá trị là
- * các biến thể mà corpus OSM/curated thật sự dùng trong `name`/`tags`.
- *
- * Quy ước: khoá và giá trị đều ở dạng ĐÃ CHUẨN HOÁ (bỏ dấu, lowercase, dấu câu
- * → khoảng trắng) — cùng quy tắc `immutable_search_normalize()` của Postgres và
- * `normalizeSearchText()` bên dưới. Nhờ vậy tra map chỉ cần chuỗi đã chuẩn hoá,
- * không phải xử lý dấu ở từng nhánh SQL.
- *
- * Chỉ mở rộng truy vấn (OR thêm biến thể), KHÔNG thay thế từ khoá gốc: người
- * dùng gõ "quán ngon" vẫn phải thấy quán tên đúng "Quán Ngon" nếu có.
- */
 const SYNONYMS: Record<string, string[]> = {
   // "quán ngon" — cách nói chung để tìm quán ăn.
   "quan ngon": ["quan an", "nha hang", "quan nhau"],
@@ -48,12 +33,10 @@ export function normalizeSearchText(input: string): string {
     .trim()
 }
 
-/** Các biến thể của MỘT cụm từ đã chuẩn hoá; mảng rỗng khi không có trong map. */
 export function synonymVariants(normalizedPhrase: string): string[] {
   return SYNONYMS[normalizedPhrase] ?? []
 }
 
-/** Toàn bộ map (chỉ đọc) — test dùng để kiểm tính nhất quán của dữ liệu. */
 export function allSynonyms(): Readonly<Record<string, string[]>> {
   return SYNONYMS
 }

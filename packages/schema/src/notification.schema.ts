@@ -2,12 +2,6 @@ import { placeSuggestionSchema } from "./place.schema"
 import { z } from "zod"
 import type { AppNotification } from "./types/notification"
 
-/**
- * Thông báo — khớp `AppNotification` (union 3 kind).
- *
- * `ActorNotification` dùng chung cho like/comment/follow nên không tách được
- * bằng `z.discriminatedUnion` ở kind đó — dùng `z.union` cho cả bộ ba.
- */
 export const notificationSchema = z.union([
   z.object({
     kind: z.literal("place-suggestion"),

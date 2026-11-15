@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 
 interface RatingStarsProps {
   value: number
-  /** Khi có `onChange`, component thành nút chọn sao; không có thì chỉ hiển thị. */
+
   onChange?: (value: number) => void
   size?: "sm" | "md"
   className?: string
@@ -13,10 +13,6 @@ interface RatingStarsProps {
 
 const STARS = [1, 2, 3, 4, 5]
 
-/**
- * Hàng 5 sao dùng chung cho hiển thị và nhập điểm đánh giá (1–5, chênh nửa sao
- * không hỗ trợ — form chỉ nhận số nguyên).
- */
 export function RatingStars({ value, onChange, size = "md", className }: RatingStarsProps) {
   const interactive = typeof onChange === "function"
   const sizeClass = size === "sm" ? "size-4" : "size-6"

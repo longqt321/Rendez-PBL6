@@ -2,7 +2,6 @@ import { useDailyPicks } from "../hooks/use-daily-picks"
 import { PlaceCard } from "./place-card"
 import { PlaceCardSkeleton } from "./place-card-skeleton"
 
-/** Nhãn ngày kiểu Việt Nam từ `YYYY-MM-DD`: `Thứ Tư, 12/11`. */
 // `Intl.DateTimeFormat` tạo 1 lần ở module scope — không dựng lại mỗi render.
 const PICK_DATE_FORMAT = new Intl.DateTimeFormat("vi-VN", {
   weekday: "long",

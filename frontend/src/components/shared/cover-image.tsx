@@ -6,44 +6,23 @@ import type { PlaceCategory } from "@/features/places/types/place"
 import { cn } from "@/lib/utils"
 
 interface CoverImageProps {
-  /** URL ảnh THẬT (cold-start/venue). Không có thì hiện placeholder tối giản. */
   src?: string
-  /**
-   * Loại địa điểm — placeholder tối giản dùng làm nhãn đọc màn hình khi thiếu
-   * ảnh thật. Bỏ trống (ví dụ ảnh bìa hồ sơ) thì hiện khung trung tính.
-   */
+
   placeholder?: PlaceCategory
-  /** Tên địa điểm — placeholder hiện chữ cái đầu + tên khi thiếu ảnh thật. */
+
   name?: string
-  /** Chiều cao cố định cho masonry; bỏ trống thì theo tỉ lệ khung */
+
   height?: number
   className?: string
-  /** Mô tả ảnh cho trình đọc màn hình */
+
   alt?: string
-  /**
-   * `sizes` cho `srcset` — theo ngữ cảnh render (card, hero), không hardcode
-   * trong component này. Bỏ trống thì không gửi `sizes`.
-   */
+
   sizes?: string
-  /**
-   * Ảnh ưu tiên LCP (hero trang chi tiết): tải ngay (`eager` + `fetchpriority
-   * high`) thay vì `lazy`. Card giữ `lazy` như cũ.
-   */
+
   priority?: boolean
   children?: React.ReactNode
 }
 
-/**
- * Ảnh bìa địa điểm.
- *
- * Có ảnh thật (`src`) thì dùng ảnh thật. Không có — hoặc ảnh HỎNG (lỗi tải,
- * R2 gặp sự cố, ảnh bị xoá khỏi bucket) — thì hiện **placeholder tối giản**
- * (gradient + chữ cái đầu + tên quán, quyết định D-050). Không còn ảnh minh
- * hoạ AI dùng chung theo nhóm loại hình.
- *
- * Ảnh hỏng không được để lộ icon ảnh vỡ + alt text thô: `onError` chuyển hẳn
- * sang nhánh placeholder, như thể ảnh chưa từng có.
- */
 export function CoverImage({
   src,
   placeholder,

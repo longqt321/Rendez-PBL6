@@ -6,14 +6,6 @@ import { createTestQueryClient } from "@/test/query-test-utils"
 import type { UserSuggestion } from "@rendez/schema"
 import { UserSuggestionsSection } from "./user-suggestions-section"
 
-/**
- * Trạng thái hiển thị của khối "Gợi ý theo dõi": loading → skeleton, rỗng/lỗi/
- * guest → thu gọn im lặng (không heading mồ côi), có dữ liệu → heading + hàng
- * user kèm nút follow.
- *
- * Mock hook (không mock axios) để điều khiển từng trạng thái; dữ liệu thật đi
- * qua mock adapter được phủ ở `use-user-suggestions.test.ts`.
- */
 interface SectionState {
   me: { id: string } | undefined
   value: { data?: UserSuggestion[]; isPending: boolean; isError: boolean }

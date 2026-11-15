@@ -4,7 +4,6 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import type { DiscoverSort } from "../api/get-places"
 import type { PlaceCategory } from "../types/place"
 
-/** Loại hình hợp lệ — chặn giá trị rác từ URL do người dùng sửa tay. */
 const VALID_CATEGORIES: PlaceCategory[] = [
   "cafe",
   "restaurant",
@@ -18,48 +17,32 @@ const VALID_SORTS: DiscoverSort[] = ["newest", "rating", "distance"]
 
 export interface DiscoverFiltersState {
   category: PlaceCategory | "all"
-  /** `"all"` = không lọc quận. */
+
   district: string
-  /** Từ khoá đã ghi vào URL (đã debounce) — dùng để gọi API. */
+
   query: string
-  /** Giá trị ô nhập hiện tại, cập nhật ngay theo từng ký tự. */
+
   draftQuery: string
   setDraftQuery: (value: string) => void
-  /** Mức giá tối đa — `"all"` = không lọc giá. */
+
   priceMax: 1 | 2 | 3 | "all"
   setPriceMax: (value: 1 | 2 | 3 | "all") => void
-  /**
-   * Nguồn sự thật DUY NHẤT cho sắp xếp (thiết kế mục 2.2.1). `nearby` trên URL
-   * chỉ là **alias chỉ-đọc** cho link cũ — đọc vào thì map sang `distance` rồi
-   * xoá khỏi URL, KHÔNG giữ state song song.
-   */
+
   sort: DiscoverSort
   setSort: (value: DiscoverSort) => void
-  /**
-   * Ghi/xoá toạ độ người dùng trên URL khi `sort=distance` (làm tròn 4 chữ số
-   * — cùng quy ước với query key, link chia sẻ tái tạo đúng thứ tự khoảng cách).
-   */
+
   setCoords: (coords: { lat: number; lng: number } | null) => void
-  /** Giá trị suy ra: `isNearbyActive === (sort === "distance")`. */
+
   isNearbyActive: boolean
   setCategory: (value: PlaceCategory | "all") => void
   setDistrict: (value: string) => void
-  /** Bật/tắt "Gần đây" — cùng một đường ghi với Select "Gần tôi". */
+
   setIsNearbyActive: (value: boolean) => void
-  /** Xoá toàn bộ bộ lọc (kể cả từ khoá, "Gần đây", giá và sort). */
+
   resetAll: () => void
   activeFilterCount: number
 }
 
-/**
- * Bộ lọc của màn hình khám phá, lưu trên URL
- * (`?category=&district=&q=&priceMax=&sort=`).
- *
- * Đặt trên URL thay vì state cục bộ để `/discover` và `/map` là **hai cách nhìn
- * của cùng một bộ lọc**: chuyển trang, tải lại, hay gửi link đều giữ nguyên
- * search + filter. Ô nhập giữ bản nháp riêng và chỉ ghi URL sau 300 ms — gõ
- * không làm rối lịch sử trình duyệt (cùng cách với `useSearchQuerySync`).
- */
 export function useDiscoverFilters(): DiscoverFiltersState {
   const [params, setParams] = useSearchParams()
 
@@ -93,7 +76,6 @@ export function useDiscoverFilters(): DiscoverFiltersState {
   const effectiveSort: DiscoverSort = sort === "newest" && hasLegacyNearby ? "distance" : sort
   const isNearbyActive = effectiveSort === "distance"
 
-  /** Ghi nhiều khoá cùng lúc; giá trị rỗng/"all" thì xoá khỏi URL cho gọn. */
   const patch = useCallback(
     (next: Record<string, string | null>) => {
       setParams(
@@ -113,7 +95,7 @@ export function useDiscoverFilters(): DiscoverFiltersState {
 
   const [draftQuery, setDraftQuery] = useState(query)
   const debouncedDraft = useDebouncedValue(draftQuery, 300)
-  /** Giá trị cuối cùng hook này tự ghi — phân biệt "mình vừa ghi" với "URL đổi từ ngoài". */
+
   const lastWritten = useRef(query)
 
   // URL đổi từ bên ngoài (back/forward, link chia sẻ) → nạp lại ô nhập.
@@ -131,17 +113,11 @@ export function useDiscoverFilters(): DiscoverFiltersState {
     patch({ q: trimmed })
   }, [debouncedDraft, draftQuery, query, patch])
 
-  /**
-   * Ghi sort — ĐƯỜNG GHI DUY NHẤT cho cả Select "Gần tôi" lẫn toggle "Gần
-   * đây". Tắt "Gần đây" về `newest` (không nhớ sort cũ — một luật đơn giản,
-   * không có state ẩn "sort cũ là gì"). Dọn luôn `nearby` nếu còn sót.
-   */
   const setSort = useCallback(
     (value: DiscoverSort) => patch({ sort: value === "newest" ? null : value, nearby: null }),
     [patch],
   )
 
-  /** Ghi toạ độ lên URL (4 chữ số); bỏ trống khi `null`. Bỏ qua nếu không đổi. */
   const setCoords = useCallback(
     (coords: { lat: number; lng: number } | null) => {
       const lat = coords ? coords.lat.toFixed(4) : null

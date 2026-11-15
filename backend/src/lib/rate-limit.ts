@@ -3,31 +3,16 @@ import type { AppEnv } from "../app"
 import { env } from "../env"
 import { prisma } from "./prisma"
 
-/**
- * Rate limit dùng chính Postgres (H4) — không kéo `unstorage`/Redis.
- *
- * Bảng `rate_limits(key, window_start, count)` với khoá ghép: mỗi request là
- * một `INSERT ... ON CONFLICT DO UPDATE ... RETURNING count`, nguyên tử ở mức
- * hàng nên nhiều tiến trình đếm đúng. Cửa sổ cố định (fixed window) — đủ cho
- * mục tiêu chống brute-force, không cần thuật toán phức tạp.
- */
-
 export interface RateLimitOptions {
-  /** Số request tối đa trong một cửa sổ. */
   limit: number
-  /** Độ dài cửa sổ (giây). */
+
   windowSeconds: number
-  /** Tiền tố khoá — tách bộ đếm giữa các nhóm route. */
+
   scope: string
-  /**
-   * Đếm theo userId thay vì IP — dùng cho route đã qua `requireAuth` để NHIỀU
-   * người dùng chung một IP (văn phòng, NAT) không chặn lẫn nhau. Thiếu userId
-   * (không đăng nhập) thì rơi về IP như mặc định.
-   */
+
   byUser?: boolean
 }
 
-/** Đổi IPv4 dạng chuỗi sang số nguyên 32-bit; `null` nếu không phải IPv4 hợp lệ. */
 function ipv4ToInt(ip: string): number | null {
   const parts = ip.split(".")
   if (parts.length !== 4) return null
@@ -41,7 +26,6 @@ function ipv4ToInt(ip: string): number | null {
   return value >>> 0
 }
 
-/** `address` có khớp mẫu proxy (`1.2.3.4` hoặc `10.0.0.0/8`) không. */
 function matchesProxy(address: string, pattern: string): boolean {
   const [network, bitsRaw] = pattern.split("/")
   if (bitsRaw === undefined) return address === pattern
@@ -56,16 +40,6 @@ function matchesProxy(address: string, pattern: string): boolean {
   return (addressInt & mask) === (networkInt & mask)
 }
 
-/**
- * IP người gọi, chống giả mạo `X-Forwarded-For`.
- *
- * - Có `remoteAddress` (Bun cung cấp từ socket): chỉ tin `X-Forwarded-For` khi
- *   chính địa chỉ socket nằm trong `TRUSTED_PROXIES`; ngược lại dùng địa chỉ
- *   socket — client tự gửi header không né được rate limit.
- * - Không có `remoteAddress` (test gọi `app.request()` trực tiếp, runtime không
- *   cung cấp socket): dùng `X-Forwarded-For` — đây là trường hợp duy nhất không
- *   xác thực được nguồn, và production luôn có `remoteAddress`.
- */
 export function clientIp(headers: Headers, remoteAddress: string | undefined): string {
   const forwarded = headers.get("x-forwarded-for")
   const fromTrustedProxy =
@@ -80,10 +54,6 @@ export function clientIp(headers: Headers, remoteAddress: string | undefined): s
   return remoteAddress || headers.get("x-real-ip") || "unknown"
 }
 
-/**
- * Đếm một lượt cho `key`; trả số lượt trong cửa sổ hiện tại.
- * Dọn luôn cửa sổ cũ của chính key đó để bảng không phình.
- */
 export async function hitRateLimit(
   key: string,
   windowSeconds: number,

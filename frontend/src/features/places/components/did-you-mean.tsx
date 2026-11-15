@@ -1,11 +1,6 @@
-/**
- * Gợi ý "Ý bạn là …?" khi server trả `meta.didYouMean` (tên quán gần nhất theo
- * `pg_trgm`). Client chỉ hiển thị + ghi lại từ khoá — không tự đoán/so khớp.
- */
 interface DidYouMeanProps {
-  /** Tên gợi ý do server trả; rỗng/null thì component tự ẩn. */
   suggestion: string | null | undefined
-  /** Người dùng bấm gợi ý → ghi lại từ khoá (URL/filter). */
+
   onSelect: (value: string) => void
 }
 
