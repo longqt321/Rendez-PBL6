@@ -3096,3 +3096,63 @@ node scripts/cold-start/review-server.mjs --data ../backend/data/places-expanded
 # mở http://localhost:5199, duyệt từng place (phím 1-5, S, U, N)
 # quyết định lưu vào backend/data/places-expanded.json.review-state.json
 ```
+
+## D-066 — Thay thế dữ liệu Cold-Start sang 358 địa điểm mới từ Web Search — 2026-11-15
+
+### Bối cảnh
+Người dùng yêu cầu thay thế bộ cold-start cũ (344 POI OSM) bằng danh sách 358 địa điểm thực tế được thu thập qua web search phân bổ khắp 6 quận Đà Nẵng (Hải Châu, Thanh Khê, Liên Chiểu, Ngũ Hành Sơn, Sơn Trà, Cẩm Lệ), loại bỏ Hòa Vang và đa dạng hóa các trải nghiệm giải trí của giới trẻ (Cà phê chill, bar pub, rạp chiếu phim, workshop, camping, ẩm thực...).
+
+### Quyết định
+1. **Làm giàu dữ liệu tự động**: Viết công cụ Golang `~/scripts/dn-places-enricher` để chuẩn hóa 358 địa điểm sang 26 trường theo schema Rendez (slug ID duy nhất, tọa độ geocoded theo centroid/địa chỉ quận, category map, tags, placeholder ảnh).
+2. **Lưu trữ an toàn tập dữ liệu cũ**: Di chuyển dữ liệu 344 POI cũ vào `backend/data/archive/places-expanded-344-legacy.json`. File `frontend/data/cold-start/places.json` (491) được giữ nguyên làm mock fixture cho unit test frontend.
+3. **Cập nhật nguồn sự thật**: Ghi đè 358 địa điểm đã làm giàu vào `backend/data/places-expanded.json`.
+4. **Seed DB & Docker Migrator**: Cập nhật `seed.ts` hỗ trợ taxonomy danh mục mở rộng và dọn dẹp an toàn các FK mồ côi (`dailyPick`, `placeEmbedding`, `affinityCache`, `interactionEvent`). Gắn seed vào Docker migrator stage để tự động hóa khi khởi tạo container.
+5. **Dọn dẹp file thừa**: Xóa các file `.bak` dư thừa, dọn thư mục rỗng `frontend/scratch/`, quy hoạch các bản dump SQL cũ vào thư mục `backup/db_dumps/`.
+
+## D-067 — Thuật toán Search & Recommendation: nhánh name + composite cold-start — 2026-11-15
+
+### Bối cảnh
+Người dùng báo kết quả tìm kiếm tệ: gõ đúng tên quán mà quán không đứng đầu
+("P Coffee" hạng 14), gõ "trinh ca phe" thì mất hẳn "Trình Cà Phê". Đánh giá lại
+trên DB thật (358 place): `place_embeddings` = **0 hàng** (dense nhánh chết),
+`reviews` = 7, `affinity_cache` = 2 → cả hai thuật toán đang chạy ở chế độ suy giảm.
+
+### Quyết định — Search (4 nhánh RRF)
+1. **Nhánh exact-name (weight 5)** và **prefix-name (weight 3)**: so trên
+   `immutable_search_normalize(p.name)` — chỉ tên, không lẫn địa chỉ. Đây là bằng
+   chứng trực tiếp người dùng gõ đúng tên quán.
+2. **Field-boost lexical**: `GREATEST(similarity(name,q)×3, similarity(haystack,q))`
+   — sửa lỗi "Trinh" trong địa chỉ đường đè "Trình" trong tên.
+3. **Entity routing bằng dữ liệu**: nếu nhánh name khớp → tắt structured
+   (`weight 0`). Không dùng heuristic từ vựng (đã thử và gây regression).
+4. **Dense không còn là điều kiện bỏ hybrid**: dense rỗng chỉ mất 1 nhánh.
+
+### Quyết định — Recommendation (cold-start)
+5. Thay `ORDER BY review_count DESC, id ASC` (thực chất là alphabet khi mọi quán
+   0 review) bằng **điểm composite**: Bayesian rating (0.45) + verified/tier (0.20)
+   + độ đầy đủ hồ sơ (0.20) + độ mới (0.15).
+6. **Nhiễu theo giờ** (md5(id+hour_bucket)): trong 1 giờ danh sách ổn định, giữa
+   các giờ đổi → khám phá được mà không phá tính tất định.
+7. **Cap đa dạng theo category** (tối đa 3 venue/category trong danh sách) cho cả
+   cold-start lẫn nhánh affinity.
+8. **KHÔNG dùng trường `quality`** trong dataset JSON: nó không được map vào DB
+   (schema `Place` không có cột này) và là điểm đầy đủ dữ liệu, không phải chất
+   lượng venue — dùng sẽ là bịa tín hiệu.
+
+### Bằng chứng (eval v3, 127 query, đóng băng trên DB 358 place)
+| Chỉ số (hybrid3) | Trước | Sau | Δ |
+|---|---|---|---|
+| P@5 | 0.360 | 0.384 | +0.024 |
+| P@10 | 0.347 | 0.370 | +0.023 |
+| R@10 | 0.302 | 0.331 | +0.029 |
+| nDCG@10 | 0.298 | 0.339 | +0.041 |
+| MRR | 0.312 | 0.358 | +0.046 |
+
+Nhóm `entity` P@5: 0.383 → 0.437. MRR của "P Coffee", "Trình Cà Phê",
+"trinh ca phe", "Acacia Café", "Bánh mì Bà Lan", "Bánh mì Ông Tý": **0.00–0.50 → 1.00**.
+Không nhóm/variant nào bị giảm điểm.
+
+### Việc còn lại (BACKLOG)
+- Chạy `scripts/embed-places.ts` cho 358 place để dense nhánh hoạt động thật.
+- Cân nhắc `tsvector`/`ts_rank_cd` thay trigram cho lexical (BM25-like: có TF-IDF,
+  trigram không có) — đo lại trên eval v3 trước khi đổi.

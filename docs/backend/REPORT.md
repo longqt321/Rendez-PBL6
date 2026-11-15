@@ -16,9 +16,9 @@
 | Test backend (`bun test --parallel=1`) | **256 pass / 0 fail**, 25 file, ~154 giây |
 | e2e Playwright với backend thật | **22/22 pass** (12 spec, `VITE_ENABLE_MOCKS=false`) — số liệu phiên 2026-11-11, **chưa chạy lại** ngày 2026-11-12 |
 | e2e Playwright với mock | **42 pass** (16 spec, project `mock`) |
-| Unit test frontend | **135 pass** (29 file) |
+| Unit test frontend | **170 pass** (37 file) |
 | Lint + typecheck (FE + BE) | 0 lỗi, 0 cảnh báo |
-| Seed | **344 địa điểm seed** (343 published: 86 curated + 257 OSM; 1 chưa duyệt làm mẫu test), **29 ảnh gốc trong DB** (87 tệp cold-start gồm 58 biến thể WebP) |
+| Seed | **358 địa điểm seed** (nguồn `collected-places-websearch.json` đã làm giàu đầy đủ 26 trường), **11 ảnh quán thật trong DB**, còn lại dùng placeholder |
 | DB dev | 3 user thật (đã dọn 167 user fixture test, 32 post rác, 6 phòng test) |
 | Container | `rendez-postgres` (healthy), `rendez-migrate-1` (one-shot OK), `rendez-api` (healthz/readyz 200) |
 

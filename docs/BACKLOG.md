@@ -22,8 +22,7 @@ Việc phát hiện trong quá trình kiểm tra/sửa nhưng **chưa làm** (ng
 
 ## Phát hiện khi bỏ ảnh món (2026-11-10, D-049)
 
-- [ ] **Phần lớn địa điểm chưa có ảnh thật** — chỉ 20 quán có ảnh venue (corpus hiện tại 344
-      place; phát hiện ban đầu là 471/491 khi dataset còn 491). Cần nguồn ảnh hợp
+- [ ] **Phần lớn địa điểm chưa có ảnh thật** — chỉ 11 quán có ảnh venue thật trong DB, 347 quán còn lại dùng ảnh placeholder (D-066). Cần nguồn ảnh hợp
       pháp (chụp thực địa, xin phép quán, hoặc Google Places API có key) trước khi phát hành.
 - [x] **Tính năng đăng ảnh của người dùng** (G5b, 2026-11-11) — `Post.images[]` (tối đa 4,
       bảng `post_images`), composer tải ảnh qua presigned URL (`POST /media` → PUT R2).
@@ -905,3 +904,20 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
 - [ ] **Xử lý 11 nhóm tên trùng** (WinMart x4, Highlands x3, Starbucks x3, Trung Nguyên x3, Olivia Pizza x2, Mirko Coffee x2, The Coffee House x2, Hancook x2, Cộng Cà Phê x2) — phân biệt chi nhánh vs trùng lặp thật.
 - [ ] **Loại địa điểm không phù hợp định vị** (siêu thị WinMart/Full Market, cửa hàng tiện lợi) khỏi danh sách gợi ý đi chơi/hẹn hò.
 - [ ] **Archive hoá `places.json` (491) và `places.json.bak` (1.701)** — thêm ghi chú "chỉ đọc" trong README để không ai seed nhầm.
+
+## Từ D-067 — Search & Recommendation (2026-11-15)
+- [ ] **Chạy backfill embedding cho 358 place** (`bun run scripts/embed-places.ts`) —
+      hiện `place_embeddings` = 0/358 nên dense nhánh không đóng góp gì. Sau khi có
+      embedding, đo lại eval v3 (dense-only + hybrid 4 nhánh) trước khi kết luận.
+- [ ] **Cân nhắc `tsvector` + `ts_rank_cd` thay `pg_trgm` cho lexical** — trigram
+      không có TF-IDF/IDF như BM25; `ts_rank_cd` tính cover density (tần suất + độ
+      gần + trọng số trường). Đo trên eval v3 trước/sau, không đổi mù.
+- [ ] **zeroRate 0.362 trên eval v3** — 36% query ý định trả 0 kết quả vì dataset 358
+      thiếu tag tương ứng ("Làm việc", "Ngoài trời", "Món Nhật"...). Cần làm giàu tag
+      hoặc nới điều kiện AND khi nhánh lexical rỗng (fallback OR).
+- [ ] **`typo` variant P@5 = 0.000** — trigram không bắt lỗi gõ trong từ khoá ý định
+      ("tiệm bánk ngọt"). Cân nhắc `levenshtein`/`dmetaphone` hoặc sửa lỗi gõ trước
+      khi search.
+- [ ] **Warm recommendation vẫn gần như không hoạt động** — `affinity_cache` chỉ 2
+      dòng vì `interaction_events` quá thưa (297 event). Cần tích luỹ traffic thật
+      trước khi đánh giá lại nhánh affinity; hiện gần như mọi user nhận cold-start.

@@ -1,0 +1,5258 @@
+{
+  "summary": {
+    "frozenAt": "2026-11-15T13:19:01.760Z",
+    "queries": 127,
+    "lexical": {
+      "p5": 0.302,
+      "p10": 0.289,
+      "recall10": 0.312,
+      "ndcg10": 0.307,
+      "mrr": 0.322,
+      "zeroRate": 0,
+      "latencyP50Ms": 9,
+      "latencyP95Ms": 11
+    },
+    "dense": {
+      "p5": 0.375,
+      "p10": 0.356,
+      "recall10": 0.343,
+      "ndcg10": 0.338,
+      "mrr": 0.347,
+      "zeroRate": 0,
+      "latencyP50Ms": 5,
+      "latencyP95Ms": 7
+    },
+    "hybrid2": {
+      "p5": 0.372,
+      "p10": 0.357,
+      "recall10": 0.35,
+      "ndcg10": 0.342,
+      "mrr": 0.345,
+      "zeroRate": 0,
+      "latencyP50Ms": 14,
+      "latencyP95Ms": 17
+    },
+    "hybrid3": {
+      "p5": 0.367,
+      "p10": 0.343,
+      "recall10": 0.343,
+      "ndcg10": 0.348,
+      "mrr": 0.365,
+      "zeroRate": 0,
+      "latencyP50Ms": 15,
+      "latencyP95Ms": 23
+    }
+  },
+  "byGroup": {
+    "study": {
+      "n": 4,
+      "lexicalP5": 0.45,
+      "denseP5": 0.7,
+      "hybrid2P5": 0.65,
+      "hybrid3P5": 0.85
+    },
+    "study-district": {
+      "n": 3,
+      "lexicalP5": 0.467,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0.467
+    },
+    "outdoor": {
+      "n": 3,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "outdoor-district": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "date": {
+      "n": 4,
+      "lexicalP5": 0.7,
+      "denseP5": 1,
+      "hybrid2P5": 0.95,
+      "hybrid3P5": 1
+    },
+    "friends": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "friends-district": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "bar": {
+      "n": 4,
+      "lexicalP5": 0.65,
+      "denseP5": 1,
+      "hybrid2P5": 0.9,
+      "hybrid3P5": 1
+    },
+    "takeaway": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "takeaway-district": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "veg": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "veg-district": {
+      "n": 2,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "bakery": {
+      "n": 4,
+      "lexicalP5": 0.4,
+      "denseP5": 0.8,
+      "hybrid2P5": 0.7,
+      "hybrid3P5": 0.85
+    },
+    "streetfood": {
+      "n": 4,
+      "lexicalP5": 0.45,
+      "denseP5": 0.85,
+      "hybrid2P5": 0.9,
+      "hybrid3P5": 1
+    },
+    "streetfood-district": {
+      "n": 2,
+      "lexicalP5": 0.8,
+      "denseP5": 0.9,
+      "hybrid2P5": 0.9,
+      "hybrid3P5": 0.6
+    },
+    "cafe": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "cafe-district": {
+      "n": 2,
+      "lexicalP5": 0.9,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0.8
+    },
+    "restaurant": {
+      "n": 2,
+      "lexicalP5": 0.9,
+      "denseP5": 0.9,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "restaurant-district": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0.9
+    },
+    "wifi": {
+      "n": 1,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "wifi-cafe": {
+      "n": 2,
+      "lexicalP5": 0.7,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "vietnamese": {
+      "n": 3,
+      "lexicalP5": 0.933,
+      "denseP5": 0.933,
+      "hybrid2P5": 1,
+      "hybrid3P5": 0.933
+    },
+    "seafood": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "japanese": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "korean": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "pizza": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "burger": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "chicken": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "steak": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "specialty": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "entertainment": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "always-open": {
+      "n": 4,
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
+    },
+    "district-hc": {
+      "n": 1,
+      "lexicalP5": 1,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "district-nhs": {
+      "n": 1,
+      "lexicalP5": 1,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "district-tk": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "district-lc": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "district-st": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "district-cl": {
+      "n": 2,
+      "lexicalP5": 1,
+      "denseP5": 1,
+      "hybrid2P5": 1,
+      "hybrid3P5": 1
+    },
+    "entity": {
+      "n": 15,
+      "lexicalP5": 0.2,
+      "denseP5": 0.187,
+      "hybrid2P5": 0.2,
+      "hybrid3P5": 0.2
+    }
+  },
+  "byVariant": {
+    "natural": {
+      "n": 33,
+      "lexicalP5": 0.394,
+      "denseP5": 0.467,
+      "hybrid2P5": 0.467,
+      "hybrid3P5": 0.497
+    },
+    "long": {
+      "n": 19,
+      "lexicalP5": 0.116,
+      "denseP5": 0.263,
+      "hybrid2P5": 0.242,
+      "hybrid3P5": 0.263
+    },
+    "no-diacritic": {
+      "n": 5,
+      "lexicalP5": 0.24,
+      "denseP5": 0.32,
+      "hybrid2P5": 0.32,
+      "hybrid3P5": 0.48
+    },
+    "with-district": {
+      "n": 17,
+      "lexicalP5": 0.4,
+      "denseP5": 0.518,
+      "hybrid2P5": 0.518,
+      "hybrid3P5": 0.353
+    },
+    "keyword": {
+      "n": 26,
+      "lexicalP5": 0.438,
+      "denseP5": 0.454,
+      "hybrid2P5": 0.462,
+      "hybrid3P5": 0.454
+    },
+    "english": {
+      "n": 9,
+      "lexicalP5": 0.111,
+      "denseP5": 0.222,
+      "hybrid2P5": 0.178,
+      "hybrid3P5": 0.222
+    },
+    "typo": {
+      "n": 5,
+      "lexicalP5": 0.04,
+      "denseP5": 0.08,
+      "hybrid2P5": 0.12,
+      "hybrid3P5": 0.08
+    },
+    "exact": {
+      "n": 5,
+      "lexicalP5": 0.2,
+      "denseP5": 0.2,
+      "hybrid2P5": 0.2,
+      "hybrid3P5": 0.2
+    },
+    "prefix": {
+      "n": 6,
+      "lexicalP5": 0.2,
+      "denseP5": 0.2,
+      "hybrid2P5": 0.2,
+      "hybrid3P5": 0.2
+    },
+    "partial": {
+      "n": 2,
+      "lexicalP5": 0.2,
+      "denseP5": 0.2,
+      "hybrid2P5": 0.2,
+      "hybrid3P5": 0.2
+    }
+  },
+  "significance": [
+    {
+      "comparison": "hybrid3 - hybrid2",
+      "meanDelta": -0.005,
+      "ci95": "[-0.030, 0.019]",
+      "pRaw": 0.6284,
+      "pHolm": 1
+    },
+    {
+      "comparison": "hybrid3 - dense",
+      "meanDelta": -0.008,
+      "ci95": "[-0.031, 0.014]",
+      "pRaw": 0.7584,
+      "pHolm": 1
+    },
+    {
+      "comparison": "hybrid3 - lexical",
+      "meanDelta": 0.065,
+      "ci95": "[0.030, 0.104]",
+      "pRaw": 0,
+      "pHolm": 0
+    },
+    {
+      "comparison": "dense - lexical",
+      "meanDelta": 0.072,
+      "ci95": "[0.038, 0.110]",
+      "pRaw": 0,
+      "pHolm": 0
+    },
+    {
+      "comparison": "hybrid2 - dense",
+      "meanDelta": -0.003,
+      "ci95": "[-0.020, 0.014]",
+      "pRaw": 0.6736,
+      "pHolm": 1
+    }
+  ],
+  "perQuery": [
+    {
+      "id": "v2-001",
+      "group": "study",
+      "variant": "natural",
+      "query": "quán cà phê yên tĩnh để học bài",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.7,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-002",
+      "group": "study",
+      "variant": "natural",
+      "query": "chỗ ngồi làm việc bằng laptop cả buổi",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0.3,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-003",
+      "group": "study",
+      "variant": "long",
+      "query": "tìm quán cà phê phù hợp làm việc nhóm buổi chiều, ngồi lâu không bị đuổi",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.2,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-004",
+      "group": "study",
+      "variant": "no-diacritic",
+      "query": "quan ca phe lam viec",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.6,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-005",
+      "group": "study-district",
+      "variant": "with-district",
+      "query": "quán cà phê làm việc ở Hải Châu",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-006",
+      "group": "study-district",
+      "variant": "with-district",
+      "query": "cafe học bài khu Hải Châu",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.6,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.6,
+        "p10": 0.5,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-007",
+      "group": "study-district",
+      "variant": "with-district",
+      "query": "quán cà phê làm việc gần Hải Châu",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-008",
+      "group": "outdoor",
+      "variant": "natural",
+      "query": "quán có không gian ngoài trời thoáng mát",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-009",
+      "group": "outdoor",
+      "variant": "keyword",
+      "query": "ngồi ngoài trời",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-010",
+      "group": "outdoor",
+      "variant": "long",
+      "query": "quán ăn ngoài trời view đẹp lãng mạn cho buổi tối",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-011",
+      "group": "outdoor-district",
+      "variant": "with-district",
+      "query": "quán ngoài trời ở Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-012",
+      "group": "outdoor-district",
+      "variant": "with-district",
+      "query": "cafe sân vườn Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-013",
+      "group": "date",
+      "variant": "natural",
+      "query": "quán cà phê hẹn hò lãng mạn",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.7,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-014",
+      "group": "date",
+      "variant": "natural",
+      "query": "cafe view đẹp cho buổi hẹn đầu tiên",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-015",
+      "group": "date",
+      "variant": "english",
+      "query": "romantic outdoor cafe",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-016",
+      "group": "date",
+      "variant": "keyword",
+      "query": "quán cà phê ngoài trời hẹn hò",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-017",
+      "group": "friends",
+      "variant": "natural",
+      "query": "quán nhậu tụ tập bạn bè cuối tuần",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-018",
+      "group": "friends",
+      "variant": "natural",
+      "query": "đi đâu chơi với hội bạn thân",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-019",
+      "group": "friends",
+      "variant": "keyword",
+      "query": "quán bia nhậu nhẹt",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-020",
+      "group": "friends",
+      "variant": "long",
+      "query": "quán có trò chơi cho nhóm bạn đông người buổi tối",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-021",
+      "group": "friends-district",
+      "variant": "with-district",
+      "query": "quán nhậu ở Hải Châu",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-022",
+      "group": "friends-district",
+      "variant": "with-district",
+      "query": "tụ tập bạn bè ở Hải Châu",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-023",
+      "group": "bar",
+      "variant": "natural",
+      "query": "quán bar cocktail ngồi tối",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.6489315753318465,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9305687780632227,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8603818544462509,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-024",
+      "group": "bar",
+      "variant": "keyword",
+      "query": "bar",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-025",
+      "group": "bar",
+      "variant": "long",
+      "query": "quán bia pub không gian tối phù hợp ngồi nói chuyện",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.6214990811334172,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-026",
+      "group": "bar",
+      "variant": "no-diacritic",
+      "query": "quan bar o da nang",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5352543167750637,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-027",
+      "group": "takeaway",
+      "variant": "natural",
+      "query": "quán cho mang về",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-028",
+      "group": "takeaway",
+      "variant": "keyword",
+      "query": "mua mang đi",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-029",
+      "group": "takeaway",
+      "variant": "long",
+      "query": "đồ ăn sáng mua mang đi làm cho kịp giờ",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-030",
+      "group": "takeaway",
+      "variant": "english",
+      "query": "takeaway food",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-031",
+      "group": "takeaway-district",
+      "variant": "with-district",
+      "query": "quán mang về ở Hải Châu",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-032",
+      "group": "takeaway-district",
+      "variant": "with-district",
+      "query": "mua đồ ăn mang đi Hải Châu",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-033",
+      "group": "veg",
+      "variant": "natural",
+      "query": "quán chay ngon",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-034",
+      "group": "veg",
+      "variant": "keyword",
+      "query": "ăn chay",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-035",
+      "group": "veg",
+      "variant": "long",
+      "query": "quán cơm chay thanh đạm cho người ăn chay trường",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-036",
+      "group": "veg",
+      "variant": "english",
+      "query": "vegan vegetarian restaurant",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-037",
+      "group": "veg-district",
+      "variant": "with-district",
+      "query": "quán chay ở Hải Châu",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-038",
+      "group": "veg-district",
+      "variant": "with-district",
+      "query": "cơm chay Hải Châu",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-039",
+      "group": "bakery",
+      "variant": "natural",
+      "query": "tiệm bánh ngọt",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.40067051810063,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7215194105726963,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.6851198693323689,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-040",
+      "group": "bakery",
+      "variant": "keyword",
+      "query": "bánh mì",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-041",
+      "group": "bakery",
+      "variant": "long",
+      "query": "tiệm bánh mì ăn sáng gần đây mở sớm",
+      "lexical": {
+        "p5": 0,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.21145027911440428,
+        "mrr": 0.16666666666666666,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.6698623505528797,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-042",
+      "group": "bakery",
+      "variant": "typo",
+      "query": "tiệm bánk ngọt",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.2,
+        "recall10": 0.2,
+        "ndcg10": 0.15850703974098104,
+        "mrr": 0.2,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.4163824138054737,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.49825064579222794,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.4163824138054737,
+        "mrr": 0.3333333333333333,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-043",
+      "group": "streetfood",
+      "variant": "natural",
+      "query": "quán ăn vặt vỉa hè",
+      "lexical": {
+        "p5": 0.4,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.39356081945565896,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.37850091886658266,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-044",
+      "group": "streetfood",
+      "variant": "keyword",
+      "query": "đồ ăn đường phố",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-045",
+      "group": "streetfood",
+      "variant": "long",
+      "query": "quán ăn vặt buổi chiều cho học sinh sinh viên",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.42333070005078094,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.933745776545611,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-046",
+      "group": "streetfood",
+      "variant": "english",
+      "query": "street food",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 0.1,
+        "ndcg10": 0.1388624438735545,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.6,
+        "p10": 0.7,
+        "recall10": 0.7,
+        "ndcg10": 0.7257345305446319,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-047",
+      "group": "streetfood-district",
+      "variant": "with-district",
+      "query": "quán ăn vặt ở Hải Châu",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.5483327772244702,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 0.5,
+        "ndcg10": 0.6235744328990729,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.7155506487682609,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.8,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5637884576902256,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-048",
+      "group": "streetfood-district",
+      "variant": "with-district",
+      "query": "đồ ăn đường phố Hải Châu",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.4,
+        "p10": 0.3,
+        "recall10": 0.3,
+        "ndcg10": 0.39639187290150923,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-049",
+      "group": "cafe",
+      "variant": "natural",
+      "query": "quán cà phê đẹp",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8572048559638626,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-050",
+      "group": "cafe",
+      "variant": "keyword",
+      "query": "cà phê",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-051",
+      "group": "cafe-district",
+      "variant": "with-district",
+      "query": "quán cà phê ở Hải Châu",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.7058075148678526,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.727329844310522,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-052",
+      "group": "cafe-district",
+      "variant": "with-district",
+      "query": "cafe Hải Châu",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.6,
+        "p10": 0.4,
+        "recall10": 0.4,
+        "ndcg10": 0.5352543167750637,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-053",
+      "group": "restaurant",
+      "variant": "natural",
+      "query": "quán ăn tối",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.914856882358379,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.9363792118010483,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-054",
+      "group": "restaurant",
+      "variant": "keyword",
+      "query": "nhà hàng",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.7799082337019198,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.8,
+        "ndcg10": 0.8482378089219647,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-055",
+      "group": "restaurant-district",
+      "variant": "with-district",
+      "query": "nhà hàng ở Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0.8,
+        "ndcg10": 0.8922097294981223,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0.6,
+        "ndcg10": 0.7354127185757128,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-056",
+      "group": "restaurant-district",
+      "variant": "with-district",
+      "query": "quán ăn Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 0.8,
+        "recall10": 0.7,
+        "ndcg10": 0.7788065869851873,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-057",
+      "group": "wifi",
+      "variant": "natural",
+      "query": "quán có wifi miễn phí",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-058",
+      "group": "wifi-cafe",
+      "variant": "natural",
+      "query": "quán cà phê có wifi",
+      "lexical": {
+        "p5": 0.6,
+        "p10": 0.7,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-059",
+      "group": "wifi-cafe",
+      "variant": "keyword",
+      "query": "cafe wifi",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-060",
+      "group": "vietnamese",
+      "variant": "natural",
+      "query": "quán ăn món Việt",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-061",
+      "group": "vietnamese",
+      "variant": "keyword",
+      "query": "cơm Việt Nam",
+      "lexical": {
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.8,
+        "p10": 0.7,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-062",
+      "group": "vietnamese",
+      "variant": "long",
+      "query": "quán món ăn Việt truyền thống đậm vị miền Trung",
+      "lexical": {
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-063",
+      "group": "seafood",
+      "variant": "natural",
+      "query": "quán hải sản tươi ngon",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-064",
+      "group": "seafood",
+      "variant": "keyword",
+      "query": "hải sản",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-065",
+      "group": "seafood",
+      "variant": "long",
+      "query": "quán tôm hùm cua ghẹ tươi sống giá hợp lý",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-066",
+      "group": "seafood",
+      "variant": "typo",
+      "query": "quán hải sãn tươi",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-067",
+      "group": "japanese",
+      "variant": "natural",
+      "query": "quán món Nhật",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-068",
+      "group": "japanese",
+      "variant": "keyword",
+      "query": "sushi",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-069",
+      "group": "japanese",
+      "variant": "long",
+      "query": "quán sashimi Nhật Bản tươi cho bữa tối",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-070",
+      "group": "japanese",
+      "variant": "typo",
+      "query": "quán susi ngon",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-071",
+      "group": "korean",
+      "variant": "natural",
+      "query": "quán món Hàn",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-072",
+      "group": "korean",
+      "variant": "keyword",
+      "query": "kim chi tokbokki",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-073",
+      "group": "korean",
+      "variant": "long",
+      "query": "quán ăn Hàn Quốc nướng tại bàn cho nhóm bạn",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-074",
+      "group": "korean",
+      "variant": "english",
+      "query": "korean food",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-075",
+      "group": "pizza",
+      "variant": "natural",
+      "query": "quán pizza ngon",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-076",
+      "group": "pizza",
+      "variant": "keyword",
+      "query": "pizza",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-077",
+      "group": "pizza",
+      "variant": "long",
+      "query": "tiệm pizza kiểu Ý đế mỏng nướng lò củi",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-078",
+      "group": "pizza",
+      "variant": "typo",
+      "query": "quán piza ngon",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-079",
+      "group": "burger",
+      "variant": "natural",
+      "query": "quán burger bò phô mai",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-080",
+      "group": "burger",
+      "variant": "keyword",
+      "query": "hamburger",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-081",
+      "group": "burger",
+      "variant": "long",
+      "query": "quán burger Mỹ ăn kèm khoai tây chiên",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-082",
+      "group": "burger",
+      "variant": "typo",
+      "query": "quán buger ngon",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-083",
+      "group": "chicken",
+      "variant": "natural",
+      "query": "quán gà rán giòn",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-084",
+      "group": "chicken",
+      "variant": "keyword",
+      "query": "gà rán",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-085",
+      "group": "chicken",
+      "variant": "long",
+      "query": "quán gà rán Hàn Quốc sốt cay cho nhóm bạn",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-086",
+      "group": "chicken",
+      "variant": "english",
+      "query": "fried chicken",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-087",
+      "group": "steak",
+      "variant": "natural",
+      "query": "quán bít tết ngon",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-088",
+      "group": "steak",
+      "variant": "keyword",
+      "query": "steak",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-089",
+      "group": "steak",
+      "variant": "long",
+      "query": "quán bò né bít tết ăn kèm bánh mì",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-090",
+      "group": "steak",
+      "variant": "english",
+      "query": "steak house",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-091",
+      "group": "specialty",
+      "variant": "natural",
+      "query": "quán đặc sản địa phương",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-092",
+      "group": "specialty",
+      "variant": "keyword",
+      "query": "đặc sản Đà Nẵng",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-093",
+      "group": "specialty",
+      "variant": "long",
+      "query": "quán món địa phương ăn là nhớ Đà Nẵng",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-094",
+      "group": "specialty",
+      "variant": "english",
+      "query": "local specialty food",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-095",
+      "group": "entertainment",
+      "variant": "natural",
+      "query": "quán giải trí cho gia đình",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-096",
+      "group": "entertainment",
+      "variant": "keyword",
+      "query": "chỗ vui chơi",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-097",
+      "group": "entertainment",
+      "variant": "long",
+      "query": "quán có trò chơi giải trí cho trẻ em và người lớn",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-098",
+      "group": "entertainment",
+      "variant": "english",
+      "query": "entertainment place",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-099",
+      "group": "always-open",
+      "variant": "natural",
+      "query": "quán mở cửa cả đêm để ăn khuya",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-100",
+      "group": "always-open",
+      "variant": "keyword",
+      "query": "quán mở 24/7",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-101",
+      "group": "always-open",
+      "variant": "long",
+      "query": "quán mở cả ngày lẫn đêm, ăn khuya lúc 2 giờ sáng",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-102",
+      "group": "always-open",
+      "variant": "no-diacritic",
+      "query": "quan mo 24h",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-103",
+      "group": "district-hc",
+      "variant": "natural",
+      "query": "quán ở Hải Châu",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-104",
+      "group": "district-nhs",
+      "variant": "natural",
+      "query": "quán ở Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-105",
+      "group": "district-tk",
+      "variant": "natural",
+      "query": "quán ở Thanh Khê",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-106",
+      "group": "district-tk",
+      "variant": "keyword",
+      "query": "Thanh Khê",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-107",
+      "group": "district-lc",
+      "variant": "natural",
+      "query": "quán ở Liên Chiểu",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-108",
+      "group": "district-lc",
+      "variant": "keyword",
+      "query": "Liên Chiểu",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-109",
+      "group": "district-st",
+      "variant": "natural",
+      "query": "quán ở Sơn Trà",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-110",
+      "group": "district-st",
+      "variant": "keyword",
+      "query": "Sơn Trà",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-111",
+      "group": "district-cl",
+      "variant": "natural",
+      "query": "quán ở Cẩm Lệ",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v2-112",
+      "group": "district-cl",
+      "variant": "keyword",
+      "query": "Cẩm Lệ",
+      "lexical": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e113",
+      "group": "entity",
+      "variant": "exact",
+      "query": "P Coffee",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e114",
+      "group": "entity",
+      "variant": "prefix",
+      "query": "43 Factory",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e115",
+      "group": "entity",
+      "variant": "exact",
+      "query": "2AM Coffee",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e116",
+      "group": "entity",
+      "variant": "exact",
+      "query": "Trình Cà Phê",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e117",
+      "group": "entity",
+      "variant": "no-diacritic",
+      "query": "trinh ca phe",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 0.6309297535714574,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e118",
+      "group": "entity",
+      "variant": "partial",
+      "query": "Bánh mì Bà Lan",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 0.6309297535714574,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 0.6309297535714574,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 0.6309297535714574,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e119",
+      "group": "entity",
+      "variant": "no-diacritic",
+      "query": "banh mi ba lan",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 0.6309297535714574,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e120",
+      "group": "entity",
+      "variant": "exact",
+      "query": "Bánh xèo Năm Hiền",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e121",
+      "group": "entity",
+      "variant": "prefix",
+      "query": "Acacia Café",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e122",
+      "group": "entity",
+      "variant": "prefix",
+      "query": "Bảo tàng Điêu khắc Chăm",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e123",
+      "group": "entity",
+      "variant": "prefix",
+      "query": "Bánh canh Mợ Tèo",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e124",
+      "group": "entity",
+      "variant": "prefix",
+      "query": "AEON Mall",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e125",
+      "group": "entity",
+      "variant": "partial",
+      "query": "Bánh mì Ông Tý",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 0.4306765580733931,
+        "mrr": 0.25,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 0.6309297535714574,
+        "mrr": 0.5,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e126",
+      "group": "entity",
+      "variant": "prefix",
+      "query": "An BBQ",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "v3-e127",
+      "group": "entity",
+      "variant": "exact",
+      "query": "Bãi Bụt",
+      "lexical": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid2": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0.2,
+        "p10": 0.1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
+        "zeroRate": 0
+      }
+    }
+  ]
+}

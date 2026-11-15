@@ -34,7 +34,7 @@ RUN cd backend && bun build src/server.ts --target bun --outdir dist \
 FROM builder AS migrator
 WORKDIR /app/backend
 USER bun
-CMD ["bunx", "prisma", "migrate", "deploy"]
+CMD ["sh", "-c", "bunx prisma migrate deploy && bun run scripts/seed.ts"]
 
 # ---------------------------------------------------------------------------
 # Lưu ý: Bun workspace install đặt store ở node_modules/.bun và symlink của

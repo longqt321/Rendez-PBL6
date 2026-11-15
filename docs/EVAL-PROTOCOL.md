@@ -40,10 +40,23 @@ Nhãn lấy từ **thuộc tính DB**, không từ kết quả search:
 
 ```bash
 cd backend
-bun run scripts/eval-search.ts --set 2      # bộ chính (v2, 149 query) — dùng từ nay
-bun run scripts/eval-search.ts --set 1      # bộ lịch sử (v1, 50 query) — kiểm regression
-bun run scripts/eval-search.ts --set 2 --freeze   # CHỈ dùng một lần khi tạo bộ mới
+bun run scripts/eval-search.ts --set 3      # bộ CHÍNH (v3, 127 query) — dùng từ 2026-11-15
+bun run scripts/eval-search.ts --set 2      # lịch sử (v2, dataset cũ 344 POI — KHÔNG so với code hiện tại)
+bun run scripts/eval-search.ts --set 1      # lịch sử (v1, dataset cũ — kiểm regression)
+bun run scripts/eval-search.ts --set 3 --freeze   # CHỈ dùng một lần khi tạo bộ mới
 ```
+
+> [!IMPORTANT]
+> **Sau khi thay dataset venue, PHẢI tạo bộ eval mới** — nhãn đóng băng theo place id
+> nên trở nên vô nghĩa. Kiểm tra trước khi tin bất kỳ con số eval nào:
+>
+> ```sql
+> -- số id trong nhãn còn tồn tại trong DB
+> SELECT count(*) FROM places WHERE id IN (<id trong labels>);
+> ```
+>
+> Nếu = 0 → eval đang cho điểm 0 cho mọi phương pháp, mọi so sánh trên bộ đó là vô nghĩa.
+> (Đã xảy ra với v1/v2 sau D-066 — xem 5a/5b.)
 
 `--set` mặc định 1. Kết quả ghi đè `search-eval-v<set>-baseline.json` — file này là
 **kết quả mới nhất**, không phải lịch sử. Muốn giữ lịch sử thì copy sang
@@ -59,7 +72,37 @@ Script verify checksum `<set>.sha256` trước khi chấm: file query hoặc nh�
 
 ## 5. Mốc so sánh
 
-### 5a. v2 — bộ chính (112 query, 38 ý định, đo 2026-11-13)
+> [!CAUTION]
+> **v1 và v2 đã LỖI THỜI với dataset hiện tại (từ D-066, 358 POI).** Nhãn của chúng
+> trỏ tới place id của dataset cũ; đo ngày 2026-11-15: **0/343 id nhãn v2 tồn tại
+> trong DB hiện tại** → eval v2 cho điểm 0 cho MỌI phương pháp. Các bảng 5a/5b dưới
+> đây là số **lịch sử** (dataset 344 POI), KHÔNG dùng để so sánh với code hiện tại.
+> Dùng **5c (v3)** cho mọi đánh giá từ 2026-11-15.
+
+### 5c. v3 — bộ hiện hành (127 query, đo 2026-11-15, dataset 358 POI)
+
+`search-eval-v3.json` = 112 query của v2 (ràng buộc thuộc tính) **+ 15 query entity**
+(gõ tên quán thật). Nhãn query thuộc tính suy từ ràng buộc; nhãn query entity suy từ
+**tên venue** (`expectName`): grade 2 = tên chuẩn hoá trùng khít, grade 1 = chứa đủ
+token, grade 0 = còn lại. Thêm nhóm entity vì bộ v2 **không có** loại query này —
+đúng loại bug người dùng báo (L-038).
+
+| Phương pháp | P@5 | P@10 | R@10 | nDCG@10 | MRR | zeroRate |
+|---|---|---|---|---|---|---|
+| Lexical thuần (trigram) | 0.302 | 0.289 | 0.312 | 0.307 | 0.322 | 0 |
+| Dense thuần | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 1.0 |
+| Hybrid 2 nhánh | 0.302 | 0.289 | 0.312 | 0.307 | 0.322 | 0 |
+| **Hybrid 4 nhánh (name+lexical+structured)** | **0.384** | **0.370** | **0.331** | **0.339** | **0.358** | 0.362 |
+
+`dense = 0` vì `place_embeddings` rỗng (0/358) — **chưa chạy backfill embedding**.
+zeroRate 0.362 đến từ các query ý định mà dataset 358 thiếu tag tương ứng (ví dụ
+"Làm việc", "Ngoài trời"), không phải lỗi xếp hạng.
+
+So với code trước D-067 (cùng bộ v3): P@5 0.360→0.384, MRR 0.312→0.358,
+nDCG 0.298→0.339, R@10 0.302→0.331; nhóm `entity` P@5 0.383→0.437; không nhóm
+hay variant nào giảm.
+
+### 5a. v2 — LỊCH SỬ (112 query, dataset 344 POI, đo 2026-11-13 — KHÔNG dùng nữa)
 
 **Thiết kế (v2 được thiết kế lại 2026-11-13 sau khi phát hiện selection bias — L-029):**
 phiên bản đầu của v2 lấy ràng buộc từ chính thuộc tính DB nên 37% query có ≥30 venue
@@ -110,12 +153,14 @@ giới hạn bởi dữ liệu (tag nghèo, ít venue), không chỉ thuật to�
 
 ## 6. Khi nào được tạo bộ mới
 
-- Dữ liệu venue thay đổi lớn (thêm >50% venue, thêm tag mới đáng kể).
+- Dữ liệu venue thay đổi lớn (thêm >50% venue, thêm tag mới đáng kể) → nhãn theo place
+  id mất nghĩa, PHẢI tạo bộ mới (đã xảy ra D-066: v1/v2 trỏ dataset cũ).
 - Cần đo loại truy vấn mới (ví dụ tìm bài viết, tìm theo ảnh).
 - Bộ hiện tại đã bị "học thuộc" qua nhiều vòng tinh chỉnh → cần held-out.
 
-Quy trình: copy `search-eval-v1.json` → `search-eval-v2.json`, sửa/bổ sung query, chạy
-`--freeze` cho v2, ghi mốc baseline v2 vào tài liệu này. **Không xoá v1** để còn so sánh lịch sử.
+Quy trình: copy bộ gần nhất (`search-eval-v2.json` → `search-eval-v3.json`), sửa/bổ sung
+query, chạy `--set <n> --freeze`, ghi mốc baseline vào tài liệu này. **Không xoá bộ cũ**
+để còn so sánh lịch sử (nhưng ghi rõ nó lỗi thời nếu dataset đã đổi).
 
 ## 7. Thống kê + giao thức nghiên cứu
 

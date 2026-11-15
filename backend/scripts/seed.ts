@@ -1,7 +1,6 @@
 /**
- * Seed idempotent: ưu tiên `backend/data/places-expanded.json` (corpus OSM đã lọc,
- * sinh bởi scripts/build-corpus — hiện 344 POI), không có thì dùng
- * `frontend/data/cold-start/places.json` (491 place gốc).
+ * Seed idempotent: ưu tiên `backend/data/places-expanded.json` (358 POI đã làm giàu
+ * từ websearch, D-066), không có thì dùng `frontend/data/cold-start/places.json` (491 place gốc).
  *
  * Nguyên tắc (D-049, K4): KHÔNG bịa số liệu.
  * - `rating`/`reviewCount` không lưu cột — tính bằng COUNT/AVG (D3).
@@ -61,6 +60,25 @@ interface ColdStartDataset {
  * để seed và mock cho cùng kết quả.
  */
 const CATEGORY_MAP: Record<string, PlaceCategory> = {
+  // Nhóm chuẩn frontend
+  restaurant: "restaurant",
+  bakery: "bakery",
+  "street-food": "street-food",
+  bar: "bar",
+  dessert: "dessert",
+  // Nhãn bổ sung từ tập dữ liệu websearch Đà Nẵng
+  "am-nhac": "bar",
+  "bar-pub": "bar",
+  "the-thao": "bar",
+  "giai-tri": "bar",
+  workshop: "cafe",
+  sach: "cafe",
+  camping: "restaurant",
+  "check-in": "restaurant",
+  "di-tich": "restaurant",
+  "bao-tang": "restaurant",
+  "cho-dem": "street-food",
+  "dac-san": "restaurant",
   // Nhãn ẩm thực gốc của dataset 491.
   cafe: "cafe",
   "banh-mi": "bakery",
@@ -217,7 +235,7 @@ const SEED_BASE_AT = new Date("2026-11-09T00:00:00+07:00")
  * giữ nguyên thứ tự trong từng nhóm, và `created_at` theo thứ tự đã sắp.
  */
 function seedRank(place: ColdStartPlace): number {
-  if (place.image || place.images.length > 0) return 0
+  if (place.image || (place.images?.length ?? 0) > 0) return 0
   return place.tier === "osm" ? 2 : 1
 }
 
@@ -321,7 +339,7 @@ async function main(): Promise<void> {
     })
 
     // Ảnh: dataset có `images[]`; giữ thứ tự, idempotent theo (place, url).
-    const urls = raw.images.length > 0 ? raw.images : raw.image ? [raw.image] : []
+    const urls = (raw.images?.length ?? 0) > 0 ? raw.images : raw.image ? [raw.image] : []
     for (const [position, path] of urls.entries()) {
       const url = `/data/cold-start/${path}`
       const existing = await prisma.placeImage.findFirst({
@@ -354,16 +372,30 @@ async function main(): Promise<void> {
     index += 1
   }
 
-  // Dọn dư liệu: các place tier='osm' KHÔNG còn trong dataset hiện tại là rác
-  // từ lần seed trước (corpus OSM thay đổi id mỗi lần build). Chỉ xoá tier='osm'
-  // — tier curated/curated-v2 là dữ liệu kiểm tay, KHÔNG BAO GIỜ tự xoá.
-  // notIn giới hạn ~65k tham số của Postgres; corpus hiện 344, đủ dư địa.
+  // Dọn dư liệu: các place KHÔNG còn trong dataset hiện tại là dữ liệu cũ
+  // cần dọn dẹp để bộ dữ liệu mới thay thế hoàn toàn.
   const datasetIds = dataset.places.map((p) => p.id)
+
+  // Dọn FK references trước
+  await prisma.dailyPick.deleteMany({
+    where: { placeId: { notIn: datasetIds } },
+  })
+  await prisma.placeEmbedding.deleteMany({
+    where: { placeId: { notIn: datasetIds } },
+  })
+  await prisma.affinityCache.deleteMany({
+    where: { placeId: { notIn: datasetIds } },
+  })
+  await prisma.interactionEvent.updateMany({
+    where: { placeId: { notIn: datasetIds } },
+    data: { placeId: null },
+  })
+
   const stale = await prisma.place.deleteMany({
-    where: { tier: "osm", id: { notIn: datasetIds } },
+    where: { id: { notIn: datasetIds } },
   })
   if (stale.count > 0) {
-    console.info(`[seed] Dọn ${stale.count} place tier='osm' không còn trong corpus.`)
+    console.info(`[seed] Dọn ${stale.count} place cũ không còn trong dataset.`)
   }
 
   const placeCount = await prisma.place.count()

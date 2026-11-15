@@ -3,133 +3,133 @@
     "frozenAt": "2026-11-13T06:23:34.093Z",
     "queries": 50,
     "lexical": {
-      "p5": 0.504,
-      "p10": 0.48,
-      "recall10": 0.465,
-      "ndcg10": 0.513,
-      "mrr": 0.584,
+      "p5": 0,
+      "p10": 0,
+      "recall10": 0,
+      "ndcg10": 0,
+      "mrr": 0,
       "zeroRate": 0,
-      "latencyP50Ms": 43,
-      "latencyP95Ms": 62
+      "latencyP50Ms": 10,
+      "latencyP95Ms": 11
     },
     "dense": {
-      "p5": 0.596,
-      "p10": 0.558,
-      "recall10": 0.545,
-      "ndcg10": 0.584,
-      "mrr": 0.627,
-      "zeroRate": 0,
-      "latencyP50Ms": 33,
-      "latencyP95Ms": 65
+      "p5": 0,
+      "p10": 0,
+      "recall10": 0,
+      "ndcg10": 0,
+      "mrr": 0,
+      "zeroRate": 1,
+      "latencyP50Ms": 5,
+      "latencyP95Ms": 7
     },
     "hybrid2": {
-      "p5": 0.612,
-      "p10": 0.578,
-      "recall10": 0.594,
-      "ndcg10": 0.613,
-      "mrr": 0.645,
+      "p5": 0,
+      "p10": 0,
+      "recall10": 0,
+      "ndcg10": 0,
+      "mrr": 0,
       "zeroRate": 0,
-      "latencyP50Ms": 76,
-      "latencyP95Ms": 128
+      "latencyP50Ms": 15,
+      "latencyP95Ms": 18
     },
     "hybrid3": {
-      "p5": 0.768,
-      "p10": 0.702,
-      "recall10": 0.716,
-      "ndcg10": 0.747,
-      "mrr": 0.742,
-      "zeroRate": 0,
-      "latencyP50Ms": 71,
-      "latencyP95Ms": 119
+      "p5": 0,
+      "p10": 0,
+      "recall10": 0,
+      "ndcg10": 0,
+      "mrr": 0,
+      "zeroRate": 0.34,
+      "latencyP50Ms": 18,
+      "latencyP95Ms": 21
     }
   },
   "byGroup": {
     "study": {
       "n": 8,
-      "lexicalP5": 0.8,
-      "denseP5": 0.875,
-      "hybrid2P5": 0.85,
-      "hybrid3P5": 0.875
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
     },
     "date": {
       "n": 7,
-      "lexicalP5": 0.543,
-      "denseP5": 0.714,
-      "hybrid2P5": 0.686,
-      "hybrid3P5": 0.686
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
     },
     "friends": {
       "n": 7,
-      "lexicalP5": 0.143,
-      "denseP5": 0.229,
-      "hybrid2P5": 0.229,
-      "hybrid3P5": 0.6
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
     },
     "indoor": {
       "n": 6,
-      "lexicalP5": 0.767,
-      "denseP5": 0.867,
-      "hybrid2P5": 0.933,
-      "hybrid3P5": 0.9
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
     },
     "budget": {
       "n": 8,
-      "lexicalP5": 0.25,
-      "denseP5": 0.45,
-      "hybrid2P5": 0.4,
-      "hybrid3P5": 0.575
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
     },
     "cuisine": {
       "n": 10,
-      "lexicalP5": 0.5,
-      "denseP5": 0.4,
-      "hybrid2P5": 0.62,
-      "hybrid3P5": 0.98
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
     },
     "district": {
       "n": 4,
-      "lexicalP5": 0.6,
-      "denseP5": 0.85,
-      "hybrid2P5": 0.6,
-      "hybrid3P5": 0.65
+      "lexicalP5": 0,
+      "denseP5": 0,
+      "hybrid2P5": 0,
+      "hybrid3P5": 0
     }
   },
   "byVariant": {},
   "significance": [
     {
       "comparison": "hybrid3 - hybrid2",
-      "meanDelta": 0.156,
-      "ci95": "[0.052, 0.264]",
-      "pRaw": 0.0007,
-      "pHolm": 0.0021
+      "meanDelta": 0,
+      "ci95": "[0.000, 0.000]",
+      "pRaw": 1,
+      "pHolm": 1
     },
     {
       "comparison": "hybrid3 - dense",
-      "meanDelta": 0.172,
-      "ci95": "[0.068, 0.276]",
-      "pRaw": 0.0004,
-      "pHolm": 0.0016
+      "meanDelta": 0,
+      "ci95": "[0.000, 0.000]",
+      "pRaw": 1,
+      "pHolm": 1
     },
     {
       "comparison": "hybrid3 - lexical",
-      "meanDelta": 0.264,
-      "ci95": "[0.156, 0.376]",
-      "pRaw": 0,
-      "pHolm": 0
+      "meanDelta": 0,
+      "ci95": "[0.000, 0.000]",
+      "pRaw": 1,
+      "pHolm": 1
     },
     {
       "comparison": "dense - lexical",
-      "meanDelta": 0.092,
-      "ci95": "[0.016, 0.168]",
-      "pRaw": 0.0097,
-      "pHolm": 0.0194
+      "meanDelta": 0,
+      "ci95": "[0.000, 0.000]",
+      "pRaw": 1,
+      "pHolm": 1
     },
     {
       "comparison": "hybrid2 - dense",
-      "meanDelta": 0.016,
-      "ci95": "[-0.052, 0.084]",
-      "pRaw": 0.3161,
-      "pHolm": 0.3161
+      "meanDelta": 0,
+      "ci95": "[0.000, 0.000]",
+      "pRaw": 1,
+      "pHolm": 1
     }
   ],
   "perQuery": [
@@ -138,270 +138,11 @@
       "group": "study",
       "query": "quán cà phê yên tĩnh để học bài",
       "lexical": {
-        "p5": 0.6,
-        "p10": 0.6,
-        "recall10": 0.2,
-        "ndcg10": 0.42094679210822467,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 0.4,
-        "ndcg10": 0.5603464619398381,
-        "mrr": 0.3333333333333333,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 0.4,
-        "ndcg10": 0.5476641081756296,
-        "mrr": 0.3333333333333333,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s02",
-      "group": "study",
-      "query": "chỗ ngồi làm việc với laptop có wifi",
-      "lexical": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s03",
-      "group": "study",
-      "query": "quán cà phê làm việc ở Hải Châu",
-      "lexical": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 0.9,
-        "ndcg10": 0.9477344873475498,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 0.8,
-        "ndcg10": 0.8650111786183292,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s04",
-      "group": "study",
-      "query": "cà phê yên tĩnh làm việc buổi sáng",
-      "lexical": {
-        "p5": 1,
-        "p10": 0.9,
-        "recall10": 0.9,
-        "ndcg10": 0.92663607790064,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s05",
-      "group": "study",
-      "query": "quán có wifi để làm việc cả ngày",
-      "lexical": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s06",
-      "group": "study",
-      "query": "cà phê học bài ở Ngũ Hành Sơn",
-      "lexical": {
-        "p5": 0.6,
-        "p10": 0.3,
-        "recall10": 0.1,
-        "ndcg10": 0.2047945210321659,
-        "mrr": 0.2,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 0.2,
-        "ndcg10": 0.45328765467411447,
-        "mrr": 0.25,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 0.8,
-        "p10": 0.5,
-        "recall10": 0.2,
-        "ndcg10": 0.3489402916089224,
-        "mrr": 0.3333333333333333,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s07",
-      "group": "study",
-      "query": "quán cà phê phù hợp làm việc nhóm",
-      "lexical": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 0.9,
-        "ndcg10": 0.9575861412006988,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s08",
-      "group": "study",
-      "query": "chỗ làm việc yên tĩnh ở Thanh Khê",
-      "lexical": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
@@ -410,22 +151,281 @@
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
-        "zeroRate": 0
+        "zeroRate": 1
       },
       "hybrid2": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 1,
-        "ndcg10": 0.3562071871080222,
-        "mrr": 0.16666666666666666,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 1,
-        "ndcg10": 0.3154648767857287,
-        "mrr": 0.125,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s02",
+      "group": "study",
+      "query": "chỗ ngồi làm việc với laptop có wifi",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      }
+    },
+    {
+      "id": "s03",
+      "group": "study",
+      "query": "quán cà phê làm việc ở Hải Châu",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s04",
+      "group": "study",
+      "query": "cà phê yên tĩnh làm việc buổi sáng",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s05",
+      "group": "study",
+      "query": "quán có wifi để làm việc cả ngày",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      }
+    },
+    {
+      "id": "s06",
+      "group": "study",
+      "query": "cà phê học bài ở Ngũ Hành Sơn",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s07",
+      "group": "study",
+      "query": "quán cà phê phù hợp làm việc nhóm",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      }
+    },
+    {
+      "id": "s08",
+      "group": "study",
+      "query": "chỗ làm việc yên tĩnh ở Thanh Khê",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -442,12 +442,12 @@
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.4,
-        "p10": 0.2,
-        "recall10": 0.2,
-        "ndcg10": 0.2240055615151755,
-        "mrr": 0.5,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
         "p5": 0,
@@ -458,12 +458,12 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.4,
-        "p10": 0.2,
-        "recall10": 0.2,
-        "ndcg10": 0.2240055615151755,
-        "mrr": 0.5,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       }
     },
     {
@@ -471,35 +471,35 @@
       "group": "date",
       "query": "quán cà phê lãng mạn ngoài trời",
       "lexical": {
-        "p5": 0.8,
-        "p10": 0.8,
-        "recall10": 0.8,
-        "ndcg10": 0.8364586133797035,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.7,
-        "recall10": 0.7,
-        "ndcg10": 0.7721596254947202,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -508,35 +508,35 @@
       "group": "date",
       "query": "nhà hàng có chỗ ngồi ngoài trời cho buổi hẹn",
       "lexical": {
-        "p5": 0.2,
-        "p10": 0.5,
-        "recall10": 0.3,
-        "ndcg10": 0.30186459548591205,
-        "mrr": 0.14285714285714285,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.4,
-        "p10": 0.5,
-        "recall10": 0.5,
-        "ndcg10": 0.5730379245414763,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.6,
-        "p10": 0.6,
-        "recall10": 0.6,
-        "ndcg10": 0.5519699720241614,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.4,
-        "p10": 0.4,
-        "recall10": 0.4,
-        "ndcg10": 0.34301849170611365,
-        "mrr": 0.3333333333333333,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -545,36 +545,36 @@
       "group": "date",
       "query": "quán ngồi ngoài trời view đẹp",
       "lexical": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       }
     },
     {
@@ -582,35 +582,35 @@
       "group": "date",
       "query": "cà phê hẹn hò ở Sơn Trà",
       "lexical": {
-        "p5": 0.2,
-        "p10": 0.6,
-        "recall10": 0.5,
-        "ndcg10": 0.5413312431779351,
-        "mrr": 0.14285714285714285,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 0.6,
-        "p10": 0.5,
+        "p5": 0,
+        "p10": 0,
         "recall10": 0,
-        "ndcg10": 0.5615252322598562,
+        "ndcg10": 0,
         "mrr": 0,
         "zeroRate": 0
       },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
       "hybrid2": {
-        "p5": 0.4,
-        "p10": 0.5,
-        "recall10": 0.5,
-        "ndcg10": 0.5175217418398985,
-        "mrr": 0.14285714285714285,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.5,
-        "recall10": 0.5,
-        "ndcg10": 0.5914493028501522,
-        "mrr": 0.2,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -619,35 +619,35 @@
       "group": "date",
       "query": "địa điểm lãng mạn ngoài trời ở Ngũ Hành Sơn",
       "lexical": {
-        "p5": 0.8,
-        "p10": 0.7,
-        "recall10": 0.7,
-        "ndcg10": 0.7849818707050382,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 0.9,
-        "recall10": 0.9,
-        "ndcg10": 0.933745776545611,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -656,35 +656,35 @@
       "group": "date",
       "query": "quán ăn tối ngoài trời cho hai người",
       "lexical": {
-        "p5": 0.8,
-        "p10": 0.9,
-        "recall10": 0.4,
-        "ndcg10": 0.48653040671645686,
-        "mrr": 0.2,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.6,
-        "p10": 0.6,
-        "recall10": 0.4,
-        "ndcg10": 0.42626452458821773,
-        "mrr": 0.25,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.8,
-        "p10": 0.9,
-        "recall10": 0.6,
-        "ndcg10": 0.7282667337330334,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.5,
-        "recall10": 0.5,
-        "ndcg10": 0.4767487015278743,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -701,28 +701,28 @@
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.4,
-        "p10": 0.4,
-        "recall10": 0.4,
-        "ndcg10": 0.39673781793804713,
-        "mrr": 0.5,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
         "p5": 0,
-        "p10": 0.2,
-        "recall10": 0.2,
-        "ndcg10": 0.14201905717762703,
-        "mrr": 0.16666666666666666,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 0.8,
-        "recall10": 0.8,
-        "ndcg10": 0.866947989864271,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       }
     },
     {
@@ -738,28 +738,28 @@
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.4,
-        "p10": 0.3,
-        "recall10": 0.3333333333333333,
-        "ndcg10": 0.3278743552539444,
-        "mrr": 0.5,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.2,
-        "p10": 0.4,
-        "recall10": 0.4444444444444444,
-        "ndcg10": 0.32704553841485895,
-        "mrr": 0.25,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 0.9,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       }
     },
     {
@@ -780,7 +780,7 @@
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
-        "zeroRate": 0
+        "zeroRate": 1
       },
       "hybrid2": {
         "p5": 0,
@@ -792,10 +792,10 @@
       },
       "hybrid3": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 0.14285714285714285,
-        "ndcg10": 0.0794570794327674,
-        "mrr": 0.1,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -804,36 +804,36 @@
       "group": "friends",
       "query": "địa điểm giải trí trong nhà cho nhóm bạn",
       "lexical": {
-        "p5": 0.6,
-        "p10": 0.4,
-        "recall10": 0.5714285714285714,
-        "ndcg10": 0.6773676006644394,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.6,
-        "p10": 0.5,
-        "recall10": 0.7142857142857143,
-        "ndcg10": 0.5827738848179197,
-        "mrr": 0.5,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 0.6,
-        "recall10": 0.8571428571428571,
-        "ndcg10": 0.9083745556952364,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 0.7,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       }
     },
     {
@@ -854,7 +854,7 @@
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
-        "zeroRate": 0
+        "zeroRate": 1
       },
       "hybrid2": {
         "p5": 0,
@@ -878,36 +878,36 @@
       "group": "friends",
       "query": "tụ tập bạn bè ăn uống ngoài trời",
       "lexical": {
-        "p5": 0.4,
-        "p10": 0.3,
-        "recall10": 0.3,
-        "ndcg10": 0.40350157154648025,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 0.1,
-        "ndcg10": 0.06943122193677725,
-        "mrr": 0.125,
-        "zeroRate": 0
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.4,
-        "p10": 0.4,
-        "recall10": 0.4,
-        "ndcg10": 0.3667028183788342,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.3,
-        "recall10": 0.3,
-        "ndcg10": 0.24261785528500338,
-        "mrr": 0.25,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       }
     },
     {
@@ -923,28 +923,28 @@
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.2,
-        "p10": 0.3,
-        "recall10": 0.3333333333333333,
-        "ndcg10": 0.2537257399688699,
-        "mrr": 0.25,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 0.1111111111111111,
-        "ndcg10": 0.08372491399919346,
-        "mrr": 0.16666666666666666,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 0.9,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       }
     },
     {
@@ -952,35 +952,35 @@
       "group": "indoor",
       "query": "quán cà phê trong nhà tránh mưa",
       "lexical": {
-        "p5": 0.4,
-        "p10": 0.5,
-        "recall10": 0.2,
-        "ndcg10": 0.2674958631932079,
-        "mrr": 0.14285714285714285,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 0.9,
-        "recall10": 0.3,
-        "ndcg10": 0.5202979596723966,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 0.4,
-        "ndcg10": 0.6192265393558442,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -989,34 +989,34 @@
       "group": "indoor",
       "query": "quán ăn trong nhà có điều hoà",
       "lexical": {
-        "p5": 1,
-        "p10": 1,
+        "p5": 0,
+        "p10": 0,
         "recall10": 0,
-        "ndcg10": 0.3333333333333333,
+        "ndcg10": 0,
         "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 0.9,
+        "p5": 0,
+        "p10": 0,
         "recall10": 0,
-        "ndcg10": 0.31212640393368274,
+        "ndcg10": 0,
         "mrr": 0,
-        "zeroRate": 0
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 1,
+        "p5": 0,
+        "p10": 0,
         "recall10": 0,
-        "ndcg10": 0.3333333333333333,
+        "ndcg10": 0,
         "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
+        "p5": 0,
+        "p10": 0,
         "recall10": 0,
-        "ndcg10": 0.3333333333333333,
+        "ndcg10": 0,
         "mrr": 0,
         "zeroRate": 0
       }
@@ -1026,35 +1026,35 @@
       "group": "indoor",
       "query": "cà phê ngồi trong nhà ở Cẩm Lệ",
       "lexical": {
-        "p5": 1,
-        "p10": 0.9,
-        "recall10": 0.2857142857142857,
-        "ndcg10": 0.6875929625773157,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.6,
-        "p10": 0.4,
-        "recall10": 0.5714285714285714,
-        "ndcg10": 0.6724559848537954,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.8,
-        "p10": 0.7,
-        "recall10": 0.5714285714285714,
-        "ndcg10": 0.7801435206072749,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.8,
-        "recall10": 0.42857142857142855,
-        "ndcg10": 0.5276416710068143,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1063,35 +1063,35 @@
       "group": "indoor",
       "query": "quán ăn trong nhà ở Liên Chiểu",
       "lexical": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 0.5,
-        "ndcg10": 0.6907156957882957,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1100,34 +1100,34 @@
       "group": "indoor",
       "query": "quán cà phê có wifi ở Thanh Khê",
       "lexical": {
-        "p5": 0.6,
-        "p10": 0.6,
-        "recall10": 1,
-        "ndcg10": 1.4340237218490028,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.6,
-        "p10": 0.7,
-        "recall10": 1,
-        "ndcg10": 1.379138117110825,
-        "mrr": 0.16666666666666666,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.8,
-        "p10": 0.7,
-        "recall10": 1,
-        "ndcg10": 1.557018505411315,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.8,
+        "p5": 0,
+        "p10": 0,
         "recall10": 0,
-        "ndcg10": 1.0522355102846015,
+        "ndcg10": 0,
         "mrr": 0,
         "zeroRate": 0
       }
@@ -1137,35 +1137,35 @@
       "group": "indoor",
       "query": "nhà hàng trong nhà cho gia đình",
       "lexical": {
-        "p5": 0.6,
-        "p10": 0.7,
-        "recall10": 0.7,
-        "ndcg10": 0.5747915663739762,
-        "mrr": 0.3333333333333333,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 0.8,
-        "recall10": 0.8,
-        "ndcg10": 0.8701249883466592,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1175,26 +1175,26 @@
       "query": "quán ăn giá rẻ gần đây",
       "lexical": {
         "p5": 0,
-        "p10": 0.2,
-        "recall10": 0.2,
-        "ndcg10": 0.1356854453911663,
-        "mrr": 0.125,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 0.1,
-        "ndcg10": 0.11004588314904007,
-        "mrr": 0.3333333333333333,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 0.1,
-        "ndcg10": 0.11004588314904007,
-        "mrr": 0.3333333333333333,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
@@ -1219,27 +1219,27 @@
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.6,
-        "p10": 0.5,
-        "recall10": 0.5,
-        "ndcg10": 0.5983950669742497,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
         "p5": 0,
-        "p10": 0.2,
-        "recall10": 0.2,
-        "ndcg10": 0.1396181455537491,
-        "mrr": 0.14285714285714285,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1248,35 +1248,35 @@
       "group": "budget",
       "query": "quán cà phê mang đi nhanh",
       "lexical": {
-        "p5": 0.8,
-        "p10": 0.7,
-        "recall10": 0.7,
-        "ndcg10": 0.7503359712972107,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1285,35 +1285,35 @@
       "group": "budget",
       "query": "bánh mì bánh ngọt mua mang đi",
       "lexical": {
-        "p5": 0.6,
-        "p10": 0.4,
-        "recall10": 0.4,
-        "ndcg10": 0.5033242827953464,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.8,
-        "p10": 0.6,
-        "recall10": 0.6,
-        "ndcg10": 0.6969383549984329,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.8,
-        "p10": 0.5,
-        "recall10": 0.5,
-        "ndcg10": 0.6332196796270028,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 0.1,
-        "ndcg10": 0.06625422345438903,
-        "mrr": 0.1111111111111111,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1323,10 +1323,10 @@
       "query": "quán ăn nhanh bình dân ở Hải Châu",
       "lexical": {
         "p5": 0,
-        "p10": 0.2,
-        "recall10": 0.2222222222222222,
-        "ndcg10": 0.157873529284268,
-        "mrr": 0.16666666666666666,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
@@ -1335,22 +1335,22 @@
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
-        "zeroRate": 0
+        "zeroRate": 1
       },
       "hybrid2": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 0.1111111111111111,
-        "ndcg10": 0.07414861528507453,
-        "mrr": 0.125,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 0.1111111111111111,
-        "ndcg10": 0.07414861528507453,
-        "mrr": 0.125,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1359,35 +1359,35 @@
       "group": "budget",
       "query": "cà phê take away ở Ngũ Hành Sơn",
       "lexical": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 0.2,
-        "ndcg10": 0.33916020527361607,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 0.2,
-        "ndcg10": 0.33916020527361607,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 0.2,
-        "ndcg10": 0.33916020527361607,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.4,
-        "recall10": 0.8,
-        "ndcg10": 0.8062079522181138,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1396,35 +1396,35 @@
       "group": "budget",
       "query": "tiệm bánh ngọt gần đây",
       "lexical": {
-        "p5": 0.4,
-        "p10": 0.4,
-        "recall10": 0.4,
-        "ndcg10": 0.3667028183788342,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.8,
-        "p10": 0.6,
-        "recall10": 0.6,
-        "ndcg10": 0.7058075148678526,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.8,
-        "p10": 0.8,
-        "recall10": 0.8,
-        "ndcg10": 0.8512360941594272,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1442,26 +1442,26 @@
       },
       "dense": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 0.1,
-        "ndcg10": 0.07336392209936005,
-        "mrr": 0.14285714285714285,
-        "zeroRate": 0
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 0.1,
-        "ndcg10": 0.09478836436955078,
-        "mrr": 0.25,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1470,35 +1470,35 @@
       "group": "cuisine",
       "query": "quán hải sản tươi ngon",
       "lexical": {
-        "p5": 0.2,
-        "p10": 0.2,
-        "recall10": 0.2857142857142857,
-        "ndcg10": 0.18579376046299725,
-        "mrr": 0.2,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.4,
-        "p10": 0.2,
-        "recall10": 0.2857142857142857,
-        "ndcg10": 0.4483039899025303,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.2,
-        "p10": 0.2,
-        "recall10": 0.2857142857142857,
-        "ndcg10": 0.265053101293003,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 0.7,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1508,269 +1508,10 @@
       "query": "quán ăn chay thanh đạm",
       "lexical": {
         "p5": 0,
-        "p10": 0.1,
-        "recall10": 0.1,
-        "ndcg10": 0.0636207881989517,
-        "mrr": 0.1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 0.2,
-        "p10": 0.3,
-        "recall10": 0.3,
-        "ndcg10": 0.23177307466786254,
-        "mrr": 0.25,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 0.1,
-        "ndcg10": 0.1388624438735545,
-        "mrr": 0.5,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 0.8,
-        "recall10": 0.8,
-        "ndcg10": 0.8701249883466592,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s39",
-      "group": "cuisine",
-      "query": "quán pizza ngon cho nhóm",
-      "lexical": {
-        "p5": 0.6,
-        "p10": 0.4,
-        "recall10": 0.4,
-        "ndcg10": 0.382414714083678,
-        "mrr": 0.5,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 0.4,
-        "p10": 0.5,
-        "recall10": 0.5,
-        "ndcg10": 0.41057198006764817,
-        "mrr": 0.3333333333333333,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 0.6,
-        "p10": 0.8,
-        "recall10": 0.8,
-        "ndcg10": 0.6851198693323689,
-        "mrr": 0.5,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s40",
-      "group": "cuisine",
-      "query": "quán bít tết steak",
-      "lexical": {
-        "p5": 0.8,
-        "p10": 0.5,
-        "recall10": 0.625,
-        "ndcg10": 0.7322538581500235,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 1,
-        "p10": 0.8,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 1,
-        "p10": 0.8,
-        "recall10": 1,
-        "ndcg10": 0.9888026041880242,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 0.8,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s41",
-      "group": "cuisine",
-      "query": "quán burger Mỹ",
-      "lexical": {
-        "p5": 0.6,
-        "p10": 0.4,
-        "recall10": 0.5714285714285714,
-        "ndcg10": 0.49994852578093474,
-        "mrr": 0.5,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 0.6,
-        "p10": 0.7,
-        "recall10": 1,
-        "ndcg10": 0.788246835854919,
-        "mrr": 0.5,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 0.8,
-        "p10": 0.7,
-        "recall10": 1,
-        "ndcg10": 0.9610742864774044,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 0.7,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s42",
-      "group": "cuisine",
-      "query": "quán gà rán",
-      "lexical": {
-        "p5": 0.4,
-        "p10": 0.2,
-        "recall10": 0.4,
-        "ndcg10": 0.5531464700081437,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 0.2,
-        "p10": 0.2,
-        "recall10": 0.4,
-        "ndcg10": 0.2591217516005785,
-        "mrr": 0.25,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 0.6,
-        "p10": 0.3,
-        "recall10": 0.6,
-        "ndcg10": 0.6548086577531306,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 0.5,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s43",
-      "group": "cuisine",
-      "query": "quán món Nhật sushi",
-      "lexical": {
-        "p5": 0.6,
-        "p10": 0.3,
-        "recall10": 0.6,
-        "ndcg10": 0.7227265726449517,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 0.8,
-        "p10": 0.5,
-        "recall10": 1,
-        "ndcg10": 0.98184832424553,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 0.8,
-        "p10": 0.5,
-        "recall10": 1,
-        "ndcg10": 0.9757880548549218,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 1,
-        "p10": 0.5,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s44",
-      "group": "cuisine",
-      "query": "quán món Hàn kim chi",
-      "lexical": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 0.25,
-        "ndcg10": 0.3903800499921017,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "dense": {
-        "p5": 0,
-        "p10": 0.2,
-        "recall10": 0.5,
-        "ndcg10": 0.2691828628414762,
-        "mrr": 0.16666666666666666,
-        "zeroRate": 0
-      },
-      "hybrid2": {
-        "p5": 0.8,
-        "p10": 0.4,
-        "recall10": 1,
-        "ndcg10": 0.9828920819566878,
-        "mrr": 1,
-        "zeroRate": 0
-      },
-      "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.4,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
-      }
-    },
-    {
-      "id": "s45",
-      "group": "cuisine",
-      "query": "quán đặc sản địa phương Đà Nẵng",
-      "lexical": {
-        "p5": 0.6,
-        "p10": 0.6,
-        "recall10": 0.8571428571428571,
-        "ndcg10": 0.8029816832868507,
-        "mrr": 1,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
@@ -1779,23 +1520,282 @@
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
-        "zeroRate": 0
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.2,
-        "p10": 0.2,
-        "recall10": 0.2857142857142857,
-        "ndcg10": 0.25288473642100684,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 0.7,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
+      }
+    },
+    {
+      "id": "s39",
+      "group": "cuisine",
+      "query": "quán pizza ngon cho nhóm",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      }
+    },
+    {
+      "id": "s40",
+      "group": "cuisine",
+      "query": "quán bít tết steak",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      }
+    },
+    {
+      "id": "s41",
+      "group": "cuisine",
+      "query": "quán burger Mỹ",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      }
+    },
+    {
+      "id": "s42",
+      "group": "cuisine",
+      "query": "quán gà rán",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      }
+    },
+    {
+      "id": "s43",
+      "group": "cuisine",
+      "query": "quán món Nhật sushi",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      }
+    },
+    {
+      "id": "s44",
+      "group": "cuisine",
+      "query": "quán món Hàn kim chi",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      }
+    },
+    {
+      "id": "s45",
+      "group": "cuisine",
+      "query": "quán đặc sản địa phương Đà Nẵng",
+      "lexical": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "dense": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
+      },
+      "hybrid2": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 0
+      },
+      "hybrid3": {
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       }
     },
     {
@@ -1803,36 +1803,36 @@
       "group": "cuisine",
       "query": "quán món Việt Nam truyền thống",
       "lexical": {
-        "p5": 1,
-        "p10": 0.9,
-        "recall10": 0.9,
-        "ndcg10": 0.9363792118010483,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.4,
-        "p10": 0.6,
-        "recall10": 0.6,
-        "ndcg10": 0.6149518506608846,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       }
     },
     {
@@ -1840,35 +1840,35 @@
       "group": "district",
       "query": "quán cà phê ở Sơn Trà",
       "lexical": {
-        "p5": 0.2,
-        "p10": 0.4,
-        "recall10": 0.125,
-        "ndcg10": 0.15973099793122303,
-        "mrr": 0.1111111111111111,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.8,
-        "p10": 0.4,
-        "recall10": 0.5,
-        "ndcg10": 0.6368547259115425,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.2,
-        "p10": 0.3,
-        "recall10": 0.25,
-        "ndcg10": 0.26375589516864784,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.4,
-        "p10": 0.5,
-        "recall10": 0.25,
-        "ndcg10": 0.3384782742164479,
-        "mrr": 0.5,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1877,35 +1877,35 @@
       "group": "district",
       "query": "nhà hàng ở Ngũ Hành Sơn",
       "lexical": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.9,
-        "recall10": 0.8,
-        "ndcg10": 0.8724430235590779,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1914,35 +1914,35 @@
       "group": "district",
       "query": "quán ăn ở Liên Chiểu",
       "lexical": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.5,
-        "recall10": 0.5,
-        "ndcg10": 0.611795237356812,
-        "mrr": 1,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     },
@@ -1951,35 +1951,35 @@
       "group": "district",
       "query": "quán cà phê ở Cẩm Lệ",
       "lexical": {
-        "p5": 0.2,
-        "p10": 0.1,
-        "recall10": 0.14285714285714285,
-        "ndcg10": 0.13743816645714543,
-        "mrr": 0.3333333333333333,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "dense": {
-        "p5": 0.6,
-        "p10": 0.3,
-        "recall10": 0.42857142857142855,
-        "ndcg10": 0.5666867828578932,
-        "mrr": 1,
-        "zeroRate": 0
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
+        "zeroRate": 1
       },
       "hybrid2": {
-        "p5": 0.2,
-        "p10": 0.2,
-        "recall10": 0.2857142857142857,
-        "ndcg10": 0.21689524588991282,
-        "mrr": 0.3333333333333333,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.8,
-        "recall10": 0.5714285714285714,
-        "ndcg10": 0.5707252637563801,
-        "mrr": 0.3333333333333333,
+        "p5": 0,
+        "p10": 0,
+        "recall10": 0,
+        "ndcg10": 0,
+        "mrr": 0,
         "zeroRate": 0
       }
     }

@@ -1,0 +1,3257 @@
+{
+  "version": 6,
+  "description": "Bộ benchmark search-eval-v6 quy mô lớn (300+ queries) đa ngôn ngữ, đa hình thái và tình huống thực tế cho corpus 358 địa điểm Đà Nẵng: 70 English & Cross-lingual synonyms, 105 Entity variations, 55 Category/Tag taxonomy, 36 Geo-Spatial 6 quận, và 40 Complex situational queries.",
+  "queries": [
+    {
+      "id": "q001",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "specialty coffee shop da nang",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q002",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "best cafes in da nang",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q003",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "cozy coffee spot",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q004",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "coffee house near dragon bridge",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Hải Châu",
+          "Sơn Trà"
+        ]
+      }
+    },
+    {
+      "id": "q005",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "vietnamese traditional drip coffee",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q006",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "egg coffee and coconut coffee",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q007",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "espresso bar and pour over coffee",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q008",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "matcha latte and coffee",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q009",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "iced milk coffee ca phe sua da",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q010",
+      "intent": "cafe",
+      "variant": "english_synonym",
+      "query": "roastery coffee beans",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q011",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "craft beer brewery taproom",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q012",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "cocktail bar and lounge",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q013",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "speakeasy hidden bar",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q014",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "live music jazz and acoustic pub",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q015",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "sports bar cold draft beer",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q016",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "rooftop bar river view",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q017",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "chill nightclub and lounge",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q018",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "cider and artisan beer",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q019",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "wine bar and charcuterie",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q020",
+      "intent": "nightlife",
+      "variant": "english_synonym",
+      "query": "irish pub and beer garden",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q021",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "traditional vietnamese restaurant",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q022",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "fresh local seafood dining",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "tagsAny": [
+          "Hải sản tươi sống"
+        ]
+      }
+    },
+    {
+      "id": "q023",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "charcoal grilled bbq and beer",
+      "constraints": {
+        "category": [
+          "restaurant",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q024",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "hotpot and noodles",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q025",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "authentic local street food tour",
+      "constraints": {
+        "category": [
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q026",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "vegan vegetarian plant based dining",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "tagsAny": [
+          "Ẩm thực chay"
+        ]
+      }
+    },
+    {
+      "id": "q027",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "fine dining romantic restaurant",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q028",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "family friendly dinner buffet",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q029",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "asian fusion cuisine",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q030",
+      "intent": "restaurant",
+      "variant": "english_synonym",
+      "query": "danang local specialties mi quang",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "tagsAny": [
+          "Đặc sản Đà Nẵng"
+        ]
+      }
+    },
+    {
+      "id": "q031",
+      "intent": "bakery",
+      "variant": "english_synonym",
+      "query": "french bakery artisan bread and croissants",
+      "constraints": {
+        "category": [
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q032",
+      "intent": "bakery",
+      "variant": "english_synonym",
+      "query": "fresh baked sourdough and baguettes",
+      "constraints": {
+        "category": [
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q033",
+      "intent": "bakery",
+      "variant": "english_synonym",
+      "query": "patisserie desserts and pastries",
+      "constraints": {
+        "category": [
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q034",
+      "intent": "bakery",
+      "variant": "english_synonym",
+      "query": "vietnamese banh mi sandwich crispy",
+      "constraints": {
+        "category": [
+          "bakery",
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q035",
+      "intent": "bakery",
+      "variant": "english_synonym",
+      "query": "morning breakfast and bakery",
+      "constraints": {
+        "category": [
+          "bakery",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q036",
+      "intent": "bakery",
+      "variant": "english_synonym",
+      "query": "birthday cakes and sweets",
+      "constraints": {
+        "category": [
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q037",
+      "intent": "bakery",
+      "variant": "english_synonym",
+      "query": "coffee and cinnamon rolls",
+      "constraints": {
+        "category": [
+          "bakery",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q038",
+      "intent": "work",
+      "variant": "english_synonym",
+      "query": "work friendly cafe with fast wifi",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q039",
+      "intent": "work",
+      "variant": "english_synonym",
+      "query": "digital nomad friendly coffee shop power plugs",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q040",
+      "intent": "work",
+      "variant": "english_synonym",
+      "query": "quiet place to work with laptop all day",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q041",
+      "intent": "work",
+      "variant": "english_synonym",
+      "query": "book cafe study spot library",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "tagsAny": [
+          "Sách & Cà phê sách"
+        ]
+      }
+    },
+    {
+      "id": "q042",
+      "intent": "work",
+      "variant": "english_synonym",
+      "query": "coworking style coffee house air conditioning",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q043",
+      "intent": "activity",
+      "variant": "english_synonym",
+      "query": "ceramic pottery workshop art studio",
+      "constraints": {
+        "tagsAny": [
+          "Workshop & Nghệ thuật"
+        ]
+      }
+    },
+    {
+      "id": "q044",
+      "intent": "activity",
+      "variant": "english_synonym",
+      "query": "painting workshop coffee",
+      "constraints": {
+        "tagsAny": [
+          "Workshop & Nghệ thuật"
+        ]
+      }
+    },
+    {
+      "id": "q045",
+      "intent": "activity",
+      "variant": "english_synonym",
+      "query": "boardgame cafe and recreation",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q046",
+      "intent": "activity",
+      "variant": "english_synonym",
+      "query": "outdoor camping and glamping site",
+      "constraints": {
+        "tagsAny": [
+          "Cắm trại & Glamping"
+        ]
+      }
+    },
+    {
+      "id": "q047",
+      "intent": "activity",
+      "variant": "english_synonym",
+      "query": "night market walking street shopping",
+      "constraints": {
+        "tagsAny": [
+          "Chợ đêm & Phố đi bộ"
+        ]
+      }
+    },
+    {
+      "id": "q048",
+      "intent": "activity",
+      "variant": "english_synonym",
+      "query": "cinema theater movie complex",
+      "constraints": {
+        "tagsAny": [
+          "Rạp chiếu phim"
+        ]
+      }
+    },
+    {
+      "id": "q049",
+      "intent": "activity",
+      "variant": "english_synonym",
+      "query": "arcade games and bowling center",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q050",
+      "intent": "activity",
+      "variant": "english_synonym",
+      "query": "sunset view beach club cocktail",
+      "constraints": {
+        "category": [
+          "bar",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q051",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "quan cafe view chill de check in",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q052",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "tiem bakery banh mi croissant ngon",
+      "constraints": {
+        "category": [
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q053",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "quan pub live music cuoi tuan",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q054",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "cho camping glamping gan bien",
+      "constraints": {
+        "tagsAny": [
+          "Cắm trại & Glamping"
+        ]
+      }
+    },
+    {
+      "id": "q055",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "cafe boardgame giai tri cho nhom ban",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q056",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "quan bar craft beer da nang",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q057",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "an seafood hai san tuoi song",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "tagsAny": [
+          "Hải sản tươi sống"
+        ]
+      }
+    },
+    {
+      "id": "q058",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "quan cafe work friendly wifi manh",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q059",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "rooftop bar ngam cau rong da nang",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q060",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "quan cocktail bar acoustic nhe nhang",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q061",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "tiem cafe specialty coffee pha tay",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q062",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "cho date hen ho romantic cho couple",
+      "constraints": {
+        "category": [
+          "restaurant",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q063",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "workshop pottery lam gom cuoi tuan",
+      "constraints": {
+        "tagsAny": [
+          "Workshop & Nghệ thuật"
+        ]
+      }
+    },
+    {
+      "id": "q064",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "quan an buffet gia dinh co baby",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q065",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "street food via he an vat",
+      "constraints": {
+        "category": [
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q066",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "pub bia hoi va craft beer ngon",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q067",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "book cafe doc sach lam viec",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "tagsAny": [
+          "Sách & Cà phê sách"
+        ]
+      }
+    },
+    {
+      "id": "q068",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "chill lounge pub ban dem",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q069",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "restaurant com nieu dac san",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q070",
+      "intent": "mixed",
+      "variant": "code_switching",
+      "query": "coffee shop yen tinh hoc bai",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q071",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "P Coffee",
+      "expectName": "P Coffee"
+    },
+    {
+      "id": "q072",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "P Coffee",
+      "expectName": "P Coffee"
+    },
+    {
+      "id": "q073",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "p coffee",
+      "expectName": "P Coffee"
+    },
+    {
+      "id": "q074",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Trình Cà Phê",
+      "expectName": "Trình Cà Phê"
+    },
+    {
+      "id": "q075",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Trình Cà",
+      "expectName": "Trình Cà Phê"
+    },
+    {
+      "id": "q076",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "trinh ca phe",
+      "expectName": "Trình Cà Phê"
+    },
+    {
+      "id": "q077",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Wonderlust Coffee and Souvenir",
+      "expectName": "Wonderlust Coffee and Souvenir"
+    },
+    {
+      "id": "q078",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Wonderlust Coffee",
+      "expectName": "Wonderlust Coffee and Souvenir"
+    },
+    {
+      "id": "q079",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "wonderlust coffee and souvenir",
+      "expectName": "Wonderlust Coffee and Souvenir"
+    },
+    {
+      "id": "q080",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Nối Café",
+      "expectName": "Nối Café"
+    },
+    {
+      "id": "q081",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Nối Café",
+      "expectName": "Nối Café"
+    },
+    {
+      "id": "q082",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "noi cafe",
+      "expectName": "Nối Café"
+    },
+    {
+      "id": "q083",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Wind Garden Coffee",
+      "expectName": "Wind Garden Coffee"
+    },
+    {
+      "id": "q084",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Wind Garden",
+      "expectName": "Wind Garden Coffee"
+    },
+    {
+      "id": "q085",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "wind garden coffee",
+      "expectName": "Wind Garden Coffee"
+    },
+    {
+      "id": "q086",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Acacia Café",
+      "expectName": "Acacia Café"
+    },
+    {
+      "id": "q087",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Acacia Café",
+      "expectName": "Acacia Café"
+    },
+    {
+      "id": "q088",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "acacia cafe",
+      "expectName": "Acacia Café"
+    },
+    {
+      "id": "q089",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "43 Factory Coffee Roaster",
+      "expectName": "43 Factory Coffee Roaster"
+    },
+    {
+      "id": "q090",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "43 Factory",
+      "expectName": "43 Factory Coffee Roaster"
+    },
+    {
+      "id": "q091",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "43 factory coffee roaster",
+      "expectName": "43 Factory Coffee Roaster"
+    },
+    {
+      "id": "q092",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "2AM Coffee",
+      "expectName": "2AM Coffee"
+    },
+    {
+      "id": "q093",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "2AM Coffee",
+      "expectName": "2AM Coffee"
+    },
+    {
+      "id": "q094",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "2am coffee",
+      "expectName": "2AM Coffee"
+    },
+    {
+      "id": "q095",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Cloud Garden Coffee",
+      "expectName": "Cloud Garden Coffee"
+    },
+    {
+      "id": "q096",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Cloud Garden",
+      "expectName": "Cloud Garden Coffee"
+    },
+    {
+      "id": "q097",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "cloud garden coffee",
+      "expectName": "Cloud Garden Coffee"
+    },
+    {
+      "id": "q098",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Dreamer Coffee",
+      "expectName": "Dreamer Coffee"
+    },
+    {
+      "id": "q099",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Dreamer Coffee",
+      "expectName": "Dreamer Coffee"
+    },
+    {
+      "id": "q100",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "dreamer coffee",
+      "expectName": "Dreamer Coffee"
+    },
+    {
+      "id": "q101",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Bánh mì Bà Lan",
+      "expectName": "Bánh mì Bà Lan"
+    },
+    {
+      "id": "q102",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Bánh mì",
+      "expectName": "Bánh mì Bà Lan"
+    },
+    {
+      "id": "q103",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "banh mi ba lan",
+      "expectName": "Bánh mì Bà Lan"
+    },
+    {
+      "id": "q104",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Bánh mì Ông Tý",
+      "expectName": "Bánh mì Ông Tý"
+    },
+    {
+      "id": "q105",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Bánh mì",
+      "expectName": "Bánh mì Ông Tý"
+    },
+    {
+      "id": "q106",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "banh mi ong ty",
+      "expectName": "Bánh mì Ông Tý"
+    },
+    {
+      "id": "q107",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Bánh mì que Tứ Hải (Trần Cao Vân)",
+      "expectName": "Bánh mì que Tứ Hải (Trần Cao Vân)"
+    },
+    {
+      "id": "q108",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Bánh mì",
+      "expectName": "Bánh mì que Tứ Hải (Trần Cao Vân)"
+    },
+    {
+      "id": "q109",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "banh mi que tu hai (tran cao van)",
+      "expectName": "Bánh mì que Tứ Hải (Trần Cao Vân)"
+    },
+    {
+      "id": "q110",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Mì Quảng ếch Bếp Trang",
+      "expectName": "Mì Quảng ếch Bếp Trang"
+    },
+    {
+      "id": "q111",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Mì Quảng",
+      "expectName": "Mì Quảng ếch Bếp Trang"
+    },
+    {
+      "id": "q112",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "mi quang ech bep trang",
+      "expectName": "Mì Quảng ếch Bếp Trang"
+    },
+    {
+      "id": "q113",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Hải sản Mộc Quán",
+      "expectName": "Hải sản Mộc Quán"
+    },
+    {
+      "id": "q114",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Hải sản",
+      "expectName": "Hải sản Mộc Quán"
+    },
+    {
+      "id": "q115",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "hai san moc quan",
+      "expectName": "Hải sản Mộc Quán"
+    },
+    {
+      "id": "q116",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Quán Mậu – Bánh tráng thịt heo",
+      "expectName": "Quán Mậu – Bánh tráng thịt heo"
+    },
+    {
+      "id": "q117",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Quán Mậu",
+      "expectName": "Quán Mậu – Bánh tráng thịt heo"
+    },
+    {
+      "id": "q118",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "quan mau – banh trang thit heo",
+      "expectName": "Quán Mậu – Bánh tráng thịt heo"
+    },
+    {
+      "id": "q119",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Brewhaha Riverside",
+      "expectName": "Brewhaha Riverside"
+    },
+    {
+      "id": "q120",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Brewhaha Riverside",
+      "expectName": "Brewhaha Riverside"
+    },
+    {
+      "id": "q121",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "brewhaha riverside",
+      "expectName": "Brewhaha Riverside"
+    },
+    {
+      "id": "q122",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Sound Cafe",
+      "expectName": "Sound Cafe"
+    },
+    {
+      "id": "q123",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Sound Cafe",
+      "expectName": "Sound Cafe"
+    },
+    {
+      "id": "q124",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "sound cafe",
+      "expectName": "Sound Cafe"
+    },
+    {
+      "id": "q125",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "OQ Lounge Pub",
+      "expectName": "OQ Lounge Pub"
+    },
+    {
+      "id": "q126",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "OQ Lounge",
+      "expectName": "OQ Lounge Pub"
+    },
+    {
+      "id": "q127",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "oq lounge pub",
+      "expectName": "OQ Lounge Pub"
+    },
+    {
+      "id": "q128",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Bánh tráng kẹp Dì Sương",
+      "expectName": "Bánh tráng kẹp Dì Sương"
+    },
+    {
+      "id": "q129",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Bánh tráng",
+      "expectName": "Bánh tráng kẹp Dì Sương"
+    },
+    {
+      "id": "q130",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "banh trang kep di suong",
+      "expectName": "Bánh tráng kẹp Dì Sương"
+    },
+    {
+      "id": "q131",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "The Third House Coffee",
+      "expectName": "The Third House Coffee"
+    },
+    {
+      "id": "q132",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "The Third",
+      "expectName": "The Third House Coffee"
+    },
+    {
+      "id": "q133",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "the third house coffee",
+      "expectName": "The Third House Coffee"
+    },
+    {
+      "id": "q134",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Kiến Gỗ Cafe",
+      "expectName": "Kiến Gỗ Cafe"
+    },
+    {
+      "id": "q135",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Kiến Gỗ",
+      "expectName": "Kiến Gỗ Cafe"
+    },
+    {
+      "id": "q136",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "kien go cafe",
+      "expectName": "Kiến Gỗ Cafe"
+    },
+    {
+      "id": "q137",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Tiệm Cà Phê Ô Cửa Sổ",
+      "expectName": "Tiệm Cà Phê Ô Cửa Sổ"
+    },
+    {
+      "id": "q138",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Tiệm Cà",
+      "expectName": "Tiệm Cà Phê Ô Cửa Sổ"
+    },
+    {
+      "id": "q139",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "tiem ca phe o cua so",
+      "expectName": "Tiệm Cà Phê Ô Cửa Sổ"
+    },
+    {
+      "id": "q140",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "La's Cafe",
+      "expectName": "La's Cafe"
+    },
+    {
+      "id": "q141",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "La's Cafe",
+      "expectName": "La's Cafe"
+    },
+    {
+      "id": "q142",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "la's cafe",
+      "expectName": "La's Cafe"
+    },
+    {
+      "id": "q143",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Velo Book Cafe",
+      "expectName": "Velo Book Cafe"
+    },
+    {
+      "id": "q144",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Velo Book",
+      "expectName": "Velo Book Cafe"
+    },
+    {
+      "id": "q145",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "velo book cafe",
+      "expectName": "Velo Book Cafe"
+    },
+    {
+      "id": "q146",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Nhà sách Phương Nam (AEON Mall)",
+      "expectName": "Nhà sách Phương Nam (AEON Mall)"
+    },
+    {
+      "id": "q147",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Nhà sách",
+      "expectName": "Nhà sách Phương Nam (AEON Mall)"
+    },
+    {
+      "id": "q148",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "nha sach phuong nam (aeon mall)",
+      "expectName": "Nhà sách Phương Nam (AEON Mall)"
+    },
+    {
+      "id": "q149",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Namto House Coffee",
+      "expectName": "Namto House Coffee"
+    },
+    {
+      "id": "q150",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Namto House",
+      "expectName": "Namto House Coffee"
+    },
+    {
+      "id": "q151",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "namto house coffee",
+      "expectName": "Namto House Coffee"
+    },
+    {
+      "id": "q152",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Boulevard Gelato & Coffee",
+      "expectName": "Boulevard Gelato & Coffee"
+    },
+    {
+      "id": "q153",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Boulevard Gelato",
+      "expectName": "Boulevard Gelato & Coffee"
+    },
+    {
+      "id": "q154",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "boulevard gelato & coffee",
+      "expectName": "Boulevard Gelato & Coffee"
+    },
+    {
+      "id": "q155",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "GRAVEL Coffee Pub",
+      "expectName": "GRAVEL Coffee Pub"
+    },
+    {
+      "id": "q156",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "GRAVEL Coffee",
+      "expectName": "GRAVEL Coffee Pub"
+    },
+    {
+      "id": "q157",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "gravel coffee pub",
+      "expectName": "GRAVEL Coffee Pub"
+    },
+    {
+      "id": "q158",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Cherish Coffee & Desserts",
+      "expectName": "Cherish Coffee & Desserts"
+    },
+    {
+      "id": "q159",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Cherish Coffee",
+      "expectName": "Cherish Coffee & Desserts"
+    },
+    {
+      "id": "q160",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "cherish coffee & desserts",
+      "expectName": "Cherish Coffee & Desserts"
+    },
+    {
+      "id": "q161",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Trà Hoa Quán",
+      "expectName": "Trà Hoa Quán"
+    },
+    {
+      "id": "q162",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Trà Hoa",
+      "expectName": "Trà Hoa Quán"
+    },
+    {
+      "id": "q163",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "tra hoa quan",
+      "expectName": "Trà Hoa Quán"
+    },
+    {
+      "id": "q164",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Comic Book Cafe",
+      "expectName": "Comic Book Cafe"
+    },
+    {
+      "id": "q165",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Comic Book",
+      "expectName": "Comic Book Cafe"
+    },
+    {
+      "id": "q166",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "comic book cafe",
+      "expectName": "Comic Book Cafe"
+    },
+    {
+      "id": "q167",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Sơn Trà Marina",
+      "expectName": "Sơn Trà Marina"
+    },
+    {
+      "id": "q168",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Sơn Trà",
+      "expectName": "Sơn Trà Marina"
+    },
+    {
+      "id": "q169",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "son tra marina",
+      "expectName": "Sơn Trà Marina"
+    },
+    {
+      "id": "q170",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Les 3000 Mondes",
+      "expectName": "Les 3000 Mondes"
+    },
+    {
+      "id": "q171",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Les 3000",
+      "expectName": "Les 3000 Mondes"
+    },
+    {
+      "id": "q172",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "les 3000 mondes",
+      "expectName": "Les 3000 Mondes"
+    },
+    {
+      "id": "q173",
+      "intent": "entity",
+      "variant": "exact",
+      "query": "Tiệm cà phê chú Mạnh",
+      "expectName": "Tiệm cà phê chú Mạnh"
+    },
+    {
+      "id": "q174",
+      "intent": "entity",
+      "variant": "prefix",
+      "query": "Tiệm cà",
+      "expectName": "Tiệm cà phê chú Mạnh"
+    },
+    {
+      "id": "q175",
+      "intent": "entity",
+      "variant": "no-diacritic",
+      "query": "tiem ca phe chu manh",
+      "expectName": "Tiệm cà phê chú Mạnh"
+    },
+    {
+      "id": "q176",
+      "intent": "study",
+      "variant": "natural",
+      "query": "quán cà phê yên tĩnh để đọc sách",
+      "constraints": {
+        "tagsAny": [
+          "Sách & Cà phê sách"
+        ],
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q177",
+      "intent": "study",
+      "variant": "keyword",
+      "query": "cà phê sách yên tĩnh",
+      "constraints": {
+        "tagsAny": [
+          "Sách & Cà phê sách"
+        ],
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q178",
+      "intent": "study",
+      "variant": "no-diacritic",
+      "query": "ca phe sach doc sach",
+      "constraints": {
+        "tagsAny": [
+          "Sách & Cà phê sách"
+        ],
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q179",
+      "intent": "study",
+      "variant": "long",
+      "query": "tìm quán cafe không gian yên ắng để ngồi làm việc đọc sách cả buổi",
+      "constraints": {
+        "tagsAny": [
+          "Sách & Cà phê sách"
+        ],
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q180",
+      "intent": "nightlife",
+      "variant": "natural",
+      "query": "quán pub bia thủ công chill tối",
+      "constraints": {
+        "tagsAny": [
+          "Bar & Pub & Bia thủ công"
+        ],
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q181",
+      "intent": "nightlife",
+      "variant": "keyword",
+      "query": "pub bia thủ công",
+      "constraints": {
+        "tagsAny": [
+          "Bar & Pub & Bia thủ công"
+        ],
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q182",
+      "intent": "nightlife",
+      "variant": "no-diacritic",
+      "query": "quan bar pub bia thu cong",
+      "constraints": {
+        "tagsAny": [
+          "Bar & Pub & Bia thủ công"
+        ],
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q183",
+      "intent": "nightlife",
+      "variant": "long",
+      "query": "quán bia thủ công không gian ngoài trời thoáng mát",
+      "constraints": {
+        "tagsAny": [
+          "Bar & Pub & Bia thủ công"
+        ],
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q184",
+      "intent": "seafood",
+      "variant": "natural",
+      "query": "quán hải sản tươi ngon gần biển",
+      "constraints": {
+        "tagsAny": [
+          "Hải sản tươi sống"
+        ],
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q185",
+      "intent": "seafood",
+      "variant": "keyword",
+      "query": "hải sản đà nẵng",
+      "constraints": {
+        "tagsAny": [
+          "Hải sản tươi sống"
+        ],
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q186",
+      "intent": "seafood",
+      "variant": "no-diacritic",
+      "query": "hai san tuoi song",
+      "constraints": {
+        "tagsAny": [
+          "Hải sản tươi sống"
+        ],
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q187",
+      "intent": "seafood",
+      "variant": "long",
+      "query": "quán ăn hải sản tươi sống ngon rẻ cho nhóm bạn",
+      "constraints": {
+        "tagsAny": [
+          "Hải sản tươi sống"
+        ],
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q188",
+      "intent": "streetfood",
+      "variant": "natural",
+      "query": "quán ăn vặt vỉa hè ngon rẻ",
+      "constraints": {
+        "tagsAny": [
+          "Ăn vặt đường phố"
+        ],
+        "category": [
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q189",
+      "intent": "streetfood",
+      "variant": "keyword",
+      "query": "ăn vặt đà nẵng",
+      "constraints": {
+        "tagsAny": [
+          "Ăn vặt đường phố"
+        ],
+        "category": [
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q190",
+      "intent": "streetfood",
+      "variant": "no-diacritic",
+      "query": "an vat via he",
+      "constraints": {
+        "tagsAny": [
+          "Ăn vặt đường phố"
+        ],
+        "category": [
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q191",
+      "intent": "streetfood",
+      "variant": "long",
+      "query": "những quán ăn vặt vỉa hè nổi tiếng đà nẵng",
+      "constraints": {
+        "tagsAny": [
+          "Ăn vặt đường phố"
+        ],
+        "category": [
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q192",
+      "intent": "bakery",
+      "variant": "natural",
+      "query": "tiệm bánh mì ngon nổi tiếng đà nẵng",
+      "constraints": {
+        "tagsAny": [
+          "Bánh mì"
+        ],
+        "category": [
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q193",
+      "intent": "bakery",
+      "variant": "keyword",
+      "query": "tiệm bánh mì",
+      "constraints": {
+        "tagsAny": [
+          "Bánh mì"
+        ],
+        "category": [
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q194",
+      "intent": "bakery",
+      "variant": "no-diacritic",
+      "query": "tiem banh mi",
+      "constraints": {
+        "tagsAny": [
+          "Bánh mì"
+        ],
+        "category": [
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q195",
+      "intent": "bakery",
+      "variant": "long",
+      "query": "tìm tiệm bánh ngọt bánh mì điểm tâm ngon",
+      "constraints": {
+        "tagsAny": [
+          "Bánh mì"
+        ],
+        "category": [
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q196",
+      "intent": "hangout",
+      "variant": "natural",
+      "query": "quán nhậu lai rai với bạn bè cuối tuần",
+      "constraints": {
+        "tagsAny": [
+          "Quán nhậu & Lai rai"
+        ],
+        "category": [
+          "restaurant",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q197",
+      "intent": "hangout",
+      "variant": "keyword",
+      "query": "quán nhậu đà nẵng",
+      "constraints": {
+        "tagsAny": [
+          "Quán nhậu & Lai rai"
+        ],
+        "category": [
+          "restaurant",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q198",
+      "intent": "hangout",
+      "variant": "no-diacritic",
+      "query": "quan nhau lai rai",
+      "constraints": {
+        "tagsAny": [
+          "Quán nhậu & Lai rai"
+        ],
+        "category": [
+          "restaurant",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q199",
+      "intent": "hangout",
+      "variant": "long",
+      "query": "chỗ ngồi nhậu vỉa hè thoáng mát giá bình dân",
+      "constraints": {
+        "tagsAny": [
+          "Quán nhậu & Lai rai"
+        ],
+        "category": [
+          "restaurant",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q200",
+      "intent": "workshop",
+      "variant": "natural",
+      "query": "workshop làm gốm vẽ tranh cuối tuần",
+      "constraints": {
+        "tagsAny": [
+          "Workshop & Nghệ thuật"
+        ],
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q201",
+      "intent": "workshop",
+      "variant": "keyword",
+      "query": "workshop nghệ thuật",
+      "constraints": {
+        "tagsAny": [
+          "Workshop & Nghệ thuật"
+        ],
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q202",
+      "intent": "workshop",
+      "variant": "no-diacritic",
+      "query": "workshop ve tranh gom",
+      "constraints": {
+        "tagsAny": [
+          "Workshop & Nghệ thuật"
+        ],
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q203",
+      "intent": "workshop",
+      "variant": "long",
+      "query": "trải nghiệm tự tay làm đồ thủ công và uống cafe",
+      "constraints": {
+        "tagsAny": [
+          "Workshop & Nghệ thuật"
+        ],
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q204",
+      "intent": "camping",
+      "variant": "natural",
+      "query": "chỗ cắm trại dã ngoại ngoài trời view đẹp",
+      "constraints": {
+        "tagsAny": [
+          "Cắm trại & Glamping"
+        ],
+        "category": [
+          "cafe",
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q205",
+      "intent": "camping",
+      "variant": "keyword",
+      "query": "glamping cắm trại",
+      "constraints": {
+        "tagsAny": [
+          "Cắm trại & Glamping"
+        ],
+        "category": [
+          "cafe",
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q206",
+      "intent": "camping",
+      "variant": "no-diacritic",
+      "query": "cam trai glamping da ngoai",
+      "constraints": {
+        "tagsAny": [
+          "Cắm trại & Glamping"
+        ],
+        "category": [
+          "cafe",
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q207",
+      "intent": "camping",
+      "variant": "long",
+      "query": "khu cắm trại nướng thịt bbq bên suối hoặc bãi biển",
+      "constraints": {
+        "tagsAny": [
+          "Cắm trại & Glamping"
+        ],
+        "category": [
+          "cafe",
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q208",
+      "intent": "specialty",
+      "variant": "natural",
+      "query": "quán đặc sản đà nẵng ngon chuẩn vị",
+      "constraints": {
+        "tagsAny": [
+          "Đặc sản Đà Nẵng"
+        ],
+        "category": [
+          "restaurant",
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q209",
+      "intent": "specialty",
+      "variant": "keyword",
+      "query": "đặc sản đà nẵng",
+      "constraints": {
+        "tagsAny": [
+          "Đặc sản Đà Nẵng"
+        ],
+        "category": [
+          "restaurant",
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q210",
+      "intent": "specialty",
+      "variant": "no-diacritic",
+      "query": "dac san da nang",
+      "constraints": {
+        "tagsAny": [
+          "Đặc sản Đà Nẵng"
+        ],
+        "category": [
+          "restaurant",
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q211",
+      "intent": "specialty",
+      "variant": "long",
+      "query": "địa chỉ ăn mì quảng bánh tráng cuốn thịt heo chuẩn gốc",
+      "constraints": {
+        "tagsAny": [
+          "Đặc sản Đà Nẵng"
+        ],
+        "category": [
+          "restaurant",
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q212",
+      "intent": "vegetarian",
+      "variant": "natural",
+      "query": "quán cơm chay thanh tịnh ngon sạch",
+      "constraints": {
+        "tagsAny": [
+          "Ẩm thực chay"
+        ],
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q213",
+      "intent": "vegetarian",
+      "variant": "keyword",
+      "query": "cơm chay đà nẵng",
+      "constraints": {
+        "tagsAny": [
+          "Ẩm thực chay"
+        ],
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q214",
+      "intent": "vegetarian",
+      "variant": "no-diacritic",
+      "query": "quan com chay",
+      "constraints": {
+        "tagsAny": [
+          "Ẩm thực chay"
+        ],
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q215",
+      "intent": "vegetarian",
+      "variant": "long",
+      "query": "nhà hàng chay thanh đạm không gian thiền tịnh ngày rằm",
+      "constraints": {
+        "tagsAny": [
+          "Ẩm thực chay"
+        ],
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q216",
+      "intent": "livemusic",
+      "variant": "natural",
+      "query": "quán cafe acoustic nhạc sống buổi tối",
+      "constraints": {
+        "tagsAny": [
+          "Nhạc sống & Phòng trà"
+        ],
+        "category": [
+          "bar",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q217",
+      "intent": "livemusic",
+      "variant": "keyword",
+      "query": "nhạc sống phòng trà",
+      "constraints": {
+        "tagsAny": [
+          "Nhạc sống & Phòng trà"
+        ],
+        "category": [
+          "bar",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q218",
+      "intent": "livemusic",
+      "variant": "no-diacritic",
+      "query": "nhac song acoustic",
+      "constraints": {
+        "tagsAny": [
+          "Nhạc sống & Phòng trà"
+        ],
+        "category": [
+          "bar",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q219",
+      "intent": "livemusic",
+      "variant": "long",
+      "query": "phòng trà nghe nhạc ballad trữ tình cuối tuần",
+      "constraints": {
+        "tagsAny": [
+          "Nhạc sống & Phòng trà"
+        ],
+        "category": [
+          "bar",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q220",
+      "intent": "cinema",
+      "variant": "natural",
+      "query": "rạp chiếu phim hiện đại cuối tuần",
+      "constraints": {
+        "tagsAny": [
+          "Rạp chiếu phim"
+        ],
+        "category": [
+          "bar",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q221",
+      "intent": "cinema",
+      "variant": "keyword",
+      "query": "rạp chiếu phim đà nẵng",
+      "constraints": {
+        "tagsAny": [
+          "Rạp chiếu phim"
+        ],
+        "category": [
+          "bar",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q222",
+      "intent": "cinema",
+      "variant": "no-diacritic",
+      "query": "rap chieu phim",
+      "constraints": {
+        "tagsAny": [
+          "Rạp chiếu phim"
+        ],
+        "category": [
+          "bar",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q223",
+      "intent": "checkin",
+      "variant": "natural",
+      "query": "địa điểm check-in chụp ảnh đẹp nổi tiếng",
+      "constraints": {
+        "tagsAny": [
+          "Điểm check-in nổi tiếng"
+        ],
+        "category": [
+          "cafe",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q224",
+      "intent": "checkin",
+      "variant": "keyword",
+      "query": "điểm check in đẹp",
+      "constraints": {
+        "tagsAny": [
+          "Điểm check-in nổi tiếng"
+        ],
+        "category": [
+          "cafe",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q225",
+      "intent": "checkin",
+      "variant": "no-diacritic",
+      "query": "diem check in dep",
+      "constraints": {
+        "tagsAny": [
+          "Điểm check-in nổi tiếng"
+        ],
+        "category": [
+          "cafe",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q226",
+      "intent": "arcade",
+      "variant": "natural",
+      "query": "khu trò chơi điện tử máy gắp thú giải trí",
+      "constraints": {
+        "tagsAny": [
+          "Khu vui chơi Arcade"
+        ],
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q227",
+      "intent": "arcade",
+      "variant": "keyword",
+      "query": "arcade game đà nẵng",
+      "constraints": {
+        "tagsAny": [
+          "Khu vui chơi Arcade"
+        ],
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q228",
+      "intent": "arcade",
+      "variant": "no-diacritic",
+      "query": "khu vui choi arcade",
+      "constraints": {
+        "tagsAny": [
+          "Khu vui chơi Arcade"
+        ],
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q229",
+      "intent": "district-cafe",
+      "variant": "with-district",
+      "query": "quán cà phê ở Hải Châu",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Hải Châu"
+        ]
+      }
+    },
+    {
+      "id": "q230",
+      "intent": "district-cafe_chill",
+      "variant": "with-district",
+      "query": "cafe chill view đẹp khu Hải Châu",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Hải Châu"
+        ]
+      }
+    },
+    {
+      "id": "q231",
+      "intent": "district-restaurant",
+      "variant": "with-district",
+      "query": "quán ăn ngon ở Hải Châu",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Hải Châu"
+        ]
+      }
+    },
+    {
+      "id": "q232",
+      "intent": "district-seafood",
+      "variant": "with-district",
+      "query": "hải sản khu vực Hải Châu",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Hải Châu"
+        ]
+      }
+    },
+    {
+      "id": "q233",
+      "intent": "district-nightlife",
+      "variant": "with-district",
+      "query": "quán bar pub tại Hải Châu",
+      "constraints": {
+        "category": [
+          "bar"
+        ],
+        "district": [
+          "Hải Châu"
+        ]
+      }
+    },
+    {
+      "id": "q234",
+      "intent": "district-streetfood",
+      "variant": "with-district",
+      "query": "ăn vặt ngon quanh Hải Châu",
+      "constraints": {
+        "category": [
+          "street-food"
+        ],
+        "district": [
+          "Hải Châu"
+        ]
+      }
+    },
+    {
+      "id": "q235",
+      "intent": "district-cafe",
+      "variant": "with-district",
+      "query": "quán cà phê ở Sơn Trà",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Sơn Trà"
+        ]
+      }
+    },
+    {
+      "id": "q236",
+      "intent": "district-cafe_chill",
+      "variant": "with-district",
+      "query": "cafe chill view đẹp khu Sơn Trà",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Sơn Trà"
+        ]
+      }
+    },
+    {
+      "id": "q237",
+      "intent": "district-restaurant",
+      "variant": "with-district",
+      "query": "quán ăn ngon ở Sơn Trà",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Sơn Trà"
+        ]
+      }
+    },
+    {
+      "id": "q238",
+      "intent": "district-seafood",
+      "variant": "with-district",
+      "query": "hải sản khu vực Sơn Trà",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Sơn Trà"
+        ]
+      }
+    },
+    {
+      "id": "q239",
+      "intent": "district-nightlife",
+      "variant": "with-district",
+      "query": "quán bar pub tại Sơn Trà",
+      "constraints": {
+        "category": [
+          "bar"
+        ],
+        "district": [
+          "Sơn Trà"
+        ]
+      }
+    },
+    {
+      "id": "q240",
+      "intent": "district-streetfood",
+      "variant": "with-district",
+      "query": "ăn vặt ngon quanh Sơn Trà",
+      "constraints": {
+        "category": [
+          "street-food"
+        ],
+        "district": [
+          "Sơn Trà"
+        ]
+      }
+    },
+    {
+      "id": "q241",
+      "intent": "district-cafe",
+      "variant": "with-district",
+      "query": "quán cà phê ở Thanh Khê",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Thanh Khê"
+        ]
+      }
+    },
+    {
+      "id": "q242",
+      "intent": "district-cafe_chill",
+      "variant": "with-district",
+      "query": "cafe chill view đẹp khu Thanh Khê",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Thanh Khê"
+        ]
+      }
+    },
+    {
+      "id": "q243",
+      "intent": "district-restaurant",
+      "variant": "with-district",
+      "query": "quán ăn ngon ở Thanh Khê",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Thanh Khê"
+        ]
+      }
+    },
+    {
+      "id": "q244",
+      "intent": "district-seafood",
+      "variant": "with-district",
+      "query": "hải sản khu vực Thanh Khê",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Thanh Khê"
+        ]
+      }
+    },
+    {
+      "id": "q245",
+      "intent": "district-nightlife",
+      "variant": "with-district",
+      "query": "quán bar pub tại Thanh Khê",
+      "constraints": {
+        "category": [
+          "bar"
+        ],
+        "district": [
+          "Thanh Khê"
+        ]
+      }
+    },
+    {
+      "id": "q246",
+      "intent": "district-streetfood",
+      "variant": "with-district",
+      "query": "ăn vặt ngon quanh Thanh Khê",
+      "constraints": {
+        "category": [
+          "street-food"
+        ],
+        "district": [
+          "Thanh Khê"
+        ]
+      }
+    },
+    {
+      "id": "q247",
+      "intent": "district-cafe",
+      "variant": "with-district",
+      "query": "quán cà phê ở Ngũ Hành Sơn",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Ngũ Hành Sơn"
+        ]
+      }
+    },
+    {
+      "id": "q248",
+      "intent": "district-cafe_chill",
+      "variant": "with-district",
+      "query": "cafe chill view đẹp khu Ngũ Hành Sơn",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Ngũ Hành Sơn"
+        ]
+      }
+    },
+    {
+      "id": "q249",
+      "intent": "district-restaurant",
+      "variant": "with-district",
+      "query": "quán ăn ngon ở Ngũ Hành Sơn",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Ngũ Hành Sơn"
+        ]
+      }
+    },
+    {
+      "id": "q250",
+      "intent": "district-seafood",
+      "variant": "with-district",
+      "query": "hải sản khu vực Ngũ Hành Sơn",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Ngũ Hành Sơn"
+        ]
+      }
+    },
+    {
+      "id": "q251",
+      "intent": "district-nightlife",
+      "variant": "with-district",
+      "query": "quán bar pub tại Ngũ Hành Sơn",
+      "constraints": {
+        "category": [
+          "bar"
+        ],
+        "district": [
+          "Ngũ Hành Sơn"
+        ]
+      }
+    },
+    {
+      "id": "q252",
+      "intent": "district-streetfood",
+      "variant": "with-district",
+      "query": "ăn vặt ngon quanh Ngũ Hành Sơn",
+      "constraints": {
+        "category": [
+          "street-food"
+        ],
+        "district": [
+          "Ngũ Hành Sơn"
+        ]
+      }
+    },
+    {
+      "id": "q253",
+      "intent": "district-cafe",
+      "variant": "with-district",
+      "query": "quán cà phê ở Liên Chiểu",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Liên Chiểu"
+        ]
+      }
+    },
+    {
+      "id": "q254",
+      "intent": "district-cafe_chill",
+      "variant": "with-district",
+      "query": "cafe chill view đẹp khu Liên Chiểu",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Liên Chiểu"
+        ]
+      }
+    },
+    {
+      "id": "q255",
+      "intent": "district-restaurant",
+      "variant": "with-district",
+      "query": "quán ăn ngon ở Liên Chiểu",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Liên Chiểu"
+        ]
+      }
+    },
+    {
+      "id": "q256",
+      "intent": "district-seafood",
+      "variant": "with-district",
+      "query": "hải sản khu vực Liên Chiểu",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Liên Chiểu"
+        ]
+      }
+    },
+    {
+      "id": "q257",
+      "intent": "district-nightlife",
+      "variant": "with-district",
+      "query": "quán bar pub tại Liên Chiểu",
+      "constraints": {
+        "category": [
+          "bar"
+        ],
+        "district": [
+          "Liên Chiểu"
+        ]
+      }
+    },
+    {
+      "id": "q258",
+      "intent": "district-streetfood",
+      "variant": "with-district",
+      "query": "ăn vặt ngon quanh Liên Chiểu",
+      "constraints": {
+        "category": [
+          "street-food"
+        ],
+        "district": [
+          "Liên Chiểu"
+        ]
+      }
+    },
+    {
+      "id": "q259",
+      "intent": "district-cafe",
+      "variant": "with-district",
+      "query": "quán cà phê ở Cẩm Lệ",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Cẩm Lệ"
+        ]
+      }
+    },
+    {
+      "id": "q260",
+      "intent": "district-cafe_chill",
+      "variant": "with-district",
+      "query": "cafe chill view đẹp khu Cẩm Lệ",
+      "constraints": {
+        "category": [
+          "cafe"
+        ],
+        "district": [
+          "Cẩm Lệ"
+        ]
+      }
+    },
+    {
+      "id": "q261",
+      "intent": "district-restaurant",
+      "variant": "with-district",
+      "query": "quán ăn ngon ở Cẩm Lệ",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Cẩm Lệ"
+        ]
+      }
+    },
+    {
+      "id": "q262",
+      "intent": "district-seafood",
+      "variant": "with-district",
+      "query": "hải sản khu vực Cẩm Lệ",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ],
+        "district": [
+          "Cẩm Lệ"
+        ]
+      }
+    },
+    {
+      "id": "q263",
+      "intent": "district-nightlife",
+      "variant": "with-district",
+      "query": "quán bar pub tại Cẩm Lệ",
+      "constraints": {
+        "category": [
+          "bar"
+        ],
+        "district": [
+          "Cẩm Lệ"
+        ]
+      }
+    },
+    {
+      "id": "q264",
+      "intent": "district-streetfood",
+      "variant": "with-district",
+      "query": "ăn vặt ngon quanh Cẩm Lệ",
+      "constraints": {
+        "category": [
+          "street-food"
+        ],
+        "district": [
+          "Cẩm Lệ"
+        ]
+      }
+    },
+    {
+      "id": "q265",
+      "intent": "date",
+      "variant": "natural",
+      "query": "quán ăn lãng mạn đèn mờ cho buổi hẹn đầu tiên",
+      "constraints": {
+        "category": [
+          "restaurant",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q266",
+      "intent": "date",
+      "variant": "long",
+      "query": "tìm nơi hẹn hò yên tĩnh có bàn riêng cho 2 người kỷ niệm tình yêu",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q267",
+      "intent": "date",
+      "variant": "no-diacritic",
+      "query": "quan hen ho lang man cho 2 nguoi",
+      "constraints": {
+        "category": [
+          "restaurant",
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q268",
+      "intent": "date",
+      "variant": "keyword",
+      "query": "quán ăn hẹn hò lãng mạn",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q269",
+      "intent": "chill",
+      "variant": "natural",
+      "query": "quán cafe sân vườn hồ cá mát mẻ buổi sáng",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q270",
+      "intent": "chill",
+      "variant": "long",
+      "query": "quán cà phê có nhiều cây xanh bóng mát ngồi đọc báo thư giãn",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q271",
+      "intent": "chill",
+      "variant": "no-diacritic",
+      "query": "cafe san vuon thoang mat",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q272",
+      "intent": "chill",
+      "variant": "keyword",
+      "query": "cafe sân vườn đà nẵng",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q273",
+      "intent": "family",
+      "variant": "natural",
+      "query": "nhà hàng có phòng riêng lịch sự tiếp khách gia đình",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q274",
+      "intent": "family",
+      "variant": "long",
+      "query": "quán ăn đồ ăn tươi sạch không gian ấm cúng người già và trẻ nhỏ đều ăn được",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q275",
+      "intent": "family",
+      "variant": "no-diacritic",
+      "query": "quan an gia dinh co phong rieng",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q276",
+      "intent": "family",
+      "variant": "keyword",
+      "query": "nhà hàng gia đình đà nẵng",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q277",
+      "intent": "night",
+      "variant": "natural",
+      "query": "quán cafe mở cửa 24 trên 24 thâu đêm",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q278",
+      "intent": "night",
+      "variant": "long",
+      "query": "chỗ ngồi làm việc qua đêm có ổ cắm điện và wifi mở sáng đèn",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q279",
+      "intent": "night",
+      "variant": "no-diacritic",
+      "query": "quan cafe mo 24h",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q280",
+      "intent": "night",
+      "variant": "keyword",
+      "query": "cafe mở 24/7",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q281",
+      "intent": "friends",
+      "variant": "natural",
+      "query": "quán nhậu lẩu nướng đông vui cho hội bạn thân",
+      "constraints": {
+        "category": [
+          "restaurant",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q282",
+      "intent": "friends",
+      "variant": "long",
+      "query": "quán có bàn dài cho nhóm 15 bạn bè tụ tập nâng ly thoải mái",
+      "constraints": {
+        "category": [
+          "restaurant",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q283",
+      "intent": "friends",
+      "variant": "no-diacritic",
+      "query": "quan lau nuong tu tap ban be",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q284",
+      "intent": "budget",
+      "variant": "natural",
+      "query": "quán cơm trưa văn phòng ngon rẻ sạch sẽ",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q285",
+      "intent": "budget",
+      "variant": "long",
+      "query": "quán ăn giá rẻ bình dân mỗi món dưới 50k cho học sinh",
+      "constraints": {
+        "category": [
+          "restaurant",
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q286",
+      "intent": "budget",
+      "variant": "no-diacritic",
+      "query": "quan com binh dan ngon re",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q287",
+      "intent": "view",
+      "variant": "natural",
+      "query": "quán cafe tầng thượng ngắm hoàng hôn bán đảo sơn trà",
+      "constraints": {
+        "category": [
+          "cafe",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q288",
+      "intent": "view",
+      "variant": "long",
+      "query": "quán rooftop ngắm toàn cảnh thành phố đà nẵng và biển mỹ khê",
+      "constraints": {
+        "category": [
+          "cafe",
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q289",
+      "intent": "view",
+      "variant": "keyword",
+      "query": "cafe view biển đà nẵng",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q290",
+      "intent": "rainy",
+      "variant": "natural",
+      "query": "quán cafe ấm cúng ngắm mưa rơi bên ô cửa sổ",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q291",
+      "intent": "rainy",
+      "variant": "long",
+      "query": "địa điểm tránh mưa ngày bão có trà nóng và nhạc êm dịu",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q292",
+      "intent": "sweet",
+      "variant": "natural",
+      "query": "tiệm trà sữa bánh ngọt kem gelato cho giới trẻ",
+      "constraints": {
+        "category": [
+          "cafe",
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q293",
+      "intent": "sweet",
+      "variant": "long",
+      "query": "quán đồ ngọt có kem tươi bingsu và trà hoa quả thanh mát",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q294",
+      "intent": "sweet",
+      "variant": "keyword",
+      "query": "tiệm bánh ngọt gelato",
+      "constraints": {
+        "category": [
+          "cafe",
+          "bakery"
+        ]
+      }
+    },
+    {
+      "id": "q295",
+      "intent": "pet",
+      "variant": "natural",
+      "query": "quán cà phê cho phép mang thú cưng chó mèo vào",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q296",
+      "intent": "pet",
+      "variant": "keyword",
+      "query": "cafe thân thiện thú cưng",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q297",
+      "intent": "healthy",
+      "variant": "natural",
+      "query": "quán nước ép hoa quả tươi và salad rau xanh",
+      "constraints": {
+        "category": [
+          "cafe",
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q298",
+      "intent": "healthy",
+      "variant": "long",
+      "query": "chỗ ăn eat clean thực dưỡng ít đường tốt cho sức khỏe",
+      "constraints": {
+        "category": [
+          "restaurant"
+        ]
+      }
+    },
+    {
+      "id": "q299",
+      "intent": "coffee_tour",
+      "variant": "natural",
+      "query": "tiệm cà phê rang xay nguyên chất tại chỗ",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q300",
+      "intent": "coffee_tour",
+      "variant": "long",
+      "query": "thưởng thức cafe arabica hạt nhập khẩu pha thủ công siphon kalita",
+      "constraints": {
+        "category": [
+          "cafe"
+        ]
+      }
+    },
+    {
+      "id": "q301",
+      "intent": "bar_cocktail",
+      "variant": "natural",
+      "query": "quán bar bartender pha chế cocktail theo tâm trạng",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q302",
+      "intent": "bar_cocktail",
+      "variant": "long",
+      "query": "quán bar không gian kín đáo nhạc jazz cổ điển",
+      "constraints": {
+        "category": [
+          "bar"
+        ]
+      }
+    },
+    {
+      "id": "q303",
+      "intent": "snack_night",
+      "variant": "natural",
+      "query": "chỗ ăn vặt ăn khuya trứng vịt lộn bánh tráng nướng",
+      "constraints": {
+        "category": [
+          "street-food"
+        ]
+      }
+    },
+    {
+      "id": "q304",
+      "intent": "snack_night",
+      "variant": "keyword",
+      "query": "ăn đêm vỉa hè",
+      "constraints": {
+        "category": [
+          "street-food"
+        ]
+      }
+    }
+  ]
+}
