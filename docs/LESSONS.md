@@ -1205,3 +1205,11 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
 - **Cách phòng tránh:**
   1. Mọi test suite tìm kiếm đô thị phải tích hợp sẵn tối thiểu 20-25% các trường hợp đồng nghĩa xuyên ngôn ngữ (Cross-lingual synonyms: cafe vs coffee, bar vs pub, bakery vs tiệm bánh) và câu lệnh kết hợp (Code-switching).
   2. Đo lường độc lập hiệu năng trên từng phân khúc ngôn ngữ để đảm bảo nhánh Dense và Lexical hỗ trợ lẫn nhau, không bị mất cân bằng khi đổi ngôn ngữ.
+
+### L-039: Vội vàng kết luận công cụ bên ngoài không tồn tại khi chưa tra cứu đa nguồn kỹ lưỡng
+- **Lỗi:** Khẳng định `Kitelon` và `Oalacea Warden` không tồn tại mà chưa tra cứu đầy đủ trên các nền tảng phân phối và registry thực tế (Docker Hub, Crates.io).
+- **Nguyên nhân gốc:** Tra cứu với từ khóa quá hẹp hoặc kết luận vội vàng khi không thấy kết quả nổi bật ở trang đầu của Google Search, vi phạm nguyên tắc "Không kết luận vội vàng khi chưa kiểm tra kỹ" trong quy tắc `user_global`.
+- **Cách phòng tránh:**
+  1. Trước khi khẳng định một công cụ, thư viện, framework hay package có tồn tại hay không, bắt buộc phải tra cứu trực tiếp trên registry chính thức tương ứng (`crates.io` cho Rust, `hub.docker.com` cho Docker container, `pypi.org` cho Python, `npmjs.com` cho Node/Bun, `github.com`).
+  2. Tuyệt đối không phán đoán chủ quan hoặc bác bỏ thông tin người dùng đưa ra khi chưa có bằng chứng xác thực từ registry.
+
