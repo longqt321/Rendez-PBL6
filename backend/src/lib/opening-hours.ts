@@ -1,25 +1,4 @@
-/**
- * Suy ra trạng thái "đang mở cửa" từ chuỗi giờ mở cửa thô (chuẩn OSM) — bản
- * backend của `frontend/src/features/places/lib/opening-hours.ts` (cùng quy tắc
- * để server và client không kết luận khác nhau cho cùng một quán).
- *
- * Hàm thuần, không phụ thuộc thư viện ngoài — chỉ parse được tập con phổ biến
- * của spec `opening_hours` mà corpus thật chứa (xem `data/cold-start`):
- * - `24/7`
- * - `Mo-Su 08:00-22:00`
- * - `Mo-Fr 07:00-17:30; Sa-Su 08:00-20:00`
- * - nhiều khung giờ cách nhau bởi `;` hoặc `,`, giờ `HH:MM` hoặc `HH:MM:SS`
- * - LƯU Ý: danh sách ngày ngăn bằng dấu phẩy (`Mo,We-Fr 09:00-17:00`) CHƯA được
- *   hỗ trợ — chuỗi bị tách theo `,` trước khi parse nên chỉ khung cuối có giờ
- *   được nhận. Corpus hiện tại không có format này; gặp thì sửa parser.
- * - khung không có ngày (`07:00-22:00`) = áp dụng mọi ngày
- * - khung qua nửa đêm (`22:00-02:00`) tính là mở sang hôm sau
- *
- * Không parse được (rỗng, lệch format, cú pháp lạ) → `null` = "không biết",
- * caller không được suy diễn thành mở/đóng.
- */
 
-/** Chỉ số ngày JS (`getDay()`: 0 = Chủ nhật). */
 const DAY_INDEX: Record<string, number> = {
   su: 0,
   mo: 1,
@@ -30,14 +9,12 @@ const DAY_INDEX: Record<string, number> = {
   sa: 6,
 }
 
-/** Khung giờ trong một ngày, tính bằng phút từ nửa đêm. */
 interface TimeRange {
   startMinutes: number
-  /** Nhỏ hơn `startMinutes` nghĩa là khung qua nửa đêm. */
+
   endMinutes: number
 }
 
-/** Ngày áp dụng của một khung: `null` = mọi ngày. */
 type DaySet = number[] | null
 
 interface OpeningRule {
@@ -45,7 +22,6 @@ interface OpeningRule {
   ranges: TimeRange[]
 }
 
-/** Đổi `HH:MM[:SS]` thành phút từ nửa đêm; sai thì `null`. */
 function parseTime(raw: string): number | null {
   const match = /^(\d{1,2}):(\d{2})(?::\d{2})?$/u.exec(raw)
   if (!match) return null
@@ -55,7 +31,6 @@ function parseTime(raw: string): number | null {
   return hours * 60 + minutes
 }
 
-/** "Mo-Su" → [1..6,0]; "Fr" → [5]; sai thì `null`. */
 function parseDayToken(raw: string): number[] | null {
   const [from, to] = raw.toLowerCase().split("-")
   const fromIndex = from ? DAY_INDEX[from] : undefined
@@ -73,10 +48,6 @@ function parseDayToken(raw: string): number[] | null {
   return days
 }
 
-/**
- * Parse một khung (đã tách bởi `;` hoặc `,`) thành rule.
- * Trả `null` khi khung không chứa giờ hợp lệ nào.
- */
 function parseRule(part: string): OpeningRule | null {
   // Bắt ngày đứng trước giờ: "Mo-Su 08:00-22:00", "Mo,We-Fr 09:00-17:00".
   const dayMatch =
@@ -112,13 +83,6 @@ function parseRule(part: string): OpeningRule | null {
   return { days, ranges }
 }
 
-/**
- * Trạng thái mở cửa tại thời điểm `now` (mặc định hiện tại), so theo múi giờ
- * Việt Nam (Asia/Ho_Chi_Minh) bất kể múi giờ máy.
- *
- * - `true` / `false`: có giờ mở cửa và parse được.
- * - `null`: không có dữ liệu hoặc format không hiểu được.
- */
 export function isOpenNow(openingHours: string | null, now: Date = new Date()): boolean | null {
   if (!openingHours) return null
   const normalized = openingHours.trim()

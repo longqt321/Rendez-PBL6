@@ -1,29 +1,9 @@
-/**
- * Gợi ý cá nhân hoá (P1 — rec production).
- *
- * Nguồn tín hiệu: `interaction_events` (weight dương = quan tâm) của actor
- * (user đăng nhập hoặc khách có `anon_id`) + `affinity_cache` do job
- * `refresh-affinity` tính lại mỗi ngày (item-item cosine, xem `affinity.ts`).
- *
- * Thuật toán:
- * 1. Đọc event dương 90 ngày của actor → danh sách seed (place, weight).
- * 2. Đọc `affinity_cache` của các seed → cộng dồn `score × seedWeight` theo
- *    place liên quan (seed nặng hơn đóng góp nhiều hơn).
- * 3. Loại place actor đã tương tác (mọi weight, kể cả âm — đã ẩn thì không
- *    gợi ý lại) và place không công khai/đã đóng.
- * 4. Không đủ seed / cache rỗng → cold start: phổ biến theo review_count.
- *
- * Không dùng LLM/embedding ở đây: affinity là tín hiệu hành vi thô, rẻ và
- * giải thích được; dense similarity là việc của search.
- */
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { selectPlaces, toPlaceDto, type PlaceRow } from "./places"
 
-/** Cửa sổ lịch sử của actor — khớp `CACHE_WINDOW_DAYS` của `affinity.ts`. */
 const HISTORY_WINDOW_DAYS = 90
 
-/** Gấp số ứng viên trước khi lọc — đề phòng bị lọc hết sau khi loại seen. */
 const CANDIDATE_MULTIPLIER = 3
 
 export interface RecommendationActor {
@@ -33,9 +13,9 @@ export interface RecommendationActor {
 
 export interface RecommendedPlaces {
   items: ReturnType<typeof toPlaceDto>[]
-  /** `affinity` = cá nhân hoá theo lịch sử; `cold-start` = phổ biến. */
+
   strategy: "affinity" | "cold-start"
-  /** Số seed place dùng cho nhánh affinity — 0 khi cold start. */
+
   seedCount: number
 }
 
@@ -62,7 +42,6 @@ function baseConditions(): Prisma.Sql[] {
   ]
 }
 
-/** Nhánh affinity: từ lịch sử actor → affinity_cache → danh sách place. */
 async function affinityCandidates(
   actor: RecommendationActor,
   limit: number,

@@ -11,12 +11,10 @@ import type { CreateCollectionInput, UpdateCollectionInput } from "../api/collec
 import type { Collection, CollectionSummary } from "../types/collection"
 import { savedPlacesQueryKey } from "@/features/saved/hooks/use-saved-places"
 
-/** Danh sách rút gọn của tôi — dùng ở tab Bộ sưu tập và menu "Lưu vào bộ sưu tập". */
 export function collectionsQueryKey(placeId?: string) {
   return placeId ? (["collections", { placeId }] as const) : (["collections"] as const)
 }
 
-/** Bộ sưu tập công khai của một người — dùng ở tab Bộ sưu tập trang cá nhân. */
 export function userCollectionsQueryKey(handle: string) {
   return ["users", handle, "collections"] as const
 }
@@ -32,12 +30,6 @@ export function useCreateCollection() {
   })
 }
 
-/**
- * Sửa tên / mô tả / trạng thái công khai.
- *
- * Server trả bản `Collection` đầy đủ nên cập nhật thẳng vào cache chi tiết, rồi
- * làm mới danh sách rút gọn (tên + badge Riêng tư thay đổi trên thẻ).
- */
 export function useUpdateCollection(id: string) {
   const queryClient = useQueryClient()
 
@@ -67,12 +59,6 @@ export function useDeleteCollection() {
   })
 }
 
-/**
- * Thêm/bớt địa điểm khỏi một bộ sưu tập.
- *
- * Server trả về bản `Collection` đầy đủ — client invalidate cả danh sách rút gọn
- * (đếm số địa điểm trên thẻ thay đổi) và chi tiết bộ sưu tập nếu đang mở.
- */
 export function useSetCollectionPlace() {
   const queryClient = useQueryClient()
 
@@ -88,12 +74,6 @@ export function useSetCollectionPlace() {
   })
 }
 
-/**
- * Thả tim / bỏ thả tim bộ sưu tập.
- *
- * Optimistic trên cả chi tiết và danh sách rút gọn để số tim đổi ngay khi bấm;
- * rollback cả hai nếu server từ chối.
- */
 export function useSetCollectionLike(id: string) {
   const queryClient = useQueryClient()
 

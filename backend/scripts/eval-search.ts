@@ -22,6 +22,7 @@ import { join } from "node:path"
 import { Prisma } from "../generated/prisma/client"
 import { prisma } from "../src/lib/prisma"
 import { denseCandidates, fuseRrf, listPlaces, parsePlaceFilters } from "../src/lib/places"
+import { normalizeSearchText } from "../src/lib/search-synonyms"
 import {
   holmCorrect,
   pairedBootstrap,
@@ -75,6 +76,17 @@ interface EvalQuery {
   variant?: string
   query: string
   constraints: Constraints
+  /**
+   * Query TÊN RIÊNG (entity query): tên venue kỳ vọng. Khi có trường này, nhãn
+   * được suy từ TÊN trong DB thay vì từ `constraints`:
+   * - grade 2 = venue có tên chuẩn hoá BẰNG `expectName` chuẩn hoá (đúng venue).
+   * - grade 1 = venue có tên CHỨA ĐỦ token của `expectName` (gần đúng).
+   * - grade 0 = còn lại.
+   * Nhờ vậy đo được đúng loại lỗi "gõ đúng tên quán mà quán không đứng đầu"
+   * — thứ mà bộ nhãn theo `constraints` không bắt được (mọi quán cùng category
+   * đều grade 2, nên trả quán nào cũng "đúng").
+   */
+  expectName?: string
 }
 
 interface Labels {
@@ -124,6 +136,28 @@ function constraintSql(c: Constraints): Prisma.Sql {
 }
 
 async function resolveGrades(q: EvalQuery): Promise<Record<string, number>> {
+  // Query tên riêng: nhãn theo TÊN venue, không theo ràng buộc thuộc tính.
+  if (q.expectName) {
+    const rows = await prisma.$queryRaw<{ id: string; name: string }[]>(Prisma.sql`
+      SELECT p.id, immutable_search_normalize(p.name) AS name
+      FROM places p
+      WHERE p.published_at IS NOT NULL AND p.deleted_at IS NULL AND p.status <> 'closed'`)
+    const target = normalizeSearchText(q.expectName)
+    const targetTokens = target.split(" ").filter((t) => t.length > 0)
+    const grades: Record<string, number> = {}
+    for (const row of rows) {
+      if (row.name === target) {
+        grades[row.id] = 2
+        continue
+      }
+      const tokens = row.name.split(" ").filter((t) => t.length > 0)
+      if (targetTokens.length > 0 && targetTokens.every((t) => tokens.includes(t))) {
+        grades[row.id] = 1
+      }
+    }
+    return grades
+  }
+
   const rows = await prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
     SELECT p.id FROM places p WHERE ${constraintSql(q.constraints)}`)
   const grades: Record<string, number> = {}

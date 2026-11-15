@@ -2,10 +2,6 @@ import { describe, expect, it } from "vitest"
 import { describeProposal } from "./room"
 import type { RoomProposal } from "../types/room"
 
-/**
- * Logic phòng lọc nhóm (tạo/join/apply/leave) đã chuyển hoàn toàn sang server —
- * client chỉ còn hiển thị, nên test chỉ kiểm phần hiển thị còn lại.
- */
 describe("describeProposal", () => {
   const base: Omit<RoomProposal, "kind" | "field" | "value"> = {
     id: "p1",

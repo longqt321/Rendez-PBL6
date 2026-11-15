@@ -2,10 +2,6 @@ import { act, renderHook, waitFor } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 import { useRooms } from "./use-rooms"
 
-/**
- * Hook phòng lọc nhóm chạy qua mock adapter (axios thật + `mockAdapter`) —
- * kiểm luồng tạo phòng → đề xuất → áp dụng → rời phòng với state thật.
- */
 describe("useRooms", () => {
   it("tạo phòng → thêm đề xuất → áp dụng → rời phòng", async () => {
     const { result } = renderHook(() => useRooms())

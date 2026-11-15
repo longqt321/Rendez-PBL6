@@ -20,11 +20,6 @@ vi.mock("sonner", () => ({
 
 import { toast } from "sonner"
 
-/**
- * Lưu ý: import `./axios` ở môi trường test sẽ nạp cả mock adapter (dev) —
- * không gọi mạng, chỉ test hàm thuần `toApiError`.
- */
-
 function axiosErrorWith(status: number, data: unknown): AxiosError {
   return new AxiosError("Request failed", "ERR_BAD_RESPONSE", {} as never, undefined, {
     data,
@@ -35,7 +30,6 @@ function axiosErrorWith(status: number, data: unknown): AxiosError {
   })
 }
 
-/** Lỗi có `config` — cần cho interceptor 401 (đọc url/method của request). */
 function axiosErrorFor(
   status: number,
   data: unknown,
@@ -91,10 +85,6 @@ describe("isNotFoundError", () => {
   })
 })
 
-/**
- * Interceptor 401 (V6-02/V8-07): lỗi phiên hết hạn phải toast + điều hướng
- * `/login?next=`, riêng endpoint đăng nhập và phép dò `GET /me` thì KHÔNG.
- */
 describe("handleUnauthorizedResponse", () => {
   let redirect: ReturnType<typeof vi.fn<(url: string) => void>>
 

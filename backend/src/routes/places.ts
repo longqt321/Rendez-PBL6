@@ -30,30 +30,16 @@ import {
   toSuggestionPlaceSummary,
 } from "../lib/suggestions"
 
-/**
- * Route địa điểm (Phase 2) — khớp hợp đồng Phần A:
- * - `GET /places` `Page<Place>` + cursor keyset + bộ lọc A7.9.
- * - `GET /places/map` `{items, total}` chặn 300.
- * - `GET /places/:id` 404 khi chưa publish (A6.6).
- *
- * Các endpoint danh sách gắn `meta` (tookMs/cacheHit/totalResults) — metadata
- * vận hành đo server-side, không phải số liệu bịa; `didYouMean` chỉ có khi `q`
- * trả về 0 kết quả.
- */
-
-/** Khớp mock (`PLACES_PAGE_SIZE = 9`) — FE infinite scroll không phụ thuộc số này. */
 const PLACES_PAGE_SIZE = 9
-/** Bài đăng gắn địa điểm — cùng cỡ trang với feed cộng đồng. */
+
 const PLACE_POSTS_PAGE_SIZE = 5
-/** Chặn trên cho `/places/map` — khung nhìn zoom nhỏ không trả cả dataset. */
+
 const MAP_MAX_PLACES = 300
-/** Số gợi ý tối đa một lần hỏi (A5: suggestion ≤ 10). */
+
 const MAX_SUGGESTIONS = 10
 const DEFAULT_SUGGESTIONS = 3
-/** Caption ngắn hơn ngưỡng thì không gợi ý (A7.1). */
-const MIN_CAPTION_CHARS = 8
 
-/** Id place là slug từ dataset (`mirkocoffeechillbeer-493`), không phải uuid. */
+const MIN_CAPTION_CHARS = 8
 
 export function createPlacesRouter() {
   const router = new Hono<AppEnv>()
@@ -144,11 +130,6 @@ export function createPlacesRouter() {
     })
   })
 
-  /**
-   * "Gợi ý hôm nay" — 3 quán do job `daily-picks` chọn mỗi ngày. Không tham số,
-   * không phụ thuộc người xem; chưa có picks thì trả `items: []` (200, không
-   * phải lỗi) để FE thu gọn dải. Đứng trước `/places/:id`.
-   */
   router.get("/places/daily-picks", async (c) => {
     const startedAt = performance.now()
     const result = await getDailyPicks(getPickDate())
@@ -171,11 +152,6 @@ export function createPlacesRouter() {
     )
   })
 
-  /**
-   * Gợi ý cá nhân hoá — item-item affinity từ lịch sử tương tác của actor
-   * (user đăng nhập hoặc khách có `anon_id` do FE sinh). Không có lịch sử →
-   * cold start theo review_count. Đứng trước `/places/:id`.
-   */
   router.get("/places/recommended", async (c) => {
     const viewer = await getViewer(c)
     const rawLimit = Number(c.req.query("limit") ?? 6)
@@ -220,7 +196,6 @@ export function createPlacesRouter() {
     )
   })
 
-  /** "Đã lưu" — hợp các bộ sưu tập của chính mình (đứng trước `/places/:id`). */
   router.get("/places/saved", requireAuth, async (c) => {
     const rawCursor = c.req.query("cursor")
     const cursor = rawCursor ? decodeCursor(rawCursor) : null
@@ -230,12 +205,6 @@ export function createPlacesRouter() {
     return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
   })
 
-  /**
-   * Bài đăng gắn địa điểm (FE `usePlacePosts`, phân trang cursor).
-   *
-   * Đứng trước `/places/:id` để không bị route chi tiết nuốt; địa điểm chưa
-   * publish coi như không tồn tại (khớp mock).
-   */
   router.get("/places/:id/posts", async (c) => {
     const id = c.req.param("id")
     if (!SLUG_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")

@@ -46,30 +46,15 @@ import {
 import type { MockCollection, MockComment, MockPost, MockReport, MockReview } from "./types"
 import type { MockRoom, MockRoomMember } from "./types"
 
-/**
- * SERVER GIẢ LẬP — không phải code frontend.
- *
- * Toàn bộ nghiệp vụ (lọc, phân trang, xếp hạng đề xuất, phát hiện địa điểm mới,
- * sinh thông báo, publish địa điểm) nằm trong file này và chạy như một adapter
- * của axios. Frontend chỉ thấy request/response HTTP.
- *
- * Khi backend thật sẵn sàng: xoá `src/mocks/` và bỏ `adapter` trong `src/lib/axios.ts`.
- */
-
 const PLACES_PAGE_SIZE = 9
-/** Lý do gợi ý của mock — cùng bộ chuỗi server thật dựng từ dữ liệu có thật. */
+
 const DAILY_PICK_REASONS = ["Gợi ý của ngày", "Quán mới", "Nhiều đánh giá"]
 const POSTS_PAGE_SIZE = 5
 const NOTIFICATIONS_PAGE_SIZE = 20
 
-/**
- * Tài khoản dev của mock — dùng để thử trang đăng nhập khi chạy mock.
- * Backend thật lưu mật khẩu đã hash; mock chỉ cần so khớp chuỗi.
- */
 const MOCK_EMAIL = "me@rendez.test"
 const MOCK_PASSWORD = "password123"
 
-/** Tài khoản mock — `verified` mô phỏng `users.email_verified` của backend thật. */
 interface MockAccount {
   userId: string
   email: string
@@ -77,10 +62,8 @@ interface MockAccount {
   verified: boolean
 }
 
-/** Lý do báo cáo hợp lệ — tra cứu O(1) thay vì so khớp mảng. */
 const VALID_REPORT_REASONS: ReadonlySet<string> = new Set(PLACE_REPORT_REASONS)
 
-/** Content-Type ảnh được nhận — cùng nguồn `@rendez/schema` với backend. */
 const MOCK_IMAGE_EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -88,16 +71,8 @@ const MOCK_IMAGE_EXTENSIONS: Record<string, string> = {
   "image/avif": "avif",
 }
 
-/** Host storage giả của mock — CHỈ file trong `src/mocks/` biết tên này. */
 const MOCK_STORAGE_HOST = "mock-r2.test"
 
-/**
- * Mock không có storage thật: chặn `PUT` tới storage giả để client coi như tải
- * lên thành công. Mọi request khác đi qua `fetch` gốc.
- *
- * Chỉ chạy khi module mock được nạp (`lib/axios.ts` import động khi
- * `DEV && env.enableMocks`) — code thật không biết gì về host này.
- */
 function patchFetchForMockStorage(): void {
   const target = globalThis as { fetch: typeof fetch; __rendezMockFetchPatched?: boolean }
   if (target.__rendezMockFetchPatched) return
@@ -118,7 +93,6 @@ function patchFetchForMockStorage(): void {
 
 patchFetchForMockStorage()
 
-/** "Database" trong bộ nhớ của server. Reset khi tải lại trang. */
 const db = {
   places: MOCK_PLACES.map((place) => ({ ...place })),
   posts: MOCK_POSTS.map((post) => ({ ...post })),
@@ -128,36 +102,22 @@ const db = {
   collections: MOCK_COLLECTIONS.map((collection) => ({ ...collection })),
   reports: [] as MockReport[],
   users: { ...MOCK_USERS },
-  /** Hồ sơ người dùng hiện tại — PATCH /me sửa bản sao này, không đụng fixture. */
+
   me: { ...ME },
-  /**
-   * Tài khoản (email + password) của mock — đăng nhập/đăng ký so khớp ở đây.
-   * Tài khoản đăng ký mới được thêm vào; xoá tài khoản chỉ đánh dấu `deleted`.
-   * `verified` mô phỏng `users.email_verified` của backend thật (bắt buộc xác
-   * thực email trước khi đăng nhập, 2026-11-12).
-   */
+
   accounts: [
     { userId: "u-me", email: MOCK_EMAIL, password: MOCK_PASSWORD, verified: true },
   ] as MockAccount[],
-  /** Tài khoản đã xoá (DELETE /me) — không đăng nhập lại được, như backend thật. */
+
   deletedUserIds: new Set<string>(),
-  /** Phòng lọc nhóm (Phase 6) — in-memory, reset khi tải lại trang. */
+
   rooms: [] as MockRoom[],
-  /**
-   * Mô phỏng cookie HttpOnly `rendez_room_<code>` của "trình duyệt" hiện tại:
-   * mã phòng → memberId. Adapter axios không có cookie thật, nên đây là state
-   * thay thế để e2e mock chạy đúng luồng guest token của backend.
-   */
+
   roomTokens: {} as Record<string, string>,
-  /**
-   * Phiên đăng nhập của mock server. Bật sẵn khi dev bypass auth; `DELETE /session`
-   * (đăng xuất) tắt đi, `POST /session` (đăng nhập lại) bật lại. Reset khi tải
-   * lại trang — mock là bộ nhớ tạm nên không có "phiên thật" để khôi phục.
-   */
+
   authenticated: env.devBypassAuth,
 }
 
-/** Bài đã được server gửi thông báo đề xuất — tránh sinh trùng. */
 const notifiedPostIds = new Set<string>()
 
 let postSeq = 0
@@ -230,16 +190,6 @@ function toNotificationDto(notification: AppNotification): AppNotification {
 // Nghiệp vụ phía server
 // ---------------------------------------------------------------------------
 
-/**
- * Sắp xếp kết quả `GET /places` theo `sort` (khớp backend):
- * - `distance`: Haversine tới người dùng tăng dần, quán thiếu toạ độ cuối —
- *   dùng CÙNG công thức client `calculateDistanceKm` để thứ tự mock khớp số
- *   hiển thị trên card.
- * - `rating`: quán có đánh giá lên đầu (rating giảm), quán 0 review giữ thứ
- *   tự dataset (= `created_at DESC` của backend).
- * - Giá trị khác/thiếu → giữ nguyên (newest). `sort=distance` thiếu toạ độ
- *   hợp lệ → newest (không lỗi), giống backend.
- */
 function sortPublishedPlaces(items: Place[], sort?: string, lat?: string, lng?: string): Place[] {
   if (sort === "distance") {
     const latN = Number(lat)
@@ -287,7 +237,6 @@ function paginate<T>(items: T[], cursor: string | null, pageSize: number): Page<
   return { items: slice, next: nextOffset < items.length ? String(nextOffset) : null }
 }
 
-/** Quy tắc hiển thị công khai: đã duyệt và chưa bị xác nhận đóng cửa. */
 function isPubliclyVisible(place: MockPlace): boolean {
   return place.publishedAt !== null && place.status !== "closed"
 }
@@ -296,19 +245,16 @@ function listPublishedPlaces(params: {
   category?: string
   district?: string
   q?: string
-  /**
-   * Khung nhìn bản đồ `minLng,minLat,maxLng,maxLat` — chỉ trả địa điểm trong khung.
-   * Dùng cho `GET /places/map` (bản đồ tự nạp theo vùng đang xem).
-   */
+
   bbox?: string
-  /** Mức giá tối đa (1–3) — dùng cho phòng lọc nhóm. */
+
   priceMax?: string
-  /** Danh sách loại hình/quán bị loại, phân tách bằng dấu phẩy. */
+
   excludeCategory?: string
   excludeDistrict?: string
-  /** Từ khoá phải xuất hiện (phân tách bằng dấu phẩy) — khớp name + tags. */
+
   includeKeyword?: string
-  /** Từ khoá bị loại (phân tách bằng dấu phẩy) — khớp name + tags. */
+
   excludeKeyword?: string
 }): Place[] {
   const published = db.places.filter(isPubliclyVisible)
@@ -383,11 +329,6 @@ function listPublishedPlaces(params: {
     .map(toPlaceDto)
 }
 
-/**
- * Gợi ý địa điểm cho nội dung đang soạn.
- *
- * Server chấm điểm + chọn top N rồi trả về. Client chỉ render đúng thứ tự này.
- */
 function suggestPlacesForCaption(caption: string, limit: number): PlaceSuggestion[] {
   if (caption.trim().length < 8) return []
   const candidates = db.places.filter(isPubliclyVisible)
@@ -397,12 +338,6 @@ function suggestPlacesForCaption(caption: string, limit: number): PlaceSuggestio
   }))
 }
 
-/**
- * Job phía server: quét bài chưa gắn địa điểm, tìm địa điểm CHƯA publish khớp
- * nội dung, rồi tạo thông báo "Đề xuất thêm địa điểm".
- *
- * Chạy mỗi lần client tải danh sách thông báo — mô phỏng job nền của backend.
- */
 function syncPlaceSuggestions(): void {
   const unpublished = db.places.filter((place) => place.publishedAt === null)
 

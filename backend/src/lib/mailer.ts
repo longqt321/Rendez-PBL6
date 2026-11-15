@@ -1,18 +1,6 @@
 import nodemailer, { type Transporter } from "nodemailer"
 import { env } from "../env"
 
-/**
- * Gửi mail giao dịch qua SMTP chuẩn (nodemailer).
- *
- * Vì sao SMTP chứ không phải SDK riêng của nhà cung cấp: cùng một cấu hình chạy
- * được với Resend / Brevo / SES / Gmail — đổi nhà cung cấp chỉ đổi biến môi
- * trường, không sửa code. Hướng dẫn cấu hình: docs/backend/SMTP-SETUP.md.
- *
- * Thiếu cấu hình (`env.mailConfigured === false`) thì `sendResetPasswordEmail`
- * trả `false` — nơi gọi tự quyết định fallback (dev log token, production ghi
- * nhận). Không ném lỗi lúc import để môi trường dev không có SMTP vẫn chạy.
- */
-
 let transporter: Transporter | null = null
 
 function getTransporter(): Transporter {
@@ -28,7 +16,6 @@ function getTransporter(): Transporter {
   return transporter
 }
 
-/** Tiêu đề cố định — test và template cùng đọc một hằng số. */
 export const RESET_PASSWORD_SUBJECT = "Đặt lại mật khẩu Rendez"
 export const VERIFY_EMAIL_SUBJECT = "Xác thực email Rendez"
 export const ACCOUNT_EXISTS_SUBJECT = "Tài khoản Rendez của bạn đã tồn tại"
@@ -44,17 +31,12 @@ function escapeHtml(value: string): string {
 
 export interface ResetPasswordMailInput {
   to: string
-  /** Link đặt lại mật khẩu do better-auth sinh (đã gồm token). */
+
   url: string
-  /** Tên hiển thị để chào — thiếu thì chào trung tính. */
+
   name?: string
 }
 
-/**
- * Dựng nội dung mail đặt lại mật khẩu.
- *
- * Tách khỏi phần gửi để test được nội dung mà không cần SMTP thật.
- */
 export function buildResetPasswordMail(input: ResetPasswordMailInput) {
   const greeting = input.name?.trim() ? `Chào ${input.name.trim()},` : "Chào bạn,"
   const safeName = escapeHtml(input.name?.trim() || "bạn")

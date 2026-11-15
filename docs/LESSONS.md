@@ -1135,3 +1135,73 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
      dùng có tự nói bằng từ này khi tìm nơi đi chơi không?".
   3. Với Rendez: tính năng phải phục vụ chuỗi *tìm nơi đi → chọn giữa vài nơi →
      lên lộ trình → rủ người đi cùng*.
+
+## L-037 — 2026-11-15: Liệt kê sót công cụ tìm kiếm Tavily trong bộ công cụ khả dụng
+
+- **Hiện tượng:** Khi người dùng yêu cầu kiểm tra các MCP, tools, skills đang cài đặt và cam kết ưu tiên sử dụng, agent đã bỏ sót plugin / bộ skills **Tavily** (`tavily-search`, `tavily-research`, `tavily-entity`, `tavily-monitor`, `tavily-list`) trong danh sách ghi nhận và cam kết.
+- **Nguyên nhân gốc:** Agent chỉ liệt kê các MCP server đang có tool call trong schema active mà bỏ qua kiểm tra đầy đủ danh sách skills đã đăng ký của plugin Tavily.
+- **Cách phòng tránh:**
+  1. Khi tra cứu hoặc xác nhận công cụ tìm kiếm và nghiên cứu ngoài web, luôn kiểm tra đồng thời cả 3 nguồn: Tavily (`tavily-search`, `tavily-research`), Tinyfish (`run_deep_research`), và Parallel Search (`parallel-search`).
+  2. Tavily là một trong những engine tìm kiếm thời gian thực quan trọng nhất của hệ thống, luôn đưa vào danh sách ưu tiên hàng đầu cho các tác vụ search & research.
+
+## L-038 — 2026-11-15: Tìm kiếm trả kết quả tệ với tên quán (entity query)
+
+- **Hiện tượng (người dùng chỉ ra):** gõ đúng tên quán mà quán không đứng đầu —
+  "P Coffee" xếp hạng 14; "Trinh Cà Phê" gõ "trinh ca phe" thì **mất hẳn** khỏi
+  top 30 (gõ "trinh" thì lại có). Kết quả tìm kiếm nói chung "rất tệ".
+- **Nguyên nhân gốc (3 lớp):**
+  1. **Nhánh structured đè nhánh lexical:** `detectIntentAttributes("P Coffee")`
+     trả `{categories:["cafe"]}` (vì "coffee" nằm trong lexicon) → nhánh structured
+     kéo 50 quán cà phê ngẫu nhiên với **weight 2**, trong khi lexical weight 1.
+     RRF: structured top-1 = 2/61 = 0.033 > lexical top-1 = 1/61 = 0.016 → mọi
+     quán cà phê đè lên tên quán đúng.
+  2. **Không có nhánh khớp TÊN:** HAYSTACK gộp `name||address||city||district||tags`,
+     nên từ "Trinh" trong địa chỉ đường (Phan Châu Trinh, Lê Mạnh Trình) có trigram
+     y hệt "Trình" trong tên quán → quán khác đè "Trình Cà Phê".
+  3. **Benchmark không bắt được:** bộ eval v2 (112 query) **không có nhóm entity/tên
+     riêng** — chỉ có query theo thuộc tính (category/tag/district). Tệ hơn: nhãn v2
+     trỏ tới 343 place id của **dataset cũ 344 POI**; DB hiện tại (358 POI mới) có
+     **0/343 id khớp** → eval v2 âm thầm cho điểm 0 cho MỌI phương pháp, không ai
+     nhận ra vì bảng "mốc so sánh" trong tài liệu là số cũ.
+- **Cách sửa:** thêm nhánh exact-name (weight 5) + prefix-name (weight 3) vào RRF;
+  field-boost lexical (name ×3); **dùng chính kết quả nhánh name làm bộ dò entity**
+  — nếu tìm thấy venue có tên khớp thì tắt structured (weight 0). Không dùng
+  heuristic từ vựng (đã thử: "quán cà phê đẹp", "romantic outdoor cafe" bị nhận
+  nhầm là tên riêng → giảm điểm).
+- **Cách phòng tránh:**
+  1. **Nhãn eval phải tái tạo được trên dữ liệu hiện tại.** Khi thay dataset, nhãn
+     đóng băng theo id trở nên vô nghĩa — phải kiểm `label ids ∩ DB ids > 0` trước
+     khi tin bất kỳ con số eval nào. Thêm kiểm tra này vào quy trình.
+  2. **Bộ eval phải phủ loại query mà người dùng thật gõ** — thiếu hẳn nhóm "tên
+     riêng" nên bug nghiêm trọng nhất lọt qua. Đã tạo bộ v3 (`search-eval-v3.json`,
+     127 query) gồm 15 query entity, nhãn suy từ TÊN venue (khách quan).
+  3. **RRF: nhánh "chắc chắn đúng" phải có weight > nhánh "đoán rộng".** Bằng chứng
+     trực tiếp (khớp đúng tên) nặng hơn suy luận thuộc tính.
+
+### L-034: Tự sinh thẻ gọi tool dạng văn bản thuần (DSML tag loop / text-based tool call hallucination)
+- **Lỗi:** Ở lượt phản hồi trước, mô hình bị rơi vào vòng lặp sinh thẻ văn bản rỗng/thẻ cấu trúc giả (`</｜DSML｜ invoke>`, `</invoke>`, `</parameter>`) lặp đi lặp lại hàng trăm dòng thay vì gọi API tool của hệ thống hoặc trả lời tự nhiên.
+- **Nguyên nhân gốc:** Khi xử lý context lớn chứa nhiều văn bản định dạng markdown/JSON thô, mô hình nhầm lẫn giữa định dạng nội bộ của tool call và luồng văn bản trả về (text generation), dẫn đến việc đóng mở thẻ giả và sinh văn bản rác lặp vô tận.
+- **Cách phòng tránh:**
+  1. Không bao giờ in ra các thẻ cấu trúc nội bộ hoặc cố tự format tool call bằng tay trong text stream.
+  2. Tách rõ ràng giữa bước phân tích logic và bước trả về kết quả; nếu context quá lớn, cô đọng thông tin trước khi xuất phản hồi.
+
+### L-036: Ràng buộc nhãn bộ test bị lệch pha với Schema dữ liệu thực tế (Label Constraint Inconsistency)
+- **Lỗi:** Bộ test `search-eval-v3` chứa các ràng buộc tag cũ (`tagsAll: ["Làm việc"]`, `"Ngoài trời"`...) vốn không tồn tại trong corpus 358 địa điểm mới, dẫn đến việc 36% query ý định bị ép nhãn rỗng (grade 0), làm sai lệch kết quả đo lường giữa Dense và Lexical/Hybrid.
+- **Nguyên nhân gốc:** Khi thay đổi corpus sang 358 venues mới, bộ query test được thừa kế từ phiên bản cũ (v2/v3) mà không kiểm tra độ giao thoa (`label tags ∩ DB tags`) trước khi freeze nhãn.
+- **Cách phòng tránh:**
+  1. Khi freeze một bộ test IR/RecSys mới, bắt buộc phải chạy script kiểm tra tính hợp lệ của ràng buộc (sanity check): `count(DB matching constraints) > 0` cho mọi query ý định.
+  2. Bất kỳ khi nào làm mới tập dữ liệu (dataset migration), phải cập nhật bộ query và nhãn đồng bộ sang phiên bản mới (`search-eval-v4`).
+
+### L-037: Bộ test quy mô nhỏ (N < 100) không đủ độ bao phủ kiểm định thống kê (Small Evaluation Test Size)
+- **Lỗi:** Bộ test 61 queries quá nhỏ, không đại diện đủ cho các phân khúc hành vi tìm kiếm (tên quán, từ khóa thuộc tính, địa lý 6 quận, ngữ cảnh tự nhiên và du khách quốc tế), dẫn đến phương sai đo lường cao (variance cao) và độ tin cậy kiểm định bootstrap chưa tối ưu.
+- **Nguyên nhân gốc:** Tâm lý chỉ tạo vừa đủ các case lỗi điển hình thay vì xây dựng một test suite toàn diện phủ kín không gian danh mục và biến thể ngôn ngữ.
+- **Cách phòng tránh:**
+  1. Với một hệ thống POI Search / RecSys đô thị, bộ test benchmark nội bộ chuẩn phải có quy mô tối thiểu N >= 200 queries (tương ứng với số lượng bài báo và chuẩn công nghiệp).
+  2. Phân bổ cân đối tỷ trọng: Entity (tên riêng) ~40%, Category/Tag thực tế ~25%, Địa lý quận huyện ~20%, Câu tự nhiên ngữ nghĩa và du khách ~15%.
+
+### L-038: Thiếu vắng tập kiểm thử đa ngôn ngữ và tiếng bồi hỗn hợp (Cross-Lingual & Code-Switching Gap)
+- **Lỗi:** Các bộ test trước đây chỉ tập trung vào tiếng Việt đơn thuần, bỏ sót hoàn toàn hành vi của du khách quốc tế (English-native) và thói quen gõ tiếng bồi hỗn hợp Anh - Việt ("cafe view chill", "tiệm bakery banh mi croissant", "craft beer bar").
+- **Nguyên nhân gốc:** Chỉ mô phỏng hành vi người dùng đơn ngữ thay vì phản ánh bức tranh thực tế của một đô thị du lịch quốc tế như Đà Nẵng.
+- **Cách phòng tránh:**
+  1. Mọi test suite tìm kiếm đô thị phải tích hợp sẵn tối thiểu 20-25% các trường hợp đồng nghĩa xuyên ngôn ngữ (Cross-lingual synonyms: cafe vs coffee, bar vs pub, bakery vs tiệm bánh) và câu lệnh kết hợp (Code-switching).
+  2. Đo lường độc lập hiệu năng trên từng phân khúc ngôn ngữ để đảm bảo nhánh Dense và Lexical hỗ trợ lẫn nhau, không bị mất cân bằng khi đổi ngôn ngữ.

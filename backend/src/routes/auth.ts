@@ -16,20 +16,6 @@ import { findProfileById } from "../lib/users"
 import { requireAuth } from "../lib/session"
 import { noStore } from "../lib/http-cache"
 
-/**
- * Route auth + hồ sơ (Phase 1).
- *
- * Hợp đồng (Phần A của kế hoạch):
- * - `GET /me` 401 khi chưa đăng nhập, 200 `userProfileSchema`.
- * - `PATCH /me` chỉ các trường `updateMeInputSchema`; trường lạ bị bỏ qua.
- * - `POST /session` đăng nhập email+password → trả hồ sơ + Set-Cookie phiên.
- * - `DELETE /session` → `{ loggedOut: true }`.
- * - `POST /register` endpoint mới (FE chưa có UI) → hồ sơ + Set-Cookie.
- *   Từ 2026-11-12: bắt buộc xác thực email, đăng ký xong trả
- *   `201 { requiresVerification: true }` (không có phiên).
- */
-
-/** Handle: chữ thường, số, gạch dưới; 3–30 ký tự (quy ước mới, xem DECISIONS). */
 const handleSchema = z
   .string()
   .min(3)
@@ -48,22 +34,9 @@ const loginInputSchema = z.object({
   password: z.string().min(1),
 })
 
-/**
- * Chuyển lỗi better-auth thành `{ message }` tiếng Việt (D6).
- *
- * `isAPIError` là predicate chính thức của better-auth (chấp nhận cả hai bản
- * APIError nội bộ) — trước đây file này tự kiểm `"statusCode" in error` kiểu
- * duck-typing, dễ sai khi thư viện đổi hình dạng lỗi.
- */
 function mapAuthError(error: unknown): never {
   if (!isAPIError(error)) throw error
 
-  /**
-   * Chưa xác thực email: better-auth trả 403 "Email not verified" từ
-   * `dist/api/routes/sign-in.mjs:338` (đã đọc source). Phải kiểm TRƯỚC nhánh 401/403
-   * chung, nếu không người dùng chỉ thấy "Email hoặc mật khẩu không đúng" và
-   * không biết cần mở mail.
-   */
   const message = error.body?.message
   if (error.statusCode === 403 && message && /not verified/i.test(message)) {
     throw new ApiError(
@@ -81,7 +54,6 @@ function mapAuthError(error: unknown): never {
   throw error
 }
 
-/** Đếm số liệu hồ sơ — một query, không N+1 (bảng `follows` thêm ở T5.4). */
 async function buildProfile(userId: string, viewerId: string | null) {
   // Một nơi dựng hồ sơ: `lib/users.ts` đếm bài/follower/following thật (T5.4).
   const profile = await findProfileById(userId, viewerId)
@@ -89,24 +61,11 @@ async function buildProfile(userId: string, viewerId: string | null) {
   return profile
 }
 
-/**
- * Lỗi đăng ký: better-auth chỉ kiểm email trùng (thông báo "User already
- * exists"), còn `handle` là additionalField nên trùng handle bị adapter Prisma
- * ném P2002 — better-auth nuốt lỗi đó và trả 422 "Failed to create user"
- * (đã đọc source `dist/api/routes/sign-up.mjs`). Vì vậy phải kiểm handle trước
- * khi gọi signUpEmail, và kiểm lại sau lỗi 422 để bắt trường hợp đua (hai
- * request cùng handle, một request thắng).
- */
 async function assertHandleAvailable(handle: string) {
   const taken = await prisma.user.findUnique({ where: { handle }, select: { id: true } })
   if (taken) throw new ApiError(409, "Handle đã được sử dụng")
 }
 
-/**
- * Tài khoản đã xoá mềm vẫn còn trong DB (giữ lịch sử bài/bình luận) nên
- * better-auth vẫn xác thực được mật khẩu. Chặn ở đây để người đã xoá tài khoản
- * không đăng nhập lại được bằng phiên cũ.
- */
 async function assertActiveUser(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -120,11 +79,6 @@ async function assertActiveUser(userId: string) {
   }
 }
 
-/**
- * Ảnh hồ sơ phải do CHÍNH người gọi tải lên thư mục `avatars/<userId>/` hoặc
- * `covers/<userId>/` — cùng chuẩn với ảnh bài đăng (`routes/posts.ts`), logic
- * kiểm dùng chung `@rendez/schema`. `null`/bỏ trống = xoá/giữ nguyên, hợp lệ.
- */
 function validateProfileImages(
   userId: string,
   urls: { url: string | null | undefined; folder: ProfileMediaFolder }[],
@@ -146,12 +100,10 @@ function validateProfileImages(
 export function createAuthRouter() {
   const router = new Hono<AppEnv>()
 
-  /** Hồ sơ của chính mình — 401 khi chưa đăng nhập (khớp mock). */
   router.get("/me", requireAuth, async (c) => {
     return noStore(c, await buildProfile(c.get("userId"), c.get("userId")))
   })
 
-  /** Cập nhật hồ sơ — chỉ các trường hợp đồng; trường lạ bị bỏ qua. */
   router.patch("/me", requireAuth, async (c) => {
     const raw = await c.req.json().catch(() => null)
     const parsed = updateMeInputSchema.safeParse(raw)
@@ -168,12 +120,6 @@ export function createAuthRouter() {
     return noStore(c, await buildProfile(userId, userId))
   })
 
-  /**
-   * Đăng nhập email + password.
-   *
-   * Trả hồ sơ (không trả token trong body) và chuyển nguyên `Set-Cookie` của
-   * better-auth sang response — FE dùng cookie phiên, không lưu token.
-   */
   router.post(
     "/session",
     rateLimit({ scope: "auth-session", limit: 20, windowSeconds: 60 }),
@@ -206,7 +152,6 @@ export function createAuthRouter() {
     },
   )
 
-  /** Đăng xuất — xoá phiên hiện tại, trả `{ loggedOut: true }` (A6.10). */
   router.delete("/session", requireAuth, async (c) => {
     try {
       await auth.api.signOut({ headers: c.req.raw.headers })
@@ -217,12 +162,6 @@ export function createAuthRouter() {
     return c.json({ loggedOut: true })
   })
 
-  /**
-   * Xoá tài khoản — xoá MỀM (`users.deleted_at`) để giữ nguyên bài/bình luận và
-   * không phải xử lý cascade 15 bảng. Xoá luôn mọi phiên để cookie cũ mất hiệu
-   * lực ngay; email/handle vẫn chiếm unique index nên KHÔNG đăng ký lại được
-   * cùng email (ghi ở DECISIONS 2026-11-11 — mở lại sau nếu cần).
-   */
   router.delete("/me", requireAuth, async (c) => {
     const userId = c.get("userId")
     await prisma.$transaction([
@@ -232,18 +171,6 @@ export function createAuthRouter() {
     return c.json({ deleted: true })
   })
 
-  /**
-   * Đăng ký — endpoint mới, FE chưa có UI (T1.3).
-   *
-   * Từ 2026-11-12 bắt buộc xác thực email: đăng ký thành công KHÔNG tạo phiên,
-   * trả `201 { requiresVerification: true }` — FE hiện "kiểm tra email". Trùng
-   * email cũng trả response như vậy (better-auth "generic duplicate") để không
-   * lộ email nào đã đăng ký; khác biệt duy nhất là hook
-   * `onExistingUserSignUp` (lib/auth.ts) gửi mail thật cho chủ tài khoản: gửi
-   * lại link xác thực nếu chưa xác thực, hoặc mail "tài khoản đã tồn tại" kèm
-   * lối đăng nhập / đặt lại mật khẩu nếu đã xác thực — người dùng không còn
-   * chờ một email không bao giờ tới (V1-02).
-   */
   router.post(
     "/register",
     rateLimit({ scope: "auth-register", limit: 20, windowSeconds: 60 }),
@@ -270,12 +197,6 @@ export function createAuthRouter() {
         const userId = result?.user?.id
         if (!userId) throw new ApiError(500, "Không tạo được tài khoản")
 
-        /**
-         * `requireEmailVerification` bật: better-auth KHÔNG tạo phiên và trả
-         * `{ token: null, user }` (đã đọc `dist/api/routes/sign-up.mjs` — cả
-         * trường hợp email đã tồn tại cũng trả response "generic" như vậy để
-         * không lộ email). Trả hợp đồng mới cho FE, không có Set-Cookie.
-         */
         if (result?.token == null) {
           return c.json({ requiresVerification: true } as const, 201)
         }
@@ -302,5 +223,4 @@ export function createAuthRouter() {
   return router
 }
 
-/** Re-export để route khác (GET /users/:handle) dùng chung — một nơi tính hồ sơ. */
 export { buildProfile }
