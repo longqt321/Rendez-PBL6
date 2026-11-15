@@ -93,8 +93,8 @@ export function hitRateLimit(key: string, windowSeconds: number): { count: numbe
 /** Middleware giới hạn theo IP (hoặc userId khi `byUser`) + scope; vượt trả 429 kèm `Retry-After`. */
 export function rateLimit(options: RateLimitOptions) {
   return createMiddleware<AppEnv>(async (c, next) => {
-    // Trong môi trường test, tắt rate limiting để không chặn các test suite duyệt qua nhiều trang
-    if (env.NODE_ENV === "test") {
+    // Nếu có cờ BYPASS_RATE_LIMIT (dành riêng cho các bài test tải trang / crawl)
+    if (process.env.BYPASS_RATE_LIMIT === "1") {
       await next()
       return
     }
