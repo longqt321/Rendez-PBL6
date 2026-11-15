@@ -35,8 +35,9 @@ const CODE_RE = /^[0-9A-HJKMNP-TV-Z]{6}$/
 
 const SSE_HEARTBEAT_MS = 15_000
 
-const READ_RATE_LIMIT = { scope: "rooms-read", limit: 240, windowSeconds: 60 } as const
+const READ_RATE_LIMIT = { scope: "rooms-read", limit: 60, windowSeconds: 60 } as const
 const JOIN_RATE_LIMIT = { scope: "rooms-join", limit: 20, windowSeconds: 60 } as const
+const EVENTS_RATE_LIMIT = { scope: "rooms-events", limit: 30, windowSeconds: 60 } as const
 
 function requireCode(raw: string | undefined): string {
   const code = (raw ?? "").toUpperCase()
@@ -224,9 +225,11 @@ export function createRoomsRouter() {
     return c.json(toRoomDto(updated, viewer?.id ?? null, null))
   })
 
-  router.get("/rooms/:code/events", async (c) => {
+  router.get("/rooms/:code/events", rateLimit(EVENTS_RATE_LIMIT), async (c) => {
     const code = requireCode(c.req.param("code"))
-    await loadRoom(code)
+    const room = await loadRoom(code)
+    // Chỉ thành viên đã tham gia phòng (có guest token hoặc user member) mới được mở SSE stream
+    await resolveRoomActor(c, room)
 
     return streamSSE(c, async (stream) => {
       let unsubscribe = () => {}
