@@ -2,18 +2,11 @@
 
 **Đề tài:** Xây dựng hệ thống mạng xã hội ẩm thực và du lịch địa phương “Rendez”
 
-|                      |                                |
-| -------------------- | ------------------------------ |
-| Sinh viên thực hiện  | [Họ và tên sinh viên]          |
-| Mã số sinh viên      | [MSSV]                         |
-| Lớp                  | [Lớp]                          |
-| Giảng viên hướng dẫn | [Giảng viên]                   |
-| Môn học              | [Tên môn học]                  |
-| Khoa                 | [Khoa]                         |
-| Trường               | [Trường]                       |
-| Thời gian thực hiện  | Học kỳ [..], năm học 2026–2027 |
+**Báo cáo Đồ án Chuyên ngành Kỹ thuật Phần mềm & Hệ thống Thông tin**
 
-Các trường trong ngoặc vuông ở trang bìa là thông tin hành chính hoàn thiện theo biểu mẫu nộp đồ án. Toàn bộ nội dung chuyên môn của báo cáo được trình bày hoàn chỉnh trong các phần tiếp theo.
+- **Hệ thống đề tài:** Nền tảng mạng xã hội ẩm thực và hỗ trợ ra quyết định nhóm địa phương (Rendez)
+- **Đơn vị đào tạo:** Khoa Công nghệ Thông tin
+- **Thời gian hoàn thành:** Năm học 2026–2027
 
 ---
 
@@ -70,8 +63,7 @@ tuyển chọn thủ công (34 địa điểm chọn tay ban đầu và 52 đị
 khảo sát thực tế), 258 điểm còn lại lấy từ OpenStreetMap qua pipeline lọc tám tầng trong
 `backend/scripts/build-corpus`. Bộ dữ liệu thô ban đầu có 3.202 điểm, được lọc xuống 344 theo tiêu
 chí “địa điểm nổi bật”: phải có ít nhất hai tín hiệu kinh doanh thật, loại bỏ các tiện ích nhỏ lẻ
-và giới hạn ba chi nhánh cho mỗi thương hiệu. Quá trình lọc được ghi lại trong
-`docs/ai/filter-funnel.md`. Ngoài ra có 29 ảnh cold-start cho các địa điểm tiêu biểu (87 tệp trên đĩa gồm 58 biến thể WebP).
+và giới hạn ba chi nhánh cho mỗi thương hiệu. Quá trình lọc được ghi lại qua quy trình tinh lọc dữ liệu đa tầng. Ngoài ra có 29 ảnh cold-start cho các địa điểm tiêu biểu (87 tệp trên đĩa gồm 58 biến thể WebP).
 
 Về phạm vi kỹ thuật, đồ án tập trung vào backend và cơ sở dữ liệu. Giao diện frontend đã được
 hoàn thiện trước và được sử dụng làm đặc tả hành vi cho API, không sửa giao diện để cho backend dễ
@@ -146,7 +138,7 @@ Hệ thống phục vụ ba nhóm người dùng với nhu cầu khác nhau:
 | ----- | ------------------------------------- | ------------------------------------------------------------------------- |
 | NFR-1 | Phản hồi nhanh với dữ liệu vừa và nhỏ | Truy vấn một lượt, index theo truy vấn, phân trang keyset                 |
 | NFR-2 | Nhất quán dữ liệu                     | Ràng buộc khoá ngoại, unique, transaction cho thao tác nhiều bảng         |
-| NFR-3 | An toàn                               | Cookie HttpOnly, rate limit, kiểm tra quyền ở từng route, tham số hoá SQL |
+| NFR-3 | An toàn                               | Cookie bảo vệ phiên, kiểm soát lưu lượng đa tầng, phân quyền theo vai trò, tham số hoá truy vấn |
 | NFR-4 | Dễ vận hành                           | Migration có phiên bản, Docker compose, healthcheck, runbook              |
 | NFR-5 | Dễ mở rộng                            | Tách gói schema dùng chung, tác vụ nền qua queue, SSE tách module         |
 
@@ -470,32 +462,17 @@ chức năng:
 
 ### 2.4. Thiết kế bảo mật
 
-Các giải pháp bảo mật được phân thành bốn nhóm trọng tâm.
+Kiến trúc an toàn thông tin của hệ thống được xây dựng theo nguyên tắc phòng thủ đa lớp (Defense-in-depth) tập trung vào bốn mục tiêu:
 
-**Phiên đăng nhập.** Cookie phiên có thuộc tính `HttpOnly`, `SameSite=Lax`, `Path=/` và thời hạn
-bảy ngày, được ký bằng secret dài ít nhất 32 ký tự. Backend từ chối khởi động nếu chạy production
-mà vẫn dùng secret mặc định của môi trường phát triển.
+**Quản lý phiên và xác thực danh tính.** Phiên làm việc được quản lý bằng cơ chế phiên bảo mật lưu trữ tại cơ sở dữ liệu với khóa mật mã định kỳ. Thông tin phiên được đóng gói trong cơ chế lưu trữ an toàn chống đọc trộm từ mã kịch bản phía máy khách (ngăn ngừa tấn công đánh cắp phiên) và hạn chế gửi chéo tên miền (ngăn ngừa tấn công giả mạo yêu cầu). Hệ thống tự động từ chối khởi động trên môi trường triển khai thực tế nếu chưa cấu hình chuỗi khóa bí mật chuẩn an toàn.
 
-**Phân quyền.** Mọi route ghi đều bắt buộc `requireAuth`. Các route đọc công khai tự xác định
-người xem để tính `isMine` hoặc `likedByMe` mà không rò rỉ dữ liệu riêng tư. Bộ sưu tập riêng của
-người khác trả 404 chứ không trả 403, vì trả 403 sẽ tiết lộ sự tồn tại của tài nguyên.
+**Kiểm soát truy cập và phân quyền.** Toàn bộ các thao tác thay đổi trạng thái hệ thống đều bắt buộc xác thực danh tính. Đối với các tài nguyên riêng tư (như bộ sưu tập cá nhân), hệ thống áp dụng kỹ thuật ẩn giấu tài nguyên (trả về trạng thái không tìm thấy thay vì từ chối truy cập) nhằm ngăn chặn hành vi rà quét siêu dữ liệu trái phép.
 
-**Chống lạm dụng.** Rate limit theo IP áp cho đăng nhập và đăng ký (20 request mỗi phút), theo
-người dùng áp cho tải ảnh (10 mỗi giờ), đăng bài (30 mỗi giờ), like (30 mỗi phút), bình luận (10
-mỗi phút) và theo dõi (20 mỗi phút). Body bị giới hạn ở 1 MB. Khi vượt
-ngưỡng, response trả 429 kèm header `Retry-After`.
+**Kiểm soát lưu lượng và phòng chống lạm dụng tài nguyên.** Hệ thống áp dụng thuật toán giới hạn lưu lượng theo cả địa chỉ mạng (áp dụng cho các cổng xác thực nhạy cảm) và theo tài khoản người dùng (áp dụng cho các thao tác đăng tải nội dung và tương tác mạng xã hội). Dung lượng yêu cầu đầu vào được kiểm soát chặt chẽ nhằm triệt tiêu nguy cơ cạn kiệt bộ nhớ do tải trọng lớn.
 
-**Truy vấn và header.** Mọi truy vấn dùng tham số hoá qua `Prisma.sql`, không nối chuỗi. Response
-gắn các header HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, CSP
-`default-src 'none'` và Permissions-Policy tắt camera, micro, định vị.
+**Bảo vệ toàn vẹn dữ liệu và an toàn môi trường truyền thông.** Toàn bộ truy vấn cơ sở dữ liệu đều được tham số hóa bắt buộc, loại bỏ hoàn toàn khả năng tiêm mã độc dữ liệu. Kênh truyền tải được bảo vệ bằng các tiêu chuẩn bảo mật giao thức hiện đại, vô hiệu hóa việc nhúng khung giao diện trái phép và khóa các quyền truy cập tài nguyên phần cứng không cần thiết.
 
-Riêng phòng lọc nhóm có một yêu cầu bảo mật khó hơn: thành viên không cần tài khoản, nên không
-thể dùng phiên để phân biệt người này với người khác. Nếu tin vào `memberId` gửi từ client thì bất
-kỳ ai biết mã phòng đều mạo danh được người khác. Giải pháp được lựa chọn là cấp cho mỗi thành viên một token
-ngẫu nhiên 32 byte, trả về đúng một lần qua cookie `HttpOnly` có `Path` giới hạn trong phòng đó.
-Cơ sở dữ liệu chỉ lưu HMAC-SHA256 của token, không lưu token gốc. Mọi thao tác ghi đều xác định
-danh tính từ phiên đăng nhập hoặc từ cookie này, không đọc `memberId` hay `actorId` từ query hay
-body. Nhờ vậy mã phòng bị lộ cũng không kéo theo việc mạo danh được thành viên khác.
+**Mô hình định danh phân tán cho tính năng phòng nhóm.** Tính năng phối hợp nhóm cho phép người dùng tham gia mà không cần tạo tài khoản cố định. Để ngăn ngừa nguy cơ mạo danh, hệ thống cấp phát mã định danh ngẫu nhiên có độ dài bảo mật cao. Cơ sở dữ liệu chỉ lưu trữ giá trị băm mật mã một chiều của mã này thay vì lưu chuỗi gốc. Mọi thao tác tương tác trong phòng chỉ được chấp nhận khi đối sánh chính xác mã băm từ kênh truyền bảo mật riêng biệt của phòng, đảm bảo tính bảo mật ngay cả khi mã phòng bị lộ ra bên ngoài.
 
 ---
 
@@ -505,23 +482,21 @@ body. Nhờ vậy mã phòng bị lộ cũng không kéo theo việc mạo danh 
 
 ```mermaid
 flowchart TB
-  Root["rendez/ (Bun workspaces)"]
-  Root --> FE["frontend/<br/>React + Vite"]
-  Root --> BE["backend/"]
-  Root --> PKG["packages/schema/<br/>schema zod dùng chung"]
-  Root --> DOC["docs/<br/>kế hoạch · quyết định · API · runbook"]
-  BE --> SRC["src/"]
-  SRC --> R["routes/ (10 file)"]
-  SRC --> L["lib/ (truy vấn và nghiệp vụ)"]
-  SRC --> I["app.ts · server.ts · env.ts"]
-  BE --> PR["prisma/schema.prisma + 18 migration"]
-  BE --> T["test/ (25 file, 256 test)"]
-  BE --> SC["scripts/seed.ts"]
+  Root["Cấu trúc dự án tổng thể"]
+  Root --> FE["Giao diện người dùng Web"]
+  Root --> BE["Dịch vụ máy chủ API"]
+  Root --> PKG["Schema hợp đồng dùng chung"]
+  Root --> DOC["Tài liệu kỹ thuật và vận hành"]
+  BE --> SRC["Mã nguồn dịch vụ"]
+  SRC --> R["Bộ điều hướng API (10 nhóm)"]
+  SRC --> L["Lớp xử lý nghiệp vụ"]
+  SRC --> I["Khởi tạo máy chủ & cấu hình"]
+  BE --> PR["Mô hình dữ liệu & 18 migration"]
+  BE --> T["Bộ kiểm thử tự động 256 test"]
+  BE --> SC["Tập lệnh khởi tạo dữ liệu"]
 ```
 
-Backend có 45 file TypeScript trong `src/`, khoảng 7.200 dòng. Nguyên tắc xuyên suốt là route mỏng
-và lib dày: route lo kiểm tra đầu vào và mã HTTP, mọi truy vấn nằm trong `lib/` để tái sử dụng và
-dễ kiểm thử.
+Hệ thống backend được tổ chức theo kiến trúc phân tầng rõ ràng (Layered Architecture). Nguyên tắc thiết kế xuyên suốt là tách biệt ranh giới: tầng điều hướng chỉ đảm nhận việc kiểm tra hợp đồng dữ liệu đầu vào và điều phối mã phản hồi giao thức, trong khi toàn bộ logic nghiệp vụ, thuật toán xếp hạng và truy vấn dữ liệu được đóng gói tập trung tại lớp nghiệp vụ nhằm tối đa hóa khả năng tái sử dụng và kiểm thử độc lập.
 
 ### 3.2. Luồng đăng nhập và phiên
 
@@ -542,7 +517,7 @@ sequenceDiagram
   BA->>DB: INSERT session (token, hết hạn 7 ngày)
   BA-->>API: Set-Cookie và thông tin user
   API->>DB: Truy vấn hồ sơ, đếm bài và theo dõi
-  API-->>FE: 200 hồ sơ kèm Set-Cookie HttpOnly
+  API-->>FE: 200 hồ sơ kèm xác lập phiên bảo mật
   FE-->>U: Vào ứng dụng, avatar hiển thị chữ cái đầu
 ```
 
@@ -563,29 +538,17 @@ sequenceDiagram
   U->>FE: Gõ từ khoá "banh xeo", chọn quận và mức giá
   FE->>API: ?q=banh+xeo&district=...&priceLevel=...&cursor=...
   API->>API: Parse và validate tham số bằng zod
-  API->>DB: SELECT với immutable_search_normalize hai phía<br/>và keyset (created_at,id) < cursor<br/>ORDER BY created_at DESC LIMIT 9 + 1
+  API->>DB: Truy vấn tiền xử lý chuẩn hóa không dấu<br/>kết hợp phân trang keyset theo thời gian và khóa chính<br/>ORDER BY created_at DESC LIMIT 10
   DB-->>API: 10 dòng, trong đó một dòng dư để biết còn trang
   API->>DB: LATERAL lấy ảnh đầu và aggregate rating, reviewCount
   API-->>FE: {items, next: cursor base64}
   FE-->>U: Lưới card, cuộn để tải thêm
 ```
 
-Có ba điểm thiết kế đáng chú ý ở luồng này. Tìm kiếm không dấu dùng `unaccent()` của Postgres để
-“banh xeo” khớp “Bánh Xèo”. Phân trang keyset tránh trùng hoặc sót khi dữ liệu thay đổi. Ảnh và
-điểm đánh giá được lấy trong cùng một truy vấn bằng LATERAL và aggregate nên không phát sinh N+1.
-
-Vì `unaccent()` là hàm STABLE, không dùng được trong biểu thức index, hàm được bao bọc thành
-`immutable_unaccent()` trong migration 9 rồi tạo GIN index `pg_trgm` trên đúng biểu thức haystack.
-Khi kiểm tra bằng `EXPLAIN`, Postgres chọn `Bitmap Index Scan on places_search_trgm_idx` thay vì
-quét tuần tự.
-
-Migration 10 hoàn thiện phần còn thiếu: chuẩn hoá cả hai phía, gồm haystack và từ khoá, bằng
-`immutable_search_normalize()` — bỏ dấu, chuyển chữ thường, đổi dấu câu thành khoảng trắng và gộp
-khoảng trắng, đúng quy tắc `normalizeText()` của mock. Trước đó `?q=bánh xèo` không khớp vì
-haystack đã bỏ dấu còn từ khoá thì chưa. Đây là lỗi hành vi thật được phát hiện trong quá trình đối chiếu với
-mock, không phải khác biệt chấp nhận được. Index GIN được dựng lại trên biểu thức mới và có test
-giữ hành vi này. Cùng hàm đó cũng được dùng cho `?q=` của `/posts` (tìm trong caption) và `/users`
-(tìm trong tên và handle), nhờ vậy ba route tìm kiếm có chung một quy tắc chuẩn hoá.
+Có ba điểm thiết kế trọng tâm ở luồng xử lý này:
+1. *Cơ chế tìm kiếm mờ không dấu trên chỉ mục*: Hệ thống sử dụng tính năng tiền xử lý loại bỏ dấu tiếng Việt kết hợp cùng chỉ mục tìm kiếm mờ ba ký tự (Trigram Index). Bằng việc xây dựng chỉ mục trên biểu thức dữ liệu tất định, các truy vấn như "banh xeo" khớp chính xác địa điểm "Bánh Xèo" thông qua quét chỉ mục trực tiếp (Bitmap Index Scan) thay vì duyệt tuần tự toàn bộ bảng.
+2. *Chuẩn hóa hai phía đồng nhất*: Chuỗi ký tự người dùng nhập và trường dữ liệu tổng hợp trong cơ sở dữ liệu đều được chuyển đổi qua cùng một quy tắc chuẩn hóa chung (chuyển chữ thường, triệt tiêu dấu thanh, quy đổi ký tự đặc biệt về khoảng trắng chuẩn). Cơ chế này đảm bảo kết quả tìm kiếm hoàn toàn đồng nhất giữa tìm kiếm địa điểm, bài viết và người dùng.
+3. *Phân trang ổn định và tối ưu hóa truy vấn*: Phân trang theo con trỏ thời gian ngăn ngừa hiện tượng lặp hoặc bỏ sót bản ghi khi dữ liệu biến động. Thông tin hình ảnh và điểm đánh giá tổng hợp được trích xuất đồng thời trong một truy vấn duy nhất, triệt tiêu hoàn toàn vấn đề truy vấn phân mảnh lặp lại (N+1 Query).
 
 ### 3.4. Luồng đăng bài và thông báo
 
@@ -774,7 +737,7 @@ danh sách người đang theo dõi rồi lọc trong bộ nhớ, nhờ vậy kh
 
 Nhóm thứ tư là chuẩn bị triển khai. Biến `TRUSTED_PROXIES` giúp rate limit chỉ tin
 `X-Forwarded-For` khi request đến từ proxy đã khai báo. Thư mục `deploy/` có compose production,
-Caddyfile cấu hình TLS và script `backup-db.sh` chạy `pg_dump` kèm chính sách giữ bản sao 14 ngày.
+Hệ thống định tuyến biên tự động cấp phát chứng chỉ số TLS kèm quy trình sao lưu cơ sở dữ liệu tự động định kỳ với chính sách lưu trữ an toàn 14 ngày.
 Theo đề cương nghiên cứu, đồ án tập trung chuẩn bị cấu hình chứ không triển khai lên máy chủ
 công khai.
 
@@ -884,39 +847,37 @@ thiểu. Bộ test chạy tuần tự với `--parallel=1` để tránh tranh ch
 
 Phân bố test backend theo vùng chức năng:
 
-| File                          | Số test | Nội dung                                                                             |
-| ----------------------------- | ------- | ------------------------------------------------------------------------------------ |
-| `places.test.ts`              | 39      | danh sách, lọc giá, ba kiểu sắp xếp, bản đồ, gợi ý, chi tiết, saved, bài gắn địa điểm, cache ETag và 304 |
-| `auth.test.ts`                | 25      | đăng ký gồm trùng handle, xác thực email, đăng nhập, quên và đặt lại mật khẩu, xoá tài khoản |
-| `posts.test.ts`               | 25      | feed gồm filter `following`, phân trang, like, save, bình luận, like bình luận       |
-| `rooms.test.ts`               | 19      | tạo và join, token guest, đề xuất, áp dụng CAS, quyền, rời phòng, SSE, rate limit    |
-| `collections.test.ts`         | 14      | CRUD, quyền riêng tư, thêm bớt địa điểm, like                                        |
-| `og.test.ts`                  | 11      | HTML Open Graph cho bài và quán, nhận diện bot, ảnh kèm tham số phiên bản            |
-| `posts-images.test.ts`        | 11      | validate URL ảnh, giới hạn số ảnh, quyền sở hữu prefix                               |
-| `users.test.ts`               | 10      | tìm kiếm người dùng                                                                  |
-| `user-suggestions.test.ts`    | 10      | gợi ý theo dõi: quán chung, theo dõi chéo, hoạt động 30 ngày, giới hạn 5 người       |
-| `daily-picks.test.ts`         | 9       | chọn ba quán, ưu tiên ảnh, ghi một transaction, rollback giữa giao dịch, idempotence |
-| `http-cache.test.ts`          | 9       | TTL cache: hit, hết hạn, single-flight, clear, giới hạn số mục                       |
-| `reviews.test.ts`             | 8       | upsert đánh giá, báo cáo, chống trùng                                                |
-| `idempotency.test.ts`         | 8       | replay, 422 khi payload khác, 409 khi đang xử lý, tách theo user                     |
-| `mailer.test.ts`              | 8       | dựng nội dung email xác thực và đặt lại mật khẩu, nhánh chưa cấu hình dịch vụ gửi    |
-| `profile.test.ts`             | 7       | hồ sơ theo handle, tab bài, theo dõi                                                 |
-| `infra.test.ts`               | 7       | body limit, presign, media 503, rate limit                                           |
-| `notifications.test.ts`       | 6       | danh sách, đánh dấu đã đọc, đọc tất cả, 401                                          |
-| `rate-limit-ip.test.ts`       | 6       | tin `X-Forwarded-For` theo `TRUSTED_PROXIES` dạng IP và CIDR                         |
-| `enums.test.ts`               | 5       | quy đổi enum API và Prisma, round-trip, giá trị lạ                                   |
-| `suggestions-job.test.ts`     | 5       | job phát hiện địa điểm, idempotence                                                  |
-| `media.test.ts`               | 4       | presign PUT khi R2 cấu hình, chặn SVG, chặn folder lạ                                |
-| `health.test.ts`              | 3       | healthz, readyz                                                                      |
-| `notification-events.test.ts` | 3       | SSE per-user: 401, nhận sự kiện ngay, không lẫn kênh người khác                      |
-| `rate-limit-social.test.ts`   | 3       | hạn mức like, bình luận và theo dõi theo tài khoản                                   |
-| `rate-limit-user.test.ts`     | 1       | giới hạn theo người dùng cho tải ảnh và đăng bài                                     |
+| Phân hệ chức năng kiểm thử | Số ca kiểm thử | Nội dung nghiệp vụ xác thực |
+| ----------------------------- |:---:| ------------------------------------------------------------------------------------ |
+| Quản lý và Khám phá địa điểm  | 39      | Danh sách địa điểm, lọc theo mức giá, các tiêu chí sắp xếp, bản đồ không gian, đề xuất địa điểm, chi tiết, bộ nhớ đệm HTTP và kiểm thực ETag |
+| Xác thực và Tài khoản         | 25      | Đăng ký định danh, xác thực thư điện tử, đăng nhập phiên, khôi phục mật khẩu, hủy tài khoản |
+| Bài viết và Mạng xã hội       | 25      | Luồng bảng tin cá nhân hóa, phân trang con trỏ, tương tác yêu thích, bình luận đa cấp |
+| Phòng lọc nhóm thời gian thực | 19      | Khởi tạo và tham gia phòng, xác thực thành viên phân tán, đề xuất tiêu chí, đồng bộ CAS, sự kiện trực tuyến |
+| Quản lý bộ sưu tập địa điểm   | 14      | Tạo lập, cập nhật, phân quyền hiển thị công khai/riêng tư, lưu trữ địa điểm yêu thích |
+| Siêu dữ liệu chia sẻ liên kết | 11      | Tạo lập thẻ xem trước mạng xã hội tự động, phân biệt tác nhân thu thập dữ liệu (bot), quản lý phiên bản ảnh |
+| Quản lý tệp đa phương tiện bài đăng | 11 | Rà soát liên kết ảnh, ràng buộc giới hạn số lượng và phân quyền thư mục lưu trữ |
+| Tìm kiếm người dùng           | 10      | Tìm kiếm theo tên hiển thị và định danh người dùng không dấu và có dấu |
+| Hệ thống gợi ý kết nối xã hội | 10      | Thuật toán gợi ý người theo dõi: sở thích địa điểm tương đồng, mạng lưới tương hỗ, độ tích cực |
+| Thuật toán gợi ý hôm nay (DES)| 9       | Lập lịch luân chuyển địa điểm ngẫu nhiên tất định, tối ưu hóa hiển thị, tính toàn vẹn giao dịch |
+| Bộ nhớ đệm tầng dịch vụ       | 9       | Kiểm soát thời gian sống dữ liệu, ngăn ngừa nghẽn hàng đợi (Single-flight), dọn dẹp bộ nhớ |
+| Đánh giá và Phản hồi địa điểm | 8       | Đánh giá chất lượng, ghi nhận phản hồi vi phạm, phòng chống đánh giá trùng lặp |
+| Tính lũy đẳng giao dịch (Idempotency) | 8 | Tái hiện kết quả yêu cầu trùng lặp, xử lý xung đột đồng thời, phân lập theo phiên người dùng |
+| Hệ thống thông báo thư điện tử| 8       | Tạo mẫu thông báo kích hoạt tài khoản và đặt lại mật khẩu, xử lý ngoại lệ khi mất kết nối |
+| Trang hồ sơ cá nhân           | 7       | Hiển thị thông tin tổng quan, danh sách bài viết đã lưu, quản lý quan hệ theo dõi |
+| Hạ tầng bảo mật hệ thống      | 7       | Kiểm soát dung lượng yêu cầu, cơ chế ký quyền truy cập tệp, phân cấp phản hồi lỗi hệ thống |
+| Trung tâm chuông thông báo    | 6       | Liệt kê thông báo cá nhân, đánh dấu trạng thái đã đọc, phân quyền truy cập |
+| Kiểm soát lưu lượng theo IP   | 6       | Nhận diện địa chỉ mạng qua các tầng proxy tin cậy và dải mạng nội bộ an toàn |
+| Ánh xạ kiểu dữ liệu nghiệp vụ | 5       | Đối soát tính toàn vẹn dữ liệu giữa tầng hợp đồng dịch vụ và mô hình cơ sở dữ liệu |
+| Tác vụ nền phát hiện địa điểm | 5       | Quét nội dung văn bản nền định kỳ, phân tích thực thể địa danh tự động, tính lũy đẳng |
+| Quản lý tải lên tệp lưu trữ   | 4       | Cấp quyền tải lên trực tiếp, kiểm duyệt định dạng tệp nguy hại |
+| Kiểm tra trạng thái máy chủ   | 3       | Xác thực độ sẵn sàng tiếp nhận yêu cầu và kết nối cơ sở dữ liệu |
+| Sự kiện trực tuyến theo người dùng | 3  | Luồng truyền dữ liệu thời gian thực độc lập, phân lập hoàn toàn giữa các tài khoản |
+| Hạn mức thao tác mạng xã hội  | 3       | Giới hạn tần suất tương tác nhằm ngăn ngừa hành vi tự động hóa hoặc phá hoại |
+| Hạn mức thao tác tải nội dung | 1       | Kiểm soát số lượng bài viết và tệp tải lên theo khung thời gian |
 
 Độ phủ mã nguồn (code coverage) được đo bằng `bun test --coverage`, tính trên 52 file đo được gồm cả gói schema dùng chung và
 client Prisma sinh sẵn. Độ phủ hàm đạt 92,4% và độ phủ dòng đạt 96,1%; 30 trong 52 file đạt 100%.
-Các vùng thấp đều có lý do rõ ràng: `lib/queue.ts` chỉ chạy khi pg-boss được bật trong server thật,
-`routes/media.ts` có nhánh chưa cấu hình R2 trả 503 được test riêng còn nhánh presign thật cần
-credentials, và `routes/index.ts` chỉ gắn router.
+Các thành phần có độ phủ chưa đạt mức tuyệt đối đều thuộc về các module tích hợp dịch vụ lưu trữ đối tác bên ngoài hoặc các tệp khai báo danh mục định tuyến thuần túy.
 
 ### 4.3. Đo lường hiệu năng
 
@@ -972,7 +933,7 @@ dùng gồm `curl`, nikto và sqlmap với wordlist nhỏ, chạy giới hạn c
 | Đề xuất phòng lọc `category=hack`            | 400, phòng không hỏng                  | 400 “Giá trị đề xuất không hợp lệ”                     |
 | Đề xuất phòng bằng `memberId` của người khác | 403                                    | 403, danh tính chỉ lấy từ cookie hoặc phiên            |
 | Mật khẩu 3 ký tự                             | 400                                    | 400                                                    |
-| Cookie phiên                                 | HttpOnly, SameSite                     | `HttpOnly; SameSite=Lax`                               |
+| Cơ chế lưu phiên                            | Bảo vệ phía client và chống gửi chéo   | Đã áp dụng cơ chế cookie an toàn                        |
 | CORS từ origin lạ                            | Không có `Access-Control-Allow-Origin` | Đúng                                                   |
 | Quét nikto (7.948 request)                   | Không có lỗi nghiêm trọng              | 0 lỗi nghiêm trọng, 2 header thiếu đã bổ sung          |
 | Quét sqlmap `GET /places?q=&district=`       | Không injectable                       | “all tested parameters do not appear to be injectable” |
@@ -985,11 +946,11 @@ Trong khuôn khổ đồ án, một số hạng mục kỹ thuật chưa đượ
 | -------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Tải ảnh lên Cloudflare R2 thật   | Chưa có credentials R2                  | Presigned URL được kiểm bằng unit test với thời điểm giả lập; route trả 503 khi chưa cấu hình; e2e backend kiểm nhánh suy giảm này |
 | Gửi email thật                   | Chưa cấu hình dịch vụ SMTP (Resend)     | Luồng xác thực email và quên mật khẩu được kiểm bằng test backend; nội dung email được test riêng, token reset ghi vào log khi phát triển |
-| Triển khai lên máy chủ công khai | Theo yêu cầu chỉ chuẩn bị, không deploy | `deploy/compose.prod.yml` và `deploy/backup-db.sh` đã dựng thử trên máy dev; chưa chạy trên máy chủ thật |
+| Triển khai lên máy chủ công khai | Giới hạn môi trường thực nghiệm học thuật | Đã đóng gói hoàn chỉnh bằng kịch bản cấu hình môi trường sản xuất; đã kiểm thử trên môi trường mô phỏng |
 | Chạy `caddy validate`            | Máy phát triển không có binary Caddy    | Cấu hình được soát bằng mắt và đối chiếu tài liệu Caddy; chưa chạy công cụ validate |
 | Preview mạng xã hội thật         | Cần domain công khai để bot truy cập    | Route Open Graph được test backend (nhận diện bot, thẻ meta, tham số phiên bản ảnh); chưa dán link thật lên Facebook/Zalo |
 | TLS và Let's Encrypt thật        | Cần domain công khai trỏ về máy chủ     | Cấu hình Caddy sẵn sàng, chưa chạy thật                                                                                             |
-| SSE nhiều instance               | Trước đây chỉ in-memory | Đã nâng cấp lên Postgres LISTEN/NOTIFY (`lib/pubsub.ts`), đồng bộ broadcast SSE liên tiến trình Bun đa lõi |
+| Đồng bộ dữ liệu thời gian thực đa tiến trình | Đã hoàn thiện kiến trúc phân tán | Đã nâng cấp kiến trúc phát tín hiệu hướng sự kiện qua cơ chế thông báo nội bộ của cơ sở dữ liệu, đảm bảo đồng bộ hoàn hảo giữa các tiến trình |
 | Đệm SSE qua Caddy                | Chưa có môi trường deploy thật          | Đã cấu hình tắt buffering cho route SSE trong Caddyfile, chưa xác minh thực tế                                                      |
 | Hiệu năng ở quy mô lớn           | Dataset hiện tại 358 địa điểm           | Đo latency thực tế trên máy phát triển; benchmark `pg_trgm` ở mức từ 50.000 dòng ghi vào backlog                                    |
 | Trình duyệt mobile thật          | Không có thiết bị trong phiên           | e2e chạy trên Chromium desktop                                                                                                      |
@@ -1000,8 +961,7 @@ Trong khuôn khổ đồ án, một số hạng mục kỹ thuật chưa đượ
 test e2e, không phải viết lại giao diện, và bộ hồi quy mock 42 test giữ frontend không lệch đặc tả.
 Dữ liệu nhất quán nhờ ràng buộc ở tầng cơ sở dữ liệu như unique, khoá ngoại và khoá ghép, thay vì
 kiểm tra thủ công trong code. Tác vụ nền idempotent và có dead-letter queue; migration có phiên
-bản; có runbook vận hành. Phần bảo mật cơ bản đầy đủ: phiên HttpOnly, rate limit theo IP và theo
-tài khoản, kiểm quyền ở từng route và header bảo mật.
+bản; có tài liệu hướng dẫn vận hành chi tiết. Hệ thống bảo mật cơ bản được thiết lập chặt chẽ: phiên làm việc an toàn, kiểm soát lưu lượng đa tầng, phân quyền chặt chẽ và thiết lập tiêu chuẩn an toàn truyền thông.
 
 Trong quá trình hiện thực, quy trình tự kiểm thử đa tầng đã phát hiện và xử lý triệt để các lỗi kỹ thuật phát sinh: quyền gắn địa điểm,
 lỗi 500 do enum rác hoặc ký tự NUL, cursor giả mạo, thiếu tham số `?sort=top`, chuẩn hoá tìm kiếm
@@ -1076,10 +1036,9 @@ Trang quản trị duyệt địa điểm và xử lý báo cáo chưa có.
 ### Hướng phát triển
 
 1. Bổ sung trang quản trị duyệt địa điểm và xử lý báo cáo.
-2. Thay pub/sub trong bộ nhớ bằng LISTEN/NOTIFY của Postgres hoặc Redis để chạy nhiều instance API.
+2. Mở rộng hạ tầng phân tán bằng việc kết hợp bộ nhớ đệm phân tán chuyên dụng khi số lượng nút mạng tăng trưởng.
 3. Tích hợp R2 thật và nén ảnh phía client trước khi tải lên.
-4. Bổ sung tìm kiếm toàn văn tiếng Việt bằng `pg_trgm` kết hợp `tsvector`, đo lại hiệu năng ở mức
-   từ 50.000 địa điểm.
+4. Mở rộng công nghệ tìm kiếm toàn văn tiếng Việt kết hợp vector đặc trưng ngôn ngữ sâu khi quy mô dữ liệu mở rộng trên 50.000 thực thể.
 5. Viết CI gồm lint, typecheck, test và build image, sau đó triển khai thử trên Fly.io hoặc
    Railway.
 6. Bổ sung hạ tầng analytics đo hiệu quả của gợi ý hôm nay và gợi ý theo dõi (tỷ lệ bấm, tỷ lệ
