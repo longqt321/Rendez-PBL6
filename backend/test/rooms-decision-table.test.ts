@@ -1,5 +1,4 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
-import { appliedProposalSchema, roomSchema } from "@rendez/schema"
 import { startTestDb, stopTestDb } from "./helpers/pg"
 import { registerVerifiedUser } from "./helpers/auth"
 
@@ -68,7 +67,7 @@ describe("Room Permission Matrix — Decision Table (Bảng quyết định)", (
       body: JSON.stringify({ name: "Phòng Quyết Định" }),
     })
     expect(createRes.status).toBe(201)
-    const room = await createRes.json()
+    const room = (await createRes.json()) as { code: string }
     roomCode = room.code
 
     // 2. Guest A join phòng
@@ -85,7 +84,7 @@ describe("Room Permission Matrix — Decision Table (Bảng quyết định)", (
       body: JSON.stringify({ displayName: `Khách B ${suffix}` }),
     })
     expect(joinB.status).toBe(200)
-    const bodyB = await joinB.json()
+    const bodyB = (await joinB.json()) as { memberId: string }
     guestBId = bodyB.memberId
     guestCookieB = roomCookie(joinB, roomCode)
   })
@@ -135,10 +134,10 @@ describe("Room Permission Matrix — Decision Table (Bảng quyết định)", (
 
     beforeAll(async () => {
       const roomRes = await call(`/api/v1/rooms/${roomCode}`)
-      const room = await roomRes.json()
-      const propA = room.proposals.find((p: any) => p.field === "district")
+      const room = (await roomRes.json()) as { proposals: { id: string; field: string }[] }
+      const propA = room.proposals.find((p) => p.field === "district")
       expect(propA).toBeDefined()
-      proposalAId = propA.id
+      proposalAId = propA!.id
     })
 
     test("DT-A1: Guest B (không phải người tạo, không phải chủ phòng) apply đề xuất của A → 403", async () => {

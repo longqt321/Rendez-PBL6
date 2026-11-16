@@ -1,5 +1,4 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
-import { pageSchema, postSchema } from "@rendez/schema"
 import { startTestDb, stopTestDb } from "./helpers/pg"
 import { registerVerifiedUser } from "./helpers/auth"
 
@@ -12,7 +11,6 @@ import { registerVerifiedUser } from "./helpers/auth"
 let app: Awaited<ReturnType<typeof import("../src/app").createApp>>
 let prisma: typeof import("../src/lib/prisma").prisma
 
-const postPageSchema = pageSchema(postSchema)
 const suffix = Math.random().toString(36).slice(2, 8)
 
 beforeAll(async () => {
@@ -67,7 +65,7 @@ describe("Post Lifecycle — State Transition Testing (STT)", () => {
       }),
     })
     expect(res.status).toBe(201)
-    const post = await res.json()
+    const post = (await res.json()) as { id: string; caption: string }
     expect(post.id).toBeDefined()
     expect(post.caption).toBe("Bài viết kiểm thử vòng đời trạng thái STT")
     postId = post.id
@@ -85,8 +83,8 @@ describe("Post Lifecycle — State Transition Testing (STT)", () => {
       cookie: otherUser.cookie,
     })
     expect(feedRes.status).toBe(200)
-    const feed = await feedRes.json()
-    expect(feed.items.some((item: any) => item.id === postId)).toBe(true)
+    const feed = (await feedRes.json()) as { items: { id: string }[] }
+    expect(feed.items.some((item) => item.id === postId)).toBe(true)
   })
 
   test("Trạng thái 3: Người ngoài cố tình xóa bài viết của tác giả (IDOR) → 403", async () => {
@@ -120,7 +118,7 @@ describe("Post Lifecycle — State Transition Testing (STT)", () => {
     const feedRes = await call("/api/v1/posts", {
       cookie: author.cookie,
     })
-    const feed = await feedRes.json()
-    expect(feed.items.some((item: any) => item.id === postId)).toBe(false)
+    const feed = (await feedRes.json()) as { items: { id: string }[] }
+    expect(feed.items.some((item) => item.id === postId)).toBe(false)
   })
 })

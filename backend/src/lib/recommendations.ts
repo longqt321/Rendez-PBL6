@@ -105,20 +105,78 @@ async function affinityCandidates(
   return { ids: ranked, seedCount: seeds.length }
 }
 
-/** Nhánh cold start: phổ biến theo review_count trong số place công khai. */
-async function coldStartCandidates(limit: number): Promise<string[]> {
-  // `review_count` không phải cột của `places` — tính qua LATERAL như
-  // `selectPlaces` (một nguồn duy nhất cho định nghĩa "phổ biến").
+/**
+ * Nhánh cold-start theo thuật toán DES (Deterministic Exposure Scheduling):
+ * 1. Completeness-Conditioned Bayesian Quality Scorer:
+ *    m_i = m_0 * (1 + gamma * C(i)) với m_0 = 10, gamma = 0.5, mu_0 = 4.0
+ *    R_hat(i) = (v_i * r_bar_i + m_i * mu_0) / (v_i + m_i)
+ * 2. Điểm cơ sở chất lượng nội dung:
+ *    S_cold(i) = 0.45 * R_hat(i) + 0.20 * V(i) + 0.20 * C(i) + 0.15 * T(i)
+ * 3. Động lực khám phá tất định (Time-bucket Jitter Hashing):
+ *    Score(i, b) = S_cold(i) + beta * h(i, b) với beta = 0.05
+ * 4. Đa dạng hoá ngành hàng:
+ *    Giới hạn tối đa capPerCategory trên mỗi nhóm ngành hàng để trang chủ đa dạng.
+ */
+async function coldStartCandidates(limit: number, capPerCategory: number = 3): Promise<string[]> {
+  const currentHourBucket = Math.floor(Date.now() / 3_600_000)
+
   const rows = await prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
-    SELECT p.id
-    FROM places p
-    LEFT JOIN LATERAL (
-      SELECT COUNT(*) AS review_count
-      FROM reviews rv
-      WHERE rv.place_id = p.id AND rv.deleted_at IS NULL
-    ) r ON true
-    WHERE ${Prisma.join(baseConditions(), " AND ")}
-    ORDER BY COALESCE(r.review_count, 0) DESC, p.id ASC
+    WITH candidate_metrics AS (
+      SELECT 
+        p.id,
+        p.category::text AS cat,
+        p.created_at,
+        p.verified,
+        COALESCE(r.review_count, 0) AS v_i,
+        COALESCE(r.rating, 0.0) AS r_bar,
+        (
+          0.30 * CASE WHEN EXISTS (SELECT 1 FROM place_images pi WHERE pi.place_id = p.id) THEN 1.0 ELSE 0.0 END +
+          0.20 * CASE WHEN p.description IS NOT NULL AND length(p.description) > 10 THEN 1.0 ELSE 0.0 END +
+          0.20 * CASE WHEN p.opening_hours IS NOT NULL THEN 1.0 ELSE 0.0 END +
+          0.15 * CASE WHEN array_length(p.tags, 1) > 0 THEN 1.0 ELSE 0.0 END +
+          0.15 * CASE WHEN p.phone IS NOT NULL THEN 1.0 ELSE 0.0 END
+        ) AS c_i
+      FROM places p
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::int AS review_count, COALESCE(AVG(rv.rating)::float8, 0.0) AS rating
+        FROM reviews rv
+        WHERE rv.place_id = p.id AND rv.deleted_at IS NULL
+      ) r ON true
+      WHERE ${Prisma.join(baseConditions(), " AND ")}
+    ),
+    scored AS (
+      SELECT
+        m.id,
+        m.cat,
+        (
+          -- Bayes Rating Score (w_r = 0.45)
+          0.45 * (
+            (m.v_i * m.r_bar + (10.0 * (1.0 + 0.5 * m.c_i) * 4.0)) /
+            (m.v_i + (10.0 * (1.0 + 0.5 * m.c_i)))
+          ) +
+          -- Verification Score (w_v = 0.20)
+          0.20 * (CASE WHEN m.verified THEN 1.0 ELSE 0.5 END) +
+          -- Metadata Completeness Score (w_c = 0.20)
+          0.20 * m.c_i +
+          -- Recency Score (w_t = 0.15)
+          0.15 * GREATEST(0.0, 1.0 - (EXTRACT(EPOCH FROM (NOW() - m.created_at)) / 86400.0) / 365.0) +
+          -- Deterministic Jitter Hash (beta = 0.05)
+          0.05 * (('x' || substr(md5(m.id || ${currentHourBucket.toString()}), 1, 8))::bit(32)::bigint / 4294967296.0)
+        ) AS des_score
+      FROM candidate_metrics m
+    ),
+    ranked_by_cat AS (
+      SELECT
+        s.id,
+        s.cat,
+        s.des_score,
+        ROW_NUMBER() OVER (PARTITION BY s.cat ORDER BY s.des_score DESC)::int AS cat_rank
+      FROM scored s
+    )
+    SELECT rbc.id
+    FROM ranked_by_cat rbc
+    WHERE rbc.cat_rank <= ${capPerCategory}
+    ORDER BY rbc.cat_rank ASC, rbc.des_score DESC
     LIMIT ${limit * CANDIDATE_MULTIPLIER}
   `)
   return rows.map((row) => row.id)

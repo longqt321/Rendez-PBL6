@@ -73,6 +73,15 @@ beforeAll(async () => {
         category: "cafe",
         publishedAt: new Date(),
       },
+      {
+        id: "test-search-banh-xeo-ba-duong",
+        name: "Bánh xèo Bà Dưỡng",
+        address: "K280/23 Hoàng Diệu",
+        city: "Đà Nẵng",
+        district: "Hải Châu",
+        category: "restaurant",
+        publishedAt: new Date(),
+      },
     ],
     skipDuplicates: true,
   })

@@ -61,7 +61,7 @@ describe("GET /places — EP & BVA (Phân vùng tương đương & Phân tích g
     test("EP-1: q rỗng hoặc toàn khoảng trắng không làm đứt query", async () => {
       const res = await call("/api/v1/places?q=%20%20%20%20")
       expect(res.status).toBe(200)
-      const body = await res.json()
+      const body = (await res.json()) as { items: unknown[] }
       expect(placePageSchema.safeParse(body).success).toBe(true)
       expect(body.items.length).toBeGreaterThan(0)
     })
@@ -93,7 +93,7 @@ describe("GET /places — EP & BVA (Phân vùng tương đương & Phân tích g
       // bbox: minLng,minLat,maxLng,maxLat nhưng truyền min > max
       const res = await call("/api/v1/places/map?bbox=107.0,11.0,106.0,10.0")
       expect(res.status).toBe(200)
-      const body = await res.json()
+      const body = (await res.json()) as { items: unknown[] }
       expect(Array.isArray(body.items)).toBe(true)
     })
   })
