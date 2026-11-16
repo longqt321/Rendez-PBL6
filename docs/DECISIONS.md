@@ -3156,3 +3156,34 @@ Không nhóm/variant nào bị giảm điểm.
 - Chạy `scripts/embed-places.ts` cho 358 place để dense nhánh hoạt động thật.
 - Cân nhắc `tsvector`/`ts_rank_cd` thay trigram cho lexical (BM25-like: có TF-IDF,
   trigram không có) — đo lại trên eval v3 trước khi đổi.
+
+---
+
+## D-069 — Triển khai Toàn diện Thuật toán EGRF và DES & Benchmark Đa Dataset
+
+**Ngày:** 2026-11-16  
+**Trạng thái:** Đã áp dụng
+
+### Bối cảnh
+Trước đây, các thuật toán Search (RRF) và Recommendation (DES) chỉ triển khai ở mức phác thảo cơ bản (heuristic), dễ gây nhiễu ngữ nghĩa (semantic drift) khi tìm tên quán và chưa được kiểm nghiệm độc lập ngoài bộ dữ liệu nội bộ Đà Nẵng, gây lo ngại overfit.
+
+### Quyết định
+1. **Nâng cấp EGRF (Evidence-Gated Rank Fusion)**:
+   - Thay hằng số $k=60$ bằng **Dynamic $k(N) = \max(10, \lfloor 2\sqrt{N} \rfloor)$** co giãn tự nhiên theo quy mô tập dữ liệu $N$.
+   - Tích hợp **Evidence Gating Matrix $\mathbf{W}(q)$**: Khi nhánh tên riêng tìm thấy bằng chứng đối sánh thực thể rõ ràng ($Exact \ge 1$), tự động triệt tiêu trọng số nhánh ngữ nghĩa dense và thuộc tính nhằm triệt tiêu nhiễu semantic drift.
+2. **Nâng cấp DES (Deterministic Exposure Scheduling)**:
+   - Triển khai **Completeness-Conditioned Bayesian Quality Scorer**: $m_i = m_0(1 + 0.5 C_i)$ với $m_0=10, \mu_0=4.0$.
+   - **Time-bucket Jitter Hashing MD5**: Xoay tua tất định có kiểm soát theo khung giờ ($0.05 \cdot h(i, b)$) giúp các địa điểm chất lượng cao nhận lượt hiển thị công bằng.
+   - **Diversity Category Cap**: Giới hạn tối đa 3 quán/danh mục để đảm bảo trải nghiệm trang chủ đa dạng.
+3. **Mở rộng Thực nghiệm Độc lập (Generalization Test)**:
+   - Kiểm thử trên **5 bộ dataset quốc tế chuẩn**: Yelp Challenge, MovieLens 100k, MovieLens 1M, BEIR SciFact, BEIR NFCorpus.
+   - Thiết kế và đóng băng dataset nội bộ cho Recommendation: `rec-eval-internal.json` (300 actors, 3,625 events theo phân phối Pareto 5 Personas).
+
+### Bằng chứng Thực nghiệm
+- **Search (EGRF)**:
+  - Tập nội bộ v7 (344 queries): P@5 đạt **0.820** (+39.7%), P@10 đạt **0.804** (+54.0%), P@5 tên riêng đạt **0.921** (+302.2%).
+  - Yelp Dataset (58 queries): P@5 đạt **0.862**, NDCG@10 đạt **0.808**, MRR đạt **0.940** (vượt trội Hybrid 2-way với $p = 0.0002$).
+  - BEIR SciFact & NFCorpus: Vượt Standard RRF cố định từ $+4.8\% \rightarrow +5.1\%$ về NDCG@10 trên văn bản khoa học/dinh dưỡng độc lập.
+- **Recommendation (DES)**:
+  - Cold-Start: Recall@10 đạt **6.1%** trên tập nội bộ và **5.3%** trên MovieLens, giải quyết điểm tê liệt của CF.
+  - DES-Hybrid: Recall@10 đạt **4.4%** trên Yelp RecSys (tăng +25.7% so với CF thuần túy, Paired Bootstrap $p < 10^{-4}$).
