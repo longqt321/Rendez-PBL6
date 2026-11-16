@@ -13,6 +13,14 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata2:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rendez} -d ${POSTGRES_DB:-rendez}"]
       interval: 5s
@@ -67,6 +75,14 @@ services:
       TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.16.0.0/12}
     ports:
       - "${API_PORT:-8000}:8000"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,6 +102,11 @@ services:
     container_name: rendez-web
     ports:
       - "${WEB_PORT:-5173}:80"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     depends_on:
       api:
         condition: service_healthy
@@ -106,6 +127,14 @@ services:
       - "5434:5432"
     volumes:
       - pgdata-bench:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
 volumes:
   # `pgdata` là volume cũ (postgres:17-alpine) — giữ tên để rollback thủ công,

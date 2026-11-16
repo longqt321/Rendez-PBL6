@@ -18,6 +18,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD phải được đặt}
     volumes:
       - /var/lib/rendez/pgdata:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
     # BẮT BUỘC: `api` khai báo `networks` tường minh nên KHÔNG tự tham gia mạng
     # `default` nữa. Thiếu dòng này thì api không phân giải được tên `postgres`
     # (getaddrinfo ENOTFOUND) và backend chết ngay khi boot.
@@ -61,6 +69,14 @@ services:
       R2_BUCKET: ${R2_BUCKET:-}
       R2_PUBLIC_BASE_URL: ${R2_PUBLIC_BASE_URL:-}
     ports: !override [] # không lộ API trực tiếp; Caddy proxy vào
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     restart: unless-stopped
     expose:
       - "8000"
@@ -75,6 +91,11 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     volumes:
       # Đường dẫn tương đối tính từ compose.yaml gốc (file đầu tiên), không phải
       # từ thư mục deploy/.
