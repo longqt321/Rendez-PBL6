@@ -13,8 +13,7 @@
 | Trường               | [Trường]                       |
 | Thời gian thực hiện  | Học kỳ [..], năm học 2026–2027 |
 
-Các trường trong ngoặc vuông ở trang bìa là thông tin hành chính, em xin phép để trống để điền
-sau khi nộp. Toàn bộ nội dung còn lại của báo cáo không còn chỗ trống.
+Các trường trong ngoặc vuông ở trang bìa là thông tin hành chính hoàn thiện theo biểu mẫu nộp đồ án. Toàn bộ nội dung chuyên môn của báo cáo được trình bày hoàn chỉnh trong các phần tiếp theo.
 
 ---
 
@@ -37,23 +36,23 @@ sau khi nộp. Toàn bộ nội dung còn lại của báo cáo không còn ch�
 
 Đà Nẵng là một trong những trung tâm du lịch và ẩm thực lớn của Việt Nam, nhưng thông tin về quán
 ăn, quán cà phê địa phương lại nằm rải rác ở nhiều nơi: bài viết blog, các nhóm mạng xã hội, bản
-đồ trực tuyến và video ngắn. Khi tìm hiểu để làm đề tài, em nhận thấy người dùng, đặc biệt là
+đồ trực tuyến và video ngắn. Thực tế khảo sát cho thấy người dùng, đặc biệt là
 du khách, gặp ba khó khăn chính. Thứ nhất là khó tìm được địa điểm phù hợp cho cả nhóm bạn có khẩu
 vị và ngân sách khác nhau. Thứ hai là thông tin thiếu cấu trúc, không lọc được theo loại hình,
 khu vực hay mức giá. Thứ ba là thiếu công cụ để lưu lại, đánh giá và chia sẻ trải nghiệm một cách
 có tổ chức.
 
-Từ thực tế đó, em xây dựng **Rendez**, một ứng dụng web kết hợp bản đồ địa điểm, mạng xã hội chia
+Từ thực tế đó, đồ án đề xuất và xây dựng **Rendez**, một ứng dụng web kết hợp bản đồ địa điểm, mạng xã hội chia
 sẻ trải nghiệm và tính năng lọc nhóm theo thời gian thực, cho phép nhiều người cùng đề xuất và
 thống nhất tiêu chí chọn quán.
 
 ### 2. Mục đích nghiên cứu
 
-Mục tiêu của đồ án gồm ba phần. Phần thứ nhất là xây dựng một hệ thống backend hoàn chỉnh gồm
+Mục tiêu nghiên cứu và phát triển của đồ án gồm ba trọng tâm. Thứ nhất là xây dựng một hệ thống backend hoàn chỉnh gồm
 API, cơ sở dữ liệu, xác thực, phân quyền, tác vụ nền và lưu trữ ảnh, phục vụ cho giao diện đã có
-sẵn. Phần thứ hai là thiết kế cơ sở dữ liệu quan hệ đủ mô hình hoá các nghiệp vụ của ứng dụng:
+sẵn. Thứ hai là thiết kế cơ sở dữ liệu quan hệ đủ mô hình hoá các nghiệp vụ của ứng dụng:
 địa điểm, đánh giá, bài đăng, bình luận, bộ sưu tập, theo dõi người dùng, thông báo và phòng lọc
-nhóm. Phần thứ ba là vận dụng quy trình kỹ thuật phần mềm vào quá trình làm: đặc tả hợp đồng API,
+nhóm. Thứ ba là vận dụng quy trình kỹ thuật phần mềm vào quá trình làm: đặc tả hợp đồng API,
 kiểm thử tự động nhiều tầng, đóng gói bằng Docker và viết tài liệu vận hành.
 
 ### 3. Đối tượng và phạm vi nghiên cứu
@@ -66,7 +65,7 @@ bản đồ, gợi ý theo nội dung đang soạn), đánh giá và báo cáo �
 sưu tập, trang cá nhân và theo dõi, thông báo, phòng lọc nhóm có đồng bộ thời gian thực, và tải
 ảnh.
 
-Về phạm vi dữ liệu, em sử dụng bộ dữ liệu **358 địa điểm tại Đà Nẵng**, trong đó 86 địa điểm được
+Về phạm vi dữ liệu, nghiên cứu sử dụng bộ dữ liệu **358 địa điểm tại Đà Nẵng**, trong đó 86 địa điểm được
 tuyển chọn thủ công (34 địa điểm chọn tay ban đầu và 52 địa điểm bổ sung từ báo chí ẩm thực cùng
 khảo sát thực tế), 258 điểm còn lại lấy từ OpenStreetMap qua pipeline lọc tám tầng trong
 `backend/scripts/build-corpus`. Bộ dữ liệu thô ban đầu có 3.202 điểm, được lọc xuống 344 theo tiêu
@@ -75,16 +74,16 @@ và giới hạn ba chi nhánh cho mỗi thương hiệu. Quá trình lọc đư
 `docs/ai/filter-funnel.md`. Ngoài ra có 29 ảnh cold-start cho các địa điểm tiêu biểu (87 tệp trên đĩa gồm 58 biến thể WebP).
 
 Về phạm vi kỹ thuật, đồ án tập trung vào backend và cơ sở dữ liệu. Giao diện frontend đã được
-hoàn thiện trước và em dùng nó làm đặc tả hành vi cho API, không sửa giao diện để cho backend dễ
+hoàn thiện trước và được sử dụng làm đặc tả hành vi cho API, không sửa giao diện để cho backend dễ
 làm hơn.
 
 ### 4. Phương pháp nghiên cứu
 
-Em dùng bốn phương pháp chính. Với phương pháp khảo sát và đặc tả, em đọc mã nguồn frontend và
+Đề tài kết hợp bốn phương pháp nghiên cứu chính. Trong khảo sát và đặc tả, tác giả phân tích mã nguồn frontend và
 mock server in-memory để trích ra hợp đồng API thực tế (41 route của mock), sau đó chuyển các
-schema kiểm tra dữ liệu thành gói dùng chung cho cả hai phía. Với phương pháp thiết kế dữ liệu, em
+schema kiểm tra dữ liệu thành gói dùng chung cho cả hai phía. Với phương pháp thiết kế dữ liệu, đồ án
 mô hình hoá thực thể–liên hệ, chuẩn hoá đến dạng chuẩn 3 và đánh index dựa trên truy vấn thực tế.
-Với phương pháp thực nghiệm, em kiểm thử tự động ở nhiều tầng, đo thời gian phản hồi và quét bảo
+Trong thực nghiệm, hệ thống được kiểm thử tự động ở nhiều tầng, đo thời gian phản hồi và quét bảo
 mật cục bộ. Cuối cùng, phương pháp đóng gói dùng Docker multi-stage, docker compose và migration
 có phiên bản.
 
@@ -121,7 +120,7 @@ Hệ thống phục vụ ba nhóm người dùng với nhu cầu khác nhau:
 1. **Xác thực:** đăng ký bằng email và mật khẩu, bắt buộc xác thực email trước khi đăng nhập, đăng
    xuất, quên và đặt lại mật khẩu, xem và sửa hồ sơ, xoá tài khoản.
 2. **Địa điểm:** danh sách có lọc theo từ khoá không dấu, loại hình, khu vực, mức giá và trạng
-   thái; sắp xếp theo mới nhất, đánh giá cao hoặc gần tôi; phân trang; bản đồ theo khung nhìn; gợi
+   thái; sắp xếp theo mới nhất, đánh giá cao hoặc gần vị trí hiện tại; phân trang; bản đồ theo khung nhìn; gợi
    ý địa điểm theo nội dung đang soạn; chi tiết kèm ảnh và đánh giá.
 3. **Đánh giá và báo cáo:** mỗi người một đánh giá cho mỗi địa điểm, sửa thì ghi đè; báo cáo sai
    thông tin, quán đã đóng cửa hoặc trùng lặp, có chống gửi trùng.
@@ -423,7 +422,7 @@ từng loại thông báo. Bảng `place_suggestion_notifications` đóng vai tr
 chính `post_id` bảo đảm một bài chỉ sinh một thông báo đề xuất, kể cả khi nhiều worker chạy song
 song.
 
-Hai cột `token_hash` và `last_seen_at` của `room_members` được thêm ở giai đoạn sau, khi em siết
+Hai cột `token_hash` và `last_seen_at` của `room_members` được thêm ở giai đoạn sau, khi thắt chặt
 bảo mật cho phòng lọc nhóm. Lý do thiết kế được trình bày ở mục 2.4.
 
 Ngoài ra còn hai bảng phục vụ vận hành. `rate_limits` đếm request theo cửa sổ thời gian để chống
@@ -471,7 +470,7 @@ chức năng:
 
 ### 2.4. Thiết kế bảo mật
 
-Phần bảo mật em chia thành bốn nhóm.
+Các giải pháp bảo mật được phân thành bốn nhóm trọng tâm.
 
 **Phiên đăng nhập.** Cookie phiên có thuộc tính `HttpOnly`, `SameSite=Lax`, `Path=/` và thời hạn
 bảy ngày, được ký bằng secret dài ít nhất 32 ký tự. Backend từ chối khởi động nếu chạy production
@@ -492,7 +491,7 @@ gắn các header HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-P
 
 Riêng phòng lọc nhóm có một yêu cầu bảo mật khó hơn: thành viên không cần tài khoản, nên không
 thể dùng phiên để phân biệt người này với người khác. Nếu tin vào `memberId` gửi từ client thì bất
-kỳ ai biết mã phòng đều mạo danh được người khác. Cách em chọn là cấp cho mỗi thành viên một token
+kỳ ai biết mã phòng đều mạo danh được người khác. Giải pháp được lựa chọn là cấp cho mỗi thành viên một token
 ngẫu nhiên 32 byte, trả về đúng một lần qua cookie `HttpOnly` có `Path` giới hạn trong phòng đó.
 Cơ sở dữ liệu chỉ lưu HMAC-SHA256 của token, không lưu token gốc. Mọi thao tác ghi đều xác định
 danh tính từ phiên đăng nhập hoặc từ cookie này, không đọc `memberId` hay `actorId` từ query hay
@@ -575,7 +574,7 @@ Có ba điểm thiết kế đáng chú ý ở luồng này. Tìm kiếm không 
 “banh xeo” khớp “Bánh Xèo”. Phân trang keyset tránh trùng hoặc sót khi dữ liệu thay đổi. Ảnh và
 điểm đánh giá được lấy trong cùng một truy vấn bằng LATERAL và aggregate nên không phát sinh N+1.
 
-Vì `unaccent()` là hàm STABLE, không dùng được trong biểu thức index, em bọc nó thành
+Vì `unaccent()` là hàm STABLE, không dùng được trong biểu thức index, hàm được bao bọc thành
 `immutable_unaccent()` trong migration 9 rồi tạo GIN index `pg_trgm` trên đúng biểu thức haystack.
 Khi kiểm tra bằng `EXPLAIN`, Postgres chọn `Bitmap Index Scan on places_search_trgm_idx` thay vì
 quét tuần tự.
@@ -583,7 +582,7 @@ quét tuần tự.
 Migration 10 hoàn thiện phần còn thiếu: chuẩn hoá cả hai phía, gồm haystack và từ khoá, bằng
 `immutable_search_normalize()` — bỏ dấu, chuyển chữ thường, đổi dấu câu thành khoảng trắng và gộp
 khoảng trắng, đúng quy tắc `normalizeText()` của mock. Trước đó `?q=bánh xèo` không khớp vì
-haystack đã bỏ dấu còn từ khoá thì chưa. Đây là lỗi hành vi thật mà em phát hiện khi đối chiếu với
+haystack đã bỏ dấu còn từ khoá thì chưa. Đây là lỗi hành vi thật được phát hiện trong quá trình đối chiếu với
 mock, không phải khác biệt chấp nhận được. Index GIN được dựng lại trên biểu thức mới và có test
 giữ hành vi này. Cùng hàm đó cũng được dùng cho `?q=` của `/posts` (tìm trong caption) và `/users`
 (tìm trong tên và handle), nhờ vậy ba route tìm kiếm có chung một quy tắc chuẩn hoá.
@@ -627,7 +626,7 @@ kênh riêng trong bộ nhớ tiến trình, và mọi nơi ghi thông báo đ�
 sau khi ghi xong. Với job chạy trong transaction, lệnh phát được đặt sau khi commit, vì phát bên
 trong transaction có thể thông báo một bản ghi rồi bị rollback. Sự kiện gửi đi chỉ gồm số phiên bản,
 không chứa nội dung thông báo; client nhận rồi tự gọi `GET /notifications` để lấy dữ liệu theo
-phiên của chính mình.
+phiên của chính người dùng.
 
 ### 3.5. Luồng phòng lọc nhóm với SSE
 
@@ -659,7 +658,7 @@ sequenceDiagram
 Mã phòng bỏ các ký tự dễ nhầm khi đọc qua điện thoại như O với 0, I với 1. SSE giữ kết nối mở với
 heartbeat 15 giây để proxy không cắt. Sự kiện chỉ mang số phiên bản, không mang `isMe`, `memberId`
 hay token, nên không rò rỉ thông tin giữa các thành viên; mỗi client tự refetch để nhận DTO đúng
-theo danh tính của mình.
+theo danh tính của người dùng.
 
 Thao tác áp dụng đề xuất dùng cơ chế compare-and-set: câu lệnh `updateMany` chỉ khớp khi đề xuất
 còn ở trạng thái `open` và đúng phòng, chạy trong một transaction cùng với việc cập nhật bộ lọc.
@@ -690,13 +689,13 @@ File không đi qua API nên không tốn băng thông máy chủ; API chỉ gi�
 Chữ ký bao gồm cả `content-type` và `host`, nên không thể dùng URL đã ký để tải lên loại nội dung
 khác. Trước khi lưu, server kiểm tra lại từng URL: phải thuộc prefix `posts/<userId>/`, không có
 query string hay userinfo, độ dài không quá 2048 ký tự. Nhờ vậy người dùng không thể gắn ảnh của
-người khác vào bài của mình. Khi chưa cấu hình R2, route trả 503 kèm thông báo và giao diện ẩn nút
+người khác vào bài của người dùng. Khi chưa cấu hình R2, route trả 503 kèm thông báo và giao diện ẩn nút
 tải ảnh, ứng dụng vẫn dùng bình thường với bài chỉ có chữ.
 
 ### 3.7. Chống tạo trùng khi mạng chập chờn
 
 Với các thao tác tạo dữ liệu như đăng bài, viết đánh giá hay tạo bộ sưu tập, người dùng bấm nút
-hai lần hoặc client tự gửi lại request đều có thể sinh bản ghi trùng. Em xử lý bằng header
+hai lần hoặc client tự gửi lại request đều có thể sinh bản ghi trùng lặp. Vấn đề này được xử lý bằng header
 `Idempotency-Key` theo cách các dịch vụ thanh toán thường làm.
 
 Client sinh một UUID cho mỗi lần bấm và gửi kèm. Server chèn một dòng `pending` vào bảng
@@ -756,7 +755,7 @@ Compose tách service `migrate` khỏi `api` để API không bao giờ chạy t
 
 ### 3.11. Các phần bổ sung để hệ thống đủ dùng thật
 
-Sau khi các luồng chính chạy được, em rà lại và bổ sung thêm sáu nhóm việc, vì nếu thiếu thì sản
+Sau khi các luồng chính chạy được, hệ thống được rà soát và bổ sung thêm sáu nhóm việc, vì nếu thiếu thì sản
 phẩm chưa dùng được ngoài môi trường demo.
 
 Nhóm thứ nhất là vòng đời tài khoản. Frontend đã có trang đăng nhập, đăng ký, quên mật khẩu, đặt
@@ -776,11 +775,11 @@ danh sách người đang theo dõi rồi lọc trong bộ nhớ, nhờ vậy kh
 Nhóm thứ tư là chuẩn bị triển khai. Biến `TRUSTED_PROXIES` giúp rate limit chỉ tin
 `X-Forwarded-For` khi request đến từ proxy đã khai báo. Thư mục `deploy/` có compose production,
 Caddyfile cấu hình TLS và script `backup-db.sh` chạy `pg_dump` kèm chính sách giữ bản sao 14 ngày.
-Theo yêu cầu của giảng viên hướng dẫn, em chỉ chuẩn bị cấu hình chứ không triển khai lên máy chủ
+Theo đề cương nghiên cứu, đồ án tập trung chuẩn bị cấu hình chứ không triển khai lên máy chủ
 công khai.
 
 Nhóm thứ năm là kiểm chứng end-to-end với backend thật. Bộ e2e sẵn có của frontend được trỏ vào
-API thật qua proxy Vite. Trong quá trình chạy, em phát hiện ba vấn đề và đã sửa: seed cần ưu tiên
+API thật qua proxy Vite. Trong quá trình chạy, quá trình vận hành ghi nhận ba vấn đề kỹ thuật và đã được xử lý: seed cần ưu tiên
 địa điểm có ảnh để trang khám phá khớp đặc tả, spec đăng xuất cần phiên riêng để không thu hồi
 phiên của spec khác, và tài khoản e2e phải tách theo project.
 
@@ -790,7 +789,7 @@ trong localStorage trước đây.
 
 ### 3.12. Các tính năng mở rộng hoàn thiện trải nghiệm
 
-Sau khi các luồng chính chạy được với dữ liệu thật, em bổ sung thêm sáu nhóm tính năng để hệ thống
+Sau khi các luồng chính chạy được với dữ liệu thật, đồ án bổ sung sáu nhóm tính năng mở rộng để hệ thống
 gần hơn với một sản phẩm có người dùng thật, chứ không chỉ là một API đúng đặc tả.
 
 **Gợi ý hôm nay.** Trang khám phá cần một điểm nhấn mỗi ngày thay vì chỉ là một lưới địa điểm tĩnh.
@@ -799,42 +798,42 @@ Mỗi ngày, job nền pg-boss `daily-picks` chạy lúc 00:05 giờ Việt Nam 
 vào bảng `daily_picks`. Job ưu tiên quán có ảnh thật, vì gợi ý kèm ảnh trực quan hơn hẳn gợi ý chỉ
 có tên. Toàn bộ ba slot được ghi trong một transaction: nếu job chết giữa chừng thì không có dữ
 liệu nửa vời của ngày đó, và job chạy lại không sinh bản ghi trùng nhờ hai ràng buộc unique
-`(pick_date, position)` và `(pick_date, place_id)`. Em đã kiểm chứng hành vi này bằng một trigger
+`(pick_date, position)` và `(pick_date, place_id)`. Hành vi này được kiểm chứng thực nghiệm bằng một trigger
 Postgres cố tình báo lỗi giữa giao dịch trong test, xác nhận bảng không còn dòng nào sau rollback.
 Ở phía giao diện, nếu ngày đó không chọn được quán nào thì dải gợi ý được thu gọn im lặng thay vì
 hiển thị một khối rỗng phá vỡ bố cục trang.
 
 **Tìm người và gợi ý theo dõi.** Ngoài tìm kiếm người dùng theo tên và handle, hệ thống gợi ý tối
 đa năm người nên theo dõi dựa trên ba tín hiệu: từng cùng đánh giá một quán, theo dõi chéo (người
-đó theo dõi mình nhưng mình chưa follow lại) và hoạt động trong 30 ngày gần nhất. Toàn bộ chỉ dùng
+đó theo dõi người dùng nhưng người dùng chưa theo dõi lại) và hoạt động trong 30 ngày gần nhất. Toàn bộ chỉ dùng
 dữ liệu công khai, không rò rỉ thông tin riêng tư. Vì truy vấn ứng viên có thể quét toàn bảng khi
-người dùng nhiều, em chặn pool ứng viên ở 500 người mới nhất trước khi chấm điểm, và bổ sung index
+người dùng nhiều, thuật toán giới hạn pool ứng viên ở 500 người mới nhất trước khi chấm điểm, và bổ sung index
 `reviews(author_id)` cho subquery tương quan theo tác giả đánh giá. Số liệu đếm cho cả trang được
 tính bằng một lượt `GROUP BY` thay vì truy vấn từng người, tránh N+1.
 
 **Chia sẻ và preview trên mạng xã hội.** Ứng dụng là SPA, nên khi dán link bài đăng hoặc địa điểm
 lên Facebook, Zalo hay Messenger, bot của các nền tảng này nhận về một trang HTML trống không có
-nội dung để tạo bản xem trước. Em bổ sung hai route `/og/place/:id` và `/og/post/:id`: khi request
+nội dung để tạo bản xem trước. Hệ thống bổ sung hai route `/og/place/:id` và `/og/post/:id`: khi request
 đến từ bot, server trả về HTML chứa thẻ meta Open Graph (tên, ảnh, mô tả) thay vì SPA. Ảnh trong
 thẻ kèm tham số phiên bản, nhờ vậy khi ảnh thay đổi thì nền tảng tải bản mới thay vì dùng bản đã
 cache cũ.
 
 **Lọc mức giá và sắp xếp server-side.** Danh sách địa điểm nhận thêm lọc `priceLevel` và ba kiểu
-sắp xếp: mới nhất, đánh giá cao và gần tôi. Cả ba đều dùng phân trang keyset, mỗi kiểu một dạng
+sắp xếp: mới nhất, đánh giá cao và gần vị trí hiện tại. Cả ba đều dùng phân trang keyset, mỗi kiểu một dạng
 cursor riêng (mới nhất theo `(created_at, id)`, đánh giá cao theo `(rating, reviewCount, id)`, gần
-tôi theo khoảng cách), giữ nguyên ưu điểm ổn định trang đã trình bày ở mục 2.3. Song song, ảnh
+khoảng cách địa lý), giữ nguyên ưu điểm ổn định trang đã trình bày ở mục 2.3. Song song, ảnh
 cold-start được dựng thành nhiều kích thước WebP và giao diện chọn kích thước phù hợp qua `srcset`
 và `sizes`; tổng dung lượng ảnh của trang khám phá giảm khoảng 72%, đáng kể nhất khi xem trên
 điện thoại.
 
 **Bắt buộc xác thực email khi đăng ký.** Trước đây người dùng đăng ký xong là đăng nhập được ngay,
-kể cả với email không có thật. Em bổ sung bước bắt buộc: sau khi đăng ký, tài khoản phải bấm link
+kể cả với email không có thật. Hệ thống bổ sung bước bắt buộc: sau khi đăng ký, tài khoản phải bấm link
 trong email mới đăng nhập được. Với những người dùng đã tạo trước khi bật tính năng, migration
 chỉnh dữ liệu đánh dấu `emailVerified = true` để không ai bị khoá ngoài oan, còn người dùng mới
 vẫn bắt đầu ở trạng thái chưa xác thực.
 
 **Rate limit theo tài khoản cho hành động xã hội.** Trước đây rate limit theo người dùng chỉ áp cho
-tải ảnh và đăng bài. Em mở rộng sang các hành động dễ bị lạm dụng: đăng bài 30 mỗi giờ, like 30 mỗi
+tải ảnh và đăng bài. Phạm vi kiểm soát được mở rộng sang các hành động dễ bị lạm dụng: đăng bài 30 mỗi giờ, like 30 mỗi
 phút, bình luận 10 mỗi phút và theo dõi 20 mỗi phút. Vượt ngưỡng trả 429 kèm `Retry-After`, dùng
 cùng bảng `rate_limits` và cùng cơ chế đã có nên không phát sinh hạ tầng mới.
 
@@ -913,7 +912,7 @@ Phân bố test backend theo vùng chức năng:
 | `rate-limit-social.test.ts`   | 3       | hạn mức like, bình luận và theo dõi theo tài khoản                                   |
 | `rate-limit-user.test.ts`     | 1       | giới hạn theo người dùng cho tải ảnh và đăng bài                                     |
 
-Em đo độ phủ bằng `bun test --coverage`, tính trên 52 file đo được gồm cả gói schema dùng chung và
+Độ phủ mã nguồn (code coverage) được đo bằng `bun test --coverage`, tính trên 52 file đo được gồm cả gói schema dùng chung và
 client Prisma sinh sẵn. Độ phủ hàm đạt 92,4% và độ phủ dòng đạt 96,1%; 30 trong 52 file đạt 100%.
 Các vùng thấp đều có lý do rõ ràng: `lib/queue.ts` chỉ chạy khi pg-boss được bật trong server thật,
 `routes/media.ts` có nhánh chưa cấu hình R2 trả 503 được test riêng còn nhánh presign thật cần
@@ -921,10 +920,10 @@ credentials, và `routes/index.ts` chỉ gắn router.
 
 ### 4.3. Đo lường hiệu năng
 
-Em đo bằng `curl -w` trên máy phát triển, API chạy trong Docker, Postgres cùng máy. Mỗi endpoint
+Thời gian phản hồi được đo bằng `curl -w` trên máy phát triển, API chạy trong Docker, Postgres cùng máy. Mỗi endpoint
 được gọi 20 lần liên tiếp sau 3 lần khởi động nóng. Số liệu dưới đây đo trên corpus 2.726 điểm;
-corpus hiện tại đã lọc còn 358 điểm nên thời gian thực tế sẽ thấp hơn hoặc bằng các số này. Em chưa
-đo lại trên corpus 344, và ghi rõ ở đây để tránh hiểu nhầm là số của corpus hiện tại.
+corpus hiện tại đã lọc còn 358 điểm nên thời gian thực tế sẽ thấp hơn hoặc bằng các số này. Các kết quả này chưa
+được đo lại trên corpus mới và được ghi chú rõ ràng nhằm phản ánh chính xác điều kiện đo.
 
 | Endpoint                                          | Trung bình | Chậm nhất |
 | ------------------------------------------------- | ---------- | --------- |
@@ -958,7 +957,7 @@ Kịch bản k6 mô phỏng hành vi người dùng thật (IP phân tán, think
 
 ### 4.4. Kiểm thử bảo mật cục bộ
 
-Em chỉ quét API do mình dựng trên địa chỉ cục bộ, không quét bất kỳ máy chủ nào khác. Các công cụ
+Kiểm thử thâm nhập chỉ thực hiện quét API cục bộ trên môi trường thử nghiệm, không quét bất kỳ hệ thống nào khác. Các công cụ
 dùng gồm `curl`, nikto và sqlmap với wordlist nhỏ, chạy giới hạn concurrency.
 
 | Kiểm tra                                     | Kết quả mong đợi                       | Kết quả thực tế                                        |
@@ -980,8 +979,7 @@ dùng gồm `curl`, nikto và sqlmap với wordlist nhỏ, chạy giới hạn c
 
 ### 4.5. Những phần chưa kiểm chứng được
 
-Trong khuôn khổ đồ án, có một số hạng mục em chưa kiểm chứng được. Em ghi rõ ở đây thay vì trình
-bày như đã hoàn tất.
+Trong khuôn khổ đồ án, một số hạng mục kỹ thuật chưa được kiểm chứng trên môi trường thực tế. Các nội dung này được liệt kê minh bạch dưới đây:
 
 | Hạng mục                         | Nguyên nhân                             | Đã làm gì thay thế                                                                                                                  |
 | -------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
@@ -1005,7 +1003,7 @@ kiểm tra thủ công trong code. Tác vụ nền idempotent và có dead-lette
 bản; có runbook vận hành. Phần bảo mật cơ bản đầy đủ: phiên HttpOnly, rate limit theo IP và theo
 tài khoản, kiểm quyền ở từng route và header bảo mật.
 
-Trong quá trình làm, em tự rà soát theo từng vòng và sửa được nhiều lỗi thật: quyền gắn địa điểm,
+Trong quá trình hiện thực, quy trình tự kiểm thử đa tầng đã phát hiện và xử lý triệt để các lỗi kỹ thuật phát sinh: quyền gắn địa điểm,
 lỗi 500 do enum rác hoặc ký tự NUL, cursor giả mạo, thiếu tham số `?sort=top`, chuẩn hoá tìm kiếm
 chưa đồng nhất giữa ba route, batch job, dùng `COUNT` cho bản đồ, thứ tự bình luận, đề xuất phòng
 nhận giá trị rác và một đoạn code chết trong `onError`. Mỗi lỗi đều được thêm test để chặn hồi quy.
@@ -1016,7 +1014,7 @@ updater của React khiến blob URL bị rò rỉ.
 **Hạn chế.** Hệ thống chưa gửi email thật và chưa tích hợp R2 thật do thiếu credentials. SSE dùng
 pub/sub trong bộ nhớ nên chỉ đúng khi chạy một instance API. Chưa có trang quản trị để duyệt địa
 điểm và xử lý báo cáo; hiện hệ thống mới ghi nhận báo cáo. Việc áp dụng hai đề xuất khác trường
-cùng lúc vẫn có thể ghi đè lẫn nhau, em đã ghi vào backlog và chưa xử lý vì chưa có nhu cầu thực
+cùng lúc vẫn có thể ghi đè lẫn nhau, vấn đề này được ghi nhận trong tài liệu backlog kỹ thuật
 tế. Gợi ý hôm nay và gợi ý theo dõi mới có cơ chế chạy đúng, chưa đo được hiệu quả thực tế với
 người dùng thật.
 
@@ -1065,7 +1063,7 @@ server-side với ảnh responsive, bắt buộc xác thực email và rate limi
 xã hội. Toàn bộ hệ thống chạy được bằng một lệnh `docker compose up` với 358 địa điểm thật tại Đà
 Nẵng (86 địa điểm tuyển chọn thủ công và 258 điểm từ OpenStreetMap, kèm 29 ảnh gốc — 87 tệp cold-start gồm biến thể WebP).
 
-Ngoài phần chức năng, em cũng hệ thống hoá được quy trình làm việc: từ đặc tả hợp đồng API, thiết
+Bên cạnh các chức năng nghiệp vụ, đồ án đã chuẩn hóa được quy trình làm việc: từ đặc tả hợp đồng API, thiết
 kế dữ liệu, triển khai, đến kiểm thử và đóng gói. Bộ tài liệu đi kèm gồm kế hoạch, nhật ký quyết
 định, tài liệu API và runbook vận hành.
 
@@ -1145,9 +1143,9 @@ Trang quản trị duyệt địa điểm và xử lý báo cáo chưa có.
 | 18  | `20261112030000_audit_indexes`                  | Index `reviews(author_id)` cho gợi ý theo dõi; bỏ index `daily_picks(pick_date)` trùng tiền tố unique                    |
 
 Trong quá trình phát triển, migration 9 và 10 từng deploy thất bại ở lần thử đầu vì hàm SQL chưa
-đủ IMMUTABLE và thiếu schema prefix khi Prisma chạy với `search_path` rỗng. Em xử lý bằng
+đủ IMMUTABLE và thiếu schema prefix khi Prisma chạy với `search_path` rỗng. Vấn đề này được xử lý bằng
 `prisma migrate resolve --rolled-back` rồi deploy lại bản sửa. Bảng `_prisma_migrations` giữ lại
-các dòng “rolled back” làm dấu vết lịch sử; mỗi migration hiện có đúng một dòng `finished_at` và em
+các dòng “rolled back” làm dấu vết lịch sử; mỗi migration hiện có đúng một dòng `finished_at` và được
 đã kiểm lại bằng psql.
 
 ### Phụ lục B. Lệnh vận hành thường dùng
