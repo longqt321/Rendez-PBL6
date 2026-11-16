@@ -1221,3 +1221,19 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
   2. Bắt buộc kiểm tra lại bằng `git diff` và công cụ hệ thống (`docker compose config` hoặc `docker inspect`) để xác thực thay đổi đã được áp dụng vào file và runtime trước khi phản hồi người dùng.
 
 
+
+## L-052: Toàn diện sai sót báo cáo kỹ thuật đồ án (Thổi phồng thuật toán, mâu thuẫn số liệu, AI Slop, lỗi LaTeX/KaTeX, thiếu đặc tả hình thức)
+- **Lỗi:** Báo cáo mắc phải các lỗi hệ thống:
+  1. Thổi phồng kết quả đánh giá (DES thua Popularity ở tập ngoài nhưng tuyên bố giải quyết triệt để; EGRF thua Lexical ở SciFact/NFCorpus nhưng tuyên bố vượt trội).
+  2. Số liệu mâu thuẫn nội tại (344 vs 358 vs 355 địa điểm; 27 bảng vs 26 bảng; 10 nhóm vs 11 nhóm route; 29 ảnh / 58 WebP / 87 tệp không giải thích; claim one-click deploy nhưng thực tế cần seed).
+  3. Lỗi LaTeX/KaTeX do escape sai (`\frac` thành `\rac`, `\bar` thành `\ar`).
+  4. Lỗi kiến trúc: mâu thuẫn giữa mô hình SSE in-memory worker và LISTEN/NOTIFY; claim dense retrieval trong khi codebase không có pgvector.
+  5. Văn phong mang tính chất cãi vã / nhật ký đối thoại / lặp lại prompt người dùng, lạm dụng tính từ khoa trương (tuyệt hảo, triệt để, cực đoan), dịch máy ngô nghê.
+  6. Thiếu đặc tả kỹ thuật phần mềm chuẩn: thiếu use case specs (preconditions, flows), thiếu sequence diagrams, thiếu code snippet thực tế cho keyset cursor/CAS/idempotency.
+- **Nguyên nhân gốc:** Không đối chiếu chéo số liệu thực nghiệm với dữ liệu thô; cố ý giấu/lờ đi các điểm yếu của thuật toán; dùng chuỗi markdown chứa ký tự escape unescaped trong Python/Bash gây hỏng LaTeX; phụ thuộc vào cách viết tóm tắt hội thoại thay vì xây dựng một tài liệu khoa học độc lập.
+- **Cách phòng tránh:**
+  - Mọi con số trong bảng phải được phân tích trung thực: thừa nhận điểm thua của baseline (thừa nhận DES cold-start thấp hơn Popularity trên MovieLens vì thiếu tín hiệu tương tác; EGRF trên SciFact không tối ưu vì tập dữ liệu y sinh thuần văn bản học thuật).
+  - Tách bạch rõ ràng những gì ĐÃ CHẠY trong sản phẩm (Lexical Trigram) và những gì LÀ MÔ HÌNH THỬ NGHIỆM/TƯƠNG LAI (Dense Retrieval qua pgvector).
+  - Viết lại toàn bộ công thức toán bằng KaTeX chuẩn `$$...$$` không bị lỗi escape.
+  - Bổ sung đầy đủ đặc tả Use Case chuẩn IEEE/Cockburn, sơ đồ Sequence Diagram Mermaid, sơ đồ kiến trúc, và code logic giải thuật cốt lõi.
+  - Loại bỏ hoàn toàn ngôn ngữ tự xưng, nhật ký chat, tính từ quảng cáo.
