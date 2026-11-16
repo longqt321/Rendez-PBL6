@@ -52,6 +52,7 @@ COPY --from=builder /app/backend/dist backend/dist
 COPY --from=builder /app/backend/generated backend/generated
 COPY --from=builder /app/backend/package.json backend/package.json
 COPY --from=builder /app/packages packages
+COPY backend/scripts/start-cluster.sh backend/scripts/start-cluster.sh
 
 USER bun
 
@@ -59,4 +60,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD bun -e "const r = await fetch('http://127.0.0.1:8000/healthz'); process.exit(r.ok ? 0 : 1)"
 
-CMD ["bun", "backend/dist/server.js"]
+CMD ["sh", "backend/scripts/start-cluster.sh"]
