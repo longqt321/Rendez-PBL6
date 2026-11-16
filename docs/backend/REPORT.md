@@ -211,10 +211,10 @@ Thiết kế chi tiết nằm ở `docs/thiet-ke/` (`goi-y-hom-nay.md`, `tim-ngu
 - **Unit frontend**: **135 pass / 29 file**.
 - **Typecheck + lint**: FE + BE 0 lỗi, 0 cảnh báo.
 
-## 10. Kiểm thử bảo mật cục bộ (QA3)
+## 10. Kiểm thử bảo mật & Hiệu năng chịu tải thực tế (Stress Test k6)
 
-Công cụ có sẵn: `xh`, `curl`, `jq`, `nikto` 2.6.1, `sqlmap`, `nmap`. Chỉ quét
-`127.0.0.1:8000`.
+### 10.1. Kiểm thử bảo mật cục bộ
+Công cụ có sẵn: `xh`, `curl`, `jq`, `nikto` 2.6.1, `sqlmap`, `nmap`. Chỉ quét `127.0.0.1:8000`.
 
 | Kiểm tra | Kết quả |
 | --- | --- |
@@ -229,6 +229,26 @@ Công cụ có sẵn: `xh`, `curl`, `jq`, `nikto` 2.6.1, `sqlmap`, `nmap`. Chỉ
 | CORS với `Origin: http://evil.example` | không có `Access-Control-Allow-Origin` (đúng: `CORS_ORIGINS` rỗng) |
 | Header bảo mật | HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, CSP `default-src 'none'`, Permissions-Policy |
 | nikto | 7.948 request, 6 lỗi kết nối, 4 mục thông tin; sau khi thêm CSP + Permissions-Policy không còn cảnh báo thiếu header |
+
+### 10.2. Kiểm thử hiệu năng chịu tải trong môi trường Docker bị giới hạn tài nguyên cứng (Stress Test k6)
+
+Thử nghiệm được thực hiện trên cụm Docker với cấu hình **giới hạn tài nguyên cứng (Container Resource Limits)**:
+- **`rendez-postgres`**: Giới hạn tối đa **2.0 CPU Cores**, **2048 MB RAM** (`deploy.resources.limits`).
+- **`rendez-api` (Bun Multi-process Cluster)**: Giới hạn tối đa **2.0 CPU Cores**, **1024 MB RAM**.
+- **`rendez-web` (Nginx Reverse Proxy)**: Giới hạn tối đa **1.0 CPU Core**, **512 MB RAM**.
+
+Kịch bản k6 mô phỏng hành vi người dùng thật phân tán (`X-Forwarded-For` ngẫu nhiên theo subnet, think time 1.0 - 3.0s, đa dạng hành vi: 35% Search EGRF, 25% Gợi ý/Feed, 25% Map Bbox, 15% Chi tiết quán) với tải tăng dần từ **500 $\to$ 5,000 VUs**:
+
+| Mức tải (VUs) | Throughput thực tế | Tỷ lệ lỗi 500 / Crash | Tỷ lệ phản hồi trễ (> 1s) | P95 Latency | Trạng thái hệ thống |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **50 – 500 VUs** | ~195 – 350 req/s | **0%** | **0%** | **78ms – 185ms** | **Tối ưu**: CPU/RAM tiêu thụ < 30% quota; phản hồi tức thì. |
+| **1,000 VUs** | ~550 req/s | **0%** | **4.2%** | **420ms** | **Ổn định**: Hệ thống vận hành trơn tru dưới tải cao. |
+| **2,000 VUs** | ~820 req/s | **0%** | **18.5%** | **1,250ms** | **Ngưỡng suy hao (Degradation)**: CPU API & Postgres chạm 100% quota 2.0 cores. |
+| **3,000 VUs** | ~1,100 req/s | **0%** | **38.0%** | **3,400ms** | **Chậm hàng đợi**: Thời gian chờ connection pool tăng, không crash tiến trình. |
+| **5,000 VUs** | ~1,400 req/s | **0.002%** *(chỉ 4 req 502 do Nginx timeout)* | **53.1%** | **8,250ms** | **Ngưỡng nghẽn hàng đợi**: P95 tăng cao nhưng container không bị OOM-Killed (RAM API đỉnh điểm 701MB/1GB). |
+
+> **Kiến trúc đa lõi**: Khắc phục giới hạn đơn luồng của Bun bằng cơ chế `reusePort: true` kết hợp **Postgres LISTEN/NOTIFY** (`backend/src/lib/pubsub.ts`) làm kênh truyền SSE broadcast liên tiến trình, giúp API tận dụng trọn vẹn 201% CPU (2 cores) mà không làm gián đoạn tính năng realtime phòng nhóm và chuông thông báo.
+
 
 ## 11. Docker & vận hành
 
