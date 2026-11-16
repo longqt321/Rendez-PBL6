@@ -142,3 +142,45 @@ select count(*) from idempotency_keys where expires_at < now();   -- key hết h
 `SIGTERM`/`SIGINT` → `server.stop()` (ngừng nhận request) → `pg-boss stop({graceful:true})`
 → `prisma.$disconnect()` → thoát. Thời gian chờ tối đa do orchestrator quyết định
 (khuyến nghị 30s).
+
+## 11. Runbook Benchmark Thực nghiệm (Search & Recommendation)
+
+### 11.1 Benchmark Tìm kiếm (Search)
+
+```bash
+# 1. Benchmark trên tập nội bộ Đà Nẵng v7 (344 queries)
+DATABASE_URL="postgresql://rendez:rendez_dev@localhost:5432/rendez" bun run backend/scripts/eval-search.ts --set 7
+
+# 2. Benchmark trên tập Yelp Challenge (58 queries, container postgres-bench trên port 5434)
+DATABASE_URL="postgresql://rendez:rendez@localhost:5434/rendez" bun run backend/scripts/eval-search.ts --file search-eval-yelp.json
+
+# 3. Benchmark Zero-Shot trên BEIR SciFact (5,183 tài liệu y sinh)
+bun run backend/scripts/eval-beir-scifact.ts
+
+# 4. Benchmark Zero-Shot trên BEIR NFCorpus (3,633 tài liệu dinh dưỡng)
+bun run backend/scripts/eval-beir-nfcorpus.ts
+```
+
+### 11.2 Benchmark Gợi ý (Recommendation)
+
+```bash
+# 1. Khởi tạo/Cập nhật dataset tương tác nội bộ Đà Nẵng (rec-eval-internal.json)
+DATABASE_URL="postgresql://rendez:rendez_dev@localhost:5432/rendez" bun run backend/scripts/generate-internal-rec-dataset.ts
+
+# 2. Đánh giá Leave-One-Out trên dataset nội bộ
+DATABASE_URL="postgresql://rendez:rendez_dev@localhost:5432/rendez" bun run backend/scripts/eval-rec.ts
+
+# 3. Đánh giá trên MovieLens 100k (GroupLens Research)
+bun run backend/scripts/eval-movielens.ts
+
+# 4. Đánh giá trên MovieLens 1M (1 triệu ratings, 3,533 phim)
+bun run backend/scripts/eval-movielens1m.ts
+
+# 5. Đánh giá trên Yelp RecSys Challenge (10,354 địa điểm, 1,709 users)
+bun run backend/scripts/eval-yelp-rec.ts
+```
+
+### 11.3 Kiểm thử đơn vị DES & Cold-Start Gate
+```bash
+DATABASE_URL="postgresql://rendez:rendez_dev@localhost:5432/rendez" bun test backend/test/recommendations-des.test.ts
+```

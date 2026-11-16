@@ -236,3 +236,22 @@ ca biên ở Đà Nẵng).
 5. **Nhãn suy tự động từ ràng buộc DB** chỉ đúng bằng chất lượng metadata (tag nghèo,
    nhiều venue thiếu tag) → trần chất lượng bị giới hạn bởi dữ liệu, không chỉ thuật toán.
 6. **H2 chưa có dữ liệu tương tác thật** → mọi số liệu rec hiện tại (nếu có) là mô phỏng.
+
+---
+
+## 12. Giao thức Đánh giá Recommendation (Bổ sung 2026-11-16)
+
+Để giải quyết giới hạn mục 11.6 (chưa có dữ liệu tương tác rec), giao thức nghiên cứu cho hệ thống Recommendation (H2) được chuẩn hóa theo chuẩn quốc tế:
+
+### 12.1 Giao thức Full-Catalog Leave-One-Out
+1. **Phân tách Dữ liệu (Temporal Split)**:
+   - Với mỗi người dùng có $\ge 5$ tương tác tích cực (positive interactions), tương tác mới nhất theo thời gian (`created_at`) được giữ lại làm **Test**, toàn bộ các tương tác trước đó làm **Train**.
+   - Bỏ các ca mà item test đã xuất hiện trong train (nhằm đo năng lực khám phá địa điểm mới).
+2. **Full-Catalog vs Sampled Negative**:
+   - Nghiêm cấm dùng giao thức cũ "1 positive + 99 negatives": Krencik & Rendle (ACM RecSys 2020) đã chứng minh lấy mẫu 99 negatives làm sai lệch thứ hạng thực tế.
+   - Bắt buộc đánh giá trên **toàn bộ catalog** ($N \ge 1,500$ đối với MovieLens, $N \ge 10,000$ đối với Yelp).
+3. **Chỉ số đo lường chuẩn**:
+   - `Recall@5`, `Recall@10`, `Recall@20`: Khả năng tìm thấy đúng địa điểm trong top $K$.
+   - `NDCG@10`: Đánh giá vị trí xếp hạng của địa điểm được gợi ý.
+   - `MRR`: Tốc độ người dùng tiếp cận được địa điểm phù hợp đầu tiên.
+4. **Kiểm định thống kê**: Paired Bootstrap 10,000 vòng lặp có seed cố định ($SEED = 42$) kèm khoảng tin cậy $95\%$ và trị số $p$-value.

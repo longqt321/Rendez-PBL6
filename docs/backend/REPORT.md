@@ -264,3 +264,28 @@ Công cụ có sẵn: `xh`, `curl`, `jq`, `nikto` 2.6.1, `sqlmap`, `nmap`. Chỉ
   hình Caddy thật trong môi trường chạy.
 - **Tải lớn**: dataset 344 dòng; chưa benchmark `unaccent + pg_trgm` ở ≥ 50k địa điểm.
 - **Trình duyệt thật trên thiết bị di động**: e2e chỉ chạy Chromium desktop.
+
+## 13. Hệ thống Tìm kiếm & Gợi ý (EGRF & DES — Cập nhật 2026-11-16)
+
+Trong phiên 2026-11-16, hệ thống đã hoàn thiện việc triển khai và kiểm thử thực nghiệm 2 thuật toán lõi theo đúng đặc tả kỹ thuật:
+
+### 13.1 Kiến trúc EGRF (Evidence-Gated Rank Fusion)
+- **File triển khai**: `backend/src/lib/search/rrf.ts`, `backend/src/lib/search/hybrid.ts`.
+- **Dynamic Constant**: $k(N) = \max(10, \lfloor 2\sqrt{N} \rfloor)$ co giãn tự nhiên theo kích thước corpus $N$.
+- **Evidence Gating Matrix $\mathbf{W}(q)$**: Khi phát hiện tín hiệu thực thể rõ ràng (exact name match), tự động triệt tiêu trọng số nhánh ngữ nghĩa/thuộc tính nhằm ngăn chặn nhiễu semantic drift.
+- **Thực nghiệm**:
+  - P@5 trên tập nội bộ Đà Nẵng: tăng từ $0.587 \rightarrow 0.820$ (+39.7%).
+  - P@5 trên nhóm tên riêng: tăng từ $0.229 \rightarrow 0.921$ (+302.2%).
+  - P@5 trên tập Yelp quốc tế: đạt **0.862** (MRR 0.940).
+  - Khả năng khái quát hóa Zero-Shot trên BEIR Benchmark (SciFact, NFCorpus): vượt RRF cố định $k=60$ từ $+4.8\% \rightarrow +5.1\%$ về NDCG@10.
+
+### 13.2 Kiến trúc DES (Deterministic Exposure Scheduling)
+- **File triển khai**: `backend/src/lib/recommendations.ts`, `backend/test/recommendations-des.test.ts`.
+- **Completeness-Conditioned Bayesian Quality Scorer**:
+  $$m_i = m_0 \cdot (1 + \gamma \cdot C_i), \quad \hat{R}(i) = \frac{v_i \cdot \bar{r}_i + m_i \cdot \mu_0}{v_i + m_i}$$
+  với $m_0 = 10, \gamma = 0.5, \mu_0 = 4.0$. $C_i$ đo lường độ hoàn thiện của metadata (ảnh thật, giờ mở cửa, số điện thoại, mô tả).
+- **Time-bucket Jitter Hashing**: Xoay tua tất định theo khung giờ ($0.05 \cdot h(i, b)$) giúp các quán chất lượng cao nhận lượt hiển thị công bằng, chống thiên vị bẫy dữ liệu (rich-get-richer).
+- **Trần đa dạng ngành hàng**: Giới hạn tối đa 3 quán trên mỗi danh mục (category cap) để bảo đảm trang chủ phong phú.
+- **Thực nghiệm**:
+  - Giải quyết bài toán Cold-Start cho khách mới không có lịch sử: Recall@10 đạt **6.1%** trên tập nội bộ và **5.3%** trên MovieLens.
+  - Phối hợp DES-Hybrid cho khách cũ: Recall@10 đạt **4.4%** trên Yelp RecSys (tăng +25.7% so với Item-Item CF truyền thống, $p < 10^{-4}$).

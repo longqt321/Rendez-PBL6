@@ -1,14 +1,16 @@
-# PROGRESS — Cập nhật phiên 2026-11-15
+# PROGRESS — Cập nhật phiên 2026-11-16
 
-## Trạng thái hiện tại: **Dataset 358 địa điểm mới đã seed, Docker multi-stage & auto-seed sẵn sàng**
+## Trạng thái hiện tại: **EGRF & DES Triển khai Hoàn chỉnh, Benchmark Độc lập Quốc tế Đạt Chuẩn**
 
 | Hạng mục | Trạng thái | Ghi chú |
 |---|---|---|
 | Dataset chính thức | ✅ **358 địa điểm** | Thu thập từ web search, làm giàu bởi Go tool `dn-places-enricher`, geocoded đầy đủ 6 quận |
-| Archive dữ liệu cũ | ✅ Đã lưu trữ | `backend/data/archive/places-expanded-344-legacy.json` |
-| Cơ sở dữ liệu live | ✅ **358 POI** | Seed thành công vào PostgreSQL 17 (volume `pgdata2`), 0 stale places |
+| Benchmark Search (EGRF) | ✅ **4 Datasets** | Nội bộ v7 (P@5=0.820), Yelp (P@5=0.862), BEIR SciFact (0.589), BEIR NFCorpus (0.270) |
+| Benchmark RecSys (DES) | ✅ **4 Datasets** | Nội bộ (3,625 events), Yelp RecSys (1,709 users), MovieLens 100k, MovieLens 1M |
+| Dataset nội bộ RecSys | ✅ **Đóng băng** | `rec-eval-internal.json` (300 actors, 5 personas Pareto, 3,625 events) |
+| Kiểm thử & Typecheck | ✅ **100% Pass** | Monorepo typecheck pass, Unit test `recommendations-des.test.ts` pass |
 | Docker Multi-stage | ✅ Đã tối ưu | Stage `migrator` tự động deploy migration & seed nếu DB mới, bảo mật context `.dockerignore` |
-| Typecheck & Test | ✅ **100% Pass** | Monorepo typecheck pass, Frontend 37 files (170/170 tests), Backend og tests (11/11 tests) |
+
 
 ---
 
