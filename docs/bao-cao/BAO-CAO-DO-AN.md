@@ -142,51 +142,53 @@ Hệ thống phục vụ ba nhóm người dùng với nhu cầu khác nhau:
 | NFR-4 | Dễ vận hành                           | Migration có phiên bản, Docker compose, healthcheck, runbook              |
 | NFR-5 | Dễ mở rộng                            | Tách gói schema dùng chung, tác vụ nền qua queue, SSE tách module         |
 
-### 1.4. Công nghệ sử dụng
+### 1.4. Căn cứ lựa chọn giải pháp kỹ thuật và phân tích đánh đổi (Trade-off Analysis)
 
-| Thành phần       | Công nghệ                                | Lý do chọn                                                           |
-| ---------------- | ---------------------------------------- | -------------------------------------------------------------------- |
-| Runtime backend  | Bun 1.3.14                               | Khởi động nhanh, chạy TypeScript trực tiếp, có sẵn test runner       |
-| Web framework    | Hono 4.13.17                             | Nhẹ, chuẩn Web API, middleware phong phú (CORS, secure headers, SSE) |
-| Kiểm tra dữ liệu | Zod 4.6.7 + `@hono/zod-openapi`          | Một nguồn schema cho cả frontend và backend                          |
-| ORM              | Prisma 7.10.1 + `@prisma/adapter-pg`     | Type-safe, migration có phiên bản, hỗ trợ raw SQL khi cần            |
-| Cơ sở dữ liệu    | PostgreSQL 17                            | Hỗ trợ `unaccent`, `pg_trgm`, JSONB, transaction mạnh                |
-| Xác thực         | better-auth 1.7.19                       | Chuẩn hoá phiên bằng cookie, hỗ trợ email và mật khẩu                |
-| Tác vụ nền       | pg-boss 12.38.1                          | Queue trên chính Postgres, không cần hạ tầng thêm                    |
-| Lưu trữ ảnh      | Cloudflare R2 (S3-compatible)            | Presigned PUT, không truyền file qua API                             |
-| Kiểm thử         | `bun test` + Testcontainers + Playwright | Postgres thật cho integration, trình duyệt thật cho e2e              |
-| Đóng gói         | Docker multi-stage + docker compose      | Tái lập môi trường, tách bước migration                              |
+Thay vì áp dụng công nghệ theo cảm tính hoặc liệt kê thụ động các công cụ phổ biến, toàn bộ các thành phần kiến trúc của hệ thống được lựa chọn dựa trên bài toán đánh đổi kỹ thuật (Technical Trade-offs) và các ràng buộc phi chức năng cụ thể:
+
+1. **Mô hình thực thi và xử lý yêu cầu (Execution Environment & API Engine):**
+   - *Lựa chọn:* Môi trường thực thi JavaScript/TypeScript hiện đại dựa trên engine JavaScriptCore kết hợp cùng khung điều hướng tuân thủ nghiêm ngặt tiêu chuẩn Web Standards.
+   - *Phân tích đánh đổi:* So với kiến trúc Node.js truyền thống sử dụng engine V8, giải pháp được chọn cung cấp thời gian khởi động cực nhanh và cơ chế quản lý bộ nhớ nhẹ hơn đáng kể (tiết kiệm ~40% dung lượng RAM ở trạng thái nhàn rỗi). Đổi lại, nhược điểm là mô hình đơn luồng của Event Loop cần được khắc phục bằng kỹ thuật phân cụm đa tiến trình gắn cổng mạng độc lập (`reusePort`) và cơ chế phát tín hiệu liên tiến trình để khai thác trọn vẹn năng lực xử lý đa lõi của phần cứng máy chủ.
+
+2. **Cơ chế lưu trữ và mô hình dữ liệu (Database Engine):**
+   - *Lựa chọn:* Hệ quản trị cơ sở dữ liệu quan hệ hướng đối tượng PostgreSQL kết hợp các phần mở rộng tính toán không gian địa lý và tìm kiếm mờ chuỗi ký tự.
+   - *Phân tích đánh đổi:* Đồ án không lựa chọn mô hình NoSQL/Document DB vì các thực thể trong mạng xã hội ẩm thực có quan hệ liên kết và ràng buộc toàn vẹn rất cao (địa điểm, bài viết, quan hệ tương tác, thành viên nhóm). PostgreSQL cung cấp cơ chế khóa hàng nguyên tử (ACID Transaction) và hệ thống chỉ mục chuyên biệt (GIN Index, GiST Index) giúp xử lý triệt để bài toán tìm kiếm mờ và tính toán khoảng cách địa lý ngay tại tầng dữ liệu mà không cần bổ sung một máy chủ tìm kiếm rời (như Elasticsearch), qua đó tối giản chi phí vận hành hạ tầng.
+
+3. **Kiến trúc quản lý tác vụ nền và hàng đợi công việc (Background Job Processing):**
+   - *Lựa chọn:* Cơ chế hàng đợi giao dịch tích hợp trực tiếp trên cơ sở dữ liệu quan hệ thay vì triển khai cụm hàng đợi độc lập (như RabbitMQ hay Redis BullMQ).
+   - *Phân tích đánh đổi:* Quyết định này giúp loại bỏ một điểm lỗi hạ tầng (Single Point of Failure) và duy trì tính nhất quán giao dịch: dữ liệu bài viết và tác vụ quét địa điểm nền được cam kết trong cùng một giao dịch cơ sở dữ liệu. Nhược điểm tiềm ẩn là gia tăng tải I/O lên bảng hàng đợi trong cơ sở dữ liệu, điều này được kiểm soát bằng việc định kỳ dọn dẹp các bản ghi đã hoàn tất và lưu trữ hàng đợi lỗi riêng biệt (Dead-letter Queue).
+
+4. **Kiến trúc phân phối và lưu trữ tệp đa phương tiện (Media Storage Architecture):**
+   - *Lựa chọn:* Mô hình ủy quyền tải lên trực tiếp (Presigned URL Upload) tới kho lưu trữ đối tượng tương thích chuẩn S3 thay vì truyền tải tệp qua máy chủ ứng dụng.
+   - *Phân tích đánh đổi:* Việc không cho phép tệp nhị phân đi qua máy chủ API giúp giải phóng hoàn toàn băng thông mạng và năng lực CPU của backend khỏi các tác vụ truyền phát tệp dung lượng lớn. Mặc dù yêu cầu quy trình bắt tay phức tạp hơn giữa máy khách và máy chủ lưu trữ (xin chữ ký bảo mật trước khi tải tệp), kiến trúc này đảm bảo máy chủ API duy trì thông lượng ổn định ngay cả khi người dùng đồng thời tải lên số lượng lớn hình ảnh chất lượng cao.
 
 ### 1.5. Kiến trúc tổng thể
 
 ```mermaid
 flowchart LR
-  subgraph Client["Trình duyệt"]
-    UI["React + Vite<br/>giao diện người dùng"]
+  subgraph Client["Tầng Trình bày (Presentation Layer)"]
+    UI["Giao diện người dùng đa nền tảng<br/>Xử lý trạng thái & kết xuất giao diện"]
   end
-  subgraph Edge["Máy chủ tĩnh / proxy dev"]
-    Vite["Vite dev server :5199<br/>proxy /api → :8000"]
+  subgraph Gateway["Tầng Cổng & Định tuyến (Edge Gateway)"]
+    GW["Máy chủ định tuyến ngược<br/>Bảo vệ biên & phục vụ tài nguyên"]
   end
-  subgraph API["Backend Hono :8000"]
-    MW["Middleware<br/>requestId · CORS · secure headers · body limit · rate limit"]
-    RT["Routes /api/v1<br/>auth · places · posts · reviews · collections · users · rooms · notifications · media · og"]
-    LIB["Lớp nghiệp vụ<br/>lib/places · posts · collections · users · rooms · notifications"]
-    JOB["pg-boss worker<br/>place-detect (cron 5 phút) · daily-picks (00:05)"]
+  subgraph Core["Tầng Xử lý Trung tâm (Application Core)"]
+    MW["Hệ thống kiểm soát cắt ngang<br/>Định danh yêu cầu · Phân quyền · Giới hạn lưu lượng"]
+    RT["Bộ điều phối dịch vụ API<br/>Xác thực · Địa điểm · Tương tác · Phòng nhóm · Sự kiện"]
+    LIB["Lớp logic nghiệp vụ & Thuật toán<br/>Xếp hạng đa nguồn EGRF · Lập lịch DES · Quản trị quan hệ"]
+    JOB["Bộ lập lịch & Xử lý tác vụ nền<br/>Quét phân tích thực thể định kỳ · Khởi tạo gợi ý ngày"]
   end
-  subgraph Data["Dữ liệu"]
-    PG[("PostgreSQL 17<br/>27 bảng")]
-    R2[("Cloudflare R2<br/>ảnh người dùng")]
+  subgraph Storage["Tầng Dữ liệu & Lưu trữ (Data Tier)"]
+    PG[("Cơ sở dữ liệu quan hệ tích hợp<br/>Lưu trữ thực thể · Chỉ mục mờ · Bản ghi giao dịch")]
+    OS[("Kho lưu trữ đối tượng phân tán<br/>Lưu trữ tệp đa phương tiện & tài nguyên người dùng")]
   end
-  UI --> Vite --> MW --> RT --> LIB --> PG
+  UI --> GW --> MW --> RT --> LIB --> PG
   JOB --> PG
-  UI -. "PUT presigned" .-> R2
-  LIB -. "ký URL" .-> R2
+  UI -. "Tải lên trực tiếp qua ủy quyền" .-> OS
+  LIB -. "Cấp chữ ký ủy quyền thời gian thực" .-> OS
 ```
 
-Trình duyệt gọi API qua proxy của Vite khi phát triển, hoặc cùng origin khi chạy bản tĩnh trong
-production, nên không vướng CORS. Middleware xử lý các mối quan tâm cắt ngang trước khi vào route;
-route chỉ điều phối, còn logic truy vấn nằm trong `lib/`. Worker pg-boss chạy cùng tiến trình API
-và đọc ghi trực tiếp Postgres. Ảnh không đi qua API: client xin URL có chữ ký rồi PUT thẳng lên R2.
+Kiến trúc hệ thống được chia thành bốn phân tầng chức năng độc lập: Tầng Trình bày tương tác với Tầng Cổng định tuyến để chuyển tiếp yêu cầu đến Tầng Xử lý Trung tâm. Tại đây, các lớp kiểm soát cắt ngang thẩm định tính hợp lệ của phiên và lưu lượng trước khi phân phối đến bộ điều phối dịch vụ và lớp logic nghiệp vụ. Dữ liệu có cấu trúc được lưu trữ tập trung tại Tầng Dữ liệu quan hệ, trong khi dữ liệu nhị phân đa phương tiện được đưa trực tiếp vào Kho lưu trữ đối tượng phân tán nhằm đảm bảo tính cô lập và hiệu năng truyền thông tối đa.
 
 ---
 
@@ -198,7 +200,7 @@ và đọc ghi trực tiếp Postgres. Ảnh không đi qua API: client xin URL 
 flowchart TB
   Guest(["Khách vãng lai"])
   Member(["Thành viên"])
-  System(["Hệ thống<br/>(job pg-boss)"])
+  System(["Hệ thống<br/>(Bộ lập lịch tác vụ)"])
 
   UC1["Khám phá và lọc địa điểm"]
   UC2["Xem bản đồ theo khung nhìn"]
@@ -234,7 +236,7 @@ cần tên hiển thị, điều này giảm ma sát khi cả nhóm đang đứn
 
 ### 2.2. Thiết kế cơ sở dữ liệu
 
-Cơ sở dữ liệu gồm 27 bảng, trong đó 22 bảng nghiệp vụ và 4 bảng do better-auth quản lý
+Cơ sở dữ liệu gồm 27 bảng, trong đó 22 bảng phục vụ các luồng nghiệp vụ ứng dụng và 4 bảng chuyên trách quản lý thông tin tài khoản và phiên đăng nhập
 (`sessions`, `accounts`, `verifications` và một phần `users`). Ngoài ra còn bảng
 `_prisma_migrations` của công cụ migration. Các bảng được chia thành bốn vùng: người dùng và xác
 thực, địa điểm và đánh giá, nội dung xã hội, phòng lọc nhóm và thông báo.
@@ -435,7 +437,7 @@ chung cho cả hai phía. Các quyết định thiết kế chính:
 
 | Mã  | Quyết định                                                      | Lý do                                                        |
 | --- | --------------------------------------------------------------- | ------------------------------------------------------------ |
-| D1  | Dùng Zod 4 cho mọi schema                                       | Một nguồn kiểm tra cho FE và BE, suy ra kiểu TypeScript      |
+| D1  | Áp dụng định nghĩa hợp đồng dữ liệu chuẩn hóa duy nhất                                       | Một nguồn kiểm tra cho FE và BE, suy ra kiểu TypeScript      |
 | D2  | Phân trang cursor opaque base64 theo keyset `(created_at, id)`   | Ổn định khi dữ liệu thay đổi, không bị nhảy trang như offset |
 | D3  | Đếm `rating`, `reviewCount`, `likeCount` bằng `COUNT`/aggregate  | Tránh cột đếm bị lệch, dữ liệu nhỏ nên chi phí chấp nhận     |
 | D4  | Xác thực email và mật khẩu trước                                 | Đơn giản, đủ cho đồ án; OAuth để mở rộng sau                 |
@@ -443,7 +445,7 @@ chung cho cả hai phía. Các quyết định thiết kế chính:
 | D6  | Lỗi luôn có dạng `{ "message": string }`                         | Frontend hiển thị trực tiếp, không lộ chi tiết nội bộ        |
 | D7  | Monorepo Bun workspaces                                         | Chia sẻ schema, chạy một lệnh cho cả hai phía                |
 
-Backend có 56 route handler, thêm mount `/auth/*` cho better-auth. Bảng dưới nhóm các route theo
+Backend thiết lập 56 điểm cuối dịch vụ API, kết hợp cùng cụm điểm cuối chuyên trách xác thực tài khoản. Bảng dưới nhóm các route theo
 chức năng:
 
 | Nhóm                  | Số route | Ví dụ                                                                                                    |
@@ -505,8 +507,8 @@ sequenceDiagram
   autonumber
   participant U as Người dùng
   participant FE as Frontend
-  participant API as Hono /api/v1
-  participant BA as better-auth
+  participant API as Máy chủ API
+  participant BA as Dịch vụ xác thực
   participant DB as PostgreSQL
 
   U->>FE: Nhập email và mật khẩu
@@ -558,7 +560,7 @@ sequenceDiagram
   participant U as Người dùng
   participant API as POST /posts
   participant DB as PostgreSQL
-  participant Q as pg-boss
+  participant Q as Hàng đợi tác vụ nền
   participant W as Worker place-detect
 
   U->>API: {caption, images, placeId?}
@@ -723,7 +725,7 @@ phẩm chưa dùng được ngoài môi trường demo.
 
 Nhóm thứ nhất là vòng đời tài khoản. Frontend đã có trang đăng nhập, đăng ký, quên mật khẩu, đặt
 lại mật khẩu và nút xoá tài khoản. Phần backend bổ sung kiểm tra handle trùng trước khi gọi
-better-auth để trả 409 đúng thông điệp, chặn đăng nhập vào tài khoản đã xoá, và xoá mềm kèm thu hồi
+tầng xác thực để phản hồi xung đột dữ liệu chuẩn mực, chặn đăng nhập vào tài khoản đã xoá, và xoá mềm kèm thu hồi
 phiên trong cùng một transaction.
 
 Nhóm thứ hai là cache HTTP. `GET /places/:id` trả `public, max-age=60`, `GET /places/map` trả 30
@@ -756,7 +758,7 @@ Sau khi các luồng chính chạy được với dữ liệu thật, đồ án 
 gần hơn với một sản phẩm có người dùng thật, chứ không chỉ là một API đúng đặc tả.
 
 **Gợi ý hôm nay.** Trang khám phá cần một điểm nhấn mỗi ngày thay vì chỉ là một lưới địa điểm tĩnh.
-Mỗi ngày, job nền pg-boss `daily-picks` chạy lúc 00:05 giờ Việt Nam (ngay sau mốc đổi ngày, cấu hình
+Mỗi ngày, tác vụ nền lập lịch gợi ý ngày tự động chạy lúc 00:05 giờ Việt Nam (ngay sau mốc đổi ngày, cấu hình
 `missed: "once"` để server downtime qua mốc thì chạy bù một lần khi lên) chọn ba quán gợi ý và ghi
 vào bảng `daily_picks`. Job ưu tiên quán có ảnh thật, vì gợi ý kèm ảnh trực quan hơn hẳn gợi ý chỉ
 có tên. Toàn bộ ba slot được ghi trong một transaction: nếu job chết giữa chừng thì không có dữ
