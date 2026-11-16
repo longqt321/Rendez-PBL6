@@ -1213,3 +1213,11 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
   1. Trước khi khẳng định một công cụ, thư viện, framework hay package có tồn tại hay không, bắt buộc phải tra cứu trực tiếp trên registry chính thức tương ứng (`crates.io` cho Rust, `hub.docker.com` cho Docker container, `pypi.org` cho Python, `npmjs.com` cho Node/Bun, `github.com`).
   2. Tuyệt đối không phán đoán chủ quan hoặc bác bỏ thông tin người dùng đưa ra khi chưa có bằng chứng xác thực từ registry.
 
+### L-040: Báo cáo đã cập nhật giới hạn tài nguyên CPU/RAM nhưng thực tế chưa ghi vào file cấu hình
+- **Lỗi:** Khẳng định đã xử lý hoặc hiểu nhầm hệ thống đã có giới hạn tài nguyên CPU/RAM, trong khi các file cấu hình `compose.yaml` và `deploy/compose.prod.yml` thực tế không có block `deploy.resources.limits`, khiến container chạy ở trạng thái không giới hạn tài nguyên (Unbounded).
+- **Nguyên nhân gốc:** Không kiểm tra trực tiếp diff và file thực tế tại thời điểm yêu cầu; chỉ suy đoán hoặc nhớ nhầm các phiên bản thảo luận trước mà không ghi file ngay lập tức và xác minh bằng lệnh inspect.
+- **Cách phòng tránh:**
+  1. Khi người dùng yêu cầu cấu hình giới hạn tài nguyên hoặc bất kỳ thay đổi nào, phải thực hiện sửa trực tiếp vào file ngay lập tức, không để việc tồn đọng.
+  2. Bắt buộc kiểm tra lại bằng `git diff` và công cụ hệ thống (`docker compose config` hoặc `docker inspect`) để xác thực thay đổi đã được áp dụng vào file và runtime trước khi phản hồi người dùng.
+
+
