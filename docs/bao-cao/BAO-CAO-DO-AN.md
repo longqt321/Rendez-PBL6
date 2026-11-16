@@ -66,7 +66,7 @@ bản đồ, gợi ý theo nội dung đang soạn), đánh giá và báo cáo �
 sưu tập, trang cá nhân và theo dõi, thông báo, phòng lọc nhóm có đồng bộ thời gian thực, và tải
 ảnh.
 
-Về phạm vi dữ liệu, em sử dụng bộ dữ liệu **344 địa điểm tại Đà Nẵng**, trong đó 86 địa điểm được
+Về phạm vi dữ liệu, em sử dụng bộ dữ liệu **358 địa điểm tại Đà Nẵng**, trong đó 86 địa điểm được
 tuyển chọn thủ công (34 địa điểm chọn tay ban đầu và 52 địa điểm bổ sung từ báo chí ẩm thực cùng
 khảo sát thực tế), 258 điểm còn lại lấy từ OpenStreetMap qua pipeline lọc tám tầng trong
 `backend/scripts/build-corpus`. Bộ dữ liệu thô ban đầu có 3.202 điểm, được lọc xuống 344 theo tiêu
@@ -843,7 +843,8 @@ cùng bảng `rate_limits` và cùng cơ chế đã có nên không phát sinh h
 
 **Hệ thống tìm kiếm kết hợp EGRF (Evidence-Gated Rank Fusion).**
 Trước đây, tìm kiếm sử dụng RRF cố định kết hợp Lexical và Dense (e5-small) nhưng dễ gặp hiện tượng nhiễu ngữ nghĩa (semantic drift) khi người dùng tìm chính xác tên quán (entity queries) hoặc truy vấn ngắn. Hệ thống được nâng cấp lên thuật toán EGRF đầy đủ:
-1. *Hằng số dung hợp động theo quy mô dữ liệu*: $k(N) = \max(10, \lfloor 2\sqrt{N} floor)$ tự co giãn theo kích thước corpus thay vì hằng số 60 cứng nhắc.
+1. *Hằng số dung hợp động theo quy mô dữ liệu*: $k(N) = \max(10, \lfloor 2\sqrt{N} 
+\rfloor)$ tự co giãn theo kích thước corpus thay vì hằng số 60 cứng nhắc.
 2. *Ma trận Gating bằng chứng động $\mathbf{W}(q)$*: Khi hệ quả đối sánh thực thể (Exact Name match) vượt ngưỡng tin cậy, cổng gating lập tức triệt tiêu trọng số của nhánh thuộc tính và dense để đưa kết quả chính xác lên vị trí đầu tiên.
 
 **Hệ thống gợi ý thích ứng DES (Deterministic Exposure Scheduling).**
@@ -922,7 +923,7 @@ credentials, và `routes/index.ts` chỉ gắn router.
 
 Em đo bằng `curl -w` trên máy phát triển, API chạy trong Docker, Postgres cùng máy. Mỗi endpoint
 được gọi 20 lần liên tiếp sau 3 lần khởi động nóng. Số liệu dưới đây đo trên corpus 2.726 điểm;
-corpus hiện tại đã lọc còn 344 điểm nên thời gian thực tế sẽ thấp hơn hoặc bằng các số này. Em chưa
+corpus hiện tại đã lọc còn 358 điểm nên thời gian thực tế sẽ thấp hơn hoặc bằng các số này. Em chưa
 đo lại trên corpus 344, và ghi rõ ở đây để tránh hiểu nhầm là số của corpus hiện tại.
 
 | Endpoint                                          | Trung bình | Chậm nhất |
@@ -992,7 +993,7 @@ bày như đã hoàn tất.
 | TLS và Let's Encrypt thật        | Cần domain công khai trỏ về máy chủ     | Cấu hình Caddy sẵn sàng, chưa chạy thật                                                                                             |
 | SSE nhiều instance               | Trước đây chỉ in-memory | Đã nâng cấp lên Postgres LISTEN/NOTIFY (`lib/pubsub.ts`), đồng bộ broadcast SSE liên tiến trình Bun đa lõi |
 | Đệm SSE qua Caddy                | Chưa có môi trường deploy thật          | Đã cấu hình tắt buffering cho route SSE trong Caddyfile, chưa xác minh thực tế                                                      |
-| Hiệu năng ở quy mô lớn           | Dataset hiện tại 344 địa điểm           | Đo latency thực tế trên máy phát triển; benchmark `pg_trgm` ở mức từ 50.000 dòng ghi vào backlog                                    |
+| Hiệu năng ở quy mô lớn           | Dataset hiện tại 358 địa điểm           | Đo latency thực tế trên máy phát triển; benchmark `pg_trgm` ở mức từ 50.000 dòng ghi vào backlog                                    |
 | Trình duyệt mobile thật          | Không có thiết bị trong phiên           | e2e chạy trên Chromium desktop                                                                                                      |
 
 ### 4.6. Đánh giá
@@ -1035,7 +1036,8 @@ Nhằm đảm bảo hệ thống không bị thiên vị hay overfit vào tập 
 | **BEIR SciFact** (5,183 docs, 300 q) | Khoa học y sinh | 0.665 | 0.468 | 0.562 | **0.589** | NDCG@10 (+4.8% vs RRF) |
 | **BEIR NFCorpus** (3,633 docs, 323 q) | Dinh dưỡng sức khỏe | 0.303 | 0.209 | 0.257 | **0.270** | NDCG@10 (+5.1% vs RRF) |
 
-*Kiểm định thống kê*: Trên tập Yelp, Paired Bootstrap 10,000 vòng khẳng định EGRF vượt trội Hybrid 2-way với $\Delta	ext{P@5} = +0.134$ ($p = 0.0002$). Trên chuẩn quốc tế BEIR, EGRF vượt RRF cố định $+4.8\% ightarrow +5.1\%$ về NDCG@10 ngay cả trên tài liệu khoa học thuần túy.
+*Kiểm định thống kê*: Trên tập Yelp, Paired Bootstrap 10,000 vòng khẳng định EGRF vượt trội Hybrid 2-way với $\Delta	ext{P@5} = +0.134$ ($p = 0.0002$). Trên chuẩn quốc tế BEIR, EGRF vượt RRF cố định $+4.8\% 
+\rightarrow +5.1\%$ về NDCG@10 ngay cả trên tài liệu khoa học thuần túy.
 
 #### 2. Đánh giá Hệ thống Gợi ý DES (Giao thức Full-Catalog Leave-One-Out)
 
@@ -1060,7 +1062,7 @@ handler, 256 test backend, 135 test unit frontend và 42 test e2e với mock cù
 backend thật đều đạt. Ngoài các luồng chính, hệ thống có thêm các tính năng hoàn thiện trải nghiệm:
 gợi ý hôm nay, gợi ý người nên theo dõi, preview mạng xã hội qua Open Graph, lọc giá và sắp xếp
 server-side với ảnh responsive, bắt buộc xác thực email và rate limit theo tài khoản cho hành động
-xã hội. Toàn bộ hệ thống chạy được bằng một lệnh `docker compose up` với 344 địa điểm thật tại Đà
+xã hội. Toàn bộ hệ thống chạy được bằng một lệnh `docker compose up` với 358 địa điểm thật tại Đà
 Nẵng (86 địa điểm tuyển chọn thủ công và 258 điểm từ OpenStreetMap, kèm 29 ảnh gốc — 87 tệp cold-start gồm biến thể WebP).
 
 Ngoài phần chức năng, em cũng hệ thống hoá được quy trình làm việc: từ đặc tả hợp đồng API, thiết
@@ -1158,7 +1160,7 @@ docker compose up -d
 curl -s http://localhost:8000/healthz
 curl -s http://localhost:8000/readyz
 
-# Nạp dữ liệu (344 địa điểm corpus hiện tại, tự dọn tier='osm' cũ)
+# Nạp dữ liệu (358 địa điểm corpus hiện tại, tự dọn tier='osm' cũ)
 cd backend && bun run db:seed
 
 # Chạy test backend (tuần tự, mỗi file một container Postgres)
