@@ -214,7 +214,7 @@ function sortPublishedPlaces(items: Place[], sort?: string, lat?: string, lng?: 
       lngN >= -180 &&
       lngN <= 180
     if (!valid) return items
-    return [...items].sort((a, b) => {
+    return items.toSorted((a, b) => {
       const da =
         a.lat !== undefined && a.lng !== undefined
           ? calculateDistanceKm(latN, lngN, a.lat, a.lng)
@@ -230,7 +230,7 @@ function sortPublishedPlaces(items: Place[], sort?: string, lat?: string, lng?: 
     })
   }
   if (sort === "rating") {
-    return [...items].sort((a, b) => {
+    return items.toSorted((a, b) => {
       const aHas = a.reviewCount > 0
       const bHas = b.reviewCount > 0
       if (aHas !== bHas) return aHas ? -1 : 1

@@ -517,7 +517,7 @@ export function PlacesMap({
   // Top quán nổi bật trong khung (điểm cao, nhiều đánh giá) — được hiện tên
   // ngay cả khi zoom thấp để bản đồ có "điểm nhấn" thay vì chỉ toàn chấm màu.
   const topPlaceIds = useMemo(() => {
-    const ranked = [...validPlaces].sort(
+    const ranked = validPlaces.toSorted(
       (a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount,
     )
     return new Set(ranked.slice(0, TOP_LABEL_COUNT).map((p) => p.id))
