@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.7.0
 # API RendeZ — Production Multi-stage Build bằng Bun & BuildKit.
 #
 # builder  : cài deps với BuildKit cache mount, sinh Prisma client, bundle server.
@@ -16,17 +16,18 @@ COPY frontend/package.json frontend/
 
 # Tận dụng BuildKit Cache Mount cho bun package store: không tải lại package qua mạng
 RUN --mount=type=cache,target=/root/.bun/install/cache \
-    bun install --frozen-lockfile --filter @rendez/api
+    bun install --frozen-lockfile --ignore-scripts --filter @rendez/api
 
 COPY packages packages
 COPY backend backend
 
 # Cache Prisma query engine binary giữa các lần build
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+WORKDIR /app/backend
 RUN --mount=type=cache,target=/root/.cache/prisma \
-    cd backend && bunx prisma generate
+    bun run db:generate
 
-RUN cd backend && bun build src/server.ts --target bun --outdir dist \
+RUN bun build src/server.ts --target bun --outdir dist \
   --external pg-boss --external sharp --external onnxruntime-node
 
 # ---------------------------------------------------------------------------

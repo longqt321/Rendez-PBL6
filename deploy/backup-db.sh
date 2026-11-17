@@ -24,7 +24,7 @@ TARGET="$BACKUP_DIR/rendez-$STAMP.sql.gz"
 docker exec "$CONTAINER" pg_dump -U "$PG_USER" -d "$PG_DB" -Fc | gzip > "$TARGET"
 
 # Kiểm tra file không rỗng — backup 0 byte coi như thất bại (cron sẽ thấy exit != 0).
-if [ ! -s "$TARGET" ]; then
+if [[ ! -s "$TARGET" ]]; then
   echo "Backup rỗng: $TARGET" >&2
   rm -f "$TARGET"
   exit 1
