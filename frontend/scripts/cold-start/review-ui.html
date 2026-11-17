@@ -232,7 +232,7 @@
       }
       dd {
         margin: 0;
-        word-break: break-word;
+        overflow-wrap: anywhere;
       }
       dd a {
         color: #7dd3fc;
@@ -390,7 +390,7 @@
       </section>
 
       <section class="info" aria-label="Thông tin địa điểm">
-        <h2 class="name" id="place-name"></h2>
+        <h2 class="name" id="place-name">Đang tải...</h2>
         <div class="badges" id="badges"></div>
         <dl>
           <dt>Địa chỉ</dt>
@@ -411,7 +411,7 @@
           <a id="osm-link" href="#" target="_blank" rel="noopener noreferrer">OpenStreetMap ↗</a>
         </div>
         <div class="row">
-          <textarea id="note" rows="1" placeholder="Ghi chú (N để nhập, Enter để lưu)"></textarea>
+          <textarea id="note" rows="1" aria-label="Ghi chú duyệt địa điểm" placeholder="Ghi chú (N để nhập, Enter để lưu)"></textarea>
         </div>
         <div class="verdicts" id="verdicts">
           <button data-verdict="ok"><kbd>1</kbd> Đúng</button>

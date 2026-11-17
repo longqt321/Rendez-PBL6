@@ -39,7 +39,7 @@ function hasHouseNumber(address) {
   if (!address) return false
   const relative = /^(đối diện|lô |bên cạnh|gần |khu |hẻm |kiệt |ngõ )/i.test(address.trim())
   if (relative) return false
-  return /\d/.test(address) && /[a-zA-Zàáạảăâđèéẹẻêìíịỉòóọỏôơùúụủưỳýỵỷ]/i.test(address)
+  return /\d/.test(address) && /[a-zàáạảăâđèéẹẻêìíịỉòóọỏôơùúụủưỳýỵỷ]/i.test(address)
 }
 
 /** Chuẩn hoá tên để so trùng: bỏ dấu, lowercase, bỏ ký tự không chữ số. */
@@ -75,11 +75,10 @@ console.log(`Dataset cũ: ${old.places.length} → đạt chuẩn: ${kept.length
 
 // 2. Gộp ứng viên nghiên cứu.
 const files = (await readdir(researchDir)).filter((f) => f.endsWith(".json"))
-const candidates = []
-for (const file of files) {
-  const items = JSON.parse(await readFile(join(researchDir, file), "utf8"))
-  for (const item of items) candidates.push(item)
-}
+const candidateGroups = await Promise.all(
+  files.map(async (file) => JSON.parse(await readFile(join(researchDir, file), "utf8"))),
+)
+const candidates = candidateGroups.flat()
 console.log(`Ứng viên nghiên cứu: ${candidates.length}`)
 
 const CATEGORY_SET = new Set(["cafe", "quan-an", "an-vat", "hai-san", "banh", "khac"])

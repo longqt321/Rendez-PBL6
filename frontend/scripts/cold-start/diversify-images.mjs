@@ -62,7 +62,7 @@ const CONCURRENT_DOWNLOADS = 6
  * nội thất, tranh vẽ, panorama — không dùng làm ảnh món được.
  */
 const BAD_TITLE_RE =
-  /(sign|logo|neon|postcard|poster|interior|exterior|storefront|facade|building|menu|map|painting|drawing|still life|panoram|panorama|360|stamp|label|bottle|vintage|1900|19[0-5]\d|advertis|brochure|book|page[ _-]1|djvu|scanned|archive|soldier|war|street view|entrance|bar counter|diner|kiosk|souvenir|gift shop)/i
+  /(sign|logo|neon|postcard|poster|interior|exterior|storefront|facade|building|menu|map|painting|drawing|still life|panoram|360|stamp|label|bottle|vintage|19[0-5]\d|advertis|brochure|book|page[ _-]1|djvu|scanned|archive|soldier|war|street view|entrance|bar counter|diner|kiosk|souvenir|gift shop)/i
 
 /** Query ảnh theo phân loại — mỗi phân loại nhiều query để đa dạng. */
 const QUERIES_BY_CATEGORY = {
@@ -197,7 +197,7 @@ async function fetchCommons(query) {
 function imageQualityOk(file) {
   try {
     const out = execFileSync(
-      "identify",
+      "/usr/bin/identify",
       ["-quiet", "-format", "%w %h %[fx:standard_deviation]", file],
       { timeout: 10_000 },
     ).toString()

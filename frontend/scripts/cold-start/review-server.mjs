@@ -46,11 +46,14 @@ function argValue(flag) {
 
 const dataArg = argValue("--data")
 const placesFile = dataArg ? resolve(root, dataArg) : join(dataDir, "places.json")
-const stateFile = argValue("--state")
-  ? resolve(root, argValue("--state"))
-  : dataArg
-    ? `${placesFile}.review-state.json`
-    : join(dataDir, "review-state.json")
+
+function resolveStateFile() {
+  const explicitState = argValue("--state")
+  if (explicitState) return resolve(root, explicitState)
+  if (dataArg) return `${placesFile}.review-state.json`
+  return join(dataDir, "review-state.json")
+}
+const stateFile = resolveStateFile()
 
 /** Trường client cần để duyệt — bỏ `imageNote`/`collectedAt` cho nhẹ payload. */
 const FIELDS = [

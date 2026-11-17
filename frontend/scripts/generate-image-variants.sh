@@ -15,11 +15,12 @@ SRC="data/cold-start/images"
 
 count=0
 for file in "$SRC"/venues/*; do
-  [ -f "$file" ] || continue
+  [[ -f "$file" ]] || continue
   base="$(basename "$file")"
   # Bỏ qua chính biến thể đã sinh (kết thúc -400.webp / -800.webp).
   case "$base" in
     *-400.webp|*-800.webp) continue ;;
+    *) ;;
   esac
   name="${base%.*}"
   magick "$file" -resize '400x>' -quality 78 -define webp:method=6 "$SRC/venues/${name}-400.webp"

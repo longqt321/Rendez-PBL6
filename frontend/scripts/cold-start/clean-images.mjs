@@ -18,7 +18,7 @@
  */
 import { readFile, writeFile, unlink } from "node:fs/promises"
 import { existsSync } from "node:fs"
-import { dirname, join } from "node:path"
+import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
@@ -29,7 +29,14 @@ if (!junkFile) {
   process.exit(1)
 }
 
-const junk = new Set(JSON.parse(await readFile(junkFile, "utf8")))
+const safeJunkPath = resolve(process.cwd(), junkFile)
+const allowedRoot = resolve(root)
+if (!safeJunkPath.startsWith(allowedRoot)) {
+  console.error("Đường dẫn file không hợp lệ (nằm ngoài thư mục dự án):", junkFile)
+  process.exit(1)
+}
+
+const junk = new Set(JSON.parse(await readFile(safeJunkPath, "utf8")))
 const places = JSON.parse(await readFile(join(dataDir, "places.json"), "utf8"))
 
 // Blocklist theo URL nguồn — diversify-images.mjs đọc file này để KHÔNG tải lại
@@ -47,13 +54,23 @@ console.log(`Blocklist: ${blocklist.length} URL`)
 
 // 1. Xoá file rác.
 let deleted = 0
+const deleteTasks = []
 for (const rel of junk) {
-  const abs = join(dataDir, rel)
+  if (typeof rel !== "string") continue
+  const abs = resolve(dataDir, rel)
+  if (!abs.startsWith(dataDir)) {
+    console.warn(`Bỏ qua đường dẫn không an toàn: ${rel}`)
+    continue
+  }
   if (existsSync(abs)) {
-    await unlink(abs)
-    deleted++
+    deleteTasks.push(
+      unlink(abs).then(() => {
+        deleted++
+      }),
+    )
   }
 }
+await Promise.all(deleteTasks)
 console.log(`Đã xoá ${deleted}/${junk.size} file rác`)
 
 // 2+3. Gỡ khỏi dataset; 4. reset toàn bộ ảnh dish.
