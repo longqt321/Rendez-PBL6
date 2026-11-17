@@ -1237,3 +1237,36 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
   - Viết lại toàn bộ công thức toán bằng KaTeX chuẩn `$$...$$` không bị lỗi escape.
   - Bổ sung đầy đủ đặc tả Use Case chuẩn IEEE/Cockburn, sơ đồ Sequence Diagram Mermaid, sơ đồ kiến trúc, và code logic giải thuật cốt lõi.
   - Loại bỏ hoàn toàn ngôn ngữ tự xưng, nhật ký chat, tính từ quảng cáo.
+
+## L-053 — 2026-11-18: "Đọc toàn bộ dự án" bị hiểu sai thành mở lại từng file, tốn gần 3 tiếng
+
+- **Hiện tượng:** người dùng nhắn "Đọc toàn bộ dự án" (18:14) nhưng phải đến khi nhắc
+  "Kết thúc nhanh lên, sao cứ đọc vãi vậy" (23:58) mới ra kết quả. Nguyên nhân trực tiếp
+  không phải "đọc chậm" mà là **đọc lại toàn bộ** — dự án ~30.000 dòng code, agent mở
+  70+ file source (backend/frontend/packages) và chạy 7 lần `bun test` backend (mỗi lần
+  2-4 phút vì Testcontainers kéo Docker Postgres), trong khi trước đó đã có sẵn bản tóm
+  tắt toàn dự án và đã đo xong code stats.
+
+- **Nguyên nhân gốc:**
+  1. **Nhầm ý định mệnh lệnh.** "Đọc toàn bộ dự án" là lệnh mở, nhưng trong ngữ cảnh
+     phiên đã có đầy đủ ngữ cảnh (context summary + đã đo inventory ở lượt trước), ý
+     đúng của người dùng là **"tóm tắt / chốt toàn cảnh dự án"**, không phải "mở lại từng
+     file từ đầu". Agent chọn cách hiểu tốn công nhất.
+  2. **Retry loop 504.** Sau khi đọc 70 file, prompt trở nên quá lớn; model gửi request
+     xử lý nặng bị `504 Upstream request timeout`, retry 8 lần (13:34 → 13:43), mỗi lần
+     thất bại lại đợi 2-3 phút.
+  3. **Session đứng yên ~2h25m** (13:43 → 16:08) không có bước nào — do chuỗi 504 liên
+     tiếp khiến phiên bị suspend/rate-limit, đến 16:08 mới tự resume. Đây là sự cố hạ
+     tầng, không phải agent, nhưng bị khuyếch đại vì nguyên nhân 1 đã nhồi context quá
+     đầy.
+
+- **Cách phòng tránh:**
+  1. Khi đã có context summary + inventory ở lượt trước, mệnh lệnh dạng "đọc/kiểm/xem
+     toàn dự án" = **trả về tóm tắt ngay**, không mở lại file. Chỉ mở file khi câu hỏi
+     chỉ đích danh một điểm chưa rõ.
+  2. **Không chạy full test suite để "đọc" code.** `bun test` cả backend kéo Testcontainer,
+     mất vài phút và gây nhiễu context. Chạy test chỉ khi có mục tiêu xác minh cụ thể.
+  3. Trước khi đọc số lượng file lớn (>30 file), đánh giá context còn lại; nếu sắp bão
+     hoà thì chốt kết quả trước rồi mới đọc tiếp theo lô nhỏ.
+  4. Khi gặp `504` liên tiếp (>=3 lần), dừng retry, thu gọn lại prompt (dùng tóm tắt thay
+     vì nội dung thô) rồi mới gửi lại — không lặp cùng payload đầy.

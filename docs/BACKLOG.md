@@ -887,9 +887,13 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
 - [ ] **`PATCH /notifications` hạn chế**: khi user không còn notification chưa đọc,
       `updateMany` không đổi dòng nào → response trả lô đọc gần nhất. Route nên truyền
       mốc thời gian (hoặc trả `{updated}`) để lib lọc chính xác.
-- [ ] **Bun test harness**: các file test integration phải chạy riêng/từng file hoặc
-      `--parallel=1` (prisma singleton ghim `DATABASE_URL` của file đầu). Cần chuyển sang
-      runner tách process (vitest pool=forks) hoặc xoá singleton.
+- [x] **Bun test harness** — đã giải quyết (2026-11-18): `backend/scripts/test-all.sh` chạy mỗi
+      file một process Bun riêng (`bun run test` gọi script này). Cần tách process vì hai lý do
+      độc lập: (1) `helpers/pg.ts` mở Testcontainer + Prisma client cho mỗi file, chạy chung
+      process thì `DATABASE_URL` bị ghi đè → `ECONNREFUSED`; (2) chạy đủ 40 file trong một
+      process làm Bun 1.3.14 segfault (SIGILL, peak ~8GB) tại `test/demo-api.test.ts` — file này
+      chạy một mình vẫn pass 16/16. Vẫn còn nợ: xoá Prisma singleton để harness bớt phụ thuộc
+      thứ tự nạp module.
 - [ ] **Marker bản đồ keyboard-focusable** (`places-map.tsx:208-250`) — chưa làm.
 - [ ] **Xoá dataset `categories/` + script copy** không còn dùng sau placeholder tối giản.
 - [ ] **SSE `/notifications/events` vẫn đứt với user đã đăng nhập** — sau guest-gate
