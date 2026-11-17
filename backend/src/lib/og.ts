@@ -39,7 +39,7 @@ export function truncateDescription(text: string, max = MAX_DESCRIPTION_LENGTH):
 
   let cut = text.slice(0, max)
   // Ký tự cuối là nửa đầu của cặp surrogate → bỏ để không đứt emoji.
-  const lastCode = cut.charCodeAt(cut.length - 1)
+  const lastCode = cut.codePointAt(cut.length - 1) ?? 0
   if (lastCode >= 0xd800 && lastCode <= 0xdbff) cut = cut.slice(0, -1)
 
   const lastSpace = cut.lastIndexOf(" ")

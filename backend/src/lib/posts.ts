@@ -153,9 +153,8 @@ export async function listPosts(
   if (params.q) {
     // Chuẩn hoá 2 phía bằng cùng hàm với tìm kiếm địa điểm (migration 10) — mock
     // so khớp trên `normalizeText(caption)` nên `?q=bánh xèo` phải khớp bài có dấu.
-    conditions.push(
-      Prisma.sql`immutable_search_normalize(p.caption) LIKE ${Prisma.sql`'%' || immutable_search_normalize(${params.q}) || '%'`}`,
-    )
+    const qPattern = Prisma.sql`'%' || immutable_search_normalize(${params.q}) || '%'`
+    conditions.push(Prisma.sql`immutable_search_normalize(p.caption) LIKE ${qPattern}`)
   }
   if (params.cursor) {
     conditions.push(

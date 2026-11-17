@@ -10,7 +10,7 @@ const UNSIGNED_PAYLOAD = "UNSIGNED-PAYLOAD"
 function awsUriEncode(value: string): string {
   return encodeURIComponent(value).replace(
     /[!'()*]/g,
-    (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,
+    (char) => `%${(char.codePointAt(0) ?? 0).toString(16).toUpperCase()}`,
   )
 }
 
@@ -80,7 +80,7 @@ export function presignPut(config: R2Config, params: PresignPutParams): Presigne
   if (params.contentLength !== undefined)
     headersToSign["content-length"] = String(params.contentLength)
 
-  const sortedHeaderNames = Object.keys(headersToSign).sort()
+  const sortedHeaderNames = Object.keys(headersToSign).sort((a, b) => a.localeCompare(b))
   const signedHeaders = sortedHeaderNames.join(";")
   const canonicalHeaders = sortedHeaderNames
     .map((name) => `${name}:${headersToSign[name]}\n`)
@@ -94,7 +94,7 @@ export function presignPut(config: R2Config, params: PresignPutParams): Presigne
     "X-Amz-SignedHeaders": signedHeaders,
   }
   const canonicalQuery = Object.keys(query)
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .map((name) => `${awsUriEncode(name)}=${awsUriEncode(query[name]!)}`)
     .join("&")
 

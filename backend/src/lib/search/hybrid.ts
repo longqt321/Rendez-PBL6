@@ -56,18 +56,17 @@ export async function hybridSearch(
   // 2. Khi không có Identity Evidence:
   //    - Có Category / Structured intent: structuredWeight = 3.0, denseWeight = 1.0
   //    - Không có structured attribute (query trừu tượng/ngữ nghĩa): denseWeight = 2.5, structuredWeight = 1.0
+  const lexicalWeight = 1.0
   let exactWeight = 0
   let prefixWeight = 0
   let tokenWeight = 0
-  let lexicalWeight = 1.0
-  let denseWeight = 1.0
-  let structuredWeight = 0.0
+  let denseWeight: number
+  let structuredWeight: number
 
   if (hasIdentityEvidence || hasTokens) {
     exactWeight = hasExact ? 5.0 : 0
     prefixWeight = hasPrefix ? 3.0 : 0
     tokenWeight = hasTokens ? 4.0 : 0
-    lexicalWeight = 1.0
     // Triệt tiêu nhánh thuộc tính khi truy vấn định danh tên riêng
     structuredWeight = 0.0
     denseWeight = 0.0

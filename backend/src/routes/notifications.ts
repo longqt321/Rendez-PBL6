@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { streamSSE } from "hono/streaming"
+import { streamSSE, type SSEStreamingApi } from "hono/streaming"
 import type { AppEnv } from "../app"
 import { UUID_ID_RE, decodeCursor, encodeCursor, requireUuid } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
@@ -12,6 +12,35 @@ import { notificationVersion, subscribeNotifications } from "../lib/notification
 const NOTIFICATIONS_PAGE_SIZE = 20
 
 const SSE_HEARTBEAT_MS = 15_000
+
+async function streamNotificationEvents(stream: SSEStreamingApi, userId: string): Promise<void> {
+  let unsubscribe = () => {}
+  const closed = new Promise<void>((resolve) => {
+    unsubscribe = subscribeNotifications(userId, (event) => {
+      // Ghi lỗi chỉ xảy ra khi client đã ngắt — `onAbort` đã dọn subscriber.
+      void stream
+        .writeSSE({ event: "notification-created", data: JSON.stringify(event) })
+        .catch(() => {})
+    })
+    stream.onAbort(() => {
+      unsubscribe()
+      resolve()
+    })
+  })
+
+  // Subscribe TRƯỚC khi đọc version để không mất update giữa hai bước.
+  await stream.writeSSE({
+    event: "notification-created",
+    data: JSON.stringify({ version: notificationVersion(userId) }),
+  })
+
+  const heartbeat = setInterval(() => {
+    void stream.writeSSE({ event: "ping", data: "{}" }).catch(() => {})
+  }, SSE_HEARTBEAT_MS)
+
+  await closed
+  clearInterval(heartbeat)
+}
 
 export function createNotificationsRouter() {
   const router = new Hono<AppEnv>()
@@ -58,35 +87,7 @@ export function createNotificationsRouter() {
 
   router.get("/notifications/events", requireAuth, (c) => {
     const userId = c.get("userId")
-
-    return streamSSE(c, async (stream) => {
-      let unsubscribe = () => {}
-      const closed = new Promise<void>((resolve) => {
-        unsubscribe = subscribeNotifications(userId, (event) => {
-          // Ghi lỗi chỉ xảy ra khi client đã ngắt — `onAbort` đã dọn subscriber.
-          void stream
-            .writeSSE({ event: "notification-created", data: JSON.stringify(event) })
-            .catch(() => {})
-        })
-        stream.onAbort(() => {
-          unsubscribe()
-          resolve()
-        })
-      })
-
-      // Subscribe TRƯỚC khi đọc version để không mất update giữa hai bước.
-      await stream.writeSSE({
-        event: "notification-created",
-        data: JSON.stringify({ version: notificationVersion(userId) }),
-      })
-
-      const heartbeat = setInterval(() => {
-        void stream.writeSSE({ event: "ping", data: "{}" }).catch(() => {})
-      }, SSE_HEARTBEAT_MS)
-
-      await closed
-      clearInterval(heartbeat)
-    })
+    return streamSSE(c, (stream) => streamNotificationEvents(stream, userId))
   })
 
   return router

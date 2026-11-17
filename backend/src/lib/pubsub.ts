@@ -7,8 +7,8 @@ export type BusListener = (payload: string) => void
 class PostgresPubSub {
   private listenerClient: Client | null = null
   private publisherClient: Client | null = null
-  private listeners = new Map<string, Set<BusListener>>()
-  private activeChannels = new Set<string>()
+  private readonly listeners = new Map<string, Set<BusListener>>()
+  private readonly activeChannels = new Set<string>()
   private isConnecting = false
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -74,7 +74,7 @@ class PostgresPubSub {
   }
 
   async subscribe(channel: string, listener: BusListener): Promise<() => void> {
-    const sanitized = channel.replace(/[^a-zA-Z0-9_]/g, "_")
+    const sanitized = channel.replace(/\W/g, "_")
     let set = this.listeners.get(sanitized)
     if (!set) {
       set = new Set()
@@ -108,7 +108,7 @@ class PostgresPubSub {
   }
 
   async publish(channel: string, payload: string = ""): Promise<void> {
-    const sanitized = channel.replace(/[^a-zA-Z0-9_]/g, "_")
+    const sanitized = channel.replace(/\W/g, "_")
     if (this.publisherClient) {
       try {
         // Sử dụng quote_literal trong SQL để an toàn với payload JSON

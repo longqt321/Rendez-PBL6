@@ -4,7 +4,7 @@ import { Prisma } from "../../../generated/prisma/client"
 
 export async function findDidYouMean(query: string): Promise<string | null> {
   const normalizedQuery = normalizeSearchText(query)
-  if (normalizedQuery.replace(/ /g, "").length < 5) return null
+  if (normalizedQuery.replaceAll(" ", "").length < 5) return null
   const rows = await prisma.$queryRaw<{ name: string }[]>(Prisma.sql`
     SELECT p.name
     FROM places p

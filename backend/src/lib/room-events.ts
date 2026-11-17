@@ -87,7 +87,9 @@ export function publishRoom(code: string): void {
 
   // 2. Đồng thời phát qua Postgres LISTEN/NOTIFY cho các TIẾN TRÌNH KHÁC
   const channelName = `room_${code}`
-  void pubsub.publish(channelName, JSON.stringify({ version, sourcePid: process.pid }))
+  void pubsub
+    .publish(channelName, JSON.stringify({ version, sourcePid: process.pid }))
+    .catch((err) => logger.error({ err, code }, "pubsub publish error"))
 }
 
 export function roomSubscriberCount(code: string): number {

@@ -27,7 +27,7 @@ function shiftDate(pickDate: string, days: number): string {
 function hashString(value: string): number {
   let hash = 0x811c9dc5
   for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index)
+    hash ^= value.codePointAt(index) ?? 0
     hash = Math.imul(hash, 0x01000193)
   }
   return hash >>> 0
@@ -128,6 +128,65 @@ function buildReason(candidate: PickCandidate, newCutoff: string): string {
   return "Gợi ý của ngày"
 }
 
+interface PoolEntry {
+  candidate: PickCandidate
+  score: number
+  key: number
+}
+
+function fillRoundRobin(
+  picked: PickedPlace[],
+  limit: number,
+  categories: string[],
+  byCategory: Map<string, PoolEntry[]>,
+  usedDistricts: Set<string>,
+  newCutoff: string,
+): void {
+  for (let round = 0; picked.length < limit && round < limit; round += 1) {
+    for (const category of categories) {
+      if (picked.length >= limit) break
+      const list = byCategory.get(category)
+      if (!list || list.length === 0) continue
+      const fresh = list.find(
+        (entry) =>
+          entry.candidate.district !== null && !usedDistricts.has(entry.candidate.district),
+      )
+      const chosen = fresh ?? list[0]
+      if (!chosen) continue
+      if (chosen.candidate.district) usedDistricts.add(chosen.candidate.district)
+      list.splice(list.indexOf(chosen), 1)
+      picked.push({
+        placeId: chosen.candidate.id,
+        position: picked.length + 1,
+        reason: buildReason(chosen.candidate, newCutoff),
+      })
+    }
+  }
+}
+
+function fillFromHistory(
+  picked: PickedPlace[],
+  limit: number,
+  candidates: PickCandidate[],
+  history: PickHistoryEntry[],
+  newCutoff: string,
+): void {
+  const pickedIds = new Set(picked.map((pick) => pick.placeId))
+  const oldest = [...history].sort((a, b) => a.pickDate.localeCompare(b.pickDate))
+  for (const entry of oldest) {
+    if (picked.length >= limit) break
+    if (pickedIds.has(entry.placeId)) continue
+    const candidate = candidates.find((item) => item.id === entry.placeId)
+    if (!candidate) continue
+    pickedIds.add(entry.placeId)
+    picked.push({
+      placeId: candidate.id,
+      position: picked.length + 1,
+      reason: buildReason(candidate, newCutoff),
+    })
+  }
+}
+
 /**
  * Chọn 3 quán cho một ngày — thuần hàm, deterministic theo `(candidates,
  * history, pickDate)`.
@@ -181,54 +240,14 @@ export function selectDailyPicks(
   const usedDistricts = new Set<string>()
   const picked: PickedPlace[] = []
 
-  const takeBest = (list: typeof pool): (typeof pool)[number] | undefined => {
-    // Ưu tiên district chưa dùng trong ngày; thiếu district coi như "kém ưu
-    // tiên" nhưng vẫn đủ điều kiện (xếp sau cùng trong category).
-    const fresh = list.find(
-      (entry) => entry.candidate.district !== null && !usedDistricts.has(entry.candidate.district),
-    )
-    const chosen = fresh ?? list[0]
-    if (!chosen) return undefined
-    if (chosen.candidate.district) usedDistricts.add(chosen.candidate.district)
-    return chosen
-  }
-
   // Round-robin: mỗi vòng lấy 1 quán mỗi category → 3 slot gần như luôn thuộc
   // 3 category khác nhau khi corpus đủ; cạn category thì vòng sau lặp lại.
-  for (let round = 0; picked.length < limit && round < limit; round += 1) {
-    for (const category of categories) {
-      if (picked.length >= limit) break
-      const list = byCategory.get(category)
-      if (!list || list.length === 0) continue
-      const chosen = takeBest(list)
-      if (!chosen) continue
-      list.splice(list.indexOf(chosen), 1)
-      picked.push({
-        placeId: chosen.candidate.id,
-        position: picked.length + 1,
-        reason: buildReason(chosen.candidate, newCutoff),
-      })
-    }
-  }
+  fillRoundRobin(picked, limit, categories, byCategory, usedDistricts, newCutoff)
 
   // Cạn ứng viên (corpus quá nhỏ): nới lỏng bằng quán lặp cũ nhất — trả thiếu
   // thì dải gợi ý co lại, vẫn tốt hơn rỗng.
   if (picked.length < limit) {
-    const pickedIds = new Set(picked.map((pick) => pick.placeId))
-    // Cũ nhất trước: quán lặp lại là quán lâu nhất chưa được chọn.
-    const oldest = [...history].sort((a, b) => a.pickDate.localeCompare(b.pickDate))
-    for (const entry of oldest) {
-      if (picked.length >= limit) break
-      if (pickedIds.has(entry.placeId)) continue
-      const candidate = candidates.find((item) => item.id === entry.placeId)
-      if (!candidate) continue
-      pickedIds.add(entry.placeId)
-      picked.push({
-        placeId: candidate.id,
-        position: picked.length + 1,
-        reason: buildReason(candidate, newCutoff),
-      })
-    }
+    fillFromHistory(picked, limit, candidates, history, newCutoff)
   }
 
   return picked

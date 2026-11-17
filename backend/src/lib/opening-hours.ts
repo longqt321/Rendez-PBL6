@@ -1,4 +1,3 @@
-
 const DAY_INDEX: Record<string, number> = {
   su: 0,
   mo: 1,
@@ -50,10 +49,7 @@ function parseDayToken(raw: string): number[] | null {
 
 function parseRule(part: string): OpeningRule | null {
   // Bắt ngày đứng trước giờ: "Mo-Su 08:00-22:00", "Mo,We-Fr 09:00-17:00".
-  const dayMatch =
-    /^((?:[A-Za-z]{2}(?:\s*-\s*[A-Za-z]{2})?)(?:\s*,\s*[A-Za-z]{2}(?:\s*-\s*[A-Za-z]{2})?)*)\s+(.*)$/u.exec(
-      part.trim(),
-    )
+  const dayMatch = /^([a-zA-Z][a-zA-Z\s,-]*)\s+(\d.*)$/u.exec(part.trim())
 
   let days: DaySet = null
   let rest = part.trim()
@@ -83,20 +79,7 @@ function parseRule(part: string): OpeningRule | null {
   return { days, ranges }
 }
 
-export function isOpenNow(openingHours: string | null, now: Date = new Date()): boolean | null {
-  if (!openingHours) return null
-  const normalized = openingHours.trim()
-  if (!normalized) return null
-  if (normalized === "24/7") return true
-
-  const rules: OpeningRule[] = []
-  for (const part of normalized.split(/[;,]/)) {
-    if (!part.trim()) continue
-    const rule = parseRule(part)
-    if (rule) rules.push(rule)
-  }
-  if (rules.length === 0) return null
-
+function getCurrentTimeInVN(now: Date): { weekdayIndex: number; nowMinutes: number } | null {
   // Giờ/phút/thứ tại Việt Nam — dùng Intl để không lệch múi giờ máy.
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Ho_Chi_Minh",
@@ -111,18 +94,43 @@ export function isOpenNow(openingHours: string | null, now: Date = new Date()): 
   const hour = Number(valueOf("hour")) % 24 // "24" lúc nửa đêm với hour12: false
   const minute = Number(valueOf("minute"))
   if (weekdayIndex === undefined || Number.isNaN(hour) || Number.isNaN(minute)) return null
-  const nowMinutes = hour * 60 + minute
+  return { weekdayIndex, nowMinutes: hour * 60 + minute }
+}
 
+function isTimeInRange(nowMinutes: number, { startMinutes, endMinutes }: TimeRange): boolean {
+  if (startMinutes === endMinutes) return false
+  if (endMinutes > startMinutes) {
+    return nowMinutes >= startMinutes && nowMinutes < endMinutes
+  }
+  return nowMinutes >= startMinutes || nowMinutes < endMinutes // qua nửa đêm: 22:00-02:00
+}
+
+function matchesAnyRule(rules: OpeningRule[], weekdayIndex: number, nowMinutes: number): boolean {
   for (const rule of rules) {
     if (rule.days !== null && !rule.days.includes(weekdayIndex)) continue
-    for (const { startMinutes, endMinutes } of rule.ranges) {
-      if (startMinutes === endMinutes) continue // khung 00:00-00:00 vô nghĩa
-      if (endMinutes > startMinutes) {
-        if (nowMinutes >= startMinutes && nowMinutes < endMinutes) return true
-      } else if (nowMinutes >= startMinutes || nowMinutes < endMinutes) {
-        return true // qua nửa đêm: 22:00-02:00
-      }
+    for (const range of rule.ranges) {
+      if (isTimeInRange(nowMinutes, range)) return true
     }
   }
   return false
+}
+
+export function isOpenNow(openingHours: string | null, now: Date = new Date()): boolean | null {
+  if (!openingHours) return null
+  const normalized = openingHours.trim()
+  if (!normalized) return null
+  if (normalized === "24/7") return true
+
+  const rules: OpeningRule[] = []
+  for (const part of normalized.split(/[;,]/)) {
+    if (!part.trim()) continue
+    const rule = parseRule(part)
+    if (rule) rules.push(rule)
+  }
+  if (rules.length === 0) return null
+
+  const currentTime = getCurrentTimeInVN(now)
+  if (!currentTime) return null
+
+  return matchesAnyRule(rules, currentTime.weekdayIndex, currentTime.nowMinutes)
 }

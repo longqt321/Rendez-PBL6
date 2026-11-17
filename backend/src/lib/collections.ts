@@ -74,7 +74,7 @@ export const DEFAULT_COLLECTION_LIMIT = 50
 const MAX_COLLECTION_LIMIT = 100
 
 /** Bộ sưu tập của một user (đã lọc private theo quyền xem). */
-export async function listCollectionsOfOwner(
+export function listCollectionsOfOwner(
   ownerId: string,
   viewerId: string | null,
   limit: number = DEFAULT_COLLECTION_LIMIT,

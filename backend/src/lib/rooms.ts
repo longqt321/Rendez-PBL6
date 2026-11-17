@@ -199,7 +199,7 @@ export async function joinRoom(
     if (known) return { room, memberId: known.id, joined: false }
   }
 
-  const duplicate = room.members.find(
+  const duplicate = room.members.some(
     (member) => member.displayName.toLowerCase() === name.toLowerCase(),
   )
   if (duplicate) throw new ApiError(409, "Tên này đã có người dùng trong phòng")

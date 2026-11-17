@@ -39,7 +39,7 @@ interface CandidateRow {
  * @param publishedOnly `true` cho `GET /places/suggestions` (chỉ place công khai);
  *   `false` cho job phát hiện place chưa publish (A7.2).
  */
-export async function fetchRankCandidates(publishedOnly: boolean): Promise<CandidateRow[]> {
+export function fetchRankCandidates(publishedOnly: boolean): Promise<CandidateRow[]> {
   const visibility = publishedOnly
     ? Prisma.sql`p.published_at IS NOT NULL AND p.status <> 'closed'`
     : Prisma.sql`p.published_at IS NULL`
@@ -109,8 +109,9 @@ export function invalidateSuggestionCache(): void {
 /** Chuẩn hoá caption bằng cùng biểu thức SQL — không tự viết lại NFD ở JS. */ export async function normalizeCaption(
   caption: string,
 ): Promise<string> {
+  const captionSql = Prisma.sql`${caption}::text`
   const rows = await prisma.$queryRaw<{ normalized: string }[]>(
-    Prisma.sql`SELECT ${norm(Prisma.sql`${caption}::text`)} AS normalized`,
+    Prisma.sql`SELECT ${norm(captionSql)} AS normalized`,
   )
   return rows[0]?.normalized ?? ""
 }

@@ -25,8 +25,8 @@ export function normalizeSearchText(input: string): string {
   return input
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/gu, "")
-    .replace(/đ/gu, "d")
-    .replace(/Đ/gu, "D")
+    .replaceAll("đ", "d")
+    .replaceAll("Đ", "D")
     .toLowerCase()
     .replace(/[^a-z0-9\s]/gu, " ")
     .replace(/\s+/gu, " ")

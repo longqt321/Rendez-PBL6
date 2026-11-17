@@ -14,18 +14,16 @@ let initPromise: Promise<FeatureExtractionPipeline | null> | null = null
 
 async function getExtractor(): Promise<FeatureExtractionPipeline | null> {
   if (extractor) return extractor
-  if (!initPromise) {
-    initPromise = pipeline("feature-extraction", MODEL_ID, { dtype: "q8" })
-      .then((pipe) => {
-        extractor = pipe as FeatureExtractionPipeline
-        return extractor
-      })
-      .catch((err) => {
-        logger.warn({ err }, "embeddings: khởi tạo model thất bại")
-        initPromise = null // cho phép thử lại ở lần gọi sau
-        return null
-      })
-  }
+  initPromise ??= pipeline("feature-extraction", MODEL_ID, { dtype: "q8" })
+    .then((pipe) => {
+      extractor = pipe as FeatureExtractionPipeline
+      return extractor
+    })
+    .catch((err) => {
+      logger.warn({ err }, "embeddings: khởi tạo model thất bại")
+      initPromise = null // cho phép thử lại ở lần gọi sau
+      return null
+    })
   return initPromise
 }
 

@@ -1,3 +1,4 @@
+import { logger } from "./logger"
 import { pubsub } from "./pubsub"
 
 export interface NotificationEvent {
@@ -49,6 +50,9 @@ export function subscribeNotifications(userId: string, listener: Listener): () =
       .then((unsub) => {
         unsubs.set(userId, unsub)
       })
+      .catch((err) => {
+        logger.error({ err, userId }, "Không đăng ký được Postgres PubSub cho thông báo")
+      })
   }
 
   return () => {
@@ -91,7 +95,9 @@ export function publishNotification(userId: string): void {
 
   // 2. Đồng thời phát qua Postgres LISTEN/NOTIFY cho các TIẾN TRÌNH KHÁC
   const channelName = `notify_${userId}`
-  void pubsub.publish(channelName, JSON.stringify({ version, sourcePid: process.pid }))
+  void pubsub
+    .publish(channelName, JSON.stringify({ version, sourcePid: process.pid }))
+    .catch((err) => logger.error({ err, userId }, "pubsub publish error"))
 }
 
 export function notificationSubscriberCount(userId: string): number {

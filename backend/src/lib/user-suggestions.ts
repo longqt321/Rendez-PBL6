@@ -43,11 +43,11 @@ function isNewUser(createdAt: Date, today: string): boolean {
 }
 
 /**
- * Khoá tiebreak: md5(`viewerId|userId|today`) — cùng ngày cùng thứ tự, ngày mai
+ * Khoá tiebreak: sha256(`viewerId|userId|today`) — cùng ngày cùng thứ tự, ngày mai
  * đổi nhẹ, mỗi người xem một góc riêng. Không thêm dependency (`node:crypto`).
  */
 function tiebreakKey(viewerId: string, userId: string, today: string): string {
-  return createHash("md5").update(`${viewerId}|${userId}|${today}`).digest("hex")
+  return createHash("sha256").update(`${viewerId}|${userId}|${today}`).digest("hex")
 }
 
 /** Điểm tín hiệu của một ứng viên — công thức mục 5 của thiết kế. */
@@ -131,7 +131,7 @@ interface CandidateRow {
  */
 const CANDIDATE_LIMIT = 500
 
-async function fetchCandidates(viewerId: string): Promise<CandidateRow[]> {
+function fetchCandidates(viewerId: string): Promise<CandidateRow[]> {
   return prisma.$queryRaw<CandidateRow[]>(Prisma.sql`
     WITH my_places AS (
       SELECT r.place_id FROM reviews r

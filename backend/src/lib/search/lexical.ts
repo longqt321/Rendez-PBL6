@@ -67,7 +67,8 @@ export const QUERY_STOPWORDS = new Set([
 ])
 
 export function likeCondition(haystack: Prisma.Sql, keyword: string): Prisma.Sql {
-  return Prisma.sql`${haystack} LIKE ${Prisma.sql`'%' || immutable_search_normalize(${keyword}) || '%'`}`
+  const pattern = Prisma.sql`'%' || immutable_search_normalize(${keyword}) || '%'`
+  return Prisma.sql`${haystack} LIKE ${pattern}`
 }
 
 export function keywordCondition(keyword: string): Prisma.Sql {

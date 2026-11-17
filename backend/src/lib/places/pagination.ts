@@ -23,6 +23,63 @@ export function cursorForSort(sort: PlaceSort, row: PlaceRow): PlaceCursor {
   }
 }
 
+interface SortClause {
+  orderBy: Prisma.Sql
+  extraSelect: Prisma.Sql
+  keyset: Prisma.Sql | null
+}
+
+function buildSortClause(
+  sort: PlaceSort,
+  cursor: PlaceCursor | null,
+  lat?: number,
+  lng?: number,
+): SortClause {
+  const matchingCursor = cursor?.kind === sort ? cursor : null
+
+  switch (sort) {
+    case "rating": {
+      const keyset =
+        matchingCursor?.kind === "rating"
+          ? Prisma.sql`(COALESCE(r.rating, 0), r.review_count, p.created_at, p.id)
+          < (${matchingCursor.rating}::float8, ${matchingCursor.reviewCount}::int, ${matchingCursor.createdAt}::timestamptz, ${matchingCursor.id})`
+          : null
+      return {
+        orderBy: Prisma.sql`COALESCE(r.rating, 0) DESC, r.review_count DESC, p.created_at DESC, p.id DESC`,
+        extraSelect: Prisma.empty,
+        keyset,
+      }
+    }
+    case "distance": {
+      const dist = distanceSql(lat!, lng!)
+      let keyset: Prisma.Sql | null = null
+      if (matchingCursor?.kind === "distance") {
+        keyset =
+          matchingCursor.distance === null
+            ? Prisma.sql`(${dist} IS NULL AND p.id > ${matchingCursor.id})`
+            : Prisma.sql`((${dist} IS NOT NULL AND (${dist}, p.id) > (${matchingCursor.distance}::float8, ${matchingCursor.id}))
+              OR ${dist} IS NULL)`
+      }
+      return {
+        orderBy: Prisma.sql`${dist} ASC NULLS LAST, p.id ASC`,
+        extraSelect: Prisma.sql`, ${dist} AS distance_km`,
+        keyset,
+      }
+    }
+    default: {
+      const keyset =
+        matchingCursor?.kind === "newest"
+          ? Prisma.sql`(p.created_at, p.id) < (${matchingCursor.createdAt}::timestamptz, ${matchingCursor.id})`
+          : null
+      return {
+        orderBy: Prisma.sql`p.created_at DESC, p.id DESC`,
+        extraSelect: Prisma.empty,
+        keyset,
+      }
+    }
+  }
+}
+
 export async function listPlacesPaginated(
   filters: PlaceFilters,
   cursor: PlaceCursor | null,
@@ -38,44 +95,13 @@ export async function listPlacesPaginated(
     }
   }
 
-  const baseConditions = buildConditionsFn(filters)
-  const conditions = [...baseConditions]
-  const matchingCursor = cursor && cursor.kind === filters.sort ? cursor : null
-
-  let orderBy: Prisma.Sql
-  let extraSelect: Prisma.Sql = Prisma.empty
-  let keyset: Prisma.Sql | null = null
-
-  switch (filters.sort) {
-    case "rating": {
-      orderBy = Prisma.sql`COALESCE(r.rating, 0) DESC, r.review_count DESC, p.created_at DESC, p.id DESC`
-      if (matchingCursor?.kind === "rating") {
-        keyset = Prisma.sql`(COALESCE(r.rating, 0), r.review_count, p.created_at, p.id)
-          < (${matchingCursor.rating}::float8, ${matchingCursor.reviewCount}::int, ${matchingCursor.createdAt}::timestamptz, ${matchingCursor.id})`
-      }
-      break
-    }
-    case "distance": {
-      const dist = distanceSql(filters.lat!, filters.lng!)
-      extraSelect = Prisma.sql`, ${dist} AS distance_km`
-      orderBy = Prisma.sql`${dist} ASC NULLS LAST, p.id ASC`
-      if (matchingCursor?.kind === "distance") {
-        keyset =
-          matchingCursor.distance === null
-            ? Prisma.sql`(${dist} IS NULL AND p.id > ${matchingCursor.id})`
-            : Prisma.sql`((${dist} IS NOT NULL AND (${dist}, p.id) > (${matchingCursor.distance}::float8, ${matchingCursor.id}))
-              OR ${dist} IS NULL)`
-      }
-      break
-    }
-    default: {
-      orderBy = Prisma.sql`p.created_at DESC, p.id DESC`
-      if (matchingCursor?.kind === "newest") {
-        keyset = Prisma.sql`(p.created_at, p.id) < (${matchingCursor.createdAt}::timestamptz, ${matchingCursor.id})`
-      }
-    }
-  }
-
+  const { orderBy, extraSelect, keyset } = buildSortClause(
+    filters.sort,
+    cursor,
+    filters.lat,
+    filters.lng,
+  )
+  const conditions = [...buildConditionsFn(filters)]
   if (keyset) conditions.push(keyset)
 
   const [rows, countRows] = await Promise.all([

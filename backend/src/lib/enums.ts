@@ -98,7 +98,7 @@ export function toPrismaNotificationType(kind: NotificationKind): NotificationTy
  * chuẩn hoá về gạch dưới trước khi so khớp — nhận cả hai dạng cho an toàn.
  */
 export function toApiNotificationType(value: string): NotificationKind {
-  const normalized = value.replace(/-/g, "_")
+  const normalized = value.replaceAll("-", "_")
   if (normalized === "place_suggestion") return "place-suggestion"
   if (
     normalized === "like" ||

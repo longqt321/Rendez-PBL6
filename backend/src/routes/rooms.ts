@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import type { Context } from "hono"
-import { streamSSE } from "hono/streaming"
+import { streamSSE, type SSEStreamingApi } from "hono/streaming"
 import {
   createProposalInputSchema,
   createRoomInputSchema,
@@ -55,6 +55,32 @@ async function roomDtoFor(c: Context<AppEnv>, room: RoomWithRelations): Promise<
   const viewer = await getViewer(c)
   const actor = tryResolveRoomActor(c, room, viewer)
   return toRoomDto(room, viewer?.id ?? null, actor?.memberId ?? null)
+}
+
+async function streamRoomEvents(stream: SSEStreamingApi, code: string): Promise<void> {
+  let unsubscribe = () => {}
+  const closed = new Promise<void>((resolve) => {
+    unsubscribe = subscribeRoom(code, (event) => {
+      // Ghi lỗi chỉ xảy ra khi client đã ngắt — `onAbort` đã dọn subscriber.
+      void stream.writeSSE({ event: "room-updated", data: JSON.stringify(event) }).catch(() => {})
+    })
+    stream.onAbort(() => {
+      unsubscribe()
+      resolve()
+    })
+  })
+
+  await stream.writeSSE({
+    event: "room-updated",
+    data: JSON.stringify({ version: roomVersion(code) }),
+  })
+
+  const heartbeat = setInterval(() => {
+    void stream.writeSSE({ event: "ping", data: "{}" }).catch(() => {})
+  }, SSE_HEARTBEAT_MS)
+
+  await closed
+  clearInterval(heartbeat)
 }
 
 export function createRoomsRouter() {
@@ -231,33 +257,7 @@ export function createRoomsRouter() {
     // Chỉ thành viên đã tham gia phòng (có guest token hoặc user member) mới được mở SSE stream
     await resolveRoomActor(c, room)
 
-    return streamSSE(c, async (stream) => {
-      let unsubscribe = () => {}
-      const closed = new Promise<void>((resolve) => {
-        unsubscribe = subscribeRoom(code, (event) => {
-          // Ghi lỗi chỉ xảy ra khi client đã ngắt — `onAbort` đã dọn subscriber.
-          void stream
-            .writeSSE({ event: "room-updated", data: JSON.stringify(event) })
-            .catch(() => {})
-        })
-        stream.onAbort(() => {
-          unsubscribe()
-          resolve()
-        })
-      })
-
-      await stream.writeSSE({
-        event: "room-updated",
-        data: JSON.stringify({ version: roomVersion(code) }),
-      })
-
-      const heartbeat = setInterval(() => {
-        void stream.writeSSE({ event: "ping", data: "{}" }).catch(() => {})
-      }, SSE_HEARTBEAT_MS)
-
-      await closed
-      clearInterval(heartbeat)
-    })
+    return streamSSE(c, (stream) => streamRoomEvents(stream, code))
   })
 
   return router

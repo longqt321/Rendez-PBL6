@@ -61,10 +61,48 @@ export function encodePlaceCursor(cursor: PlaceCursor): string {
     case "distance":
       // Khoảng cách rỗng = dòng cuối trang thiếu toạ độ (NULL) — giữ nguyên
       // thông tin đó để trang sau biết phải lấy các dòng NULL có id lớn hơn.
-      payload = `distance|${cursor.distance === null ? "" : cursor.distance}|${cursor.id}`
+      payload = `distance|${cursor.distance ?? ""}|${cursor.id}`
       break
   }
   return Buffer.from(payload, "utf8").toString("base64url")
+}
+
+function decodeNewest(parts: string[], idPattern: RegExp): PlaceCursor | null {
+  if (parts.length !== 3) return null
+  const createdAt = new Date(parts[1]!)
+  const id = parts[2]!
+  if (Number.isNaN(createdAt.getTime()) || !idPattern.test(id)) return null
+  return { kind: "newest", createdAt, id }
+}
+
+function decodeRating(parts: string[], idPattern: RegExp): PlaceCursor | null {
+  if (parts.length !== 5) return null
+  const rating = parseFiniteNumber(parts[1]!)
+  const reviewCount = parseFiniteNumber(parts[2]!)
+  const createdAt = new Date(parts[3]!)
+  const id = parts[4]!
+  if (rating === null || reviewCount === null) return null
+  if (Number.isNaN(createdAt.getTime()) || !idPattern.test(id)) return null
+  return { kind: "rating", rating, reviewCount, createdAt, id }
+}
+
+function decodeDistance(parts: string[], idPattern: RegExp): PlaceCursor | null {
+  if (parts.length !== 3) return null
+  const id = parts[2]!
+  if (!idPattern.test(id)) return null
+  const distance = parseFiniteNumber(parts[1]!)
+  // Chuỗi không rỗng nhưng không phải số → cursor hỏng.
+  if (parts[1] !== "" && distance === null) return null
+  return { kind: "distance", distance, id }
+}
+
+function decodeLegacy(decoded: string, idPattern: RegExp): PlaceCursor | null {
+  const separator = decoded.lastIndexOf("|")
+  if (separator <= 0) return null
+  const createdAt = new Date(decoded.slice(0, separator))
+  const id = decoded.slice(separator + 1)
+  if (Number.isNaN(createdAt.getTime()) || !idPattern.test(id)) return null
+  return { kind: "newest", createdAt, id }
 }
 
 export function decodePlaceCursor(raw: string, idPattern: RegExp = SLUG_ID_RE): PlaceCursor | null {
@@ -78,42 +116,9 @@ export function decodePlaceCursor(raw: string, idPattern: RegExp = SLUG_ID_RE): 
   const parts = decoded.split("|")
   const tag = parts[0]
 
-  if (tag === "newest") {
-    if (parts.length !== 3) return null
-    const createdAt = new Date(parts[1]!)
-    const id = parts[2]!
-    if (Number.isNaN(createdAt.getTime()) || !idPattern.test(id)) return null
-    return { kind: "newest", createdAt, id }
-  }
+  if (tag === "newest") return decodeNewest(parts, idPattern)
+  if (tag === "rating") return decodeRating(parts, idPattern)
+  if (tag === "distance") return decodeDistance(parts, idPattern)
 
-  if (tag === "rating") {
-    if (parts.length !== 5) return null
-    const rating = parseFiniteNumber(parts[1]!)
-    const reviewCount = parseFiniteNumber(parts[2]!)
-    const createdAt = new Date(parts[3]!)
-    const id = parts[4]!
-    if (rating === null || reviewCount === null) return null
-    if (Number.isNaN(createdAt.getTime()) || !idPattern.test(id)) return null
-    return { kind: "rating", rating, reviewCount, createdAt, id }
-  }
-
-  if (tag === "distance") {
-    if (parts.length !== 3) return null
-    const id = parts[2]!
-    if (!idPattern.test(id)) return null
-    const distance = parseFiniteNumber(parts[1]!)
-    // Chuỗi không rỗng nhưng không phải số → cursor hỏng.
-    if (parts[1] !== "" && distance === null) return null
-    return { kind: "distance", distance, id }
-  }
-
-  // Cursor cũ `created_at|id` (không tag) → hiểu là `newest`.
-  const separator = decoded.lastIndexOf("|")
-  if (separator <= 0) return null
-
-  const createdAt = new Date(decoded.slice(0, separator))
-  const id = decoded.slice(separator + 1)
-  if (Number.isNaN(createdAt.getTime()) || !idPattern.test(id)) return null
-
-  return { kind: "newest", createdAt, id }
+  return decodeLegacy(decoded, idPattern)
 }

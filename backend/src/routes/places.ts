@@ -58,7 +58,7 @@ export function createPlacesRouter() {
       // Cursor hợp lệ nhưng thuộc kiểu sắp xếp khác (đổi sort / link cũ) → trả
       // trang đầu thay vì 400: đổi sort là hành động hợp lệ, không được làm vỡ
       // trang. Xem comment ngoại lệ trong `lib/cursor.ts`.
-      const cursor = decoded && decoded.kind === filters.sort ? decoded : null
+      const cursor = decoded?.kind === filters.sort ? decoded : null
 
       const startedAt = performance.now()
       const page = await listPlaces(filters, cursor, PLACES_PAGE_SIZE)
