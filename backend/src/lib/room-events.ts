@@ -15,11 +15,6 @@ export function subscribeRoom(code: string, listener: Listener): () => void {
   listeners.add(listener)
   channels.set(code, listeners)
 
-  // Đăng ký local listener để nhận trực tiếp
-  const localListener: Listener = (event) => {
-    listener(event)
-  }
-
   // Đăng ký vào Postgres PubSub nếu chạy đa tiến trình
   if (listeners.size === 1) {
     const channelName = `room_${code}`
