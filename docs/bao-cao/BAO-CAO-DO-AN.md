@@ -37,7 +37,7 @@ Dù đã cố gắng, báo cáo khó tránh khỏi thiếu sót. Nhóm mong nh�
 
 ## TÓM TẮT
 
-Đồ án xây dựng một mạng xã hội khám phá địa điểm tại Đà Nẵng, gồm 358 địa điểm thuộc 23 hạng mục trên 6 quận. Hệ thống gồm 29 bảng dữ liệu, 12 nhóm endpoint và 356 ca kiểm thử tự động, chạy trên một máy chủ với 5 nhân và 3,5 GB bộ nhớ.
+Đồ án xây dựng một mạng xã hội khám phá địa điểm tại Đà Nẵng, gồm 358 địa điểm thuộc 6 hạng mục trên 6 quận. Hệ thống gồm 29 bảng dữ liệu, 12 nhóm endpoint và 356 ca kiểm thử tự động, chạy trên một máy chủ với 5 nhân và 3,5 GB bộ nhớ.
 
 Đồ án thiết kế hai thuật toán. Thuật toán tìm kiếm lai ghép EGRF hợp nhất bốn nhánh tín hiệu, trong đó nhánh ngữ nghĩa và nhánh suy luận thuộc tính cho phép hệ thống hiểu ý định ẩn sau truy vấn thay vì chỉ khớp chữ nghĩa; trọng số các nhánh được chọn theo bằng chứng định danh có trong truy vấn. Trên tập nội bộ 344 truy vấn, EGRF đạt độ chính xác tại 5 là 0,820, so với 0,591 của hợp nhất xếp hạng chuẩn. Thuật toán gợi ý DES tính điểm theo trung bình Bayes có điều chỉnh và thêm nhiễu thay đổi theo khung giờ. Trên tập địa điểm đối chứng, DES kết hợp đạt độ triệu hồi tại 10 là 0,044, so với 0,035 của lọc cộng tác. Kiểm định bootstrap cho nDCG@10 cho chênh lệch trung bình 0,0046, khoảng tin cậy 95% [0,0028; 0,0065].
 
@@ -126,11 +126,12 @@ Số trang cập nhật khi kết xuất theo mẫu của trường.
 | Bảng 4.2 | Danh mục module đã cài đặt |
 | Bảng 4.3 | Xử lý kỹ thuật và kết quả đo |
 | Bảng 4.4 | Kết quả kiểm thử chức năng theo nhóm |
-| Bảng 4.5 | Thời gian phản hồi ở mức tải đơn lẻ |
-| Bảng 4.6 | Kết quả kiểm thử tải tăng dần |
-| Bảng 4.7 | Độ chính xác tìm kiếm trên tập nội bộ |
-| Bảng 4.8 | Độ chính xác tìm kiếm trên tập đối chứng |
-| Bảng 4.9 | Độ triệu hồi gợi ý trên tập đối chứng |
+| Bảng 4.5 | Test case tiêu biểu |
+| Bảng 4.6 | Thời gian phản hồi ở mức tải đơn lẻ |
+| Bảng 4.7 | Kết quả kiểm thử tải tăng dần |
+| Bảng 4.8 | Độ chính xác tìm kiếm trên tập nội bộ |
+| Bảng 4.9 | Độ chính xác tìm kiếm trên tập đối chứng |
+| Bảng 4.10 | Độ triệu hồi gợi ý trên tập đối chứng |
 | Bảng 5.1 | Đối chiếu mục tiêu và kết quả |
 | Bảng A.1 | Danh mục API endpoint |
 
@@ -188,7 +189,7 @@ Rendez hướng đến giới trẻ và các cặp đôi ở Đà Nẵng, nhữn
 | Xem khoảng cách, vị trí tức thì | Có, là thế mạnh của bản đồ | Phải tra thêm bản đồ | Phải tra thêm bản đồ | Có bản đồ tích hợp |
 | Thông tin cộng đồng gắn địa điểm | Yếu | Có đánh giá, ít cập nhật | Phong phú nhưng rời rạc, khó tra cứu | Có, bài đăng gắn với địa điểm |
 
-Ba ứng dụng trên mỗi cái mạnh ở một lĩnh vực nhưng không chuyên biệt cho gợi ý địa điểm. Google Maps chuyên về bản đồ và chỉ đường, không phải gợi ý địa điểm. Foody chuyên về đồ ăn. TikTok chuyên về video ngắn giải trí, có nhắc đến địa điểm đi ăn, đi chơi nhưng đó không phải chức năng chính. Không ứng dụng nào đáp ứng cùng lúc ba nhu cầu: hiểu ý định tìm kiếm, gợi ý được địa điểm mới chưa có đánh giá, và gắn thông tin cộng đồng với từng địa điểm. Rendez được xây dựng chuyên biệt cho ba nhu cầu này, trên tập dữ liệu thật của Đà Nẵng gồm 358 địa điểm thuộc 23 hạng mục trên 6 quận nội thành, thu thập từ OpenStreetMap [20].
+Ba ứng dụng trên mỗi cái mạnh ở một lĩnh vực nhưng không chuyên biệt cho gợi ý địa điểm. Google Maps chuyên về bản đồ và chỉ đường, không phải gợi ý địa điểm. Foody chuyên về đồ ăn. TikTok chuyên về video ngắn giải trí, có nhắc đến địa điểm đi ăn, đi chơi nhưng đó không phải chức năng chính. Không ứng dụng nào đáp ứng cùng lúc ba nhu cầu: hiểu ý định tìm kiếm, gợi ý được địa điểm mới chưa có đánh giá, và gắn thông tin cộng đồng với từng địa điểm. Rendez được xây dựng chuyên biệt cho ba nhu cầu này, trên tập dữ liệu thật của Đà Nẵng gồm 358 địa điểm thuộc 6 hạng mục trên 6 quận nội thành, thu thập từ OpenStreetMap [20].
 
 ## 1.2. Mục tiêu
 
@@ -202,7 +203,18 @@ Từ ba nhu cầu trên, đồ án đặt năm mục tiêu. Mỗi mục tiêu g�
 
 Mục tiêu số hai là trọng tâm kỹ thuật. Năng lực hiểu ý định được hiện thực bằng hai cơ chế: một nhánh tìm kiếm ngữ nghĩa dựa trên biểu diễn vector của truy vấn, và một nhánh suy luận thuộc tính trích xuất ý định từ truy vấn tự do thành các nhãn có cấu trúc. Phần xử lý không dấu và lỗi gõ là khả năng kèm theo, giúp truy vấn của người dùng trẻ vốn thường gõ vắn tắt và bỏ dấu vẫn được hiểu đúng trước khi bước vào giai đoạn suy luận ngữ nghĩa.
 
-## 1.3. Phạm vi
+## 1.3. Đối tượng sử dụng
+
+Hệ thống phục vụ bốn nhóm người dùng, phân biệt theo mức tham gia:
+
+- **Khách vãng lai.** Người chưa có tài khoản, vào để tìm địa điểm, xem bản đồ và xem chi tiết địa điểm. Nhóm này chiếm phần lớn lưu lượng và cần có kết quả ngay mà không phải đăng ký.
+- **Thành viên.** Người đã có tài khoản, ngoài các thao tác của khách còn đăng bài, viết đánh giá, tạo bộ sưu tập và nhận thông báo. Đây là nhóm tạo ra dữ liệu tương tác nuôi thuật toán gợi ý.
+- **Khách trong phòng bình chọn.** Người được mời vào một phòng để cùng chọn địa điểm cho một cuộc hẹn nhóm, không bắt buộc có tài khoản. Nhóm này gắn trực tiếp với tình huống các cặp đôi và nhóm bạn rủ nhau đi chơi.
+- **Hệ thống.** Thành phần tự động chạy các tác vụ nền: phát hiện địa điểm trong bài đăng, sinh gợi ý hằng ngày, cập nhật bộ đệm sở thích và dọn dữ liệu cũ.
+
+Trong bốn nhóm trên, giới trẻ và các cặp đôi là đối tượng chính mà Rendez hướng đến; ba nhóm còn lại là cách hệ thống mở rộng phạm vi phục vụ xoay quanh nhóm chính.
+
+## 1.4. Phạm vi
 
 Bảng 1.2 phân định nội dung thực hiện và không thực hiện của đồ án.
 
@@ -218,13 +230,13 @@ Bảng 1.2 phân định nội dung thực hiện và không thực hiện của
 | Tìm kiếm lai ghép và gợi ý cá nhân hoá | Quảng cáo và khuyến mãi |
 | Triển khai trên một máy chủ | Điều phối đa nút, cân bằng tải nhiều máy |
 
-## 1.4. Phương pháp thực hiện
+## 1.5. Phương pháp thực hiện
 
 Đồ án thực hiện theo bốn bước. Bước một khảo sát chức năng của các nền tảng khám phá địa điểm hiện có. Bước hai thiết kế kiến trúc, lược đồ dữ liệu và hai thuật toán. Bước ba cài đặt hệ thống và bộ kiểm thử tự động. Bước bốn đo hiệu năng và đánh giá thuật toán trên tập dữ liệu có đối chứng.
 
 Công cụ chính gồm bốn nhóm. Nhóm thực thi dùng Bun và Hono. Nhóm lưu trữ dùng PostgreSQL 17 với các phần mở rộng tìm kiếm. Nhóm đóng gói dùng Docker Compose. Nhóm đo tải dùng k6 [11].
 
-## 1.5. Bố cục báo cáo
+## 1.6. Bố cục báo cáo
 
 Báo cáo gồm năm chương. Chương 1 trình bày bài toán, mục tiêu và phạm vi. Chương 2 trình bày cơ sở lý thuyết và căn cứ lựa chọn công nghệ. Chương 3 trình bày phân tích và thiết kế: yêu cầu, use case, kiến trúc, luồng tương tác, dữ liệu và giao diện. Chương 4 trình bày cài đặt, kiểm thử chức năng và đánh giá hiệu năng, độ chính xác. Chương 5 kết luận, nêu hạn chế và hướng phát triển.
 
@@ -544,7 +556,7 @@ sequenceDiagram
         A->>D: Khớp tên và khớp tiền tố
         D-->>A: Danh sách định danh
     and
-        A->>D: Khớp mờ trigram qua chỉ mục GIN
+        A->>D: So khớp từ khoá, xếp hạng trigram qua chỉ mục GIN
         D-->>A: Danh sách định danh
     and
         A->>D: Khớp thuộc tính cấu trúc
@@ -734,7 +746,7 @@ flowchart TD
 
 ### 3.6.1. Thuật toán tìm kiếm EGRF
 
-Hệ thống chạy bốn nhánh tín hiệu song song. Nhánh khớp tên nhận diện tên riêng qua khớp chính xác và khớp tiền tố. Nhánh khớp mờ dùng độ tương đồng trigram. Nhánh khớp cấu trúc trích xuất hạng mục, quận, khoảng giá, trạng thái mở cửa. Nhánh ngữ nghĩa dùng khoảng cách cosine trên vector 384 chiều.
+Hệ thống chạy bốn nhánh tín hiệu song song. Nhánh khớp tên nhận diện tên riêng qua ba mức: khớp chính xác, khớp tiền tố và khớp từng token. Nhánh từ khoá so khớp các token của truy vấn trong trường văn bản tổng hợp (tên, địa chỉ, quận, thẻ) sau khi chuẩn hoá về dạng không dấu, và xếp hạng kết quả bằng độ tương đồng trigram, tăng trọng cho trường tên. Nhánh khớp cấu trúc trích xuất hạng mục, quận, khoảng giá, trạng thái mở cửa từ truy vấn. Nhánh ngữ nghĩa dùng khoảng cách cosine trên vector 384 chiều.
 
 Bốn danh sách xếp hạng được hợp nhất theo công thức hợp nhất xếp hạng nghịch đảo [12]:
 
@@ -750,12 +762,14 @@ Trọng số $w_r$ không cố định mà chọn theo bằng chứng định da
 
 **Bảng 3.7. Trọng số gate của thuật toán EGRF**
 
-| Điều kiện bằng chứng | Nhánh tên | Nhánh cấu trúc | Nhánh ngữ nghĩa | Nhánh mờ |
+| Điều kiện bằng chứng | Nhánh tên | Nhánh cấu trúc | Nhánh ngữ nghĩa | Nhánh từ khoá |
 |---|---|---|---|---|
-| Có khớp tên chính xác | 4,0 | 0 | 0 | 0,5 |
-| Có khớp tiền tố tên | 3,0 | 0,5 | 0,5 | 1,0 |
-| Có thuộc tính cấu trúc, không có tên | 0,5 | 3,0 | 1,0 | 1,0 |
-| Truy vấn trừu tượng | 0,5 | 1,0 | 2,5 | 1,0 |
+| Có khớp tên chính xác | 5,0 | 0 | 0 | 1,0 |
+| Có khớp tiền tố hoặc token tên | 3,0 | 0 | 0 | 1,0 |
+| Có thuộc tính cấu trúc, không có tên | 0 | 3,0 | 1,0 | 1,0 |
+| Truy vấn trừu tượng | 0 | 1,0 | 2,5 | 1,0 |
+
+Nhánh tên gộp ba mức khớp chính xác, tiền tố và token; khi có nhiều mức khớp cùng lúc, mức mạnh hơn (chính xác trước, tiền tố sau, token sau) quyết định trọng số. Nhánh từ khoá luôn giữ trọng số 1,0 vì đóng vai trò nền cho mọi truy vấn.
 
 ### 3.6.2. Thuật toán gợi ý DES
 
@@ -1102,7 +1116,7 @@ Bảng 3.9 mô tả cấu trúc bảng địa điểm, bảng trung tâm của h
 | id | text | Khoá chính | Định danh sinh từ tên và địa chỉ |
 | ten | text | Bắt buộc | Tên địa điểm có dấu |
 | ten_khong_dau | text | Bắt buộc, chỉ mục GIN | Tên đã bỏ dấu, chuẩn hoá chữ thường |
-| hang_muc | text | Bắt buộc | Một trong 23 hạng mục |
+| hang_muc | text | Bắt buộc | Một trong 6 hạng mục |
 | quan | text | Bắt buộc | Một trong 6 quận nội thành |
 | vi_do | numeric | | Vĩ độ |
 | kinh_do | numeric | | Kinh độ |
@@ -1187,6 +1201,37 @@ Bảng 4.1 mô tả môi trường cài đặt và đo lường.
 
 Các container được giới hạn cứng tổng cộng 5 nhân và 3,5 GB, phần còn lại của máy vật lý không cấp cho hệ thống. Công cụ sinh tải k6 chạy trên cùng máy vật lý, không chạy trên máy riêng.
 
+### 4.1.1. Hướng dẫn cài đặt và chạy hệ thống
+
+Dự án chạy được theo hai chế độ: phát triển trên máy cục bộ và triển khai đầy đủ bằng Docker Compose.
+
+**Chuẩn bị.** Máy cần có Bun (phiên bản 1.3.14 trở lên) và Docker. Hai biến môi trường bắt buộc là `DATABASE_URL` trỏ tới PostgreSQL và `BETTER_AUTH_SECRET` dài tối thiểu 32 ký tự. Các biến còn lại (kho lưu trữ R2, SMTP gửi thư) có giá trị mặc định rỗng; khi để rỗng thì tính năng lưu ảnh và gửi thư bị tắt nhưng hệ thống vẫn chạy.
+
+**Chạy ở chế độ phát triển.** Các lệnh sau khởi tạo cơ sở dữ liệu, nạp dữ liệu mẫu rồi chạy hai phía:
+
+```bash
+bun install                      # Cài phụ thuộc cho cả monorepo
+bun run db:up                    # Khởi động PostgreSQL (image pgvector)
+cd backend && cp .env.example .env   # Tạo tệp môi trường nếu chưa có
+bun run db:migrate               # Chạy 20 migration có phiên bản
+bun run db:generate              # Sinh kiểu dữ liệu Prisma cho mã ứng dụng
+bun run db:seed                  # Nạp 358 địa điểm mẫu
+bun run dev:api                  # Chạy API ở cổng cấu hình
+bun run dev                      # Ở cửa sổ khác, chạy giao diện React
+```
+
+Lệnh `db:seed` có tính chất lũy đẳng: ưu tiên nạp tệp `backend/data/places-expanded.json` gồm 358 địa điểm đã làm giàu thông tin; nếu tệp không có thì dùng tệp dự phòng 491 địa điểm gốc. Chạy lại seed không tạo bản ghi trùng.
+
+**Chạy ở chế độ triển khai đầy đủ.** Một lệnh khởi động cả bốn dịch vụ:
+
+```bash
+docker compose up -d --build     # postgres + migrate + api + web
+```
+
+Compose khởi động PostgreSQL trước, chờ qua healthcheck, chạy migration một lần rồi thoát, sau đó API mới khởi động. Caddy phục vụ giao diện tĩnh và làm reverse proxy cho API.
+
+**Dữ liệu mẫu.** Bộ dữ liệu 358 địa điểm lấy từ OpenStreetMap [20], đã làm giàu ảnh, giờ mở cửa và số điện thoại. Dữ liệu tương tác (bài đăng, đánh giá, bộ sưu tập) để rỗng sau seed, vì các số liệu trong báo cáo đo trên dữ liệu thật sinh ra khi chạy, không phải dữ liệu mẫu cài sẵn.
+
 ## 4.2. Các module đã cài đặt
 
 Bảng 4.2 liệt kê các module đã cài đặt và chức năng tương ứng.
@@ -1208,6 +1253,46 @@ Bảng 4.2 liệt kê các module đã cài đặt và chức năng tương ứn
 | Tác vụ nền | Phát hiện địa điểm, gợi ý hằng ngày, bộ đệm sở thích, dọn dữ liệu |
 | Thẻ xem trước | Sinh thẻ Open Graph cho địa điểm và bài viết |
 
+### 4.2.1. Cấu trúc thư mục project
+
+Dự án là một monorepo quản lý bằng Bun workspaces, gồm ba không gian làm việc: `frontend`, `backend` và `packages/schema`. Cấu trúc thư mục chính như sau:
+
+```text
+rendez/
+├── package.json              # Cấu hình workspace và các lệnh chung
+├── compose.yaml              # Docker Compose: postgres, api, web
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma     # Lược đồ 29 bảng
+│   │   └── migrations/       # 20 migration có phiên bản
+│   ├── src/
+│   │   ├── server.ts         # Điểm khởi động, chia sẻ cổng nhiều tiến trình
+│   │   ├── app.ts            # Gắn định tuyến Hono và middleware
+│   │   ├── routes/           # 12 nhóm endpoint (places, posts, rooms, ...)
+│   │   ├── lib/              # Logic nghiệp vụ
+│   │   │   ├── search/       # EGRF: dense, lexical, name, intent, rrf
+│   │   │   ├── places/       # Bộ lọc, phân trang, khoảng cách
+│   │   │   ├── recommendations.ts   # DES: điểm Bayes, nhiễu khung giờ
+│   │   │   ├── ranking.ts    # Xếp hạng gợi ý
+│   │   │   ├── daily-picks.ts       # Gợi ý hằng ngày
+│   │   │   ├── affinity.ts   # Bộ đệm sở thích
+│   │   │   ├── queue.ts      # Hàng đợi pg-boss
+│   │   │   └── auth.ts       # Better Auth
+│   │   └── env.ts            # Đọc biến môi trường
+│   ├── test/                 # 356 ca kiểm thử trong 40 tệp
+│   └── scripts/              # Sinh dữ liệu, đánh giá, seed
+├── frontend/
+│   ├── src/
+│   │   ├── features/         # Mỗi tính năng một thư mục (places, search, rooms, ...)
+│   │   ├── components/       # Thành phần giao diện dùng chung
+│   │   ├── hooks/            # Hook dùng chung
+│   │   └── lib/              # Tiện ích phía máy khách
+│   └── e2e/                  # Kiểm thử giao diện
+└── packages/schema/          # Sơ đồ dữ liệu dùng chung hai phía
+```
+
+Cách tổ chức này tách rõ ba tầng: tầng định tuyến trong `routes/` chỉ nhận yêu cầu và trả phản hồi; tầng nghiệp vụ trong `lib/` chứa toàn bộ logic, trong đó hai thuật toán EGRF và DES nằm ở `lib/search/` và `lib/recommendations.ts`; tầng dữ liệu do Prisma quản lý qua `prisma/`. Phía máy khách, mỗi tính năng nằm trong một thư mục riêng của `features/`, giúp thêm tính năng mới mà không ảnh hưởng phần còn lại.
+
 ## 4.3. Xử lý kỹ thuật quan trọng
 
 Bảng 4.3 trình bày các xử lý kỹ thuật chính theo mẫu: vấn đề, giải pháp, kết quả đo.
@@ -1217,7 +1302,7 @@ Bảng 4.3 trình bày các xử lý kỹ thuật chính theo mẫu: vấn đề
 | Vấn đề | Giải pháp | Kết quả đo |
 |---|---|---|
 | Truy vấn tiếng Việt không dấu không khớp tên có dấu | Lưu cột tên đã bỏ dấu kèm chỉ mục GIN trigram | Truy vấn không dấu đạt p95 18 ms trên 358 địa điểm |
-| Lỗi gõ làm mất kết quả | Khớp mờ trigram trên tập ba ký tự | Nhánh mờ xử lý được truy vấn lệch một ký tự |
+| Lỗi gõ làm mất kết quả | Xếp hạng từ khoá bằng độ tương đồng trigram, so khớp cả chuỗi nén không dấu | Nhánh từ khoá vẫn xếp hạng được truy vấn lệch một ký tự |
 | Hợp nhất nhiều nhánh làm giảm thứ hạng tên đúng | Chọn trọng số theo bằng chứng định danh trong truy vấn | Độ chính xác tại 5 tăng từ 0,591 lên 0,820 |
 | Một tiến trình JavaScript chỉ dùng một nhân | Khởi tạo nhiều tiến trình cùng lắng nghe một cổng | Tận dụng 2 nhân, đạt 1.400 yêu cầu/giây ở 5.000 người dùng |
 | Sự kiện thời gian thực không tới được tiến trình khác | Phát qua kênh thông báo nội bộ PostgreSQL | Sự kiện tới mọi tiến trình đang giữ kết nối |
@@ -1225,36 +1310,6 @@ Bảng 4.3 trình bày các xử lý kỹ thuật chính theo mẫu: vấn đề
 | Nhiều người bỏ phiếu đồng thời làm mất cập nhật | Cập nhật có kiểm tra phiên bản | Xung đột được phát hiện, thử lại tối đa ba lần |
 | Truyền ảnh qua tầng dịch vụ chiếm băng thông | URL có chữ ký, máy khách tải trực tiếp lên kho lưu trữ | Tệp không đi qua tầng dịch vụ |
 | Phân trang theo số trang bỏ sót bản ghi khi dữ liệu đổi | Phân trang theo con trỏ với cặp giá trị sắp xếp | Không lặp, không sót bản ghi |
-
-Ba xử lý dưới đây minh hoạ cơ chế quan trọng nhất. Mã rút gọn về đúng thao tác, bỏ phần xử lý lỗi và nhập thư viện.
-
-Truy vấn khớp mờ trigram trên cột tên đã bỏ dấu:
-
-```sql
-SELECT id, ten_goc, similarity(ten_khong_dau, $1) AS sim
-FROM dia_diem
-WHERE ten_khong_dau % $1
-ORDER BY sim DESC
-LIMIT 20;
-```
-
-Cập nhật số phiếu bình chọn có kiểm tra phiên bản:
-
-```sql
-UPDATE de_xuat
-SET so_phieu = so_phieu + 1, version = version + 1
-WHERE id = $1 AND version = $2 AND so_phieu + 1 >= 0;
-```
-
-Sinh URL có chữ ký để tải ảnh trực tiếp lên kho lưu trữ:
-
-```ts
-if (!["image/jpeg", "image/png", "image/webp"].includes(loaiTep)) throw Error("sai loại tệp");
-if (kichThuoc > 5 * 1024 * 1024) throw Error("tệp quá lớn");
-const url = kyURL(khoLuuTru, khoa, { hieuLuc: 60 });
-```
-
-Ba đoạn mã mô tả thao tác, cần đối chiếu với mã thật khi hoàn thiện. 【cần đối chiếu mã thật】
 
 ## 4.4. Kiểm thử chức năng
 
@@ -1281,13 +1336,30 @@ Bộ kiểm thử gồm 356 ca trong 40 tệp, chạy trên một cơ sở dữ 
 | Hạ tầng và tiện ích | (không ánh xạ FR) | 60 | 60 | 0 |
 | **Tổng** | | **356** | **356** | **0** |
 
+Bảng 4.5 trích mười ca tiêu biểu, mỗi ca ghi rõ đầu vào, kỳ vọng và kết quả thực tế. Các ca này lấy nguyên văn từ bộ kiểm thử, không phải ví dụ dựng lại.
+
+**Bảng 4.5. Test case tiêu biểu**
+
+| Mã | Chức năng | Đầu vào | Kỳ vọng | Kết quả |
+|---|---|---|---|---|
+| TC-01 | Tìm kiếm không dấu | `GET /places?q=banh xeo` | Trả về địa điểm có tên chuẩn hoá chứa "banh xeo" | Đạt: danh sách khớp, mọi tên chuẩn hoá chứa "banh xeo" |
+| TC-02 | Cursor không hợp lệ | `GET /places?cursor=khong-phai-cursor` | Mã 400, thông báo "Cursor không hợp lệ" | Đạt: đúng mã và thông báo |
+| TC-03 | Ký tự NUL trong bộ lọc | `GET /places?district=%00` | Mã 400, thông báo "Dữ liệu chứa ký tự không hợp lệ" | Đạt: đúng mã và thông báo |
+| TC-04 | Giá trị ngoài miền bị bỏ qua | `GET /places?priceMax=9` | Không lỗi, kết quả giống truy vấn không lọc giá | Đạt: danh sách id trùng khớp |
+| TC-05 | Gợi ý địa điểm theo nội dung | `GET /places/suggestions?q="an banh"` (dưới 8 ký tự) | Mảng gợi ý rỗng | Đạt: độ dài 0 |
+| TC-06 | Gợi ý địa điểm có ngữ cảnh | `q="Hôm nay ăn bánh xèo ở Đà Nẵng rất ngon"` | 1 đến 3 gợi ý, mỗi gợi ý có mã địa điểm và lý do | Đạt: trong khoảng, trường đầy đủ |
+| TC-07 | Chặn giới hạn gợi ý | `GET /places/suggestions?limit=99` | Tối đa 10 gợi ý | Đạt: độ dài không vượt 10 |
+| TC-08 | Ẩn địa điểm chưa duyệt | `GET /places/:id` với địa điểm chưa publish | Mã 404 | Đạt: đúng mã |
+| TC-09 | Bộ nhớ đệm HTTP | `GET /places/:id` kèm `If-None-Match` khớp ETag | Mã 304, có ETag và Cache-Control | Đạt: đúng mã và header |
+| TC-10 | Lũy đẳng tác vụ hằng ngày | Chạy `pickDailyPicks` hai lần | Bảng gợi ý vẫn đúng 3 dòng, cùng bộ địa điểm | Đạt: không sinh trùng |
+
 ## 4.5. Đánh giá hiệu năng và độ chính xác
 
 ### 4.5.1. Thời gian phản hồi ở mức tải đơn lẻ
 
-Bảng 4.5 ghi thời gian phản hồi của sáu endpoint, mỗi endpoint gọi 20 lần tuần tự, không có tải đồng thời.
+Bảng 4.6 ghi thời gian phản hồi của sáu endpoint, mỗi endpoint gọi 20 lần tuần tự, không có tải đồng thời.
 
-**Bảng 4.5. Thời gian phản hồi ở mức tải đơn lẻ**
+**Bảng 4.6. Thời gian phản hồi ở mức tải đơn lẻ**
 
 | Endpoint | p50 (ms) | p95 (ms) | Chỉ tiêu NFR |
 |---|---|---|---|
@@ -1304,7 +1376,7 @@ Số liệu đo trên corpus 358 địa điểm. Không suy ra được hành vi
 
 Kịch bản sinh tải mô phỏng bốn thao tác: tìm kiếm (35%), xem gợi ý (25%), duyệt bản đồ (25%), xem chi tiết (15%). Mỗi lượt có thời gian nghỉ ngẫu nhiên 1–3 giây. Tải tăng qua năm mốc, mỗi mốc giữ ổn định 30 giây, riêng mốc cuối giữ 40 giây.
 
-**Bảng 4.6. Kết quả kiểm thử tải tăng dần**
+**Bảng 4.7. Kết quả kiểm thử tải tăng dần**
 
 | Người dùng đồng thời | Thông lượng (yêu cầu/giây) | Lỗi máy chủ | Phản hồi > 1 giây | p95 (ms) |
 |---|---|---|---|---|
@@ -1332,7 +1404,7 @@ xychart-beta
 
 Tập nội bộ gồm 344 truy vấn, sinh theo năm nhóm ý định. Mỗi truy vấn có nhiều biến thể cách diễn đạt: câu tự nhiên, câu dài, từ khoá ngắn, không dấu, có tên quận. Nhãn chuẩn xác định theo ràng buộc hạng mục, thẻ và quận.
 
-**Bảng 4.7. Độ chính xác tìm kiếm trên tập nội bộ**
+**Bảng 4.8. Độ chính xác tìm kiếm trên tập nội bộ**
 
 | Phương pháp | P@5 | P@10 | R@10 | nDCG@10 | MRR | p95 (ms) |
 |---|---|---|---|---|---|---|
@@ -1355,9 +1427,9 @@ xychart-beta
 
 EGRF tăng P@5 từ 0,591 lên 0,820 và P@10 từ 0,513 lên 0,804 so với hợp nhất chuẩn. EGRF giảm R@10 từ 0,797 xuống 0,780 và MRR từ 0,878 xuống 0,865, do tầng kiểm soát bằng chứng thu hẹp tập kết quả về phía nhánh mạnh.
 
-Hai tập tài liệu khoa học của bộ đối chứng BEIR [18] gồm SciFact [16] và NFCorpus [17] được dùng để kiểm tra tính tổng quát. Bảng 4.8 ghi kết quả.
+Hai tập tài liệu khoa học của bộ đối chứng BEIR [18] gồm SciFact [16] và NFCorpus [17] được dùng để kiểm tra tính tổng quát. Bảng 4.9 ghi kết quả.
 
-**Bảng 4.8. Độ chính xác tìm kiếm trên tập đối chứng**
+**Bảng 4.9. Độ chính xác tìm kiếm trên tập đối chứng**
 
 | Tập | Số tài liệu | Số truy vấn | Phương pháp | nDCG@10 | R@10 |
 |---|---|---|---|---|---|
@@ -1376,9 +1448,9 @@ Tập địa điểm đối chứng gồm 58 truy vấn đa ngôn ngữ. Hợp n
 
 ### 4.5.4. Độ triệu hồi gợi ý
 
-Bảng 4.9 ghi kết quả gợi ý trên bốn tập đối chứng.
+Bảng 4.10 ghi kết quả gợi ý trên bốn tập đối chứng.
 
-**Bảng 4.9. Độ triệu hồi gợi ý trên tập đối chứng**
+**Bảng 4.10. Độ triệu hồi gợi ý trên tập đối chứng**
 
 | Tập | Người dùng | Phương pháp | R@5 | R@10 | R@20 | nDCG@10 |
 |---|---|---|---|---|---|---|
