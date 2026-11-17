@@ -925,3 +925,18 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
 - [ ] **Warm recommendation vẫn gần như không hoạt động** — `affinity_cache` chỉ 2
       dòng vì `interaction_events` quá thưa (297 event). Cần tích luỹ traffic thật
       trước khi đánh giá lại nhánh affinity; hiện gần như mọi user nhận cold-start.
+
+## Phát hiện từ audit 2026-11-18 (modern-web-guidance + bun audit + phân tích tĩnh)
+
+- [ ] **3 lỗ hổng dependency chưa vá được bằng `bun update`** — đều nằm ở
+      **dev/test dependency**, không vào bundle production:
+      - `picomatch` ≤4.0.7 (high, ReDoS) — đã ở **phiên bản mới nhất trên npm**,
+        OSV ghi `last_affected: 4.0.7`, **chưa có bản vá**. Chỉ đợi upstream.
+      - `minimatch` (moderate, DoS) — cần `>=11.0.1`, **major bump**.
+      - `glob` (moderate, AbortSignal bypass) — cần `>14.0.1`, **major bump**.
+      Không ép major bump vì có thể vỡ build; xem lại khi upstream phát hành bản vá
+      hoặc khi nâng cấp chủ động các gói cha (vite/vitest/eslint/testcontainers).
+- [ ] **`mocks/server.ts` 2236 dòng** — file mock lớn nhất codebase. Không chặn
+      production nhưng khó bảo trì; cân nhắc tách theo domain khi chạm lại.
+- [ ] **`places-map.tsx` 606 dòng** — file code thật lớn nhất; component bản đồ
+      đang gánh cả positioner/label/clustering. Cân nhắc tách hook khi sửa tiếp.
