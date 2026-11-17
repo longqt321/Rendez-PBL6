@@ -940,3 +940,18 @@ mở qua API + badge "Đang mở cửa/Đã đóng cửa" (parse 24/7, range ng�
       production nhưng khó bảo trì; cân nhắc tách theo domain khi chạm lại.
 - [ ] **`places-map.tsx` 606 dòng** — file code thật lớn nhất; component bản đồ
       đang gánh cả positioner/label/clustering. Cân nhắc tách hook khi sửa tiếp.
+
+## Phát hiện từ SonarQube Cloud 2026-11-18 (441 issues, revision d1c8ca2)
+
+- [ ] **Migration không được sửa theo quy tắc dự án** — 4 issue trong migration
+      (`VARCHAR2` x3, `UPDATE` không `WHERE` x1) **không thể sửa** vì quy tắc
+      "Không sửa migration đã tồn tại". Cả 4 đều là false-positive thực tế:
+      `VARCHAR2` là cú pháp Oracle (Postgres dùng VARCHAR), `UPDATE` không WHERE
+      là backfill chủ ý. Cần đánh dấu *Won't Fix* trên SonarCloud UI.
+- [ ] **Secrets `compose.yaml` (S6698)** — mật khẩu dev default `rendez_dev` qua
+      `${POSTGRES_PASSWORD:-rendez_dev}`. Chấp nhận cho local dev; production
+      bắt buộc đặt env riêng. Nếu muốn triệt để: bỏ default, yêu cầu `.env`.
+- [ ] **MD5 `user-suggestions.ts` (S4790)** — tiebreak key chủ ý, không phải
+      mật khẩu. Có thể đánh dấu *Won't Fix* hoặc đổi SHA-256 cho sạch.
+- [ ] **SCA dependency-risks không khả dụng** — gói SonarQube Cloud free không
+      có SCA; dùng `bun audit` thay thế (đã có trong BACKLOG phần trên).
