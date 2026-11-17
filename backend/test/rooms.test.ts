@@ -443,6 +443,7 @@ describe("phòng lọc nhóm", () => {
     const controller = new AbortController()
     const res = await app.request(`/api/v1/rooms/${code}/events`, {
       signal: controller.signal,
+      headers: { Cookie: ownerCookie },
     })
     expect(res.status).toBe(200)
     expect(res.headers.get("content-type")).toContain("text/event-stream")

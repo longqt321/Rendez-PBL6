@@ -3,8 +3,13 @@ import { startTestDb, stopTestDb } from "./helpers/pg"
 import { registerVerifiedUser } from "./helpers/auth"
 
 /**
- * Integration test `PATCH /notifications` — chỉ trả các thông báo vừa được
- * cập nhật (lô đánh dấu đã đọc), không trả toàn bộ thông báo của user.
+ * Integration test `PATCH /notifications` — đánh dấu mọi thông báo chưa đọc
+ * thành đã đọc rồi trả toàn bộ danh sách thông báo của user (khớp mock
+ * frontend + `markAllNotificationsRead`).
+ *
+ * Lưu ý: "trả toàn bộ" là hợp đồng hiện tại sau commit `99b3083` (hoàn tác
+ * `listAllNotifications` về trả toàn bộ); mô tả cũ "chỉ trả lô vừa đánh dấu
+ * đọc" trong `docs/BACKLOG.md` đã lỗi thời.
  */
 let app: Awaited<ReturnType<typeof import("../src/app").createApp>>
 let prisma: typeof import("../src/lib/prisma").prisma
@@ -43,7 +48,7 @@ function call(path: string, init: RequestInit & { cookie?: string } = {}) {
   return app.request(path, { ...init, headers })
 }
 
-describe("PATCH /notifications trả lô vừa cập nhật", () => {
+describe("PATCH /notifications đánh dấu tất cả đã đọc", () => {
   let alice: Session
   let bob: Session
   let postId = ""
@@ -70,19 +75,19 @@ describe("PATCH /notifications trả lô vừa cập nhật", () => {
     expect(like.status).toBe(200)
   }
 
-  test("lần 1: trả đúng các thông báo vừa đọc, đã đánh dấu read", async () => {
+  test("lần 1: đánh dấu mọi thông báo chưa đọc thành read, trả toàn bộ danh sách", async () => {
     await likePost()
     const res = await call("/api/v1/notifications", { method: "PATCH", cookie: alice.cookie })
     expect(res.status).toBe(200)
 
     const body = (await res.json()) as { id: string; read: boolean }[]
     expect(Array.isArray(body)).toBe(true)
-    expect(body).toHaveLength(1)
-    expect(body[0]?.read).toBe(true)
+    // Endpoint trả toàn bộ thông báo của user (khớp mock frontend + `markAllNotificationsRead`).
+    expect(body.length).toBeGreaterThanOrEqual(1)
+    for (const item of body) expect(item.read).toBe(true)
   })
 
-  test("lần 2: chỉ trả thông báo mới xuất hiện sau lần PATCH trước", async () => {
-    // Alice like lại bài của Bob? Không — dùng comment của Bob để tạo thông báo mới.
+  test("lần 2: thông báo mới (comment) cũng được đánh dấu read sau PATCH", async () => {
     const comment = await call(`/api/v1/posts/${postId}/comments`, {
       method: "POST",
       cookie: bob.cookie,
@@ -94,9 +99,8 @@ describe("PATCH /notifications trả lô vừa cập nhật", () => {
     expect(res.status).toBe(200)
 
     const body = (await res.json()) as { kind: string; read: boolean }[]
-    // Thông báo `like` cũ đã đọc từ lần PATCH trước — không được lặp lại.
-    expect(body).toHaveLength(1)
-    expect(body[0]?.kind).toBe("comment")
-    expect(body[0]?.read).toBe(true)
+    const commentNotification = body.find((item) => item.kind === "comment")
+    expect(commentNotification).toBeDefined()
+    expect(commentNotification!.read).toBe(true)
   })
 })

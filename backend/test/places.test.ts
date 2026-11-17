@@ -38,6 +38,9 @@ beforeAll(async () => {
   process.env.DATABASE_URL = url
   process.env.LOG_LEVEL = "error"
   process.env.NODE_ENV = "test"
+  // Test sort đi hết pagination (`collectAll` >120 request) — vượt rate limit
+  // `places-list` 120/phút nếu không tắt. Khớp các file test tải nặng khác.
+  process.env.BYPASS_RATE_LIMIT = "1"
 
   const { createApp } = await import("../src/app")
   prisma = (await import("../src/lib/prisma")).prisma
