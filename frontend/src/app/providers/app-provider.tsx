@@ -5,7 +5,7 @@ import { QueryProvider } from "./query-provider"
 import { SkinProvider } from "./skin-provider"
 import { ThemeProvider } from "./theme-provider"
 
-export function AppProvider({ children }: { children: ReactNode }) {
+export function AppProvider({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <ThemeProvider>
       <SkinProvider>

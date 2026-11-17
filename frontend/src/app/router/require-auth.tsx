@@ -4,7 +4,7 @@ import { PageLoading } from "@/components/shared/page-loading"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { isUnauthorizedError } from "@/lib/axios"
 
-export function RequireAuth({ children }: { children: React.ReactNode }) {
+export function RequireAuth({ children }: Readonly<{ children: React.ReactNode }>) {
   const { data: me, isPending, isError, error, refetch } = useMe()
   const location = useLocation()
 

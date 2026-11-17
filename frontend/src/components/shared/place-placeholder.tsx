@@ -16,7 +16,7 @@ interface PlacePlaceholderProps {
 function hashString(value: string): number {
   let hash = 2166136261
   for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index)
+    hash ^= value.codePointAt(index) ?? 0
     hash = Math.imul(hash, 16777619)
   }
   return hash >>> 0
@@ -47,7 +47,7 @@ function layoutFromSeed(seed: string) {
  * tên địa điểm và nhãn hạng mục. Bố cục (góc gradient, vị trí mảng màu) sinh từ tên
  * địa điểm nên hai quán cùng hạng mục vẫn khác nhau về thị giác.
  */
-export function PlacePlaceholder({ category, name, label }: PlacePlaceholderProps) {
+export function PlacePlaceholder({ category, name, label }: Readonly<PlacePlaceholderProps>) {
   const meta = category ? CATEGORY_META[category] : undefined
   const seed = name?.trim() || label || category || "rendez"
   const layout = layoutFromSeed(seed)

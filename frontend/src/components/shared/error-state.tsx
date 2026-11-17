@@ -31,7 +31,7 @@ export function ErrorState({
   variant = "bordered",
   className,
   children,
-}: ErrorStateProps) {
+}: Readonly<ErrorStateProps>) {
   return (
     <Empty
       className={cn(variant === "bordered" && "border border-dashed border-border", className)}

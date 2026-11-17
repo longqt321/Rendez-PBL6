@@ -109,7 +109,7 @@ interface AppShellProps {
  *
  * Dùng làm layout route: không truyền `children` thì render `<Outlet />`.
  */
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children }: Readonly<AppShellProps>) {
   const location = useLocation()
   const mainRef = useRef<HTMLElement>(null)
   useDocumentTitle(location.pathname)
@@ -304,6 +304,98 @@ function UserMenu() {
     })
   }
 
+  let menuContent: React.ReactNode
+  if (isPending) {
+    menuContent = (
+      <DropdownMenuItem disabled>
+        <Spinner />
+        Đang tải hồ sơ…
+      </DropdownMenuItem>
+    )
+  } else if (me) {
+    menuContent = (
+      <>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <span className="block text-sm font-semibold">{me.name}</span>
+            <span className="block text-xs font-normal text-muted-foreground">@{me.handle}</span>
+            <Link
+              to="/profile"
+              className="mt-1 block text-xs font-medium text-foreground underline underline-offset-2"
+            >
+              Xem trang cá nhân →
+            </Link>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem render={<Link to="/profile" />}>
+            <UserIcon />
+            Trang cá nhân
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link to="/saved" />}>
+            <BookmarkIcon />
+            Bài đăng đã lưu
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link to="/profile?tab=pinned" />}>
+            <MapPinIcon />
+            Địa điểm đã ghim
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link to="/settings" />}>
+          <SettingsIcon />
+          Cài đặt
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <PaletteIcon />
+            Giao diện
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup
+              value={skin}
+              onValueChange={(value) => setSkin(value as typeof skin)}
+            >
+              <DropdownMenuRadioItem value="default">Mặc định</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="retro">Retro</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuItem render={<Link to="/help" />}>
+          <HelpCircleIcon />
+          Trợ giúp
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" disabled={isLoggingOut} onClick={handleLogout}>
+          <LogOutIcon />
+          {isLoggingOut ? "Đang đăng xuất…" : "Đăng xuất"}
+        </DropdownMenuItem>
+      </>
+    )
+  } else if (isUnauthorizedError(error)) {
+    // Chưa đăng nhập: lối tắt vào cả đăng nhập và đăng ký (V1-10).
+    menuContent = (
+      <>
+        <DropdownMenuItem onClick={() => void navigate("/login")}>
+          <LogInIcon />
+          Đăng nhập
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => void navigate("/register")}>
+          <UserPlusIcon />
+          Đăng ký
+        </DropdownMenuItem>
+      </>
+    )
+  } else {
+    // Lỗi khác 401 (mạng, 5xx): người dùng vẫn có thể đã đăng nhập — không
+    // được hiện "Đăng nhập" như thể phiên đã mất.
+    menuContent = (
+      <DropdownMenuItem onClick={() => void refetch()}>
+        <UserIcon />
+        Không tải được hồ sơ — thử lại
+      </DropdownMenuItem>
+    )
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -323,90 +415,7 @@ function UserMenu() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
-        {isPending ? (
-          <DropdownMenuItem disabled>
-            <Spinner />
-            Đang tải hồ sơ…
-          </DropdownMenuItem>
-        ) : me ? (
-          <>
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>
-                <span className="block text-sm font-semibold">{me.name}</span>
-                <span className="block text-xs font-normal text-muted-foreground">
-                  @{me.handle}
-                </span>
-                <Link
-                  to="/profile"
-                  className="mt-1 block text-xs font-medium text-foreground underline underline-offset-2"
-                >
-                  Xem trang cá nhân →
-                </Link>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem render={<Link to="/profile" />}>
-                <UserIcon />
-                Trang cá nhân
-              </DropdownMenuItem>
-              <DropdownMenuItem render={<Link to="/saved" />}>
-                <BookmarkIcon />
-                Bài đăng đã lưu
-              </DropdownMenuItem>
-              <DropdownMenuItem render={<Link to="/profile?tab=pinned" />}>
-                <MapPinIcon />
-                Địa điểm đã ghim
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem render={<Link to="/settings" />}>
-              <SettingsIcon />
-              Cài đặt
-            </DropdownMenuItem>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <PaletteIcon />
-                Giao diện
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuRadioGroup
-                  value={skin}
-                  onValueChange={(value) => setSkin(value as typeof skin)}
-                >
-                  <DropdownMenuRadioItem value="default">Mặc định</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="retro">Retro</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DropdownMenuItem render={<Link to="/help" />}>
-              <HelpCircleIcon />
-              Trợ giúp
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" disabled={isLoggingOut} onClick={handleLogout}>
-              <LogOutIcon />
-              {isLoggingOut ? "Đang đăng xuất…" : "Đăng xuất"}
-            </DropdownMenuItem>
-          </>
-        ) : isUnauthorizedError(error) ? (
-          // Chưa đăng nhập: lối tắt vào cả đăng nhập và đăng ký (V1-10).
-          <>
-            <DropdownMenuItem onClick={() => void navigate("/login")}>
-              <LogInIcon />
-              Đăng nhập
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => void navigate("/register")}>
-              <UserPlusIcon />
-              Đăng ký
-            </DropdownMenuItem>
-          </>
-        ) : (
-          // Lỗi khác 401 (mạng, 5xx): người dùng vẫn có thể đã đăng nhập — không
-          // được hiện "Đăng nhập" như thể phiên đã mất.
-          <DropdownMenuItem onClick={() => void refetch()}>
-            <UserIcon />
-            Không tải được hồ sơ — thử lại
-          </DropdownMenuItem>
-        )}
+        {menuContent}
       </DropdownMenuContent>
     </DropdownMenu>
   )

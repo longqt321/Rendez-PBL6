@@ -4,7 +4,7 @@ import { useIntersectionObserver } from "@uidotdev/usehooks"
 interface UseInfiniteScrollOptions {
   hasNextPage: boolean
   isFetchingNextPage: boolean
-  fetchNextPage: () => void
+  fetchNextPage: () => unknown
 
   rootMargin?: string
 }

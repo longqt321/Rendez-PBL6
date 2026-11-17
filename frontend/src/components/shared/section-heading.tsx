@@ -6,12 +6,12 @@ export function SectionHeading({
   icon,
   className,
   as: Tag = "h2",
-}: {
+}: Readonly<{
   children: ReactNode
   icon?: ReactNode
   className?: string
   as?: "h2" | "h3" | "p"
-}) {
+}>) {
   return (
     <Tag
       className={cn(

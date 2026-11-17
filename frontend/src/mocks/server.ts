@@ -43,8 +43,15 @@ import {
   POST_IMAGE_INVALID_MESSAGE,
   validatePostImageUrls,
 } from "@rendez/schema"
-import type { MockCollection, MockComment, MockPost, MockReport, MockReview } from "./types"
-import type { MockRoom, MockRoomMember } from "./types"
+import type {
+  MockCollection,
+  MockComment,
+  MockPost,
+  MockReport,
+  MockReview,
+  MockRoom,
+  MockRoomMember,
+} from "./types"
 
 const PLACES_PAGE_SIZE = 9
 
@@ -79,7 +86,14 @@ function patchFetchForMockStorage(): void {
   const originalFetch = target.fetch.bind(globalThis)
 
   target.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url
+    let url: string
+    if (typeof input === "string") {
+      url = input
+    } else if (input instanceof URL) {
+      url = input.href
+    } else {
+      url = input.url
+    }
     const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase()
     // `new URL` ném TypeError với URL tương đối (`/api/...`) — resolve theo origin
     // trang; chỉ host tuyệt đối khớp storage giả mới bị chặn.
@@ -253,6 +267,41 @@ function isPubliclyVisible(place: MockPlace): boolean {
   return place.publishedAt !== null && place.status !== "closed"
 }
 
+interface Bbox {
+  minLng: number
+  minLat: number
+  maxLng: number
+  maxLat: number
+}
+
+function matchesBbox(place: MockPlace, bbox?: Bbox): boolean {
+  if (!bbox) return true
+  if (place.lat === undefined || place.lng === undefined) return false
+  return !(
+    place.lng < bbox.minLng ||
+    place.lng > bbox.maxLng ||
+    place.lat < bbox.minLat ||
+    place.lat > bbox.maxLat
+  )
+}
+
+function matchesKeywords(
+  haystack: string,
+  includeKeywords: string[],
+  excludeKeywords: string[],
+  query: string,
+): boolean {
+  if (
+    includeKeywords.length > 0 &&
+    !includeKeywords.every((keyword) => haystack.includes(keyword))
+  ) {
+    return false
+  }
+  if (excludeKeywords.some((keyword) => haystack.includes(keyword))) return false
+  if (!query) return true
+  return haystack.includes(query)
+}
+
 function listPublishedPlaces(params: {
   category?: string
   district?: string
@@ -281,10 +330,10 @@ function listPublishedPlaces(params: {
   // Chỉ nhận 1–3; giá trị lạ (NaN, 0, 9...) coi như không lọc thay vì lọc sai.
   const priceMax =
     params.priceMax && priceMaxRaw >= 1 && priceMaxRaw <= 3 ? (priceMaxRaw as 1 | 2 | 3) : undefined
-  const excludedCategories = (params.excludeCategory ?? "")
-    .split(",")
-    .filter(Boolean) as PlaceCategory[]
-  const excludedDistricts = (params.excludeDistrict ?? "").split(",").filter(Boolean)
+  const excludedCategories = new Set(
+    (params.excludeCategory ?? "").split(",").filter(Boolean) as PlaceCategory[],
+  )
+  const excludedDistricts = new Set((params.excludeDistrict ?? "").split(",").filter(Boolean))
   const includeKeywords = (params.includeKeyword ?? "")
     .split(",")
     .filter(Boolean)
@@ -303,17 +352,7 @@ function listPublishedPlaces(params: {
 
   return published
     .filter((place) => {
-      if (bbox) {
-        if (place.lat === undefined || place.lng === undefined) return false
-        if (
-          place.lng < bbox.minLng ||
-          place.lng > bbox.maxLng ||
-          place.lat < bbox.minLat ||
-          place.lat > bbox.maxLat
-        ) {
-          return false
-        }
-      }
+      if (!matchesBbox(place, bbox)) return false
       if (categories.length > 0 && !categories.includes(place.category)) {
         return false
       }
@@ -321,22 +360,12 @@ function listPublishedPlaces(params: {
         return false
       }
       if (priceMax !== undefined && place.priceLevel > priceMax) return false
-      if (excludedCategories.includes(place.category)) return false
-      if (place.district && excludedDistricts.includes(place.district)) return false
+      if (excludedCategories.has(place.category)) return false
+      if (place.district && excludedDistricts.has(place.district)) return false
       const haystack = normalizeText(
         [place.name, place.address, place.city, place.district ?? "", ...place.tags].join(" "),
       )
-      // Nhiều từ khoá include = phải có ĐỦ (AND) — "muốn có hải sản" + "muốn có
-      // bình dân" nghĩa là cả hai, không phải một trong hai.
-      if (
-        includeKeywords.length > 0 &&
-        !includeKeywords.every((keyword) => haystack.includes(keyword))
-      ) {
-        return false
-      }
-      if (excludeKeywords.some((keyword) => haystack.includes(keyword))) return false
-      if (!query) return true
-      return haystack.includes(query)
+      return matchesKeywords(haystack, includeKeywords, excludeKeywords, query)
     })
     .map(toPlaceDto)
 }
@@ -607,7 +636,7 @@ function createComment(postId: string, body: { body?: string; parentId?: string 
   const parentId = body.parentId ?? null
   if (parentId !== null) {
     const parent = findComment(parentId)
-    if (!parent || parent.postId !== postId) throw new Error("Không tìm thấy bình luận gốc")
+    if (parent?.postId !== postId) throw new Error("Không tìm thấy bình luận gốc")
     if (parent.parentId !== null) throw new Error("Chỉ hỗ trợ trả lời 1 cấp")
   }
 
@@ -653,7 +682,7 @@ function createPlaceReport(config: InternalAxiosRequestConfig, placeId: string):
   }
 
   // Một người một lý do một lần cho mỗi địa điểm — báo cáo lặp là nhiễu.
-  const duplicate = db.reports.find(
+  const duplicate = db.reports.some(
     (report) =>
       report.placeId === placeId &&
       report.reason === reason &&
@@ -1642,8 +1671,7 @@ const routes: Route[] = [
     pattern: /^\/posts\/([^/]+)\/comments$/,
     handler: (config, [postId]) => {
       const { sort = "new" } = query(config)
-      const post = db.posts.find((item) => item.id === postId)
-      if (!post) notFound(config, "Không tìm thấy bài đăng")
+      if (!db.posts.some((item) => item.id === postId)) notFound(config, "Không tìm thấy bài đăng")
       return listComments(postId, sort === "top" ? "top" : "new")
     },
   },
@@ -2019,7 +2047,7 @@ const routes: Route[] = [
         return { room: toRoomDto(room), memberId: tokenMember.id, joined: false }
       }
 
-      const duplicate = room.members.find(
+      const duplicate = room.members.some(
         (member) => member.displayName.toLowerCase() === displayName.toLowerCase(),
       )
       if (duplicate) conflict(config, "Tên này đã có người dùng trong phòng")

@@ -81,13 +81,10 @@
    --radius, cỡ chữ, line-height, padding, border-width, phông chữ của
    component: tất cả khai báo ở đây, KHÔNG ghi đè trong khối [data-skin="retro"].
    Kiểm bằng máy: scratch/size-parity.mjs (phải ra 0 mục lệch).
+   Skin mặc định — "Slate mềm": trung tính hơi lạnh + nhấn indigo-xanh.
    -------------------------------------------------------------------------- */
 :root {
   --radius: 0.625rem;
-}
-
-/* Skin mặc định — "Slate mềm": trung tính hơi lạnh + nhấn indigo-xanh. */
-:root {
   --background: oklch(0.974 0.004 250);
   --foreground: oklch(0.275 0.014 255);
   --card: oklch(0.992 0.002 250);

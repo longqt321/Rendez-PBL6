@@ -11,7 +11,7 @@ interface SafeImageProps {
   imgClassName?: string
 }
 
-export function SafeImage({ src, alt, className, imgClassName }: SafeImageProps) {
+export function SafeImage({ src, alt, className, imgClassName }: Readonly<SafeImageProps>) {
   const [failed, setFailed] = useState(false)
 
   if (failed) {

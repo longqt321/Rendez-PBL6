@@ -25,9 +25,19 @@ if (typeof window !== "undefined" && !window.matchMedia) {
 // jsdom chưa có ResizeObserver — base-ui dùng cho popover/tooltip.
 if (typeof window !== "undefined" && !("ResizeObserver" in window)) {
   class ResizeObserverMock {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
+    private readonly elements = new Set<Element>()
+
+    observe(target: Element) {
+      this.elements.add(target)
+    }
+
+    unobserve(target: Element) {
+      this.elements.delete(target)
+    }
+
+    disconnect() {
+      this.elements.clear()
+    }
   }
   Object.defineProperty(window, "ResizeObserver", {
     writable: true,

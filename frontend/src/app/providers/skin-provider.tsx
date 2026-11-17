@@ -8,7 +8,7 @@ function readStoredSkin(): Skin {
   return window.localStorage.getItem(STORAGE_KEY) === "retro" ? "retro" : "default"
 }
 
-export function SkinProvider({ children }: { children: ReactNode }) {
+export function SkinProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [skin, setSkin] = useState<Skin>(readStoredSkin)
 
   // useLayoutEffect chạy trước khi trình duyệt vẽ khung hình đầu tiên,
@@ -16,9 +16,9 @@ export function SkinProvider({ children }: { children: ReactNode }) {
   useLayoutEffect(() => {
     const root = document.documentElement
     if (skin === "retro") {
-      root.setAttribute("data-skin", "retro")
+      root.dataset.skin = "retro"
     } else {
-      root.removeAttribute("data-skin")
+      delete root.dataset.skin
     }
     window.localStorage.setItem(STORAGE_KEY, skin)
   }, [skin])

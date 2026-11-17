@@ -18,7 +18,7 @@ const STATIC_ROUTES = ["", "/discover", "/map", "/login", "/register"]
  */
 function seoOriginPlugin(origin: string): Plugin {
   const escapeXml = (value: string) =>
-    value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
 
   return {
     name: "rendez-seo-origin",
@@ -32,9 +32,10 @@ function seoOriginPlugin(origin: string): Plugin {
         fileName: "robots.txt",
         source: `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`,
       })
-      const urls = STATIC_ROUTES.map(
-        (route) => `  <url><loc>${escapeXml(`${origin}${route}`)}</loc></url>`,
-      ).join("\n")
+      const urls = STATIC_ROUTES.map((route) => {
+        const loc = escapeXml(origin + route)
+        return `  <url><loc>${loc}</loc></url>`
+      }).join("\n")
       this.emitFile({
         type: "asset",
         fileName: "sitemap.xml",
@@ -52,7 +53,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, import.meta.dirname, "")
   const proxyTarget = env.VITE_PROXY_TARGET || "http://localhost:8000"
   // Dev không cần domain thật; build prod phải đặt VITE_APP_ORIGIN.
-  const appOrigin = (env.VITE_APP_ORIGIN || "http://localhost:5173").replace(/\/+$/, "")
+  let appOrigin = env.VITE_APP_ORIGIN || "http://localhost:5173"
+  while (appOrigin.endsWith("/")) {
+    appOrigin = appOrigin.slice(0, -1)
+  }
 
   return {
     plugins: [react(), tailwindcss(), seoOriginPlugin(appOrigin)],

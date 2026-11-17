@@ -12,7 +12,12 @@ interface ShareButtonProps {
   size?: "sm" | "default"
 }
 
-export function ShareButton({ title, url, label = "Chia sẻ", size = "sm" }: ShareButtonProps) {
+export function ShareButton({
+  title,
+  url,
+  label = "Chia sẻ",
+  size = "sm",
+}: Readonly<ShareButtonProps>) {
   async function handleShare() {
     const result = await shareLink({ title, url })
 
