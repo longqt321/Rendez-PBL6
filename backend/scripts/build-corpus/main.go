@@ -23,6 +23,125 @@ import (
 	"unicode"
 )
 
+// ---------- Hằng số định danh (S1192) ----------
+
+const (
+	// Category slugs
+	catCafe             = "cafe"
+	catQuanAn           = "quan-an"
+	catQuanNhau         = "quan-nhau"
+	catAnVat            = "an-vat"
+	catVietNam          = "viet-nam"
+	catBanhMi           = "banh-mi"
+	catPho              = "pho"
+	catBun              = "bun"
+	catCom              = "com"
+	catComGa            = "com-ga"
+	catMiQuang          = "mi-quang"
+	catBanh             = "banh"
+	catBanhXeo          = "banh-xeo"
+	catBanhBeo          = "banh-beo"
+	catBanhKhoai        = "banh-khoai"
+	catBanhCanh         = "banh-canh"
+	catBanhNgot         = "banh-ngot"
+	catBanhTrangThitHeo = "banh-trang-thit-heo"
+	catBunChaCa         = "bun-cha-ca"
+	catBunMam           = "bun-mam"
+	catBunMamNem        = "bun-mam-nem"
+	catCaoLau           = "cao-lau"
+	catChao             = "chao"
+	catChe              = "che"
+	catKemBo            = "kem-bo"
+	catLau              = "lau"
+	catNuong            = "nuong"
+	catNemLui           = "nem-lui"
+	catGoiCa            = "goi-ca"
+	catHaiSan           = "hai-san"
+	catHuTieu           = "hu-tieu"
+	catSinhTo           = "sinh-to"
+	catTraSua           = "tra-sua"
+	catXoi              = "xoi"
+	catNhat             = "nhat"
+	catHan              = "han"
+	catThai             = "thai"
+	catTrung            = "trung"
+	catAnDo             = "an-do"
+	catY                = "y"
+	catChay             = "chay"
+	catSieuThi          = "sieu-thi"
+	catCuaHangTienLoi   = "cua-hang-tien-loi"
+	catCuaHangThucPham  = "cua-hang-thuc-pham"
+	catCuaHangRuou      = "cua-hang-ruou"
+	catTapHoa           = "tap-hoa"
+	catCho              = "cho"
+	catMall             = "mall"
+	catFarm             = "farm"
+	catKaraoke          = "karaoke"
+	catMusicBox         = "music-box"
+	catCinema           = "cinema"
+	catBida             = "bida"
+	catBowling          = "bowling"
+	catArcade           = "arcade"
+	catWaterPark        = "water-park"
+	catSpa              = "spa"
+	catMassage          = "massage"
+	catKhac             = "khac"
+
+	// District names (canonical 6 quận)
+	distHaiChau    = "Hải Châu"
+	distThanhKhe   = "Thanh Khê"
+	distSonTra     = "Sơn Trà"
+	distNguHanhSon = "Ngũ Hành Sơn"
+	distLienChieu  = "Liên Chiểu"
+	distCamLe      = "Cẩm Lệ"
+
+	// Điểm chất lượng phân khoảng
+	bucket0To19   = "0-19"
+	bucket20To39  = "20-39"
+	bucket40To59  = "40-59"
+	bucket60To79  = "60-79"
+	bucket80To100 = "80-100"
+
+	// Giá trị tag OSM phổ biến
+	valYes  = "yes"
+	valOnly = "only"
+	valWlan = "wlan"
+	valOsm  = "osm"
+
+	// Tag keys
+	tagCuisine         = "cuisine"
+	tagOpeningHours    = "opening_hours"
+	tagPhone           = "phone"
+	tagContactPhone    = "contact:phone"
+	tagWebsite         = "website"
+	tagContactWebsite  = "contact:website"
+	tagDietVegetarian  = "diet:vegetarian"
+	tagOutdoorSeating  = "outdoor_seating"
+	tagTakeaway        = "takeaway"
+	tagInternetAccess  = "internet_access"
+	tagAmenity         = "amenity"
+	tagShop            = "shop"
+	tagLeisure         = "leisure"
+	tagSport           = "sport"
+	tagAddrDistrict    = "addr:district"
+	tagAddrStreet      = "addr:street"
+	tagAddrHousenumber = "addr:housenumber"
+
+	// Terms & labels
+	termJapanese = "japanese"
+	termKorean   = "korean"
+	termChinese  = "chinese"
+	termIndian   = "indian"
+	termSushi    = "sushi"
+	termRamen    = "ramen"
+	termPizza    = "pizza"
+	termBurger   = "burger"
+	termCoffee   = "coffee"
+	termBakery   = "bakery"
+	termSeafood  = "seafood"
+	labelChay    = "Chay"
+)
+
 // ---------- Kiểu dữ liệu raw OSM ----------
 
 type rawElement struct {
@@ -94,10 +213,18 @@ type outDataset struct {
 	Places []outPlace     `json:"places"`
 }
 
-// ---------- Bộ đếm funnel ----------
+// ---------- Bộ đếm funnel & candidate ----------
 
 type funnel struct {
 	Raw, T1, T2, T2b, T3, T4, T4b, T5, T6 int
+}
+
+type cand struct {
+	e           rawElement
+	name        string
+	lat         float64
+	lng         float64
+	namePenalty int // điểm phạt từ judgeName (âm hoặc 0)
 }
 
 // dropReasons: đếm lý do loại của T2b + T4b để in bảng.
@@ -113,73 +240,73 @@ var dishLexicon = []struct {
 	cat  string
 }{
 	// --- Nhật (dài trước) ---
-	{"nhat ban", "nhat"}, {"japanese", "nhat"},
-	{"sashimi", "nhat"}, {"yakitori", "nhat"}, {"izakaya", "nhat"},
-	{"onigiri", "nhat"}, {"tempura", "nhat"}, {"sushi", "nhat"},
-	{"ramen", "nhat"}, {"udon", "nhat"}, {"soba", "nhat"},
-	{"bento", "nhat"}, {"matcha", "nhat"},
+	{"nhat ban", catNhat}, {termJapanese, catNhat},
+	{"sashimi", catNhat}, {"yakitori", catNhat}, {"izakaya", catNhat},
+	{"onigiri", catNhat}, {"tempura", catNhat}, {termSushi, catNhat},
+	{termRamen, catNhat}, {"udon", catNhat}, {"soba", catNhat},
+	{"bento", catNhat}, {"matcha", catNhat},
 	// --- Hàn ---
-	{"han quoc", "han"}, {"korean", "han"}, {"korea", "han"},
-	{"samgyeopsal", "han"}, {"bibimbap", "han"}, {"bulgogi", "han"},
-	{"tteokbokki", "han"}, {"tokbokki", "han"}, {"kimchi", "han"},
-	{"gogi", "han"}, {"soju", "han"},
+	{"han quoc", catHan}, {termKorean, catHan}, {"korea", catHan},
+	{"samgyeopsal", catHan}, {"bibimbap", catHan}, {"bulgogi", catHan},
+	{"tteokbokki", catHan}, {"tokbokki", catHan}, {"kimchi", catHan},
+	{"gogi", catHan}, {"soju", catHan},
 	// --- Thái ---
-	{"thai lan", "thai"}, {"pad thai", "thai"},
-	{"tom yum", "thai"}, {"tom yam", "thai"}, {"thai", "thai"},
+	{"thai lan", catThai}, {"pad thai", catThai},
+	{"tom yum", catThai}, {"tom yam", catThai}, {catThai, catThai},
 	// --- Trung (trước đây sai thành `khac`) ---
-	{"trung hoa", "trung"}, {"trung quoc", "trung"}, {"chinese", "trung"},
-	{"xiao long bao", "trung"}, {"dim sum", "trung"}, {"dimsun", "trung"},
-	{"dumpling", "trung"},
+	{"trung hoa", catTrung}, {"trung quoc", catTrung}, {termChinese, catTrung},
+	{"xiao long bao", catTrung}, {"dim sum", catTrung}, {"dimsun", catTrung},
+	{"dumpling", catTrung},
 	// --- Ấn ---
-	{"an do", "an-do"}, {"indian", "an-do"}, {"biryani", "an-do"},
-	{"masala", "an-do"}, {"naan", "an-do"}, {"curry", "an-do"},
+	{"an do", catAnDo}, {termIndian, catAnDo}, {"biryani", catAnDo},
+	{"masala", catAnDo}, {"naan", catAnDo}, {"curry", catAnDo},
 	// --- Âu / Mỹ ---
-	{"spaghetti", "y"}, {"pho mai", "y"}, {"pizza", "y"}, {"pasta", "y"},
-	{"burger", "an-vat"}, {"steak", "y"},
+	{"spaghetti", catY}, {"pho mai", catY}, {termPizza, catY}, {"pasta", catY},
+	{termBurger, catAnVat}, {"steak", catY},
 	// --- Món Việt dài ---
-	{"banh trang thit heo", "banh-trang-thit-heo"},
-	{"banh canh ca loc", "banh-canh"},
-	{"bun mam nem", "bun-mam-nem"},
-	{"bun bo hue", "bun"},
-	{"banh bot loc", "banh"},
-	{"mi quang", "mi-quang"},
-	{"cao lau", "mi-quang"},
-	{"bun cha ca", "bun-cha-ca"},
-	{"com ga", "com-ga"},
-	{"banh xeo", "banh-xeo"},
-	{"banh beo", "banh-beo"},
-	{"banh khoai", "banh-khoai"},
-	{"banh canh", "banh-canh"},
-	{"banh mi", "banh-mi"},
-	{"banh cuon", "banh"},
-	{"banh uot", "banh"},
-	{"banh ngot", "banh-ngot"},
-	{"goi cuon", "an-vat"},
-	{"cha gio", "an-vat"},
-	{"nem lui", "nem-lui"},
-	{"nem nuong", "nem-lui"},
-	{"kem bo", "kem-bo"},
-	{"hu tieu", "hu-tieu"},
-	{"sinh to", "sinh-to"},
-	{"tra sua", "tra-sua"},
-	{"hai san", "hai-san"},
-	{"do bien", "hai-san"},
-	{"goi ca", "goi-ca"},
-	{"bun mam", "bun-mam"},
-	{"bun bo", "bun"},
-	{"bun rieu", "bun"},
-	{"bun thit", "bun"},
-	{"quan nhau", "quan-nhau"},
+	{"banh trang thit heo", catBanhTrangThitHeo},
+	{"banh canh ca loc", catBanhCanh},
+	{"bun mam nem", catBunMamNem},
+	{"bun bo hue", catBun},
+	{"banh bot loc", catBanh},
+	{"mi quang", catMiQuang},
+	{"cao lau", catMiQuang},
+	{"bun cha ca", catBunChaCa},
+	{"com ga", catComGa},
+	{"banh xeo", catBanhXeo},
+	{"banh beo", catBanhBeo},
+	{"banh khoai", catBanhKhoai},
+	{"banh canh", catBanhCanh},
+	{"banh mi", catBanhMi},
+	{"banh cuon", catBanh},
+	{"banh uot", catBanh},
+	{"banh ngot", catBanhNgot},
+	{"goi cuon", catAnVat},
+	{"cha gio", catAnVat},
+	{"nem lui", catNemLui},
+	{"nem nuong", catNemLui},
+	{"kem bo", catKemBo},
+	{"hu tieu", catHuTieu},
+	{"sinh to", catSinhTo},
+	{"tra sua", catTraSua},
+	{"hai san", catHaiSan},
+	{"do bien", catHaiSan},
+	{"goi ca", catGoiCa},
+	{"bun mam", catBunMam},
+	{"bun bo", catBun},
+	{"bun rieu", catBun},
+	{"bun thit", catBun},
+	{"quan nhau", catQuanNhau},
 	// "quan an" / "nha hang" ĐÃ BỎ: từ chung chung, đứng trước "chay"/món cụ thể
 	// nên đè nhãn ("Nhà hàng chay" từng ra quan-an thay vì chay — MAJOR 4).
 	// Loại hình này do tag amenity quyết định ở fallback.
 	// --- Món nước / một âm tiết ---
-	{"bun", "bun"}, {"pho", "pho"}, {"chao", "chao"}, {"lau", "lau"},
-	{"nuong", "nuong"}, {"oc", "hai-san"}, {"com", "com"}, {"che", "che"},
-	{"kem", "kem-bo"}, {"bia", "quan-nhau"}, {"xoi", "com"},
-	{"an vat", "an-vat"}, {"ca phe", "cafe"}, {"cafe", "cafe"},
-	{"coffee", "cafe"}, {"chay", "chay"}, {"vegan", "chay"},
-	{"banh", "banh"},
+	{catBun, catBun}, {catPho, catPho}, {catChao, catChao}, {catLau, catLau},
+	{catNuong, catNuong}, {"oc", catHaiSan}, {catCom, catCom}, {catChe, catChe},
+	{"kem", catKemBo}, {"bia", catQuanNhau}, {catXoi, catCom},
+	{"an vat", catAnVat}, {"ca phe", catCafe}, {catCafe, catCafe},
+	{termCoffee, catCafe}, {catChay, catChay}, {"vegan", catChay},
+	{catBanh, catBanh},
 }
 
 // init: sắp dishLexicon theo ĐỘ DÀI term GIẢM DẦN — longest-match đúng nghĩa,
@@ -191,40 +318,40 @@ func init() {
 }
 
 var cuisineMap = map[string]string{
-	"vietnamese": "viet-nam", "viet_nam": "viet-nam",
-	"japanese": "nhat", "sushi": "nhat", "ramen": "nhat",
-	"udon": "nhat", "soba": "nhat", "izakaya": "nhat", "tempura": "nhat",
-	"korean": "han", "korean_bbq": "han", "bibimbap": "han", "kimchi": "han",
-	"thai": "thai", "thai_food": "thai", "vietnamese_street_food": "viet-nam",
-	"indian": "an-do", "curry": "an-do", "biryani": "an-do",
+	"vietnamese": catVietNam, "viet_nam": catVietNam,
+	termJapanese: catNhat, termSushi: catNhat, termRamen: catNhat,
+	"udon": catNhat, "soba": catNhat, "izakaya": catNhat, "tempura": catNhat,
+	termKorean: catHan, "korean_bbq": catHan, "bibimbap": catHan, "kimchi": catHan,
+	catThai: catThai, "thai_food": catThai, "vietnamese_street_food": catVietNam,
+	termIndian: catAnDo, "curry": catAnDo, "biryani": catAnDo,
 	// `chinese` KHÔNG map về `khac` nữa — `khac` là thùng nhiễu bị cảnh báo >20%,
 	// đẩy quán Trung vào đó vừa mất thông tin vừa làm nhiễu chỉ tiêu A7.
-	"chinese": "trung", "dim_sum": "trung", "cantonese": "trung",
-	"sichuan": "trung", "taiwanese": "trung", "hotpot": "lau", "hot_pot": "lau",
-	"seafood": "hai-san", "fish": "hai-san",
-	"italian": "y", "pizza": "y", "french": "y", "western": "y",
-	"american": "y", "mexican": "y", "spanish": "y", "german": "y",
-	"bbq": "nuong", "barbecue": "nuong", "grill": "nuong",
-	"coffee_shop": "cafe", "coffee": "cafe", "cafe": "cafe",
-	"bubble_tea": "tra-sua", "tea": "cafe",
-	"bakery": "banh-mi", "cake": "banh-ngot",
-	"ice_cream": "kem-bo", "dessert": "kem-bo",
-	"fast_food": "an-vat", "burger": "an-vat",
-	"vegetarian": "chay", "vegan": "chay",
-	"noodle": "bun", "breakfast": "quan-an",
-	"sandwich": "banh-mi", "juice": "sinh-to", "smoothie": "sinh-to",
+	termChinese: catTrung, "dim_sum": catTrung, "cantonese": catTrung,
+	"sichuan": catTrung, "taiwanese": catTrung, "hotpot": catLau, "hot_pot": catLau,
+	termSeafood: catHaiSan, "fish": catHaiSan,
+	"italian": catY, termPizza: catY, "french": catY, "western": catY,
+	"american": catY, "mexican": catY, "spanish": catY, "german": catY,
+	"bbq": catNuong, "barbecue": catNuong, "grill": catNuong,
+	"coffee_shop": catCafe, termCoffee: catCafe, catCafe: catCafe,
+	"bubble_tea": catTraSua, "tea": catCafe,
+	termBakery: catBanhMi, "cake": catBanhNgot,
+	"ice_cream": catKemBo, "dessert": catKemBo,
+	"fast_food": catAnVat, termBurger: catAnVat,
+	"vegetarian": catChay, "vegan": catChay,
+	"noodle": catBun, "breakfast": catQuanAn,
+	"sandwich": catBanhMi, "juice": catSinhTo, "smoothie": catSinhTo,
 }
 
 // tagCuisineMap: cuisine OSM → nhãn tiếng Việt cho trường tags. Cuisine lạ
 // KHÔNG có trong map → bỏ (không dịch máy móc bừa — D-049).
 var tagCuisineMap = map[string]string{
-	"vietnamese": "Món Việt", "coffee_shop": "Cà phê", "seafood": "Hải sản",
-	"korean": "Món Hàn", "japanese": "Món Nhật", "indian": "Món Ấn",
-	"pizza": "Pizza", "pasta": "Pizza", "steak_house": "Bít tết",
-	"regional": "Đặc sản địa phương", "burger": "Burger", "asian": "Món Á",
-	"thai": "Món Thái", "mexican": "Món Mexico", "american": "Món Mỹ",
-	"chicken": "Gà rán", "noodle": "Mì/noodle", "vegetarian": "Chay",
-	"chinese": "Món Trung",
+	"vietnamese": "Món Việt", "coffee_shop": "Cà phê", termSeafood: "Hải sản",
+	termKorean: "Món Hàn", termJapanese: "Món Nhật", termIndian: "Món Ấn",
+	termPizza: "Pizza", "pasta": "Pizza", "steak_house": "Bít tết",
+	"regional": "Đặc sản địa phương", termBurger: "Burger", "asian": "Món Á",
+	catThai: "Món Thái", "mexican": "Món Mexico", "american": "Món Mỹ",
+	"chicken": "Gà rán", "noodle": "Mì/noodle", "vegetarian": labelChay,
+	termChinese: "Món Trung",
 }
 
 // buildTags: sinh tags từ tag OSM thật. Dedup, sort alphabet (thứ tự ổn định),
@@ -236,23 +363,23 @@ func buildTags(tags map[string]string) []string {
 			set[l] = true
 		}
 	}
-	if c := tags["cuisine"]; c != "" {
+	if c := tags[tagCuisine]; c != "" {
 		for _, part := range strings.Split(c, ";") {
 			add(tagCuisineMap[strings.ToLower(strings.TrimSpace(part))])
 		}
 	}
-	switch tags["diet:vegetarian"] {
-	case "yes", "only":
-		add("Chay")
+	switch tags[tagDietVegetarian] {
+	case valYes, valOnly:
+		add(labelChay)
 	}
-	if tags["outdoor_seating"] == "yes" {
+	if tags[tagOutdoorSeating] == valYes {
 		add("Ngồi ngoài trời")
 	}
-	if tags["takeaway"] == "yes" {
+	if tags[tagTakeaway] == valYes {
 		add("Mang đi")
 	}
-	switch tags["internet_access"] {
-	case "yes", "wlan":
+	switch tags[tagInternetAccess] {
+	case valYes, valWlan:
 		add("Wifi")
 	}
 	out := make([]string, 0, len(set))
@@ -272,46 +399,52 @@ func buildTags(tags map[string]string) []string {
 // Nguyên tắc: KHÔNG suy đoán. Cafe không khai internet_access thì KHÔNG gán
 // "Làm việc" (nhiều quán có wifi nhưng OSM không ghi — bịa là sai). Place không
 // có tín hiệu nào → mảng rỗng, card tự ẩn khối vibes.
+func isWorkingVibe(tags map[string]string, cat string) bool {
+	if cat != catCafe {
+		return false
+	}
+	ia := tags[tagInternetAccess]
+	return ia == valYes || ia == valWlan
+}
+
+func isOutdoorVibe(tags map[string]string) bool {
+	return tags[tagOutdoorSeating] == valYes
+}
+
+func isTakeawayVibe(tags map[string]string) bool {
+	return tags[tagTakeaway] == valYes
+}
+
+func isNightlifeVibe(tags map[string]string, cat string) bool {
+	if cat == catQuanNhau {
+		return true
+	}
+	amenity := tags[tagAmenity]
+	return amenity == "bar" || amenity == "pub"
+}
+
+func isEntertainmentVibe(cat string) bool {
+	return cat == catKaraoke || cat == catCinema || cat == catArcade
+}
+
+func isVegetarianVibe(tags map[string]string) bool {
+	dv := tags[tagDietVegetarian]
+	return dv == valYes || dv == valOnly
+}
+
 func buildVibes(tags map[string]string, cat string) []string {
 	out := make([]string, 0, 3)
-	add := func(v string) {
-		if len(out) >= 3 {
-			return
-		}
-		for _, e := range out {
-			if e == v {
-				return
-			}
-		}
-		out = append(out, v)
-	}
-	switch tags["internet_access"] {
-	case "yes", "wlan":
-		if cat == "cafe" {
-			add("Làm việc")
+	appendVibe := func(condition bool, v string) {
+		if condition && len(out) < 3 {
+			out = append(out, v)
 		}
 	}
-	if tags["outdoor_seating"] == "yes" {
-		add("Ngoài trời")
-	}
-	if tags["takeaway"] == "yes" {
-		add("Mang đi")
-	}
-	switch tags["amenity"] {
-	case "bar", "pub":
-		add("Nhậu nhẹt")
-	}
-	if cat == "quan-nhau" {
-		add("Nhậu nhẹt")
-	}
-	switch cat {
-	case "karaoke", "cinema", "arcade":
-		add("Giải trí")
-	}
-	switch tags["diet:vegetarian"] {
-	case "yes", "only":
-		add("Chay")
-	}
+	appendVibe(isWorkingVibe(tags, cat), "Làm việc")
+	appendVibe(isOutdoorVibe(tags), "Ngoài trời")
+	appendVibe(isTakeawayVibe(tags), "Mang đi")
+	appendVibe(isNightlifeVibe(tags, cat), "Nhậu nhẹt")
+	appendVibe(isEntertainmentVibe(cat), "Giải trí")
+	appendVibe(isVegetarianVibe(tags), labelChay)
 	return out
 }
 
@@ -326,12 +459,12 @@ func buildVibes(tags map[string]string, cat string) []string {
 // trực thuộc TP), nên đây là PHÂN NHÓM XẤP XỈ theo quận cũ, không phải đơn vị
 // hành chính hiện hành.
 var districtCentroids = map[string][2]float64{
-	"Hải Châu":     {16.0678, 108.2208},
-	"Thanh Khê":    {16.0450, 108.2050},
-	"Sơn Trà":      {16.1000, 108.2500},
-	"Ngũ Hành Sơn": {16.0200, 108.2500},
-	"Liên Chiểu":   {16.0700, 108.1500},
-	"Cẩm Lệ":       {16.0100, 108.2000},
+	distHaiChau:    {16.0678, 108.2208},
+	distThanhKhe:   {16.0450, 108.2050},
+	distSonTra:     {16.1000, 108.2500},
+	distNguHanhSon: {16.0200, 108.2500},
+	distLienChieu:  {16.0700, 108.1500},
+	distCamLe:      {16.0100, 108.2000},
 }
 
 var (
@@ -395,15 +528,15 @@ var vnGivenNames = map[string]bool{
 
 // dishWordSet: từ đơn là TÊN MÓN — không bao giờ coi là tên người.
 var dishWordSet = map[string]bool{
-	"com": true, "bun": true, "pho": true, "chao": true, "che": true,
-	"kem": true, "oc": true, "lau": true, "xoi": true, "banh": true,
-	"bia": true, "chay": true, "nuong": true, "goi": true, "mi": true,
+	catCom: true, catBun: true, catPho: true, catChao: true, catChe: true,
+	catKemBo: true, "oc": true, catLau: true, catXoi: true, catBanh: true,
+	"bia": true, catChay: true, catNuong: true, "goi": true, "mi": true,
 	"hu": true, "tieu": true, "mam": true, "nem": true, "canh": true,
 	"tra": true, "sua": true, "sinh": true, "to": true, "hai": true,
 	"san": true, "do": true, "bien": true, "khoai": true, "beo": true,
 	"xeo": true, "ngot": true, "cuon": true, "gio": true, "lui": true,
 	"trang": true, "thit": true, "heo": true, "ga": true, "ca": true,
-	"cha": true, "pizza": true, "burger": true, "sushi": true, "ramen": true,
+	"cha": true, termPizza: true, termBurger: true, termSushi: true, termRamen: true,
 }
 
 // ---------- Hàm phụ ----------
@@ -489,22 +622,22 @@ func removeDiacritics(s string) string {
 // Lý do: lần trước code đổi `mart`→`sieu-thi` nhưng JSON trên đĩa vẫn là bản
 // build cũ; mọi phân tích đo trên dữ liệu không khớp code (L-019).
 var validCategories = map[string]bool{
-	"cafe": true, "quan-an": true, "quan-nhau": true, "an-vat": true,
-	"viet-nam": true, "banh-mi": true, "pho": true, "bun": true, "com": true,
-	"com-ga": true, "mi-quang": true, "banh": true, "banh-xeo": true,
-	"banh-beo": true, "banh-khoai": true, "banh-canh": true, "banh-ngot": true,
-	"banh-trang-thit-heo": true, "bun-cha-ca": true, "bun-mam": true,
-	"bun-mam-nem": true, "cao-lau": true, "chao": true, "che": true,
-	"kem-bo": true, "lau": true, "nuong": true, "nem-lui": true,
-	"goi-ca": true, "hai-san": true, "hu-tieu": true, "sinh-to": true,
-	"tra-sua": true, "xoi": true,
-	"nhat": true, "han": true, "thai": true, "trung": true, "an-do": true,
-	"y": true, "chay": true,
-	"sieu-thi": true, "cua-hang-tien-loi": true, "cua-hang-thuc-pham": true,
-	"cua-hang-ruou": true, "tap-hoa": true, "cho": true, "mall": true, "farm": true,
-	"karaoke": true, "music-box": true, "cinema": true, "bida": true,
-	"bowling": true, "arcade": true, "water-park": true, "spa": true, "massage": true,
-	"khac": true,
+	catCafe: true, catQuanAn: true, catQuanNhau: true, catAnVat: true,
+	catVietNam: true, catBanhMi: true, catPho: true, catBun: true, catCom: true,
+	catComGa: true, catMiQuang: true, catBanh: true, catBanhXeo: true,
+	catBanhBeo: true, catBanhKhoai: true, catBanhCanh: true, catBanhNgot: true,
+	catBanhTrangThitHeo: true, catBunChaCa: true, catBunMam: true,
+	catBunMamNem: true, catCaoLau: true, catChao: true, catChe: true,
+	catKemBo: true, catLau: true, catNuong: true, catNemLui: true,
+	catGoiCa: true, catHaiSan: true, catHuTieu: true, catSinhTo: true,
+	catTraSua: true, catXoi: true,
+	catNhat: true, catHan: true, catThai: true, catTrung: true, catAnDo: true,
+	catY: true, catChay: true,
+	catSieuThi: true, catCuaHangTienLoi: true, catCuaHangThucPham: true,
+	catCuaHangRuou: true, catTapHoa: true, catCho: true, catMall: true, catFarm: true,
+	catKaraoke: true, catMusicBox: true, catCinema: true, catBida: true,
+	catBowling: true, catArcade: true, catWaterPark: true, catSpa: true, catMassage: true,
+	catKhac: true,
 }
 
 // ---------- Đánh giá tên: tên có SEARCHABLE không? ----------
@@ -673,9 +806,9 @@ func looksFakeWebsite(w string) bool {
 }
 
 func realPhone(tags map[string]string) string {
-	p := tags["phone"]
+	p := tags[tagPhone]
 	if p == "" {
-		p = tags["contact:phone"]
+		p = tags[tagContactPhone]
 	}
 	if p == "" || looksFakePhone(p) {
 		return ""
@@ -684,9 +817,9 @@ func realPhone(tags map[string]string) string {
 }
 
 func realWebsite(tags map[string]string) string {
-	w := tags["website"]
+	w := tags[tagWebsite]
 	if w == "" {
-		w = tags["contact:website"]
+		w = tags[tagContactWebsite]
 	}
 	if w == "" || looksFakeWebsite(w) {
 		return ""
@@ -701,11 +834,14 @@ func realWebsite(tags map[string]string) string {
 // nông trại. Giữ: mall + siêu thị lớn (điểm mua sắm thật), chợ nổi tiếng.
 
 var dropCategories = map[string]bool{
-	"cua-hang-tien-loi": true, "tap-hoa": true,
-	"cua-hang-thuc-pham": true, "cua-hang-ruou": true, "farm": true,
+	catCuaHangTienLoi:  true,
+	catTapHoa:          true,
+	catCuaHangThucPham: true,
+	catCuaHangRuou:     true,
+	catFarm:            true,
 }
 
-var keepRetailCategories = map[string]bool{"mall": true, "sieu-thi": true}
+var keepRetailCategories = map[string]bool{catMall: true, catSieuThi: true}
 
 // famousMarkets: chợ lớn/nổi tiếng ở Đà Nẵng (nguồn: cổng du lịch ĐN).
 var famousMarkets = []string{
@@ -731,7 +867,7 @@ func businessSignals(tags map[string]string, name string) int {
 	if realWebsite(tags) != "" {
 		n++
 	}
-	if tags["opening_hours"] != "" {
+	if tags[tagOpeningHours] != "" {
 		n++
 	}
 	if tags["brand"] != "" || tags["brand:wikidata"] != "" {
@@ -755,7 +891,7 @@ func isNotable(tags map[string]string, name, cat string, minSignals int) (bool, 
 	if keepRetailCategories[cat] {
 		return true, ""
 	}
-	if cat == "cho" {
+	if cat == catCho {
 		flat := removeDiacritics(strings.ToLower(name))
 		for _, m := range famousMarkets {
 			if containsWord(flat, m) {
@@ -781,6 +917,251 @@ func hasNearMarker(flat string) bool {
 	return false
 }
 
+// ---------- Phân loại danh mục (S3776 refactoring) ----------
+
+func categoryFromPrimaryShop(shop string) string {
+	switch shop {
+	case "mall", "department_store":
+		return catMall
+	case catSieuThi:
+		return catSieuThi
+	case catCuaHangTienLoi:
+		return catCuaHangTienLoi
+	case "greengrocer", termSeafood, "butcher", "deli", "wholesale":
+		return catCuaHangThucPham
+	case "wine", "alcohol":
+		// Cửa hàng BÁN rượu ≠ quán nhậu (MAJOR 6).
+		return catCuaHangRuou
+	case catMassage:
+		// shop=massage ở VN là cơ sở massage, KHÔNG phải wellness spa (MAJOR 5).
+		return catMassage
+	case termBakery:
+		return catBanhMi
+	case termCoffee:
+		// shop=coffee = bán hạt/đóng gói, nhưng ở ĐN gần như chắc chắn là cafe
+		// (10 cái; wiki: map quán cà phê thì dùng amenity=cafe).
+		return catCafe
+	case catFarm:
+		return catFarm
+	}
+	return ""
+}
+
+func categoryFromPrimaryAmenity(amenity string) string {
+	switch amenity {
+	case "marketplace":
+		// Chợ truyền thống — 48 cái ở ĐN, khác hẳn siêu thị.
+		return catCho
+	case "karaoke_box":
+		return catKaraoke
+	case "music_venue":
+		return catMusicBox
+	case catCinema:
+		return catCinema
+	}
+	return ""
+}
+
+func categoryFromPrimaryLeisure(leisure string) string {
+	switch leisure {
+	case "bowling_alley":
+		return catBowling
+	case "amusement_arcade", "escape_game", "adult_gaming_centre":
+		return catArcade
+	case "water_park":
+		return catWaterPark
+	}
+	return ""
+}
+
+func categoryFromPrimaryTags(tags map[string]string) string {
+	if cat := categoryFromPrimaryShop(tags[tagShop]); cat != "" {
+		return cat
+	}
+	if cat := categoryFromPrimaryAmenity(tags[tagAmenity]); cat != "" {
+		return cat
+	}
+	if tags[tagSport] == "billiards" {
+		return catBida
+	}
+	if cat := categoryFromPrimaryLeisure(tags[tagLeisure]); cat != "" {
+		return cat
+	}
+	return ""
+}
+
+var (
+	mallWords        = []string{"trung tam thuong mai", "tttm", "vincom", "aeon mall", "parkson", "indochina riverside"}
+	supermarketWords = []string{"sieu thi", "coopmart", "winmart", "lotte mart", "big c", "go!", "mm mega market", "satrafoods"}
+	convenienceWords = []string{"circle k", "gs25", "family mart", "winmart+", "bach hoa xanh", "vinmart+", "mart"}
+	musicBoxWords    = []string{"music box", "nhac song", "live music", "acoustic"}
+	bidaWords        = []string{"bida", "bi a", "billiard"}
+	cinemaWords      = []string{"cinema", "rap phim"}
+)
+
+func containsAnyWord(flat string, words []string) bool {
+	for _, w := range words {
+		if containsWord(flat, w) {
+			return true
+		}
+	}
+	return false
+}
+
+func categoryFromRetailName(flat string) string {
+	// TTTM: phải tự khai "trung tâm thương mại"/"tttm" hoặc là thương hiệu
+	// TTTM thật. "plaza"/"mall" một mình KHÔNG đủ (Crowne Plaza = khách sạn).
+	if containsAnyWord(flat, mallWords) {
+		return catMall
+	}
+	// Siêu thị: CHỈ thương hiệu lớn (D-AI-44). "Siêu thị X"/"Y Mart" không
+	// có thương hiệu lớn → minimart/tạp hóa → cua-hang-tien-loi (T4b loại).
+	// Audit: 49 sieu-thi chỉ 9 là thương hiệu lớn, còn lại minimart nhỏ.
+	if containsAnyWord(flat, supermarketWords) {
+		return catSieuThi
+	}
+	if containsAnyWord(flat, convenienceWords) {
+		return catCuaHangTienLoi
+	}
+	if containsWord(flat, "tap hoa") {
+		return catTapHoa
+	}
+	// "Chợ X" — chỉ nhận khi "cho" đứng ĐẦU tên, tránh "chỗ"/"chợ" giữa câu.
+	if strings.HasPrefix(flat, "cho ") {
+		return catCho
+	}
+	if containsWord(flat, "mart") {
+		return catSieuThi
+	}
+	return ""
+}
+
+func categoryFromEntertainmentName(flat string) string {
+	if containsWord(flat, "quan nhau") {
+		return catQuanNhau
+	}
+	if containsWord(flat, "karaoke") {
+		return catKaraoke
+	}
+	// Music box / nhạc sống / acoustic — quán cà phê hát (rất phổ biến ở Đà Nẵng)
+	if containsAnyWord(flat, musicBoxWords) {
+		return catMusicBox
+	}
+	if containsAnyWord(flat, bidaWords) {
+		return catBida
+	}
+	if containsAnyWord(flat, cinemaWords) {
+		return catCinema
+	}
+	if containsWord(flat, "bowling") {
+		return catBowling
+	}
+	if containsWord(flat, "arcade") {
+		return catArcade
+	}
+	// spa ≠ massage: shop=massage ở VN phần lớn là cơ sở massage, không phải
+	// wellness spa, và nổi tiếng nhiễu nội dung người lớn (MAJOR 5).
+	if containsWord(flat, "spa") {
+		return catSpa
+	}
+	if containsWord(flat, "massage") {
+		return catMassage
+	}
+	return ""
+}
+
+func categoryFromName(flat string) string {
+	if containsWord(flat, "farm") || containsWord(flat, "nong trai") {
+		return catFarm
+	}
+	if !hasNearMarker(flat) {
+		if cat := categoryFromRetailName(flat); cat != "" {
+			return cat
+		}
+	}
+	if cat := categoryFromEntertainmentName(flat); cat != "" {
+		return cat
+	}
+	// Tên món CỤ THỂ thắng cuisine chung chung (audit: "Bánh Bèo Nóng" có
+	// cuisine=vietnamese nên bị gán viet-nam, mất nhãn banh-beo). Lexicon đã
+	// sort dài→ngắn nên "banh beo" thắng "banh".
+	for _, entry := range dishLexicon {
+		if containsWord(flat, entry.term) {
+			return entry.cat
+		}
+	}
+	return ""
+}
+
+func categoryFromCuisine(cuisineTag string) string {
+	if cuisineTag == "" {
+		return ""
+	}
+	for _, part := range strings.Split(strings.ToLower(cuisineTag), ";") {
+		part = strings.TrimSpace(part)
+		if cat, ok := cuisineMap[part]; ok {
+			return cat
+		}
+	}
+	return ""
+}
+
+func categoryFromFallbackAmenity(amenity string) string {
+	switch amenity {
+	case catCafe:
+		return catCafe
+	case "restaurant", "food_court", "canteen":
+		return catQuanAn
+	case "fast_food":
+		return catAnVat
+	case "bar", "pub", "biergarten", "nightclub":
+		return catQuanNhau
+	case "ice_cream":
+		return catKemBo
+	case "karaoke_box":
+		return catKaraoke
+	case "music_venue":
+		return catMusicBox
+	case catCinema:
+		return catCinema
+	}
+	return ""
+}
+
+func categoryFromFallbackTags(tags map[string]string) string {
+	if cat := categoryFromFallbackAmenity(tags[tagAmenity]); cat != "" {
+		return cat
+	}
+	// Giải trí — leisure/sport/shop (L7)
+	switch tags[tagLeisure] {
+	case "bowling_alley":
+		return catBowling
+	case "amusement_arcade", "escape_game", "adult_gaming_centre":
+		return catArcade
+	case "water_park":
+		return catWaterPark
+	}
+	if tags[tagSport] == "billiards" {
+		return catBida
+	}
+
+	switch tags[tagShop] {
+	case termBakery:
+		return catBanhMi
+	case catSieuThi:
+		return catSieuThi
+	case catCuaHangTienLoi:
+		return catCuaHangTienLoi
+	case "greengrocer", termSeafood, "butcher", "deli", "wholesale":
+		return catCuaHangThucPham
+	case catFarm:
+		return catFarm
+	case "wine", "alcohol":
+		return catCuaHangRuou
+	}
+	return ""
+}
+
 // assignCategory: tag OSM (đáng tin nhất) → tên → cuisine → fallback → khac.
 //
 // Thứ tự đã sửa sau phản biện độc lập (L-020, L-021):
@@ -797,212 +1178,42 @@ func assignCategory(tags map[string]string, name string) string {
 	// amenity=restaurant, cửa hàng thú cưng tên "Siêu Thị Thú Cưng"...).
 	for _, m := range nonFoodMarkers {
 		if containsWord(flat, m) {
-			return "khac"
+			return catKhac
 		}
 	}
 
 	// 2. TAG quyết định — đáng tin hơn tên (OSM wiki: chọn theo tag, không theo tên).
-	switch tags["shop"] {
-	case "mall", "department_store":
-		return "mall"
-	case "supermarket":
-		return "sieu-thi"
-	case "convenience":
-		return "cua-hang-tien-loi"
-	case "greengrocer", "seafood", "butcher", "deli", "wholesale":
-		return "cua-hang-thuc-pham"
-	case "wine", "alcohol":
-		// Cửa hàng BÁN rượu ≠ quán nhậu (MAJOR 6).
-		return "cua-hang-ruou"
-	case "massage":
-		// shop=massage ở VN là cơ sở massage, KHÔNG phải wellness spa (MAJOR 5).
-		return "massage"
-	case "bakery":
-		return "banh-mi"
-	case "coffee":
-		// shop=coffee = bán hạt/đóng gói, nhưng ở ĐN gần như chắc chắn là cafe
-		// (10 cái; wiki: map quán cà phê thì dùng amenity=cafe).
-		return "cafe"
-	case "farm":
-		return "farm"
-	}
-	switch tags["amenity"] {
-	case "marketplace":
-		// Chợ truyền thống — 48 cái ở ĐN, khác hẳn siêu thị.
-		return "cho"
-	case "karaoke_box":
-		return "karaoke"
-	case "music_venue":
-		return "music-box"
-	case "cinema":
-		return "cinema"
-	}
-	if tags["sport"] == "billiards" {
-		return "bida"
-	}
-	switch tags["leisure"] {
-	case "bowling_alley":
-		return "bowling"
-	case "amusement_arcade", "escape_game", "adult_gaming_centre":
-		return "arcade"
-	case "water_park":
-		return "water-park"
+	if cat := categoryFromPrimaryTags(tags); cat != "" {
+		return cat
 	}
 
 	// 3. Tên — chỉ khi tag không nói gì.
-	near := hasNearMarker(flat)
-	if containsWord(flat, "farm") || containsWord(flat, "nong trai") {
-		return "farm"
-	}
-	if !near {
-		// TTTM: phải tự khai "trung tâm thương mại"/"tttm" hoặc là thương hiệu
-		// TTTM thật. "plaza"/"mall" một mình KHÔNG đủ (Crowne Plaza = khách sạn).
-		if containsWord(flat, "trung tam thuong mai") || containsWord(flat, "tttm") ||
-			containsWord(flat, "vincom") || containsWord(flat, "aeon mall") ||
-			containsWord(flat, "parkson") || containsWord(flat, "indochina riverside") {
-			return "mall"
-		}
-		// Siêu thị: CHỈ thương hiệu lớn (D-AI-44). "Siêu thị X"/"Y Mart" không
-		// có thương hiệu lớn → minimart/tạp hóa → cua-hang-tien-loi (T4b loại).
-		// Audit: 49 sieu-thi chỉ 9 là thương hiệu lớn, còn lại minimart nhỏ.
-		if containsWord(flat, "sieu thi") || containsWord(flat, "coopmart") ||
-			containsWord(flat, "winmart") || containsWord(flat, "lotte mart") ||
-			containsWord(flat, "big c") || containsWord(flat, "go!") ||
-			containsWord(flat, "mm mega market") || containsWord(flat, "satrafoods") {
-			return "sieu-thi"
-		}
-		if containsWord(flat, "circle k") || containsWord(flat, "gs25") ||
-			containsWord(flat, "family mart") || containsWord(flat, "winmart+") ||
-			containsWord(flat, "bach hoa xanh") || containsWord(flat, "vinmart+") ||
-			containsWord(flat, "mart") {
-			return "cua-hang-tien-loi"
-		}
-		if containsWord(flat, "tap hoa") {
-			return "tap-hoa"
-		}
-		// "Chợ X" — chỉ nhận khi "cho" đứng ĐẦU tên, tránh "chỗ"/"chợ" giữa câu.
-		if strings.HasPrefix(flat, "cho ") {
-			return "cho"
-		}
-		if containsWord(flat, "mart") {
-			return "sieu-thi"
-		}
-	}
-	if containsWord(flat, "quan nhau") {
-		return "quan-nhau"
-	}
-	if containsWord(flat, "karaoke") {
-		return "karaoke"
-	}
-	// Music box / nhạc sống / acoustic — quán cà phê hát (rất phổ biến ở Đà Nẵng)
-	if containsWord(flat, "music box") || containsWord(flat, "nhac song") ||
-		containsWord(flat, "live music") || containsWord(flat, "acoustic") {
-		return "music-box"
-	}
-	if containsWord(flat, "bida") || containsWord(flat, "bi a") ||
-		containsWord(flat, "billiard") {
-		return "bida"
-	}
-	if containsWord(flat, "cinema") || containsWord(flat, "rap phim") {
-		return "cinema"
-	}
-	if containsWord(flat, "bowling") {
-		return "bowling"
-	}
-	if containsWord(flat, "arcade") {
-		return "arcade"
-	}
-	// spa ≠ massage: shop=massage ở VN phần lớn là cơ sở massage, không phải
-	// wellness spa, và nổi tiếng nhiễu nội dung người lớn (MAJOR 5).
-	if containsWord(flat, "spa") {
-		return "spa"
-	}
-	if containsWord(flat, "massage") {
-		return "massage"
+	if cat := categoryFromName(flat); cat != "" {
+		return cat
 	}
 
-	// Tên món CỤ THỂ thắng cuisine chung chung (audit: "Bánh Bèo Nóng" có
-	// cuisine=vietnamese nên bị gán viet-nam, mất nhãn banh-beo). Lexicon đã
-	// sort dài→ngắn nên "banh beo" thắng "banh".
-	for _, entry := range dishLexicon {
-		if containsWord(flat, entry.term) {
-			return entry.cat
-		}
+	// 4. Cuisine tag
+	if cat := categoryFromCuisine(tags[tagCuisine]); cat != "" {
+		return cat
 	}
 
-	if c, ok := tags["cuisine"]; ok && c != "" {
-		// cuisine có thể là "vietnamese;seafood"
-		for _, part := range strings.Split(strings.ToLower(c), ";") {
-			part = strings.TrimSpace(part)
-			if cat, ok := cuisineMap[part]; ok {
-				return cat
-			}
-		}
+	// 5. Fallback tags
+	if cat := categoryFromFallbackTags(tags); cat != "" {
+		return cat
 	}
 
-	switch tags["amenity"] {
-	case "cafe":
-		return "cafe"
-	case "restaurant":
-		return "quan-an"
-	case "fast_food":
-		return "an-vat"
-	case "bar", "pub", "biergarten", "nightclub":
-		return "quan-nhau"
-	case "ice_cream":
-		return "kem-bo"
-	case "food_court", "canteen":
-		return "quan-an"
-	case "karaoke_box":
-		return "karaoke"
-	case "music_venue":
-		return "music-box"
-	case "cinema":
-		return "cinema"
-	}
-
-	// Giải trí — leisure/sport/shop (L7)
-	switch tags["leisure"] {
-	case "bowling_alley":
-		return "bowling"
-	case "amusement_arcade", "escape_game", "adult_gaming_centre":
-		return "arcade"
-	case "water_park":
-		return "water-park"
-	}
-	if tags["sport"] == "billiards" {
-		return "bida"
-	}
-
-	switch tags["shop"] {
-	case "bakery":
-		return "banh-mi"
-	// TÁCH 3 loại bán lẻ — số đếm thật từ Overpass (2026-11-11):
-	//   shop=supermarket 32 · shop=convenience 410 · amenity=marketplace 48
-	// Gộp cả ba thành "sieu-thi" là sai bản chất: cửa hàng tiện lợi (Circle K,
-	// GS25, WinMart+, Bách Hóa Xanh) KHÔNG phải siêu thị (D-AI-40).
-	// T4b sẽ loại tiếp các nhãn tiện ích — ở đây vẫn phân loại đúng để funnel
-	// đếm được lý do (D-AI-42).
-	case "supermarket":
-		return "sieu-thi"
-	case "convenience":
-		return "cua-hang-tien-loi"
-	case "greengrocer", "seafood", "butcher", "deli", "wholesale":
-		return "cua-hang-thuc-pham"
-	case "farm":
-		return "farm"
-	case "wine", "alcohol":
-		return "cua-hang-ruou"
-	}
-
-	return "khac"
+	return catKhac
 }
 
 // districtCanonical: 6 nhãn quận (xấp xỉ theo quận cũ, xem comment trên
 // `districtCentroids`).
 var districtCanonical = map[string]bool{
-	"Hải Châu": true, "Thanh Khê": true, "Sơn Trà": true,
-	"Ngũ Hành Sơn": true, "Liên Chiểu": true, "Cẩm Lệ": true,
+	distHaiChau:    true,
+	distThanhKhe:   true,
+	distSonTra:     true,
+	distNguHanhSon: true,
+	distLienChieu:  true,
+	distCamLe:      true,
 }
 
 // Chuẩn hoá addr:district từ OSM (viết không dấu, có tiền tố, sai chính tả,
@@ -1026,18 +1237,20 @@ func normalizeDistrict(s string) string {
 	}
 	// map không dấu → có dấu, gồm cả đơn vị cũ trước sáp nhập 2025
 	ascii := map[string]string{
-		"Hai Chau": "Hải Châu", "Hai Chau District": "Hải Châu",
-		"Ngu Hanh Son": "Ngũ Hành Sơn",
-		"Son Tra":      "Sơn Trà", "Lien Chieu": "Liên Chiểu",
-		"Cam Le": "Cẩm Lệ",
+		"Hai Chau":          distHaiChau,
+		"Hai Chau District": distHaiChau,
+		"Ngu Hanh Son":      distNguHanhSon,
+		"Son Tra":           distSonTra,
+		"Lien Chieu":        distLienChieu,
+		"Cam Le":            distCamLe,
 		// Đơn vị cũ → đơn vị mới sau sáp nhập 2025
-		"An Hai":    "Sơn Trà", // An Hải Đông/Bắc/Tây là phường của Sơn Trà
-		"Hoa Cuong": "Hải Châu",
-		"An Khe":    "Thanh Khê", // An Khê là phường thuộc Thanh Khê cũ
-		"Thanh Khe": "Thanh Khê",
-		"Hoa Khanh": "Liên Chiểu",
-		"Hai Van":   "Liên Chiểu",
-		"Hoa Xuan":  "Cẩm Lệ",
+		"An Hai":    distSonTra, // An Hải Đông/Bắc/Tây là phường của Sơn Trà
+		"Hoa Cuong": distHaiChau,
+		"An Khe":    distThanhKhe, // An Khê là phường thuộc Thanh Khê cũ
+		"Thanh Khe": distThanhKhe,
+		"Hoa Khanh": distLienChieu,
+		"Hai Van":   distLienChieu,
+		"Hoa Xuan":  distCamLe,
 	}
 	if mapped, ok := ascii[s]; ok {
 		return mapped
@@ -1055,10 +1268,8 @@ func normalizeDistrict(s string) string {
 //
 // KHÔNG dùng review/rating vì OSM không có. KHÔNG gọi Google vì không có API key
 // và sẽ bị rate-limit khi quét hàng nghìn POI — xem ghi chú trong runbook.
-func qualityScore(e rawElement, name string) int {
+func nameQualityScore(name string) int {
 	score := 0
-
-	// --- 1. Chất lượng tên (0–40) ---
 	if hasDiacritics(name) {
 		score += 20 // tên có dấu = người Việt nhập cẩn thận
 	}
@@ -1069,31 +1280,37 @@ func qualityScore(e rawElement, name string) int {
 	if name != strings.ToUpper(name) {
 		score += 5 // không phải VIẾT HOA TOÀN BỘ
 	}
-	if len([]rune(name)) >= 5 && len([]rune(name)) <= 60 {
+	runes := len([]rune(name))
+	if runes >= 5 && runes <= 60 {
 		score += 5
 	}
+	return score
+}
 
-	// --- 2. Metadata (0–30) ---
-	t := e.Tags
-	if t["opening_hours"] != "" {
+func metadataQualityScore(t map[string]string) int {
+	score := 0
+	if t[tagOpeningHours] != "" {
 		score += 10
 	}
-	if t["phone"] != "" || t["contact:phone"] != "" {
+	if t[tagPhone] != "" || t[tagContactPhone] != "" {
 		score += 8
 	}
-	if t["website"] != "" || t["contact:website"] != "" {
+	if t[tagWebsite] != "" || t[tagContactWebsite] != "" {
 		score += 6
 	}
-	if t["cuisine"] != "" {
+	if t[tagCuisine] != "" {
 		score += 3
 	}
-	if t["addr:street"] != "" {
+	if t[tagAddrStreet] != "" {
 		score += 3
 	}
+	return score
+}
 
-	// --- 3. Còn hoạt động (0–30) ---
-	if e.Timestamp != "" {
-		if ts, err := time.Parse(time.RFC3339, e.Timestamp); err == nil {
+func livenessQualityScore(timestamp string, version int) int {
+	score := 0
+	if timestamp != "" {
+		if ts, err := time.Parse(time.RFC3339, timestamp); err == nil {
 			years := time.Since(ts).Hours() / 24 / 365
 			switch {
 			case years < 2:
@@ -1105,13 +1322,16 @@ func qualityScore(e rawElement, name string) int {
 			}
 		}
 	}
-	if e.Version >= 5 {
+	if version >= 5 {
 		score += 10 // được sửa nhiều lần = có người quan tâm
-	} else if e.Version >= 3 {
+	} else if version >= 3 {
 		score += 5
 	}
-
 	return score
+}
+
+func qualityScore(e rawElement, name string) int {
+	return nameQualityScore(name) + metadataQualityScore(e.Tags) + livenessQualityScore(e.Timestamp, e.Version)
 }
 
 // hasDiacritics: tên có ký tự Latin mở rộng (ắ, ộ, ữ...) → người Việt nhập đúng.
@@ -1148,48 +1368,30 @@ func strPtr(s string) *string {
 	return &s
 }
 
-// capChainBranches: mỗi THƯƠNG HIỆU chỉ giữ tối đa `max` chi nhánh điểm cao nhất.
-//
-// Audit 2026-11-11: 76/84 "bánh mì" là chi nhánh Đồng Tiến Bakery — một chuỗi
-// bakery chiếm 17% corpus, làm loãng mọi phân bố và khiến query "bánh mì" trả
-// về 20 chi nhánh giống nhau. Key thương hiệu = tên chuẩn hoá BỎ số nhà/đường
-// ("Đồng Tiến Bakery - 07 Nguyễn Đình Tựu" và "Đồng Tiến Bakery" cùng key).
-// Tất định: sort quality giảm dần, hoà → theo tên.
-func capChainBranches(places []outPlace, max int) int {
-	if max <= 0 {
-		return 0
+// chainKey: chuẩn hoá tên chuỗi, cắt tại "-" đầu tiên và bỏ token số nhà.
+func chainKey(name string) string {
+	k := normalizeName(name)
+	// cắt tại "-" đầu tiên: "dong tien bakery - 07 nguyen dinh tuu" →
+	// "dong tien bakery" (tên chi nhánh luôn sau dấu gạch).
+	if i := strings.Index(k, "-"); i > 0 {
+		k = strings.TrimSpace(k[:i])
 	}
-	chainKey := func(p outPlace) string {
-		k := normalizeName(p.Name)
-		// cắt tại "-" đầu tiên: "dong tien bakery - 07 nguyen dinh tuu" →
-		// "dong tien bakery" (tên chi nhánh luôn sau dấu gạch).
-		if i := strings.Index(k, "-"); i > 0 {
-			k = strings.TrimSpace(k[:i])
+	// bỏ token số ("07", "575") — chi nhánh hay ghi số nhà trong tên.
+	fs := strings.Fields(k)
+	keep := make([]string, 0, len(fs))
+	for _, w := range fs {
+		if !isAllDigits(w) {
+			keep = append(keep, w)
 		}
-		// bỏ token số ("07", "575") — chi nhánh hay ghi số nhà trong tên.
-		fs := strings.Fields(k)
-		keep := fs[:0]
-		for _, w := range fs {
-			if !isAllDigits(w) {
-				keep = append(keep, w)
-			}
-		}
-		return strings.Join(keep, " ")
 	}
-	groups := map[string][]int{}
-	for i, p := range places {
-		k := chainKey(p)
-		// Key 1 từ quá chung ("Bánh mì", "Cà phê") — gộp sẽ giết oan quán khác
-		// nhau cùng tên chung. Chỉ áp dụng cho tên thương hiệu ≥2 từ.
-		if len(strings.Fields(k)) < 2 {
-			continue
-		}
-		groups[k] = append(groups[k], i)
-	}
+	return strings.Join(keep, " ")
+}
+
+func findBranchIndicesToDrop(groups map[string][]int, places []outPlace, maxBranches int) (map[int]bool, int) {
 	drop := map[int]bool{}
 	dropped := 0
 	for _, idxs := range groups {
-		if len(idxs) <= max {
+		if len(idxs) <= maxBranches {
 			continue
 		}
 		sort.SliceStable(idxs, func(a, b int) bool {
@@ -1199,11 +1401,36 @@ func capChainBranches(places []outPlace, max int) int {
 			}
 			return pa.Name < pb.Name
 		})
-		for _, i := range idxs[max:] {
+		for _, i := range idxs[maxBranches:] {
 			drop[i] = true
 			dropped++
 		}
 	}
+	return drop, dropped
+}
+
+// capChainBranches: mỗi THƯƠNG HIỆU chỉ giữ tối đa `maxBranches` chi nhánh điểm cao nhất.
+//
+// Audit 2026-11-11: 76/84 "bánh mì" là chi nhánh Đồng Tiến Bakery — một chuỗi
+// bakery chiếm 17% corpus, làm loãng mọi phân bố và khiến query "bánh mì" trả
+// về 20 chi nhánh giống nhau. Key thương hiệu = tên chuẩn hoá BỎ số nhà/đường
+// ("Đồng Tiến Bakery - 07 Nguyễn Đình Tựu" và "Đồng Tiến Bakery" cùng key).
+// Tất định: sort quality giảm dần, hoà → theo tên.
+func capChainBranches(places []outPlace, maxBranches int) int {
+	if maxBranches <= 0 {
+		return 0
+	}
+	groups := map[string][]int{}
+	for i, p := range places {
+		k := chainKey(p.Name)
+		// Key 1 từ quá chung ("Bánh mì", "Cà phê") — gộp sẽ giết oan quán khác
+		// nhau cùng tên chung. Chỉ áp dụng cho tên thương hiệu ≥2 từ.
+		if len(strings.Fields(k)) < 2 {
+			continue
+		}
+		groups[k] = append(groups[k], i)
+	}
+	drop, dropped := findBranchIndicesToDrop(groups, places, maxBranches)
 	if dropped == 0 {
 		return 0
 	}
@@ -1233,21 +1460,12 @@ func isAllDigits(s string) bool {
 	return true
 }
 
-// ---------- main ----------
+// ---------- Các bước trong pipeline lọc (S3776 refactoring) ----------
 
-func main() {
-	rawDir := flag.String("raw", "../../data/raw", "thư mục chứa osm-*.json (tính từ backend/scripts/build-corpus)")
-	outPath := flag.String("out", "../../data/places-expanded.json", "file kết quả (seed.ts đọc backend/data/places-expanded.json)")
-	origPath := flag.String("original", "../../../frontend/data/cold-start/places.json", "dataset gốc 491 — giữ lại quán curated/curated-v2")
-	capCafe := flag.Float64("cap-cafe", 0.35, "tỉ lệ cafe tối đa trong corpus (0 = không giới hạn). Downsample có seed cố định")
-	minSignals := flag.Int("min-signals", 2, "số tín hiệu kinh doanh thật tối thiểu (phone/website/giờ mở/brand/chuỗi) để giữ quán ăn-cafe-giải trí")
-	maxBranch := flag.Int("max-branch", 3, "số chi nhánh tối đa giữ lại cho mỗi thương hiệu (0 = không giới hạn)")
-	flag.Parse()
-
-	files, err := filepath.Glob(filepath.Join(*rawDir, "osm-*.json"))
+func loadRawElements(rawDir string) (map[string]rawElement, error) {
+	files, err := filepath.Glob(filepath.Join(rawDir, "osm-*.json"))
 	if err != nil || len(files) == 0 {
-		fmt.Fprintf(os.Stderr, "[build] không tìm thấy file raw trong %s\n", *rawDir)
-		os.Exit(1)
+		return nil, fmt.Errorf("không tìm thấy file raw trong %s", rawDir)
 	}
 	sort.Strings(files)
 
@@ -1269,19 +1487,10 @@ func main() {
 		}
 		fmt.Printf("[build] %s: %d element\n", filepath.Base(f), len(rf.Elements))
 	}
+	return seen, nil
+}
 
-	var fn funnel
-	fn.Raw = len(seen)
-	fmt.Printf("[build] RAW (sau dedup theo OSM id): %d\n", fn.Raw)
-
-	// T1: bỏ không có name
-	type cand struct {
-		e           rawElement
-		name        string
-		lat         float64
-		lng         float64
-		namePenalty int // điểm phạt từ judgeName (âm hoặc 0)
-	}
+func filterT1(seen map[string]rawElement) []cand {
 	var afterT1 []cand
 	for _, e := range seen {
 		name := strings.TrimSpace(e.Tags["name"])
@@ -1298,10 +1507,10 @@ func main() {
 		}
 		afterT1 = append(afterT1, cand{e: e, name: name, lat: lat, lng: lng})
 	}
-	fn.T1 = len(afterT1)
-	fmt.Printf("[build] T1 (có name + toạ độ): %d\n", fn.T1)
+	return afterT1
+}
 
-	// T2: bỏ name không có chữ cái
+func filterT2(afterT1 []cand) []cand {
 	var afterT2 []cand
 	for _, c := range afterT1 {
 		if !letterRe.MatchString(c.name) {
@@ -1309,26 +1518,24 @@ func main() {
 		}
 		afterT2 = append(afterT2, c)
 	}
-	fn.T2 = len(afterT2)
-	fmt.Printf("[build] T2 (name có chữ cái): %d\n", fn.T2)
+	return afterT2
+}
 
-	// T2b: đánh giá TÊN — loại tên trơ (địa chỉ, ký hiệu, tên người, phi ẩm thực),
-	// phạt mềm tên mơ hồ. Chạy TRƯỚC T3 dedup để key dedup không bị tên rác
-	// làm bẩn (L-021). Penalty trừ thẳng vào qualityScore.
+func filterT2b(afterT2 []cand, reasons map[string]int) []cand {
 	var afterT2b []cand
 	for _, c := range afterT2 {
 		v := judgeName(c.name)
 		if v.drop {
-			dropReasons["T2b/"+v.reason]++
+			reasons["T2b/"+v.reason]++
 			continue
 		}
 		c.namePenalty = v.penalty
 		afterT2b = append(afterT2b, c)
 	}
-	fn.T2b = len(afterT2b)
-	fmt.Printf("[build] T2b (tên searchable): %d (loại %d)\n", fn.T2b, fn.T2-fn.T2b)
+	return afterT2b
+}
 
-	// T3: dedup theo tên chuẩn hoá + <50m
+func filterT3(afterT2b []cand) ([]cand, int) {
 	var afterT3 []cand
 	byKey := map[string][]int{} // key → index trong afterT3
 	merged := 0
@@ -1351,10 +1558,10 @@ func main() {
 			afterT3 = append(afterT3, c)
 		}
 	}
-	fn.T3 = len(afterT3)
-	fmt.Printf("[build] T3 (dedup <50m, gộp %d): %d\n", merged, fn.T3)
+	return afterT3, merged
+}
 
-	// T4: bỏ ngoài bbox
+func filterT4(afterT3 []cand) []cand {
 	var afterT4 []cand
 	for _, c := range afterT3 {
 		if c.lat < 15.90 || c.lat > 16.30 || c.lng < 107.60 || c.lng > 108.45 {
@@ -1362,30 +1569,36 @@ func main() {
 		}
 		afterT4 = append(afterT4, c)
 	}
-	fn.T4 = len(afterT4)
-	fmt.Printf("[build] T4 (trong bbox): %d\n", fn.T4)
+	return afterT4
+}
 
-	// T4b: chỉ giữ ĐỊA ĐIỂM NỔI BẬT (D-AI-42). Loại hẳn tiện ích (tạp hóa,
-	// cửa hàng tiện lợi, cửa hàng thực phẩm/rượu, nông trại) và quán không có
-	// tín hiệu kinh doanh thật. Mall + siêu thị lớn + chợ nổi tiếng luôn giữ.
+func filterT4b(afterT4 []cand, minSignals int, reasons map[string]int) ([]cand, []string) {
 	var afterT4b []cand
 	cats := make([]string, 0, len(afterT4))
 	for _, c := range afterT4 {
 		cat := assignCategory(c.e.Tags, c.name)
-		keep, reason := isNotable(c.e.Tags, c.name, cat, *minSignals)
+		keep, reason := isNotable(c.e.Tags, c.name, cat, minSignals)
 		if !keep {
-			dropReasons["T4b/"+reason]++
+			reasons["T4b/"+reason]++
 			continue
 		}
 		afterT4b = append(afterT4b, c)
 		cats = append(cats, cat)
 	}
-	fn.T4b = len(afterT4b)
-	fmt.Printf("[build] T4b (địa điểm nổi bật): %d (loại %d)\n", fn.T4b, fn.T4-fn.T4b)
+	return afterT4b, cats
+}
 
-	// T5 + T6: gán nhãn + chuẩn hoá
+func buildPlaceDistrict(e rawElement, lat, lng float64) (*string, string, bool) {
+	if d := normalizeDistrict(e.Tags[tagAddrDistrict]); d != "" {
+		return strPtr(d), "addr-tag", false
+	}
+	// Luôn gán quận gần nhất trong 7 đơn vị — không để trống.
+	d, _ := nearestDistrict(lat, lng)
+	return strPtr(d), "district-centroid", true
+}
+
+func buildOutPlaces(afterT4b []cand, cats []string) []outPlace {
 	out := make([]outPlace, 0, len(afterT4b))
-
 	for i, c := range afterT4b {
 		cat := cats[i]
 		// Chống lệch code ↔ dữ liệu: nhãn lạ = build FAIL, không ghi file (L-019).
@@ -1394,21 +1607,9 @@ func main() {
 			os.Exit(1)
 		}
 
-		var district *string
-		geoPrec := ""
-		districtApprox := false
-		if d := normalizeDistrict(c.e.Tags["addr:district"]); d != "" {
-			district = strPtr(d)
-			geoPrec = "addr-tag"
-		} else {
-			// Luôn gán quận gần nhất trong 7 đơn vị — không để trống.
-			d, _ := nearestDistrict(c.lat, c.lng)
-			district = strPtr(d)
-			geoPrec = "district-centroid"
-			districtApprox = true
-		}
+		district, geoPrec, districtApprox := buildPlaceDistrict(c.e, c.lat, c.lng)
 		addr := strings.TrimSpace(strings.Join([]string{
-			c.e.Tags["addr:housenumber"], c.e.Tags["addr:street"],
+			c.e.Tags[tagAddrHousenumber], c.e.Tags[tagAddrStreet],
 		}, " "))
 		addr = strings.TrimSpace(addr)
 
@@ -1418,9 +1619,9 @@ func main() {
 		website := realWebsite(c.e.Tags)
 
 		lat, lng := c.lat, c.lng
-		src := "osm"
+		src := valOsm
 		osmID := fmt.Sprintf("osm:%s/%d", c.e.Type, c.e.ID)
-		tier := "osm"
+		tier := valOsm
 		status := "unknown"
 
 		q := qualityScore(c.e, c.name) + c.namePenalty
@@ -1429,239 +1630,301 @@ func main() {
 		}
 
 		out = append(out, outPlace{
-			ID:           fmt.Sprintf("osm-%s-%d", c.e.Type, c.e.ID),
-			Name:         c.name,
-			Category:     cat,
-			District:     district,
-			Address:      strPtr(addr),
-			Lat:          &lat,
-			Lng:          &lng,
-			Phone:        strPtr(phone),
-			OpeningHours: strPtr(c.e.Tags["opening_hours"]),
-			Description:  nil, // OSM không có mô tả — không bịa
-			Sources:      []string{src},
-			GeoSource:    strPtr("osm"),
-			GeoPrecision: strPtr(geoPrec),
-			OsmID:        strPtr(osmID),
-			Image:        nil,
-			ImageKind:    nil,
-			ImageNote:    nil,
-			Images:       []string{},
-			VenuePageURL: strPtr(website),
-			Verified:     false,
-			CollectedAt:  nil,
-			Tier:         &tier,
-			Status:       status,
-			Tags:         buildTags(c.e.Tags),
-			Vibes:        buildVibes(c.e.Tags, cat),
-			Quality:      q,
-
+			ID:             fmt.Sprintf("osm-%s-%d", c.e.Type, c.e.ID),
+			Name:           c.name,
+			Category:       cat,
+			District:       district,
+			Address:        strPtr(addr),
+			Lat:            &lat,
+			Lng:            &lng,
+			Phone:          strPtr(phone),
+			OpeningHours:   strPtr(c.e.Tags[tagOpeningHours]),
+			Description:    nil, // OSM không có mô tả — không bịa
+			Sources:        []string{src},
+			GeoSource:      strPtr(valOsm),
+			GeoPrecision:   strPtr(geoPrec),
+			OsmID:          strPtr(osmID),
+			Image:          nil,
+			ImageKind:      nil,
+			ImageNote:      nil,
+			Images:         []string{},
+			VenuePageURL:   strPtr(website),
+			Verified:       false,
+			CollectedAt:    nil,
+			Tier:           &tier,
+			Status:         status,
+			Tags:           buildTags(c.e.Tags),
+			Vibes:          buildVibes(c.e.Tags, cat),
+			Quality:        q,
 			DistrictApprox: districtApprox,
-			mHours:       c.e.Tags["opening_hours"] != "",
-			mPhone:       phone != "",
-			mCuisine:     c.e.Tags["cuisine"] != "",
-			mWebsite:     website != "",
+			mHours:         c.e.Tags[tagOpeningHours] != "",
+			mPhone:         phone != "",
+			mCuisine:       c.e.Tags[tagCuisine] != "",
+			mWebsite:       website != "",
 		})
 	}
-	// ---------- Gộp quán curated từ dataset gốc (giữ description + ảnh) ----------
-	// Chỉ giữ tier curated / curated-v2. POI OSM cũ trong dataset gốc BỎ, vì
-	// corpus mới đã có bản OSM đầy đủ hơn (tránh trùng lặp khi seed).
-	var curated []outPlace
-	if b, err := os.ReadFile(*origPath); err == nil {
-		var orig struct {
-			Places []outPlace `json:"places"`
-		}
-		if err := json.Unmarshal(b, &orig); err != nil {
-			fmt.Fprintf(os.Stderr, "[build] dataset gốc JSON lỗi: %v\n", err)
-		} else {
-			for _, p := range orig.Places {
-				tier := ""
-				if p.Tier != nil {
-					tier = *p.Tier
-				}
-				if tier == "curated" || tier == "curated-v2" {
-					// Curated là quán đã kiểm tay thủ công — dataset gốc không có
-					// trường quality nên mặc định 0, sẽ bị cap-cafe cắt đầu tiên.
-					// Gán sàn 60 (tương đương tên tốt + metadata đầy đủ).
-					if p.Quality < 60 {
-						p.Quality = 60
-					}
-					// Curated không có tag OSM → vibes rỗng (không bịa).
-					p.Vibes = []string{}
-					// Chuẩn hoá district của curated về 7 đơn vị cấp quận. Dataset
-					// gốc còn nhãn cũ (Thanh Khê, An Hải, Hòa Cường...) — map theo
-					// sáp nhập 2025; không nhận ra thì lấy centroid gần nhất.
-					curDistrict := ""
-					if p.District != nil {
-						curDistrict = normalizeDistrict(*p.District)
-					}
-					if curDistrict == "" && p.Lat != nil && p.Lng != nil {
-						curDistrict, _ = nearestDistrict(*p.Lat, *p.Lng)
-					}
-					if curDistrict != "" {
-						p.District = strPtr(curDistrict)
-					}
-					p.mHours = p.OpeningHours != nil && *p.OpeningHours != ""
-					p.mPhone = p.Phone != nil && *p.Phone != ""
-					p.mCuisine = false // dataset gốc không có trường cuisine
-					p.mWebsite = p.VenuePageURL != nil && *p.VenuePageURL != ""
-					curated = append(curated, p)
-				}
-			}
-			fmt.Printf("[build] dataset gốc: giữ %d quán curated (bỏ %d POI OSM cũ)\n",
-				len(curated), len(orig.Places)-len(curated))
-		}
-	} else {
-		fmt.Fprintf(os.Stderr, "[build] CẢNH BÁO: không đọc được %s — corpus sẽ thiếu quán curated: %v\n", *origPath, err)
-	}
+	return out
+}
 
-	// Dedup OSM mới với curated: nếu trùng tên + <50m thì BỎ bản OSM (giữ curated
-	// vì có description/ảnh/đã kiểm).
+func normalizeCuratedPlace(p outPlace) (outPlace, bool) {
+	tier := ""
+	if p.Tier != nil {
+		tier = *p.Tier
+	}
+	if tier != "curated" && tier != "curated-v2" {
+		return outPlace{}, false
+	}
+	// Curated là quán đã kiểm tay thủ công — dataset gốc không có
+	// trường quality nên mặc định 0, sẽ bị cap-cafe cắt đầu tiên.
+	// Gán sàn 60 (tương đương tên tốt + metadata đầy đủ).
+	if p.Quality < 60 {
+		p.Quality = 60
+	}
+	// Curated không có tag OSM → vibes rỗng (không bịa).
+	p.Vibes = []string{}
+	// Chuẩn hoá district của curated về 7 đơn vị cấp quận. Dataset
+	// gốc còn nhãn cũ (Thanh Khê, An Hải, Hòa Cường...) — map theo
+	// sáp nhập 2025; không nhận ra thì lấy centroid gần nhất.
+	curDistrict := ""
+	if p.District != nil {
+		curDistrict = normalizeDistrict(*p.District)
+	}
+	if curDistrict == "" && p.Lat != nil && p.Lng != nil {
+		curDistrict, _ = nearestDistrict(*p.Lat, *p.Lng)
+	}
+	if curDistrict != "" {
+		p.District = strPtr(curDistrict)
+	}
+	p.mHours = p.OpeningHours != nil && *p.OpeningHours != ""
+	p.mPhone = p.Phone != nil && *p.Phone != ""
+	p.mCuisine = false // dataset gốc không có trường cuisine
+	p.mWebsite = p.VenuePageURL != nil && *p.VenuePageURL != ""
+	return p, true
+}
+
+func loadCuratedPlaces(origPath string) []outPlace {
+	var curated []outPlace
+	b, err := os.ReadFile(origPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[build] CẢNH BÁO: không đọc được %s — corpus sẽ thiếu quán curated: %v\n", origPath, err)
+		return nil
+	}
+	var orig struct {
+		Places []outPlace `json:"places"`
+	}
+	if err := json.Unmarshal(b, &orig); err != nil {
+		fmt.Fprintf(os.Stderr, "[build] dataset gốc JSON lỗi: %v\n", err)
+		return nil
+	}
+	for _, p := range orig.Places {
+		if cp, ok := normalizeCuratedPlace(p); ok {
+			curated = append(curated, cp)
+		}
+	}
+	fmt.Printf("[build] dataset gốc: giữ %d quán curated (bỏ %d POI OSM cũ)\n",
+		len(curated), len(orig.Places)-len(curated))
+	return curated
+}
+
+func isDuplicateWithCurated(p outPlace, curated []outPlace) bool {
+	if p.Lat == nil || p.Lng == nil {
+		return false
+	}
+	pNorm := normalizeName(p.Name)
+	for _, c := range curated {
+		if c.Lat == nil || c.Lng == nil {
+			continue
+		}
+		if pNorm == normalizeName(c.Name) && haversine(*p.Lat, *p.Lng, *c.Lat, *c.Lng) < 50 {
+			return true
+		}
+	}
+	return false
+}
+
+func dedupWithCurated(out []outPlace, curated []outPlace) ([]outPlace, int) {
 	kept := out[:0]
 	dropped := 0
 	for _, p := range out {
-		dup := false
-		if p.Lat != nil && p.Lng != nil {
-			for _, c := range curated {
-				if c.Lat == nil || c.Lng == nil {
-					continue
-				}
-				if normalizeName(p.Name) == normalizeName(c.Name) &&
-					haversine(*p.Lat, *p.Lng, *c.Lat, *c.Lng) < 50 {
-					dup = true
-					break
-				}
-			}
-		}
-		if dup {
+		if isDuplicateWithCurated(p, curated) {
 			dropped++
 			continue
 		}
 		kept = append(kept, p)
 	}
-	out = kept
-	fmt.Printf("[build] dedup với curated: bỏ %d POI OSM trùng → còn %d\n", dropped, len(out))
-
-	// Thêm curated vào cuối
-	out = append(out, curated...)
-	fn.T5 = len(out) // sau gộp curated
-
-// ---------- Giới hạn chi nhánh mỗi thương hiệu (D-AI-44) ----------
-// Audit: 76/84 "bánh mì" là chi nhánh Đồng Tiến Bakery → 1 chuỗi chiếm 17%
-// corpus. Chỉ giữ `maxBranch` chi nhánh điểm cao nhất mỗi thương hiệu.
-chainDropped := capChainBranches(out, *maxBranch)
-if chainDropped > 0 {
-	out = out[:len(out)-chainDropped]
-	fmt.Printf("[build] GIỚI HẠN CHUỖI: bỏ %d chi nhánh trùng thương hiệu (giữ tối đa %d/thương hiệu)\n",
-		chainDropped, *maxBranch)
+	fmt.Printf("[build] dedup với curated: bỏ %d POI OSM trùng → còn %d\n", dropped, len(kept))
+	return kept, dropped
 }
 
-// ---------- Cân bằng lớp: giới hạn tỉ lệ cafe, GIỮ QUÁN ĐIỂM CAO ----------
-// Không phải để "làm đẹp số liệu" mà để tránh corpus lệch lớp làm ranker
-// thiên về cafe. Khi phải cắt, giữ quán chất lượng cao nhất (qualityScore),
-// không theo thứ tự OSM. Hoà điểm → theo tên để tất định.
-//
-// Công thức: cắt cafe làm THAY ĐỔI cả mẫu số. Muốn tỉ lệ CUỐI = cap:
-//   keep / (N - C + keep) = cap  →  keep = cap*(N-C)/(1-cap)
-// (công thức cũ keep = cap*N cho ra tỉ lệ cuối vẫn > cap — L-016)
-cafeDropped := 0
-if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
-		cafeIdx := []int{}
-		for i, p := range out {
-			if p.Category == "cafe" {
-				cafeIdx = append(cafeIdx, i)
-			}
-		}
-		share := float64(len(cafeIdx)) / float64(len(out))
-		if share > *capCafe {
-			nonCafe := len(out) - len(cafeIdx)
-			keep := int(*capCafe * float64(nonCafe) / (1 - *capCafe))
-			if keep < 0 {
-				keep = 0
-			}
-			if keep > len(cafeIdx) {
-				keep = len(cafeIdx)
-			}
-			// sắp giảm dần theo quality; hoà → theo tên để tất định
-			sort.SliceStable(cafeIdx, func(a, b int) bool {
-				pa, pb := out[cafeIdx[a]], out[cafeIdx[b]]
-				if pa.Quality != pb.Quality {
-					return pa.Quality > pb.Quality
-				}
-				return pa.Name < pb.Name
-			})
-			drop := map[int]bool{}
-			for _, i := range cafeIdx[keep:] {
-				drop[i] = true
-			}
-			filtered := make([]outPlace, 0, len(out)-len(drop))
-			for i, p := range out {
-				if !drop[i] {
-					filtered = append(filtered, p)
-				}
-			}
-			cafeDropped = len(drop)
-			out = filtered
-			finalShare := float64(keep) / float64(len(out))
-			fmt.Printf("[build] CÂN BẰNG LỚP: cafe %.1f%% > %.0f%% → bỏ %d cafe ĐIỂM THẤP NHẤT, còn %.1f%%\n",
-				share*100, *capCafe*100, cafeDropped, finalShare*100)
+func capCafeShare(out []outPlace, capCafe float64) ([]outPlace, int) {
+	if capCafe <= 0 || capCafe >= 1 || len(out) == 0 {
+		return out, 0
+	}
+	cafeIdx := []int{}
+	for i, p := range out {
+		if p.Category == catCafe {
+			cafeIdx = append(cafeIdx, i)
 		}
 	}
-	fn.T6 = len(out) // sau cap-cafe
-
-	// Sắp toàn corpus giảm dần theo quality → seed/DB có thứ tự ổn định,
-	// và nếu sau này cần cắt thêm thì cắt từ cuối.
-	sort.SliceStable(out, func(i, j int) bool {
-		if out[i].Quality != out[j].Quality {
-			return out[i].Quality > out[j].Quality
+	share := float64(len(cafeIdx)) / float64(len(out))
+	if share <= capCafe {
+		return out, 0
+	}
+	nonCafe := len(out) - len(cafeIdx)
+	keep := int(capCafe * float64(nonCafe) / (1 - capCafe))
+	if keep < 0 {
+		keep = 0
+	}
+	if keep > len(cafeIdx) {
+		keep = len(cafeIdx)
+	}
+	// sắp giảm dần theo quality; hoà → theo tên để tất định
+	sort.SliceStable(cafeIdx, func(a, b int) bool {
+		pa, pb := out[cafeIdx[a]], out[cafeIdx[b]]
+		if pa.Quality != pb.Quality {
+			return pa.Quality > pb.Quality
 		}
-		return out[i].Name < out[j].Name
+		return pa.Name < pb.Name
 	})
-
-	// ---------- Thống kê trên CORPUS CUỐI (sau gộp curated + cap-cafe) ----------
-	catCount := map[string]int{}
-	distCount := map[string]int{}
-	approxDistrict := 0
-	hasHours, hasPhone, hasCuisine, hasWebsite := 0, 0, 0, 0
-	tagCount := map[string]int{}
-	tagsFilled := 0
-	vibesFilled := 0
-	vibeCount := map[string]int{}
-	for _, p := range out {
-		catCount[p.Category]++
-		if len(p.Tags) > 0 {
-			tagsFilled++
-		}
-		for _, t := range p.Tags {
-			tagCount[t]++
-		}
-		if len(p.Vibes) > 0 {
-			vibesFilled++
-		}
-		for _, v := range p.Vibes {
-			vibeCount[v]++
-		}
-		if p.District != nil {
-			distCount[*p.District]++
-		}
-		if p.DistrictApprox {
-			approxDistrict++
-		}
-		if p.mHours {
-			hasHours++
-		}
-		if p.mPhone {
-			hasPhone++
-		}
-		if p.mCuisine {
-			hasCuisine++
-		}
-		if p.mWebsite {
-			hasWebsite++
+	drop := map[int]bool{}
+	for _, i := range cafeIdx[keep:] {
+		drop[i] = true
+	}
+	filtered := make([]outPlace, 0, len(out)-len(drop))
+	for i, p := range out {
+		if !drop[i] {
+			filtered = append(filtered, p)
 		}
 	}
+	cafeDropped := len(drop)
+	finalShare := float64(keep) / float64(len(filtered))
+	fmt.Printf("[build] CÂN BẰNG LỚP: cafe %.1f%% > %.0f%% → bỏ %d cafe ĐIỂM THẤP NHẤT, còn %.1f%%\n",
+		share*100, capCafe*100, cafeDropped, finalShare*100)
+	return filtered, cafeDropped
+}
 
-	// ---------- In bảng funnel ----------
+type corpusStats struct {
+	catCount       map[string]int
+	distCount      map[string]int
+	tagCount       map[string]int
+	vibeCount      map[string]int
+	buckets        map[string]int
+	approxDistrict int
+	hasHours       int
+	hasPhone       int
+	hasCuisine     int
+	hasWebsite     int
+	tagsFilled     int
+	vibesFilled    int
+	withDia        int
+	sumQ           int
+	maxQ           int
+	minQ           int
+	entCount       int
+	retailCount    int
+	foodCount      int
+}
+
+func updateQualityStats(st *corpusStats, q int) {
+	st.sumQ += q
+	if q > st.maxQ {
+		st.maxQ = q
+	}
+	if q < st.minQ {
+		st.minQ = q
+	}
+	switch {
+	case q < 20:
+		st.buckets[bucket0To19]++
+	case q < 40:
+		st.buckets[bucket20To39]++
+	case q < 60:
+		st.buckets[bucket40To59]++
+	case q < 80:
+		st.buckets[bucket60To79]++
+	default:
+		st.buckets[bucket80To100]++
+	}
+}
+
+func updateCorpusPlaceStats(st *corpusStats, p outPlace) {
+	st.catCount[p.Category]++
+	if len(p.Tags) > 0 {
+		st.tagsFilled++
+	}
+	for _, t := range p.Tags {
+		st.tagCount[t]++
+	}
+	if len(p.Vibes) > 0 {
+		st.vibesFilled++
+	}
+	for _, v := range p.Vibes {
+		st.vibeCount[v]++
+	}
+	if p.District != nil {
+		st.distCount[*p.District]++
+	}
+	if p.DistrictApprox {
+		st.approxDistrict++
+	}
+	if p.mHours {
+		st.hasHours++
+	}
+	if p.mPhone {
+		st.hasPhone++
+	}
+	if p.mCuisine {
+		st.hasCuisine++
+	}
+	if p.mWebsite {
+		st.hasWebsite++
+	}
+
+	updateQualityStats(st, p.Quality)
+	if hasDiacritics(p.Name) {
+		st.withDia++
+	}
+}
+
+func calcGroupCounts(st *corpusStats, total int) {
+	entertainment := map[string]bool{
+		catKaraoke: true, catMusicBox: true, catCinema: true, catBida: true,
+		catBowling: true, catArcade: true, catWaterPark: true, catSpa: true,
+		catMassage: true,
+	}
+	retail := map[string]bool{
+		catSieuThi: true, catCho: true, catMall: true,
+	}
+	for cat, n := range st.catCount {
+		if entertainment[cat] {
+			st.entCount += n
+		}
+		if retail[cat] {
+			st.retailCount += n
+		}
+	}
+	st.foodCount = total - st.entCount - st.retailCount
+}
+
+func calcCorpusStats(out []outPlace, total int) corpusStats {
+	st := corpusStats{
+		catCount:  map[string]int{},
+		distCount: map[string]int{},
+		tagCount:  map[string]int{},
+		vibeCount: map[string]int{},
+		buckets: map[string]int{
+			bucket0To19: 0, bucket20To39: 0, bucket40To59: 0, bucket60To79: 0, bucket80To100: 0,
+		},
+		minQ: 100,
+	}
+	for _, p := range out {
+		updateCorpusPlaceStats(&st, p)
+	}
+	calcGroupCounts(&st, total)
+	return st
+}
+
+func printFunnelTable(fn funnel, curatedCount, droppedOsmWithCurated int, reasons map[string]int) {
 	fmt.Println()
 	fmt.Println("| Tầng | Vào | Ra | Loại | Tỉ lệ | Lý do |")
 	fmt.Println("|------|-----|-----|------|-------|-------|")
@@ -1681,7 +1944,7 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	// T5 có thể TĂNG so với T4b (thêm curated sau khi trừ trùng) → in có dấu.
 	if fn.T5 >= fn.T4b {
 		fmt.Printf("| T5   | %d | %d | +%d | - | gộp curated (+%d, trừ %d trùng với OSM) |\n",
-			fn.T4b, fn.T5, fn.T5-fn.T4b, len(curated), dropped)
+			fn.T4b, fn.T5, fn.T5-fn.T4b, curatedCount, droppedOsmWithCurated)
 	} else {
 		fmt.Printf("| T5   | %d | %d | %d | %.1f%% | gộp curated + dedup với curated |\n",
 			fn.T4b, fn.T5, fn.T4b-fn.T5, pct(fn.T4b-fn.T5, fn.T4b))
@@ -1691,121 +1954,71 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	fmt.Printf("| CUỐI | - | **%d** | - | - | corpus |\n", fn.T6)
 
 	// Lý do loại chi tiết của T2b + T4b — mỗi tầng phải đếm, không lọc im lặng.
-	if len(dropReasons) > 0 {
-		keys := make([]string, 0, len(dropReasons))
-		for k := range dropReasons {
+	if len(reasons) > 0 {
+		keys := make([]string, 0, len(reasons))
+		for k := range reasons {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
 		fmt.Println("\n## Lý do loại (T2b + T4b)")
 		for _, k := range keys {
-			fmt.Printf("- %-28s %5d\n", k, dropReasons[k])
+			fmt.Printf("- %-28s %5d\n", k, reasons[k])
 		}
 	}
+}
 
-	// ---------- Phân bố ----------
+func printDistributions(st corpusStats, total int) {
 	fmt.Println("\n## Phân bố quận")
 	fmt.Printf("- (nguồn: %d từ addr:district thật, %d PHỎNG ĐOÁN theo centroid — districtApprox=true)\n",
-		fn.T6-approxDistrict, approxDistrict)
-	for _, kv := range topN(distCount, 20) {
-		fmt.Printf("- %-15s %5d  %5.1f%%\n", kv.k, kv.v, pct(kv.v, fn.T6))
+		total-st.approxDistrict, st.approxDistrict)
+	for _, kv := range topN(st.distCount, 20) {
+		fmt.Printf("- %-15s %5d  %5.1f%%\n", kv.k, kv.v, pct(kv.v, total))
 	}
 	fmt.Println("\n## Phân bố category")
-	for _, kv := range topN(catCount, 20) {
-		fmt.Printf("- %-22s %5d  %5.1f%%\n", kv.k, kv.v, pct(kv.v, fn.T6))
+	for _, kv := range topN(st.catCount, 20) {
+		fmt.Printf("- %-22s %5d  %5.1f%%\n", kv.k, kv.v, pct(kv.v, total))
 	}
 
-	// Tách 3 nhóm nội dung — corpus KHÔNG còn thuần ẩm thực (D-AI-37, D-AI-38).
-	// Sau D-AI-42, bán lẻ chỉ còn mall + siêu thị lớn + chợ nổi tiếng.
-	entertainment := map[string]bool{
-		"karaoke": true, "music-box": true, "cinema": true, "bida": true,
-		"bowling": true, "arcade": true, "water-park": true, "spa": true,
-		"massage": true,
-	}
-	retail := map[string]bool{
-		"sieu-thi": true, "cho": true, "mall": true,
-	}
-	entCount, retailCount := 0, 0
-	for cat, n := range catCount {
-		if entertainment[cat] {
-			entCount += n
-		}
-		if retail[cat] {
-			retailCount += n
-		}
-	}
-	foodCount := fn.T6 - entCount - retailCount
 	fmt.Println("\n## Nhóm nội dung")
-	fmt.Printf("- ẩm thực   %5d  %5.1f%%\n", foodCount, pct(foodCount, fn.T6))
-	fmt.Printf("- mua sắm   %5d  %5.1f%%  (sieu-thi/cho/mall — chỉ địa điểm lớn)\n", retailCount, pct(retailCount, fn.T6))
+	fmt.Printf("- ẩm thực   %5d  %5.1f%%\n", st.foodCount, pct(st.foodCount, total))
+	fmt.Printf("- mua sắm   %5d  %5.1f%%  (sieu-thi/cho/mall — chỉ địa điểm lớn)\n", st.retailCount, pct(st.retailCount, total))
 	fmt.Printf("- giải trí  %5d  %5.1f%%  (karaoke/music-box/cinema/bida/bowling/arcade/water-park/spa/massage)\n",
-		entCount, pct(entCount, fn.T6))
+		st.entCount, pct(st.entCount, total))
 	fmt.Println("\n## Metadata coverage")
-	fmt.Printf("- openingHours %d (%.1f%%)\n", hasHours, pct(hasHours, fn.T6))
-	fmt.Printf("- phone        %d (%.1f%%)\n", hasPhone, pct(hasPhone, fn.T6))
-	fmt.Printf("- cuisine      %d (%.1f%%)\n", hasCuisine, pct(hasCuisine, fn.T6))
-	fmt.Printf("- website      %d (%.1f%%)\n", hasWebsite, pct(hasWebsite, fn.T6))
+	fmt.Printf("- openingHours %d (%.1f%%)\n", st.hasHours, pct(st.hasHours, total))
+	fmt.Printf("- phone        %d (%.1f%%)\n", st.hasPhone, pct(st.hasPhone, total))
+	fmt.Printf("- cuisine      %d (%.1f%%)\n", st.hasCuisine, pct(st.hasCuisine, total))
+	fmt.Printf("- website      %d (%.1f%%)\n", st.hasWebsite, pct(st.hasWebsite, total))
 
 	// ---------- Phân bố tags (sinh từ tag OSM thật) ----------
 	fmt.Println("\n## Tags (từ OSM)")
-	fmt.Printf("- place có tags %d/%d (%.1f%%)\n", tagsFilled, fn.T6, pct(tagsFilled, fn.T6))
-	for _, kv := range topN(tagCount, 15) {
+	fmt.Printf("- place có tags %d/%d (%.1f%%)\n", st.tagsFilled, total, pct(st.tagsFilled, total))
+	for _, kv := range topN(st.tagCount, 15) {
 		fmt.Printf("- %-24s %5d\n", kv.k, kv.v)
 	}
 
 	// ---------- Phân bố vibes (sinh từ tín hiệu OSM thật) ----------
 	fmt.Println("\n## Vibes (từ tín hiệu OSM)")
-	fmt.Printf("- place có vibes %d/%d (%.1f%%)\n", vibesFilled, fn.T6, pct(vibesFilled, fn.T6))
-	for _, kv := range topN(vibeCount, 10) {
+	fmt.Printf("- place có vibes %d/%d (%.1f%%)\n", st.vibesFilled, total, pct(st.vibesFilled, total))
+	for _, kv := range topN(st.vibeCount, 10) {
 		fmt.Printf("- %-24s %5d\n", kv.k, kv.v)
 	}
 
 	// ---------- Phân bố điểm chất lượng ----------
 	fmt.Println("\n## Điểm chất lượng (qualityScore 0–100)")
-	buckets := map[string]int{"0-19": 0, "20-39": 0, "40-59": 0, "60-79": 0, "80-100": 0}
-	sumQ, maxQ, minQ := 0, 0, 100
-	for _, p := range out {
-		sumQ += p.Quality
-		if p.Quality > maxQ {
-			maxQ = p.Quality
-		}
-		if p.Quality < minQ {
-			minQ = p.Quality
-		}
-		switch {
-		case p.Quality < 20:
-			buckets["0-19"]++
-		case p.Quality < 40:
-			buckets["20-39"]++
-		case p.Quality < 60:
-			buckets["40-59"]++
-		case p.Quality < 80:
-			buckets["60-79"]++
-		default:
-			buckets["80-100"]++
-		}
+	for _, k := range []string{bucket0To19, bucket20To39, bucket40To59, bucket60To79, bucket80To100} {
+		fmt.Printf("- %-7s %5d  %5.1f%%\n", k, st.buckets[k], pct(st.buckets[k], total))
 	}
-	for _, k := range []string{"0-19", "20-39", "40-59", "60-79", "80-100"} {
-		fmt.Printf("- %-7s %5d  %5.1f%%\n", k, buckets[k], pct(buckets[k], fn.T6))
-	}
-	if fn.T6 > 0 {
-		fmt.Printf("- trung bình %.1f · min %d · max %d\n", float64(sumQ)/float64(fn.T6), minQ, maxQ)
+	if total > 0 {
+		fmt.Printf("- trung bình %.1f · min %d · max %d\n", float64(st.sumQ)/float64(total), st.minQ, st.maxQ)
 	}
 
 	fmt.Println("\n## Tên có dấu tiếng Việt")
-	withDia := 0
-	for _, p := range out {
-		if hasDiacritics(p.Name) {
-			withDia++
-		}
-	}
 	fmt.Printf("- có dấu %d (%.1f%%) · không dấu %d (%.1f%%)\n",
-		withDia, pct(withDia, fn.T6), fn.T6-withDia, pct(fn.T6-withDia, fn.T6))
+		st.withDia, pct(st.withDia, total), total-st.withDia, pct(total-st.withDia, total))
+}
 
-	// ---------- Cảnh báo ----------
-	// Nguyên tắc: mỗi cảnh báo phải nêu (a) số thật, (b) ngưỡng, (c) việc cần làm.
-	// Ngưỡng cảnh báo phải KHỚP ngưỡng dùng để cắt dữ liệu ở trên — nếu cap-cafe là
-	// 35% mà cảnh báo chỉ kêu ở 50% thì lúc cap hỏng sẽ không ai biết (L-018).
+func printWarnings(st corpusStats, fn funnel, capCafe float64, cafeDropped int) {
 	fmt.Println("\n## Cảnh báo")
 	warned := false
 	warn := func(format string, a ...any) {
@@ -1820,10 +2033,10 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	// 1. Quận lệch — tính trên số POI CÓ quận, không phải toàn corpus (nếu nhiều
 	//    POI district=null thì chia cho tổng sẽ báo thấp giả tạo).
 	withDistrict := 0
-	for _, n := range distCount {
+	for _, n := range st.distCount {
 		withDistrict += n
 	}
-	if kv := topN(distCount, 1); len(kv) > 0 && withDistrict > 0 {
+	if kv := topN(st.distCount, 1); len(kv) > 0 && withDistrict > 0 {
 		if p := pct(kv[0].v, withDistrict); p > 40 {
 			warn("LỆCH QUẬN: %s chiếm %.1f%% (>40%% của %d POI có quận) — fetch bổ sung vùng thiếu",
 				kv[0].k, p, withDistrict)
@@ -1831,24 +2044,24 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	}
 
 	// 2. cafe vượt ngưỡng cap — so với CHÍNH cap, không phải 50%.
-	cafePct := pct(catCount["cafe"], fn.T6)
-	if *capCafe > 0 && *capCafe < 1 {
-		if cafePct > *capCafe*100+0.5 {
+	cafePct := pct(st.catCount[catCafe], fn.T6)
+	if capCafe > 0 && capCafe < 1 {
+		if cafePct > capCafe*100+0.5 {
 			warn("CAP-CAFE KHÔNG ĐẠT: cafe %.1f%% > ngưỡng %.0f%% — kiểm tra bước downsample",
-				cafePct, *capCafe*100)
+				cafePct, capCafe*100)
 		}
 	} else if cafePct > 50 {
 		warn("LỆCH CATEGORY: cafe chiếm %.1f%% (>50%%, cap đang tắt)", cafePct)
 	}
 
 	// 3. Nhãn nhiễu
-	if p := pct(catCount["khac"], fn.T6); p > 20 {
+	if p := pct(st.catCount[catKhac], fn.T6); p > 20 {
 		warn("NHIỄU CAO: khac chiếm %.1f%% (>20%%) — siết lexicon / assignCategory", p)
 	}
 
 	// 4. Bất kỳ category nào khác lấn át (không chỉ cafe)
-	for cat, n := range catCount {
-		if cat == "cafe" {
+	for cat, n := range st.catCount {
+		if cat == catCafe {
 			continue
 		}
 		if p := pct(n, fn.T6); p > 40 {
@@ -1863,16 +2076,16 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	}
 
 	// 6. Tỉ lệ giải trí — corpus không còn thuần ẩm thực (D-AI-37)
-	if p := pct(entCount, fn.T6); p > 30 {
+	if p := pct(st.entCount, fn.T6); p > 30 {
 		warn("GIẢI TRÍ CHIẾM %.1f%% (>30%%) — nên tách corpus ẩm thực / giải trí khi đánh giá", p)
 	}
-	if entCount == 0 {
+	if st.entCount == 0 {
 		warn("KHÔNG CÓ POI GIẢI TRÍ: vòng L7 chưa chạy hoặc query không khớp")
 	}
 
 	// 7. Loại hình user yêu cầu phải có mặt (sau D-AI-42 chỉ còn mall + siêu thị lớn)
-	for _, cat := range []string{"sieu-thi", "mall"} {
-		if catCount[cat] == 0 {
+	for _, cat := range []string{catSieuThi, catMall} {
+		if st.catCount[cat] == 0 {
 			warn("THIẾU LOẠI HÌNH: không có POI nào nhãn %q (siêu thị lớn / TTTM) — kiểm tra L6", cat)
 		}
 	}
@@ -1885,62 +2098,186 @@ if *capCafe > 0 && *capCafe < 1 && len(out) > 0 {
 	}
 
 	// 8. District phần lớn là phỏng đoán
-	if p := pct(approxDistrict, fn.T6); p > 60 {
+	if p := pct(st.approxDistrict, fn.T6); p > 60 {
 		warn("DISTRICT PHỎNG ĐOÁN %.1f%% (>60%%) — f_district trong ranker chỉ là tín hiệu yếu", p)
 	}
 
 	// 9. cap-cafe cắt quá nhiều → corpus bị bóp méo
 	if cafeDropped > 0 {
-		if p := pct(cafeDropped, cafeDropped+catCount["cafe"]); p > 30 {
+		if p := pct(cafeDropped, cafeDropped+st.catCount[catCafe]); p > 30 {
 			warn("CAP-CAFE CẮT %.1f%% số cafe — corpus bị bóp méo, cân nhắc bỏ cap hoặc fetch thêm loại khác", p)
 		}
 	}
 
 	// 10. Metadata thấp so với chỉ tiêu A9/A10
-	if p := pct(hasHours, fn.T6); p < 25 {
+	if p := pct(st.hasHours, fn.T6); p < 25 {
 		warn("METADATA THẤP: openingHours %.1f%% (<25%%) — f_hours sẽ thiếu ở phần lớn POI", p)
 	}
-	if p := pct(hasPhone, fn.T6); p < 20 {
+	if p := pct(st.hasPhone, fn.T6); p < 20 {
 		warn("METADATA THẤP: phone %.1f%% (<20%%)", p)
 	}
 
 	if !warned {
 		fmt.Println("✅ không có cảnh báo")
 	}
+}
 
-	// ---------- Ghi file ----------
+func saveCorpusDataset(outPath string, out []outPlace, curatedCount, cafeDropped, chainDropped, minSignals, maxBranches, approxDistrict, tagsFilled, vibesFilled int, fn funnel, reasons map[string]int) error {
 	ds := outDataset{
 		Meta: map[string]any{
-			"count":     len(out),
-			"generated": "build-corpus",
-			"curated":   len(curated),
-			"osm":       len(out) - len(curated),
+			"count":               len(out),
+			"generated":           "build-corpus",
+			"curated":             curatedCount,
+			"osm":                 len(out) - curatedCount,
 			"cafe_dropped_by_cap": cafeDropped,
 			"tags_filled":         tagsFilled,
 			"vibes_filled":        vibesFilled,
 			"district_approx":     approxDistrict,
-			"min_signals":         *minSignals,
-			"max_branch":          *maxBranch,
+			"min_signals":         minSignals,
+			"max_branch":          maxBranches,
 			"chain_dropped":       chainDropped,
 			"funnel": map[string]int{
 				"raw": fn.Raw, "t1": fn.T1, "t2": fn.T2, "t2b": fn.T2b,
 				"t3": fn.T3, "t4": fn.T4, "t4b": fn.T4b, "t5": fn.T5, "t6": fn.T6,
 			},
-			"drop_reasons": dropReasons,
-			"note": "Sinh tự động từ OSM + dataset gốc curated. district dùng addr-tag hoặc district-centroid (xấp xỉ) — bản ghi phỏng đoán có districtApprox=true.",
+			"drop_reasons": reasons,
+			"note":         "Sinh tự động từ OSM + dataset gốc curated. district dùng addr-tag hoặc district-centroid (xấp xỉ) — bản ghi phỏng đoán có districtApprox=true.",
 		},
 		Places: out,
 	}
 	b, err := json.MarshalIndent(ds, "", "  ")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[build] marshal lỗi: %v\n", err)
+		return fmt.Errorf("marshal lỗi: %w", err)
+	}
+	if err := os.WriteFile(outPath, b, 0o644); err != nil {
+		return fmt.Errorf("ghi lỗi: %w", err)
+	}
+	fmt.Printf("\n[build] đã ghi %d place → %s (%.1f MB)\n", len(out), outPath, float64(len(b))/1e6)
+	return nil
+}
+
+// ---------- main ----------
+
+func main() {
+	rawDir := flag.String("raw", "../../data/raw", "thư mục chứa osm-*.json (tính từ backend/scripts/build-corpus)")
+	outPath := flag.String("out", "../../data/places-expanded.json", "file kết quả (seed.ts đọc backend/data/places-expanded.json)")
+	origPath := flag.String("original", "../../../frontend/data/cold-start/places.json", "dataset gốc 491 — giữ lại quán curated/curated-v2")
+	capCafe := flag.Float64("cap-cafe", 0.35, "tỉ lệ cafe tối đa trong corpus (0 = không giới hạn). Downsample có seed cố định")
+	minSignals := flag.Int("min-signals", 2, "số tín hiệu kinh doanh thật tối thiểu (phone/website/giờ mở/brand/chuỗi) để giữ quán ăn-cafe-giải trí")
+	maxBranch := flag.Int("max-branch", 3, "số chi nhánh tối đa giữ lại cho mỗi thương hiệu (0 = không giới hạn)")
+	flag.Parse()
+
+	seen, err := loadRawElements(*rawDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[build] %v\n", err)
 		os.Exit(1)
 	}
-	if err := os.WriteFile(*outPath, b, 0o644); err != nil {
-		fmt.Fprintf(os.Stderr, "[build] ghi lỗi: %v\n", err)
+
+	var fn funnel
+	fn.Raw = len(seen)
+	fmt.Printf("[build] RAW (sau dedup theo OSM id): %d\n", fn.Raw)
+
+	// T1: bỏ không có name
+	afterT1 := filterT1(seen)
+	fn.T1 = len(afterT1)
+	fmt.Printf("[build] T1 (có name + toạ độ): %d\n", fn.T1)
+
+	// T2: bỏ name không có chữ cái
+	afterT2 := filterT2(afterT1)
+	fn.T2 = len(afterT2)
+	fmt.Printf("[build] T2 (name có chữ cái): %d\n", fn.T2)
+
+	// T2b: đánh giá TÊN — loại tên trơ (địa chỉ, ký hiệu, tên người, phi ẩm thực),
+	// phạt mềm tên mơ hồ. Chạy TRƯỚC T3 dedup để key dedup không bị tên rác
+	// làm bẩn (L-021). Penalty trừ thẳng vào qualityScore.
+	afterT2b := filterT2b(afterT2, dropReasons)
+	fn.T2b = len(afterT2b)
+	fmt.Printf("[build] T2b (tên searchable): %d (loại %d)\n", fn.T2b, fn.T2-fn.T2b)
+
+	// T3: dedup theo tên chuẩn hoá + <50m
+	afterT3, merged := filterT3(afterT2b)
+	fn.T3 = len(afterT3)
+	fmt.Printf("[build] T3 (dedup <50m, gộp %d): %d\n", merged, fn.T3)
+
+	// T4: bỏ ngoài bbox
+	afterT4 := filterT4(afterT3)
+	fn.T4 = len(afterT4)
+	fmt.Printf("[build] T4 (trong bbox): %d\n", fn.T4)
+
+	// T4b: chỉ giữ ĐỊA ĐIỂM NỔI BẬT (D-AI-42). Loại hẳn tiện ích (tạp hóa,
+	// cửa hàng tiện lợi, cửa hàng thực phẩm/rượu, nông trại) và quán không có
+	// tín hiệu kinh doanh thật. Mall + siêu thị lớn + chợ nổi tiếng luôn giữ.
+	afterT4b, cats := filterT4b(afterT4, *minSignals, dropReasons)
+	fn.T4b = len(afterT4b)
+	fmt.Printf("[build] T4b (địa điểm nổi bật): %d (loại %d)\n", fn.T4b, fn.T4-fn.T4b)
+
+	// T5 + T6: gán nhãn + chuẩn hoá
+	out := buildOutPlaces(afterT4b, cats)
+
+	// ---------- Gộp quán curated từ dataset gốc (giữ description + ảnh) ----------
+	// Chỉ giữ tier curated / curated-v2. POI OSM cũ trong dataset gốc BỎ, vì
+	// corpus mới đã có bản OSM đầy đủ hơn (tránh trùng lặp khi seed).
+	curated := loadCuratedPlaces(*origPath)
+
+	// Dedup OSM mới với curated: nếu trùng tên + <50m thì BỎ bản OSM (giữ curated
+	// vì có description/ảnh/đã kiểm).
+	out, droppedWithCurated := dedupWithCurated(out, curated)
+
+	// Thêm curated vào cuối
+	out = append(out, curated...)
+	fn.T5 = len(out) // sau gộp curated
+
+	// ---------- Giới hạn chi nhánh mỗi thương hiệu (D-AI-44) ----------
+	// Audit: 76/84 "bánh mì" là chi nhánh Đồng Tiến Bakery → 1 chuỗi chiếm 17%
+	// corpus. Chỉ giữ `maxBranch` chi nhánh điểm cao nhất mỗi thương hiệu.
+	chainDropped := capChainBranches(out, *maxBranch)
+	if chainDropped > 0 {
+		out = out[:len(out)-chainDropped]
+		fmt.Printf("[build] GIỚI HẠN CHUỖI: bỏ %d chi nhánh trùng thương hiệu (giữ tối đa %d/thương hiệu)\n",
+			chainDropped, *maxBranch)
+	}
+
+	// ---------- Cân bằng lớp: giới hạn tỉ lệ cafe, GIỮ QUÁN ĐIỂM CAO ----------
+	// Không phải để "làm đẹp số liệu" mà để tránh corpus lệch lớp làm ranker
+	// thiên về cafe. Khi phải cắt, giữ quán chất lượng cao nhất (qualityScore),
+	// không theo thứ tự OSM. Hoà điểm → theo tên để tất định.
+	//
+	// Công thức: cắt cafe làm THAY ĐỔI cả mẫu số. Muốn tỉ lệ CUỐI = cap:
+	//   keep / (N - C + keep) = cap  →  keep = cap*(N-C)/(1-cap)
+	// (công thức cũ keep = cap*N cho ra tỉ lệ cuối vẫn > cap — L-016)
+	var cafeDropped int
+	out, cafeDropped = capCafeShare(out, *capCafe)
+	fn.T6 = len(out) // sau cap-cafe
+
+	// Sắp toàn corpus giảm dần theo quality → seed/DB có thứ tự ổn định,
+	// và nếu sau này cần cắt thêm thì cắt từ cuối.
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].Quality != out[j].Quality {
+			return out[i].Quality > out[j].Quality
+		}
+		return out[i].Name < out[j].Name
+	})
+
+	// ---------- Thống kê trên CORPUS CUỐI (sau gộp curated + cap-cafe) ----------
+	stats := calcCorpusStats(out, fn.T6)
+
+	// ---------- In bảng funnel ----------
+	printFunnelTable(fn, len(curated), droppedWithCurated, dropReasons)
+
+	// ---------- Phân bố ----------
+	printDistributions(stats, fn.T6)
+
+	// ---------- Cảnh báo ----------
+	// Nguyên tắc: mỗi cảnh báo phải nêu (a) số thật, (b) ngưỡng, (c) việc cần làm.
+	// Ngưỡng cảnh báo phải KHỚP ngưỡng dùng để cắt dữ liệu ở trên — nếu cap-cafe là
+	// 35% mà cảnh báo chỉ kêu ở 50% thì lúc cap hỏng sẽ không ai biết (L-018).
+	printWarnings(stats, fn, *capCafe, cafeDropped)
+
+	// ---------- Ghi file ----------
+	if err := saveCorpusDataset(*outPath, out, len(curated), cafeDropped, chainDropped, *minSignals, *maxBranch, stats.approxDistrict, stats.tagsFilled, stats.vibesFilled, fn, dropReasons); err != nil {
+		fmt.Fprintf(os.Stderr, "[build] %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("\n[build] đã ghi %d place → %s (%.1f MB)\n", len(out), *outPath, float64(len(b))/1e6)
 }
 
 func pct(a, b int) float64 {

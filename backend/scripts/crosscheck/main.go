@@ -81,22 +81,30 @@ func isFoodType(label string) bool {
 
 // ---------- Kiểu dữ liệu ----------
 
+const (
+	tagCrosscheck = "crosscheck"
+	valWikidata   = "wikidata"
+	fieldQuality  = "quality"
+)
+
+type sparqlBinding struct {
+	Item struct {
+		Value string `json:"value"`
+	} `json:"item"`
+	ItemLabel struct {
+		Value string `json:"value"`
+	} `json:"itemLabel"`
+	Coord struct {
+		Value string `json:"value"`
+	} `json:"coord"`
+	TypeLabel struct {
+		Value string `json:"value"`
+	} `json:"typeLabel"`
+}
+
 type sparqlResp struct {
 	Results struct {
-		Bindings []struct {
-			Item struct {
-				Value string `json:"value"`
-			} `json:"item"`
-			ItemLabel struct {
-				Value string `json:"value"`
-			} `json:"itemLabel"`
-			Coord struct {
-				Value string `json:"value"`
-			} `json:"coord"`
-			TypeLabel struct {
-				Value string `json:"value"`
-			} `json:"typeLabel"`
-		} `json:"bindings"`
+		Bindings []sparqlBinding `json:"bindings"`
 	} `json:"results"`
 }
 
@@ -201,6 +209,143 @@ func removeDiacritics(s string) string {
 
 // ---------- main ----------
 
+type matchResult struct {
+	matched      int
+	matchedExact int
+	matchedFuzzy int
+}
+
+func filterFoodPlaces(wd []wdPlace) []wdPlace {
+	var food []wdPlace
+	for _, p := range wd {
+		if isFoodType(p.Type) {
+			food = append(food, p)
+		}
+	}
+	return food
+}
+
+func buildPlacesByName(food []wdPlace) map[string][]wdPlace {
+	byName := map[string][]wdPlace{}
+	for _, p := range food {
+		k := normalizeName(p.Name)
+		if k == "" {
+			continue
+		}
+		byName[k] = append(byName[k], p)
+	}
+	return byName
+}
+
+func findCandidates(key string, byName map[string][]wdPlace) []wdPlace {
+	cands := byName[key]
+	if len(cands) == 0 && len(key) >= 4 {
+		for k, v := range byName {
+			if strings.Contains(k, key) || strings.Contains(key, k) {
+				cands = append(cands, v...)
+			}
+		}
+	}
+	return cands
+}
+
+func findBestCandidate(lat, lng float64, cands []wdPlace) (wdPlace, float64, bool) {
+	best := -1
+	bestD := math.MaxFloat64
+	for j, c := range cands {
+		d := haversine(lat, lng, c.Lat, c.Lng)
+		if d < bestD {
+			bestD, best = d, j
+		}
+	}
+	if best >= 0 && bestD < 300 {
+		return cands[best], bestD, true
+	}
+	return wdPlace{}, 0, false
+}
+
+func applyWikidataMatch(p map[string]any, c wdPlace, dist float64, key string, res *matchResult) {
+	p[tagCrosscheck] = valWikidata
+	p["crosscheckQid"] = c.QID
+	p["crosscheckName"] = c.Name
+	p["crosscheckDistM"] = int(dist)
+
+	q := getInt(p, fieldQuality)
+	if normalizeName(c.Name) == key {
+		q += 10
+		res.matchedExact++
+	} else {
+		q += 6
+		res.matchedFuzzy++
+	}
+	if q > 100 {
+		q = 100
+	}
+	p[fieldQuality] = q
+	res.matched++
+}
+
+func matchPlaces(places []map[string]any, byName map[string][]wdPlace) matchResult {
+	var res matchResult
+	for _, p := range places {
+		lat, okLat := getFloat(p, "lat")
+		lng, okLng := getFloat(p, "lng")
+		if !okLat || !okLng {
+			continue
+		}
+		name := getStr(p, "name")
+		key := normalizeName(name)
+		if key == "" {
+			continue
+		}
+		cands := findCandidates(key, byName)
+		if c, dist, ok := findBestCandidate(lat, lng, cands); ok {
+			applyWikidataMatch(p, c, dist, key, &res)
+		}
+	}
+	return res
+}
+
+func printCrosscheckReport(total int, res matchResult, wdCount, foodCount int) {
+	fmt.Println()
+	fmt.Println("## Kết quả cross-check (Wikidata)")
+	fmt.Printf("- POI trong corpus:        %d\n", total)
+	fmt.Printf("- Khớp Wikidata:           %d (%.1f%%)\n", res.matched, pct(res.matched, total))
+	fmt.Printf("  · khớp chính xác tên:    %d\n", res.matchedExact)
+	fmt.Printf("  · khớp lỏng (chứa tên):  %d\n", res.matchedFuzzy)
+	fmt.Printf("- Wikidata có trong bbox:  %d item, %d là ăn uống\n", wdCount, foodCount)
+	fmt.Println()
+	fmt.Println("⚠️  Độ phủ Wikidata với quán ăn bình dân VN RẤT THẤP.")
+	fmt.Println("    Không khớp KHÔNG có nghĩa quán không tồn tại — chỉ là chưa có")
+	fmt.Println("    ai tạo mục từ điển. Vì vậy đây là ĐIỂM CỘNG (+10/+6), không phải")
+	fmt.Println("    điều kiện loại. Phải ghi rõ trong báo cáo.")
+}
+
+func saveCrosscheckDataset(outPath string, ds dataset, res matchResult, total, wdCount, foodCount int) error {
+	if ds.Meta == nil {
+		ds.Meta = map[string]any{}
+	}
+	ds.Meta[tagCrosscheck] = map[string]any{
+		"source":                 valWikidata,
+		"matched":                res.matched,
+		"matched_exact":          res.matchedExact,
+		"matched_fuzzy":          res.matchedFuzzy,
+		"total":                  total,
+		"wikidata_items_in_bbox": wdCount,
+		"wikidata_food_items":    foodCount,
+		"note":                   "Cross-check độc lập với OSM. Độ phủ thấp; chỉ là điểm cộng.",
+	}
+	out, err := json.MarshalIndent(ds, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal lỗi: %w", err)
+	}
+	if err := os.WriteFile(outPath, out, 0o644); err != nil {
+		return fmt.Errorf("ghi lỗi: %w", err)
+	}
+	fmt.Printf("\n[crosscheck] đã ghi %s (%.1f MB)\n", outPath, float64(len(out))/1e6)
+	return nil
+}
+
 func main() {
 	inPath := flag.String("in", "../../data/places-expanded.json", "corpus đã lọc")
 	outPath := flag.String("out", "../../data/places-expanded.json", "ghi đè cùng file")
@@ -231,118 +376,23 @@ func main() {
 	fmt.Printf("[crosscheck] Wikidata trả %d item trong bbox\n", len(wd))
 
 	// 3. Lọc loại hình ăn uống
-	var food []wdPlace
-	for _, p := range wd {
-		if isFoodType(p.Type) {
-			food = append(food, p)
-		}
-	}
+	food := filterFoodPlaces(wd)
 	fmt.Printf("[crosscheck] trong đó %d item là loại hình ăn uống\n", len(food))
 
 	// 4. Gom theo tên chuẩn hoá để tra nhanh
-	byName := map[string][]wdPlace{}
-	for _, p := range food {
-		k := normalizeName(p.Name)
-		if k == "" {
-			continue
-		}
-		byName[k] = append(byName[k], p)
-	}
+	byName := buildPlacesByName(food)
 
 	// 5. Khớp: cùng tên chuẩn hoá + cách < 300m
-	matched, matchedExact, matchedFuzzy := 0, 0, 0
-	for _, p := range ds.Places {
-		lat, okLat := getFloat(p, "lat")
-		lng, okLng := getFloat(p, "lng")
-		if !okLat || !okLng {
-			continue
-		}
-		name := getStr(p, "name")
-		key := normalizeName(name)
-		if key == "" {
-			continue
-		}
-		cands := byName[key]
-		if len(cands) == 0 {
-			// thử khớp lỏng: tên Wikidata chứa tên OSM (hoặc ngược lại), >= 4 ký tự
-			if len(key) >= 4 {
-				for k, v := range byName {
-					if strings.Contains(k, key) || strings.Contains(key, k) {
-						cands = append(cands, v...)
-					}
-				}
-			}
-		}
-		best := -1
-		bestD := math.MaxFloat64
-		for j, c := range cands {
-			d := haversine(lat, lng, c.Lat, c.Lng)
-			if d < bestD {
-				bestD, best = d, j
-			}
-		}
-		if best >= 0 && bestD < 300 {
-			c := cands[best]
-			p["crosscheck"] = "wikidata"
-			p["crosscheckQid"] = c.QID
-			p["crosscheckName"] = c.Name
-			p["crosscheckDistM"] = int(bestD)
-			// điểm cộng: +10 nếu khớp chính xác tên, +6 nếu khớp lỏng
-			q := getInt(p, "quality")
-			if normalizeName(c.Name) == key {
-				q += 10
-				matchedExact++
-			} else {
-				q += 6
-				matchedFuzzy++
-			}
-			if q > 100 {
-				q = 100
-			}
-			p["quality"] = q
-			matched++
-		}
-	}
+	res := matchPlaces(ds.Places, byName)
 
 	// 6. Báo cáo
-	total := len(ds.Places)
-	fmt.Println()
-	fmt.Println("## Kết quả cross-check (Wikidata)")
-	fmt.Printf("- POI trong corpus:        %d\n", total)
-	fmt.Printf("- Khớp Wikidata:           %d (%.1f%%)\n", matched, pct(matched, total))
-	fmt.Printf("  · khớp chính xác tên:    %d\n", matchedExact)
-	fmt.Printf("  · khớp lỏng (chứa tên):  %d\n", matchedFuzzy)
-	fmt.Printf("- Wikidata có trong bbox:  %d item, %d là ăn uống\n", len(wd), len(food))
-	fmt.Println()
-	fmt.Println("⚠️  Độ phủ Wikidata với quán ăn bình dân VN RẤT THẤP.")
-	fmt.Println("    Không khớp KHÔNG có nghĩa quán không tồn tại — chỉ là chưa có")
-	fmt.Println("    ai tạo mục từ điển. Vì vậy đây là ĐIỂM CỘNG (+10/+6), không phải")
-	fmt.Println("    điều kiện loại. Phải ghi rõ trong báo cáo.")
+	printCrosscheckReport(len(ds.Places), res, len(wd), len(food))
 
 	// 7. Ghi lại
-	if ds.Meta == nil {
-		ds.Meta = map[string]any{}
-	}
-	ds.Meta["crosscheck"] = map[string]any{
-		"source":        "wikidata",
-		"matched":       matched,
-		"matched_exact": matchedExact,
-		"matched_fuzzy": matchedFuzzy,
-		"total":         total,
-		"wikidata_items_in_bbox": len(wd),
-		"wikidata_food_items":    len(food),
-		"note":          "Cross-check độc lập với OSM. Độ phủ thấp; chỉ là điểm cộng.",
-	}
-	out, err := json.MarshalIndent(ds, "", "  ")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "[crosscheck] marshal lỗi: %v\n", err)
+	if err := saveCrosscheckDataset(*outPath, ds, res, len(ds.Places), len(wd), len(food)); err != nil {
+		fmt.Fprintf(os.Stderr, "[crosscheck] %v\n", err)
 		os.Exit(1)
 	}
-	if err := os.WriteFile(*outPath, out, 0o644); err != nil {
-		fmt.Fprintf(os.Stderr, "[crosscheck] ghi lỗi: %v\n", err)
-		os.Exit(1)
-	}
-	fmt.Printf("\n[crosscheck] đã ghi %s (%.1f MB)\n", *outPath, float64(len(out))/1e6)
 }
 
 func pct(a, b int) float64 {
@@ -397,6 +447,49 @@ func queryWikidata(timeout time.Duration) ([]wdPlace, error) {
 	return all, nil
 }
 
+func handleSparqlHttpError(attempt int, statusCode int, body []byte) error {
+	err := fmt.Errorf("HTTP %d: %s", statusCode, truncate(string(body), 200))
+	if statusCode == 429 || statusCode >= 500 {
+		wait := time.Duration(attempt*attempt) * 10 * time.Second
+		fmt.Printf("[crosscheck]     %v — chờ %v rồi thử lại\n", err, wait)
+		time.Sleep(wait)
+	}
+	return err
+}
+
+func parseSparqlBinding(b sparqlBinding) (wdPlace, bool) {
+	lat, lng, ok := parseWKT(b.Coord.Value)
+	if !ok {
+		return wdPlace{}, false
+	}
+	name := b.ItemLabel.Value
+	// Wikidata trả về Q-id khi không có nhãn ngôn ngữ — bỏ qua
+	if strings.HasPrefix(name, "Q") && len(name) > 1 && isAllDigits(name[1:]) {
+		return wdPlace{}, false
+	}
+	return wdPlace{
+		QID:  strings.TrimPrefix(b.Item.Value, "http://www.wikidata.org/entity/"),
+		Name: name,
+		Lat:  lat,
+		Lng:  lng,
+		Type: b.TypeLabel.Value,
+	}, true
+}
+
+func parseSparqlResponse(body []byte) ([]wdPlace, error) {
+	var sr sparqlResp
+	if err := json.Unmarshal(body, &sr); err != nil {
+		return nil, fmt.Errorf("JSON lỗi: %w (body: %s)", err, truncate(string(body), 200))
+	}
+	out := make([]wdPlace, 0, len(sr.Results.Bindings))
+	for _, b := range sr.Results.Bindings {
+		if p, ok := parseSparqlBinding(b); ok {
+			out = append(out, p)
+		}
+	}
+	return out, nil
+}
+
 // runSparql: 1 truy vấn, 3 lần thử, backoff 10s → 40s → 90s khi 429/5xx.
 func runSparql(query string, timeout time.Duration) ([]wdPlace, error) {
 	form := url.Values{}
@@ -429,39 +522,14 @@ func runSparql(query string, timeout time.Duration) ([]wdPlace, error) {
 			continue
 		}
 		if resp.StatusCode != 200 {
-			lastErr = fmt.Errorf("HTTP %d: %s", resp.StatusCode, truncate(string(body), 200))
-			if resp.StatusCode == 429 || resp.StatusCode >= 500 {
-				wait := time.Duration(attempt*attempt) * 10 * time.Second
-				fmt.Printf("[crosscheck]     %v — chờ %v rồi thử lại\n", lastErr, wait)
-				time.Sleep(wait)
-			}
+			lastErr = handleSparqlHttpError(attempt, resp.StatusCode, body)
 			continue
 		}
 
-		var sr sparqlResp
-		if err := json.Unmarshal(body, &sr); err != nil {
-			lastErr = fmt.Errorf("JSON lỗi: %w (body: %s)", err, truncate(string(body), 200))
+		out, parseErr := parseSparqlResponse(body)
+		if parseErr != nil {
+			lastErr = parseErr
 			continue
-		}
-
-		out := make([]wdPlace, 0, len(sr.Results.Bindings))
-		for _, b := range sr.Results.Bindings {
-			lat, lng, ok := parseWKT(b.Coord.Value)
-			if !ok {
-				continue
-			}
-			name := b.ItemLabel.Value
-			// Wikidata trả về Q-id khi không có nhãn ngôn ngữ — bỏ qua
-			if strings.HasPrefix(name, "Q") && len(name) > 1 && isAllDigits(name[1:]) {
-				continue
-			}
-			out = append(out, wdPlace{
-				QID:  strings.TrimPrefix(b.Item.Value, "http://www.wikidata.org/entity/"),
-				Name: name,
-				Lat:  lat,
-				Lng:  lng,
-				Type: b.TypeLabel.Value,
-			})
 		}
 		return out, nil
 	}
