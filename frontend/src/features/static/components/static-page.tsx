@@ -15,7 +15,10 @@ export function StaticPage({ title, description, children }: StaticPageProps) {
   )
 }
 
-export function StaticSection({ title, children }: { title: string; children: React.ReactNode }) {
+export function StaticSection({
+  title,
+  children,
+}: Readonly<{ title: string; children: React.ReactNode }>) {
   return (
     <section className="flex flex-col gap-2">
       <h2 className="font-heading text-base font-bold">{title}</h2>

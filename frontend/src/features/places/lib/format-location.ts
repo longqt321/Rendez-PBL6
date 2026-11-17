@@ -5,7 +5,7 @@ export function formatLocation(address: string, city: string): string {
     .filter((part) => part.length > 0)
 
   // Bỏ các đoạn cuối trùng `city` (so sánh không phân biệt hoa/thường).
-  while (parts.length > 0 && parts[parts.length - 1]?.toLowerCase() === city.trim().toLowerCase()) {
+  while (parts.length > 0 && parts.at(-1)?.toLowerCase() === city.trim().toLowerCase()) {
     parts.pop()
   }
 

@@ -43,7 +43,7 @@ const ACTOR_META = {
   follow: { icon: UserPlusIcon, text: "đã bắt đầu theo dõi bạn" },
 } as const
 
-function NotificationRow({ notification }: { notification: ActorNotification }) {
+function NotificationRow({ notification }: Readonly<{ notification: ActorNotification }>) {
   const markRead = useMarkNotificationRead()
   const meta = ACTOR_META[notification.kind]
   const Icon = meta.icon
@@ -113,7 +113,7 @@ function NotificationRow({ notification }: { notification: ActorNotification }) 
 }
 
 /** Một hàng thông báo hệ thống — không bấm được, chỉ đọc. */
-function SystemRow({ notification }: { notification: SystemNotification }) {
+function SystemRow({ notification }: Readonly<{ notification: SystemNotification }>) {
   return (
     <Item
       variant="outline"
@@ -139,6 +139,69 @@ function SystemRow({ notification }: { notification: SystemNotification }) {
   )
 }
 
+interface NotificationContentProps {
+  readonly isPending: boolean
+  readonly isError: boolean
+  readonly onRetry: () => void
+  readonly notifications: AppNotification[]
+  readonly suggestions: Extract<AppNotification, { kind: "place-suggestion" }>[]
+  readonly others: OtherNotification[]
+  readonly sentinelRef: React.Ref<HTMLDivElement>
+  readonly hasNextPage: boolean
+}
+
+function NotificationContent({
+  isPending,
+  isError,
+  onRetry,
+  notifications,
+  suggestions,
+  others,
+  sentinelRef,
+  hasNextPage,
+}: NotificationContentProps) {
+  if (isPending) {
+    return (
+      <div className="mt-4 flex flex-col gap-2">
+        {Array.from({ length: 4 }, (_, index) => (
+          <Skeleton key={`skel-notif-${index}`} className="h-16 w-full rounded-surface" />
+        ))}
+      </div>
+    )
+  }
+  if (isError) {
+    return (
+      <ErrorState className="mt-10" title="Không tải được thông báo" size="sm" onRetry={onRetry} />
+    )
+  }
+  return (
+    <Tabs defaultValue="all" className="mt-4">
+      <TabsList>
+        <TabsTrigger value="all">Tất cả ({notifications.length})</TabsTrigger>
+        <TabsTrigger value="suggestions">Đề xuất địa điểm ({suggestions.length})</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="all" className="mt-3">
+        <div className="flex flex-col gap-6">
+          <SuggestionSection suggestions={suggestions} />
+          <OtherActivitySection notifications={others} />
+        </div>
+        <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
+        {hasNextPage ? (
+          <p className="mt-6 flex justify-center text-xs text-muted-foreground">
+            <Spinner aria-label="Đang tải thêm thông báo" className="size-3" />
+            <span className="ml-1.5">Đang tải thêm…</span>
+          </p>
+        ) : null}
+      </TabsContent>
+
+      <TabsContent value="suggestions" className="mt-3">
+        <SuggestionSection suggestions={suggestions} />
+      </TabsContent>
+    </Tabs>
+  )
+}
+
 export function NotificationPage() {
   const {
     notifications,
@@ -154,7 +217,7 @@ export function NotificationPage() {
   const sentinelRef = useInfiniteScroll({
     hasNextPage,
     isFetchingNextPage,
-    fetchNextPage: () => void fetchNextPage(),
+    fetchNextPage,
   })
 
   const unreadCount = notifications.filter((notification) => !notification.read).length
@@ -188,45 +251,18 @@ export function NotificationPage() {
         </Button>
       </header>
 
-      {isPending ? (
-        <div className="mt-4 flex flex-col gap-2">
-          {Array.from({ length: 4 }, (_, index) => (
-            <Skeleton key={index} className="h-16 w-full rounded-surface" />
-          ))}
-        </div>
-      ) : isError ? (
-        <ErrorState
-          className="mt-10"
-          title="Không tải được thông báo"
-          size="sm"
-          onRetry={() => void refetch()}
-        />
-      ) : (
-        <Tabs defaultValue="all" className="mt-4">
-          <TabsList>
-            <TabsTrigger value="all">Tất cả ({notifications.length})</TabsTrigger>
-            <TabsTrigger value="suggestions">Đề xuất địa điểm ({suggestions.length})</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all" className="mt-3">
-            <div className="flex flex-col gap-6">
-              <SuggestionSection suggestions={suggestions} />
-              <OtherActivitySection notifications={others} />
-            </div>
-            <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
-            {hasNextPage ? (
-              <p className="mt-6 flex justify-center text-xs text-muted-foreground">
-                <Spinner aria-label="Đang tải thêm thông báo" className="size-3" />
-                <span className="ml-1.5">Đang tải thêm…</span>
-              </p>
-            ) : null}
-          </TabsContent>
-
-          <TabsContent value="suggestions" className="mt-3">
-            <SuggestionSection suggestions={suggestions} />
-          </TabsContent>
-        </Tabs>
-      )}
+      <NotificationContent
+        isPending={isPending}
+        isError={isError}
+        onRetry={() => {
+          refetch().catch(() => {})
+        }}
+        notifications={notifications}
+        suggestions={suggestions}
+        others={others}
+        sentinelRef={sentinelRef}
+        hasNextPage={hasNextPage}
+      />
     </div>
   )
 }
@@ -234,9 +270,9 @@ export function NotificationPage() {
 /** Khối "Đề xuất thêm địa điểm" — dùng chung cho tab Tất cả và tab Đề xuất. */
 function SuggestionSection({
   suggestions,
-}: {
+}: Readonly<{
   suggestions: Extract<AppNotification, { kind: "place-suggestion" }>[]
-}) {
+}>) {
   if (suggestions.length === 0) {
     return (
       <Empty className="border border-dashed border-border">
@@ -269,7 +305,7 @@ function SuggestionSection({
 }
 
 /** Khối "Hoạt động khác" — thông báo tương tác và thông báo hệ thống. */
-function OtherActivitySection({ notifications }: { notifications: OtherNotification[] }) {
+function OtherActivitySection({ notifications }: Readonly<{ notifications: OtherNotification[] }>) {
   if (notifications.length === 0) {
     return (
       <Empty className="border border-dashed border-border">

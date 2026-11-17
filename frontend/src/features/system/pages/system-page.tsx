@@ -22,6 +22,97 @@ interface SystemStats {
   }
 }
 
+function SystemStatsContent({
+  isPending,
+  isError,
+  stats,
+}: Readonly<{
+  isPending: boolean
+  isError: boolean
+  stats?: SystemStats
+}>) {
+  if (isPending) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner className="size-6" aria-label="Đang tải số liệu" />
+      </div>
+    )
+  }
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          Không tải được số liệu — kiểm tra API có đang chạy không.
+        </CardContent>
+      </Card>
+    )
+  }
+  if (!stats) return null
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardDescription>Tổng truy vấn đã phục vụ</CardDescription>
+          <CardTitle className="text-3xl tabular-nums">{stats.totalQueries}</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          Thời gian hoạt động: {Math.round(stats.uptimeMs / 1000)} giây
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardDescription>Độ trễ trung bình</CardDescription>
+          <CardTitle className="text-3xl tabular-nums">{stats.avgLatencyMs} ms</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          Tỉ lệ cache hit: {(stats.cacheHitRatio * 100).toFixed(0)}%
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardDescription>Dữ liệu địa điểm</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <dt className="text-muted-foreground">Tổng số quán</dt>
+            <dd className="text-right font-semibold tabular-nums">{stats.venues.total}</dd>
+            <dt className="text-muted-foreground">Đã đăng</dt>
+            <dd className="text-right font-semibold tabular-nums">{stats.venues.published}</dd>
+            <dt className="text-muted-foreground">Có ảnh</dt>
+            <dd className="text-right font-semibold tabular-nums">{stats.venues.withImages}</dd>
+            <dt className="text-muted-foreground">Có thẻ</dt>
+            <dd className="text-right font-semibold tabular-nums">{stats.venues.withTags}</dd>
+            <dt className="text-muted-foreground">Có giờ mở cửa</dt>
+            <dd className="text-right font-semibold tabular-nums">{stats.venues.withHours}</dd>
+          </dl>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardDescription>Theo endpoint</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {stats.byEndpoint.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Chưa có request nào.</p>
+          ) : (
+            <ul className="space-y-1.5 text-sm">
+              {stats.byEndpoint.slice(0, 8).map((endpoint) => (
+                <li key={endpoint.route} className="flex items-center justify-between gap-3">
+                  <span className="truncate font-mono text-xs">{endpoint.route}</span>
+                  <Badge variant="outline" className="tabular-nums">
+                    {endpoint.count}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export function SystemPage() {
   const queryClient = useQueryClient()
 
@@ -76,78 +167,11 @@ export function SystemPage() {
         </Button>
       </div>
 
-      {statsQuery.isPending ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="Đang tải số liệu" />
-        </div>
-      ) : statsQuery.isError ? (
-        <Card>
-          <CardContent className="py-8 text-center text-sm text-muted-foreground">
-            Không tải được số liệu — kiểm tra API có đang chạy không.
-          </CardContent>
-        </Card>
-      ) : stats ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardDescription>Tổng truy vấn đã phục vụ</CardDescription>
-              <CardTitle className="text-3xl tabular-nums">{stats.totalQueries}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Thời gian hoạt động: {Math.round(stats.uptimeMs / 1000)} giây
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Độ trễ trung bình</CardDescription>
-              <CardTitle className="text-3xl tabular-nums">{stats.avgLatencyMs} ms</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Tỉ lệ cache hit: {(stats.cacheHitRatio * 100).toFixed(0)}%
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Dữ liệu địa điểm</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                <dt className="text-muted-foreground">Tổng số quán</dt>
-                <dd className="text-right font-semibold tabular-nums">{stats.venues.total}</dd>
-                <dt className="text-muted-foreground">Đã đăng</dt>
-                <dd className="text-right font-semibold tabular-nums">{stats.venues.published}</dd>
-                <dt className="text-muted-foreground">Có ảnh</dt>
-                <dd className="text-right font-semibold tabular-nums">{stats.venues.withImages}</dd>
-                <dt className="text-muted-foreground">Có thẻ</dt>
-                <dd className="text-right font-semibold tabular-nums">{stats.venues.withTags}</dd>
-                <dt className="text-muted-foreground">Có giờ mở cửa</dt>
-                <dd className="text-right font-semibold tabular-nums">{stats.venues.withHours}</dd>
-              </dl>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Theo endpoint</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {stats.byEndpoint.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Chưa có request nào.</p>
-              ) : (
-                <ul className="space-y-1.5 text-sm">
-                  {stats.byEndpoint.slice(0, 8).map((endpoint) => (
-                    <li key={endpoint.route} className="flex items-center justify-between gap-3">
-                      <span className="truncate font-mono text-xs">{endpoint.route}</span>
-                      <Badge variant="outline" className="tabular-nums">
-                        {endpoint.count}
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
+      <SystemStatsContent
+        isPending={statsQuery.isPending}
+        isError={statsQuery.isError}
+        stats={stats}
+      />
     </div>
   )
 }

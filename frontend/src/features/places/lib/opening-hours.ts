@@ -47,12 +47,12 @@ function parseDayToken(raw: string): number[] | null {
   return days
 }
 
+const DAY_PART_REGEX =
+  /^([A-Za-z]{2}(?:\s*-\s*[A-Za-z]{2})?(?:\s*,\s*[A-Za-z]{2}(?:\s*-\s*[A-Za-z]{2})?)*)\s+(.*)$/u
+
 function parseRule(part: string): OpeningRule | null {
   // Bắt ngày đứng trước giờ: "Mo-Su 08:00-22:00", "Mo,We-Fr 09:00-17:00".
-  const dayMatch =
-    /^((?:[A-Za-z]{2}(?:\s*-\s*[A-Za-z]{2})?)(?:\s*,\s*[A-Za-z]{2}(?:\s*-\s*[A-Za-z]{2})?)*)\s+(.*)$/u.exec(
-      part.trim(),
-    )
+  const dayMatch = DAY_PART_REGEX.exec(part.trim())
 
   let days: DaySet = null
   let rest = part.trim()
@@ -82,6 +82,36 @@ function parseRule(part: string): OpeningRule | null {
   return { days, ranges }
 }
 
+function getVietnamNow(now: Date): { weekdayIndex: number; nowMinutes: number } | null {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now)
+  const valueOf = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((part) => part.type === type)?.value ?? ""
+  const weekdayIndex = DAY_INDEX[valueOf("weekday").slice(0, 2).toLowerCase()]
+  const hour = Number(valueOf("hour")) % 24
+  const minute = Number(valueOf("minute"))
+  if (weekdayIndex === undefined || Number.isNaN(hour) || Number.isNaN(minute)) return null
+  return { weekdayIndex, nowMinutes: hour * 60 + minute }
+}
+
+function matchesOpeningRule(rule: OpeningRule, weekdayIndex: number, nowMinutes: number): boolean {
+  if (rule.days !== null && !rule.days.includes(weekdayIndex)) return false
+  for (const { startMinutes, endMinutes } of rule.ranges) {
+    if (startMinutes === endMinutes) continue // khung 00:00-00:00 vô nghĩa
+    if (endMinutes > startMinutes) {
+      if (nowMinutes >= startMinutes && nowMinutes < endMinutes) return true
+    } else if (nowMinutes >= startMinutes || nowMinutes < endMinutes) {
+      return true // qua nửa đêm: 22:00-02:00
+    }
+  }
+  return false
+}
+
 export function isOpenNow(openingHours: string | null, now: Date = new Date()): boolean | null {
   if (!openingHours) return null
   const normalized = openingHours.trim()
@@ -96,32 +126,11 @@ export function isOpenNow(openingHours: string | null, now: Date = new Date()): 
   }
   if (rules.length === 0) return null
 
-  // Giờ/phút/thứ tại Việt Nam — dùng Intl để không lệch múi giờ máy.
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    weekday: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(now)
-  const valueOf = (type: Intl.DateTimeFormatPartTypes): string =>
-    parts.find((part) => part.type === type)?.value ?? ""
-  const weekdayIndex = DAY_INDEX[valueOf("weekday").slice(0, 2).toLowerCase()]
-  const hour = Number(valueOf("hour")) % 24 // "24" lúc nửa đêm với hour12: false
-  const minute = Number(valueOf("minute"))
-  if (weekdayIndex === undefined || Number.isNaN(hour) || Number.isNaN(minute)) return null
-  const nowMinutes = hour * 60 + minute
+  const vn = getVietnamNow(now)
+  if (!vn) return null
 
   for (const rule of rules) {
-    if (rule.days !== null && !rule.days.includes(weekdayIndex)) continue
-    for (const { startMinutes, endMinutes } of rule.ranges) {
-      if (startMinutes === endMinutes) continue // khung 00:00-00:00 vô nghĩa
-      if (endMinutes > startMinutes) {
-        if (nowMinutes >= startMinutes && nowMinutes < endMinutes) return true
-      } else if (nowMinutes >= startMinutes || nowMinutes < endMinutes) {
-        return true // qua nửa đêm: 22:00-02:00
-      }
-    }
+    if (matchesOpeningRule(rule, vn.weekdayIndex, vn.nowMinutes)) return true
   }
   return false
 }

@@ -23,17 +23,121 @@ function isRecentlyPublished(publishedAt: string | null): boolean {
 }
 
 interface PlaceCardProps {
-  place: Place
-  distanceKm?: number
+  readonly place: Place
+  readonly distanceKm?: number
+  readonly why?: PickWhy
+}
 
-  why?: PickWhy
+interface PlaceCardBadgesProps {
+  readonly place: Place
+  readonly isNew: boolean
+  readonly openState: boolean | null
+}
+
+function PlaceCardBadges({ place, isNew, openState }: PlaceCardBadgesProps) {
+  return (
+    <>
+      <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+        <Badge
+          variant="secondary"
+          className="h-6 border-border bg-secondary px-2 text-xs text-secondary-foreground"
+        >
+          {categoryLabel(place.category)}
+        </Badge>
+        {isNew ? (
+          <Badge className="h-6 border-transparent bg-primary px-2 text-xs text-primary-foreground">
+            Mới
+          </Badge>
+        ) : null}
+        {place.district ? (
+          <Badge
+            variant="outline"
+            className="h-6 border-border/80 bg-background/80 px-2 text-xs font-medium backdrop-blur"
+          >
+            {place.district}
+          </Badge>
+        ) : null}
+      </div>
+
+      {place.reviewCount > 0 ? (
+        <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-sm font-bold">
+          <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
+          {formatRating(place.rating)}
+        </span>
+      ) : null}
+
+      {openState !== null ? (
+        <Badge
+          variant="outline"
+          className={
+            openState
+              ? "absolute top-2 right-2 h-6 border-transparent bg-open px-2 text-xs text-white"
+              : "absolute top-2 right-2 h-6 border-border/80 bg-background/80 px-2 text-xs font-medium text-muted-foreground backdrop-blur"
+          }
+        >
+          {openState ? "Đang mở cửa" : "Đã đóng cửa"}
+        </Badge>
+      ) : null}
+    </>
+  )
+}
+
+function PlaceCardTags({ tags }: Readonly<{ tags: string[] }>) {
+  const visibleTags = tags.slice(0, 3)
+  const hiddenTagCount = tags.length - visibleTags.length
+  if (visibleTags.length === 0) return null
+
+  return (
+    <ul className="flex flex-wrap gap-1" aria-label="Thẻ gợi ý">
+      {visibleTags.map((tag) => (
+        <li key={tag}>
+          <Badge variant="outline" className="h-5 px-1.5 text-xs font-normal text-muted-foreground">
+            #{tag}
+          </Badge>
+        </li>
+      ))}
+      {hiddenTagCount > 0 ? (
+        <li
+          aria-label={`${hiddenTagCount} thẻ khác`}
+          className="flex h-5 items-center px-1 text-xs text-muted-foreground"
+        >
+          +{hiddenTagCount}
+        </li>
+      ) : null}
+    </ul>
+  )
+}
+
+function PlaceCardWhyBlock({ why }: Readonly<{ why: PickWhy }>) {
+  return (
+    <div className="flex flex-wrap items-center gap-1" aria-label="Vì sao gợi ý">
+      <Badge
+        variant="secondary"
+        className="h-5 gap-1 px-1.5 text-xs font-medium text-secondary-foreground"
+      >
+        <SparklesIcon className="size-3" aria-hidden="true" />
+        Điểm gợi ý {why.matchPercent}/100
+      </Badge>
+      {why.district ? <span className="text-xs text-muted-foreground">{why.district}</span> : null}
+      {why.openNow !== null ? (
+        <span className="text-xs text-muted-foreground">· {why.openNow ? "Đang mở" : "Đóng"}</span>
+      ) : null}
+      {why.signals.slice(0, 3).map((signal) => (
+        <Badge
+          key={signal}
+          variant="outline"
+          className="h-5 px-1.5 text-xs font-normal text-muted-foreground"
+        >
+          {signal}
+        </Badge>
+      ))}
+    </div>
+  )
 }
 
 export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
   // `null` = không có dữ liệu giờ mở cửa → không hiện badge.
   const openState = isOpenNow(place.openingHours ?? null)
-  const visibleTags = place.tags.slice(0, 3)
-  const hiddenTagCount = place.tags.length - visibleTags.length
   const isNew = isRecentlyPublished(place.publishedAt)
 
   return (
@@ -50,47 +154,7 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
         sizes="(min-width: 768px) 33vw, 50vw"
         className="w-full shrink-0 rounded-t-xl"
       >
-        <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-          <Badge
-            variant="secondary"
-            className="h-6 border-border bg-secondary px-2 text-xs text-secondary-foreground"
-          >
-            {categoryLabel(place.category)}
-          </Badge>
-          {isNew ? (
-            <Badge className="h-6 border-transparent bg-primary px-2 text-xs text-primary-foreground">
-              Mới
-            </Badge>
-          ) : null}
-          {place.district ? (
-            <Badge
-              variant="outline"
-              className="h-6 border-border/80 bg-background/80 px-2 text-xs font-medium backdrop-blur"
-            >
-              {place.district}
-            </Badge>
-          ) : null}
-        </div>
-
-        {place.reviewCount > 0 ? (
-          <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-sm font-bold">
-            <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
-            {formatRating(place.rating)}
-          </span>
-        ) : null}
-
-        {openState !== null ? (
-          <Badge
-            variant="outline"
-            className={
-              openState
-                ? "absolute top-2 right-2 h-6 border-transparent bg-open px-2 text-xs text-white"
-                : "absolute top-2 right-2 h-6 border-border/80 bg-background/80 px-2 text-xs font-medium text-muted-foreground backdrop-blur"
-            }
-          >
-            {openState ? "Đang mở cửa" : "Đã đóng cửa"}
-          </Badge>
-        ) : null}
+        <PlaceCardBadges place={place} isNew={isNew} openState={openState} />
       </CoverImage>
 
       <CardContent className="flex flex-1 flex-col gap-2 p-4">
@@ -104,64 +168,14 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
           </Link>
         </h3>
 
-        {visibleTags.length > 0 ? (
-          <ul className="flex flex-wrap gap-1" aria-label="Thẻ gợi ý">
-            {visibleTags.map((tag) => (
-              <li key={tag}>
-                <Badge
-                  variant="outline"
-                  className="h-5 px-1.5 text-xs font-normal text-muted-foreground"
-                >
-                  #{tag}
-                </Badge>
-              </li>
-            ))}
-            {hiddenTagCount > 0 ? (
-              <li
-                aria-label={`${hiddenTagCount} thẻ khác`}
-                className="flex h-5 items-center px-1 text-xs text-muted-foreground"
-              >
-                +{hiddenTagCount}
-              </li>
-            ) : null}
-          </ul>
-        ) : null}
+        <PlaceCardTags tags={place.tags} />
 
         <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
           <MapPinIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
           <span className="line-clamp-2">{place.address}</span>
         </p>
 
-        {why ? (
-          <div className="flex flex-wrap items-center gap-1" aria-label="Vì sao gợi ý">
-            <Badge
-              variant="secondary"
-              className="h-5 gap-1 px-1.5 text-xs font-medium text-secondary-foreground"
-            >
-              <SparklesIcon className="size-3" aria-hidden="true" />
-              {/* matchPercent là điểm chất lượng tuyệt đối (score/maxScore), không
-                  phải % khớp sở thích — nhãn phải nói đúng nghĩa. */}
-              Điểm gợi ý {why.matchPercent}/100
-            </Badge>
-            {why.district ? (
-              <span className="text-xs text-muted-foreground">{why.district}</span>
-            ) : null}
-            {why.openNow !== null ? (
-              <span className="text-xs text-muted-foreground">
-                · {why.openNow ? "Đang mở" : "Đóng"}
-              </span>
-            ) : null}
-            {why.signals.slice(0, 3).map((signal) => (
-              <Badge
-                key={signal}
-                variant="outline"
-                className="h-5 px-1.5 text-xs font-normal text-muted-foreground"
-              >
-                {signal}
-              </Badge>
-            ))}
-          </div>
-        ) : null}
+        {why ? <PlaceCardWhyBlock why={why} /> : null}
 
         <div className="mt-auto flex items-center justify-between pt-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">

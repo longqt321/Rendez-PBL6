@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { formatCount, formatRelativeTime } from "@/lib/format"
 import type { CollectionSummary } from "../types/collection"
 
-export function CollectionCard({ collection }: { collection: CollectionSummary }) {
+export function CollectionCard({ collection }: Readonly<{ collection: CollectionSummary }>) {
   return (
     <Card className="relative gap-0 py-0">
       <div className="grid grid-cols-3 gap-px bg-border">

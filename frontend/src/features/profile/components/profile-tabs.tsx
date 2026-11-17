@@ -8,7 +8,7 @@ import { ProfileCollectionGrid } from "./profile-collection-grid"
 import { ProfilePostGrid } from "./profile-post-grid"
 
 interface ProfileTabsProps {
-  profile: UserProfile
+  readonly profile: UserProfile
 }
 
 const POST_TABS: ProfileTab[] = ["posts", "pinned", "saved"]
@@ -16,7 +16,7 @@ const TAB_VALUES = ["posts", "pinned", "saved", "collections"] as const
 type TabValue = (typeof TAB_VALUES)[number]
 
 function isTabValue(value: string | null): value is TabValue {
-  return TAB_VALUES.some((tab) => tab === value)
+  return value !== null && (TAB_VALUES as readonly string[]).includes(value)
 }
 
 export function ProfileTabs({ profile }: ProfileTabsProps) {
@@ -70,14 +70,17 @@ function PrivateProfileNotice() {
   )
 }
 
-function ProfileTabContent({ profile, tab }: { profile: UserProfile; tab: ProfileTab }) {
+function ProfileTabContent({ profile, tab }: Readonly<{ profile: UserProfile; tab: ProfileTab }>) {
   // Server trả 403 cho dữ liệu riêng của hồ sơ riêng tư — chặn trước khi gọi,
   // tránh mỗi tab bắn request chỉ để nhận 403 (và để hook không gọi có điều kiện).
   if (profile.privateProfile && !profile.isMe) return <PrivateProfileNotice />
   return <ProfileTabContentInner profile={profile} tab={tab} />
 }
 
-function ProfileTabContentInner({ profile, tab }: { profile: UserProfile; tab: ProfileTab }) {
+function ProfileTabContentInner({
+  profile,
+  tab,
+}: Readonly<{ profile: UserProfile; tab: ProfileTab }>) {
   const { data, isPending, isError, refetch } = useProfilePosts(profile.handle, tab)
   const posts = data?.pages.flatMap((page) => page.items) ?? []
 
@@ -101,7 +104,9 @@ function ProfileTabContentInner({ profile, tab }: { profile: UserProfile; tab: P
       posts={posts}
       isPending={isPending}
       isError={isError}
-      onRetry={() => void refetch()}
+      onRetry={() => {
+        refetch().catch(() => {})
+      }}
       emptyTitle={copy.title}
       emptyDescription={copy.description}
     />

@@ -11,7 +11,7 @@ import { useSetFollow } from "../hooks/use-set-follow"
 import type { UserProfile } from "../types/profile"
 
 interface ProfileHeaderProps {
-  profile: UserProfile
+  readonly profile: UserProfile
 }
 
 export function ProfileHeader({ profile }: ProfileHeaderProps) {
@@ -65,9 +65,11 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
                   focusable — bọc trực tiếp lên Button thì tooltip không bao giờ hiện. */}
               <Tooltip>
                 <TooltipTrigger
-                  render={<span className="inline-flex" tabIndex={0} aria-disabled="true" />}
+                  render={
+                    <span role="button" className="inline-flex" tabIndex={0} aria-disabled="true" />
+                  }
                 >
-                  <Button variant="outline" disabled>
+                  <Button variant="outline" disabled tabIndex={-1}>
                     Nhắn tin
                   </Button>
                 </TooltipTrigger>

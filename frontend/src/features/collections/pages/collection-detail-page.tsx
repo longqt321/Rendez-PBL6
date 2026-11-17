@@ -37,12 +37,12 @@ import { useCollection } from "../hooks/use-collection"
 import { useDeleteCollection, useSetCollectionPlace } from "../hooks/use-collections"
 import { CollectionLikeButton } from "../components/collection-like-button"
 import { EditCollectionDialog } from "../components/edit-collection-dialog"
+import type { Collection } from "../types/collection"
 
 interface CollectionPlaceItemProps {
-  placeId: string
-
-  canRemove: boolean
-  collectionId: string
+  readonly placeId: string
+  readonly canRemove: boolean
+  readonly collectionId: string
 }
 
 function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPlaceItemProps) {
@@ -109,6 +109,108 @@ function CollectionNotFound() {
   )
 }
 
+interface CollectionHeaderCardProps {
+  readonly collection: Collection
+  readonly onDeleteClick: () => void
+}
+
+function CollectionHeaderCard({ collection, onDeleteClick }: CollectionHeaderCardProps) {
+  return (
+    <Card className="mt-4">
+      <CardContent className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <h1 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-bold tracking-tight">
+            {collection.name}
+            {collection.isPrivate ? (
+              <Badge variant="secondary" className="gap-1 text-xs">
+                <LockIcon className="size-3" aria-hidden="true" />
+                Riêng tư
+              </Badge>
+            ) : null}
+          </h1>
+          {collection.description ? (
+            <p className="text-sm break-words whitespace-pre-line text-muted-foreground">
+              {collection.description}
+            </p>
+          ) : null}
+          <p className="text-sm text-muted-foreground">
+            {collection.placeIds.length} địa điểm ·{" "}
+            {collection.isMine ? (
+              collection.owner.name
+            ) : (
+              <Link
+                to={`/u/${collection.owner.handle}`}
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                {collection.owner.name}
+              </Link>
+            )}
+          </p>
+        </div>
+
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <CollectionLikeButton collection={collection} />
+          <ShareButton
+            title={`Bộ sưu tập “${collection.name}”`}
+            url={`/collections/${collection.id}`}
+          />
+          {collection.isMine ? (
+            <>
+              <EditCollectionDialog collection={collection}>
+                <Button variant="outline" size="sm">
+                  <PencilIcon />
+                  Sửa
+                </Button>
+              </EditCollectionDialog>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={onDeleteClick}
+              >
+                <Trash2Icon />
+                Xoá
+              </Button>
+            </>
+          ) : null}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function CollectionPlacesList({ collection }: Readonly<{ collection: Collection }>) {
+  if (collection.placeIds.length === 0) {
+    return (
+      <Empty className="mt-8">
+        <EmptyHeader>
+          <EmptyTitle>Bộ sưu tập đang trống</EmptyTitle>
+          <EmptyDescription>
+            Mở một{" "}
+            <Link to="/discover" className="underline underline-offset-2">
+              địa điểm
+            </Link>{" "}
+            và nhấn “Lưu vào bộ sưu tập”.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    )
+  }
+  return (
+    <ItemGroup className="mt-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {collection.placeIds.map((placeId) => (
+        <Item key={placeId} role="listitem" className="h-full border-0 p-0 [&>*]:w-full">
+          <CollectionPlaceItem
+            placeId={placeId}
+            canRemove={collection.isMine}
+            collectionId={collection.id}
+          />
+        </Item>
+      ))}
+    </ItemGroup>
+  )
+}
+
 /** Trang chi tiết bộ sưu tập — `/collections/:id`. */
 export function CollectionDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -147,7 +249,13 @@ export function CollectionDetailPage() {
           className="mt-8"
           title={notFound ? "Không tìm thấy bộ sưu tập" : "Không tải được bộ sưu tập"}
           description={notFound ? "Bộ sưu tập có thể đã bị xoá hoặc link không đúng." : undefined}
-          onRetry={notFound ? undefined : () => void refetch()}
+          onRetry={
+            notFound
+              ? undefined
+              : () => {
+                  refetch().catch(() => {})
+                }
+          }
         />
       </div>
     )
@@ -165,6 +273,9 @@ export function CollectionDetailPage() {
     })
   }
 
+  const targetPath = `/collections/${collection.id}`
+  const loginNextUrl = `/login?next=${encodeURIComponent(targetPath)}`
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
       {isGuest ? null : (
@@ -181,93 +292,9 @@ export function CollectionDetailPage() {
         </Breadcrumb>
       )}
 
-      <Card className="mt-4">
-        <CardContent className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <h1 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-bold tracking-tight">
-              {collection.name}
-              {collection.isPrivate ? (
-                <Badge variant="secondary" className="gap-1 text-xs">
-                  <LockIcon className="size-3" aria-hidden="true" />
-                  Riêng tư
-                </Badge>
-              ) : null}
-            </h1>
-            {collection.description ? (
-              <p className="text-sm break-words whitespace-pre-line text-muted-foreground">
-                {collection.description}
-              </p>
-            ) : null}
-            <p className="text-sm text-muted-foreground">
-              {collection.placeIds.length} địa điểm ·{" "}
-              {collection.isMine ? (
-                collection.owner.name
-              ) : (
-                <Link
-                  to={`/u/${collection.owner.handle}`}
-                  className="underline underline-offset-2 hover:text-foreground"
-                >
-                  {collection.owner.name}
-                </Link>
-              )}
-            </p>
-          </div>
+      <CollectionHeaderCard collection={collection} onDeleteClick={() => setConfirming(true)} />
 
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <CollectionLikeButton collection={collection} />
-            <ShareButton
-              title={`Bộ sưu tập “${collection.name}”`}
-              url={`/collections/${collection.id}`}
-            />
-            {collection.isMine ? (
-              <>
-                <EditCollectionDialog collection={collection}>
-                  <Button variant="outline" size="sm">
-                    <PencilIcon />
-                    Sửa
-                  </Button>
-                </EditCollectionDialog>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => setConfirming(true)}
-                >
-                  <Trash2Icon />
-                  Xoá
-                </Button>
-              </>
-            ) : null}
-          </div>
-        </CardContent>
-      </Card>
-
-      {collection.placeIds.length === 0 ? (
-        <Empty className="mt-8">
-          <EmptyHeader>
-            <EmptyTitle>Bộ sưu tập đang trống</EmptyTitle>
-            <EmptyDescription>
-              Mở một{" "}
-              <Link to="/discover" className="underline underline-offset-2">
-                địa điểm
-              </Link>{" "}
-              và nhấn “Lưu vào bộ sưu tập”.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <ItemGroup className="mt-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {collection.placeIds.map((placeId) => (
-            <Item key={placeId} role="listitem" className="h-full border-0 p-0 [&>*]:w-full">
-              <CollectionPlaceItem
-                placeId={placeId}
-                canRemove={collection.isMine}
-                collectionId={collection.id}
-              />
-            </Item>
-          ))}
-        </ItemGroup>
-      )}
+      <CollectionPlacesList collection={collection} />
 
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
         <AlertDialogContent className="sm:max-w-sm">
@@ -297,19 +324,19 @@ export function CollectionDetailPage() {
       </AlertDialog>
 
       {isGuest ? (
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-6"
-          render={
-            <Link to={`/login?next=${encodeURIComponent(`/collections/${collection.id}`)}`} />
-          }
-        >
+        <Button variant="outline" size="sm" className="mt-6" render={<Link to={loginNextUrl} />}>
           <LogInIcon />
           Đăng nhập để lưu bộ sưu tập
         </Button>
       ) : (
-        <Button variant="ghost" size="sm" className="mt-6" onClick={() => void navigate("/saved")}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-6"
+          onClick={() => {
+            void navigate("/saved")
+          }}
+        >
           <ArrowLeftIcon />
           Về trang Đã lưu
         </Button>

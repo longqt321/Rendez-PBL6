@@ -22,21 +22,21 @@ import type { MapBounds } from "../api/get-map-places"
 import type { Place } from "../types/place"
 
 interface PlacesMapProps {
-  places: Place[]
-  selectedPlaceId?: string | null
-  onSelectPlace?: (place: Place) => void
-  userCoordinates?: { lat: number; lng: number } | null
-  className?: string
+  readonly places: Place[]
+  readonly selectedPlaceId?: string | null
+  readonly onSelectPlace?: (place: Place) => void
+  readonly userCoordinates?: { lat: number; lng: number } | null
+  readonly className?: string
 
-  height?: string
+  readonly height?: string
 
-  onViewportChange?: (bounds: MapBounds) => void
+  readonly onViewportChange?: (bounds: MapBounds) => void
 
-  fitKey?: string
+  readonly fitKey?: string
 
-  isPlacesLoading?: boolean
+  readonly isPlacesLoading?: boolean
 
-  totalPlaces?: number
+  readonly totalPlaces?: number
 }
 
 const LABEL_MIN_ZOOM = 17
@@ -82,12 +82,12 @@ function MapBoundsUpdater({
   selectedPlace,
   userCoordinates,
   fitKey,
-}: {
+}: Readonly<{
   places: Place[]
   selectedPlace?: Place
   userCoordinates?: { lat: number; lng: number } | null
   fitKey?: string
-}) {
+}>) {
   const map = useMap()
   const fittedKeyRef = useRef<string | null>(null)
 
@@ -117,7 +117,7 @@ function MapBoundsUpdater({
   return null
 }
 
-function ViewportReporter({ onChange }: { onChange: (bounds: MapBounds) => void }) {
+function ViewportReporter({ onChange }: Readonly<{ onChange: (bounds: MapBounds) => void }>) {
   // Giữ callback mới nhất trong ref để `emit` ổn định (không re-run effect khi
   // parent render lại), đồng thời không cần eslint-disable exhaustive-deps.
   const onChangeRef = useRef(onChange)
@@ -194,9 +194,15 @@ function createPlacePinIcon(
   })
 }
 
+function getClusterSize(count: number): number {
+  if (count >= 50) return 52
+  if (count >= 10) return 44
+  return 36
+}
+
 /** Cụm pin: vòng tròn hiện số quán bên trong, to dần theo số lượng. */
 function createClusterIcon(count: number) {
-  const size = count >= 50 ? 52 : count >= 10 ? 44 : 36
+  const size = getClusterSize(count)
   const html = `
     <div class="flex items-center justify-center rounded-full bg-primary font-heading font-bold text-primary-foreground shadow-lg ring-4 ring-primary/25 transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/60" style="width: ${size}px; height: ${size}px; font-size: ${size >= 44 ? 14 : 12}px" role="button" tabindex="0" aria-label="${count} địa điểm — bấm để phóng to">
       ${count}
@@ -241,13 +247,13 @@ function ClusteredPlaceMarkers({
   onSelectPlace,
   userCoordinates,
   topPlaceIds,
-}: {
+}: Readonly<{
   places: Place[]
   selectedPlaceId?: string | null
   onSelectPlace?: (place: Place) => void
   userCoordinates?: { lat: number; lng: number } | null
   topPlaceIds: Set<string>
-}) {
+}>) {
   const map = useMap()
   const markerRefs = useRef<Record<string, L.Marker | null>>({})
   const [viewport, setViewport] = useState(() => ({
@@ -585,16 +591,11 @@ export function PlacesMap({
 
       {/* Tóm tắt số lượng địa điểm trên bản đồ */}
       <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-md border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur">
-        {isPlacesLoading && validPlaces.length === 0 ? (
-          <span>Đang tải địa điểm trong vùng xem…</span>
-        ) : totalPlaces !== undefined && totalPlaces > validPlaces.length ? (
-          <span>
-            Đang hiển thị {validPlaces.length}/{totalPlaces} địa điểm trong vùng xem — zoom sát hơn
-            để xem hết
-          </span>
-        ) : (
-          <span>Đang hiển thị {validPlaces.length} địa điểm trong vùng xem</span>
-        )}
+        <PlacesSummaryText
+          isLoading={isPlacesLoading}
+          validCount={validPlaces.length}
+          totalCount={totalPlaces}
+        />
         {userCoordinates ? (
           <span className="flex items-center gap-0.5 text-primary">
             <NavigationIcon className="size-3" /> Đã bật vị trí
@@ -603,4 +604,22 @@ export function PlacesMap({
       </div>
     </div>
   )
+}
+
+function PlacesSummaryText({
+  isLoading,
+  validCount,
+  totalCount,
+}: Readonly<{ isLoading?: boolean; validCount: number; totalCount?: number }>) {
+  if (isLoading && validCount === 0) {
+    return <span>Đang tải địa điểm trong vùng xem…</span>
+  }
+  if (totalCount !== undefined && totalCount > validCount) {
+    return (
+      <span>
+        Đang hiển thị {validCount}/{totalCount} địa điểm trong vùng xem — zoom sát hơn để xem hết
+      </span>
+    )
+  }
+  return <span>Đang hiển thị {validCount} địa điểm trong vùng xem</span>
 }

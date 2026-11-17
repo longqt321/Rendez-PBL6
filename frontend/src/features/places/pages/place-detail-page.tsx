@@ -34,6 +34,7 @@ import { ReviewForm } from "../components/review-form"
 import { ReviewItem } from "../components/review-item"
 import { ReviewDeleteDialog } from "../components/review-delete-dialog"
 import type { Review } from "../types/review"
+import type { Post } from "@/features/social/types/post"
 import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
 import { PlaceMiniMap } from "../components/place-mini-map"
 import { CheckInDialog } from "../components/check-in-dialog"
@@ -142,13 +143,7 @@ export function PlaceDetailPage() {
             <h1 className="font-heading text-xl font-bold tracking-tight">{place.name}</h1>
             <Badge variant="secondary">{categoryLabel(place.category)}</Badge>
             {place.status === "closed" ? <Badge variant="destructive">Đã đóng cửa</Badge> : null}
-            {openState === true ? (
-              <Badge className="bg-open text-white">Đang mở cửa</Badge>
-            ) : openState === false ? (
-              <Badge variant="outline" className="text-muted-foreground">
-                Đang đóng cửa
-              </Badge>
-            ) : null}
+            <OpenStatusBadge openState={openState} />
           </div>
 
           <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
@@ -220,103 +215,34 @@ export function PlaceDetailPage() {
 
         <TabsContent value="reviews" className="mt-4">
           <div className="flex flex-col gap-4">
-            {reviewFormVisible ? (
-              <Card className="p-4" role="region" aria-label="Form đánh giá">
-                <ReviewForm
-                  key={editingReview?.id ?? "new"}
-                  placeId={placeId}
-                  myReview={editingReview}
-                  authorInitials={me?.initials ?? "Tôi"}
-                  onDone={closeReviewForm}
-                />
-              </Card>
-            ) : myReview ? (
-              <Item variant="outline" className="justify-between gap-3 p-4">
-                <ItemContent>
-                  <p className="text-sm text-muted-foreground">
-                    Bạn đã đánh giá {myReview.rating}/5 sao cho địa điểm này.
-                  </p>
-                </ItemContent>
-                <ItemActions>
-                  <Button variant="outline" size="sm" onClick={() => setEditingReview(myReview)}>
-                    Sửa đánh giá
-                  </Button>
-                </ItemActions>
-              </Item>
-            ) : (
-              <Button className="self-start" onClick={() => setShowReviewForm(true)}>
-                <StarIcon />
-                Viết đánh giá
-              </Button>
-            )}
-
-            {reviewsPending ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">Đang tải đánh giá…</p>
-            ) : reviewsError ? (
-              <ErrorState
-                variant="plain"
-                title="Không tải được đánh giá"
-                onRetry={() => void refetchReviews()}
-              />
-            ) : reviews && reviews.length > 0 ? (
-              <ItemGroup className="gap-3">
-                {reviews.map((review) => (
-                  <ReviewItem
-                    key={review.id}
-                    review={review}
-                    onEdit={review.isMine ? setEditingReview : undefined}
-                    onDelete={review.isMine ? setDeletingReview : undefined}
-                  />
-                ))}
-              </ItemGroup>
-            ) : (
-              <Empty className="mt-2">
-                <EmptyHeader>
-                  <EmptyTitle>Chưa có đánh giá nào</EmptyTitle>
-                  <EmptyDescription>
-                    Hãy là người đầu tiên chia sẻ trải nghiệm tại đây.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            )}
+            <ReviewTrigger
+              reviewFormVisible={reviewFormVisible}
+              myReview={myReview}
+              editingReview={editingReview}
+              placeId={placeId}
+              authorInitials={me?.initials ?? "Tôi"}
+              closeReviewForm={closeReviewForm}
+              setEditingReview={setEditingReview}
+              setShowReviewForm={setShowReviewForm}
+            />
+            <ReviewsListContent
+              reviewsPending={reviewsPending}
+              reviewsError={reviewsError}
+              reviews={reviews}
+              refetchReviews={refetchReviews}
+              setEditingReview={setEditingReview}
+              setDeletingReview={setDeletingReview}
+            />
           </div>
         </TabsContent>
 
         <TabsContent value="posts" className="mt-4">
-          {postsPending ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Đang tải bài đăng…</p>
-          ) : postsError ? (
-            <ErrorState
-              variant="plain"
-              title="Không tải được bài đăng"
-              onRetry={() => void refetchPosts()}
-            />
-          ) : posts.length === 0 ? (
-            <Empty className="mt-2">
-              <EmptyHeader>
-                <EmptyTitle>Chưa có bài đăng nào</EmptyTitle>
-                <EmptyDescription>Các bài gắn địa điểm này sẽ xuất hiện ở đây.</EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          ) : (
-            <ItemGroup className="gap-3">
-              {posts.map((post) => (
-                <Item
-                  key={post.id}
-                  variant="outline"
-                  render={<Link to={`/post/${post.id}`} />}
-                  className="items-start gap-3 rounded-surface p-3 hover:bg-muted"
-                >
-                  <ItemContent>
-                    <p className="text-xs text-muted-foreground">
-                      {post.author.name} · {post.commentCount} bình luận · {post.likeCount} thích
-                    </p>
-                    <p className="line-clamp-3 text-sm leading-snug">{post.caption}</p>
-                  </ItemContent>
-                </Item>
-              ))}
-            </ItemGroup>
-          )}
+          <PostsTabContent
+            postsPending={postsPending}
+            postsError={postsError}
+            posts={posts}
+            refetchPosts={refetchPosts}
+          />
         </TabsContent>
 
         <TabsContent value="overview" className="mt-4 flex flex-col gap-6">
@@ -346,5 +272,168 @@ export function PlaceDetailPage() {
         }}
       />
     </div>
+  )
+}
+
+function OpenStatusBadge({ openState }: Readonly<{ openState: boolean | null }>) {
+  if (openState === true) {
+    return <Badge className="bg-open text-white">Đang mở cửa</Badge>
+  }
+  if (openState === false) {
+    return (
+      <Badge variant="outline" className="text-muted-foreground">
+        Đang đóng cửa
+      </Badge>
+    )
+  }
+  return null
+}
+
+function ReviewTrigger({
+  reviewFormVisible,
+  myReview,
+  editingReview,
+  placeId,
+  authorInitials,
+  closeReviewForm,
+  setEditingReview,
+  setShowReviewForm,
+}: Readonly<{
+  reviewFormVisible: boolean
+  myReview?: Review | null
+  editingReview: Review | null
+  placeId: string
+  authorInitials: string
+  closeReviewForm: () => void
+  setEditingReview: (review: Review | null) => void
+  setShowReviewForm: (show: boolean) => void
+}>) {
+  if (reviewFormVisible) {
+    return (
+      <Card className="p-4" role="region" aria-label="Form đánh giá">
+        <ReviewForm
+          key={editingReview?.id ?? "new"}
+          placeId={placeId}
+          myReview={editingReview}
+          authorInitials={authorInitials}
+          onDone={closeReviewForm}
+        />
+      </Card>
+    )
+  }
+  if (myReview) {
+    return (
+      <Item variant="outline" className="justify-between gap-3 p-4">
+        <ItemContent>
+          <p className="text-sm text-muted-foreground">
+            Bạn đã đánh giá {myReview.rating}/5 sao cho địa điểm này.
+          </p>
+        </ItemContent>
+        <ItemActions>
+          <Button variant="outline" size="sm" onClick={() => setEditingReview(myReview)}>
+            Sửa đánh giá
+          </Button>
+        </ItemActions>
+      </Item>
+    )
+  }
+  return (
+    <Button className="self-start" onClick={() => setShowReviewForm(true)}>
+      <StarIcon />
+      Viết đánh giá
+    </Button>
+  )
+}
+
+function ReviewsListContent({
+  reviewsPending,
+  reviewsError,
+  reviews,
+  refetchReviews,
+  setEditingReview,
+  setDeletingReview,
+}: Readonly<{
+  reviewsPending: boolean
+  reviewsError: boolean
+  reviews?: Review[]
+  refetchReviews: () => unknown
+  setEditingReview: (review: Review | null) => void
+  setDeletingReview: (review: Review | null) => void
+}>) {
+  if (reviewsPending) {
+    return <p className="py-8 text-center text-sm text-muted-foreground">Đang tải đánh giá…</p>
+  }
+  if (reviewsError) {
+    return <ErrorState variant="plain" title="Không tải được đánh giá" onRetry={refetchReviews} />
+  }
+  if (reviews && reviews.length > 0) {
+    return (
+      <ItemGroup className="gap-3">
+        {reviews.map((review) => (
+          <ReviewItem
+            key={review.id}
+            review={review}
+            onEdit={review.isMine ? setEditingReview : undefined}
+            onDelete={review.isMine ? setDeletingReview : undefined}
+          />
+        ))}
+      </ItemGroup>
+    )
+  }
+  return (
+    <Empty className="mt-2">
+      <EmptyHeader>
+        <EmptyTitle>Chưa có đánh giá nào</EmptyTitle>
+        <EmptyDescription>Hãy là người đầu tiên chia sẻ trải nghiệm tại đây.</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  )
+}
+
+function PostsTabContent({
+  postsPending,
+  postsError,
+  posts,
+  refetchPosts,
+}: Readonly<{
+  postsPending: boolean
+  postsError: boolean
+  posts: Post[]
+  refetchPosts: () => unknown
+}>) {
+  if (postsPending) {
+    return <p className="py-8 text-center text-sm text-muted-foreground">Đang tải bài đăng…</p>
+  }
+  if (postsError) {
+    return <ErrorState variant="plain" title="Không tải được bài đăng" onRetry={refetchPosts} />
+  }
+  if (posts.length === 0) {
+    return (
+      <Empty className="mt-2">
+        <EmptyHeader>
+          <EmptyTitle>Chưa có bài đăng nào</EmptyTitle>
+          <EmptyDescription>Các bài gắn địa điểm này sẽ xuất hiện ở đây.</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    )
+  }
+  return (
+    <ItemGroup className="gap-3">
+      {posts.map((post) => (
+        <Item
+          key={post.id}
+          variant="outline"
+          render={<Link to={`/post/${post.id}`} />}
+          className="items-start gap-3 rounded-surface p-3 hover:bg-muted"
+        >
+          <ItemContent>
+            <p className="text-xs text-muted-foreground">
+              {post.author.name} · {post.commentCount} bình luận · {post.likeCount} thích
+            </p>
+            <p className="line-clamp-3 text-sm leading-snug">{post.caption}</p>
+          </ItemContent>
+        </Item>
+      ))}
+    </ItemGroup>
   )
 }

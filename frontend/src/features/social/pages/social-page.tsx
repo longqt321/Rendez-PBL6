@@ -8,9 +8,74 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { usePosts } from "../hooks/use-posts"
-import type { PostFeedFilter } from "../types/post"
+import type { Post, PostFeedFilter } from "../types/post"
 import { PostCard } from "../components/post-card"
 import { PostComposer } from "../components/post-composer"
+
+interface SocialFeedContentProps {
+  readonly isPending: boolean
+  readonly isError: boolean
+  readonly posts: Post[]
+  readonly filter: PostFeedFilter
+  readonly onRetry: () => void
+}
+
+function SocialFeedContent({ isPending, isError, posts, filter, onRetry }: SocialFeedContentProps) {
+  if (isPending) {
+    return (
+      <div className="mt-4 flex flex-col gap-4">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={`skel-feed-${index}`}
+            className="flex flex-col gap-3 rounded-surface border border-border/20 p-4"
+          >
+            <div className="flex items-center gap-3">
+              <Skeleton className="size-10 rounded-full" />
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Skeleton className="h-3.5 w-36" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-48 w-full rounded-surface" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        ))}
+      </div>
+    )
+  }
+  if (isError) {
+    return (
+      <ErrorState className="mt-10" title="Không tải được bài đăng" size="sm" onRetry={onRetry} />
+    )
+  }
+  if (posts.length === 0) {
+    return (
+      <Empty className="mt-10 border border-dashed border-border">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <UsersIcon />
+          </EmptyMedia>
+          <EmptyTitle>Chưa có bài đăng nào</EmptyTitle>
+          <EmptyDescription>
+            {filter === "following"
+              ? "Theo dõi ai đó để thấy bài của họ ở đây."
+              : "Mục này chưa có bài. Thử chọn bộ lọc khác."}
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    )
+  }
+  return (
+    <ul className="mt-4 flex flex-col gap-4">
+      {posts.map((post) => (
+        <li key={post.id}>
+          <PostCard post={post} />
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 export function SocialPage() {
   const [filter, setFilter] = useState<PostFeedFilter>("all")
@@ -21,7 +86,7 @@ export function SocialPage() {
   const sentinelRef = useInfiniteScroll({
     hasNextPage,
     isFetchingNextPage,
-    fetchNextPage: () => void fetchNextPage(),
+    fetchNextPage,
   })
 
   return (
@@ -41,56 +106,15 @@ export function SocialPage() {
         </Tabs>
       </div>
 
-      {isPending ? (
-        <div className="mt-4 flex flex-col gap-4">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div
-              key={index}
-              className="flex flex-col gap-3 rounded-surface border border-border/20 p-4"
-            >
-              <div className="flex items-center gap-3">
-                <Skeleton className="size-10 rounded-full" />
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <Skeleton className="h-3.5 w-36" />
-                  <Skeleton className="h-3 w-24" />
-                </div>
-              </div>
-              <Skeleton className="h-48 w-full rounded-surface" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-            </div>
-          ))}
-        </div>
-      ) : isError ? (
-        <ErrorState
-          className="mt-10"
-          title="Không tải được bài đăng"
-          size="sm"
-          onRetry={() => void refetch()}
-        />
-      ) : posts.length === 0 ? (
-        <Empty className="mt-10 border border-dashed border-border">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <UsersIcon />
-            </EmptyMedia>
-            <EmptyTitle>Chưa có bài đăng nào</EmptyTitle>
-            <EmptyDescription>
-              {filter === "following"
-                ? "Theo dõi ai đó để thấy bài của họ ở đây."
-                : "Mục này chưa có bài. Thử chọn bộ lọc khác."}
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <ul className="mt-4 flex flex-col gap-4">
-          {posts.map((post) => (
-            <li key={post.id}>
-              <PostCard post={post} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <SocialFeedContent
+        isPending={isPending}
+        isError={isError}
+        posts={posts}
+        filter={filter}
+        onRetry={() => {
+          refetch().catch(() => {})
+        }}
+      />
 
       {posts.length > 0 ? (
         <>

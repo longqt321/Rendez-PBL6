@@ -31,9 +31,86 @@ import { useCreateCollection, useSetCollectionPlace } from "../hooks/use-collect
 import type { CollectionSummary } from "../types/collection"
 
 interface SaveToCollectionDialogProps {
-  placeId: string
-  placeName: string
-  children: React.ReactElement
+  readonly placeId: string
+  readonly placeName: string
+  readonly children: React.ReactElement
+}
+
+interface CollectionDialogListProps {
+  readonly isPending: boolean
+  readonly collections?: CollectionSummary[]
+  readonly isSetPlacePending: boolean
+  readonly onToggle: (collection: CollectionSummary, member: boolean) => void
+}
+
+function CollectionDialogList({
+  isPending,
+  collections,
+  isSetPlacePending,
+  onToggle,
+}: CollectionDialogListProps) {
+  if (isPending) {
+    return (
+      <p className="py-4 text-center text-sm text-muted-foreground">
+        <Spinner aria-label="Đang tải bộ sưu tập" /> Đang tải bộ sưu tập…
+      </p>
+    )
+  }
+  if (!collections || collections.length === 0) {
+    return (
+      <Empty className="border border-dashed border-border">
+        <EmptyHeader>
+          <EmptyTitle>Chưa có bộ sưu tập nào — tạo bên dưới.</EmptyTitle>
+        </EmptyHeader>
+      </Empty>
+    )
+  }
+  return (
+    <ItemGroup className="gap-1 p-0">
+      {collections.map((collection) => {
+        const active = collection.containsPlace ?? false
+        const switchId = `collection-switch-${collection.id}`
+        return (
+          <Item
+            key={collection.id}
+            role="listitem"
+            variant="muted"
+            size="sm"
+            className="cursor-pointer justify-between transition-colors hover:bg-accent"
+            onClick={() => {
+              if (!isSetPlacePending) {
+                onToggle(collection, !active)
+              }
+            }}
+          >
+            <ItemContent className="cursor-pointer">
+              <ItemTitle>
+                <Label
+                  htmlFor={switchId}
+                  className="cursor-pointer font-medium"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  {collection.name}
+                </Label>
+                {collection.isPrivate ? (
+                  <span className="text-xs text-muted-foreground">(Riêng tư)</span>
+                ) : null}
+              </ItemTitle>
+              <ItemDescription>{collection.placeCount} địa điểm</ItemDescription>
+            </ItemContent>
+            <ItemActions onClick={(event) => event.stopPropagation()}>
+              <Switch
+                id={switchId}
+                checked={active}
+                disabled={isSetPlacePending}
+                onCheckedChange={(checked) => onToggle(collection, checked)}
+              />
+            </ItemActions>
+          </Item>
+        )
+      })}
+    </ItemGroup>
+  )
 }
 
 export function SaveToCollectionDialog({
@@ -109,62 +186,12 @@ export function SaveToCollectionDialog({
         </DialogHeader>
 
         <div className="max-h-64 overflow-y-auto">
-          {isPending ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              <Spinner aria-label="Đang tải bộ sưu tập" /> Đang tải bộ sưu tập…
-            </p>
-          ) : collections && collections.length > 0 ? (
-            <ItemGroup className="gap-1 p-0">
-              {collections.map((collection) => {
-                const active = collection.containsPlace ?? false
-                const switchId = `collection-switch-${collection.id}`
-                return (
-                  <Item
-                    key={collection.id}
-                    role="listitem"
-                    variant="muted"
-                    size="sm"
-                    className="cursor-pointer justify-between transition-colors hover:bg-accent"
-                    onClick={() => {
-                      if (!setPlace.isPending) {
-                        handleToggle(collection, !active)
-                      }
-                    }}
-                  >
-                    <ItemContent className="cursor-pointer">
-                      <ItemTitle>
-                        <Label
-                          htmlFor={switchId}
-                          className="cursor-pointer font-medium"
-                          onClick={(event) => event.stopPropagation()}
-                        >
-                          {collection.name}
-                        </Label>
-                        {collection.isPrivate ? (
-                          <span className="text-xs text-muted-foreground">(Riêng tư)</span>
-                        ) : null}
-                      </ItemTitle>
-                      <ItemDescription>{collection.placeCount} địa điểm</ItemDescription>
-                    </ItemContent>
-                    <ItemActions onClick={(event) => event.stopPropagation()}>
-                      <Switch
-                        id={switchId}
-                        checked={active}
-                        disabled={setPlace.isPending}
-                        onCheckedChange={(checked) => handleToggle(collection, checked)}
-                      />
-                    </ItemActions>
-                  </Item>
-                )
-              })}
-            </ItemGroup>
-          ) : (
-            <Empty className="border border-dashed border-border">
-              <EmptyHeader>
-                <EmptyTitle>Chưa có bộ sưu tập nào — tạo bên dưới.</EmptyTitle>
-              </EmptyHeader>
-            </Empty>
-          )}
+          <CollectionDialogList
+            isPending={isPending}
+            collections={collections}
+            isSetPlacePending={setPlace.isPending}
+            onToggle={handleToggle}
+          />
         </div>
 
         <div className="flex flex-col gap-2 rounded-md border p-3">

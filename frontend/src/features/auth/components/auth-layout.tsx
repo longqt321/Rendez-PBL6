@@ -7,12 +7,12 @@ export function AuthLayout({
   description,
   children,
   footer,
-}: {
+}: Readonly<{
   title: string
   description?: string
   children: ReactNode
   footer?: ReactNode
-}) {
+}>) {
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-sm flex-col justify-center px-4 py-8">
       <Link
@@ -24,7 +24,7 @@ export function AuthLayout({
           className="grid size-8 place-items-center rounded-control border border-border bg-secondary text-sm font-bold text-secondary-foreground"
         >
           R
-        </span>
+        </span>{" "}
         Rendez
       </Link>
       <Card>

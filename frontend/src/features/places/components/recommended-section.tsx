@@ -4,6 +4,10 @@ import { PlaceCard } from "./place-card"
 import { PlaceCardSkeleton } from "./place-card-skeleton"
 
 const RECOMMENDED_LIMIT = 6
+const SKELETON_KEYS = Array.from(
+  { length: RECOMMENDED_LIMIT },
+  (_, index) => `rec-skeleton-${index}`,
+)
 
 export function RecommendedSection() {
   const { data, isPending, isError } = useRecommendedPlaces(RECOMMENDED_LIMIT)
@@ -14,8 +18,8 @@ export function RecommendedSection() {
       <section aria-busy="true" className="mt-6">
         <h2 className="font-heading text-lg font-bold">Gợi ý cho bạn</h2>
         <ul className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-3">
-          {Array.from({ length: RECOMMENDED_LIMIT }).map((_, index) => (
-            <li key={index}>
+          {SKELETON_KEYS.map((key) => (
+            <li key={key}>
               <PlaceCardSkeleton imageHeight={200} />
             </li>
           ))}

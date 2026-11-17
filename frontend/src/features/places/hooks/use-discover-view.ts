@@ -56,7 +56,7 @@ export function useDiscoverView(): DiscoverView {
       category: room ? ("all" as const) : filters.category,
       district: room ? ("all" as const) : filters.district,
       query: room ? "" : filters.query,
-      priceMax: room ? undefined : filters.priceMax === "all" ? undefined : filters.priceMax,
+      priceMax: room || filters.priceMax === "all" ? undefined : filters.priceMax,
       sort: filters.sort,
       // Chỉ gửi toạ độ khi sort là distance; chưa có vị trí thì server tự rơi
       // về newest, khi toạ độ về thì key đổi → fetch lại đúng thứ tự.

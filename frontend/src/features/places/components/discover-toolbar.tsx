@@ -56,9 +56,9 @@ const SORT_LABELS: Record<"newest" | "rating" | "distance", string> = {
 }
 
 interface DiscoverToolbarProps {
-  view: DiscoverView
+  readonly view: DiscoverView
 
-  mode: "grid" | "map"
+  readonly mode: "grid" | "map"
 }
 
 export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
@@ -89,7 +89,7 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
       view.clearLocation()
     } else {
       filters.setIsNearbyActive(true)
-      void view.requestLocation()
+      view.requestLocation()
     }
   }
 
@@ -100,7 +100,7 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
     if (value === "distance") {
       if (filters.isNearbyActive) return
       filters.setSort("distance")
-      void view.requestLocation()
+      view.requestLocation()
       return
     }
     filters.setSort(value === "rating" ? "rating" : "newest")
@@ -289,13 +289,10 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
               />
             }
           >
-            {view.isLocating ? (
-              <Spinner className="size-3.5" aria-label="Đang xác định vị trí" />
-            ) : filters.isNearbyActive ? (
-              <LocateFixedIcon className="size-3.5" />
-            ) : (
-              <NavigationIcon className="size-3.5 text-primary" />
-            )}
+            <NearbyButtonIcon
+              isLocating={view.isLocating}
+              isNearbyActive={filters.isNearbyActive}
+            />
             Gần đây
             {filters.isNearbyActive && view.coordinates ? (
               <span className="size-1.5 animate-ping rounded-full bg-primary"></span>
@@ -380,4 +377,17 @@ export function DiscoverToolbar({ view, mode }: DiscoverToolbarProps) {
       />
     </>
   )
+}
+
+function NearbyButtonIcon({
+  isLocating,
+  isNearbyActive,
+}: Readonly<{ isLocating: boolean; isNearbyActive: boolean }>) {
+  if (isLocating) {
+    return <Spinner className="size-3.5" aria-label="Đang xác định vị trí" />
+  }
+  if (isNearbyActive) {
+    return <LocateFixedIcon className="size-3.5" />
+  }
+  return <NavigationIcon className="size-3.5 text-primary" />
 }

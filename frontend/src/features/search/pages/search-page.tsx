@@ -19,9 +19,12 @@ import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { PlaceCardSkeleton } from "@/features/places/components/place-card-skeleton"
 import { DidYouMean } from "@/features/places/components/did-you-mean"
+import type { Place } from "@/features/places/types/place"
 import { usePosts } from "@/features/social/hooks/use-posts"
 import { PostCard } from "@/features/social/components/post-card"
+import type { Post } from "@/features/social/types/post"
 import { useMe } from "@/features/profile/hooks/use-me"
+import type { UserProfile } from "@/features/profile/types/profile"
 import { formatCount } from "@/lib/format"
 import { useUsersSearch } from "../hooks/use-users-search"
 import { useUserSuggestions } from "../hooks/use-user-suggestions"
@@ -41,7 +44,216 @@ export function SearchPage() {
   return <SearchResults query={query} />
 }
 
-function SearchResults({ query }: { query: string }) {
+interface SearchPlacesTabContentProps {
+  readonly placesPending: boolean
+  readonly placesError: boolean
+  readonly places: Place[]
+  readonly onRetry: () => void
+  readonly sentinelRef: React.Ref<HTMLDivElement>
+  readonly hasNextPage: boolean
+  readonly isFetchingNextPage: boolean
+  readonly onFetchNextPage: () => unknown
+}
+
+function SearchPlacesTabContent({
+  placesPending,
+  placesError,
+  places,
+  onRetry,
+  sentinelRef,
+  hasNextPage,
+  isFetchingNextPage,
+  onFetchNextPage,
+}: SearchPlacesTabContentProps) {
+  if (placesPending) {
+    return (
+      <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <li key={`skel-sp-${index}`}>
+            <PlaceCardSkeleton imageHeight={280 + (index % 3) * 60} />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  if (placesError) {
+    return <ErrorState variant="plain" title="Không tải được kết quả địa điểm" onRetry={onRetry} />
+  }
+  if (places.length === 0) {
+    return <SearchEmptyBlock label="địa điểm" />
+  }
+  return (
+    <>
+      <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+        {places.map((place) => (
+          <li key={place.id}>
+            <PlaceCard place={place} />
+          </li>
+        ))}
+      </ul>
+      <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
+      {hasNextPage ? (
+        <div className="mt-6 flex justify-center">
+          <Button variant="outline" onClick={onFetchNextPage} disabled={isFetchingNextPage}>
+            {isFetchingNextPage ? <Spinner aria-label="Đang tải thêm địa điểm" /> : null}
+            {isFetchingNextPage ? "Đang tải…" : "Tải thêm"}
+          </Button>
+        </div>
+      ) : (
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Đã hiển thị hết kết quả địa điểm.
+        </p>
+      )}
+    </>
+  )
+}
+
+interface SearchPostsTabContentProps {
+  readonly postsPending: boolean
+  readonly postsError: boolean
+  readonly posts: Post[]
+  readonly onRetry: () => void
+}
+
+function SearchPostsTabContent({
+  postsPending,
+  postsError,
+  posts,
+  onRetry,
+}: SearchPostsTabContentProps) {
+  if (postsPending) {
+    return (
+      <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={`skel-post-${index}`} className="h-64 w-full rounded-md" />
+        ))}
+      </div>
+    )
+  }
+  if (postsError) {
+    return <ErrorState variant="plain" title="Không tải được kết quả bài đăng" onRetry={onRetry} />
+  }
+  if (posts.length === 0) {
+    return <SearchEmptyBlock label="bài đăng" />
+  }
+  return (
+    <ul className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+      {posts.map((post) => (
+        <li key={post.id}>
+          <PostCard post={post} />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+interface SearchPeopleTabContentProps {
+  readonly peoplePending: boolean
+  readonly peopleError: boolean
+  readonly people: UserProfile[]
+  readonly onRetry: () => void
+  readonly me: UserProfile | null | undefined
+  readonly suggestionsLength: number
+  readonly locationString: string
+}
+
+function SearchPeopleBody({
+  peoplePending,
+  peopleError,
+  people,
+  onRetry,
+  me,
+  suggestionsLength,
+  locationString,
+}: SearchPeopleTabContentProps) {
+  if (peoplePending) {
+    return (
+      <div className="grid max-w-xl grid-cols-1 gap-2">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Skeleton key={`skel-usr-${index}`} className="h-16 w-full rounded-md" />
+        ))}
+      </div>
+    )
+  }
+  if (peopleError) {
+    return (
+      <ErrorState variant="plain" title="Không tải được kết quả người dùng" onRetry={onRetry} />
+    )
+  }
+  if (people.length === 0) {
+    return (
+      <>
+        <SearchEmptyBlock label="người dùng" />
+        {me && suggestionsLength > 0 ? (
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            Không tìm thấy ai tên này — thử những người được gợi ý bên trên.
+          </p>
+        ) : null}
+        {!me ? (
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            <Link
+              to={loginRedirectUrl(locationString)}
+              className="font-medium text-foreground underline underline-offset-4"
+            >
+              Đăng nhập để xem gợi ý theo dõi
+            </Link>
+          </p>
+        ) : null}
+      </>
+    )
+  }
+  return (
+    <ul className="grid max-w-xl grid-cols-1 gap-2" aria-label="Kết quả tìm kiếm người dùng">
+      {people.map((user) => (
+        <li key={user.id}>
+          <Item
+            variant="outline"
+            className="transition-colors hover:bg-muted"
+            render={<Link to={`/u/${user.handle}`} />}
+          >
+            <ItemMedia>
+              <Avatar size="lg">
+                {user.avatarUrl && (
+                  <AvatarImage src={user.avatarUrl} alt={`Ảnh đại diện của ${user.name}`} />
+                )}
+                <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
+                  {user.initials}
+                </AvatarFallback>
+              </Avatar>
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle className="text-sm font-semibold">
+                {user.name}
+                {me && user.id === me.id ? " (bạn)" : ""}
+              </ItemTitle>
+              <ItemDescription className="text-xs">
+                @{user.handle} · {formatCount(user.postCount)} bài đăng
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              {me && user.id === me.id ? (
+                <UsersIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              ) : (
+                <FollowButton user={user} />
+              )}
+            </ItemActions>
+          </Item>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function SearchPeopleTabContent(props: SearchPeopleTabContentProps) {
+  return (
+    <>
+      <UserSuggestionsSection />
+      <SearchPeopleBody {...props} />
+    </>
+  )
+}
+
+function SearchResults({ query }: Readonly<{ query: string }>) {
   const location = useLocation()
   const navigate = useNavigate()
   const {
@@ -60,7 +272,7 @@ function SearchResults({ query }: { query: string }) {
   const placesSentinelRef = useInfiniteScroll({
     hasNextPage: placesHasNextPage,
     isFetchingNextPage: placesFetchingNext,
-    fetchNextPage: () => void fetchNextPlaces(),
+    fetchNextPage: fetchNextPlaces,
   })
   // `q` được lọc server-side (GET /posts?q=); lọc client chỉ giữ bài có gắn địa điểm.
   const {
@@ -96,7 +308,9 @@ function SearchResults({ query }: { query: string }) {
 
       <DidYouMean
         suggestion={didYouMean}
-        onSelect={(value) => void navigate(`/search?q=${encodeURIComponent(value)}`)}
+        onSelect={(value) => {
+          void navigate(`/search?q=${encodeURIComponent(value)}`)
+        }}
       />
 
       <Tabs defaultValue="places" className="mt-4">
@@ -107,170 +321,50 @@ function SearchResults({ query }: { query: string }) {
         </TabsList>
 
         <TabsContent value="places" className="mt-4">
-          {placesPending ? (
-            <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <li key={index}>
-                  <PlaceCardSkeleton imageHeight={280 + (index % 3) * 60} />
-                </li>
-              ))}
-            </ul>
-          ) : placesError ? (
-            <ErrorState
-              variant="plain"
-              title="Không tải được kết quả địa điểm"
-              onRetry={() => void refetchPlaces()}
-            />
-          ) : places.length === 0 ? (
-            <SearchEmptyBlock label="địa điểm" />
-          ) : (
-            <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
-              {places.map((place) => (
-                <li key={place.id}>
-                  <PlaceCard place={place} />
-                </li>
-              ))}
-            </ul>
-          )}
-          {!placesPending && !placesError && places.length > 0 && (
-            <>
-              <div ref={placesSentinelRef} aria-hidden="true" className="h-px w-full" />
-              {placesHasNextPage ? (
-                <div className="mt-6 flex justify-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => void fetchNextPlaces()}
-                    disabled={placesFetchingNext}
-                  >
-                    {placesFetchingNext ? <Spinner aria-label="Đang tải thêm địa điểm" /> : null}
-                    {placesFetchingNext ? "Đang tải…" : "Tải thêm"}
-                  </Button>
-                </div>
-              ) : (
-                <p className="mt-6 text-center text-sm text-muted-foreground">
-                  Đã hiển thị hết kết quả địa điểm.
-                </p>
-              )}
-            </>
-          )}
+          <SearchPlacesTabContent
+            placesPending={placesPending}
+            placesError={placesError}
+            places={places}
+            onRetry={() => {
+              refetchPlaces().catch(() => {})
+            }}
+            sentinelRef={placesSentinelRef}
+            hasNextPage={placesHasNextPage}
+            isFetchingNextPage={placesFetchingNext}
+            onFetchNextPage={fetchNextPlaces}
+          />
         </TabsContent>
 
         <TabsContent value="posts" className="mt-4">
-          {postsPending ? (
-            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton key={index} className="h-64 w-full rounded-md" />
-              ))}
-            </div>
-          ) : postsError ? (
-            <ErrorState
-              variant="plain"
-              title="Không tải được kết quả bài đăng"
-              onRetry={() => void refetchPosts()}
-            />
-          ) : posts.length === 0 ? (
-            <SearchEmptyBlock label="bài đăng" />
-          ) : (
-            <ul className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-              {posts.map((post) => (
-                <li key={post.id}>
-                  <PostCard post={post} />
-                </li>
-              ))}
-            </ul>
-          )}
+          <SearchPostsTabContent
+            postsPending={postsPending}
+            postsError={postsError}
+            posts={posts}
+            onRetry={() => {
+              refetchPosts().catch(() => {})
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="people" className="mt-4">
-          {/* Khối gợi ý render độc lập với trạng thái kết quả; tự thu gọn khi guest/rỗng/lỗi. */}
-          <UserSuggestionsSection />
-          {peoplePending ? (
-            <div className="grid max-w-xl grid-cols-1 gap-2">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index} className="h-16 w-full rounded-md" />
-              ))}
-            </div>
-          ) : peopleError ? (
-            <ErrorState
-              variant="plain"
-              title="Không tải được kết quả người dùng"
-              onRetry={() => void refetchPeople()}
-            />
-          ) : people.length === 0 ? (
-            <>
-              <SearchEmptyBlock label="người dùng" />
-              {/* Có gợi ý thì hướng dẫn sang khối bên trên; guest thì mời đăng nhập. */}
-              {me && (suggestions?.length ?? 0) > 0 && (
-                <p className="mt-2 text-center text-sm text-muted-foreground">
-                  Không tìm thấy ai tên này — thử những người được gợi ý bên trên.
-                </p>
-              )}
-              {!me && (
-                <p className="mt-2 text-center text-sm text-muted-foreground">
-                  {/* Guest: mời đăng nhập để xem gợi ý (endpoint cần đăng nhập). */}
-                  <Link
-                    to={loginRedirectUrl(`${location.pathname}${location.search}`)}
-                    className="font-medium text-foreground underline underline-offset-4"
-                  >
-                    Đăng nhập để xem gợi ý theo dõi
-                  </Link>
-                </p>
-              )}
-            </>
-          ) : (
-            <ul
-              className="grid max-w-xl grid-cols-1 gap-2"
-              aria-label="Kết quả tìm kiếm người dùng"
-            >
-              {people.map((user) => (
-                <li key={user.id}>
-                  {/* Item tự là thẻ `<a>` qua `render` nên cần hover riêng (`[a]:hover` chỉ áp cho con). */}
-                  <Item
-                    variant="outline"
-                    className="transition-colors hover:bg-muted"
-                    render={<Link to={`/u/${user.handle}`} />}
-                  >
-                    <ItemMedia>
-                      <Avatar size="lg">
-                        {user.avatarUrl && (
-                          <AvatarImage src={user.avatarUrl} alt={`Ảnh đại diện của ${user.name}`} />
-                        )}
-                        <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
-                          {user.initials}
-                        </AvatarFallback>
-                      </Avatar>
-                    </ItemMedia>
-                    <ItemContent>
-                      <ItemTitle className="text-sm font-semibold">
-                        {user.name}
-                        {me && user.id === me.id ? " (bạn)" : ""}
-                      </ItemTitle>
-                      <ItemDescription className="text-xs">
-                        @{user.handle} · {formatCount(user.postCount)} bài đăng
-                      </ItemDescription>
-                    </ItemContent>
-                    <ItemActions>
-                      {me && user.id === me.id ? (
-                        <UsersIcon
-                          className="size-4 shrink-0 text-muted-foreground"
-                          aria-hidden="true"
-                        />
-                      ) : (
-                        <FollowButton user={user} />
-                      )}
-                    </ItemActions>
-                  </Item>
-                </li>
-              ))}
-            </ul>
-          )}
+          <SearchPeopleTabContent
+            peoplePending={peoplePending}
+            peopleError={peopleError}
+            people={people}
+            onRetry={() => {
+              refetchPeople().catch(() => {})
+            }}
+            me={me}
+            suggestionsLength={suggestions?.length ?? 0}
+            locationString={`${location.pathname}${location.search}`}
+          />
         </TabsContent>
       </Tabs>
     </div>
   )
 }
 
-function SearchEmptyBlock({ label }: { label: string }) {
+function SearchEmptyBlock({ label }: Readonly<{ label: string }>) {
   return (
     <Empty className="mt-2">
       <EmptyHeader>

@@ -26,7 +26,7 @@ const LABEL_BY_KIND: Record<ImageKind, string> = {
   cover: "ảnh bìa",
 }
 
-export function ProfileImagesField({ profile }: { profile: UserProfile }) {
+export function ProfileImagesField({ profile }: Readonly<{ profile: UserProfile }>) {
   const updateMe = useUpdateMe()
   const [mediaUnavailable, setMediaUnavailable] = useState(false)
   const [uploadingKind, setUploadingKind] = useState<ImageKind | null>(null)

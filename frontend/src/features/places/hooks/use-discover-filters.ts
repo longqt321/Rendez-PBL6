@@ -4,16 +4,18 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import type { DiscoverSort } from "../api/get-places"
 import type { PlaceCategory } from "../types/place"
 
-const VALID_CATEGORIES: PlaceCategory[] = [
+export type PriceMaxFilter = 1 | 2 | 3 | "all"
+
+const VALID_CATEGORIES = new Set<PlaceCategory>([
   "cafe",
   "restaurant",
   "street-food",
   "bakery",
   "dessert",
   "bar",
-]
+])
 
-const VALID_SORTS: DiscoverSort[] = ["newest", "rating", "distance"]
+const VALID_SORTS = new Set<DiscoverSort>(["newest", "rating", "distance"])
 
 export interface DiscoverFiltersState {
   category: PlaceCategory | "all"
@@ -25,8 +27,8 @@ export interface DiscoverFiltersState {
   draftQuery: string
   setDraftQuery: (value: string) => void
 
-  priceMax: 1 | 2 | 3 | "all"
-  setPriceMax: (value: 1 | 2 | 3 | "all") => void
+  priceMax: PriceMaxFilter
+  setPriceMax: (value: PriceMaxFilter) => void
 
   sort: DiscoverSort
   setSort: (value: DiscoverSort) => void
@@ -47,7 +49,7 @@ export function useDiscoverFilters(): DiscoverFiltersState {
   const [params, setParams] = useSearchParams()
 
   const rawCategory = params.get("category") ?? "all"
-  const category = VALID_CATEGORIES.includes(rawCategory as PlaceCategory)
+  const category = VALID_CATEGORIES.has(rawCategory as PlaceCategory)
     ? (rawCategory as PlaceCategory)
     : "all"
   const district = params.get("district") ?? "all"
@@ -55,10 +57,10 @@ export function useDiscoverFilters(): DiscoverFiltersState {
 
   const rawSort = params.get("sort")
   const sort: DiscoverSort =
-    rawSort && VALID_SORTS.includes(rawSort as DiscoverSort) ? (rawSort as DiscoverSort) : "newest"
+    rawSort && VALID_SORTS.has(rawSort as DiscoverSort) ? (rawSort as DiscoverSort) : "newest"
 
   const rawPriceMax = Number(params.get("priceMax"))
-  const priceMax: 1 | 2 | 3 | "all" = [1, 2, 3].includes(rawPriceMax)
+  const priceMax: PriceMaxFilter = [1, 2, 3].includes(rawPriceMax)
     ? (rawPriceMax as 1 | 2 | 3)
     : "all"
 

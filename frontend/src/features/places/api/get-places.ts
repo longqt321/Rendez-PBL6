@@ -30,21 +30,23 @@ export interface DiscoverFilters {
 const joinList = (values: string[]): string | undefined =>
   values.length > 0 ? values.join(",") : undefined
 
+function resolveCategory(room: DiscoverFilters["room"], category: DiscoverFilters["category"]) {
+  if (room) return joinList(room.categories)
+  return category === "all" ? undefined : category
+}
+
+function resolveDistrict(room: DiscoverFilters["room"], district?: string) {
+  if (room) return joinList(room.districts)
+  return !district || district === "all" ? undefined : district
+}
+
 export function placesQueryParams(filters: DiscoverFilters) {
   const room = filters.room
   return {
     // Khi có phòng: category/district lấy từ danh sách của phòng (nhiều phần
     // tử phân tách dấu phẩy), bỏ qua filter cá nhân trên URL.
-    category: room
-      ? joinList(room.categories)
-      : filters.category === "all"
-        ? undefined
-        : filters.category,
-    district: room
-      ? joinList(room.districts)
-      : filters.district && filters.district !== "all"
-        ? filters.district
-        : undefined,
+    category: resolveCategory(room, filters.category),
+    district: resolveDistrict(room, filters.district),
     q: room ? undefined : filters.query.trim() || undefined,
     // Phòng có priceMax thì thắng filter giá cá nhân (thứ tự ưu tiên hiện có).
     priceMax: room?.priceMax ?? filters.priceMax,

@@ -69,9 +69,7 @@ export function RoomPage() {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-8">
         <h1 className="sr-only">Đang tải phòng lọc nhóm</h1>
-        <p className="mt-8 text-sm text-muted-foreground" role="status">
-          Đang tải phòng…
-        </p>
+        <output className="mt-8 block text-sm text-muted-foreground">Đang tải phòng…</output>
       </div>
     )
   }
