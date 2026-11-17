@@ -34,6 +34,70 @@ function mean(values: number[]): number {
   return values.reduce((sum, v) => sum + v, 0) / values.length
 }
 
+function loadCorpus(corpusPath: string): {
+  docs: Map<string, Doc>
+  docFrequencies: Map<string, number>
+} {
+  const corpusLines = readFileSync(corpusPath, "utf-8").trim().split("\n")
+  const docs = new Map<string, Doc>()
+  const docFrequencies = new Map<string, number>()
+
+  for (const line of corpusLines) {
+    if (!line) continue
+    const obj = JSON.parse(line)
+    const tokens = tokenize(`${obj.title} ${obj.text}`)
+    docs.set(obj._id, {
+      id: obj._id,
+      title: obj.title,
+      text: obj.text,
+      tokens,
+    })
+    const uniqueTokens = new Set(tokens)
+    for (const t of uniqueTokens) {
+      docFrequencies.set(t, (docFrequencies.get(t) ?? 0) + 1)
+    }
+  }
+  return { docs, docFrequencies }
+}
+
+function loadQrels(qrelsPath: string): Map<string, Map<string, number>> {
+  const qrels = new Map<string, Map<string, number>>()
+  const qrelLines = readFileSync(qrelsPath, "utf-8").trim().split("\n")
+  for (let i = 1; i < qrelLines.length; i++) {
+    const line = qrelLines[i]!
+    if (!line) continue
+    const [qId, cId, sStr] = line.split("\t")
+    if (!qId || !cId || !sStr) continue
+    const s = Number.parseInt(sStr, 10)
+    if (s > 0) {
+      let map = qrels.get(qId)
+      if (!map) {
+        map = new Map()
+        qrels.set(qId, map)
+      }
+      map.set(cId, s)
+    }
+  }
+  return qrels
+}
+
+function loadQueries(queriesPath: string, qrels: Map<string, Map<string, number>>): Query[] {
+  const queryLines = readFileSync(queriesPath, "utf-8").trim().split("\n")
+  const evalQueries: Query[] = []
+  for (const line of queryLines) {
+    if (!line) continue
+    const obj = JSON.parse(line)
+    if (qrels.has(obj._id)) {
+      evalQueries.push({
+        id: obj._id,
+        text: obj.text,
+        tokens: tokenize(obj.text),
+      })
+    }
+  }
+  return evalQueries
+}
+
 async function main() {
   const corpusPath = join(
     import.meta.dir,
@@ -65,62 +129,15 @@ async function main() {
   )
 
   console.log("=== Đọc BEIR NFCorpus Dataset ===")
-  const corpusLines = readFileSync(corpusPath, "utf-8").trim().split("\n")
-  const docs = new Map<string, Doc>()
-  const docFrequencies = new Map<string, number>()
-
-  for (const line of corpusLines) {
-    if (!line) continue
-    const obj = JSON.parse(line)
-    const tokens = tokenize(`${obj.title} ${obj.text}`)
-    docs.set(obj._id, {
-      id: obj._id,
-      title: obj.title,
-      text: obj.text,
-      tokens,
-    })
-    const uniqueTokens = new Set(tokens)
-    for (const t of uniqueTokens) {
-      docFrequencies.set(t, (docFrequencies.get(t) ?? 0) + 1)
-    }
-  }
-
+  const { docs, docFrequencies } = loadCorpus(corpusPath)
   const N = docs.size
   console.log(`  Corpus documents: ${N}`)
 
   // Qrels
-  const qrels = new Map<string, Map<string, number>>()
-  const qrelLines = readFileSync(qrelsPath, "utf-8").trim().split("\n")
-  for (let i = 1; i < qrelLines.length; i++) {
-    const line = qrelLines[i]!
-    if (!line) continue
-    const [qId, cId, sStr] = line.split("\t")
-    if (!qId || !cId || !sStr) continue
-    const s = parseInt(sStr, 10)
-    if (s > 0) {
-      let map = qrels.get(qId)
-      if (!map) {
-        map = new Map()
-        qrels.set(qId, map)
-      }
-      map.set(cId, s)
-    }
-  }
+  const qrels = loadQrels(qrelsPath)
 
   // Queries
-  const queryLines = readFileSync(queriesPath, "utf-8").trim().split("\n")
-  const evalQueries: Query[] = []
-  for (const line of queryLines) {
-    if (!line) continue
-    const obj = JSON.parse(line)
-    if (qrels.has(obj._id)) {
-      evalQueries.push({
-        id: obj._id,
-        text: obj.text,
-        tokens: tokenize(obj.text),
-      })
-    }
-  }
+  const evalQueries = loadQueries(queriesPath, qrels)
   console.log(`  Queries test có ground-truth: ${evalQueries.length}`)
 
   const k1 = 1.2
@@ -272,4 +289,4 @@ async function main() {
   console.log(`\nĐã ghi báo cáo: ${outPath}`)
 }
 
-main().catch(console.error)
+await main()

@@ -46,7 +46,7 @@ function recallAt(ids: string[], relevant: string, k: number): number {
 function fnv1a(text: string): number {
   let hash = 0x811c9dc5
   for (let i = 0; i < text.length; i++) {
-    hash ^= text.charCodeAt(i)
+    hash ^= text.codePointAt(i) ?? 0
     hash = Math.imul(hash, 0x01000193)
   }
   return hash >>> 0
@@ -74,11 +74,7 @@ function metricsFor(ranked: string[], relevant: string) {
   }
 }
 
-async function main() {
-  const dataPath = join(import.meta.dir, "..", "data", "external", "movielens", "ml-100k", "u.data")
-  const itemPath = join(import.meta.dir, "..", "data", "external", "movielens", "ml-100k", "u.item")
-
-  console.log("=== Đọc MovieLens 100k Dataset ===")
+function loadMovieLensData(dataPath: string): Rating[] {
   const rawData = readFileSync(dataPath, "utf-8")
   const lines = rawData.trim().split("\n")
 
@@ -86,19 +82,21 @@ async function main() {
   for (const line of lines) {
     const [userId, itemId, ratingStr, timestampStr] = line.split("\t")
     if (!userId || !itemId || !ratingStr || !timestampStr) continue
-    const rating = parseFloat(ratingStr)
+    const rating = Number.parseFloat(ratingStr)
     // Chỉ lấy rating >= 3.0 làm tương tác dương (implicit positive feedback)
     if (rating >= 3.0) {
       ratings.push({
         userId,
         itemId,
         rating,
-        timestamp: parseInt(timestampStr, 10),
+        timestamp: Number.parseInt(timestampStr, 10),
       })
     }
   }
+  return ratings
+}
 
-  // Đọc metadata item
+function loadMovieLensItems(itemPath: string): Map<string, ItemMeta> {
   const rawItems = readFileSync(itemPath, "latin1")
   const itemMap = new Map<string, ItemMeta>()
   for (const line of rawItems.trim().split("\n")) {
@@ -111,8 +109,10 @@ async function main() {
       itemMap.set(id, { id, title, releaseDate, genres })
     }
   }
+  return itemMap
+}
 
-  // Nhóm theo user
+function splitLeaveOneOut(ratings: Rating[]) {
   const byUser = new Map<string, Rating[]>()
   const universe = new Set<string>()
   for (const r of ratings) {
@@ -122,12 +122,10 @@ async function main() {
     else byUser.set(r.userId, [r])
   }
 
-  // Sắp xếp thời gian
   for (const list of byUser.values()) {
     list.sort((a, b) => a.timestamp - b.timestamp)
   }
 
-  // Split Leave-one-out
   const trainRatings: Rating[] = []
   const testByUser = new Map<string, string>()
   const seenByUser = new Map<string, Set<string>>()
@@ -144,16 +142,13 @@ async function main() {
     trainRatings.push(...train)
   }
 
-  const evalUsers = [...testByUser.keys()].sort()
-  const catalog = [...universe].sort()
+  const evalUsers = [...testByUser.keys()].sort((a, b) => a.localeCompare(b))
+  const catalog = [...universe].sort((a, b) => a.localeCompare(b))
 
-  console.log(`  Tổng rating dương (>=3.0) : ${ratings.length}`)
-  console.log(`  Users đủ điều kiện eval    : ${evalUsers.length}`)
-  console.log(`  Catalog items              : ${catalog.length}`)
-  console.log(`  Train interactions         : ${trainRatings.length}`)
-  console.log(`  Test interactions          : ${testByUser.size}`)
+  return { trainRatings, testByUser, seenByUser, evalUsers, catalog }
+}
 
-  // 1. Popularity Baseline
+function buildCooccurrence(trainRatings: Rating[]) {
   const itemCounts = new Map<string, number>()
   const itemRatingSum = new Map<string, number>()
   for (const r of trainRatings) {
@@ -164,7 +159,6 @@ async function main() {
     .sort((a, b) => b[1] - a[1])
     .map(([itemId]) => itemId)
 
-  // 2. Item-Item Collaborative Filtering (Cosine Co-occurrence)
   const userItemsMap = new Map<string, Set<string>>()
   for (const r of trainRatings) {
     let s = userItemsMap.get(r.userId)
@@ -175,7 +169,6 @@ async function main() {
     s.add(r.itemId)
   }
 
-  // Co-occurrence matrix
   const coOccur = new Map<string, Map<string, number>>()
   for (const [, items] of userItemsMap) {
     const arr = [...items]
@@ -194,12 +187,18 @@ async function main() {
     }
   }
 
-  // 3. DES Model: Completeness-Conditioned Bayesian Quality Scorer + Jitter
-  // Metadata completeness C(i): dựa trên có release date, độ phong phú thể loại
+  return { itemCounts, itemRatingSum, popularityRanked, coOccur }
+}
+
+function computeDesScores(
+  catalog: string[],
+  itemMap: Map<string, ItemMeta>,
+  itemCounts: Map<string, number>,
+  itemRatingSum: Map<string, number>,
+): Map<string, number> {
   const mu0 = 3.5 // prior rating mean
   const m0 = 10.0 // prior weight
   const gamma = 0.5
-  const beta = 0.05
 
   const desScores = new Map<string, number>()
   for (const itemId of catalog) {
@@ -219,6 +218,31 @@ async function main() {
     const s_cold = 0.5 * (r_hat / 5.0) + 0.3 * (Math.log10(v_i + 1) / 3.0) + 0.2 * c_i
     desScores.set(itemId, s_cold)
   }
+  return desScores
+}
+
+async function main() {
+  const dataPath = join(import.meta.dir, "..", "data", "external", "movielens", "ml-100k", "u.data")
+  const itemPath = join(import.meta.dir, "..", "data", "external", "movielens", "ml-100k", "u.item")
+
+  console.log("=== Đọc MovieLens 100k Dataset ===")
+  const ratings = loadMovieLensData(dataPath)
+  const itemMap = loadMovieLensItems(itemPath)
+
+  const { trainRatings, testByUser, seenByUser, evalUsers, catalog } = splitLeaveOneOut(ratings)
+
+  console.log(`  Tổng rating dương (>=3.0) : ${ratings.length}`)
+  console.log(`  Users đủ điều kiện eval    : ${evalUsers.length}`)
+  console.log(`  Catalog items              : ${catalog.length}`)
+  console.log(`  Train interactions         : ${trainRatings.length}`)
+  console.log(`  Test interactions          : ${testByUser.size}`)
+
+  // 1 & 2. Baselines (Popularity, Item-Item CF)
+  const { itemCounts, itemRatingSum, popularityRanked, coOccur } = buildCooccurrence(trainRatings)
+
+  // 3. DES Model: Completeness-Conditioned Bayesian Quality Scorer + Jitter
+  const beta = 0.05
+  const desScores = computeDesScores(catalog, itemMap, itemCounts, itemRatingSum)
 
   // Chạy đánh giá
   interface UserResult {
@@ -359,4 +383,4 @@ async function main() {
   console.log(`\nĐã ghi báo cáo: ${outPath}`)
 }
 
-main().catch(console.error)
+await main()

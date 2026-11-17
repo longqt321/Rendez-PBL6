@@ -75,7 +75,7 @@ function recallAt(ids: string[], relevant: string, k: number): number {
 function fnv1a(text: string): number {
   let hash = 0x811c9dc5
   for (let i = 0; i < text.length; i += 1) {
-    hash ^= text.charCodeAt(i)
+    hash ^= text.codePointAt(i) ?? 0
     hash = Math.imul(hash, 0x01000193)
   }
   return hash >>> 0
@@ -191,8 +191,8 @@ async function main(): Promise<void> {
     else identified += 1
   }
 
-  const evalActors = [...testByActor.keys()].sort()
-  const catalog = [...universe].sort()
+  const evalActors = [...testByActor.keys()].sort((a, b) => a.localeCompare(b))
+  const catalog = [...universe].sort((a, b) => a.localeCompare(b))
 
   console.log("=== Split leave-one-out ===")
   console.log(`  event dương đọc từ DB : ${rows.length}`)
@@ -313,11 +313,11 @@ async function main(): Promise<void> {
   console.log(`\nĐã ghi ${outFile}`)
 }
 
-main()
-  .catch((error: unknown) => {
-    console.error("eval-rec lỗi:", error)
-    process.exitCode = 1
-  })
-  .finally(() => {
-    void prisma.$disconnect()
-  })
+try {
+  await main()
+} catch (error: unknown) {
+  console.error("eval-rec lỗi:", error)
+  process.exitCode = 1
+} finally {
+  await prisma.$disconnect()
+}

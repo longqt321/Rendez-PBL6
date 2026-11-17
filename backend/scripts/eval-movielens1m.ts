@@ -43,7 +43,7 @@ function recallAt(ids: string[], relevant: string, k: number): number {
 function fnv1a(text: string): number {
   let hash = 0x811c9dc5
   for (let i = 0; i < text.length; i++) {
-    hash ^= text.charCodeAt(i)
+    hash ^= text.codePointAt(i) ?? 0
     hash = Math.imul(hash, 0x01000193)
   }
   return hash >>> 0
@@ -71,27 +71,7 @@ function metricsFor(ranked: string[], relevant: string) {
   }
 }
 
-async function main() {
-  const dataPath = join(
-    import.meta.dir,
-    "..",
-    "data",
-    "external",
-    "movielens1m",
-    "ml-1m",
-    "ratings.dat",
-  )
-  const moviePath = join(
-    import.meta.dir,
-    "..",
-    "data",
-    "external",
-    "movielens1m",
-    "ml-1m",
-    "movies.dat",
-  )
-
-  console.log("=== Đọc MovieLens 1M Dataset (1,000,209 ratings) ===")
+function loadRatings1M(dataPath: string): Rating[] {
   const rawData = readFileSync(dataPath, "utf-8")
   const lines = rawData.trim().split("\n")
 
@@ -100,18 +80,21 @@ async function main() {
     if (!line) continue
     const [userId, itemId, ratingStr, timestampStr] = line.split("::")
     if (!userId || !itemId || !ratingStr || !timestampStr) continue
-    const rating = parseFloat(ratingStr)
+    const rating = Number.parseFloat(ratingStr)
     // Tương tác tích cực: rating >= 4.0 (chuẩn khắt khe của RecSys paper trên ML-1M)
     if (rating >= 4.0) {
       ratings.push({
         userId,
         itemId,
         rating,
-        timestamp: parseInt(timestampStr, 10),
+        timestamp: Number.parseInt(timestampStr, 10),
       })
     }
   }
+  return ratings
+}
 
+function loadMovies1M(moviePath: string): Map<string, MovieMeta> {
   const rawMovies = readFileSync(moviePath, "latin1")
   const movieMap = new Map<string, MovieMeta>()
   for (const line of rawMovies.trim().split("\n")) {
@@ -121,8 +104,10 @@ async function main() {
       movieMap.set(id, { id, title, genres: genresStr.split("|") })
     }
   }
+  return movieMap
+}
 
-  // Nhóm theo user
+function splitLeaveOneOut1M(ratings: Rating[]) {
   const byUser = new Map<string, Rating[]>()
   const universe = new Set<string>()
   for (const r of ratings) {
@@ -136,7 +121,6 @@ async function main() {
     list.sort((a, b) => a.timestamp - b.timestamp)
   }
 
-  // Split Leave-one-out
   const trainRatings: Rating[] = []
   const testByUser = new Map<string, string>()
   const seenByUser = new Map<string, Set<string>>()
@@ -153,19 +137,15 @@ async function main() {
     trainRatings.push(...train)
   }
 
-  // Để đánh giá nhanh và chuẩn xác, lấy mẫu ngẫu nhiên có seed 2,000 users đại diện
-  const allUsers = [...testByUser.keys()].sort()
+  const allUsers = [...testByUser.keys()].sort((a, b) => a.localeCompare(b))
   const rngUsers = mulberry32(SEED)
   const evalUsers = seededShuffle(allUsers, rngUsers).slice(0, 2000)
-  const catalog = [...universe].sort()
+  const catalog = [...universe].sort((a, b) => a.localeCompare(b))
 
-  console.log(`  Ratings dương (>=4.0)     : ${ratings.length}`)
-  console.log(`  Users đủ điều kiện        : ${allUsers.length}`)
-  console.log(`  Users lấy mẫu đánh giá    : ${evalUsers.length}`)
-  console.log(`  Catalog items              : ${catalog.length}`)
-  console.log(`  Train ratings              : ${trainRatings.length}`)
+  return { trainRatings, testByUser, seenByUser, allUsers, evalUsers, catalog }
+}
 
-  // 1. Popularity
+function buildCooccurrence1M(trainRatings: Rating[]) {
   const itemCounts = new Map<string, number>()
   const itemRatingSum = new Map<string, number>()
   for (const r of trainRatings) {
@@ -176,7 +156,6 @@ async function main() {
     .sort((a, b) => b[1] - a[1])
     .map(([itemId]) => itemId)
 
-  // 2. Item-Item CF
   const userItemsMap = new Map<string, Set<string>>()
   for (const r of trainRatings) {
     let s = userItemsMap.get(r.userId)
@@ -205,11 +184,18 @@ async function main() {
     }
   }
 
-  // 3. DES Model: Completeness-Conditioned Bayesian Quality Scorer
+  return { itemCounts, itemRatingSum, popularityRanked, coOccur }
+}
+
+function computeDesScores1M(
+  catalog: string[],
+  movieMap: Map<string, MovieMeta>,
+  itemCounts: Map<string, number>,
+  itemRatingSum: Map<string, number>,
+): Map<string, number> {
   const mu0 = 4.0
   const m0 = 10.0
   const gamma = 0.5
-  const beta = 0.05
 
   const desScores = new Map<string, number>()
   for (const itemId of catalog) {
@@ -228,6 +214,48 @@ async function main() {
     const s_cold = 0.5 * (r_hat / 5.0) + 0.3 * (Math.log10(v_i + 1) / 4.0) + 0.2 * c_i
     desScores.set(itemId, s_cold)
   }
+  return desScores
+}
+
+async function main() {
+  const dataPath = join(
+    import.meta.dir,
+    "..",
+    "data",
+    "external",
+    "movielens1m",
+    "ml-1m",
+    "ratings.dat",
+  )
+  const moviePath = join(
+    import.meta.dir,
+    "..",
+    "data",
+    "external",
+    "movielens1m",
+    "ml-1m",
+    "movies.dat",
+  )
+
+  console.log("=== Đọc MovieLens 1M Dataset (1,000,209 ratings) ===")
+  const ratings = loadRatings1M(dataPath)
+  const movieMap = loadMovies1M(moviePath)
+
+  const { trainRatings, testByUser, seenByUser, allUsers, evalUsers, catalog } =
+    splitLeaveOneOut1M(ratings)
+
+  console.log(`  Ratings dương (>=4.0)     : ${ratings.length}`)
+  console.log(`  Users đủ điều kiện        : ${allUsers.length}`)
+  console.log(`  Users lấy mẫu đánh giá    : ${evalUsers.length}`)
+  console.log(`  Catalog items              : ${catalog.length}`)
+  console.log(`  Train ratings              : ${trainRatings.length}`)
+
+  // 1 & 2. Baselines (Popularity, Item-Item CF)
+  const { itemCounts, itemRatingSum, popularityRanked, coOccur } = buildCooccurrence1M(trainRatings)
+
+  // 3. DES Model: Completeness-Conditioned Bayesian Quality Scorer
+  const beta = 0.05
+  const desScores = computeDesScores1M(catalog, movieMap, itemCounts, itemRatingSum)
 
   interface UserResult {
     recall5: number
@@ -363,4 +391,4 @@ async function main() {
   console.log(`\nĐã ghi báo cáo: ${outPath}`)
 }
 
-main().catch(console.error)
+await main()

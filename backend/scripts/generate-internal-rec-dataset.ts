@@ -60,7 +60,7 @@ const PERSONAS = [
 function mulberry32(seed: number): () => number {
   let s = seed >>> 0
   return () => {
-    s = (s + 0x6d2b79f5) | 0
+    s = Math.trunc(s + 0x6d2b79f5)
     let t = Math.imul(s ^ (s >>> 15), 1 | s)
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
@@ -159,7 +159,6 @@ async function main() {
     const personaPlaces = scoredPlacesByPersona.get(actor.persona.name)!
     const sumWeight = personaPlaces.reduce((acc, cur) => acc + cur.weight, 0)
 
-    const pickedPlaceIds = new Set<string>()
     let currentTime = baseTime + Math.floor(rng() * 5 * 24 * 3600 * 1000)
 
     for (let k = 0; k < numEvents; k++) {
@@ -173,9 +172,6 @@ async function main() {
           break
         }
       }
-
-      // Tránh trùng lặp quá nhiều trong chuỗi sự kiện ngắn
-      pickedPlaceIds.add(selectedPlace.id)
 
       // Random event type & weight
       const eventRoll = rng()
@@ -265,9 +261,11 @@ async function main() {
   console.log(`Đã xuất và đóng băng dataset tại: ${evalInternalPath}`)
 }
 
-main()
-  .catch((e) => {
-    console.error("Lỗi:", e)
-    process.exitCode = 1
-  })
-  .finally(() => prisma.$disconnect())
+try {
+  await main()
+} catch (e) {
+  console.error("Lỗi:", e)
+  process.exitCode = 1
+} finally {
+  await prisma.$disconnect()
+}

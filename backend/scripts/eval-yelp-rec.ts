@@ -45,7 +45,7 @@ function recallAt(ids: string[], relevant: string, k: number): number {
 function fnv1a(text: string): number {
   let hash = 0x811c9dc5
   for (let i = 0; i < text.length; i++) {
-    hash ^= text.charCodeAt(i)
+    hash ^= text.codePointAt(i) ?? 0
     hash = Math.imul(hash, 0x01000193)
   }
   return hash >>> 0
@@ -73,25 +73,7 @@ function metricsFor(ranked: string[], relevant: string) {
   }
 }
 
-async function main() {
-  const reviewPath = join(
-    import.meta.dir,
-    "..",
-    "data",
-    "external",
-    "yelp-sample",
-    "yelp_academic_dataset_review.json",
-  )
-  const bizPath = join(
-    import.meta.dir,
-    "..",
-    "data",
-    "external",
-    "yelp-sample",
-    "yelp_academic_dataset_business.json",
-  )
-
-  console.log("=== Đọc Yelp Dataset Reviews & Businesses ===")
+function loadYelpBusinesses(bizPath: string): Map<string, BusinessMeta> {
   const rawBiz = readFileSync(bizPath, "utf-8").trim().split("\n")
   const bizMap = new Map<string, BusinessMeta>()
   for (const line of rawBiz) {
@@ -110,7 +92,10 @@ async function main() {
       })
     } catch {}
   }
+  return bizMap
+}
 
+function loadYelpReviews(reviewPath: string, bizMap: Map<string, BusinessMeta>): Review[] {
   const rawReviews = readFileSync(reviewPath, "utf-8").trim().split("\n")
   const reviews: Review[] = []
   for (const line of rawReviews) {
@@ -128,8 +113,10 @@ async function main() {
       }
     } catch {}
   }
+  return reviews
+}
 
-  // Nhóm theo user
+function splitYelpLeaveOneOut(reviews: Review[]) {
   const byUser = new Map<string, Review[]>()
   const universe = new Set<string>()
   for (const r of reviews) {
@@ -143,7 +130,6 @@ async function main() {
     list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   }
 
-  // Split Leave-one-out
   const trainReviews: Review[] = []
   const testByUser = new Map<string, string>()
   const seenByUser = new Map<string, Set<string>>()
@@ -160,16 +146,13 @@ async function main() {
     trainReviews.push(...train)
   }
 
-  const evalUsers = [...testByUser.keys()].sort()
-  const catalog = [...universe].sort()
+  const evalUsers = [...testByUser.keys()].sort((a, b) => a.localeCompare(b))
+  const catalog = [...universe].sort((a, b) => a.localeCompare(b))
 
-  console.log(`  Reviews tích cực (>=3.5*)  : ${reviews.length}`)
-  console.log(`  Users đủ điều kiện eval    : ${evalUsers.length}`)
-  console.log(`  Catalog địa điểm           : ${catalog.length}`)
-  console.log(`  Train reviews              : ${trainReviews.length}`)
-  console.log(`  Test reviews               : ${testByUser.size}`)
+  return { trainReviews, testByUser, seenByUser, evalUsers, catalog }
+}
 
-  // 1. Popularity
+function buildYelpCooccurrence(trainReviews: Review[]) {
   const bizCounts = new Map<string, number>()
   const bizStarSum = new Map<string, number>()
   for (const r of trainReviews) {
@@ -178,7 +161,6 @@ async function main() {
   }
   const popularityRanked = [...bizCounts.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id)
 
-  // 2. Item-Item Co-occurrence CF
   const userItemsMap = new Map<string, Set<string>>()
   for (const r of trainReviews) {
     let s = userItemsMap.get(r.userId)
@@ -207,11 +189,18 @@ async function main() {
     }
   }
 
-  // 3. DES Model: Completeness-Conditioned Bayesian Quality Scorer
+  return { bizCounts, bizStarSum, popularityRanked, coOccur }
+}
+
+function computeYelpDesScores(
+  catalog: string[],
+  bizMap: Map<string, BusinessMeta>,
+  bizCounts: Map<string, number>,
+  bizStarSum: Map<string, number>,
+): Map<string, number> {
   const mu0 = 3.8
   const m0 = 10.0
   const gamma = 0.5
-  const beta = 0.05
 
   const desScores = new Map<string, number>()
   for (const bId of catalog) {
@@ -232,6 +221,45 @@ async function main() {
     const s_cold = 0.45 * (r_hat / 5.0) + 0.35 * (Math.log10(v_i + 1) / 3.0) + 0.2 * c_i
     desScores.set(bId, s_cold)
   }
+  return desScores
+}
+
+async function main() {
+  const reviewPath = join(
+    import.meta.dir,
+    "..",
+    "data",
+    "external",
+    "yelp-sample",
+    "yelp_academic_dataset_review.json",
+  )
+  const bizPath = join(
+    import.meta.dir,
+    "..",
+    "data",
+    "external",
+    "yelp-sample",
+    "yelp_academic_dataset_business.json",
+  )
+
+  console.log("=== Đọc Yelp Dataset Reviews & Businesses ===")
+  const bizMap = loadYelpBusinesses(bizPath)
+  const reviews = loadYelpReviews(reviewPath, bizMap)
+
+  const { trainReviews, testByUser, seenByUser, evalUsers, catalog } = splitYelpLeaveOneOut(reviews)
+
+  console.log(`  Reviews tích cực (>=3.5*)  : ${reviews.length}`)
+  console.log(`  Users đủ điều kiện eval    : ${evalUsers.length}`)
+  console.log(`  Catalog địa điểm           : ${catalog.length}`)
+  console.log(`  Train reviews              : ${trainReviews.length}`)
+  console.log(`  Test reviews               : ${testByUser.size}`)
+
+  // 1 & 2. Baselines (Popularity, Item-Item CF)
+  const { bizCounts, bizStarSum, popularityRanked, coOccur } = buildYelpCooccurrence(trainReviews)
+
+  // 3. DES Model: Completeness-Conditioned Bayesian Quality Scorer
+  const beta = 0.05
+  const desScores = computeYelpDesScores(catalog, bizMap, bizCounts, bizStarSum)
 
   interface UserResult {
     recall5: number
@@ -367,4 +395,4 @@ async function main() {
   console.log(`\nĐã ghi báo cáo: ${outPath}`)
 }
 
-main().catch(console.error)
+await main()

@@ -150,8 +150,8 @@ async function resolveGrades(q: EvalQuery): Promise<Record<string, number>> {
         grades[row.id] = 2
         continue
       }
-      const tokens = row.name.split(" ").filter((t) => t.length > 0)
-      if (targetTokens.length > 0 && targetTokens.every((t) => tokens.includes(t))) {
+      const tokenSet = new Set(row.name.split(" ").filter((t) => t.length > 0))
+      if (targetTokens.length > 0 && targetTokens.every((t) => tokenSet.has(t))) {
         grades[row.id] = 1
       }
     }
@@ -211,7 +211,7 @@ function verifyFrozen(): Labels {
     .split("\n")
     .find((line) => /^[0-9a-f]{64}$/.test(line.trim()))
   const actual = sha256(readFileSync(QUERIES_FILE, "utf8") + readFileSync(LABELS_FILE, "utf8"))
-  if (!expected || expected.trim() !== actual) {
+  if (expected?.trim() !== actual) {
     console.error(
       "Bộ test đã bị sửa (checksum lệch). KHÔNG chấm điểm trên bộ đã đổi — tạo search-eval-v2.json thay vì sửa v1.",
     )
@@ -399,7 +399,7 @@ async function evaluate(): Promise<void> {
 }
 
 if (process.argv.includes("--freeze")) {
-  void freeze()
+  await freeze()
 } else {
-  void evaluate()
+  await evaluate()
 }
