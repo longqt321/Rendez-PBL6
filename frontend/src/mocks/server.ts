@@ -118,6 +118,18 @@ const db = {
   authenticated: env.devBypassAuth,
 }
 
+// Tổng hợp review seed vào rating/reviewCount của place — nếu không, place
+// hiện rating=0 dù đã có review, lệch với số review hiển thị trên trang quán.
+for (const review of db.reviews) {
+  const place = db.places.find((item) => item.id === review.placeId)
+  if (!place) continue
+  place.rating = (place.rating * place.reviewCount + review.rating) / (place.reviewCount + 1)
+  place.reviewCount += 1
+}
+for (const place of db.places) {
+  place.rating = Math.round(place.rating * 10) / 10
+}
+
 const notifiedPostIds = new Set<string>()
 
 let postSeq = 0
