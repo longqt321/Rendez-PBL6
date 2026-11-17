@@ -1,3 +1,4 @@
+import { logger } from "./logger"
 import { pubsub } from "./pubsub"
 
 export interface RoomUpdateEvent {
@@ -25,7 +26,8 @@ export function subscribeRoom(code: string, listener: Listener): () => void {
           const parsed = JSON.parse(payload) as { version?: number }
           if (typeof parsed.version === "number") version = parsed.version
         } catch {
-          // ignore
+          // Payload NOTIFY không phải JSON hợp lệ (hoặc thiếu version) — bỏ qua,
+          // giữ version tự tăng cục bộ. Không log: NOTIFY do chính hệ thống gửi.
         }
         versions.set(code, version)
 
@@ -41,6 +43,11 @@ export function subscribeRoom(code: string, listener: Listener): () => void {
       })
       .then((unsub) => {
         unsubs.set(code, unsub)
+      })
+      .catch((err) => {
+        // Subscribe LISTEN thất bại — ghi log nhưng không làm vỡ luồng SSE:
+        // listener trong tiến trình hiện tại vẫn chạy, chỉ thiếu tin từ tiến trình khác.
+        logger.error({ err, code }, "Không đăng ký được Postgres PubSub cho phòng")
       })
   }
 

@@ -27,7 +27,8 @@ export function subscribeNotifications(userId: string, listener: Listener): () =
           if (typeof parsed.version === "number") version = parsed.version
           sourcePid = parsed.sourcePid
         } catch {
-          // ignore
+          // Payload NOTIFY không phải JSON hợp lệ (hoặc thiếu version) — bỏ qua,
+          // giữ version tự tăng cục bộ. Không log: NOTIFY do chính hệ thống gửi.
         }
 
         // Bỏ qua nếu tin nhắn xuất phát từ chính tiến trình này (vì đã được gọi trực tiếp)

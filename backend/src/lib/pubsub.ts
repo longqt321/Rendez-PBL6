@@ -64,7 +64,12 @@ class PostgresPubSub {
     if (this.reconnectTimer) return
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null
-      this.cleanup().then(() => this.init())
+      this.cleanup()
+        .then(() => this.init())
+        .catch((err) => {
+          logger.error({ err }, "PubSub reconnect thất bại — sẽ thử lại sau 3s")
+          this.scheduleReconnect()
+        })
     }, 3000)
   }
 
