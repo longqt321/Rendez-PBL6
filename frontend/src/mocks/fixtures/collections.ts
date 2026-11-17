@@ -22,7 +22,7 @@ export const MOCK_COLLECTIONS: MockCollection[] = [
     name: "Món Quảng phải thử",
     description: "Mì Quảng, bánh xèo, bánh căn — danh sách dài dần sau mỗi chuyến đi.",
     isPrivate: false,
-    owner: MOCK_USERS["u-hieu"]!,
+    owner: MOCK_USERS["u-hieu"],
     placeIds: ["mi-quang-1a", "mi-quang-ech-bep-trang", "banh-xeo-ba-duong"],
     createdAt: "2026-11-03T20:00:00+07:00",
     likeCount: 28,

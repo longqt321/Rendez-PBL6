@@ -3,34 +3,35 @@
 **TRƯỜNG ĐẠI HỌC BÁCH KHOA – ĐẠI HỌC ĐÀ NẴNG**
 **KHOA CÔNG NGHỆ THÔNG TIN**
 
-**ĐỀ TÀI:** Xây dựng mạng xã hội khám phá địa điểm tại Đà Nẵng tích hợp tìm kiếm không dấu và gợi ý cá nhân hoá
+**ĐỀ TÀI:** XÂY DỰNG MẠNG XÃ HỘI KHÁM PHÁ ĐỊA ĐIỂM TẠI ĐÀ NẴNG TÍCH HỢP TÌM KIẾM KHÔNG DẤU VÀ GỢI Ý CÁ NHÂN HOÁ
 
 | | |
 |---|---|
 | Sinh viên thực hiện | Trần Đức Long |
-| Mã số sinh viên | 102230027 |
-| Lớp | 【cần thông tin: lớp】 |
+| | Phan Thị Thảo Tiên |
+| Mã số sinh viên | 【cần thông tin: MSSV Trần Đức Long】 |
+| | 【cần thông tin: MSSV Phan Thị Thảo Tiên】 |
+| Lớp | 23T_Nhat1 |
+| | 23T_Nhat2 |
 | Chuyên ngành | Công nghệ Thông tin |
-| Giảng viên hướng dẫn | 【cần thông tin: tên GVHD】 |
+| Giảng viên hướng dẫn | TS. Võ Đức Hoàng |
 | Năm học | 2026 – 2027 |
 
----
-
-## LỜI CAM ĐOAN
-
-Sinh viên cam đoan báo cáo do sinh viên thực hiện, không sao chép từ công trình khác. Các tài liệu tham khảo đã được trích dẫn đầy đủ. Số liệu và kết quả đo trong báo cáo do sinh viên thu thập và xử lý.
-
-| | |
-|---|---|
-| Sinh viên thực hiện | Trần Đức Long |
-| Lớp | 【cần thông tin: lớp】 |
-| Giảng viên hướng dẫn | 【cần thông tin: tên GVHD】 |
+**Đà Nẵng, tháng 11 năm 2026**
 
 ---
 
 ## LỜI CẢM ƠN
 
-Sinh viên xin cảm ơn giảng viên hướng dẫn đã định hướng phương pháp và góp ý trong quá trình thực hiện đồ án. Sinh viên xin cảm ơn quý thầy cô Khoa Công nghệ Thông tin đã trang bị kiến thức về hệ phân tán, cơ sở dữ liệu và học máy. Sinh viên xin cảm ơn cộng đồng mã nguồn mở đã phát triển các công cụ sử dụng trong đồ án. Sinh viên xin cảm ơn các nhà cung cấp dữ liệu nghiên cứu đã công bố dữ liệu phục vụ mục đích học thuật.
+Đồ án này là kết quả của một học kỳ làm việc nghiêm túc của nhóm. Để hoàn thành báo cáo, nhóm đã nhận được sự hướng dẫn, góp ý và động viên từ nhiều người.
+
+Trước hết, nhóm xin bày tỏ lòng biết ơn sâu sắc đến TS. Võ Đức Hoàng, người trực tiếp hướng dẫn, định hướng phương pháp nghiên cứu và chỉ ra những điểm còn thiếu trong quá trình thực hiện. Những nhận xét của thầy giúp nhóm nhìn rõ giới hạn của sản phẩm và điều chỉnh cách đánh giá kết quả một cách khách quan hơn.
+
+Nhóm cũng xin cảm ơn quý thầy cô Khoa Công nghệ Thông tin, Trường Đại học Bách khoa – Đại học Đà Nẵng đã truyền đạt kiến thức nền tảng trong suốt những năm học, và cảm ơn các giảng viên chấm đồ án đã dành thời gian đọc và góp ý cho báo cáo này.
+
+Cuối cùng, nhóm xin cảm ơn bạn bè đã chia sẻ tài liệu, góp ý về giao diện và hỗ trợ kiểm thử. Nhóm cũng muốn ghi nhận nỗ lực của chính mình: những buổi làm việc kéo dài, những lần sửa đi sửa lại, và quyết định giữ lại cả những kết quả chưa đạt kỳ vọng thay vì che giấu chúng.
+
+Dù đã cố gắng, báo cáo khó tránh khỏi thiếu sót. Nhóm mong nhận được góp ý để hoàn thiện hơn.
 
 ---
 
@@ -38,25 +39,23 @@ Sinh viên xin cảm ơn giảng viên hướng dẫn đã định hướng phư
 
 Đồ án xây dựng một mạng xã hội khám phá địa điểm tại Đà Nẵng, gồm 358 địa điểm thuộc 23 hạng mục trên 6 quận. Hệ thống gồm 29 bảng dữ liệu, 12 nhóm endpoint và 356 ca kiểm thử tự động, chạy trên một máy chủ với 5 nhân và 3,5 GB bộ nhớ.
 
-Đồ án thiết kế hai thuật toán. Thuật toán tìm kiếm lai ghép EGRF hợp nhất bốn nhánh tín hiệu và chọn trọng số theo bằng chứng định danh có trong truy vấn. Trên tập nội bộ 344 truy vấn, EGRF đạt độ chính xác tại 5 là 0,820, so với 0,591 của hợp nhất xếp hạng chuẩn. Thuật toán gợi ý DES tính điểm theo trung bình Bayes có điều chỉnh và thêm nhiễu thay đổi theo khung giờ. Trên tập địa điểm đối chứng, DES kết hợp đạt độ triệu hồi tại 10 là 0,044, so với 0,035 của lọc cộng tác. Kiểm định bootstrap cho nDCG@10 cho chênh lệch trung bình 0,0046, khoảng tin cậy 95% [0,0028; 0,0065].
+Đồ án thiết kế hai thuật toán. Thuật toán tìm kiếm lai ghép EGRF hợp nhất bốn nhánh tín hiệu, trong đó nhánh ngữ nghĩa và nhánh suy luận thuộc tính cho phép hệ thống hiểu ý định ẩn sau truy vấn thay vì chỉ khớp chữ nghĩa; trọng số các nhánh được chọn theo bằng chứng định danh có trong truy vấn. Trên tập nội bộ 344 truy vấn, EGRF đạt độ chính xác tại 5 là 0,820, so với 0,591 của hợp nhất xếp hạng chuẩn. Thuật toán gợi ý DES tính điểm theo trung bình Bayes có điều chỉnh và thêm nhiễu thay đổi theo khung giờ. Trên tập địa điểm đối chứng, DES kết hợp đạt độ triệu hồi tại 10 là 0,044, so với 0,035 của lọc cộng tác. Kiểm định bootstrap cho nDCG@10 cho chênh lệch trung bình 0,0046, khoảng tin cậy 95% [0,0028; 0,0065].
 
 Kiểm thử tải dùng cấu hình giới hạn 2 nhân cho tầng dịch vụ. Thời gian phản hồi phân vị 95 đạt 420 ms ở mức 1.000 người dùng đồng thời và 1.250 ms ở mức 2.000. Hệ thống không có lỗi máy chủ cho tới mức 3.000 người dùng đồng thời.
 
-**Từ khoá:** tìm kiếm lai ghép, cold-start, tiếng Việt không dấu, PostgreSQL, kiến trúc đa tiến trình.
+**Từ khoá:** tìm kiếm lai ghép, tìm kiếm theo ngữ nghĩa, cold-start, tiếng Việt không dấu, PostgreSQL, kiến trúc đa tiến trình.
 
 ---
 
 ## ABSTRACT
 
-This project builds a location-discovery social network for Da Nang, covering 358 venues in 23 categories across 6 districts. The system comprises 29 data tables, 12 endpoint groups and 356 automated tests, running on a single server with 5 cores and 3.5 GB of memory.
+This project builds a social network for place discovery in Da Nang, covering 358 places in 23 categories across 6 urban districts. The system comprises 29 database tables, 12 endpoint groups and 356 automated test cases, running on a single server with 5 CPU cores and 3.5 GB of memory.
 
-Two algorithms are designed. The hybrid search algorithm EGRF fuses four signal branches and selects weights from identity evidence in the query. On an internal set of 344 queries, EGRF reaches precision at 5 of 0.820, against 0.591 for standard reciprocal rank fusion. The recommendation algorithm DES scores venues by an adjusted Bayesian average and adds a time-bucketed jitter. On a reference venue dataset, combined DES reaches recall at 10 of 0.044, against 0.035 for item-based collaborative filtering. A bootstrap test on nDCG@10 gives a mean difference of 0.0046, with a 95% confidence interval of [0.0028; 0.0065].
+The project designs two algorithms. The hybrid search algorithm EGRF fuses four signal branches; its semantic branch and its attribute-inference branch let the system understand the intent behind a query instead of matching surface text alone, while branch weights are selected according to the identifying evidence present in the query. On an internal set of 344 queries, EGRF achieves precision at 5 of 0.820, compared with 0.591 for standard rank fusion. The recommendation algorithm DES scores places by an adjusted Bayesian average and adds noise that varies by time window. On the reference place set, combined DES reaches recall at 10 of 0.044, compared with 0.035 for collaborative filtering. A bootstrap test on nDCG@10 gives a mean difference of 0.0046 with a 95% confidence interval of [0.0028, 0.0065].
 
-Load testing on a configuration limited to 2 cores for the service tier shows a 95th-percentile response time of 420 ms at 1,000 concurrent users and 1,250 ms at 2,000. The system records no server errors up to 3,000 concurrent users.
+Load testing uses a configuration that limits the service tier to 2 cores. The 95th percentile response time reaches 420 ms at 1,000 concurrent users and 1,250 ms at 2,000. The system records no server errors up to 3,000 concurrent users. These results are limited to a corpus of 358 places and an internally constructed query set; the report states both limitations explicitly.
 
-**Keywords:** hybrid search, cold-start recommendation, Vietnamese diacritics, PostgreSQL, multi-process architecture.
-
----
+**Keywords:** hybrid search, semantic search, cold-start, Vietnamese without diacritics, PostgreSQL, multi-process architecture.
 
 ## MỤC LỤC
 
@@ -88,8 +87,11 @@ Load testing on a configuration limited to 2 cores for the service tier shows a 
 | Hình 3.4 | Sequence diagram luồng tác vụ nền |
 | Hình 3.5 | Sequence diagram luồng bình chọn nhóm thời gian thực |
 | Hình 3.6 | Sequence diagram luồng tải ảnh qua URL có chữ ký |
-| Hình 3.7 | Sơ đồ thực thể liên kết (theo miền, 29 bảng) |
-| Hình 3.8 | Sơ đồ điều hướng các màn hình chính |
+| Hình 3.7 | Activity diagram luồng tìm kiếm địa điểm |
+| Hình 3.8 | Activity diagram luồng đăng bài và phát hiện địa điểm |
+| Hình 3.9 | Sơ đồ lớp các lớp miền nghiệp vụ chính |
+| Hình 3.10 | Sơ đồ thực thể liên kết (theo miền, 29 bảng) |
+| Hình 3.11 | Sơ đồ điều hướng các màn hình chính |
 | Hình 4.1 | Biểu đồ thời gian phản hồi theo mức tải |
 | Hình 4.2 | Biểu đồ độ chính xác tìm kiếm trên tập nội bộ |
 | Hình 4.3 | Biểu đồ độ triệu hồi gợi ý trên tập địa điểm |
@@ -106,7 +108,8 @@ Số trang cập nhật khi kết xuất theo mẫu của trường.
 
 | Số hiệu | Tên bảng |
 |---|---|
-| Bảng 1.1 | Phạm vi thực hiện của đồ án |
+| Bảng 1.1 | So sánh Rendez với các ứng dụng người dùng đang dùng |
+| Bảng 1.2 | Phạm vi thực hiện của đồ án |
 | Bảng 2.1 | So sánh phương án hàng đợi tác vụ |
 | Bảng 2.2 | So sánh phương án tìm kiếm văn bản |
 | Bảng 3.1 | Yêu cầu chức năng |
@@ -171,31 +174,39 @@ Số trang cập nhật khi kết xuất theo mẫu của trường.
 
 ## 1.1. Đặt vấn đề
 
-Đà Nẵng là một trong những trung tâm du lịch lớn nhất miền Trung, với lượng khách trong nước và quốc tế tăng đều qua các năm. Nhu cầu tìm kiếm địa điểm ăn uống và vui chơi vì thế cũng tăng theo. Người dân và du khách hiện dựa vào ba kênh chính: bản đồ trực tuyến, nền tảng đánh giá ẩm thực và các nhóm cộng đồng. Mỗi kênh giải quyết tốt một việc riêng, nhưng ba kênh không liên kết với nhau.
+Rendez hướng đến giới trẻ và các cặp đôi ở Đà Nẵng, những người thường xuyên đi chơi và chọn địa điểm theo từng cuộc hẹn. Tên ứng dụng lấy từ chữ *rendezvous* trong tiếng Pháp, nghĩa là cuộc hẹn đã hứa. Với nhóm người dùng này, mỗi lần ra ngoài là một lần chọn bối cảnh cho cuộc hẹn: quán yên tĩnh để trò chuyện, chỗ ngoài trời view biển, hay một địa điểm mới để đổi không khí.
 
-Bản đồ trực tuyến định vị và chỉ đường chính xác, nhưng tìm kiếm văn bản xử lý kém với tiếng Việt. Phần lớn người dùng gõ nhanh, không dấu. Chỉ cần một ký tự lệch hoặc thiếu dấu, kết quả đúng biến mất: truy vấn "bun cha ca" không trả về "Bún chả cá".
+Để chọn địa điểm, người dùng hiện dùng ba loại ứng dụng: bản đồ, nền tảng đánh giá ẩm thực và mạng xã hội video. Mỗi loại mạnh ở một lĩnh vực riêng, nhưng không loại nào chuyên biệt cho việc gợi ý địa điểm đi chơi, đi ăn. Bảng 1.1 so sánh bốn ứng dụng theo năm tiêu chí quan trọng nhất với người đi hẹn.
 
-Nền tảng đánh giá ẩm thực xếp hạng theo độ phổ biến. Cách xếp hạng này tạo vòng lặp bất lợi: quán đông khách càng được đẩy lên, quán mới mở càng chìm. Một quán vừa khai trương, dù chất lượng tốt, gần như vô hình vì chưa có lượt đánh giá. Bài toán cold-start của hệ gợi ý nằm đúng ở điểm này: khi chưa có dữ liệu tương tác, hệ thống thiếu căn cứ để xếp hạng [19].
+**Bảng 1.1. So sánh Rendez với các ứng dụng người dùng đang dùng**
 
-Nhóm cộng đồng nắm thông tin thời sự nhất — quán mới mở, món mới, khuyến mãi — nhưng thông tin nằm rải rác trong các bài đăng tự do, không cấu trúc, không tra cứu lại được. Muốn biết "quán nào mới mở ở Sơn Trà tuần này", người dùng phải cuộn hàng trăm bài viết.
+| Tiêu chí | Google Maps | Foody | TikTok | Rendez |
+|---|---|---|---|---|
+| Định hướng chính | Bản đồ, chỉ đường | Đồ ăn, đánh giá quán | Video ngắn giải trí | Gợi ý địa điểm đi chơi, đi ăn |
+| Tìm kiếm theo ý định (ngữ nghĩa) | Yếu, chủ yếu khớp từ khoá | Yếu, chủ yếu khớp từ khoá | Không có | Có, nhánh ngữ nghĩa và nhánh suy luận thuộc tính |
+| Gợi ý cá nhân hoá | Gần như không | Yếu | Có, nhưng không gắn với địa điểm cụ thể | Có, xử lý được cold-start |
+| Xem khoảng cách, vị trí tức thì | Có, là thế mạnh của bản đồ | Phải tra thêm bản đồ | Phải tra thêm bản đồ | Có bản đồ tích hợp |
+| Thông tin cộng đồng gắn địa điểm | Yếu | Có đánh giá, ít cập nhật | Phong phú nhưng rời rạc, khó tra cứu | Có, bài đăng gắn với địa điểm |
 
-Ba khoảng trống trên — tìm kiếm không chịu được tiếng Việt không dấu, xếp hạng gây bất lợi cho địa điểm mới, và thông tin cộng đồng thiếu cấu trúc — cùng xuất phát từ một gốc: chưa có một nền tảng nào tích hợp được cả ba nhu cầu trên cùng một hệ thống. Đồ án này xây dựng nền tảng đó, trên tập dữ liệu thật của Đà Nẵng: 358 địa điểm thuộc 23 hạng mục trên 6 quận nội thành, thu thập từ OpenStreetMap [20].
+Ba ứng dụng trên mỗi cái mạnh ở một lĩnh vực nhưng không chuyên biệt cho gợi ý địa điểm. Google Maps chuyên về bản đồ và chỉ đường, không phải gợi ý địa điểm. Foody chuyên về đồ ăn. TikTok chuyên về video ngắn giải trí, có nhắc đến địa điểm đi ăn, đi chơi nhưng đó không phải chức năng chính. Không ứng dụng nào đáp ứng cùng lúc ba nhu cầu: hiểu ý định tìm kiếm, gợi ý được địa điểm mới chưa có đánh giá, và gắn thông tin cộng đồng với từng địa điểm. Rendez được xây dựng chuyên biệt cho ba nhu cầu này, trên tập dữ liệu thật của Đà Nẵng gồm 358 địa điểm thuộc 23 hạng mục trên 6 quận nội thành, thu thập từ OpenStreetMap [20].
 
 ## 1.2. Mục tiêu
 
-Từ ba yêu cầu trên, đồ án đặt năm mục tiêu. Mỗi mục tiêu gắn với một phép đo cụ thể để kết quả kiểm chứng được, không dừng ở mô tả:
+Từ ba nhu cầu trên, đồ án đặt năm mục tiêu. Mỗi mục tiêu gắn với một phép đo cụ thể để kết quả kiểm chứng được:
 
 1. Xây dựng mạng xã hội địa điểm có đủ nghiệp vụ: tài khoản, bài đăng, đánh giá, bộ sưu tập, thông báo, phòng bình chọn nhóm.
-2. Xây dựng thuật toán tìm kiếm xử lý truy vấn tiếng Việt không dấu và lỗi gõ, đo bằng độ chính xác tại 5 trên tập truy vấn nội bộ.
-3. Xây dựng thuật toán gợi ý hoạt động khi chưa có lịch sử tương tác, đo bằng độ triệu hồi tại 10 trên tập đối chứng.
+2. Xây dựng thuật toán tìm kiếm hiểu ý định theo ngữ nghĩa, đồng thời chịu được tiếng Việt không dấu và lỗi gõ; đo bằng độ chính xác tại 5 trên tập truy vấn nội bộ.
+3. Xây dựng thuật toán gợi ý hoạt động khi chưa có lịch sử tương tác; đo bằng độ triệu hồi tại 10 trên tập đối chứng.
 4. Đo thời gian phản hồi của hệ thống dưới tải tăng dần trên cấu hình giới hạn tài nguyên.
 5. Xây dựng bộ kiểm thử tự động phủ toàn bộ yêu cầu chức năng.
 
+Mục tiêu số hai là trọng tâm kỹ thuật. Năng lực hiểu ý định được hiện thực bằng hai cơ chế: một nhánh tìm kiếm ngữ nghĩa dựa trên biểu diễn vector của truy vấn, và một nhánh suy luận thuộc tính trích xuất ý định từ truy vấn tự do thành các nhãn có cấu trúc. Phần xử lý không dấu và lỗi gõ là khả năng kèm theo, giúp truy vấn của người dùng trẻ vốn thường gõ vắn tắt và bỏ dấu vẫn được hiểu đúng trước khi bước vào giai đoạn suy luận ngữ nghĩa.
+
 ## 1.3. Phạm vi
 
-Bảng 1.1 phân định nội dung thực hiện và không thực hiện của đồ án.
+Bảng 1.2 phân định nội dung thực hiện và không thực hiện của đồ án.
 
-**Bảng 1.1. Phạm vi thực hiện của đồ án**
+**Bảng 1.2. Phạm vi thực hiện của đồ án**
 
 | Trong phạm vi | Ngoài phạm vi |
 |---|---|
@@ -271,6 +282,28 @@ Hai quyết định công nghệ dưới đây có nhiều phương án thay th�
 | Chất lượng xếp hạng với truy vấn dài | Trung bình | Cao |
 | Chi phí phù hợp corpus 358 bản ghi | Phù hợp | Không tương xứng |
 | Kết luận | Chọn cho corpus hiện tại | Không chọn |
+
+## 2.3. Cơ sở lý thuyết của hai thuật toán
+
+Hai thuật toán EGRF và DES ở Chương 3 được xây dựng trên bốn nền tảng lý thuyết có sẵn. Mục này trình bày từng nền tảng và nêu lý do chọn, để phần thiết kế ở Chương 3 chỉ cần mô tả cách áp dụng mà không phải giải thích lại lý thuyết.
+
+**Hợp nhất xếp hạng nghịch đảo (Reciprocal Rank Fusion).** Khi một truy vấn được xử lý bởi nhiều nhánh tìm kiếm, mỗi nhánh trả về một danh sách xếp hạng riêng. Hợp nhất xếp hạng nghịch đảo (RRF) gộp các danh sách này bằng cách cộng điểm của mỗi tài liệu theo nghịch đảo thứ hạng của nó trong từng danh sách [12]. Điểm RRF của tài liệu $d$ là:
+
+$$S(d) = \sum_{r \in R} \frac{w_r}{k + \mathrm{rank}_r(d)}$$
+
+trong đó $k$ là hằng số làm mịn, tránh trường hợp một tài liệu đứng đầu tuyệt đối ở một nhánh lấn át toàn bộ kết quả. Cormack và cộng sự cho thấy RRF đạt chất lượng cao hơn nhiều phương pháp hợp nhất dựa trên điểm số, vì nó chỉ dùng thứ hạng nên không cần chuẩn hoá điểm giữa các nhánh có thang đo khác nhau [12]. Đây là lý do EGRF chọn RRF thay vì hợp nhất theo điểm: bốn nhánh của EGRF trả về điểm trên các thang khác nhau (tương đồng trigram, khoảng cách cosine, khớp chính xác), không thể cộng trực tiếp. RRF còn cho phép gắn trọng số $w_r$ vào từng nhánh, là cơ chế để EGRF điều chỉnh độ tin cậy theo bằng chứng định danh.
+
+**Xếp hạng theo xác suất (BM25).** Nhánh khớp từ khoá của EGRF dùng BM25 làm nền xếp hạng. BM25 xếp hạng tài liệu theo xác suất liên quan giữa truy vấn và tài liệu, kết hợp ba yếu tố: tần suất từ trong tài liệu, độ hiếm của từ trong toàn bộ corpus và độ dài tài liệu [13]. Khác với mô hình vector, BM25 khớp chính xác các thuật ngữ nên mạnh với truy vấn có tên riêng hoặc thuật ngữ đặc trưng. Đây là lý do trên hai tập khoa học ở mục 4.5.3, khớp từ khoá đạt nDCG@10 cao hơn EGRF: khi tín hiệu từ khoá đã đủ mạnh và tài liệu tiếng Anh chuyên ngành hẹp, khớp chính xác thuật ngữ hiệu quả hơn hợp nhất đa nhánh.
+
+**Lọc cộng tác dựa trên vật phẩm.** Lọc cộng tác dựa trên vật phẩm (item-based collaborative filtering) dự đoán sở thích của người dùng bằng cách tìm các vật phẩm tương tự với những gì người dùng đã tương tác [14]. Độ tương tự giữa hai vật phẩm tính từ ma trận tương tác của toàn bộ người dùng, thường bằng độ tương đồng cosine. Phương pháp này ổn định hơn lọc cộng tác dựa trên người dùng vì số vật phẩm ít thay đổi hơn số người dùng, nên ma trận tương tự vật phẩm có thể tính lại theo chu kỳ thay vì theo thời gian thực. DES dùng cách tiếp cận này để tính điểm sở thích: mỗi loại sự kiện tương tác (xem, thích, lưu, đánh giá) có một trọng số riêng, điểm tổng hợp trên các địa điểm cùng hạng mục hoặc cùng quận và suy giảm theo thời gian.
+
+**Trung bình Bayes có điều chỉnh và bài toán cold-start.** Bài toán cold-start xảy ra khi hệ gợi ý thiếu dữ liệu tương tác để xếp hạng, đặc biệt với vật phẩm mới hoặc người dùng mới [19]. Schein và cộng sự phân loại các hướng giải quyết cold-start và chỉ ra rằng khi thiếu dữ liệu tương tác, hệ thống cần dựa vào thông tin nội tại của vật phẩm hoặc tiên nghiệm thống kê thay vì dữ liệu cộng tác [19]. Trung bình Bayes có điều chỉnh là một hướng như vậy: điểm của một vật phẩm được co về điểm trung bình tiên nghiệm $\mu_0$ bằng một khối lượng tiên nghiệm $m$, nên vật phẩm có ít lượt đánh giá sẽ gần $\mu_0$ thay vì bị chi phối bởi một vài đánh giá đầu tiên. Công thức là:
+
+$$\hat{R}(i) = \frac{v_i \cdot \bar{r}_i + m_i \cdot \mu_0}{v_i + m_i}$$
+
+với $v_i$ là số lượt đánh giá và $\bar{r}_i$ là điểm trung bình của vật phẩm $i$. Khi $v_i$ nhỏ, điểm $\hat{R}(i)$ gần $\mu_0$; khi $v_i$ lớn, điểm tiến về $\bar{r}_i$. DES dùng chính cơ chế này làm nền xử lý cold-start: khối lượng tiên nghiệm $m_i$ tăng theo độ hoàn thiện thông tin của địa điểm, nên địa điểm mới nhưng có đủ ảnh, giờ mở cửa, số điện thoại và mô tả vẫn được xếp hạng hợp lý mà không cần chờ lượt đánh giá.
+
+Bốn nền tảng trên bổ sung cho nhau. RRF và BM25 giải quyết bài toán xếp hạng kết quả tìm kiếm; lọc cộng tác dựa trên vật phẩm và trung bình Bayes giải quyết bài toán gợi ý khi dữ liệu tương tác thiếu hoặc không đồng đều. EGRF và DES ở Chương 3 là cách kết hợp các nền tảng này cho đặc thù dữ liệu địa điểm Đà Nẵng.
 
 ---
 
@@ -623,6 +656,80 @@ sequenceDiagram
 
 **Hình 3.6. Sequence diagram luồng tải ảnh qua URL có chữ ký**
 
+Hình 3.7 trình bày activity diagram của luồng tìm kiếm địa điểm. Sơ đồ thể hiện nhánh rẽ quyết định giữa tìm kiếm lai ghép EGRF và phân trang thông thường, cùng hai nhánh phụ là gợi ý "Ý bạn là" khi không có kết quả và ghi nhận sự kiện tìm kiếm.
+
+```mermaid
+flowchart TD
+    A(["Máy khách gửi GET /places?q=..."]) --> B{"Vượt giới hạn tốc độ?"}
+    B -->|Có| B1(["Trả 429"])
+    B -->|Không| C["Phân tích bộ lọc và giải mã cursor"]
+    C --> D{"Cursor hợp lệ?"}
+    D -->|Không| D1(["Trả 400"])
+    D -->|Có| E{"Có q, không có cursor và sort = newest?"}
+    E -->|Không| F["Phân trang keyset theo sort: rating / distance / newest"]
+    E -->|Có| G["Chạy EGRF: bốn nhánh song song"]
+    G --> G1["Nhánh ngữ nghĩa: nhúng truy vấn, tìm vector gần nhất"]
+    G --> G2["Nhánh từ khoá: xếp hạng BM25 có tăng trọng trường"]
+    G --> G3["Nhánh tên: khớp chính xác, tiền tố, token"]
+    G --> G4["Nhánh cấu trúc: suy luận hạng mục, quận, thuộc tính"]
+    G1 --> H["Chọn trọng số theo bằng chứng định danh"]
+    G2 --> H
+    G3 --> H
+    G4 --> H
+    H --> I["Hợp nhất RRF với k theo quy mô corpus"]
+    I --> J{"Danh sách hợp nhất rỗng?"}
+    J -->|Có| F
+    J -->|Không| K["Lấy bản ghi theo thứ hạng hợp nhất"]
+    F --> L["Tập kết quả cuối"]
+    K --> L
+    L --> M{"Không có kết quả và q dài từ 3 ký tự?"}
+    M -->|Có| M1["Tính gợi ý Ý bạn là bằng trigram"]
+    M -->|Không| N["Bỏ qua gợi ý"]
+    M1 --> O["Ghi sự kiện search_query, không chặn phản hồi"]
+    N --> O
+    O --> P(["Trả JSON: items, next, meta"])
+```
+
+**Hình 3.7. Activity diagram luồng tìm kiếm địa điểm**
+
+Hình 3.8 trình bày activity diagram của luồng đăng bài và phát hiện địa điểm. Sơ đồ tách hai pha: pha xử lý yêu cầu đồng bộ tạo bài và ảnh trong một giao dịch, và pha xử lý nền phát hiện địa điểm cho bài chưa gắn thẻ.
+
+```mermaid
+flowchart TD
+    A(["Thành viên gửi POST /posts"]) --> B{"Đã xác thực và trong giới hạn tốc độ?"}
+    B -->|Không| B1(["Trả 401 hoặc 429"])
+    B -->|Có| C{"Trùng khoá lũy đẳng đã xử lý?"}
+    C -->|Có| C1(["Trả lại bài đã tạo"])
+    C -->|Không| D{"Dữ liệu hợp lệ?"}
+    D -->|Không| D1(["Trả 400"])
+    D -->|Có| E{"Bài có placeId?"}
+    E -->|Có| E1{"Địa điểm tồn tại?"}
+    E1 -->|Không| E2(["Trả 404"])
+    E1 -->|Có| F
+    E -->|Không| F["Kiểm tra ảnh thuộc quyền người dùng"]
+    F --> G["Một giao dịch: tạo bài và các ảnh"]
+    G --> H{"Tạo thành công?"}
+    H -->|Không| H1(["Trả 500"])
+    H -->|Có| I{"Bài chưa có placeId?"}
+    I -->|Có| J["Đẩy job place-detect vào hàng đợi"]
+    I -->|Không| K
+    J --> K(["Trả 201 kèm bài đã tạo"])
+
+    K -.->|Xử lý nền| W1(["Worker nhận job"])
+    W1 --> W2["Tìm bài chưa gắn địa điểm, chưa có thông báo gợi ý"]
+    W2 --> W3{"Có bài cần xử lý?"}
+    W3 -->|Không| W9(["Kết thúc"])
+    W3 -->|Có| W4["Nạp ứng viên địa điểm để xếp hạng"]
+    W4 --> W5["Chuẩn hoá nội dung, xếp hạng gợi ý cho từng bài"]
+    W5 --> W6{"Có gợi ý phù hợp?"}
+    W6 -->|Không| W9
+    W6 -->|Có| W7["Một giao dịch: tạo thông báo và dấu lũy đẳng"]
+    W7 --> W8["Phát sự kiện SSE sau khi commit"]
+    W8 --> W9
+```
+
+**Hình 3.8. Activity diagram luồng đăng bài và phát hiện địa điểm**
+
 ## 3.6. Thiết kế thuật toán
 
 ### 3.6.1. Thuật toán tìm kiếm EGRF
@@ -683,7 +790,120 @@ Lược đồ dữ liệu gồm 29 bảng. Bảng 3.8 nhóm các bảng theo mi�
 | Thông báo | 2 | Thông báo, thông báo gợi ý địa điểm |
 | Hạ tầng | 3 | Giới hạn tần suất, khoá lũy đẳng, bộ đệm sở thích |
 
-Hình 3.7 mô tả quan hệ giữa các bảng, chia theo tám miền nghiệp vụ. Sơ đồ gộp các bảng cùng miền để giữ kích thước đọc được; tên bảng dùng dạng tiếng Việt không dấu.
+Hình 3.9 mô tả các lớp miền chính của hệ thống, gồm thuộc tính và hành vi. Thuộc tính lấy từ lược đồ dữ liệu; hành vi ánh xạ từ các hàm xử lý thật trong mã nguồn. Hai lớp dịch vụ `SearchService` và `RecommendationService` gói hai thuật toán EGRF và DES.
+
+```mermaid
+classDiagram
+    class User {
+        +String id
+        +String name
+        +String handle
+        +String email
+        +Boolean privateProfile
+        +DateTime createdAt
+        +register()
+        +login()
+        +updateProfile()
+        +follow(otherUser)
+    }
+    class Place {
+        +String id
+        +String name
+        +String address
+        +String district
+        +PlaceCategory category
+        +Int priceLevel
+        +String[] tags
+        +Float lat
+        +Float lng
+        +PlaceStatus status
+        +DateTime publishedAt
+        +list(filters)
+        +detail(id)
+        +onMap(bounds)
+    }
+    class Review {
+        +Int rating
+        +String content
+        +DateTime createdAt
+        +createReview()
+        +updateReview()
+        +reportPlace()
+    }
+    class Post {
+        +String caption
+        +DateTime createdAt
+        +createPost()
+        +detectPlace()
+        +likePost()
+        +savePost()
+    }
+    class Collection {
+        +String name
+        +String description
+        +Boolean isPrivate
+        +addPlace(place)
+        +reorder()
+        +like()
+    }
+    class Room {
+        +String code
+        +String name
+        +Json filter
+        +create()
+        +join(guest)
+        +addProposal(proposal)
+        +applyProposal(proposal)
+    }
+    class RoomProposal {
+        +String field
+        +String value
+        +DateTime createdAt
+        +describe()
+    }
+    class Notification {
+        +NotificationKind kind
+        +Boolean read
+        +DateTime createdAt
+        +markRead()
+        +publish()
+    }
+    class SearchService {
+        <<service>>
+        +embed(query)
+        +lexicalRank(query)
+        +nameMatch(query)
+        +structuredIntent(query)
+        +gateWeights(evidence)
+        +fuseRrf(lists, k)
+        +hybridSearch(filters)
+    }
+    class RecommendationService {
+        <<service>>
+        +bayesScore(place)
+        +hourNoise(place, window)
+        +itemItemAffinity(user)
+        +dailyPick(date)
+        +getRecommended(user)
+    }
+
+    User "1" --> "*" Post : tao
+    User "1" --> "*" Review : viet
+    User "1" --> "*" Collection : so huu
+    User "1" --> "*" Room : tao
+    User "1" --> "*" Notification : nhan
+    Place "1" --> "*" Review : nhan
+    Place "1" --> "*" Post : duoc gan the
+    Collection "*" --> "*" Place : chua
+    Room "1" *-- "*" RoomProposal : gom
+    Room "*" --> "*" User : thanh vien
+    SearchService ..> Place : xep hang
+    RecommendationService ..> Place : xep hang
+```
+
+**Hình 3.9. Sơ đồ lớp các lớp miền nghiệp vụ chính**
+
+Hình 3.10 mô tả quan hệ giữa các bảng, chia theo tám miền nghiệp vụ. Sơ đồ gộp các bảng cùng miền để giữ kích thước đọc được; tên bảng dùng dạng tiếng Việt không dấu.
 
 ```mermaid
 erDiagram
@@ -793,7 +1013,7 @@ erDiagram
     }
 ```
 
-**Hình 3.7. Sơ đồ thực thể liên kết (theo miền, 29 bảng)**
+**Hình 3.10. Sơ đồ thực thể liên kết (theo miền, 29 bảng)**
 
 Hai sơ đồ dưới đây tách riêng miền tài khoản và miền phòng bình chọn để thấy rõ khoá và quan hệ.
 
@@ -901,7 +1121,7 @@ Màn hình khám phá gồm thanh tìm kiếm, bộ lọc theo quận và hạng
 
 Danh sách và bản đồ chia sẻ cùng một nguồn dữ liệu: thao tác kéo bản đồ cập nhật danh sách và ngược lại. Trình tải ảnh dùng URL có chữ ký và hiển thị tiến trình tải trực tiếp từ kho lưu trữ. Danh sách ảnh dùng thuộc tính kích thước và tập nguồn thay thế để trình duyệt chọn biến thể phù hợp.
 
-Hình 3.8 mô tả điều hướng giữa các màn hình chính. Nhóm màn hình công khai gồm khám phá, bản đồ và chi tiết địa điểm. Nhóm yêu cầu phiên gồm bảng tin, hồ sơ, bộ sưu tập, thông báo và phòng bình chọn.
+Hình 3.11 mô tả điều hướng giữa các màn hình chính. Nhóm màn hình công khai gồm khám phá, bản đồ và chi tiết địa điểm. Nhóm yêu cầu phiên gồm bảng tin, hồ sơ, bộ sưu tập, thông báo và phòng bình chọn.
 
 ```mermaid
 flowchart TD
@@ -925,7 +1145,7 @@ flowchart TD
     Auth["Đăng nhập /login"] --> Profile
 ```
 
-**Hình 3.8. Sơ đồ điều hướng các màn hình chính**
+**Hình 3.11. Sơ đồ điều hướng các màn hình chính**
 
 ## 3.9. Thiết kế bảo mật
 
@@ -1254,7 +1474,7 @@ Bảng 5.1 đối chiếu năm mục tiêu ở Chương 1 với kết quả đ�
 | Mục tiêu | Kết quả | Trạng thái |
 |---|---|---|
 | Mạng xã hội địa điểm đủ nghiệp vụ | 20 yêu cầu chức năng, 356 ca kiểm thử đạt | Đạt |
-| Tìm kiếm xử lý không dấu và lỗi gõ | P@5 đạt 0,820 trên tập nội bộ, p95 35 ms | Đạt |
+| Tìm kiếm hiểu ý định theo ngữ nghĩa, chịu không dấu và lỗi gõ | P@5 đạt 0,820 trên tập nội bộ, p95 35 ms | Đạt |
 | Gợi ý hoạt động khi chưa có lịch sử | R@10 đạt 0,044 trên tập địa điểm | Đạt |
 | Đo thời gian phản hồi dưới tải | p95 420 ms ở 1.000 người dùng, 1.250 ms ở 2.000 | Đạt |
 | Kiểm thử tự động phủ toàn bộ FR | 356 ca trong 40 tệp, đạt toàn bộ | Đạt |

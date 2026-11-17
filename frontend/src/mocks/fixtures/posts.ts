@@ -22,7 +22,7 @@ export const MOCK_POSTS: MockPost[] = [
   },
   {
     id: "p-mock-2",
-    author: MOCK_USERS["u-lan"]!,
+    author: MOCK_USERS["u-lan"],
     caption: "Mì Quảng 1A — sợi mì vàng óng, thịt gà xé, nước dùng đậm đà kiểu Quảng Nam.",
     createdAt: "2026-11-14T08:15:00+07:00",
     placeId: "mi-quang-1a",
@@ -34,7 +34,7 @@ export const MOCK_POSTS: MockPost[] = [
   },
   {
     id: "p-mock-3",
-    author: MOCK_USERS["u-hieu"]!,
+    author: MOCK_USERS["u-hieu"],
     caption: "Mì Quảng ếch Bếp Trang — ếch chiên giòn, ăn kèm bún tươi, vị cay nồng khó quên.",
     createdAt: "2026-11-13T19:45:00+07:00",
     placeId: "mi-quang-ech-bep-trang",
@@ -46,7 +46,7 @@ export const MOCK_POSTS: MockPost[] = [
   },
   {
     id: "p-mock-4",
-    author: MOCK_USERS["u-mai"]!,
+    author: MOCK_USERS["u-mai"],
     caption: "Đến Đà Nẵng hai ngày, đã ăn mì Quảng ba bữa. Bữa nào cũng ngon khác nhau.",
     createdAt: "2026-11-12T07:50:00+07:00",
     placeId: null,
