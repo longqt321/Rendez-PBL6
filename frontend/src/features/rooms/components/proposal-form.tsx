@@ -156,6 +156,9 @@ export function ProposalForm({ onSubmit }: ProposalFormProps) {
             value={value}
             onChange={(event) => setValue(event.target.value)}
             onKeyDown={(event) => {
+              // Bỏ qua Enter đang xác nhận ứng viên IME (gõ tiếng Việt có dấu) —
+              // nếu không, đề xuất bị gửi giữa chừng khi người dùng mới chọn dấu.
+              if (event.nativeEvent.isComposing || event.keyCode === 229) return
               if (event.key === "Enter") handleSubmit()
             }}
           />

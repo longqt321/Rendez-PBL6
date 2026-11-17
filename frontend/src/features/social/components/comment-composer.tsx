@@ -64,6 +64,9 @@ export function CommentComposer({ postId, replyTo, onCancelReply }: CommentCompo
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault()
+              // Enter đang xác nhận ứng viên IME (gõ tiếng Việt có dấu) — gửi
+              // ngay sẽ cắt mất phần chữ người dùng mới gõ.
+              if (event.nativeEvent.isComposing || event.keyCode === 229) return
               handleSubmit()
             }
           }}

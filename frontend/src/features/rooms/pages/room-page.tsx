@@ -197,6 +197,8 @@ export function RoomPage() {
                   value={joinName}
                   onChange={(event) => setJoinName(event.target.value)}
                   onKeyDown={(event) => {
+                    // Enter đang xác nhận ứng viên IME không được coi là submit.
+                    if (event.nativeEvent.isComposing || event.keyCode === 229) return
                     if (event.key === "Enter" && joinName.trim()) void handleJoin()
                   }}
                   aria-label="Tên hiển thị của bạn"
