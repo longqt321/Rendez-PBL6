@@ -127,7 +127,14 @@ export const routes: RouteObject[] = [
       { path: "/notification", element: <NotificationPage /> },
       { path: "/discover/:id", element: <PlaceDetailPage /> },
       { path: "/search", element: <SearchPage /> },
-      { path: "/saved", element: <SavedPage /> },
+      {
+        path: "/saved",
+        element: (
+          <RequireAuth>
+            <SavedPage />
+          </RequireAuth>
+        ),
+      },
       { path: "/collections/:id", element: <CollectionDetailPage /> },
       { path: "/rooms/:code", element: <RoomPage /> },
       {

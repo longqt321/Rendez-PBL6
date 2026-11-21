@@ -1,0 +1,6 @@
+# Dữ liệu ảnh/cache cold-start, build output và kết quả test sinh tự động
+data/cold-start/
+dist/
+test-results/
+playwright-report/
+.playwright-mcp/

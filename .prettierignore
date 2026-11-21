@@ -1,3 +1,9 @@
 # Bộ eval đóng băng: checksum tính trên BYTES gốc — prettier không được format lại
 backend/data/eval/*.json
 backend/data/eval/*.sha256
+
+# Dữ liệu ảnh/cache cold-start và kết quả test sinh tự động
+frontend/data/cold-start/
+frontend/test-results/
+frontend/playwright-report/
+.playwright-mcp/

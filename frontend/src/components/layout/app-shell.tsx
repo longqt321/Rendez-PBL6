@@ -16,7 +16,7 @@ import {
   UsersIcon,
   XIcon,
 } from "lucide-react"
-import { NavLink, Link, Outlet, useLocation, useNavigate } from "react-router"
+import { NavLink, Link, Outlet, ScrollRestoration, useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -153,6 +153,7 @@ export function AppShell({ children }: Readonly<AppShellProps>) {
         </main>
       </div>
       <BottomNav />
+      <ScrollRestoration />
     </div>
   )
 }
@@ -428,7 +429,7 @@ function TopBar() {
             <Button
               variant="outline"
               size="sm"
-              className="inline-flex gap-1.5 rounded-full text-xs font-medium"
+              className="inline-flex min-h-11 gap-1.5 rounded-full px-3 text-xs font-medium sm:min-h-0 sm:px-2.5"
               onClick={() => setJoinOpen(true)}
             >
               <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
@@ -612,7 +613,7 @@ function UserMenu() {
             variant="outline"
             size="sm"
             aria-label="Mở menu người dùng"
-            className="h-10 gap-2 rounded-full px-1.5 md:pr-3"
+            className="min-h-11 min-w-11 gap-2 rounded-full px-1.5 sm:h-10 sm:min-h-0 sm:min-w-0 md:pr-3"
           />
         }
       >

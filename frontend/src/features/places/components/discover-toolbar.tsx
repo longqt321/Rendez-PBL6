@@ -169,7 +169,7 @@ export function DiscoverToolbar({
                   tab.value === "all" ? "all" : filters.category === tab.value ? "all" : tab.value,
                 )
               }
-              className="h-8 shrink-0 gap-1.5 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+              className="min-h-11 shrink-0 gap-1.5 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground sm:h-8 sm:min-h-0"
             >
               <Icon className="size-3.5 shrink-0" aria-hidden="true" />
               <span>{tab.label}</span>

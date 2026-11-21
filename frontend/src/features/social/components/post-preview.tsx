@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link } from "react-router"
 import { ArrowUpRightIcon, MapPinIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { ImageLightbox } from "@/components/shared/image-lightbox"
 import { SafeImage } from "@/components/shared/safe-image"
 import { formatRelativeTime } from "@/lib/format"
@@ -47,19 +48,20 @@ export function PostPreview({ post, footer }: PostPreviewProps) {
             className={cn("grid gap-1.5", post.images.length === 1 ? "grid-cols-1" : "grid-cols-2")}
           >
             {post.images.map((url, index) => (
-              <button
+              <Button
                 key={`${post.id}-${index}`}
                 type="button"
+                variant="ghost"
                 onClick={() => setLightboxIndex(index)}
                 aria-label={`Phóng to ảnh ${index + 1}`}
-                className="group relative overflow-hidden rounded-control bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group relative h-auto overflow-hidden rounded-control bg-muted p-0 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <SafeImage
                   src={url}
                   alt={`Ảnh ${index + 1}/${post.images.length} của bài đăng`}
                   className="aspect-square h-full w-full transition-transform duration-300 group-hover:scale-[1.02]"
                 />
-              </button>
+              </Button>
             ))}
           </div>
         ) : null}

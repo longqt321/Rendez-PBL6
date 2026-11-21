@@ -129,6 +129,39 @@ export default defineConfig(({ mode }) => {
       // Sourcemap "hidden": file .map vẫn sinh để upload lên dịch vụ lỗi sau này
       // nhưng không tham chiếu trong bundle → trình duyệt không tải/công khai mã nguồn.
       sourcemap: "hidden",
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            groups: [
+              {
+                name: "vendor-react",
+                test: /node_modules\/(react|react-dom|react-router|scheduler)\//,
+                priority: 20,
+              },
+              {
+                name: "vendor-motion",
+                test: /node_modules\/(motion|framer-motion)\//,
+                priority: 18,
+              },
+              {
+                name: "vendor-ui",
+                test: /node_modules\/(@base-ui|lucide-react|embla-carousel|yet-another-react-lightbox|cmdk|sonner)\//,
+                priority: 15,
+              },
+              {
+                name: "vendor-data",
+                test: /node_modules\/(@tanstack|axios|zod|react-hook-form|@hookform|cockatiel)\//,
+                priority: 15,
+              },
+              {
+                name: "vendor-map",
+                test: /node_modules\/(leaflet|react-leaflet|supercluster|leaflet\.tilelayer\.fallback)\//,
+                priority: 15,
+              },
+            ],
+          },
+        },
+      },
     },
     test: {
       environment: "jsdom",

@@ -162,7 +162,7 @@ export function LoginPage() {
 
           <Link
             to="/forgot-password"
-            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+            className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline-offset-4 hover:underline sm:min-h-0"
           >
             Quên mật khẩu?
           </Link>

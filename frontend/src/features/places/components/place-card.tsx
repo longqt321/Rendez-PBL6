@@ -201,6 +201,7 @@ export function PlaceCard({
           <h3 className="font-display text-base leading-snug font-bold tracking-tight">
             <Link
               to={`/discover/${place.id}`}
+              viewTransition
               onClick={() => emitPlaceClick(place.id)}
               className="line-clamp-1 outline-none after:absolute after:inset-0 focus-visible:underline"
             >
@@ -253,6 +254,7 @@ export function PlaceCard({
         >
           <Link
             to={`/discover/${place.id}`}
+            viewTransition
             onClick={() => emitPlaceClick(place.id)}
             className="outline-none after:absolute after:inset-0 focus-visible:underline"
           >

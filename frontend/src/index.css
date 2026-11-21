@@ -310,3 +310,28 @@ body {
 .leaflet-popup-content {
   margin: 0.5rem !important;
 }
+
+/* Chuyển cảnh View Transitions nhẹ nhàng theo nhịp editorial */
+@keyframes rendez-vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes rendez-vt-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+::view-transition-old(root) {
+  animation: 140ms cubic-bezier(0.22, 1, 0.36, 1) both rendez-vt-fade-out;
+}
+::view-transition-new(root) {
+  animation: 220ms cubic-bezier(0.22, 1, 0.36, 1) both rendez-vt-fade-in;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

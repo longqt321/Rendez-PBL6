@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button"
+
 interface DidYouMeanProps {
   readonly suggestion: string | null | undefined
 
@@ -10,13 +12,15 @@ export function DidYouMean({ suggestion, onSelect }: DidYouMeanProps) {
   return (
     <p className="mt-2 text-sm text-muted-foreground">
       Ý bạn là{" "}
-      <button
+      <Button
         type="button"
+        variant="link"
+        size="sm"
         onClick={() => onSelect(suggestion)}
-        className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+        className="h-auto p-0 font-semibold text-foreground underline underline-offset-4 hover:text-primary"
       >
         {suggestion}
-      </button>{" "}
+      </Button>{" "}
       ?
     </p>
   )

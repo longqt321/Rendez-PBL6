@@ -49,7 +49,7 @@ Xem `.env.example`.
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `VITE_API_BASE_URL` | Base URL API trình duyệt gọi. Mặc định `/api` (đi qua proxy dev).                                                                                                                                                          |
 | `VITE_PROXY_TARGET` | Chỉ dùng ở dev server: đích thật của proxy `/api`.                                                                                                                                                                         |
-| `VITE_ENABLE_MOCKS` | `true`/`false`. Bỏ trống: dev bật, build production tắt.                                                                                                                                                                   |
+| `VITE_ENABLE_MOCKS` | `true`/`false`. Bỏ trống: tắt (nối backend thật) ở dev & production; chỉ bật mặc định trong test (`MODE === "test"`) hoặc dùng `bun run dev:mock`.                                                                         |
 | `VITE_APP_ORIGIN`   | Origin công khai của FE (vd `https://rendez.example.com`): canonical/OG + sinh `robots.txt`/`sitemap.xml` lúc build. Dev bỏ trống (mặc định `http://localhost:5173`); build prod bắt buộc đặt đúng — xem `vite.config.ts`. |
 
 ## Mock và chuyển sang backend thật

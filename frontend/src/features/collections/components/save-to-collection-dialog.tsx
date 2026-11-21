@@ -26,6 +26,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { MAX_COLLECTION_NAME_LENGTH } from "@/lib/constants"
+import { useMe } from "@/features/profile/hooks/use-me"
 import { useCollections } from "../hooks/use-collection"
 import { useCreateCollection, useSetCollectionPlace } from "../hooks/use-collections"
 import type { CollectionSummary } from "../types/collection"
@@ -119,7 +120,11 @@ export function SaveToCollectionDialog({
   children,
 }: SaveToCollectionDialogProps) {
   const [open, setOpen] = useState(false)
-  const { data: collections, isPending } = useCollections({ placeId })
+  const { data: me } = useMe()
+  const { data: collections, isPending } = useCollections({
+    placeId,
+    enabled: open && Boolean(me),
+  })
   const setPlace = useSetCollectionPlace()
   const createCollection = useCreateCollection()
   const [newName, setNewName] = useState("")

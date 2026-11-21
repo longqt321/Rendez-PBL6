@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,9 +63,37 @@ export function PostCard({ post }: PostCardProps) {
         </Link>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm leading-tight font-semibold">
-            <Link to={`/u/${post.author.handle}`} className="outline-none hover:underline">
-              {post.author.name}
-            </Link>
+            <HoverCard>
+              <HoverCardTrigger
+                render={
+                  <Link to={`/u/${post.author.handle}`} className="outline-none hover:underline">
+                    {post.author.name}
+                  </Link>
+                }
+              />
+              <HoverCardContent align="start" className="w-64">
+                <div className="flex items-center gap-3">
+                  <Avatar size="default">
+                    <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
+                      {post.author.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{post.author.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">@{post.author.handle}</p>
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    render={<Link to={`/u/${post.author.handle}`} />}
+                  >
+                    Xem hồ sơ
+                  </Button>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
           </p>
           <p className="truncate text-xs text-muted-foreground">
             @{post.author.handle} ·{" "}
@@ -100,12 +129,13 @@ export function PostCard({ post }: PostCardProps) {
             className={cn("grid gap-1.5", post.images.length === 1 ? "grid-cols-1" : "grid-cols-2")}
           >
             {post.images.map((url, index) => (
-              <button
+              <Button
                 key={`${post.id}-${index}`}
                 type="button"
+                variant="ghost"
                 onClick={() => setLightboxIndex(index)}
                 aria-label={`Phóng to ảnh ${index + 1}`}
-                className="group relative block overflow-hidden rounded-control bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group relative block h-auto w-full overflow-hidden rounded-control bg-muted p-0 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <SafeImage
                   src={url}
@@ -115,7 +145,7 @@ export function PostCard({ post }: PostCardProps) {
                     post.images.length === 1 ? "max-h-96" : "aspect-square",
                   )}
                 />
-              </button>
+              </Button>
             ))}
           </div>
         ) : null}

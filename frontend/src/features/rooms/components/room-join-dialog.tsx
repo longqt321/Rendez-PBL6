@@ -16,11 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MAX_MEMBER_NAME_LENGTH, MAX_ROOM_NAME_LENGTH, ROOM_CODE_LENGTH } from "@/lib/constants"
 import type { JoinRoomStatus } from "../hooks/use-rooms"
 
-const QUICK_ROOM_NAMES = [
-  "Ăn trưa cùng team",
-  "Cà phê cuối tuần",
-  "Tối thứ 6 chill",
-] as const
+const QUICK_ROOM_NAMES = ["Ăn trưa cùng team", "Cà phê cuối tuần", "Tối thứ 6 chill"] as const
 
 interface RoomJoinDialogProps {
   open: boolean

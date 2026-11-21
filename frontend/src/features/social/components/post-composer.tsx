@@ -372,6 +372,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
                   ref={fileInputRef}
                   id={fileInputId}
                   type="file"
+                  aria-label="Chọn ảnh đính kèm"
                   accept={IMAGE_CONTENT_TYPES.join(",")}
                   multiple
                   className="sr-only"
@@ -381,6 +382,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
                   type="button"
                   variant="ghost"
                   size="sm"
+                  className="min-h-11 sm:min-h-0"
                   disabled={images.length >= MAX_POST_IMAGES || uploading}
                   onClick={() => fileInputRef.current?.click()}
                 >

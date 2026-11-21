@@ -2,10 +2,11 @@ import { useQuery } from "@tanstack/react-query"
 import { getCollection, getCollections, getUserCollections } from "../api/collections"
 import { collectionsQueryKey, userCollectionsQueryKey } from "./use-collections"
 
-export function useCollections(params?: { placeId?: string }) {
+export function useCollections(params?: { placeId?: string; enabled?: boolean }) {
   return useQuery({
     queryKey: collectionsQueryKey(params?.placeId),
-    queryFn: () => getCollections(params),
+    queryFn: () => getCollections(params?.placeId ? { placeId: params.placeId } : undefined),
+    enabled: params?.enabled ?? true,
   })
 }
 
