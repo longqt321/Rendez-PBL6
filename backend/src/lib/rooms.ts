@@ -10,7 +10,14 @@ import {
   toPrismaCategory,
   toPrismaProposalField,
 } from "./enums"
-import type { Room, RoomFilter, RoomMember, RoomProposal, RoomProposalField } from "@rendez/schema"
+import type {
+  Room,
+  RoomFilter,
+  RoomMember,
+  RoomProposal,
+  RoomProposalField,
+  UpdateRoomFilterInput,
+} from "@rendez/schema"
 
 const CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 const CODE_LENGTH = 6
@@ -234,17 +241,50 @@ export async function joinRoom(
 
 export async function addProposal(
   room: RoomWithRelations,
-  input: { memberId: string; kind: "include" | "exclude"; field: RoomProposalField; value: string },
+  input: {
+    memberId: string
+    kind: "include" | "exclude"
+    field: RoomProposalField
+    value: string
+    autoApply?: boolean
+  },
 ): Promise<RoomWithRelations> {
-  await prisma.roomProposal.create({
-    data: {
-      roomId: room.id,
-      memberId: input.memberId,
-      kind: input.kind,
-      field: toPrismaProposalField(input.field),
-      value: input.value.trim(),
-    },
-  })
+  if (input.autoApply) {
+    await prisma.$transaction(async (tx) => {
+      await tx.roomProposal.create({
+        data: {
+          roomId: room.id,
+          memberId: input.memberId,
+          kind: input.kind,
+          field: toPrismaProposalField(input.field),
+          value: input.value.trim(),
+          status: "applied",
+          appliedBy: input.memberId,
+          appliedAt: new Date(),
+        },
+      })
+      const current = await tx.room.findUniqueOrThrow({ where: { id: room.id } })
+      const nextFilter = applyProposalToFilter(parseRoomFilter(current.filter), {
+        kind: input.kind,
+        field: input.field,
+        value: input.value.trim(),
+      })
+      await tx.room.update({
+        where: { id: room.id },
+        data: { filter: serializeRoomFilter(nextFilter) },
+      })
+    })
+  } else {
+    await prisma.roomProposal.create({
+      data: {
+        roomId: room.id,
+        memberId: input.memberId,
+        kind: input.kind,
+        field: toPrismaProposalField(input.field),
+        value: input.value.trim(),
+      },
+    })
+  }
   const updated = await findRoomByCode(room.code)
   if (!updated) throw new Error("Phòng biến mất sau khi thêm đề xuất")
   return updated
@@ -254,6 +294,115 @@ export function normalizeProposalValue(field: RoomProposalField, value: string):
   if (field === "category") return parseApiCategory(value)
   if (field === "priceMax") return value === "1" || value === "2" || value === "3" ? value : null
   return value
+}
+
+export function removeFilterConstraint(
+  filter: RoomFilter,
+  target: { kind: "include" | "exclude"; field: RoomProposalField; value: string },
+): RoomFilter {
+  const value = target.value.trim()
+  if (target.field === "category") {
+    const category = parseApiCategory(value)
+    if (!category) return filter
+    return target.kind === "include"
+      ? { ...filter, categories: filter.categories.filter((c) => c !== category) }
+      : { ...filter, excludedCategories: filter.excludedCategories.filter((c) => c !== category) }
+  }
+  if (target.field === "district") {
+    return target.kind === "include"
+      ? { ...filter, districts: filter.districts.filter((d) => d !== value) }
+      : { ...filter, excludedDistricts: filter.excludedDistricts.filter((d) => d !== value) }
+  }
+  if (target.field === "priceMax") {
+    const rest = { ...filter }
+    delete rest.priceMax
+    return rest
+  }
+  return target.kind === "include"
+    ? { ...filter, includeKeywords: filter.includeKeywords.filter((k) => k !== value) }
+    : { ...filter, excludeKeywords: filter.excludeKeywords.filter((k) => k !== value) }
+}
+
+function hasFilterConstraint(
+  filter: RoomFilter,
+  target: { kind: "include" | "exclude"; field: RoomProposalField; value: string },
+): boolean {
+  const value = target.value.trim()
+  if (target.field === "category") {
+    const category = parseApiCategory(value)
+    if (!category) return false
+    return target.kind === "include"
+      ? filter.categories.includes(category)
+      : filter.excludedCategories.includes(category)
+  }
+  if (target.field === "district") {
+    return target.kind === "include"
+      ? filter.districts.includes(value)
+      : filter.excludedDistricts.includes(value)
+  }
+  if (target.field === "priceMax") {
+    return filter.priceMax !== undefined && String(filter.priceMax) === value
+  }
+  return target.kind === "include"
+    ? filter.includeKeywords.includes(value)
+    : filter.excludeKeywords.includes(value)
+}
+
+export function toggleFilterConstraint(
+  filter: RoomFilter,
+  target: { kind: "include" | "exclude"; field: RoomProposalField; value: string },
+): RoomFilter {
+  return hasFilterConstraint(filter, target)
+    ? removeFilterConstraint(filter, target)
+    : applyProposalToFilter(filter, target)
+}
+
+export async function updateRoomFilter(
+  roomId: string,
+  code: string,
+  input: UpdateRoomFilterInput,
+): Promise<RoomWithRelations> {
+  await prisma.$transaction(async (tx) => {
+    let nextFilter: RoomFilter
+    if (input.action === "reset") {
+      nextFilter = createEmptyFilter()
+    } else if (input.action === "replace") {
+      let built = createEmptyFilter()
+      for (const item of input.items) {
+        const normalized = normalizeProposalValue(item.field, item.value)
+        if (normalized === null) {
+          throw new ApiError(400, "Giá trị bộ lọc không hợp lệ")
+        }
+        built = applyProposalToFilter(built, {
+          kind: item.kind,
+          field: item.field,
+          value: normalized,
+        })
+      }
+      nextFilter = built
+    } else {
+      const normalized = normalizeProposalValue(input.field, input.value)
+      if (normalized === null) {
+        throw new ApiError(400, "Giá trị bộ lọc không hợp lệ")
+      }
+      const current = await tx.room.findUniqueOrThrow({ where: { id: roomId } })
+      const parsedFilter = parseRoomFilter(current.filter)
+      const target = { kind: input.kind, field: input.field, value: normalized }
+      nextFilter =
+        input.action === "remove"
+          ? removeFilterConstraint(parsedFilter, target)
+          : toggleFilterConstraint(parsedFilter, target)
+    }
+
+    await tx.room.update({
+      where: { id: roomId },
+      data: { filter: serializeRoomFilter(nextFilter) },
+    })
+  })
+
+  const updated = await findRoomByCode(code)
+  if (!updated) throw new Error("Phòng biến mất sau khi cập nhật bộ lọc")
+  return updated
 }
 
 export function applyProposalToFilter(

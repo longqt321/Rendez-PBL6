@@ -1,180 +1,268 @@
-import { useState } from "react"
-import { PlusIcon } from "lucide-react"
+import { useMemo, useState } from "react"
+import { PlusIcon, RefreshCwIcon, SparklesIcon, ZapIcon } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Field, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+  FieldTitle,
+} from "@/components/ui/field"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import { Toggle } from "@/components/ui/toggle"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { CATEGORY_META } from "@/features/places/lib/category-meta"
 import { DANANG_DISTRICTS } from "@/features/places/lib/danang-districts"
 import { priceLevelLabel } from "@/features/places/lib/price-level"
 import type { PlaceCategory } from "@/features/places/types/place"
-import { MAX_ROOM_KEYWORD_LENGTH } from "@/lib/constants"
-import type { RoomProposalField } from "../types/room"
+import { cn } from "@/lib/utils"
+import {
+  describeProposal,
+  naturalQueryToProposalInputs,
+  roomFilterChips,
+  type ParsedRoomProposalInput,
+} from "../lib/room"
+import type { Room, RoomProposalField } from "../types/room"
 
 interface ProposalFormProps {
-  onSubmit: (input: {
+  room: Room
+  disabled?: boolean
+  onSubmitProposals: (
+    items: ParsedRoomProposalInput[],
+    options: { autoApply: boolean; mode: "append" | "replace" },
+  ) => Promise<void> | void
+  onQuickToggle: (target: {
     kind: "include" | "exclude"
     field: RoomProposalField
     value: string
-  }) => void
+  }) => Promise<void> | void
 }
 
-const FIELD_TABS: { value: RoomProposalField; label: string }[] = [
-  { value: "category", label: "Loại hình" },
-  { value: "district", label: "Quận" },
-  { value: "priceMax", label: "Mức giá" },
-  { value: "keyword", label: "Từ khoá" },
-]
+export function ProposalForm({
+  room,
+  disabled = false,
+  onSubmitProposals,
+  onQuickToggle,
+}: ProposalFormProps) {
+  const [text, setText] = useState("")
+  const [enterMode, setEnterMode] = useState<"append" | "replace">("append")
+  const [submitting, setSubmitting] = useState(false)
 
-export function ProposalForm({ onSubmit }: ProposalFormProps) {
-  const [kind, setKind] = useState<"include" | "exclude">("include")
-  const [field, setField] = useState<RoomProposalField>("category")
-  const [value, setValue] = useState("")
+  const parsedItems = useMemo(() => naturalQueryToProposalInputs(text), [text])
+  const activeChips = useMemo(() => roomFilterChips(room), [room])
+  const hasActiveFilters = activeChips.length > 0
 
-  function handleSubmit() {
-    if (!value.trim()) return
-    onSubmit({ kind, field, value: value.trim() })
-    setValue("")
+  async function handleSubmit(mode: "append" | "replace") {
+    if (parsedItems.length === 0 || submitting || disabled) return
+    setSubmitting(true)
+    try {
+      await onSubmitProposals(parsedItems, { autoApply: true, mode })
+      setText("")
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  const chipGroup = (
-    <ToggleGroup
-      value={[value]}
-      onValueChange={(next) => {
-        const selected = next[0]
-        if (selected) setValue(selected)
-      }}
-      variant="outline"
-      size="sm"
-      aria-label="Chọn giá trị đề xuất"
-      className="flex-wrap"
-    >
-      {field === "category"
-        ? (Object.keys(CATEGORY_META) as PlaceCategory[]).map((category) => (
-            <ToggleGroupItem
+  return (
+    <FieldGroup className="gap-3.5">
+      <Field>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <FieldLabel htmlFor="room-natural-input">Nhập tiêu chí lọc cho cả nhóm</FieldLabel>
+          {hasActiveFilters ? (
+            <ToggleGroup
+              value={[enterMode]}
+              onValueChange={(next) => {
+                const selected = next[0] as "append" | "replace" | undefined
+                if (selected) setEnterMode(selected)
+              }}
+              variant="outline"
+              size="sm"
+              spacing={0}
+              aria-label="Hành vi khi nhấn Enter"
+            >
+              <ToggleGroupItem
+                value="append"
+                className="h-6 px-2 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+              >
+                ＋ Nối tiếp
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="replace"
+                className="h-6 px-2 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+              >
+                ↻ Ghi đè
+              </ToggleGroupItem>
+            </ToggleGroup>
+          ) : null}
+        </div>
+
+        <InputGroup className="h-9 bg-card">
+          <InputGroupAddon>
+            <SparklesIcon className="size-3.5 text-primary" aria-hidden="true" />
+          </InputGroupAddon>
+          <InputGroupInput
+            id="room-natural-input"
+            placeholder={
+              hasActiveFilters
+                ? enterMode === "append"
+                  ? "Nhập tiêu chí để cộng nối tiếp vào bộ lọc hiện tại…"
+                  : "Nhập tiêu chí mới để ghi đè toàn bộ bộ lọc cũ…"
+                : "VD: cà phê Sơn Trà dưới 50k, không hải sản…"
+            }
+            autoComplete="off"
+            value={text}
+            disabled={disabled || submitting}
+            onChange={(event) => setText(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.nativeEvent.isComposing || event.keyCode === 229) return
+              if (event.key === "Enter" && parsedItems.length > 0) {
+                event.preventDefault()
+                void handleSubmit(hasActiveFilters ? enterMode : "append")
+              }
+            }}
+          />
+        </InputGroup>
+
+        {parsedItems.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1.5 rounded-control border border-border/70 bg-muted/40 p-2">
+            <FieldTitle className="text-xs text-muted-foreground">
+              Sẽ {hasActiveFilters && enterMode === "replace" ? "thay mới bằng" : "cộng thêm"}:
+            </FieldTitle>
+            {parsedItems.map((item) => (
+              <Badge
+                key={`${item.kind}-${item.field}-${item.value}`}
+                variant="outline"
+                className={cn(
+                  "text-xs",
+                  item.kind === "exclude"
+                    ? "border-destructive/40 bg-destructive/10 text-destructive"
+                    : "border-primary/40 bg-primary/10 text-primary",
+                )}
+              >
+                {describeProposal(item)}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <FieldDescription className="text-xs">
+            {hasActiveFilters
+              ? `Đang có ${activeChips.length} tiêu chí. Nhấn Enter sẽ ${enterMode === "append" ? "cộng nối tiếp vào bộ lọc hiện có" : "xoá điều kiện cũ và lọc mới hoàn toàn"}.`
+              : "Gõ tự nhiên loại hình, quận, mức giá (dưới 50k / tầm trung) hoặc từ phủ định (không, né, trừ)."}
+          </FieldDescription>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          {!hasActiveFilters ? (
+            <Button
+              type="button"
+              size="sm"
+              className="w-full"
+              disabled={disabled || submitting || parsedItems.length === 0}
+              onClick={() => void handleSubmit("append")}
+            >
+              <ZapIcon className="size-3.5" aria-hidden="true" />
+              Áp dụng bộ lọc (Enter)
+            </Button>
+          ) : (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                variant={enterMode === "append" ? "default" : "outline"}
+                className="flex-1 text-xs"
+                disabled={disabled || submitting || parsedItems.length === 0}
+                onClick={() => void handleSubmit("append")}
+              >
+                <PlusIcon className="size-3.5" aria-hidden="true" />
+                Cộng nối tiếp {enterMode === "append" ? "(Enter)" : ""}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={enterMode === "replace" ? "default" : "outline"}
+                className="flex-1 text-xs"
+                disabled={disabled || submitting || parsedItems.length === 0}
+                onClick={() => void handleSubmit("replace")}
+              >
+                <RefreshCwIcon className="size-3.5" aria-hidden="true" />
+                Ghi đè mới {enterMode === "replace" ? "(Enter)" : ""}
+              </Button>
+            </>
+          )}
+        </div>
+      </Field>
+
+      <FieldSeparator />
+
+      <Field>
+        <FieldTitle className="text-xs text-muted-foreground">Loại hình</FieldTitle>
+        <div className="flex flex-wrap gap-1.5">
+          {(Object.keys(CATEGORY_META) as PlaceCategory[]).map((category) => (
+            <Toggle
               key={category}
-              value={category}
-              className="h-8 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+              size="sm"
+              variant="outline"
+              disabled={disabled}
+              pressed={room.filter.categories.includes(category)}
+              onPressedChange={() =>
+                void onQuickToggle({ kind: "include", field: "category", value: category })
+              }
+              className="h-7 rounded-full px-2.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
             >
               {CATEGORY_META[category].label}
-            </ToggleGroupItem>
-          ))
-        : null}
-      {field === "district"
-        ? DANANG_DISTRICTS.map((district) => (
-            <ToggleGroupItem
+            </Toggle>
+          ))}
+        </div>
+      </Field>
+
+      <Field>
+        <FieldTitle className="text-xs text-muted-foreground">Quận tại Đà Nẵng</FieldTitle>
+        <div className="flex flex-wrap gap-1.5">
+          {DANANG_DISTRICTS.map((district) => (
+            <Toggle
               key={district}
-              value={district}
-              className="h-8 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+              size="sm"
+              variant="outline"
+              disabled={disabled}
+              pressed={room.filter.districts.includes(district)}
+              onPressedChange={() =>
+                void onQuickToggle({ kind: "include", field: "district", value: district })
+              }
+              className="h-7 rounded-full px-2.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
             >
               {district}
-            </ToggleGroupItem>
-          ))
-        : null}
-      {field === "priceMax"
-        ? ([1, 2, 3] as const).map((level) => (
-            <ToggleGroupItem
+            </Toggle>
+          ))}
+        </div>
+      </Field>
+
+      <Field>
+        <FieldTitle className="text-xs text-muted-foreground">Ngân sách tối đa</FieldTitle>
+        <div className="flex flex-wrap gap-1.5">
+          {([1, 2, 3] as const).map((level) => (
+            <Toggle
               key={level}
-              value={String(level)}
-              className="h-8 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+              size="sm"
+              variant="outline"
+              disabled={disabled}
+              pressed={room.filter.priceMax === level}
+              onPressedChange={() =>
+                void onQuickToggle({
+                  kind: "include",
+                  field: "priceMax",
+                  value: String(level),
+                })
+              }
+              className="h-7 rounded-full px-2.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
             >
               {priceLevelLabel(level)}
               {level < 3 ? " trở xuống" : ""}
-            </ToggleGroupItem>
-          ))
-        : null}
-    </ToggleGroup>
-  )
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field>
-          <FieldLabel>Ý kiến của bạn</FieldLabel>
-          <ToggleGroup
-            value={[kind]}
-            onValueChange={(next) => {
-              const selected = next[0]
-              if (selected) setKind(selected as "include" | "exclude")
-            }}
-            variant="outline"
-            size="sm"
-            aria-label="Loại đề xuất"
-          >
-            <ToggleGroupItem
-              value="include"
-              className="h-8 flex-1 text-xs aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground"
-            >
-              ＋ Muốn có
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="exclude"
-              className="h-8 flex-1 text-xs aria-pressed:border-destructive aria-pressed:bg-destructive aria-pressed:text-primary-foreground"
-              disabled={field === "priceMax"}
-            >
-              － Không muốn
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </Field>
-
-        <Field>
-          <FieldLabel>Tiêu chí</FieldLabel>
-          <ToggleGroup
-            value={[field]}
-            onValueChange={(next) => {
-              const selected = next[0] as RoomProposalField | undefined
-              if (selected) {
-                setField(selected)
-                if (selected === "priceMax") setKind("include")
-                setValue("")
-              }
-            }}
-            variant="outline"
-            size="sm"
-            aria-label="Chiều lọc"
-            className="flex-wrap"
-          >
-            {FIELD_TABS.map((tab) => (
-              <ToggleGroupItem
-                key={tab.value}
-                value={tab.value}
-                className="h-8 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
-              >
-                {tab.label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </Field>
-      </div>
-
-      <Field>
-        <FieldLabel htmlFor="proposal-value">Chọn giá trị</FieldLabel>
-        {field === "keyword" ? (
-          <Input
-            id="proposal-value"
-            maxLength={MAX_ROOM_KEYWORD_LENGTH}
-            placeholder="Ví dụ: hải sản, bánh xèo…"
-            autoComplete="off"
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.nativeEvent.isComposing || event.keyCode === 229) return
-              if (event.key === "Enter") handleSubmit()
-            }}
-          />
-        ) : (
-          chipGroup
-        )}
-        <Button
-          type="button"
-          className="mt-2 w-full sm:w-auto sm:self-start"
-          onClick={handleSubmit}
-          disabled={!value.trim()}
-        >
-          <PlusIcon aria-hidden="true" />
-          Gửi đề xuất cho nhóm
-        </Button>
+            </Toggle>
+          ))}
+        </div>
       </Field>
-    </div>
+    </FieldGroup>
   )
 }

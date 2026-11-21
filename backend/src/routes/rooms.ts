@@ -5,6 +5,7 @@ import {
   createProposalInputSchema,
   createRoomInputSchema,
   joinRoomInputSchema,
+  updateRoomFilterInputSchema,
   type Room,
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
@@ -26,6 +27,7 @@ import {
   parseRoomFilter,
   serializeRoomFilter,
   toRoomDto,
+  updateRoomFilter,
   type RoomWithRelations,
 } from "../lib/rooms"
 import { getViewer, requireAuth } from "../lib/session"
@@ -149,9 +151,32 @@ export function createRoomsRouter() {
       throw new ApiError(400, "Giá trị đề xuất không hợp lệ")
     }
 
-    const updated = await addProposal(room, { ...parsed.data, memberId: actor.memberId, value })
+    const updated = await addProposal(room, {
+      ...parsed.data,
+      memberId: actor.memberId,
+      value,
+    })
     publishRoom(code)
     return c.json(await roomDtoFor(c, updated), 201)
+  })
+
+  router.post("/rooms/:code/filter", async (c) => {
+    const code = requireCode(c.req.param("code"))
+    const room = await loadRoom(code)
+    await resolveRoomActor(c, room)
+
+    const raw = await c.req.json().catch(() => null)
+    const parsed = updateRoomFilterInputSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(
+        400,
+        parsed.error.issues[0]?.message ?? "Yêu cầu cập nhật bộ lọc không hợp lệ",
+      )
+    }
+
+    const updated = await updateRoomFilter(room.id, code, parsed.data)
+    publishRoom(code)
+    return c.json(await roomDtoFor(c, updated))
   })
 
   router.post("/rooms/:code/proposals/:proposalId/apply", async (c) => {

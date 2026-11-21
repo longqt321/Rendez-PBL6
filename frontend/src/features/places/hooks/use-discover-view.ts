@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react"
 import { toast } from "sonner"
 import { useUserLocation } from "@/hooks/use-user-location"
 import { useRooms, type JoinRoomStatus } from "@/features/rooms/hooks/use-rooms"
+import type { RoomFilterChip } from "@/features/rooms/lib/room"
 import type { Room } from "@/features/rooms/types/room"
 import { calculateDistanceKm } from "../lib/danang-districts"
 import type { Place } from "../types/place"
@@ -19,6 +20,8 @@ export interface DiscoverView {
 
   joinRoom: (code: string, displayName: string) => Promise<JoinRoomStatus>
   leaveRoom: () => void
+  removeRoomChip: (chip: RoomFilterChip) => void
+  resetRoomFilter: () => void
   coordinates: { lat: number; lng: number } | null
   isLocating: boolean
   locationError: string | null
@@ -44,41 +47,26 @@ export interface DiscoverView {
 export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView {
   const fetchList = options?.fetchList ?? true
   const filters = useDiscoverFilters()
-  const { activeCode, getRoom, createRoom, joinRoom, leaveRoom } = useRooms()
+  const { activeCode, getRoom, createRoom, joinRoom, updateRoomFilter, leaveRoom } = useRooms()
   const room = activeCode ? getRoom(activeCode) : undefined
   const { coordinates, isLocating, locationError, requestLocation, clearLocation, locationGate } =
     useUserLocation()
-  // Phòng lọc nhóm gửi toàn bộ ràng buộc xuống server (server lọc trước khi phân
-  // trang) — client không tự lọc lại, tránh hai nguồn sự thật cho cùng một việc.
-  // `sort` + toạ độ cũng xuống server: sắp xếp khoảng cách là việc của server
-  // (đúng trên TOÀN BỘ kết quả phân trang), client chỉ tính `distanceKm` để hiển thị.
+  // `/discover` và `/map` luôn dùng bộ lọc cá nhân của người dùng để họ có thể
+  // tự tìm kiếm và khám phá riêng ngay cả khi đang tham gia một phòng nhóm
+  // (bộ lọc chung của phòng hoạt động độc lập bên trong `/rooms/:code`).
   const serverFilters = useMemo(
     () => ({
-      category: room ? ("all" as const) : filters.category,
-      district: room ? ("all" as const) : filters.district,
-      query: room ? "" : filters.query,
-      priceMax: room || filters.priceMax === "all" ? undefined : filters.priceMax,
+      category: filters.category,
+      district: filters.district,
+      query: filters.query,
+      priceMax: filters.priceMax === "all" ? undefined : filters.priceMax,
       sort: filters.sort,
-      // Chỉ gửi toạ độ khi sort là distance; chưa có vị trí thì server tự rơi
-      // về newest, khi toạ độ về thì key đổi → fetch lại đúng thứ tự.
       coords:
         filters.sort === "distance" && coordinates
           ? { lat: coordinates.lat, lng: coordinates.lng }
           : undefined,
-      room: room
-        ? {
-            categories: room.filter.categories,
-            excludedCategories: room.filter.excludedCategories,
-            districts: room.filter.districts,
-            excludedDistricts: room.filter.excludedDistricts,
-            includeKeywords: room.filter.includeKeywords,
-            excludeKeywords: room.filter.excludeKeywords,
-            priceMax: room.filter.priceMax,
-          }
-        : undefined,
     }),
     [
-      room,
       filters.category,
       filters.district,
       filters.query,
@@ -87,6 +75,15 @@ export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView
       coordinates,
     ],
   )
+
+  // Khi người dùng gõ "gần tôi" / "gần đây" vào thanh Search, tự động bật định vị & sort distance.
+  const { setSort, isNearbyActive } = filters
+  useEffect(() => {
+    if (filters.parsedQuery.nearMe && !isNearbyActive) {
+      setSort("distance")
+      requestLocation()
+    }
+  }, [filters.parsedQuery.nearMe, isNearbyActive, setSort, requestLocation])
 
   // Toạ độ lên URL khi `sort=distance` (làm tròn 4 chữ số) để link chia sẻ tái
   // tạo đúng thứ tự khoảng cách; tắt sort distance thì dọn khỏi URL.
@@ -136,6 +133,25 @@ export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView
       if (room) {
         void leaveRoom(room.code).catch((error: unknown) => {
           toast.error(error instanceof Error ? error.message : "Không rời được phòng")
+        })
+      }
+    },
+    removeRoomChip: (chip) => {
+      if (room) {
+        void updateRoomFilter(room.code, {
+          action: "remove",
+          kind: chip.kind,
+          field: chip.field,
+          value: chip.value,
+        }).catch((error: unknown) => {
+          toast.error(error instanceof Error ? error.message : "Không gỡ được điều kiện")
+        })
+      }
+    },
+    resetRoomFilter: () => {
+      if (room) {
+        void updateRoomFilter(room.code, { action: "reset" }).catch((error: unknown) => {
+          toast.error(error instanceof Error ? error.message : "Không đặt lại được bộ lọc")
         })
       }
     },

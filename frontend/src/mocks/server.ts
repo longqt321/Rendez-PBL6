@@ -13,14 +13,16 @@ import { priceLevelLabel } from "@/features/places/lib/price-level"
 import type { Post } from "@/features/social/types/post"
 import type { Comment, CommentSort } from "@/features/social/types/comment"
 import type { Page } from "@/types/api"
-import type {
-  AdminOverview,
-  AdminPlace,
-  AdminReport,
-  AdminReportStatus,
-  AdminUser,
-  AuditLogEntry,
-  UserRole,
+import {
+  parseNaturalFilterQuery,
+  updateRoomFilterInputSchema,
+  type AdminOverview,
+  type AdminPlace,
+  type AdminReport,
+  type AdminReportStatus,
+  type AdminUser,
+  type AuditLogEntry,
+  type UserRole,
 } from "@rendez/schema"
 import { MOCK_NOTIFICATIONS } from "./fixtures/notifications"
 import { MOCK_PLACES, type MockPlace } from "./fixtures/cold-start-places"
@@ -46,7 +48,6 @@ import {
   MAX_PROFILE_NAME_LENGTH,
   MAX_REPORT_DETAIL_LENGTH,
   MAX_REVIEW_CONTENT_LENGTH,
-  MAX_ROOM_KEYWORD_LENGTH,
   MAX_ROOM_NAME_LENGTH,
   MIN_CAPTION_LENGTH,
   POST_IMAGE_INVALID_MESSAGE,
@@ -437,6 +438,40 @@ function matchesKeywords(
   return haystack.includes(query)
 }
 
+function filterMockPlacesCore(
+  published: MockPlace[],
+  params: {
+    categories: PlaceCategory[]
+    districts: string[]
+    priceMax?: number
+    excludedCategories: Set<PlaceCategory>
+    excludedDistricts: Set<string>
+    includeKeywords: string[]
+    excludeKeywords: string[]
+    query: string
+    bbox?: { minLng: number; minLat: number; maxLng: number; maxLat: number }
+  },
+): Place[] {
+  return published
+    .filter((place) => {
+      if (!matchesBbox(place, params.bbox)) return false
+      if (params.categories.length > 0 && !params.categories.includes(place.category)) {
+        return false
+      }
+      if (params.districts.length > 0 && !params.districts.includes(place.district ?? "")) {
+        return false
+      }
+      if (params.priceMax !== undefined && place.priceLevel > params.priceMax) return false
+      if (params.excludedCategories.has(place.category)) return false
+      if (place.district && params.excludedDistricts.has(place.district)) return false
+      const haystack = normalizeText(
+        [place.name, place.address, place.city, place.district ?? "", ...place.tags].join(" "),
+      )
+      return matchesKeywords(haystack, params.includeKeywords, params.excludeKeywords, params.query)
+    })
+    .map(toPlaceDto)
+}
+
 function listPublishedPlaces(params: {
   category?: string
   district?: string
@@ -454,15 +489,16 @@ function listPublishedPlaces(params: {
   excludeKeyword?: string
 }): Place[] {
   const published = db.places.filter(isPubliclyVisible)
-  const query = normalizeText(params.q ?? "")
+  const rawQuery = (params.q ?? "").trim()
+  const query = normalizeText(rawQuery)
   // `category`/`district` nhận một giá trị (discover) hoặc danh sách phân tách
-  // dấu phẩy (phòng lọc nhóm có thể chọn nhiều) — "all" nghĩa là không ràng buộc.
+  // dấu phẩy (phòng lọc nhóm có thể chọn nhiều) - "all" nghĩa là không ràng buộc.
   const categories = (params.category ?? "")
     .split(",")
     .filter((value) => value && value !== "all") as PlaceCategory[]
   const districts = (params.district ?? "").split(",").filter((value) => value && value !== "all")
   const priceMaxRaw = Number(params.priceMax)
-  // Chỉ nhận 1–3; giá trị lạ (NaN, 0, 9...) coi như không lọc thay vì lọc sai.
+  // Chỉ nhận 1-3; giá trị lạ (NaN, 0, 9...) coi như không lọc thay vì lọc sai.
   const priceMax =
     params.priceMax && priceMaxRaw >= 1 && priceMaxRaw <= 3 ? (priceMaxRaw as 1 | 2 | 3) : undefined
   const excludedCategories = new Set(
@@ -485,24 +521,47 @@ function listPublishedPlaces(params: {
       ? { minLng: bboxParts[0], minLat: bboxParts[1], maxLng: bboxParts[2], maxLat: bboxParts[3] }
       : undefined
 
-  return published
-    .filter((place) => {
-      if (!matchesBbox(place, bbox)) return false
-      if (categories.length > 0 && !categories.includes(place.category)) {
-        return false
-      }
-      if (districts.length > 0 && !districts.includes(place.district ?? "")) {
-        return false
-      }
-      if (priceMax !== undefined && place.priceLevel > priceMax) return false
-      if (excludedCategories.has(place.category)) return false
-      if (place.district && excludedDistricts.has(place.district)) return false
-      const haystack = normalizeText(
-        [place.name, place.address, place.city, place.district ?? "", ...place.tags].join(" "),
-      )
-      return matchesKeywords(haystack, includeKeywords, excludeKeywords, query)
-    })
-    .map(toPlaceDto)
+  if (rawQuery) {
+    const exactMatch = published.some((p) => normalizeText(p.name) === query)
+    const parsed = parseNaturalFilterQuery(rawQuery)
+    const hasPromoted =
+      !exactMatch &&
+      ((categories.length === 0 && parsed.categories.length > 0) ||
+        (districts.length === 0 && parsed.districts.length > 0) ||
+        (priceMax === undefined && parsed.priceMax !== undefined) ||
+        parsed.excludeCategories.length > 0 ||
+        parsed.excludeDistricts.length > 0 ||
+        parsed.excludeKeywords.length > 0)
+
+    if (hasPromoted) {
+      const promoted = filterMockPlacesCore(published, {
+        categories: categories.length > 0 ? categories : parsed.categories,
+        districts: districts.length > 0 ? districts : parsed.districts,
+        priceMax: priceMax !== undefined ? priceMax : parsed.priceMax,
+        excludedCategories: new Set([...excludedCategories, ...parsed.excludeCategories]),
+        excludedDistricts: new Set([...excludedDistricts, ...parsed.excludeDistricts]),
+        includeKeywords,
+        excludeKeywords: [
+          ...new Set([...excludeKeywords, ...parsed.excludeKeywords.map(normalizeText)]),
+        ],
+        query: normalizeText(parsed.residualQuery),
+        bbox,
+      })
+      if (promoted.length > 0) return promoted
+    }
+  }
+
+  return filterMockPlacesCore(published, {
+    categories,
+    districts,
+    priceMax,
+    excludedCategories,
+    excludedDistricts,
+    includeKeywords,
+    excludeKeywords,
+    query,
+    bbox,
+  })
 }
 
 function suggestPlacesForCaption(caption: string, limit: number): PlaceSuggestion[] {
@@ -1394,6 +1453,7 @@ function toRoomDto(room: MockRoom): Room {
       excludedDistricts: [...room.filter.excludedDistricts],
       includeKeywords: [...room.filter.includeKeywords],
       excludeKeywords: [...room.filter.excludeKeywords],
+      ...(room.filter.priceMax ? { priceMax: room.filter.priceMax } : {}),
     },
     createdAt: room.createdAt,
   }
@@ -1469,6 +1529,65 @@ function applyMockProposalToFilter(
   return proposal.kind === "include"
     ? { ...filter, includeKeywords: [...new Set([...filter.includeKeywords, value])] }
     : { ...filter, excludeKeywords: [...new Set([...filter.excludeKeywords, value])] }
+}
+
+function removeMockFilterConstraint(
+  filter: RoomFilter,
+  target: { kind: "include" | "exclude"; field: RoomProposal["field"]; value: string },
+): RoomFilter {
+  const value = target.value.trim()
+  if (target.field === "category") {
+    const category = value as PlaceCategory
+    return target.kind === "include"
+      ? { ...filter, categories: filter.categories.filter((c) => c !== category) }
+      : { ...filter, excludedCategories: filter.excludedCategories.filter((c) => c !== category) }
+  }
+  if (target.field === "district") {
+    return target.kind === "include"
+      ? { ...filter, districts: filter.districts.filter((d) => d !== value) }
+      : { ...filter, excludedDistricts: filter.excludedDistricts.filter((d) => d !== value) }
+  }
+  if (target.field === "priceMax") {
+    const next = { ...filter }
+    delete next.priceMax
+    return next
+  }
+  return target.kind === "include"
+    ? { ...filter, includeKeywords: filter.includeKeywords.filter((k) => k !== value) }
+    : { ...filter, excludeKeywords: filter.excludeKeywords.filter((k) => k !== value) }
+}
+
+function hasMockFilterConstraint(
+  filter: RoomFilter,
+  target: { kind: "include" | "exclude"; field: RoomProposal["field"]; value: string },
+): boolean {
+  const value = target.value.trim()
+  if (target.field === "category") {
+    const category = value as PlaceCategory
+    return target.kind === "include"
+      ? filter.categories.includes(category)
+      : filter.excludedCategories.includes(category)
+  }
+  if (target.field === "district") {
+    return target.kind === "include"
+      ? filter.districts.includes(value)
+      : filter.excludedDistricts.includes(value)
+  }
+  if (target.field === "priceMax") {
+    return filter.priceMax !== undefined && String(filter.priceMax) === value
+  }
+  return target.kind === "include"
+    ? filter.includeKeywords.includes(value)
+    : filter.excludeKeywords.includes(value)
+}
+
+function toggleMockFilterConstraint(
+  filter: RoomFilter,
+  target: { kind: "include" | "exclude"; field: RoomProposal["field"]; value: string },
+): RoomFilter {
+  return hasMockFilterConstraint(filter, target)
+    ? removeMockFilterConstraint(filter, target)
+    : applyMockProposalToFilter(filter, target)
 }
 
 const VALID_ROOM_CATEGORIES: ReadonlySet<PlaceCategory> = new Set([
@@ -2211,7 +2330,12 @@ const routes: Route[] = [
       if (!room) notFound(config, "Không tìm thấy phòng")
       const actor = resolveMockRoomActor(config, room)
 
-      const body = parseBody<{ kind?: unknown; field?: unknown; value?: unknown }>(config)
+      const body = parseBody<{
+        kind?: unknown
+        field?: unknown
+        value?: unknown
+        autoApply?: unknown
+      }>(config)
       const kind = body.kind
       const field = body.field
       const rawValue = typeof body.value === "string" ? body.value.trim() : ""
@@ -2224,21 +2348,62 @@ const routes: Route[] = [
       ) {
         badRequest(config, "Đề xuất không hợp lệ")
       }
-      if (!rawValue || rawValue.length > MAX_ROOM_KEYWORD_LENGTH) {
+      if (!rawValue || rawValue.length > 80) {
         badRequest(config, "Giá trị đề xuất không hợp lệ")
       }
       const value = normalizeMockProposalValue(field, rawValue)
       if (value === null) badRequest(config, "Giá trị đề xuất không hợp lệ")
 
-      room.proposals.unshift({
+      const proposal: RoomProposal = {
         id: `room-proposal-${++roomProposalSeq}`,
         memberId: actor.id,
         kind,
         field,
         value,
-        status: "open",
+        status: body.autoApply === true ? "applied" : "open",
         createdAt: new Date().toISOString(),
-      })
+      }
+      room.proposals.unshift(proposal)
+      if (body.autoApply === true) {
+        room.filter = applyMockProposalToFilter(room.filter, proposal)
+      }
+      return toRoomDto(room)
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/rooms\/([^/]+)\/filter$/,
+    handler: (config, [code]) => {
+      const room = db.rooms.find((item) => item.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      resolveMockRoomActor(config, room)
+
+      const parsed = updateRoomFilterInputSchema.safeParse(parseBody(config))
+      if (!parsed.success) badRequest(config, "Yêu cầu cập nhật bộ lọc không hợp lệ")
+
+      if (parsed.data.action === "reset") {
+        room.filter = emptyRoomFilter()
+      } else if (parsed.data.action === "replace") {
+        let built = emptyRoomFilter()
+        for (const item of parsed.data.items) {
+          const value = normalizeMockProposalValue(item.field, item.value)
+          if (value === null) badRequest(config, "Giá trị bộ lọc không hợp lệ")
+          built = applyMockProposalToFilter(built, {
+            kind: item.kind,
+            field: item.field,
+            value,
+          })
+        }
+        room.filter = built
+      } else {
+        const value = normalizeMockProposalValue(parsed.data.field, parsed.data.value)
+        if (value === null) badRequest(config, "Giá trị bộ lọc không hợp lệ")
+        const target = { kind: parsed.data.kind, field: parsed.data.field, value }
+        room.filter =
+          parsed.data.action === "remove"
+            ? removeMockFilterConstraint(room.filter, target)
+            : toggleMockFilterConstraint(room.filter, target)
+      }
       return toRoomDto(room)
     },
   },

@@ -507,4 +507,71 @@ describe("phòng lọc nhóm", () => {
     }
     expect(saw429).toBe(true)
   })
+
+  test("autoApply đề xuất 1 bước và POST /rooms/:code/filter (toggle / remove / reset)", async () => {
+    const created = await call("/api/v1/rooms", {
+      method: "POST",
+      cookie: ownerCookie,
+      body: JSON.stringify({ name: "Phòng bộ lọc mới" }),
+    })
+    expect(created.status).toBe(201)
+    const freshRoom = (await created.json()) as RoomBody
+
+    // 1. Gửi đề xuất với autoApply: true -> áp thẳng vào filter và status = "applied"
+    const directRes = await call(`/api/v1/rooms/${freshRoom.code}/proposals`, {
+      method: "POST",
+      cookie: ownerCookie,
+      body: JSON.stringify({
+        kind: "include",
+        field: "district",
+        value: "Sơn Trà",
+        autoApply: true,
+      }),
+    })
+    expect(directRes.status).toBe(201)
+    const afterDirect = (await directRes.json()) as RoomBody
+    expect(afterDirect.filter.districts).toEqual(["Sơn Trà"])
+    expect(afterDirect.proposals[0]?.status).toBe("applied")
+
+    // 2. Toggle category -> thêm rồi bật lại sẽ tắt
+    const toggleOn = await call(`/api/v1/rooms/${freshRoom.code}/filter`, {
+      method: "POST",
+      cookie: ownerCookie,
+      body: JSON.stringify({
+        action: "toggle",
+        kind: "include",
+        field: "category",
+        value: "cafe",
+      }),
+    })
+    expect(toggleOn.status).toBe(200)
+    expect(((await toggleOn.json()) as RoomBody).filter.categories).toEqual(["cafe"])
+
+    // 3. Remove district -> gỡ đúng Sơn Trà, giữ nguyên cafe
+    const removed = await call(`/api/v1/rooms/${freshRoom.code}/filter`, {
+      method: "POST",
+      cookie: ownerCookie,
+      body: JSON.stringify({
+        action: "remove",
+        kind: "include",
+        field: "district",
+        value: "Sơn Trà",
+      }),
+    })
+    expect(removed.status).toBe(200)
+    const afterRemove = (await removed.json()) as RoomBody
+    expect(afterRemove.filter.districts).toEqual([])
+    expect(afterRemove.filter.categories).toEqual(["cafe"])
+
+    // 4. Reset -> xoá trắng toàn bộ filter
+    const resetRes = await call(`/api/v1/rooms/${freshRoom.code}/filter`, {
+      method: "POST",
+      cookie: ownerCookie,
+      body: JSON.stringify({ action: "reset" }),
+    })
+    expect(resetRes.status).toBe(200)
+    const afterReset = (await resetRes.json()) as RoomBody
+    expect(afterReset.filter.categories).toEqual([])
+    expect(afterReset.filter.districts).toEqual([])
+  })
 })
