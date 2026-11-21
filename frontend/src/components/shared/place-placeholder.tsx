@@ -3,15 +3,13 @@ import { CATEGORY_META } from "@/features/places/lib/category-meta"
 
 interface PlacePlaceholderProps {
   category?: PlaceCategory
-
   name?: string
-
   label?: string
 }
 
 /**
  * Băm chuỗi thành số nguyên 32 bit ổn định (FNV-1a).
- * Dùng để mỗi địa điểm có một bố cục riêng nhưng không đổi giữa các lần render.
+ * Tạo biến thể màu sắc & đường nét riêng cho từng địa điểm.
  */
 function hashString(value: string): number {
   let hash = 2166136261
@@ -22,109 +20,107 @@ function hashString(value: string): number {
   return hash >>> 0
 }
 
-/** Lấy các tham số bố cục từ tên địa điểm: góc gradient, vị trí hai mảng màu, độ lệch tông. */
 function layoutFromSeed(seed: string) {
   const hash = hashString(seed)
   return {
-    angle: 100 + (hash % 80),
-    // Lệch tông trong khoảng ±14° để hai quán cùng hạng mục không trùng màu.
-    hue: (hash % 29) - 14,
-    // Lệch độ sáng ±7% tạo khác biệt về sắc độ.
-    lift: (hash >> 26) % 15,
-    blobAX: 12 + ((hash >> 3) % 60),
-    blobAY: 8 + ((hash >> 9) % 45),
-    blobBX: 40 + ((hash >> 15) % 55),
-    blobBY: 45 + ((hash >> 21) % 50),
-    ringX: 55 + ((hash >> 5) % 40),
-    ringY: 10 + ((hash >> 11) % 40),
+    angle: 115 + (hash % 55),
+    hue: (hash % 24) - 12,
+    lift: (hash >> 24) % 10,
+    circleX: 62 + ((hash >> 5) % 30),
+    circleY: 12 + ((hash >> 11) % 32),
   }
 }
 
 /**
- * Ảnh thay thế cho địa điểm chưa có ảnh thật.
- *
- * Thay vì một gradient trơn, khối này dựng một "thẻ hạng mục": biểu tượng loại hình,
- * tên địa điểm và nhãn hạng mục. Bố cục (góc gradient, vị trí mảng màu) sinh từ tên
- * địa điểm nên hai quán cùng hạng mục vẫn khác nhau về thị giác.
+ * Poster nghệ thuật thay thế cho địa điểm chưa có ảnh thật ("Danang Culinary Stamp").
+ * Thay cho khối xám đơn điệu: kết hợp sắc độ hạng mục, họa tiết tọa độ bản đồ Đà Nẵng,
+ * biểu tượng vector và tên quán bằng font Display.
  */
 export function PlacePlaceholder({ category, name, label }: Readonly<PlacePlaceholderProps>) {
   const meta = category ? CATEGORY_META[category] : undefined
   const seed = name?.trim() || label || category || "rendez"
   const layout = layoutFromSeed(seed)
-
   const describedAs = label ?? name ?? meta?.label ?? category
 
   const content = (
     <div
       aria-hidden="true"
       className="@container relative size-full overflow-hidden bg-muted"
-      style={{ "--pc": meta?.color ?? "var(--muted-foreground)" } as React.CSSProperties}
+      style={{ "--pc": meta?.color ?? "var(--primary)" } as React.CSSProperties}
     >
-      {/* Lớp trang trí: gradient chéo + hai mảng màu + vòng tròn, vị trí lấy từ seed. */}
       <div
         className="absolute inset-0"
         style={{
-          filter: `hue-rotate(${layout.hue}deg) saturate(1.15) brightness(${(1 + layout.lift / 100).toFixed(2)})`,
+          filter: `hue-rotate(${layout.hue}deg) saturate(0.95) brightness(${1 + layout.lift / 100})`,
+          background: `linear-gradient(${layout.angle}deg, color-mix(in oklab, var(--pc) 82%, var(--foreground)), color-mix(in oklab, var(--pc) 48%, var(--foreground)) 65%, color-mix(in oklab, var(--pc) 32%, var(--background)))`,
         }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(${layout.angle}deg, color-mix(in oklab, var(--pc) 92%, #0a0c10), color-mix(in oklab, var(--pc) 44%, #0a0c10) 74%)`,
-          }}
-        />
-        <div
-          className="absolute size-[70%] rounded-full blur-2xl"
-          style={{
-            left: `${layout.blobAX}%`,
-            top: `${layout.blobAY}%`,
-            background: `radial-gradient(circle, color-mix(in oklab, var(--pc) 70%, transparent), transparent 70%)`,
-          }}
-        />
-        <div
-          className="absolute size-[45%] rounded-full blur-xl"
-          style={{
-            left: `${layout.blobBX}%`,
-            top: `${layout.blobBY}%`,
-            background: `radial-gradient(circle, color-mix(in oklab, var(--pc) 55%, transparent), transparent 70%)`,
-          }}
-        />
-        {/* Vòng tròn mảnh tạo nhịp thị giác khác nhau giữa các quán cùng hạng mục. */}
-        <div
-          className="absolute size-[58%] rounded-full border border-current opacity-25"
-          style={{ left: `${layout.ringX}%`, top: `${layout.ringY}%`, color: "var(--pc)" }}
-        />
-      </div>
+      />
 
-      {/* Nội dung: biểu tượng hạng mục + tên + nhãn. Ẩn chữ khi khung quá nhỏ (popup bản đồ). */}
-      <div className="relative flex size-full flex-col items-center justify-center gap-1 px-3 text-center">
+      {/* Họa tiết lưới tọa độ bản đồ & vòng tròn trang trí chìm */}
+      <svg
+        viewBox="0 0 320 200"
+        preserveAspectRatio="none"
+        className="pointer-events-none absolute inset-0 size-full opacity-20"
+      >
+        <path
+          d="M0 150 Q 90 120, 175 155 T 320 130"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          className="text-primary-foreground"
+        />
+        <path
+          d="M0 175 Q 110 140, 210 170 T 320 155"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="0.9"
+          strokeDasharray="4 4"
+          className="text-primary-foreground"
+        />
+      </svg>
+
+      <div
+        className="pointer-events-none absolute size-[64%] rounded-full border border-current opacity-20"
+        style={{
+          left: `${layout.circleX}%`,
+          top: `${layout.circleY}%`,
+          color: "var(--primary-foreground)",
+        }}
+      />
+
+      {/* Khung tem nhãn trung tâm */}
+      <div className="relative flex size-full flex-col items-center justify-center gap-1.5 px-4 text-center text-primary-foreground">
         {meta ? (
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-[26%] max-h-10 min-h-5 max-w-10 text-white/70"
-            dangerouslySetInnerHTML={{ __html: meta.icon }}
-          />
+          <div className="grid size-11 place-items-center rounded-full border border-current/30 bg-background/15 backdrop-blur-xs @max-[110px]:size-7">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.6}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-5 @max-[110px]:size-3.5"
+              dangerouslySetInnerHTML={{ __html: meta.icon }}
+            />
+          </div>
         ) : null}
+
         {name ? (
-          <span className="line-clamp-2 max-w-[92%] text-[0.8rem] leading-tight font-semibold text-white @max-[110px]:hidden">
+          <span className="line-clamp-2 max-w-[92%] font-display text-sm leading-snug font-semibold tracking-tight drop-shadow-xs @max-[110px]:hidden">
             {name}
           </span>
         ) : null}
+
         {meta ? (
-          <span className="text-[0.6rem] font-medium tracking-wider text-white/60 uppercase @max-[110px]:hidden">
-            {meta.label}
+          <span className="text-xs font-medium tracking-wider uppercase opacity-80 @max-[140px]:hidden">
+            {meta.label} · Đà Nẵng
           </span>
         ) : null}
       </div>
     </div>
   )
 
-  if (describedAs === undefined) return content
+  if (!describedAs) return content
 
   return (
     <div role="img" aria-label={describedAs} className="size-full">

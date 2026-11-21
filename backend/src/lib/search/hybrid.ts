@@ -1,21 +1,47 @@
 import { Prisma } from "../../../generated/prisma/client"
 import { prisma } from "../prisma"
 import { normalizeSearchText, synonymVariants } from "../search-synonyms"
-import { detectIntentAttributes } from "../intent-lexicon"
+import { detectIntentAttributes, extractMatchedPhrases } from "../intent-lexicon"
 import { selectPlaces } from "../places/select"
 import { toPlaceDto, type PlaceDto, type PlaceRow, type PlaceFilters } from "../places/types"
 import { denseCandidates } from "./dense"
 import { nameCandidates } from "./name-matcher"
 import { structuredCandidates } from "./intent"
-import { fieldBoostedLexicalRank } from "./lexical"
+import { fieldBoostedLexicalRank, QUERY_STOPWORDS } from "./lexical"
 import { fuseRrf, calculateEgrfK } from "./rrf"
 
 export const HYBRID_POOL = 50
 export const HYBRID_MAX_RESULTS = 30
 
+function findResidualEntityTokens(normalizedQuery: string, matchedPhrases: string[]): string[] {
+  if (!normalizedQuery) return []
+  const chars = [...normalizedQuery]
+  const masked = new Array<boolean>(chars.length).fill(false)
+
+  for (const rawPhrase of matchedPhrases) {
+    const phrase = normalizeSearchText(rawPhrase)
+    if (!phrase) continue
+    let from = 0
+    for (;;) {
+      const idx = normalizedQuery.indexOf(phrase, from)
+      if (idx === -1) break
+      const before = idx === 0 ? " " : (normalizedQuery[idx - 1] ?? " ")
+      const after = normalizedQuery[idx + phrase.length] ?? " "
+      if (before === " " && after === " ") {
+        for (let i = idx; i < idx + phrase.length; i += 1) masked[i] = true
+      }
+      from = idx + 1
+    }
+  }
+
+  const remaining = chars.map((ch, idx) => (masked[idx] ? " " : ch)).join("")
+  return remaining.split(/\s+/).filter((token) => token.length >= 2 && !QUERY_STOPWORDS.has(token))
+}
+
 export async function hybridSearch(
   filters: PlaceFilters & { q: string },
   buildConditionsFn: (f: PlaceFilters) => Prisma.Sql[],
+  poolLimit: number = HYBRID_POOL,
 ): Promise<{ items: PlaceDto[]; total: number } | null> {
   const attrConditions = buildConditionsFn({ ...filters, q: undefined })
   const lexicalConditions = buildConditionsFn(filters)
@@ -23,19 +49,22 @@ export async function hybridSearch(
   const lexicalRank = fieldBoostedLexicalRank(rankVariants)
 
   const intent = detectIntentAttributes(filters.q)
+  const matchedPhrases = extractMatchedPhrases(filters.q)
   const normalizedQuery = normalizeSearchText(filters.q)
+  const residualEntityTokens = findResidualEntityTokens(normalizedQuery, matchedPhrases)
+  const isPureIntentQuery = matchedPhrases.length > 0 && residualEntityTokens.length === 0
 
   const [dense, lexicalRows, names, structuredRows, corpusCountRows] = await Promise.all([
-    denseCandidates(filters.q, HYBRID_POOL),
+    denseCandidates(filters.q, poolLimit, attrConditions),
     prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
       SELECT p.id
       FROM places p
       WHERE ${Prisma.join(lexicalConditions, " AND ")}
       ORDER BY ${lexicalRank} DESC, p.created_at DESC, p.id DESC
-      LIMIT ${HYBRID_POOL}
+      LIMIT ${poolLimit}
     `),
-    nameCandidates(normalizedQuery, attrConditions, HYBRID_POOL),
-    structuredCandidates(intent, attrConditions, HYBRID_POOL),
+    nameCandidates(normalizedQuery, attrConditions, poolLimit),
+    structuredCandidates(intent, attrConditions, poolLimit),
     prisma.$queryRaw<{ count: number }[]>(Prisma.sql`
       SELECT COUNT(*)::int AS count
       FROM places p
@@ -51,9 +80,9 @@ export async function hybridSearch(
   const hasIdentityEvidence = hasExact || hasPrefix
 
   // Gating Controller (Ma trận trọng số động W(q)):
-  // 1. Khi có Identity Evidence (tên riêng): Triệt tiêu structured/attribute & dense branch
-  //    để ngăn hiện tượng "Fusion Tax" làm tụt quán chính xác.
-  // 2. Khi không có Identity Evidence:
+  // 1. Khi query chứa token thực thể ngoài intent và có bằng chứng tên: triệt tiêu
+  //    structured/attribute & dense branch để ngăn "Fusion Tax" làm tụt quán chính xác.
+  // 2. Khi là query thuần ý định (category/quận/món/24-7) hoặc không có bằng chứng tên:
   //    - Có Category / Structured intent: structuredWeight = 3.0, denseWeight = 1.0
   //    - Không có structured attribute (query trừu tượng/ngữ nghĩa): denseWeight = 2.5, structuredWeight = 1.0
   const lexicalWeight = 1.0
@@ -63,7 +92,7 @@ export async function hybridSearch(
   let denseWeight: number
   let structuredWeight: number
 
-  if (hasIdentityEvidence || hasTokens) {
+  if (!isPureIntentQuery && (hasIdentityEvidence || hasTokens)) {
     exactWeight = hasExact ? 5.0 : 0
     prefixWeight = hasPrefix ? 3.0 : 0
     tokenWeight = hasTokens ? 4.0 : 0
@@ -72,10 +101,16 @@ export async function hybridSearch(
     denseWeight = 0.0
   } else {
     const hasCategoryAttr =
-      intent.categories.length > 0 || intent.tags.length > 0 || intent.districts.length > 0
+      intent.categories.length > 0 ||
+      intent.tags.length > 0 ||
+      intent.districts.length > 0 ||
+      intent.alwaysOpen
     if (hasCategoryAttr) {
       structuredWeight = 3.0
       denseWeight = 1.0
+      exactWeight = hasExact ? 1.5 : 0
+      prefixWeight = hasPrefix ? 0.5 : 0
+      tokenWeight = hasTokens ? 0.5 : 0
     } else {
       structuredWeight = 1.0
       denseWeight = 2.5

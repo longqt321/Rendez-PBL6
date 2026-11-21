@@ -5,11 +5,21 @@ export type {
   PlaceSummary,
   PlaceSuggestion,
   DailyPick,
+  DailyPickWhy,
   DailyPicks,
 } from "./types/place"
 export { PLACE_REPORT_REASONS, type PlaceReport, type PlaceReportReason } from "./types/place-report"
 export type { Review } from "./types/review"
-export type { UserProfile, ProfileTab, UserSuggestion } from "./types/profile"
+export type { UserProfile, ProfileTab, UserSuggestion, UserRole } from "./types/profile"
+export type {
+  AdminOverview,
+  AdminPlace,
+  AdminReport,
+  AdminReportStatus,
+  AdminUser,
+  AuditLogActor,
+  AuditLogEntry,
+} from "./types/admin"
 export type { Author, Post, CreatePostInput, PostFeedFilter } from "./types/post"
 export type { Comment, CommentSort, CreateCommentInput } from "./types/comment"
 export type { Collection, CollectionSummary } from "./types/collection"
@@ -57,12 +67,26 @@ export { reviewSchema } from "./review.schema"
 export { placeReportSchema } from "./place-report.schema"
 export { notificationSchema } from "./notification.schema"
 export {
+  userRoleSchema,
   userProfileSchema,
   userSuggestionSchema,
   userSuggestionsSchema,
   updateMeInputSchema,
   type UpdateMeInput,
 } from "./profile.schema"
+export {
+  adminOverviewSchema,
+  adminReportSchema,
+  adminPlaceSchema,
+  adminUserSchema,
+  auditLogSchema,
+  updateAdminReportInputSchema,
+  updateAdminPlaceInputSchema,
+  updateAdminUserInputSchema,
+  type UpdateAdminReportInput,
+  type UpdateAdminPlaceInput,
+  type UpdateAdminUserInput,
+} from "./admin.schema"
 export { collectionSchema, collectionSummarySchema } from "./collection.schema"
 export {
   roomSchema,

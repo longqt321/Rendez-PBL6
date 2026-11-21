@@ -1,4 +1,5 @@
 import { Fragment } from "react"
+import { useAutoAnimate } from "@formkit/auto-animate/react"
 import {
   BellIcon,
   CheckCheckIcon,
@@ -8,9 +9,11 @@ import {
   UserPlusIcon,
 } from "lucide-react"
 import { Link } from "react-router"
+import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
+import { ErrorState } from "@/components/shared/error-state"
+import { SectionHeading } from "@/components/shared/section-heading"
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { ErrorState } from "@/components/shared/error-state"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import {
   Item,
@@ -26,7 +29,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
-import { SectionHeading } from "@/components/shared/section-heading"
 import { formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { PlaceSuggestionCard } from "../components/place-suggestion-card"
@@ -38,9 +40,21 @@ import type { ActorNotification, AppNotification, SystemNotification } from "../
 type OtherNotification = Exclude<AppNotification, { kind: "place-suggestion" }>
 
 const ACTOR_META = {
-  like: { icon: HeartIcon, text: "đã thích bài đăng của bạn" },
-  comment: { icon: MessageCircleIcon, text: "đã bình luận bài đăng của bạn" },
-  follow: { icon: UserPlusIcon, text: "đã bắt đầu theo dõi bạn" },
+  like: {
+    icon: HeartIcon,
+    text: "đã thích bài đăng của bạn",
+    tone: "bg-destructive/12 text-destructive",
+  },
+  comment: {
+    icon: MessageCircleIcon,
+    text: "đã bình luận bài đăng của bạn",
+    tone: "bg-primary/12 text-primary",
+  },
+  follow: {
+    icon: UserPlusIcon,
+    text: "đã bắt đầu theo dõi bạn",
+    tone: "bg-accent text-accent-foreground",
+  },
 } as const
 
 function NotificationRow({ notification }: Readonly<{ notification: ActorNotification }>) {
@@ -63,11 +77,11 @@ function NotificationRow({ notification }: Readonly<{ notification: ActorNotific
         </Avatar>
       </ItemMedia>
       <ItemContent className="gap-1">
-        <ItemTitle className="line-clamp-none block w-full text-xs leading-relaxed">
+        <ItemTitle className="line-clamp-none block w-full text-sm leading-relaxed">
           <span className="font-semibold">{notification.actorName}</span> {meta.text}
         </ItemTitle>
         {notification.excerpt ? (
-          <ItemDescription className="line-clamp-2 border-l border-border pl-2 text-xs italic">
+          <ItemDescription className="line-clamp-2 border-l-2 border-primary/40 pl-2.5 text-xs italic">
             “{notification.excerpt}”
           </ItemDescription>
         ) : null}
@@ -76,17 +90,18 @@ function NotificationRow({ notification }: Readonly<{ notification: ActorNotific
         </ItemDescription>
       </ItemContent>
       <ItemActions>
-        <Icon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <span className={cn("grid size-8 place-items-center rounded-full", meta.tone)}>
+          <Icon className="size-4 shrink-0" aria-hidden="true" />
+        </span>
       </ItemActions>
     </>
   )
 
   const className = cn(
-    "items-start",
-    notification.read ? "border-border" : "border-primary bg-primary/5",
+    "items-start rounded-surface p-3.5",
+    notification.read ? "border-border bg-card" : "border-primary/50 bg-primary/5",
   )
 
-  // Thông báo `follow` không gắn với bài nào → chỉ đánh dấu đã đọc, không điều hướng.
   if (!notification.postId) {
     return (
       <Item
@@ -112,25 +127,24 @@ function NotificationRow({ notification }: Readonly<{ notification: ActorNotific
   )
 }
 
-/** Một hàng thông báo hệ thống — không bấm được, chỉ đọc. */
 function SystemRow({ notification }: Readonly<{ notification: SystemNotification }>) {
   return (
     <Item
       variant="outline"
       size="sm"
       className={cn(
-        "items-start",
-        notification.read ? "border-border" : "border-primary bg-primary/5",
+        "items-start rounded-surface p-3.5",
+        notification.read ? "border-border bg-card" : "border-primary/50 bg-primary/5",
       )}
     >
       <ItemMedia variant="icon">
-        <InfoIcon aria-hidden="true" />
+        <InfoIcon className="text-primary" aria-hidden="true" />
       </ItemMedia>
       <ItemContent className="gap-1">
-        <ItemTitle className="line-clamp-none block w-full text-xs font-semibold">
+        <ItemTitle className="line-clamp-none block w-full text-sm font-semibold">
           {notification.title}
         </ItemTitle>
-        <ItemDescription className="text-xs">{notification.body}</ItemDescription>
+        <ItemDescription className="text-xs leading-relaxed">{notification.body}</ItemDescription>
         <ItemDescription className="text-xs">
           {formatRelativeTime(notification.createdAt)}
         </ItemDescription>
@@ -164,7 +178,7 @@ function NotificationContent({
     return (
       <div className="mt-4 flex flex-col gap-2">
         {Array.from({ length: 4 }, (_, index) => (
-          <Skeleton key={`skel-notif-${index}`} className="h-16 w-full rounded-surface" />
+          <Skeleton key={`skel-notif-${index}`} className="h-18 w-full rounded-surface" />
         ))}
       </div>
     )
@@ -181,11 +195,25 @@ function NotificationContent({
         <TabsTrigger value="suggestions">Đề xuất địa điểm ({suggestions.length})</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="all" className="mt-3">
-        <div className="flex flex-col gap-6">
-          <SuggestionSection suggestions={suggestions} />
-          <OtherActivitySection notifications={others} />
-        </div>
+      <TabsContent value="all" className="mt-4">
+        {notifications.length === 0 ? (
+          <Empty className="border border-dashed border-border">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <BellIcon />
+              </EmptyMedia>
+              <EmptyTitle>Chưa có thông báo nào</EmptyTitle>
+              <EmptyDescription>
+                Đề xuất địa điểm, lượt thích, bình luận và người theo dõi mới sẽ hiện ở đây.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <div className="flex flex-col gap-6">
+            {suggestions.length > 0 ? <SuggestionSection suggestions={suggestions} /> : null}
+            {others.length > 0 ? <OtherActivitySection notifications={others} /> : null}
+          </div>
+        )}
         <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
         {hasNextPage ? (
           <p className="mt-6 flex justify-center text-xs text-muted-foreground">
@@ -195,7 +223,7 @@ function NotificationContent({
         ) : null}
       </TabsContent>
 
-      <TabsContent value="suggestions" className="mt-3">
+      <TabsContent value="suggestions" className="mt-4">
         <SuggestionSection suggestions={suggestions} />
       </TabsContent>
     </Tabs>
@@ -230,26 +258,28 @@ export function NotificationPage() {
   )
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 className="sr-only">Thông báo</h1>
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">
-          {unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : "Bạn đã đọc hết thông báo."}
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => markAllRead.mutate()}
-          disabled={unreadCount === 0 || markAllRead.isPending}
-        >
-          {markAllRead.isPending ? (
-            <Spinner aria-label="Đang đánh dấu đã đọc" />
-          ) : (
-            <CheckCheckIcon />
-          )}
-          Đọc tất cả
-        </Button>
-      </header>
+    <PageContainer size="narrow">
+      <PageHeader
+        title="Thông báo"
+        description={
+          unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : "Bạn đã đọc hết thông báo."
+        }
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => markAllRead.mutate()}
+            disabled={unreadCount === 0 || markAllRead.isPending}
+          >
+            {markAllRead.isPending ? (
+              <Spinner aria-label="Đang đánh dấu đã đọc" />
+            ) : (
+              <CheckCheckIcon />
+            )}
+            Đọc tất cả
+          </Button>
+        }
+      />
 
       <NotificationContent
         isPending={isPending}
@@ -263,16 +293,17 @@ export function NotificationPage() {
         sentinelRef={sentinelRef}
         hasNextPage={hasNextPage}
       />
-    </div>
+    </PageContainer>
   )
 }
 
-/** Khối "Đề xuất thêm địa điểm" — dùng chung cho tab Tất cả và tab Đề xuất. */
 function SuggestionSection({
   suggestions,
 }: Readonly<{
   suggestions: Extract<AppNotification, { kind: "place-suggestion" }>[]
 }>) {
+  const [listRef] = useAutoAnimate<HTMLUListElement>()
+
   if (suggestions.length === 0) {
     return (
       <Empty className="border border-dashed border-border">
@@ -292,8 +323,8 @@ function SuggestionSection({
 
   return (
     <section>
-      <SectionHeading className="mb-2">Đề xuất thêm địa điểm</SectionHeading>
-      <ul className="flex flex-col gap-3">
+      <SectionHeading className="mb-2.5">Đề xuất thêm địa điểm</SectionHeading>
+      <ul ref={listRef} className="flex flex-col gap-3">
         {suggestions.map((notification) => (
           <li key={notification.id}>
             <PlaceSuggestionCard notification={notification} />
@@ -304,8 +335,9 @@ function SuggestionSection({
   )
 }
 
-/** Khối "Hoạt động khác" — thông báo tương tác và thông báo hệ thống. */
 function OtherActivitySection({ notifications }: Readonly<{ notifications: OtherNotification[] }>) {
+  const [listRef] = useAutoAnimate<HTMLDivElement>()
+
   if (notifications.length === 0) {
     return (
       <Empty className="border border-dashed border-border">
@@ -324,19 +356,21 @@ function OtherActivitySection({ notifications }: Readonly<{ notifications: Other
 
   return (
     <section>
-      <SectionHeading className="mb-2">Hoạt động khác</SectionHeading>
-      <ItemGroup className="gap-0">
-        {notifications.map((notification, index) => (
-          <Fragment key={notification.id}>
-            {index > 0 ? <ItemSeparator /> : null}
-            {notification.kind === "system" ? (
-              <SystemRow notification={notification} />
-            ) : (
-              <NotificationRow notification={notification} />
-            )}
-          </Fragment>
-        ))}
-      </ItemGroup>
+      <SectionHeading className="mb-2.5">Hoạt động khác</SectionHeading>
+      <div ref={listRef}>
+        <ItemGroup className="gap-2">
+          {notifications.map((notification, index) => (
+            <Fragment key={notification.id}>
+              {index > 0 ? <ItemSeparator className="hidden" /> : null}
+              {notification.kind === "system" ? (
+                <SystemRow notification={notification} />
+              ) : (
+                <NotificationRow notification={notification} />
+              )}
+            </Fragment>
+          ))}
+        </ItemGroup>
+      </div>
     </section>
   )
 }

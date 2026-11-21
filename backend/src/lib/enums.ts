@@ -68,16 +68,19 @@ export function toPrismaReportReason(reason: PlaceReportReason): ReportReason {
   return REPORT_REASON_TO_PRISMA[reason]
 }
 
-/** DB `wrong_info` ↔ API `wrong-info` — bảng tường minh, không cast tự do. */
-const REPORT_REASON_TO_API: Record<ReportReason, PlaceReportReason> = {
+/** DB `wrong_info` / `wrong-info` ↔ API `wrong-info` — bảng tường minh, nhận cả 2 dạng từ $queryRaw và Prisma ORM. */
+const REPORT_REASON_TO_API: Record<string, PlaceReportReason> = {
   closed: "closed",
   wrong_info: "wrong-info",
+  "wrong-info": "wrong-info",
   duplicate: "duplicate",
   other: "other",
 }
 
-export function toApiReportReason(reason: ReportReason): PlaceReportReason {
-  return REPORT_REASON_TO_API[reason]
+export function toApiReportReason(reason: string): PlaceReportReason {
+  const mapped = REPORT_REASON_TO_API[reason]
+  if (!mapped) throw new Error(`Lý do báo cáo không rõ: ${reason}`)
+  return mapped
 }
 
 /** API `place-suggestion` ↔ Prisma `place_suggestion`. */

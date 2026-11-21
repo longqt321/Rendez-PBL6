@@ -1,3 +1,4 @@
+import type { UserRole } from "@rendez/schema"
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { toUserProfile } from "./profile"
@@ -11,11 +12,12 @@ interface ProfileRow {
   avatar_url: string | null
   cover_url: string | null
   private_profile: boolean
+  role: string
   created_at: Date
 }
 
 const SELECT_PROFILE = Prisma.sql`
-  SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url, u.private_profile, u.created_at
+  SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url, u.private_profile, u.role::text AS role, u.created_at
   FROM users u
   WHERE u.deleted_at IS NULL
 `
@@ -42,6 +44,7 @@ async function countProfile(userId: string, viewerId: string | null, row: Profil
       avatarUrl: row.avatar_url,
       coverUrl: row.cover_url,
       privateProfile: row.private_profile,
+      role: row.role as UserRole,
       createdAt: row.created_at,
     },
     viewerId,

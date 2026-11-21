@@ -12,14 +12,6 @@ export { selectPlaces } from "./places/select"
 export { findPublicPlace, findPublicPlaceWithVersion, listSavedPlaces } from "./places/crud"
 export { denseCandidates, fuseRrf, findDidYouMean } from "./search"
 
-function baseConditions(): Prisma.Sql[] {
-  return [
-    Prisma.sql`p.published_at IS NOT NULL`,
-    Prisma.sql`p.status <> 'closed'`,
-    Prisma.sql`p.deleted_at IS NULL`,
-  ]
-}
-
 function buildConditions(filters: PlaceFilters): Prisma.Sql[] {
   const conditions: Prisma.Sql[] = [
     Prisma.sql`p.published_at IS NOT NULL`,
@@ -64,7 +56,7 @@ function buildConditions(filters: PlaceFilters): Prisma.Sql[] {
   if (filters.q) {
     conditions.push(searchCondition(filters.q))
   }
-  if (filters.bbox && filters.sort !== "distance") {
+  if (filters.bbox) {
     conditions.push(
       Prisma.sql`p.lat IS NOT NULL AND p.lng IS NOT NULL
         AND p.lng BETWEEN ${filters.bbox.minLng} AND ${filters.bbox.maxLng}
@@ -80,7 +72,7 @@ export async function listPlaces(
   cursor: PlaceCursor | null,
   pageSize: number,
 ): Promise<{ items: PlaceDto[]; next: PlaceCursor | null; total: number }> {
-  return listPlacesPaginated(filters, cursor, pageSize, buildConditions, baseConditions)
+  return listPlacesPaginated(filters, cursor, pageSize, buildConditions)
 }
 
 export async function listPlacesInMapWrapper(

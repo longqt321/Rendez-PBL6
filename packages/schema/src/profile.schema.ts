@@ -5,7 +5,9 @@ import {
   MAX_PROFILE_NAME_LENGTH,
 } from "./constants"
 import { MAX_POST_IMAGE_URL_LENGTH } from "./post-images"
-import type { UserProfile } from "./types/profile"
+import type { UserProfile, UserRole } from "./types/profile"
+
+export const userRoleSchema = z.enum(["user", "moderator", "admin"]) satisfies z.ZodType<UserRole>
 
 export const userProfileSchema = z.object({
   id: z.string(),
@@ -25,6 +27,7 @@ export const userProfileSchema = z.object({
   followedByMe: z.boolean(),
   isMe: z.boolean(),
   privateProfile: z.boolean(),
+  role: userRoleSchema.optional(),
 }) satisfies z.ZodType<UserProfile>
 
 export const updateMeInputSchema = z.object({

@@ -26,7 +26,9 @@ Phiên bản đã cài thực tế (đọc từ `node_modules/*/package.json`), 
 | vitest / jsdom                                 | (bun.lock)     | Test runner + môi trường DOM (D-037)                                                                                       |
 | @testing-library/react / user-event / jest-dom | (bun.lock)     | Test component theo hành vi người dùng (D-037)                                                                             |
 | husky / lint-staged                            | (bun.lock)     | Pre-commit hook: prettier + eslint trên file staged (D-037)                                                                |
-| @uidotdev/usehooks                             | 2.4.1          | `useGeolocation`, `useIntersectionObserver`, `useDebounce`, `useLocalStorage`, `useMediaQuery` — thay hook tự viết (D-025) |
+| @uidotdev/usehooks                             | 2.4.1          | `useGeolocation`, `useIntersectionObserver`, `useDebounce`, `useSessionStorage`, `useMediaQuery` — thay hook tự viết (D-025) |
+| leaflet / react-leaflet                        | 1.9.4 / 5.0.0  | Bản đồ tương tác và mini-map trang quán                                                                                     |
+| supercluster                                   | 9.1.0          | Gom cụm pin bản đồ theo viewport/zoom                                                                                       |
 
 ## Runtime
 
@@ -111,21 +113,26 @@ src/
 
 ### Route
 
-| Route           | Trang                   | Ghi chú                                                                   |
-| --------------- | ----------------------- | ------------------------------------------------------------------------- |
-| `/`             | redirect → `/discover`  |                                                                           |
-| `/discover`     | `features/places`       | 3 cột PC / 2 cột masonry mobile, infinity scroll; lọc trong popover "Lọc" |
-| `/discover/:id` | `features/places`       | chi tiết địa điểm: breadcrumb + tabs + rating                             |
-| `/social`       | `features/social`       | feed dọc + ô soạn bài + bình luận (thread Dialog/Drawer)                  |
-| `/post/:id`     | `features/social`       | chi tiết bài đăng: preview + thread bình luận 2 cột (PC)                  |
-| `/notification` | `features/notification` | tab Tất cả / Đề xuất địa điểm; thông báo bấm được                         |
-| `/profile`      | `features/profile`      | trang cá nhân của mình (tabs posts/pinned/saved)                          |
-| `/u/:handle`    | `features/profile`      | trang cá nhân người khác (follow, chỉ tab posts)                          |
-| `/search`       | `features/search`       | chỉ đọc `?q=` từ URL; ô nhập duy nhất ở topbar; `q` rỗng → `/discover`    |
-| `/saved`        | `features/social`       | bài đã lưu, lọc `savedByMe`                                               |
-| `/settings`     | `features/settings`     | form RHF + zod (Field/Switch)                                             |
-| `*`             | 404                     | Empty + link về `/discover`, render **trong** `AppShell`                  |
-| `/design`       | `components/shared`     | trang kiểm tra design stack (tạm)                                         |
+| Route                | Trang                         | Ghi chú                                                                   |
+| -------------------- | ----------------------------- | ------------------------------------------------------------------------- |
+| `/`                  | redirect → `/discover`        |                                                                           |
+| `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email` | `features/auth` | Ngoài `AppShell`, vòng đời tài khoản                                      |
+| `/discover`          | `features/places`             | Lưới 3 cột PC / 2 cột masonry mobile, lọc + sắp xếp, dải gợi ý           |
+| `/discover/:id`      | `features/places`             | Chi tiết địa điểm: breadcrumb + tabs + rating                             |
+| `/map`               | `features/places`             | Bản đồ cụm pin theo bbox, dùng chung bộ lọc URL với `/discover`           |
+| `/social`            | `features/social`             | Feed cộng đồng (`?filter=` trên URL) + composer + thread bình luận        |
+| `/post/:id`          | `features/social`             | Chi tiết bài đăng: preview + thread bình luận 2 cột (PC)                  |
+| `/notification`      | `features/notification`       | Tab Tất cả / Đề xuất địa điểm, cập nhật SSE                               |
+| `/profile`           | `features/profile`            | Hồ sơ của mình (bắt buộc đăng nhập)                                       |
+| `/u/:handle`         | `features/profile`            | Hồ sơ người khác (follow, kiểm tra riêng tư)                              |
+| `/search`            | `features/search`             | Đọc `?q=` từ URL, tab Địa điểm / Bài đăng / Người; `q` rỗng → `/discover` |
+| `/saved`             | `features/saved`              | Bài viết, địa điểm và bộ sưu tập đã lưu                                   |
+| `/collections/:id`   | `features/collections`        | Chi tiết bộ sưu tập                                                       |
+| `/rooms/:code`       | `features/rooms`              | Phòng lọc nhóm realtime (SSE)                                             |
+| `/settings`          | `features/settings`           | Cài đặt hồ sơ (RHF + zod, bắt buộc đăng nhập)                             |
+| `/system`            | `features/system`             | Trang demo metrics/reset (ẩn khỏi nav)                                    |
+| `/help`, `/about`, `/terms`, `/privacy` | `features/static` | Trang thông tin tĩnh                                                      |
+| `*`                  | 404                           | Empty + link về `/discover`, render **trong** `AppShell`                  |
 
 ### Phân chia state
 
@@ -134,11 +141,9 @@ src/
 | Mọi dữ liệu từ API (địa điểm, bài, thông báo) | TanStack Query — server state                     |
 | Sáng/tối                                      | `next-themes`                                     |
 | Skin (mặc định/retro)                         | `SkinProvider` + `data-skin`                      |
-| Bộ lọc, tab, nội dung đang gõ, dialog         | React `useState`                                  |
-| Optimistic update (like/save)                 | `queryClient.setQueriesData` + rollback `onError` |
-
-Zustand **chưa dùng**: chưa có client state nào thực sự cần chia sẻ toàn cục. Dependency vẫn để
-trong `package.json` để dùng khi phát sinh nhu cầu (ví dụ trạng thái sidebar của toàn app).
+| Bộ lọc, URL tab                               | URL (`useSearchParams`)                           |
+| Form, dialog, UI cục bộ                       | React `useState` / `react-hook-form`              |
+| Optimistic update (like/save/follow)          | `queryClient.setQueriesData` + rollback `onError` |
 
 ### Quy tắc
 
@@ -192,8 +197,7 @@ Hai lớp tuỳ biến **độc lập nhau**, có thể kết hợp tự do (4 t
 
 - Skin mặc định: **không có** attribute `data-skin` → dùng token gốc trong `:root` / `.dark`.
 - Skin retro: `data-skin="retro"` → khối `[data-skin="retro"]` trong `src/index.css` ghi đè token.
-- Chuyển skin: [`skin-toggle.tsx`](../src/components/layout/skin-toggle.tsx) (icon `Palette` / `Type`).
-- Chuyển sáng/tối: [`theme-toggle.tsx`](../src/components/layout/theme-toggle.tsx).
+- Chuyển skin & sáng/tối: `SkinSwitch` trong [`app-shell.tsx`](../frontend/src/components/layout/app-shell.tsx) cùng [`theme-toggle.tsx`](../frontend/src/components/layout/theme-toggle.tsx).
 
 > [!IMPORTANT]
 > Không sửa file trong `src/components/ui/` để đổi giao diện. Mọi tuỳ biến skin đi qua

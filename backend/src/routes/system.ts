@@ -3,8 +3,10 @@ import { Prisma } from "../../generated/prisma/client"
 import type { AppEnv } from "../app"
 import { prisma } from "../lib/prisma"
 import { metricsSnapshot, resetMetrics } from "../lib/metrics"
-import { rateLimit } from "../lib/rate-limit"
+import { clientIp, rateLimit } from "../lib/rate-limit"
 import { ApiError } from "../lib/errors"
+import { getViewer } from "../lib/session"
+import { recordAuditLogSafe } from "../lib/audit-log"
 
 const RESET_RATE_LIMIT = rateLimit({ scope: "system-reset", limit: 10, windowSeconds: 60 })
 
@@ -64,7 +66,7 @@ export function createSystemRouter() {
     })
   })
 
-  router.post("/system/reset", RESET_RATE_LIMIT, (c) => {
+  router.post("/system/reset", RESET_RATE_LIMIT, async (c) => {
     // Thao tác GHI công khai chỉ chấp nhận được ở môi trường demo/dev; ở
     // production ai cũng gọi được là lỗ hổng quan sát (ai cũng xoá số liệu
     // được) → chặn hẳn.
@@ -72,6 +74,16 @@ export function createSystemRouter() {
       throw new ApiError(403, "Reset metrics chỉ khả dụng ở môi trường demo/dev")
     }
     resetMetrics()
+    const viewer = await getViewer(c).catch(() => null)
+    if (viewer) {
+      const ip = clientIp(c.req.raw.headers, c.env?.remoteAddress)
+      void recordAuditLogSafe({
+        actorId: viewer.id,
+        action: "system.metrics_reset",
+        entity: "system",
+        ip: ip === "unknown" ? null : ip,
+      })
+    }
     return c.json({ reset: true })
   })
 

@@ -2,7 +2,7 @@ import { Prisma } from "../../../generated/prisma/client"
 import { prisma } from "../prisma"
 import { selectPlaces } from "./select"
 import { toPlaceDto, type PlaceDto, type PlaceRow, type PlaceFilters } from "./types"
-import { hybridSearch } from "../search/hybrid"
+import { hybridSearch, HYBRID_POOL } from "../search/hybrid"
 
 export function distanceSql(lat: number, lng: number): Prisma.Sql {
   return Prisma.sql`(6371 * acos(least(1, greatest(-1,
@@ -17,7 +17,11 @@ export async function listPlacesInMap(
   buildConditionsFn: (f: PlaceFilters) => Prisma.Sql[],
 ): Promise<{ items: PlaceDto[]; total: number }> {
   if (filters.q) {
-    const hybrid = await hybridSearch(filters as PlaceFilters & { q: string }, buildConditionsFn)
+    const hybrid = await hybridSearch(
+      filters as PlaceFilters & { q: string },
+      buildConditionsFn,
+      Math.max(HYBRID_POOL, limit),
+    )
     if (hybrid) return { items: hybrid.items.slice(0, limit), total: hybrid.total }
   }
 

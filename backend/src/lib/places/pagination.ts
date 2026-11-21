@@ -85,7 +85,6 @@ export async function listPlacesPaginated(
   cursor: PlaceCursor | null,
   pageSize: number,
   buildConditionsFn: (f: PlaceFilters) => Prisma.Sql[],
-  baseConditionsFn: () => Prisma.Sql[],
 ): Promise<{ items: PlaceDto[]; next: PlaceCursor | null; total: number }> {
   if (filters.q && !cursor && filters.sort === "newest") {
     const hybrid = await hybridSearch(filters as PlaceFilters & { q: string }, buildConditionsFn)
@@ -101,8 +100,8 @@ export async function listPlacesPaginated(
     filters.lat,
     filters.lng,
   )
-  const conditions = [...buildConditionsFn(filters)]
-  if (keyset) conditions.push(keyset)
+  const filterConditions = buildConditionsFn(filters)
+  const conditions = keyset ? [...filterConditions, keyset] : filterConditions
 
   const [rows, countRows] = await Promise.all([
     prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
@@ -114,7 +113,7 @@ export async function listPlacesPaginated(
     prisma.$queryRaw<{ count: number }[]>(Prisma.sql`
       SELECT COUNT(*)::int AS count
       FROM places p
-      WHERE ${Prisma.join(baseConditionsFn(), " AND ")}
+      WHERE ${Prisma.join(filterConditions, " AND ")}
     `),
   ])
 

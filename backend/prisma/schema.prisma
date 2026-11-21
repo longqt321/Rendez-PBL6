@@ -88,6 +88,14 @@ enum RoomProposalStatus {
   @@map("room_proposal_status")
 }
 
+enum UserRole {
+  user
+  moderator
+  admin
+
+  @@map("user_role")
+}
+
 // ---------------------------------------------------------------------------
 // 1. users
 // ---------------------------------------------------------------------------
@@ -104,6 +112,9 @@ model User {
   bio             String    @default("")
   location        String    @default("")
   privateProfile  Boolean   @default(false) @map("private_profile")
+  role            UserRole  @default(user)
+  bannedAt        DateTime? @map("banned_at")
+  banReason       String?   @map("ban_reason")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
@@ -126,6 +137,7 @@ model User {
   followers        Follow[]       @relation("Following")
   idempotencyKeys  IdempotencyKey[]
   interactionEvents InteractionEvent[]
+  auditLogs        AuditLog[]
 
   @@map("users")
 }
@@ -742,4 +754,26 @@ model InteractionEvent {
   @@index([placeId, eventType, createdAt(sort: Desc)])
   @@index([anonId, createdAt(sort: Desc)])
   @@map("interaction_events")
+}
+
+// ---------------------------------------------------------------------------
+// 25. audit_logs — nhật ký thao tác quản trị và sự kiện bảo mật
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  meta      Json     @default("{}")
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt(sort: Desc), id(sort: Desc)])
+  @@index([entity, createdAt(sort: Desc)])
+  @@index([actorId, createdAt(sort: Desc)])
+  @@map("audit_logs")
 }

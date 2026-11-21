@@ -1,3 +1,4 @@
+import type { UserRole } from "@rendez/schema"
 import type { User } from "../../generated/prisma/client"
 
 export function formatInitials(name: string): string {
@@ -20,7 +21,7 @@ export type ProfileSource = Pick<
   | "coverUrl"
   | "privateProfile"
   | "createdAt"
->
+> & { role?: UserRole }
 
 export function toUserProfile(
   user: ProfileSource,
@@ -32,6 +33,7 @@ export function toUserProfile(
     followedByMe: boolean
   },
 ) {
+  const isMe = viewerId !== null && viewerId === user.id
   return {
     id: user.id,
     name: user.name,
@@ -46,8 +48,9 @@ export function toUserProfile(
     followerCount: counts.followerCount,
     followingCount: counts.followingCount,
     followedByMe: counts.followedByMe,
-    isMe: viewerId !== null && viewerId === user.id,
+    isMe,
     privateProfile: user.privateProfile,
+    ...(isMe && user.role ? { role: user.role } : {}),
   }
 }
 

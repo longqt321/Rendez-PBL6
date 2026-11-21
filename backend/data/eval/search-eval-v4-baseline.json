@@ -9,8 +9,8 @@
       "ndcg10": 0.709,
       "mrr": 0.77,
       "zeroRate": 0,
-      "latencyP50Ms": 9,
-      "latencyP95Ms": 11
+      "latencyP50Ms": 17,
+      "latencyP95Ms": 22
     },
     "dense": {
       "p5": 0.577,
@@ -19,8 +19,8 @@
       "ndcg10": 0.703,
       "mrr": 0.737,
       "zeroRate": 0,
-      "latencyP50Ms": 6,
-      "latencyP95Ms": 7
+      "latencyP50Ms": 9,
+      "latencyP95Ms": 11
     },
     "hybrid2": {
       "p5": 0.63,
@@ -29,18 +29,18 @@
       "ndcg10": 0.759,
       "mrr": 0.822,
       "zeroRate": 0,
-      "latencyP50Ms": 15,
-      "latencyP95Ms": 17
+      "latencyP50Ms": 26,
+      "latencyP95Ms": 31
     },
     "hybrid3": {
-      "p5": 0.63,
-      "p10": 0.534,
-      "recall10": 0.702,
-      "ndcg10": 0.737,
-      "mrr": 0.825,
+      "p5": 0.877,
+      "p10": 0.849,
+      "recall10": 0.8,
+      "ndcg10": 0.814,
+      "mrr": 0.833,
       "zeroRate": 0,
-      "latencyP50Ms": 17,
-      "latencyP95Ms": 21
+      "latencyP50Ms": 31,
+      "latencyP95Ms": 63
     }
   },
   "byGroup": {
@@ -49,7 +49,7 @@
       "lexicalP5": 0.288,
       "denseP5": 0.256,
       "hybrid2P5": 0.28,
-      "hybrid3P5": 0.28
+      "hybrid3P5": 0.757
     },
     "study": {
       "n": 3,
@@ -63,7 +63,7 @@
       "lexicalP5": 0.8,
       "denseP5": 0.067,
       "hybrid2P5": 0.867,
-      "hybrid3P5": 1
+      "hybrid3P5": 0.933
     },
     "nightlife": {
       "n": 3,
@@ -112,42 +112,42 @@
       "lexicalP5": 0.8,
       "denseP5": 0.8,
       "hybrid2P5": 1,
-      "hybrid3P5": 0.8
+      "hybrid3P5": 1
     },
     "district-Sơn Trà": {
       "n": 2,
       "lexicalP5": 0.8,
       "denseP5": 0.7,
       "hybrid2P5": 0.8,
-      "hybrid3P5": 0.6
+      "hybrid3P5": 1
     },
     "district-Thanh Khê": {
       "n": 2,
       "lexicalP5": 0.6,
       "denseP5": 0.8,
       "hybrid2P5": 0.8,
-      "hybrid3P5": 0.7
+      "hybrid3P5": 1
     },
     "district-Ngũ Hành Sơn": {
       "n": 2,
       "lexicalP5": 0.6,
       "denseP5": 0.7,
       "hybrid2P5": 0.6,
-      "hybrid3P5": 0.5
+      "hybrid3P5": 0.9
     },
     "district-Liên Chiểu": {
       "n": 2,
       "lexicalP5": 0.7,
       "denseP5": 1,
       "hybrid2P5": 0.8,
-      "hybrid3P5": 0.8
+      "hybrid3P5": 1
     },
     "district-Cẩm Lệ": {
       "n": 2,
       "lexicalP5": 0.7,
       "denseP5": 1,
       "hybrid2P5": 0.9,
-      "hybrid3P5": 0.8
+      "hybrid3P5": 1
     },
     "chill": {
       "n": 1,
@@ -184,28 +184,28 @@
       "lexicalP5": 0.3,
       "denseP5": 0.3,
       "hybrid2P5": 0.3,
-      "hybrid3P5": 0.3
+      "hybrid3P5": 0.853
     },
     "prefix": {
       "n": 7,
       "lexicalP5": 0.229,
       "denseP5": 0.171,
       "hybrid2P5": 0.2,
-      "hybrid3P5": 0.2
+      "hybrid3P5": 0.55
     },
     "no-diacritic": {
       "n": 11,
       "lexicalP5": 0.509,
       "denseP5": 0.291,
       "hybrid2P5": 0.436,
-      "hybrid3P5": 0.473
+      "hybrid3P5": 0.83
     },
     "natural": {
       "n": 10,
       "lexicalP5": 0.8,
       "denseP5": 0.82,
       "hybrid2P5": 0.92,
-      "hybrid3P5": 0.98
+      "hybrid3P5": 0.96
     },
     "keyword": {
       "n": 8,
@@ -226,7 +226,7 @@
       "lexicalP5": 0.7,
       "denseP5": 0.833,
       "hybrid2P5": 0.817,
-      "hybrid3P5": 0.7
+      "hybrid3P5": 0.983
     },
     "long": {
       "n": 2,
@@ -239,38 +239,38 @@
   "significance": [
     {
       "comparison": "hybrid3 - hybrid2",
-      "meanDelta": 0,
-      "ci95": "[-0.043, 0.043]",
-      "pRaw": 0.4858,
-      "pHolm": 0.9716
+      "meanDelta": 0.248,
+      "ci95": "[0.168, 0.332]",
+      "pRaw": 0,
+      "pHolm": 0
     },
     {
       "comparison": "hybrid3 - dense",
-      "meanDelta": 0.052,
-      "ci95": "[-0.010, 0.121]",
-      "pRaw": 0.0432,
-      "pHolm": 0.191
+      "meanDelta": 0.3,
+      "ci95": "[0.213, 0.390]",
+      "pRaw": 0,
+      "pHolm": 0
     },
     {
       "comparison": "hybrid3 - lexical",
-      "meanDelta": 0.049,
-      "ci95": "[-0.013, 0.118]",
-      "pRaw": 0.068,
-      "pHolm": 0.204
+      "meanDelta": 0.297,
+      "ci95": "[0.210, 0.385]",
+      "pRaw": 0,
+      "pHolm": 0
     },
     {
       "comparison": "dense - lexical",
       "meanDelta": -0.003,
       "ci95": "[-0.085, 0.079]",
       "pRaw": 0.541,
-      "pHolm": 0.9716
+      "pHolm": 0.541
     },
     {
       "comparison": "hybrid2 - dense",
       "meanDelta": 0.052,
       "ci95": "[-0.003, 0.115]",
       "pRaw": 0.0382,
-      "pHolm": 0.191
+      "pHolm": 0.0764
     }
   ],
   "perQuery": [
@@ -418,8 +418,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.3333333333333333,
+        "p10": 0.3333333333333333,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -456,8 +456,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.25,
+        "p10": 0.25,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -494,8 +494,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.3333333333333333,
+        "p10": 0.3333333333333333,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -532,8 +532,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -570,8 +570,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -608,8 +608,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -646,8 +646,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.3,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -684,8 +684,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.4,
-        "p10": 0.3,
+        "p5": 0.2,
+        "p10": 0.2,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -722,8 +722,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.3,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -760,8 +760,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.4,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -798,8 +798,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0,
-        "p10": 0.2,
+        "p5": 0.2,
+        "p10": 0.1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -836,8 +836,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.4,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -874,8 +874,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -912,8 +912,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -950,8 +950,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -988,8 +988,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -1026,8 +1026,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -1064,8 +1064,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -1102,8 +1102,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -1140,8 +1140,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -1178,8 +1178,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -1216,8 +1216,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -1256,9 +1256,9 @@
       "hybrid3": {
         "p5": 1,
         "p10": 1,
-        "recall10": 0.4,
-        "ndcg10": 0.6673155115661743,
-        "mrr": 1,
+        "recall10": 0.3,
+        "ndcg10": 0.5353880201199216,
+        "mrr": 0.5,
         "zeroRate": 0
       }
     },
@@ -1295,8 +1295,8 @@
         "p5": 1,
         "p10": 1,
         "recall10": 0.4,
-        "ndcg10": 0.644748239830288,
-        "mrr": 1,
+        "ndcg10": 0.5564728394479543,
+        "mrr": 0.3333333333333333,
         "zeroRate": 0
       }
     },
@@ -1332,8 +1332,8 @@
       "hybrid3": {
         "p5": 1,
         "p10": 1,
-        "recall10": 0.9,
-        "ndcg10": 0.9575861412006988,
+        "recall10": 0.8,
+        "ndcg10": 0.89263827478404,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -1368,10 +1368,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 1,
-        "p10": 1,
-        "recall10": 1,
-        "ndcg10": 1,
+        "p5": 0.8,
+        "p10": 0.9,
+        "recall10": 0.9,
+        "ndcg10": 0.8611375561264454,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -1559,9 +1559,9 @@
       },
       "hybrid3": {
         "p5": 0.8,
-        "p10": 0.7,
-        "recall10": 0.7,
-        "ndcg10": 0.78180487222265,
+        "p10": 0.6,
+        "recall10": 0.6,
+        "ndcg10": 0.70844095012329,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2015,9 +2015,9 @@
       },
       "hybrid3": {
         "p5": 1,
-        "p10": 0.6,
-        "recall10": 0.6,
-        "ndcg10": 0.727329844310522,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2052,11 +2052,11 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.5,
-        "recall10": 0.3,
-        "ndcg10": 0.3869883619432589,
-        "mrr": 0.5,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
         "zeroRate": 0
       }
     },
@@ -2090,10 +2090,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.5,
-        "recall10": 0.3,
-        "ndcg10": 0.514661663420112,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2128,10 +2128,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.6,
-        "recall10": 0.6,
-        "ndcg10": 0.6332971816211657,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2167,9 +2167,9 @@
       },
       "hybrid3": {
         "p5": 1,
-        "p10": 0.6,
-        "recall10": 0.6,
-        "ndcg10": 0.727329844310522,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2204,11 +2204,11 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.4,
-        "p10": 0.4,
-        "recall10": 0.4,
-        "ndcg10": 0.3764459522792426,
-        "mrr": 0.5,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
+        "mrr": 1,
         "zeroRate": 0
       }
     },
@@ -2242,11 +2242,11 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.3,
-        "recall10": 0.25,
-        "ndcg10": 0.27773762102509336,
-        "mrr": 0.3333333333333333,
+        "p5": 0.8,
+        "p10": 0.5,
+        "recall10": 1,
+        "ndcg10": 1.0262676430669213,
+        "mrr": 1,
         "zeroRate": 0
       }
     },
@@ -2280,10 +2280,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.8,
-        "recall10": 0.6,
-        "ndcg10": 0.7168536044477894,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2319,9 +2319,9 @@
       },
       "hybrid3": {
         "p5": 1,
-        "p10": 0.6,
-        "recall10": 0.7142857142857143,
-        "ndcg10": 0.8410034451135232,
+        "p10": 0.8,
+        "recall10": 1,
+        "ndcg10": 1.0275820071017734,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2356,10 +2356,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.5,
-        "recall10": 0.3,
-        "ndcg10": 0.4311649928404144,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2394,10 +2394,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.5,
-        "recall10": 0.4444444444444444,
-        "ndcg10": 0.6300024675705751,
+        "p5": 1,
+        "p10": 0.9,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2432,10 +2432,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.6,
-        "recall10": 0.5,
-        "ndcg10": 0.5947063794607107,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }

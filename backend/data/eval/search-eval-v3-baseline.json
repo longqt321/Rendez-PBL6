@@ -9,8 +9,8 @@
       "ndcg10": 0.307,
       "mrr": 0.322,
       "zeroRate": 0,
-      "latencyP50Ms": 9,
-      "latencyP95Ms": 11
+      "latencyP50Ms": 18,
+      "latencyP95Ms": 25
     },
     "dense": {
       "p5": 0.375,
@@ -19,8 +19,8 @@
       "ndcg10": 0.338,
       "mrr": 0.347,
       "zeroRate": 0,
-      "latencyP50Ms": 5,
-      "latencyP95Ms": 7
+      "latencyP50Ms": 10,
+      "latencyP95Ms": 15
     },
     "hybrid2": {
       "p5": 0.372,
@@ -29,18 +29,18 @@
       "ndcg10": 0.342,
       "mrr": 0.345,
       "zeroRate": 0,
-      "latencyP50Ms": 14,
-      "latencyP95Ms": 17
+      "latencyP50Ms": 29,
+      "latencyP95Ms": 40
     },
     "hybrid3": {
-      "p5": 0.367,
-      "p10": 0.343,
-      "recall10": 0.343,
-      "ndcg10": 0.348,
+      "p5": 0.436,
+      "p10": 0.433,
+      "recall10": 0.366,
+      "ndcg10": 0.365,
       "mrr": 0.365,
       "zeroRate": 0,
-      "latencyP50Ms": 15,
-      "latencyP95Ms": 23
+      "latencyP50Ms": 33,
+      "latencyP95Ms": 63
     }
   },
   "byGroup": {
@@ -56,7 +56,7 @@
       "lexicalP5": 0.467,
       "denseP5": 1,
       "hybrid2P5": 1,
-      "hybrid3P5": 0.467
+      "hybrid3P5": 1
     },
     "outdoor": {
       "n": 3,
@@ -147,7 +147,7 @@
       "lexicalP5": 0.8,
       "denseP5": 0.9,
       "hybrid2P5": 0.9,
-      "hybrid3P5": 0.6
+      "hybrid3P5": 1
     },
     "cafe": {
       "n": 2,
@@ -161,7 +161,7 @@
       "lexicalP5": 0.9,
       "denseP5": 1,
       "hybrid2P5": 1,
-      "hybrid3P5": 0.8
+      "hybrid3P5": 1
     },
     "restaurant": {
       "n": 2,
@@ -175,7 +175,7 @@
       "lexicalP5": 1,
       "denseP5": 1,
       "hybrid2P5": 1,
-      "hybrid3P5": 0.9
+      "hybrid3P5": 1
     },
     "wifi": {
       "n": 1,
@@ -315,7 +315,7 @@
       "lexicalP5": 0.2,
       "denseP5": 0.187,
       "hybrid2P5": 0.2,
-      "hybrid3P5": 0.2
+      "hybrid3P5": 0.582
     }
   },
   "byVariant": {
@@ -338,14 +338,14 @@
       "lexicalP5": 0.24,
       "denseP5": 0.32,
       "hybrid2P5": 0.32,
-      "hybrid3P5": 0.48
+      "hybrid3P5": 0.533
     },
     "with-district": {
       "n": 17,
       "lexicalP5": 0.4,
       "denseP5": 0.518,
       "hybrid2P5": 0.518,
-      "hybrid3P5": 0.353
+      "hybrid3P5": 0.529
     },
     "keyword": {
       "n": 26,
@@ -373,42 +373,42 @@
       "lexicalP5": 0.2,
       "denseP5": 0.2,
       "hybrid2P5": 0.2,
-      "hybrid3P5": 0.2
+      "hybrid3P5": 0.607
     },
     "prefix": {
       "n": 6,
       "lexicalP5": 0.2,
       "denseP5": 0.2,
       "hybrid2P5": 0.2,
-      "hybrid3P5": 0.2
+      "hybrid3P5": 0.742
     },
     "partial": {
       "n": 2,
       "lexicalP5": 0.2,
       "denseP5": 0.2,
       "hybrid2P5": 0.2,
-      "hybrid3P5": 0.2
+      "hybrid3P5": 0.292
     }
   },
   "significance": [
     {
       "comparison": "hybrid3 - hybrid2",
-      "meanDelta": -0.005,
-      "ci95": "[-0.030, 0.019]",
-      "pRaw": 0.6284,
-      "pHolm": 1
+      "meanDelta": 0.064,
+      "ci95": "[0.033, 0.099]",
+      "pRaw": 0,
+      "pHolm": 0
     },
     {
       "comparison": "hybrid3 - dense",
-      "meanDelta": -0.008,
-      "ci95": "[-0.031, 0.014]",
-      "pRaw": 0.7584,
-      "pHolm": 1
+      "meanDelta": 0.061,
+      "ci95": "[0.030, 0.096]",
+      "pRaw": 0,
+      "pHolm": 0
     },
     {
       "comparison": "hybrid3 - lexical",
-      "meanDelta": 0.065,
-      "ci95": "[0.030, 0.104]",
+      "meanDelta": 0.133,
+      "ci95": "[0.090, 0.180]",
       "pRaw": 0,
       "pHolm": 0
     },
@@ -424,7 +424,7 @@
       "meanDelta": -0.003,
       "ci95": "[-0.020, 0.014]",
       "pRaw": 0.6736,
-      "pHolm": 1
+      "pHolm": 0.6736
     }
   ],
   "perQuery": [
@@ -610,8 +610,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.4,
-        "p10": 0.4,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -648,8 +648,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.5,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -686,8 +686,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.4,
-        "p10": 0.4,
+        "p5": 1,
+        "p10": 1,
         "recall10": 0,
         "ndcg10": 0,
         "mrr": 0,
@@ -2206,10 +2206,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.4,
-        "recall10": 0.4,
-        "ndcg10": 0.5637884576902256,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2244,10 +2244,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.4,
-        "p10": 0.3,
-        "recall10": 0.3,
-        "ndcg10": 0.39639187290150923,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2359,9 +2359,9 @@
       },
       "hybrid3": {
         "p5": 1,
-        "p10": 0.6,
-        "recall10": 0.6,
-        "ndcg10": 0.727329844310522,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2396,10 +2396,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.6,
-        "p10": 0.4,
-        "recall10": 0.4,
-        "ndcg10": 0.5352543167750637,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2510,10 +2510,10 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.8,
-        "p10": 0.9,
-        "recall10": 0.6,
-        "ndcg10": 0.7354127185757128,
+        "p5": 1,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -2549,9 +2549,9 @@
       },
       "hybrid3": {
         "p5": 1,
-        "p10": 0.8,
-        "recall10": 0.7,
-        "ndcg10": 0.7788065869851873,
+        "p10": 1,
+        "recall10": 1,
+        "ndcg10": 1,
         "mrr": 1,
         "zeroRate": 0
       }
@@ -4752,8 +4752,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -4790,8 +4790,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -4828,8 +4828,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.3333333333333333,
+        "p10": 0.3333333333333333,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -4866,8 +4866,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.3333333333333333,
+        "p10": 0.3333333333333333,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -4904,8 +4904,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.3333333333333333,
+        "p10": 0.3333333333333333,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -4942,8 +4942,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.3333333333333333,
+        "p10": 0.3333333333333333,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -4980,8 +4980,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -5018,8 +5018,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -5056,8 +5056,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -5094,8 +5094,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 1,
+        "p10": 1,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -5133,7 +5133,7 @@
       },
       "hybrid3": {
         "p5": 0.2,
-        "p10": 0.1,
+        "p10": 0.2,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -5170,8 +5170,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.25,
+        "p10": 0.25,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -5208,8 +5208,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.25,
+        "p10": 0.25,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,
@@ -5246,8 +5246,8 @@
         "zeroRate": 0
       },
       "hybrid3": {
-        "p5": 0.2,
-        "p10": 0.1,
+        "p5": 0.5,
+        "p10": 0.5,
         "recall10": 1,
         "ndcg10": 1,
         "mrr": 1,

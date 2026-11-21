@@ -25,9 +25,11 @@ interface CandidateRow {
   lat: number | null
   lng: number | null
   image_url: string | null
+  tags: string[]
   name_norm: string
   address_norm: string
   city_norm: string
+  district_norm: string
   tags_norm: string[]
   rating: number
   review_count: number
@@ -47,9 +49,11 @@ export function fetchRankCandidates(publishedOnly: boolean): Promise<CandidateRo
   return prisma.$queryRaw<CandidateRow[]>(Prisma.sql`
     SELECT p.id, p.name, p.address, p.city, p.district, p.category::text AS category, p.lat, p.lng,
            img.url AS image_url,
+           p.tags AS tags,
            ${norm(Prisma.sql`p.name`)} AS name_norm,
            ${norm(Prisma.sql`p.address`)} AS address_norm,
            ${norm(Prisma.sql`p.city`)} AS city_norm,
+           ${norm(Prisma.sql`coalesce(p.district, '')`)} AS district_norm,
            COALESCE(
              (SELECT array_agg(${norm(Prisma.sql`t.tag`)})
               FROM unnest(p.tags) AS t(tag)),
@@ -127,9 +131,12 @@ export function toSuggestionCandidate(row: CandidateRow): SuggestionCandidate {
     rating: Number(row.rating),
     reviewCount: Number(row.review_count),
     city: row.city,
+    district: row.district,
+    districtNorm: row.district_norm,
     nameNorm: row.name_norm,
     addressNorm: row.address_norm,
     cityNorm: row.city_norm,
+    tags: row.tags,
     tagsNorm: row.tags_norm,
     row,
   }

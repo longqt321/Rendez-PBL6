@@ -45,6 +45,7 @@ export interface PickCandidate {
   category: string
   district: string | null
   reviewCount: number
+  rating?: number
   /** Số ảnh thật của quán — quán curated có ảnh, quán OSM thô thì không. */
   imageCount: number
   createdAt: Date
@@ -67,6 +68,7 @@ export interface PickedPlace {
 /** Phần dữ liệu thật cần cho việc chấm điểm một quán (dùng lại ở `why`). */
 export interface PickScoreInput {
   reviewCount: number
+  rating?: number
   /** Số ảnh thật của quán — quán curated có ảnh, quán OSM thô thì không. */
   imageCount: number
   createdAt: Date
@@ -74,19 +76,20 @@ export interface PickScoreInput {
 
 /**
  * Điểm tối đa lý thuyết của công thức `baseScore`: quán ≥ `REASON_REVIEW_THRESHOLD`
- * đánh giá, vừa thêm trong 30 ngày, có ảnh thật. Dùng làm mẫu số để quy đổi
+ * đánh giá, điểm >= 4.0, vừa thêm trong 30 ngày, có ảnh thật. Dùng làm mẫu số để quy đổi
  * `matchPercent` — hằng số của công thức, không phải số liệu bịa theo từng quán.
  */
-export const PICK_SCORE_MAX = 2 * Math.log(1 + REASON_REVIEW_THRESHOLD) + 1 + 2
+export const PICK_SCORE_MAX = 2 * Math.log(1 + REASON_REVIEW_THRESHOLD) + 2 + 2 + 1
 
-/** Điểm cơ bản: review thật được ưu tiên khi có, quán mới cộng thêm. */
+/** Điểm cơ bản: review thật, điểm cao, quán mới và ảnh thật. */
 function baseScore(candidate: PickScoreInput, newCutoff: string): number {
   const isNew = candidate.createdAt.toISOString().slice(0, 10) >= newCutoff
   // Quán có ảnh thật được cộng điểm: dải gợi ý hiển thị ảnh ngay trên đầu
   // /discover — chọn quán không ảnh là dải toàn placeholder. Cùng điểm với
   // "quán mới" (2) vì ảnh là tín hiệu chất lượng quan trọng nhất hiện có.
   const hasImage = candidate.imageCount > 0 ? 2 : 0
-  return 2 * Math.log(1 + candidate.reviewCount) + (isNew ? 1 : 0) + hasImage
+  const goodRating = (candidate.rating ?? 0) >= 4.0 && candidate.reviewCount >= 3 ? 1 : 0
+  return 2 * Math.log(1 + candidate.reviewCount) + (isNew ? 2 : 0) + hasImage + goodRating
 }
 
 /** Điểm của một quán theo đúng `pickDate` — dùng cho `why.matchPercent`. */
@@ -259,6 +262,7 @@ interface CandidateRow {
   category: string
   district: string | null
   review_count: number
+  rating: number
   image_count: number
   created_at: Date
 }
@@ -275,10 +279,11 @@ async function fetchPickCandidates(
   const rows = await client.$queryRaw<CandidateRow[]>(Prisma.sql`
     SELECT p.id, p.category::text AS category, p.district, p.created_at,
            COALESCE(r.review_count, 0)::int AS review_count,
+           COALESCE(r.rating, 0)::float8 AS rating,
            COALESCE(img.image_count, 0)::int AS image_count
     FROM places p
     LEFT JOIN LATERAL (
-      SELECT COUNT(*) AS review_count
+      SELECT COUNT(*) AS review_count, COALESCE(AVG(rv.rating), 0) AS rating
       FROM reviews rv
       WHERE rv.place_id = p.id AND rv.deleted_at IS NULL
     ) r ON true
@@ -294,6 +299,7 @@ async function fetchPickCandidates(
     category: row.category,
     district: row.district,
     reviewCount: Number(row.review_count),
+    rating: Number(row.rating),
     imageCount: Number(row.image_count),
     createdAt: row.created_at,
   }))
@@ -417,6 +423,7 @@ export async function getDailyPicks(pickDate: string): Promise<{
     items: rows.map((row) => {
       const input = {
         reviewCount: Number(row.review_count),
+        rating: Number(row.rating),
         imageCount: Number(row.image_count),
         createdAt: row.created_at,
       }

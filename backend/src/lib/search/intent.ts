@@ -12,25 +12,45 @@ export async function structuredCandidates(
   if (tags.length === 0 && categories.length === 0 && districts.length === 0 && !alwaysOpen)
     return []
 
-  const matches: Prisma.Sql[] = []
-  if (categories.length > 0)
-    matches.push(Prisma.sql`p.category::text IN (${Prisma.join(categories)})`)
-  if (tags.length > 0) matches.push(Prisma.sql`p.tags && ARRAY[${Prisma.join(tags)}]::text[]`)
-  if (districts.length > 0) matches.push(Prisma.sql`p.district IN (${Prisma.join(districts)})`)
-  if (alwaysOpen) matches.push(Prisma.sql`p.opening_hours = '24/7'`)
-
   const tagOverlap =
     tags.length > 0
       ? Prisma.sql`(SELECT count(*) FROM unnest(p.tags) AS t(tag) WHERE t.tag = ANY(ARRAY[${Prisma.join(tags)}]::text[]))`
       : Prisma.sql`0`
 
+  const matches: Prisma.Sql[] = []
+  const scoreParts: Prisma.Sql[] = [tagOverlap]
+
+  if (categories.length > 0) {
+    const cond = Prisma.sql`p.category::text IN (${Prisma.join(categories)})`
+    matches.push(cond)
+    scoreParts.push(Prisma.sql`CASE WHEN ${cond} THEN 2 ELSE 0 END`)
+  }
+  if (tags.length > 0) {
+    matches.push(Prisma.sql`p.tags && ARRAY[${Prisma.join(tags)}]::text[]`)
+  }
+  if (districts.length > 0) {
+    const cond = Prisma.sql`p.district IN (${Prisma.join(districts)})`
+    matches.push(cond)
+    scoreParts.push(Prisma.sql`CASE WHEN ${cond} THEN 2 ELSE 0 END`)
+  }
+  if (alwaysOpen) {
+    const cond = Prisma.sql`p.opening_hours = '24/7'`
+    matches.push(cond)
+    scoreParts.push(Prisma.sql`CASE WHEN ${cond} THEN 2 ELSE 0 END`)
+  }
+  if (matches.length >= 2) {
+    scoreParts.push(Prisma.sql`CASE WHEN (${Prisma.join(matches, " AND ")}) THEN 10 ELSE 0 END`)
+  }
+
+  const totalScore = Prisma.join(scoreParts, " + ")
+
   try {
     const rows = await prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
-      SELECT p.id, ${tagOverlap} AS overlap
+      SELECT p.id, (${totalScore}) AS overlap
       FROM places p
       WHERE ${Prisma.join(attrConditions, " AND ")}
         AND (${Prisma.join(matches, " OR ")})
-      ORDER BY overlap DESC, p.published_at DESC NULLS LAST, p.id ASC
+      ORDER BY (${totalScore}) DESC, p.published_at DESC NULLS LAST, p.id ASC
       LIMIT ${limit}
     `)
     return rows.map((row) => row.id)

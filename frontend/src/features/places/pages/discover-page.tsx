@@ -1,20 +1,23 @@
 import { SearchXIcon } from "lucide-react"
 import { Link } from "react-router"
-import { Button } from "@/components/ui/button"
+import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
+import { LoadMore } from "@/components/shared/load-more"
+import { StaggerItem, StaggerList } from "@/components/shared/motion-primitives"
+import { SectionHeading } from "@/components/shared/section-heading"
+import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { Spinner } from "@/components/ui/spinner"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
-import { DiscoverToolbar } from "../components/discover-toolbar"
-import { DidYouMean } from "../components/did-you-mean"
 import { DailyPicksSection } from "../components/daily-picks-section"
+import { DidYouMean } from "../components/did-you-mean"
+import { DiscoverToolbar } from "../components/discover-toolbar"
 import { PlaceCard } from "../components/place-card"
 import { PlaceCardSkeleton } from "../components/place-card-skeleton"
-import { RecommendedSection } from "../components/recommended-section"
 import { RecentlyViewedSection } from "../components/recently-viewed-section"
+import { RecommendedSection } from "../components/recommended-section"
 import { useDiscoverView } from "../hooks/use-discover-view"
 
-const SKELETON_HEIGHTS = [320, 400, 280, 360, 440, 300, 380, 340, 420]
+const SKELETON_HEIGHTS = [240, 280, 220, 260, 290, 230]
 
 function getEmptyDescription(room: unknown, district: string, priceMax: string): string {
   let text: string
@@ -41,7 +44,7 @@ function DiscoverContent({ view, sentinelRef }: DiscoverContentProps) {
 
   if (view.isPending) {
     return (
-      <ul className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3">
+      <ul className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, index) => (
           <li key={`skel-discover-${index}`}>
             <PlaceCardSkeleton imageHeight={SKELETON_HEIGHTS[index % SKELETON_HEIGHTS.length]} />
@@ -87,28 +90,27 @@ function DiscoverContent({ view, sentinelRef }: DiscoverContentProps) {
   }
 
   return (
-    <>
-      <ul className="mt-5 grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+    <section className="mt-8" aria-labelledby="discover-grid-heading">
+      <SectionHeading id="discover-grid-heading">Tất cả địa điểm</SectionHeading>
+
+      <StaggerList className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {view.placesWithDistance.map(({ place, distanceKm }) => (
-          <li key={place.id} className="lg:h-full">
+          <StaggerItem key={place.id} className="h-full">
             <PlaceCard place={place} distanceKm={distanceKm} />
-          </li>
+          </StaggerItem>
         ))}
-      </ul>
+      </StaggerList>
 
-      <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
-
-      <div className="mt-8 flex justify-center">
-        {view.hasNextPage ? (
-          <Button variant="outline" onClick={view.fetchNextPage} disabled={view.isFetchingNextPage}>
-            {view.isFetchingNextPage ? <Spinner aria-label="Đang tải thêm địa điểm" /> : null}
-            {view.isFetchingNextPage ? "Đang tải…" : "Tải thêm"}
-          </Button>
-        ) : (
-          <p className="text-sm text-muted-foreground">Đã hiển thị hết địa điểm tại Đà Nẵng.</p>
-        )}
-      </div>
-    </>
+      <LoadMore
+        sentinelRef={sentinelRef}
+        hasNextPage={view.hasNextPage}
+        isFetchingNextPage={view.isFetchingNextPage}
+        onLoadMore={view.fetchNextPage}
+        loadingLabel="Đang tải thêm địa điểm"
+        endMessage="Đã hiển thị hết địa điểm tại Đà Nẵng."
+        className="mt-8"
+      />
+    </section>
   )
 }
 
@@ -123,21 +125,18 @@ export function DiscoverPage() {
   })
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 className="sr-only">Khám phá địa điểm Đà Nẵng</h1>
+    <PageContainer size="wide">
+      <PageHeader title="Khám phá địa điểm Đà Nẵng" />
+
       <DiscoverToolbar view={view} mode="grid" />
 
-      {/* Server gợi ý tên quán gần nhất khi từ khoá không khớp (pg_trgm). */}
       <DidYouMean suggestion={view.meta?.didYouMean} onSelect={filters.setDraftQuery} />
 
-      {/* Dải gợi ý đứng trên lưới, độc lập với trạng thái lưới và bộ lọc. */}
       <DailyPicksSection />
-      {/* Cá nhân hoá theo lịch sử tương tác — rỗng/chưa có endpoint thì tự ẩn. */}
       <RecommendedSection />
-      {/* Lịch sử xem cục bộ (localStorage) — rỗng thì tự ẩn. */}
       <RecentlyViewedSection />
 
       <DiscoverContent view={view} sentinelRef={sentinelRef} />
-    </div>
+    </PageContainer>
   )
 }

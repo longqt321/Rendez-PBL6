@@ -171,15 +171,22 @@ function hasPhrase(folded: string, phrase: string): boolean {
   }
 }
 
-export function detectIntentAttributes(query: string): IntentAttributes {
+function collectIntentMatches(query: string) {
   const folded = fold(query)
   const tags = new Set<string>()
   const categories = new Set<string>()
   const districts = new Set<string>()
+  const matchedPhrases: string[] = []
   let alwaysOpen = false
 
   for (const entry of LEXICON) {
-    if (!entry.phrases.some((phrase) => hasPhrase(folded, phrase))) continue
+    let entryMatched = false
+    for (const phrase of entry.phrases) {
+      if (!hasPhrase(folded, phrase)) continue
+      matchedPhrases.push(phrase)
+      entryMatched = true
+    }
+    if (!entryMatched) continue
     for (const tag of entry.tags ?? []) tags.add(tag)
     for (const category of entry.categories ?? []) categories.add(category)
     for (const district of entry.districts ?? []) districts.add(district)
@@ -190,5 +197,14 @@ export function detectIntentAttributes(query: string): IntentAttributes {
   // bánh, bar…) thì bỏ restaurant để không mở rộng sai phạm vi.
   if (categories.size > 1) categories.delete("restaurant")
 
+  return { tags, categories, districts, matchedPhrases, alwaysOpen }
+}
+
+export function extractMatchedPhrases(query: string): string[] {
+  return collectIntentMatches(query).matchedPhrases
+}
+
+export function detectIntentAttributes(query: string): IntentAttributes {
+  const { tags, categories, districts, alwaysOpen } = collectIntentMatches(query)
   return { tags: [...tags], categories: [...categories], districts: [...districts], alwaysOpen }
 }

@@ -1,46 +1,46 @@
 {
-  "runAt": "2026-11-16T09:37:43.326Z",
+  "runAt": "2026-11-20T00:58:45.721Z",
   "dataset": "db",
   "split": {
-    "evalActors": 278,
-    "trainEvents": 2975,
+    "evalActors": 279,
+    "trainEvents": 2997,
     "catalog": 355
   },
   "methods": {
     "random": {
-      "recall5": 0.0216,
-      "recall10": 0.036,
-      "recall20": 0.0576,
+      "recall5": 0.0215,
+      "recall10": 0.0358,
+      "recall20": 0.0573,
       "ndcg10": 0.0174,
       "mrr": 0.0118
     },
     "popularity": {
-      "recall5": 0.0252,
-      "recall10": 0.054,
-      "recall20": 0.1115,
-      "ndcg10": 0.0261,
-      "mrr": 0.018
+      "recall5": 0.0251,
+      "recall10": 0.0538,
+      "recall20": 0.1111,
+      "ndcg10": 0.026,
+      "mrr": 0.0179
     },
     "item-item": {
-      "recall5": 0.0468,
-      "recall10": 0.0791,
-      "recall20": 0.1403,
-      "ndcg10": 0.0409,
-      "mrr": 0.0294
+      "recall5": 0.0466,
+      "recall10": 0.0789,
+      "recall20": 0.1362,
+      "ndcg10": 0.0408,
+      "mrr": 0.0293
     }
   },
   "significance": [
     {
       "baseline": "random",
-      "meanDelta": 0.0235,
-      "ci95": "[0.003, 0.045]",
-      "p": 0.0123
+      "meanDelta": 0.0234,
+      "ci95": "[0.003, 0.044]",
+      "p": 0.0111
     },
     {
       "baseline": "popularity",
-      "meanDelta": 0.0148,
-      "ci95": "[-0.003, 0.033]",
-      "p": 0.0555
+      "meanDelta": 0.0147,
+      "ci95": "[-0.004, 0.033]",
+      "p": 0.0558
     }
   ]
 }

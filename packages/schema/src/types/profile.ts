@@ -1,4 +1,6 @@
 
+export type UserRole = "user" | "moderator" | "admin"
+
 export interface UserProfile {
   id: string
   name: string
@@ -20,6 +22,8 @@ export interface UserProfile {
   isMe: boolean
 
   privateProfile: boolean
+
+  role?: UserRole
 }
 
 export type ProfileTab = "posts" | "pinned" | "saved"

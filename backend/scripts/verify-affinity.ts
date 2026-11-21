@@ -74,8 +74,8 @@ async function main(): Promise<void> {
   const ok =
     result.strategy === "affinity" &&
     result.seedCount === 3 &&
-    result.items.length > 0 &&
-    result.items.every((item) => item.id === p4 || item.id === p5)
+    result.items.length === 5 &&
+    [p4, p5].every((id) => result.items.slice(0, 2).some((item) => item.id === id))
   console.log(ok ? "KẾT LUẬN: PASS" : "KẾT LUẬN: FAIL")
   if (!ok) process.exitCode = 1
 }
