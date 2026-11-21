@@ -38,7 +38,21 @@ export type {
   SystemNotification,
 } from "./types/notification"
 export type { Page, PageMeta } from "./page-types"
-export { pageMetaSchema, pageSchema } from "./page"
+export {
+  pageMetaSchema,
+  pageSchema,
+  parsedFilterChipSchema,
+} from "./page"
+export {
+  DANANG_DISTRICTS_CANONICAL,
+  PLACE_CATEGORY_LABELS,
+  normalizeQueryText,
+  parseNaturalFilterQuery,
+  removeChipFromQuery,
+  type DanangDistrictName,
+  type ParsedFilterChip,
+  type ParsedNaturalQuery,
+} from "./natural-query"
 export * from "./constants"
 export {
   placeSchema,
@@ -99,4 +113,7 @@ export {
   joinRoomInputSchema,
   joinRoomResponseSchema,
   createProposalInputSchema,
+  updateRoomFilterInputSchema,
+  type CreateProposalInput,
+  type UpdateRoomFilterInput,
 } from "./room.schema"

@@ -75,4 +75,30 @@ export const createProposalInputSchema = z.object({
   kind: z.enum(["include", "exclude"]),
   field: z.enum(["category", "district", "priceMax", "keyword"]),
   value: z.string().trim().min(1, "Giá trị đề xuất trống").max(80),
+  autoApply: z.boolean().optional(),
 })
+
+export const roomFilterTargetSchema = z.object({
+  kind: z.enum(["include", "exclude"]),
+  field: z.enum(["category", "district", "priceMax", "keyword"]),
+  value: z.string().trim().min(1, "Giá trị lọc trống").max(80),
+})
+
+export const updateRoomFilterInputSchema = z.union([
+  z.object({
+    action: z.literal("reset"),
+  }),
+  z.object({
+    action: z.enum(["remove", "toggle"]),
+    kind: z.enum(["include", "exclude"]),
+    field: z.enum(["category", "district", "priceMax", "keyword"]),
+    value: z.string().trim().min(1, "Giá trị lọc trống").max(80),
+  }),
+  z.object({
+    action: z.literal("replace"),
+    items: z.array(roomFilterTargetSchema).max(20),
+  }),
+])
+
+export type CreateProposalInput = z.infer<typeof createProposalInputSchema>
+export type UpdateRoomFilterInput = z.infer<typeof updateRoomFilterInputSchema>
