@@ -3,6 +3,7 @@ import path from "node:path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig, loadEnv, type Plugin } from "vite"
+import { VitePWA } from "vite-plugin-pwa"
 
 /** Route tĩnh của SPA — route động sinh theo dữ liệu nên không liệt kê. */
 const STATIC_ROUTES = ["", "/discover", "/map", "/login", "/register"]
@@ -58,8 +59,58 @@ export default defineConfig(({ mode }) => {
     appOrigin = appOrigin.slice(0, -1)
   }
 
+  const isTest = mode === "test"
+
   return {
-    plugins: [react(), tailwindcss(), seoOriginPlugin(appOrigin)],
+    plugins: [
+      react(),
+      tailwindcss(),
+      seoOriginPlugin(appOrigin),
+      ...(isTest
+        ? []
+        : [
+            VitePWA({
+              registerType: "autoUpdate",
+              manifest: false,
+              workbox: {
+                globPatterns: ["**/*.{js,css,html,svg,woff2}"],
+                // Không precache toàn bộ ảnh cold-start để tránh phình SW; cache lúc runtime
+                globIgnores: ["**/data/cold-start/**"],
+                runtimeCaching: [
+                  {
+                    urlPattern: /^\/api\/v1\/tiles\/.*/i,
+                    handler: "CacheFirst",
+                    options: {
+                      cacheName: "rendez-map-tiles-cache",
+                      expiration: {
+                        maxEntries: 2000,
+                        maxAgeSeconds: 60 * 60 * 24 * 30,
+                      },
+                      cacheableResponse: {
+                        statuses: [0, 200],
+                      },
+                    },
+                  },
+                  {
+                    urlPattern:
+                      /^https:\/\/[abcd]\.(tile\.openstreetmap\.org|basemaps\.cartocdn\.com)\/.*/i,
+                    handler: "CacheFirst",
+                    options: {
+                      cacheName: "external-map-tiles-cache",
+                      expiration: {
+                        maxEntries: 2000,
+                        maxAgeSeconds: 60 * 60 * 24 * 30,
+                      },
+                      cacheableResponse: {
+                        statuses: [0, 200],
+                      },
+                    },
+                  },
+                ],
+              },
+            }),
+          ]),
+    ],
     resolve: {
       alias: {
         "@": path.resolve(import.meta.dirname, "./src"),

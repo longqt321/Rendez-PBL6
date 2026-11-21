@@ -12,9 +12,11 @@ import { createReviewsRouter } from "./reviews"
 import { createCollectionsRouter } from "./collections"
 import { createRoomsRouter } from "./rooms"
 import { createMediaRouter } from "./media"
+import { createTilesRouter } from "./tiles"
 import { createOgRouter } from "./og"
 import { createSystemRouter } from "./system"
 import { createEventsRouter } from "./events"
+import { createAdminRouter } from "./admin"
 
 function normalizeRoutePath(path: string): string {
   const stripped = path.replace(/^\/api\/v1/u, "") || "/"
@@ -95,8 +97,11 @@ export function createApiRouter() {
   // Phòng lọc nhóm + SSE (Phase 6).
   api.route("/", createRoomsRouter())
 
-  // Upload ảnh presigned R2 (Phase 7).
+  // Upload ảnh presigned R2 + local fallback (Phase 7).
   api.route("/", createMediaRouter())
+
+  // Proxy + Disk Cache + Multi-CDN Fallback cho bản đồ OSM.
+  api.route("/", createTilesRouter())
 
   // HTML meta Open Graph cho bot preview (`/og/place/:id`, `/og/post/:id`).
   api.route("/", createOgRouter())
@@ -106,6 +111,9 @@ export function createApiRouter() {
 
   // Thu thập sự kiện tương tác (P0 đo lường) — `/events`.
   api.route("/", createEventsRouter())
+
+  // Quản trị và nhật ký hoạt động — `/admin/*`.
+  api.route("/", createAdminRouter())
 
   return api
 }

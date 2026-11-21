@@ -36,6 +36,7 @@ services:
       target: migrator
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:-rendez_dev}@postgres:5432/${POSTGRES_DB:-rendez}
+      SEED_MODE: ${SEED_MODE:-dev}
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,6 +59,7 @@ services:
       # đặt NODE_ENV=production + BETTER_AUTH_SECRET riêng (env.ts từ chối
       # secret dev khi NODE_ENV=production).
       NODE_ENV: ${NODE_ENV:-development}
+      DEMO_AUTO_VERIFY_EMAIL: ${DEMO_AUTO_VERIFY_EMAIL:-true}
       PORT: "8000"
       DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:-rendez_dev}@postgres:5432/${POSTGRES_DB:-rendez}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-rendez-dev-secret-0123456789abcdef}

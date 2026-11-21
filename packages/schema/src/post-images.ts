@@ -12,12 +12,15 @@ export interface ValidatePostImageUrlsOptions {
   userId: string
   /** Domain công khai của bucket (`R2_PUBLIC_BASE_URL`); mock dùng domain giả. */
   publicBaseUrl: string
+  /** URL gốc kho lưu trữ dự phòng nội bộ trên API server (khi R2 lỗi/chưa cấu hình). */
+  fallbackBaseUrl?: string
 }
 
 export type PostImageValidation = { ok: true; images: string[] } | { ok: false; message: string }
 
 /**
- * Kiểm MỘT URL ảnh thuộc thư mục `<folder>/<userId>/` của bucket công khai.
+ * Kiểm MỘT URL ảnh thuộc thư mục `<folder>/<userId>/` của bucket công khai
+ * hoặc kho lưu trữ dự phòng hợp lệ.
  *
  * Dùng chung cho ảnh bài đăng (`posts/`) và ảnh hồ sơ (`avatars/`, `covers/`) —
  * cùng một quy tắc origin/path/userinfo nên không có bản validate lệch nhau.
@@ -54,6 +57,26 @@ function checkOwnedMediaUrl(url: string, base: URL, expectedPrefix: string): str
   return null
 }
 
+function checkOwnedMediaAgainstBases(
+  url: string,
+  bases: readonly string[],
+  folder: string,
+  userId: string,
+): string | null {
+  let lastError: string | null = POST_IMAGE_INVALID_MESSAGE
+  for (const rawBase of bases) {
+    if (!rawBase) continue
+    const base = new URL(rawBase)
+    const basePath = base.pathname.replace(/\/$/, "")
+    const expectedPrefix = `${basePath}/${folder}/${userId}/`
+    const error = checkOwnedMediaUrl(url, base, expectedPrefix)
+    if (error === null) return null
+    if (error === POST_IMAGE_TOO_LONG_MESSAGE) return error
+    lastError = error
+  }
+  return lastError
+}
+
 /**
  * Trả danh sách URL đã kiểm (giữ nguyên thứ tự) hoặc thông điệp lỗi tiếng Việt.
  *
@@ -71,12 +94,12 @@ export function validatePostImageUrls(
     return { ok: false, message: POST_IMAGE_DUPLICATE_MESSAGE }
   }
 
-  const base = new URL(options.publicBaseUrl)
-  const basePath = base.pathname.replace(/\/$/, "")
-  const expectedPrefix = `${basePath}/posts/${options.userId}/`
+  const bases = [options.publicBaseUrl, options.fallbackBaseUrl].filter(
+    (b): b is string => Boolean(b && b.trim().length > 0),
+  )
 
   for (const url of images) {
-    const error = checkOwnedMediaUrl(url, base, expectedPrefix)
+    const error = checkOwnedMediaAgainstBases(url, bases, "posts", options.userId)
     if (error) return { ok: false, message: error }
   }
 
@@ -93,6 +116,8 @@ export interface ValidateProfileImageUrlOptions {
   folder: ProfileMediaFolder
   /** Domain công khai của bucket (`R2_PUBLIC_BASE_URL`); mock dùng domain giả. */
   publicBaseUrl: string
+  /** URL gốc kho lưu trữ dự phòng nội bộ trên API server. */
+  fallbackBaseUrl?: string
 }
 
 export type ProfileImageValidation = { ok: true } | { ok: false; message: string }
@@ -110,10 +135,9 @@ export function validateProfileImageUrl(
 ): ProfileImageValidation {
   if (url == null || url === "") return { ok: true }
 
-  const base = new URL(options.publicBaseUrl)
-  const basePath = base.pathname.replace(/\/$/, "")
-  const expectedPrefix = `${basePath}/${options.folder}/${options.userId}/`
-
-  const error = checkOwnedMediaUrl(url, base, expectedPrefix)
+  const bases = [options.publicBaseUrl, options.fallbackBaseUrl].filter(
+    (b): b is string => Boolean(b && b.trim().length > 0),
+  )
+  const error = checkOwnedMediaAgainstBases(url, bases, options.folder, options.userId)
   return error ? { ok: false, message: error } : { ok: true }
 }

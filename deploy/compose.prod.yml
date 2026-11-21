@@ -35,6 +35,7 @@ services:
   migrate:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD phải được đặt}@postgres:5432/${POSTGRES_DB:-rendez}
+      SEED_MODE: prod
     networks:
       - rendez_net
 

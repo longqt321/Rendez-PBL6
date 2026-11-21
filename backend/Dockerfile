@@ -54,6 +54,7 @@ COPY --from=builder /app/backend/generated backend/generated
 COPY --from=builder /app/backend/package.json backend/package.json
 COPY --from=builder /app/packages packages
 COPY backend/scripts/start-cluster.sh backend/scripts/start-cluster.sh
+RUN mkdir -p /app/backend/data/uploads /app/backend/data/tile-cache && chown -R bun:bun /app/backend/data
 
 USER bun
 

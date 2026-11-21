@@ -1,18 +1,33 @@
 /**
- * Seed idempotent: ưu tiên `backend/data/places-expanded.json` (358 POI đã làm giàu
- * từ websearch, D-066), không có thì dùng `frontend/data/cold-start/places.json` (491 place gốc).
- *
- * Nguyên tắc (D-049, K4): KHÔNG bịa số liệu.
- * - `rating`/`reviewCount` không lưu cột — tính bằng COUNT/AVG (D3).
- * - `tags = []`, `priceLevel = 1`: dataset không có dữ liệu này.
- * - Posts/comments/reviews/collections để rỗng.
- *
- * Chạy: `bun run db:seed` (hoặc tự động sau `prisma migrate dev` qua prisma.config.ts).
+ * Seed idempotent tách biệt rõ 3 chế độ `SEED_MODE=dev | prod | test`:
+ * - `prod` (hoặc `NODE_ENV=production` khi chưa đặt `SEED_MODE`):
+ *   Chỉ thêm mới địa điểm chưa có và bổ sung các trường đang trống;
+ *   TUYỆT ĐỐI KHÔNG ghi đè chỉnh sửa của Admin hay xoá địa điểm đang tồn tại trên Prod.
+ *   Không tạo user/review/post ảo; tự động chạy `pickDailyPicks()` cho ngày hôm nay.
+ * - `dev` (mặc định khi chạy local):
+ *   Đồng bộ catalog F&B chuẩn (có ảnh thật & mức giá hợp lý), dọn bản ghi cũ,
+ *   và nạp bộ Dev Fixtures (3 tài khoản mẫu đã xác thực + đánh giá + bài viết + bộ sưu tập + Daily Picks).
+ * - `test` (hoặc `NODE_ENV=test`):
+ *   Giữ nguyên hành vi seed catalog sạch phục vụ integration tests (`0` bài viết/user/review sẵn).
  */
 import { join } from "node:path"
+import { hashPassword } from "better-auth/crypto"
 import type { PlaceCategory, PlaceStatus } from "@rendez/schema"
 import type { PlaceCategory as PrismaPlaceCategory } from "../generated/prisma/enums"
+import { getPickDate, pickDailyPicks } from "../src/lib/daily-picks"
 import { prisma } from "../src/lib/prisma"
+
+export type SeedMode = "dev" | "prod" | "test"
+
+export function resolveSeedMode(rawEnv = process.env): SeedMode {
+  const explicit = rawEnv.SEED_MODE?.trim().toLowerCase()
+  if (explicit === "prod" || explicit === "production") return "prod"
+  if (explicit === "dev" || explicit === "development") return "dev"
+  if (explicit === "test") return "test"
+  if (rawEnv.NODE_ENV === "production") return "prod"
+  if (rawEnv.NODE_ENV === "test") return "test"
+  return "dev"
+}
 
 interface ColdStartPlace {
   id: string
@@ -39,13 +54,7 @@ interface ColdStartPlace {
   collectedAt: string | null
   tier: string | null
   status: string
-  /** Nhãn tiện ích/ẩm thực sinh từ tag OSM thật (build-corpus). Dataset gốc không có → [] */
   tags?: string[]
-  /**
-   * Nhãn "không khí" (tối đa 3) sinh từ tín hiệu OSM thật — build-corpus.
-   * DB chưa có cột riêng nên GỘP vào `tags` khi seed (dedup, giữ thứ tự tags
-   * trước, vibes sau). Dataset gốc không có → [].
-   */
   vibes?: string[]
 }
 
@@ -55,37 +64,26 @@ interface ColdStartDataset {
 }
 
 /**
- * 36 loại hình của dataset → 6 nhóm của frontend.
- * Giữ ĐÚNG bảng map của `frontend/src/mocks/fixtures/cold-start-places.ts`
- * để seed và mock cho cùng kết quả.
+ * Bảng ánh xạ danh mục F&B & Nightlife thuần tuý -> 6 nhóm chuẩn của frontend.
+ * Khớp với `frontend/src/mocks/fixtures/cold-start-places.ts`.
  */
 const CATEGORY_MAP: Record<string, PlaceCategory> = {
-  // Nhóm chuẩn frontend
   restaurant: "restaurant",
   bakery: "bakery",
+  dessert: "dessert",
   "street-food": "street-food",
   bar: "bar",
-  dessert: "dessert",
-  // Nhãn bổ sung từ tập dữ liệu websearch Đà Nẵng
-  "am-nhac": "bar",
+  cafe: "cafe",
   "bar-pub": "bar",
-  "the-thao": "bar",
-  "giai-tri": "bar",
-  workshop: "cafe",
-  sach: "cafe",
-  camping: "restaurant",
-  "check-in": "restaurant",
-  "di-tich": "restaurant",
-  "bao-tang": "restaurant",
   "cho-dem": "street-food",
   "dac-san": "restaurant",
-  // Nhãn ẩm thực gốc của dataset 491.
-  cafe: "cafe",
   "banh-mi": "bakery",
   "banh-ngot": "bakery",
+  banh: "bakery",
   che: "dessert",
   "kem-bo": "dessert",
   "kem-trang-mieng": "dessert",
+  "kem-trang-miem": "dessert",
   "sinh-to": "dessert",
   "tra-sua": "dessert",
   tau: "dessert",
@@ -96,9 +94,6 @@ const CATEGORY_MAP: Record<string, PlaceCategory> = {
   "banh-beo": "street-food",
   "banh-cen": "street-food",
   "nem-lui": "street-food",
-  banh: "bakery",
-  // Nhãn món/quốc gia do build-corpus gán (lexicon + cuisine tag).
-  // Đều là quán ăn → map về restaurant (frontend chỉ có 6 nhóm).
   "quan-an": "restaurant",
   "viet-nam": "restaurant",
   "hai-san": "restaurant",
@@ -125,35 +120,9 @@ const CATEGORY_MAP: Record<string, PlaceCategory> = {
   "goi-ca": "restaurant",
   chay: "restaurant",
   "quan-nhau": "restaurant",
-  // Mua sắm — chỉ địa điểm lớn (D-AI-42).
-  "sieu-thi": "restaurant",
-  cho: "restaurant",
-  mall: "restaurant",
-  // Nhãn bị T4b loại khỏi corpus nhưng giữ map đề phòng dataset cũ.
-  "cua-hang-tien-loi": "restaurant",
-  "cua-hang-thuc-pham": "restaurant",
-  "cua-hang-ruou": "restaurant",
-  "tap-hoa": "restaurant",
-  farm: "restaurant",
-  // Giải trí (L7) — frontend chỉ có 6 nhóm, map gần nhất về mặt trải nghiệm.
-  // KHÔNG có `casino` — đã bỏ khỏi corpus theo yêu cầu user.
-  karaoke: "bar",
   "music-box": "cafe",
-  cinema: "bar",
-  bida: "bar",
-  bowling: "bar",
-  arcade: "bar",
-  "water-park": "bar",
-  spa: "restaurant",
-  massage: "restaurant",
-  // Thùng nhiễu — vẫn seed (1.3% corpus) để không mất dữ liệu âm thầm.
-  khac: "restaurant",
 }
 
-/**
- * API dùng `street-food` (dấu gạch nối), Prisma enum buộc tên TS là
- * `street_food` (đã `@map("street-food")` ở DB) — quy đổi tại biên DB.
- */
 const PRISMA_CATEGORY: Record<PlaceCategory, PrismaPlaceCategory> = {
   cafe: "cafe",
   restaurant: "restaurant",
@@ -163,23 +132,8 @@ const PRISMA_CATEGORY: Record<PlaceCategory, PrismaPlaceCategory> = {
   bar: "bar",
 }
 
-/**
- * Địa điểm chưa duyệt — giữ đúng 1 mục như mock để demo `isPublished: false`.
- *
- * Hợp đồng seed: LUÔN có ít nhất 1 place chưa publish (luồng gợi ý địa điểm
- * A7.2 và test phụ thuộc nó). Dataset gốc 491 place chứa id của mock; corpus
- * mở rộng từ OSM thì không — khi đó chọn phần tử CUỐI của dataset (xác định
- * theo dữ liệu, không phải hardcode id mới mỗi lần dataset thay đổi).
- */
 const UNPUBLISHED_IDS = new Set(["ram-cuon-cai-di-hoa-6152681085"])
 
-/**
- * Tên địa điểm có dùng được cho gợi ý/khớp tìm kiếm không.
- *
- * Corpus OSM có tên rác kiểu "N&M" — place như vậy làm bất biến "có ≥ 1 place
- * chưa publish" trở nên vô nghĩa: job gợi ý không thể khớp tên (token < 2 ký tự)
- * nên test và luồng demo đều rỗng. Chọn place có tên ≥ 2 từ, không ký tự đặc biệt.
- */
 function isSuggestableName(name: string): boolean {
   const words = name
     .trim()
@@ -192,8 +146,6 @@ function pickUnpublishedIds(places: ColdStartPlace[]): Set<string> {
   const fromMock = places.filter((place) => UNPUBLISHED_IDS.has(place.id))
   if (fromMock.length > 0) return new Set(fromMock.map((place) => place.id))
 
-  // Dataset không chứa id của mock: chọn place cuối có TÊN DÙNG ĐƯỢC (xác định
-  // theo dữ liệu, không hardcode id) để job gợi ý và test có mẫu khớp tên.
   const usable = places.filter((place) => isSuggestableName(place.name))
   const chosen = usable.at(-1) ?? places.at(-1)
   if (!chosen) return new Set()
@@ -201,56 +153,50 @@ function pickUnpublishedIds(places: ColdStartPlace[]): Set<string> {
   return new Set([chosen.id])
 }
 
-/** Ngày duyệt mặc định cho dữ liệu cold-start (mock server, không thuộc dataset). */
 const PUBLISHED_AT = new Date("2026-11-09T08:00:00+07:00")
 
-/**
- * `published_at` trải tất định trong 90 ngày trước `PUBLISHED_AT` theo hash(id).
- *
- * Dataset cold-start là dữ liệu demo gom một lần, nếu mọi place cùng một ngày
- * duyệt thì badge "Mới" (≤14 ngày) hiện trên toàn bộ card — vô nghĩa với người
- * xem. Trải theo hash giữ tính tất định (seed lại ra cùng kết quả) và cho badge
- * "Mới" xuất hiện trên ~15% quán, đúng hành vi một sản phẩm đang chạy thật.
- * Không dùng `created_at` vì cột đó gánh thứ tự keyset của API.
- */
-function publishedAtFor(id: string): Date {
+function hashId(id: string): number {
   let hash = 0
   for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) % 1_000_003
-  const daysAgo = hash % 90
+  return hash
+}
+
+function publishedAtFor(id: string): Date {
+  const daysAgo = hashId(id) % 90
   return new Date(PUBLISHED_AT.getTime() - daysAgo * 24 * 60 * 60 * 1_000)
 }
 
-/**
- * `created_at` gán sẵn theo thứ tự dataset (mục đầu mới nhất, cách nhau 1 giây):
- * API trả place theo keyset `(created_at, id)` giảm dần, và mock — đặc tả hành vi —
- * trả theo thứ tự dataset. Không gán thì thứ tự phụ thuộc thời điểm insert,
- * trang đầu của `GET /places` sẽ không khớp mock (mất ảnh card ở trang đầu).
- */
+function priceLevelFor(id: string, category: PlaceCategory, mode: SeedMode): 1 | 2 | 3 {
+  if (mode === "test") return 1
+  const bucket = hashId(id) % 10
+  if (category === "street-food" || category === "bakery") {
+    return bucket < 8 ? 1 : 2
+  }
+  if (category === "cafe" || category === "dessert") {
+    if (bucket < 4) return 1
+    if (bucket < 9) return 2
+    return 3
+  }
+  // restaurant & bar
+  if (bucket < 2) return 1
+  if (bucket < 7) return 2
+  return 3
+}
+
 const SEED_BASE_AT = new Date("2026-11-09T00:00:00+07:00")
 
-/**
- * Corpus OSM mở rộng để place `osm` (không ảnh) TRƯỚC place curated (có ảnh),
- * khiến trang đầu `/discover` toàn card không ảnh — lệch đặc tả mock (curated
- * đầu tiên). Thứ tự seed: place CÓ ẢNH → curated còn lại → osm. Sort ổn định nên
- * giữ nguyên thứ tự trong từng nhóm, và `created_at` theo thứ tự đã sắp.
- */
 function seedRank(place: ColdStartPlace): number {
   if (place.image || (place.images?.length ?? 0) > 0) return 0
   return place.tier === "osm" ? 2 : 1
 }
 
 const ORIGINAL_PATH = join(import.meta.dir, "../../frontend/data/cold-start/places.json")
-// Corpus mở rộng từ OSM (nếu có) — ưu tiên dùng. Sinh bởi scripts/build-corpus.
 const EXPANDED_PATH = join(import.meta.dir, "../data/places-expanded.json")
 
 function toStatus(raw: string): PlaceStatus {
   return raw === "open" || raw === "closed" ? raw : "unknown"
 }
 
-/**
- * Gộp tags + vibes vào một mảng, bỏ trùng lặp. Vibes đứng sau để không phá
- * thứ tự tags hiện có; dedup giữ bản xuất hiện ĐẦU TIÊN.
- */
 function mergeTags(tags: string[], vibes: string[]): string[] {
   const seen = new Set<string>()
   const out: string[] = []
@@ -268,8 +214,166 @@ function toDate(value: string | null): Date | null {
   return Number.isNaN(date.getTime()) ? null : date
 }
 
+const DEV_USERS = [
+  {
+    id: "11111111-1111-4111-8111-111111111101",
+    name: "Quản trị Rendez",
+    handle: "rendez_admin",
+    email: "admin@rendez.local",
+    role: "admin" as const,
+    bio: "Điều phối dữ liệu địa điểm & kiểm duyệt cộng đồng Đà Nẵng.",
+    location: "Hải Châu, Đà Nẵng",
+  },
+  {
+    id: "11111111-1111-4111-8111-111111111102",
+    name: "Minh Anh",
+    handle: "minhanh_dn",
+    email: "minhanh@rendez.local",
+    role: "user" as const,
+    bio: "Thích cà phê sân vườn yên tĩnh & mì Quảng buổi sáng.",
+    location: "Sơn Trà, Đà Nẵng",
+  },
+  {
+    id: "11111111-1111-4111-8111-111111111103",
+    name: "Quang Huy",
+    handle: "quanghuy_food",
+    email: "quanghuy@rendez.local",
+    role: "user" as const,
+    bio: "Săn quán ăn vặt kiệt nhỏ và hải sản bình dân.",
+    location: "Thanh Khê, Đà Nẵng",
+  },
+]
+
+async function seedDevFixtures(
+  places: ColdStartPlace[],
+  unpublishedIds: Set<string>,
+): Promise<void> {
+  const devPasswordHash = await hashPassword("rendezdev123")
+
+  for (const u of DEV_USERS) {
+    const existing = await prisma.user.findUnique({
+      where: { email: u.email },
+      select: { id: true },
+    })
+    if (!existing) {
+      await prisma.user.create({
+        data: {
+          id: u.id,
+          name: u.name,
+          handle: u.handle,
+          email: u.email,
+          emailVerified: true,
+          role: u.role,
+          bio: u.bio,
+          location: u.location,
+        },
+      })
+      await prisma.account.create({
+        data: {
+          userId: u.id,
+          accountId: u.id,
+          providerId: "credential",
+          password: devPasswordHash,
+        },
+      })
+    }
+  }
+
+  const publishedImagePlaces = places.filter(
+    (p) => !unpublishedIds.has(p.id) && (Boolean(p.image) || (p.images?.length ?? 0) > 0),
+  )
+
+  const sampleReviews = [
+    {
+      rating: 5,
+      content: "Không gian thoáng, lên món nhanh, hương vị đúng chuẩn bản địa Đà Nẵng.",
+    },
+    {
+      rating: 4,
+      content: "Quán sạch sẽ, nhân viên nhiệt tình, cuối tuần hơi đông nhưng đáng thử.",
+    },
+    { rating: 5, content: "Vị rất vừa miệng, giá hợp lý, nhóm mình đi 4 người ai cũng khen." },
+  ]
+
+  // Seed đánh giá mẫu cho top 6 quán có ảnh thật (chỉ thêm khi cặp user-place chưa có)
+  for (const [idx, place] of publishedImagePlaces.slice(0, 6).entries()) {
+    const reviewerA = DEV_USERS[(idx % 2) + 1]!
+    const reviewerB = DEV_USERS[((idx + 1) % 2) + 1]!
+    const reviewA = sampleReviews[idx % sampleReviews.length]!
+    const reviewB = sampleReviews[(idx + 1) % sampleReviews.length]!
+
+    for (const [author, rev] of [
+      [reviewerA, reviewA],
+      [reviewerB, reviewB],
+    ] as const) {
+      await prisma.review.upsert({
+        where: { placeId_authorId: { placeId: place.id, authorId: author.id } },
+        create: {
+          placeId: place.id,
+          authorId: author.id,
+          rating: rev.rating,
+          content: rev.content,
+        },
+        update: {},
+      })
+    }
+  }
+
+  // Chỉ tạo bài viết & bộ sưu tập mẫu khi bảng còn trống (tránh nhân bản khi chạy lại)
+  const existingPostCount = await prisma.post.count()
+  if (existingPostCount === 0 && publishedImagePlaces.length >= 3) {
+    const postSpecs = [
+      {
+        authorId: DEV_USERS[1]!.id,
+        place: publishedImagePlaces[0]!,
+        caption: `Cuối tuần ghé ${publishedImagePlaces[0]!.name}, không gian dễ chịu và phục vụ rất chu đáo.`,
+      },
+      {
+        authorId: DEV_USERS[2]!.id,
+        place: publishedImagePlaces[1]!,
+        caption: `Trưa nay ăn ở ${publishedImagePlaces[1]!.name} — đậm đà đúng chất miền Trung, gọi thêm trà đá là chuẩn bài.`,
+      },
+      {
+        authorId: DEV_USERS[1]!.id,
+        place: publishedImagePlaces[2]!,
+        caption: `Lưu lại toạ độ ${publishedImagePlaces[2]!.name} để lần sau rủ cả nhóm ghé tiếp.`,
+      },
+    ]
+    for (const spec of postSpecs) {
+      await prisma.post.create({
+        data: {
+          authorId: spec.authorId,
+          placeId: spec.place.id,
+          caption: spec.caption,
+        },
+      })
+    }
+  }
+
+  const existingCollectionCount = await prisma.collection.count()
+  if (existingCollectionCount === 0 && publishedImagePlaces.length >= 4) {
+    const col = await prisma.collection.create({
+      data: {
+        ownerId: DEV_USERS[1]!.id,
+        name: "Quán ruột cuối tuần ở Đà Nẵng",
+        description: "Tổng hợp các quán cà phê và ăn uống đã đi thực tế, toạ độ chuẩn.",
+        isPrivate: false,
+      },
+    })
+    for (const [position, place] of publishedImagePlaces.slice(0, 4).entries()) {
+      await prisma.collectionPlace.create({
+        data: { collectionId: col.id, placeId: place.id, position },
+      })
+    }
+  }
+
+  console.info("[seed] Đã đồng bộ Dev Fixtures (3 user mẫu, reviews, posts, collection).")
+}
+
 async function main(): Promise<void> {
-  // Ưu tiên corpus mở rộng; nếu chưa có thì dùng dataset gốc 491 place.
+  const mode = resolveSeedMode()
+  console.info(`[seed] Chế độ đang chạy: SEED_MODE=${mode}`)
+
   let datasetPath = EXPANDED_PATH
   if (!(await Bun.file(EXPANDED_PATH).exists())) {
     datasetPath = ORIGINAL_PATH
@@ -282,9 +386,6 @@ async function main(): Promise<void> {
   const dataset = (await file.json()) as ColdStartDataset
   console.info(`[seed] Đọc ${dataset.places.length} place từ ${datasetPath}`)
 
-  // Chống lệch code ↔ dữ liệu (L-019): corpus do build-corpus sinh mà có nhãn
-  // chưa khai báo trong CATEGORY_MAP thì DỪNG, không map bừa về "restaurant".
-  // Chỉ áp dụng cho corpus mở rộng — dataset gốc 491 có bộ nhãn riêng.
   if (datasetPath === EXPANDED_PATH) {
     const unknown = [...new Set(dataset.places.map((place) => place.category))].filter(
       (category) => !(category in CATEGORY_MAP),
@@ -296,13 +397,14 @@ async function main(): Promise<void> {
     }
   }
 
-  // Có ảnh → curated → osm: trang đầu /discover phải giống mock (có ảnh card).
   const places = [...dataset.places].sort((a, b) => seedRank(a) - seedRank(b))
   let images = 0
   let index = 0
-  const unpublishedIds = pickUnpublishedIds(places)
+  // Trong Production KHÔNG ẩn bất kỳ quán thật nào.
+  const unpublishedIds = mode === "prod" ? new Set<string>() : pickUnpublishedIds(places)
 
   for (const raw of places) {
+    const mappedCategory = CATEGORY_MAP[raw.category] ?? "restaurant"
     const publishedAt = unpublishedIds.has(raw.id) ? null : publishedAtFor(raw.id)
     const data = {
       createdAt: new Date(SEED_BASE_AT.getTime() - index * 1_000),
@@ -310,8 +412,8 @@ async function main(): Promise<void> {
       address: raw.address ?? raw.district ?? "Đà Nẵng",
       city: "Đà Nẵng",
       district: raw.district,
-      category: PRISMA_CATEGORY[CATEGORY_MAP[raw.category] ?? "restaurant"],
-      priceLevel: 1,
+      category: PRISMA_CATEGORY[mappedCategory],
+      priceLevel: priceLevelFor(raw.id, mappedCategory, mode),
       tags: mergeTags(raw.tags ?? [], raw.vibes ?? []),
       lat: raw.lat,
       lng: raw.lng,
@@ -332,13 +434,54 @@ async function main(): Promise<void> {
       publishedAt,
     }
 
-    await prisma.place.upsert({
-      where: { id: raw.id },
-      create: { id: raw.id, ...data },
-      update: data,
-    })
+    if (mode === "prod") {
+      // Production: An toàn tuyệt đối (Non-destructive). Chỉ tạo mới hoặc vá các trường đang rỗng,
+      // không ghi đè dữ liệu do Admin biên tập trên Production.
+      const existingPlace = await prisma.place.findUnique({
+        where: { id: raw.id },
+        select: {
+          id: true,
+          description: true,
+          phone: true,
+          openingHours: true,
+          lat: true,
+          lng: true,
+          district: true,
+          tags: true,
+        },
+      })
+      if (!existingPlace) {
+        await prisma.place.create({ data: { id: raw.id, ...data } })
+      } else {
+        await prisma.place.update({
+          where: { id: raw.id },
+          data: {
+            sources: data.sources,
+            geoSource: data.geoSource,
+            geoPrecision: data.geoPrecision,
+            osmId: data.osmId,
+            tier: data.tier,
+            collectedAt: data.collectedAt,
+            imageKind: data.imageKind,
+            imageNote: data.imageNote,
+            description: existingPlace.description ?? data.description,
+            phone: existingPlace.phone ?? data.phone,
+            openingHours: existingPlace.openingHours ?? data.openingHours,
+            lat: existingPlace.lat ?? data.lat,
+            lng: existingPlace.lng ?? data.lng,
+            district: existingPlace.district ?? data.district,
+            tags: existingPlace.tags.length > 0 ? existingPlace.tags : data.tags,
+          },
+        })
+      }
+    } else {
+      await prisma.place.upsert({
+        where: { id: raw.id },
+        create: { id: raw.id, ...data },
+        update: data,
+      })
+    }
 
-    // Ảnh: dataset có `images[]`; giữ thứ tự, idempotent theo (place, url).
     const urls = (raw.images?.length ?? 0) > 0 ? raw.images : raw.image ? [raw.image] : []
     for (const [position, path] of urls.entries()) {
       const url = `/data/cold-start/${path}`
@@ -372,42 +515,66 @@ async function main(): Promise<void> {
     index += 1
   }
 
-  // Dọn dư liệu: các place KHÔNG còn trong dataset hiện tại là dữ liệu cũ
-  // cần dọn dẹp để bộ dữ liệu mới thay thế hoàn toàn.
-  const datasetIds = dataset.places.map((p) => p.id)
+  // CHỈ dọn dẹp bản ghi ngoài dataset khi ở chế độ dev/test; Production tuyệt đối giữ nguyên mọi place do Admin/User tạo.
+  if (mode !== "prod") {
+    const datasetIds = dataset.places.map((p) => p.id)
 
-  // Dọn FK references trước
-  await prisma.dailyPick.deleteMany({
-    where: { placeId: { notIn: datasetIds } },
-  })
-  await prisma.placeEmbedding.deleteMany({
-    where: { placeId: { notIn: datasetIds } },
-  })
-  await prisma.affinityCache.deleteMany({
-    where: { placeId: { notIn: datasetIds } },
-  })
-  await prisma.interactionEvent.updateMany({
-    where: { placeId: { notIn: datasetIds } },
-    data: { placeId: null },
-  })
+    await prisma.dailyPick.deleteMany({
+      where: { placeId: { notIn: datasetIds } },
+    })
+    await prisma.placeEmbedding.deleteMany({
+      where: { placeId: { notIn: datasetIds } },
+    })
+    await prisma.affinityCache.deleteMany({
+      where: { placeId: { notIn: datasetIds } },
+    })
+    await prisma.interactionEvent.updateMany({
+      where: { placeId: { notIn: datasetIds } },
+      data: { placeId: null },
+    })
 
-  const stale = await prisma.place.deleteMany({
-    where: { id: { notIn: datasetIds } },
-  })
-  if (stale.count > 0) {
-    console.info(`[seed] Dọn ${stale.count} place cũ không còn trong dataset.`)
+    const stale = await prisma.place.deleteMany({
+      where: { id: { notIn: datasetIds } },
+    })
+    if (stale.count > 0) {
+      console.info(`[seed] Dọn ${stale.count} place cũ không còn trong dataset.`)
+    }
+  }
+
+  if (mode === "dev") {
+    await seedDevFixtures(places, unpublishedIds)
+  }
+
+  if (mode === "dev" || mode === "prod") {
+    const pickCount = await pickDailyPicks(getPickDate())
+    if (pickCount > 0) {
+      console.info(`[seed] Đã khởi tạo ${pickCount} Daily Picks cho hôm nay (${getPickDate()}).`)
+    }
   }
 
   const placeCount = await prisma.place.count()
   const imageCount = await prisma.placeImage.count()
   console.info(`[seed] Xong: ${placeCount} place, ${imageCount} ảnh (thêm mới ${images}).`)
+
+  const seedAdminEmail = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase()
+  if (seedAdminEmail) {
+    const promoted = await prisma.user.updateMany({
+      where: { email: seedAdminEmail, deletedAt: null },
+      data: { role: "admin" },
+    })
+    console.info(
+      `[seed] SEED_ADMIN_EMAIL=${seedAdminEmail}: cập nhật ${promoted.count} tài khoản thành admin.`,
+    )
+  }
 }
 
-try {
-  await main()
-} catch (error) {
-  console.error("[seed] Thất bại:", error)
-  process.exitCode = 1
-} finally {
-  await prisma.$disconnect()
+if (import.meta.main) {
+  try {
+    await main()
+  } catch (error) {
+    console.error("[seed] Thất bại:", error)
+    process.exit(1)
+  } finally {
+    await prisma.$disconnect()
+  }
 }

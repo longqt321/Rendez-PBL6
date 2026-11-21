@@ -8,11 +8,14 @@ import { isNulByteError } from "./lib/errors"
 import { logger } from "./lib/logger"
 import { prisma } from "./lib/prisma"
 import { createApiRouter } from "./routes"
+import type { UserRole } from "@rendez/schema"
 
 interface AppVariables {
   requestId: string
 
   userId: string
+
+  userRole?: UserRole
 
   cacheHit?: boolean
 }
@@ -58,6 +61,7 @@ export function createApp() {
   app.use(
     "*",
     secureHeaders({
+      crossOriginResourcePolicy: false,
       contentSecurityPolicy: { defaultSrc: ["'none'"] },
       permissionsPolicy: {
         camera: [],
@@ -68,15 +72,23 @@ export function createApp() {
       },
     }),
   )
+  app.use("*", async (c, next) => {
+    await next()
+    const isPublicMediaOrTile =
+      c.req.path.startsWith("/api/v1/media/files/") || c.req.path.startsWith("/api/v1/tiles/")
+    c.header("Cross-Origin-Resource-Policy", isPublicMediaOrTile ? "cross-origin" : "same-origin")
+  })
 
-  // JSON API 1MB là dư; ảnh đi qua presigned R2 nên không nhận file qua API (H5).
-  app.use(
-    "*",
-    bodyLimit({
-      maxSize: 1024 * 1024,
-      onError: (c) => c.json({ message: "Nội dung request quá lớn" }, 413),
-    }),
-  )
+  // JSON API 1MB là dư; route fallback upload ảnh local cho phép tối đa 5MB.
+  app.use("*", async (c, next) => {
+    const isLocalMediaUpload =
+      c.req.method === "PUT" && c.req.path.startsWith("/api/v1/media/upload/")
+    const maxSize = isLocalMediaUpload ? 5 * 1024 * 1024 : 1024 * 1024
+    return bodyLimit({
+      maxSize,
+      onError: (ctx) => ctx.json({ message: "Nội dung request quá lớn" }, 413),
+    })(c, next)
+  })
 
   // Structured log một dòng/request: không log query string (có thể chứa từ khoá).
   app.use("*", async (c, next) => {
@@ -146,7 +158,7 @@ export function createApp() {
     )
     // Không trả stack/SQL ra ngoài (G1).
     return c.json(
-      { message: "Máy chủ trả lỗi — thử lại sau.", code: "INTERNAL" },
+      { message: "Có lỗi từ máy chủ, vui lòng thử lại sau.", code: "INTERNAL" },
       500,
       requestId ? { "X-Request-Id": requestId } : undefined,
     )

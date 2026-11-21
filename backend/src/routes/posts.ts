@@ -11,6 +11,7 @@ import {
 import type { AppEnv } from "../app"
 import { env } from "../env"
 import { UUID_ID_RE, decodeCursor, encodeCursor, requireUuid } from "../lib/cursor"
+import { isLocalMediaFallbackEnabled, localMediaBaseUrl } from "../lib/media-storage"
 import { ApiError } from "../lib/errors"
 import { idempotency } from "../lib/idempotency"
 import { prisma } from "../lib/prisma"
@@ -54,13 +55,21 @@ const createPostSchema = z.object({
  * hưởng bởi việc R2 chưa cấu hình.
  */
 function validatePostImages(images: string[] | undefined, userId: string): string[] {
-  // Chưa có bucket (hoặc thiếu domain công khai) thì không xác thực được ảnh
-  // thuộc về ai — từ chối thay vì nhận URL tuỳ ý.
-  if (images && images.length > 0 && (!env.r2Configured || env.R2_PUBLIC_BASE_URL.length === 0)) {
+  const localFallback = isLocalMediaFallbackEnabled()
+  const hasR2Public = env.r2Configured && env.R2_PUBLIC_BASE_URL.length > 0
+
+  if (images && images.length > 0 && !hasR2Public && !localFallback) {
     throw new ApiError(400, "Tính năng ảnh chưa được cấu hình")
   }
 
-  const result = validatePostImageUrls(images, { userId, publicBaseUrl: env.R2_PUBLIC_BASE_URL })
+  const fallbackBaseUrl = localFallback ? localMediaBaseUrl() : undefined
+  const publicBaseUrl = hasR2Public ? env.R2_PUBLIC_BASE_URL : (fallbackBaseUrl ?? "")
+
+  const result = validatePostImageUrls(images, {
+    userId,
+    publicBaseUrl,
+    fallbackBaseUrl,
+  })
   if (!result.ok) throw new ApiError(400, result.message)
 
   return result.images

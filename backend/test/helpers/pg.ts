@@ -59,7 +59,7 @@ export async function startTestDb(): Promise<string> {
   // Seed dataset cold-start — các test places/posts phụ thuộc dữ liệu thật.
   const seed = Bun.spawnSync(["bun", "run", "scripts/seed.ts"], {
     cwd: backendDir,
-    env: { ...process.env, DATABASE_URL: connectionUrl },
+    env: { ...process.env, DATABASE_URL: connectionUrl, SEED_MODE: "test" },
     stdout: "pipe",
     stderr: "pipe",
   })

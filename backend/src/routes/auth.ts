@@ -8,10 +8,12 @@ import {
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { auth, verifyEmailCallbackUrl } from "../lib/auth"
+import { isLocalMediaFallbackEnabled, localMediaBaseUrl } from "../lib/media-storage"
 import { env } from "../env"
 import { ApiError } from "../lib/errors"
+import { recordAuditLogSafe } from "../lib/audit-log"
 import { prisma } from "../lib/prisma"
-import { rateLimit } from "../lib/rate-limit"
+import { clientIp, rateLimit } from "../lib/rate-limit"
 import { findProfileById } from "../lib/users"
 import { requireAuth } from "../lib/session"
 import { noStore } from "../lib/http-cache"
@@ -69,13 +71,17 @@ async function assertHandleAvailable(handle: string) {
 async function assertActiveUser(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { deletedAt: true },
+    select: { deletedAt: true, bannedAt: true },
   })
   if (!user || user.deletedAt) {
     // signInEmail đã tạo phiên trước khi ta kiểm được — xoá ngay để không còn
     // cookie hợp lệ cho tài khoản đã xoá.
     await prisma.session.deleteMany({ where: { userId } })
     throw new ApiError(401, "Email hoặc mật khẩu không đúng")
+  }
+  if (user.bannedAt) {
+    await prisma.session.deleteMany({ where: { userId } })
+    throw new ApiError(403, "Tài khoản đã bị tạm khoá")
   }
 }
 
@@ -84,14 +90,22 @@ function validateProfileImages(
   urls: { url: string | null | undefined; folder: ProfileMediaFolder }[],
 ): void {
   const hasImage = urls.some(({ url }) => url != null && url !== "")
-  if (hasImage && (!env.r2Configured || env.R2_PUBLIC_BASE_URL.length === 0)) {
+  const localFallback = isLocalMediaFallbackEnabled()
+  const hasR2Public = env.r2Configured && env.R2_PUBLIC_BASE_URL.length > 0
+
+  if (hasImage && !hasR2Public && !localFallback) {
     throw new ApiError(400, "Tính năng ảnh chưa được cấu hình")
   }
+
+  const fallbackBaseUrl = localFallback ? localMediaBaseUrl() : undefined
+  const publicBaseUrl = hasR2Public ? env.R2_PUBLIC_BASE_URL : (fallbackBaseUrl ?? "")
+
   for (const { url, folder } of urls) {
     const result = validateProfileImageUrl(url, {
       userId,
       folder,
-      publicBaseUrl: env.R2_PUBLIC_BASE_URL,
+      publicBaseUrl,
+      fallbackBaseUrl,
     })
     if (!result.ok) throw new ApiError(400, result.message)
   }
@@ -146,6 +160,16 @@ export function createAuthRouter() {
         for (const cookie of headers.getSetCookie()) result.headers.append("Set-Cookie", cookie)
         return result
       } catch (error) {
+        const ip = clientIp(c.req.raw.headers, c.env?.remoteAddress)
+        void recordAuditLogSafe({
+          action: "auth.login_failed",
+          entity: "auth",
+          meta: {
+            email: parsed.data.email,
+            reason: error instanceof ApiError ? error.message : "invalid_credentials",
+          },
+          ip: ip === "unknown" ? null : ip,
+        })
         if (error instanceof ApiError) throw error
         mapAuthError(error)
       }

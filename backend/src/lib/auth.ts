@@ -70,8 +70,9 @@ export const auth = betterAuth({
 
   emailVerification: {
     sendVerificationEmail: async ({ user, url, token }) => {
+      let sent = false
       try {
-        const sent = await sendVerifyEmailEmail({ to: user.email, url, name: user.name })
+        sent = await sendVerifyEmailEmail({ to: user.email, url, name: user.name })
         if (sent) {
           logger.info({ userId: user.id }, "Đã gửi email xác thực")
           return
@@ -79,6 +80,14 @@ export const auth = betterAuth({
       } catch (error) {
         // Lỗi SMTP không được lộ ra API (chống dò email) — chỉ log cho người vận hành.
         logger.error({ err: error, userId: user.id }, "Gửi email xác thực thất bại")
+      }
+      if (!sent && process.env.DEMO_AUTO_VERIFY_EMAIL === "true") {
+        await prisma.user.update({ where: { id: user.id }, data: { emailVerified: true } })
+        logger.warn(
+          { userId: user.id },
+          "DEMO_AUTO_VERIFY_EMAIL=true — tự động kích hoạt email sau khi SMTP dự phòng kích hoạt",
+        )
+        return
       }
       if (env.NODE_ENV === "production") {
         // Production không log token (ai đọc log lấy được thì xác thực hộ người khác).
@@ -113,6 +122,7 @@ export const auth = betterAuth({
       bio: { type: "string", required: false, defaultValue: "" },
       location: { type: "string", required: false, defaultValue: "" },
       privateProfile: { type: "boolean", required: false, defaultValue: false },
+      role: { type: "string", required: false, defaultValue: "user", input: false },
     },
   },
 

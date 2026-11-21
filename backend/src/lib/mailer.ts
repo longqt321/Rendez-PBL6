@@ -1,7 +1,23 @@
+import {
+  ConsecutiveBreaker,
+  TimeoutStrategy,
+  circuitBreaker,
+  handleAll,
+  timeout,
+  wrap,
+} from "cockatiel"
 import nodemailer, { type Transporter } from "nodemailer"
 import { env } from "../env"
 
 let transporter: Transporter | null = null
+
+const mailerPolicy = wrap(
+  circuitBreaker(handleAll, {
+    halfOpenAfter: 60_000,
+    breaker: new ConsecutiveBreaker(2),
+  }),
+  timeout(4_000, TimeoutStrategy.Aggressive),
+)
 
 function getTransporter(): Transporter {
   if (!transporter) {
@@ -10,10 +26,20 @@ function getTransporter(): Transporter {
       port: env.SMTP_PORT,
       // 465/2465 là SMTPS (SSL ngay từ byte đầu); 25/587/2587 dùng STARTTLS.
       secure: env.SMTP_PORT === 465 || env.SMTP_PORT === 2465,
+      connectionTimeout: 3_500,
+      socketTimeout: 4_000,
       auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD },
     })
   }
   return transporter
+}
+
+async function sendResilientMail(
+  message: Parameters<Transporter["sendMail"]>[0],
+): Promise<boolean> {
+  if (!env.mailConfigured) return false
+  await mailerPolicy.execute(() => getTransporter().sendMail(message))
+  return true
 }
 
 export const RESET_PASSWORD_SUBJECT = "Đặt lại mật khẩu Rendez"
@@ -91,9 +117,7 @@ export function buildResetPasswordMail(input: ResetPasswordMailInput) {
  * fallback); lỗi mạng/SMTP thì ném ra để nơi gọi log và phản hồi trung tính.
  */
 export async function sendResetPasswordEmail(input: ResetPasswordMailInput): Promise<boolean> {
-  if (!env.mailConfigured) return false
-  await getTransporter().sendMail(buildResetPasswordMail(input))
-  return true
+  return sendResilientMail(buildResetPasswordMail(input))
 }
 
 export interface VerifyEmailMailInput {
@@ -158,9 +182,7 @@ export function buildVerifyEmailMail(input: VerifyEmailMailInput) {
 
 /** Gửi mail xác thực email — hành vi trả về giống `sendResetPasswordEmail`. */
 export async function sendVerifyEmailEmail(input: VerifyEmailMailInput): Promise<boolean> {
-  if (!env.mailConfigured) return false
-  await getTransporter().sendMail(buildVerifyEmailMail(input))
-  return true
+  return sendResilientMail(buildVerifyEmailMail(input))
 }
 
 export interface AccountExistsMailInput {
@@ -236,7 +258,5 @@ export function buildAccountExistsMail(input: AccountExistsMailInput) {
 
 /** Gửi mail "tài khoản đã tồn tại" — hành vi trả về giống mail xác thực. */
 export async function sendAccountExistsEmail(input: AccountExistsMailInput): Promise<boolean> {
-  if (!env.mailConfigured) return false
-  await getTransporter().sendMail(buildAccountExistsMail(input))
-  return true
+  return sendResilientMail(buildAccountExistsMail(input))
 }
