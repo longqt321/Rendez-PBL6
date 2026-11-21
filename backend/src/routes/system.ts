@@ -32,7 +32,7 @@ async function countVenues(): Promise<{
              WHERE EXISTS (SELECT 1 FROM place_images pi WHERE pi.place_id = p.id)
            )::int AS with_images,
            COUNT(*) FILTER (
-             WHERE p.tags IS NOT NULL AND array_length(p.tags, 1) > 0
+             WHERE EXISTS (SELECT 1 FROM place_tags pt WHERE pt.place_id = p.id)
            )::int AS with_tags,
            COUNT(*) FILTER (WHERE p.opening_hours IS NOT NULL)::int AS with_hours
     FROM places p

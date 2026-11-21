@@ -14,7 +14,7 @@ export async function structuredCandidates(
 
   const tagOverlap =
     tags.length > 0
-      ? Prisma.sql`(SELECT count(*) FROM unnest(p.tags) AS t(tag) WHERE t.tag = ANY(ARRAY[${Prisma.join(tags)}]::text[]))`
+      ? Prisma.sql`(SELECT count(*) FROM place_tags pt JOIN tags t ON t.id = pt.tag_id WHERE pt.place_id = p.id AND t.name = ANY(ARRAY[${Prisma.join(tags)}]::text[]))`
       : Prisma.sql`0`
 
   const matches: Prisma.Sql[] = []
@@ -26,7 +26,9 @@ export async function structuredCandidates(
     scoreParts.push(Prisma.sql`CASE WHEN ${cond} THEN 2 ELSE 0 END`)
   }
   if (tags.length > 0) {
-    matches.push(Prisma.sql`p.tags && ARRAY[${Prisma.join(tags)}]::text[]`)
+    matches.push(
+      Prisma.sql`EXISTS (SELECT 1 FROM place_tags pt JOIN tags t ON t.id = pt.tag_id WHERE pt.place_id = p.id AND t.name = ANY(ARRAY[${Prisma.join(tags)}]::text[]))`,
+    )
   }
   if (districts.length > 0) {
     const cond = Prisma.sql`p.district IN (${Prisma.join(districts)})`

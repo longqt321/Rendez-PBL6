@@ -49,19 +49,27 @@ export function fetchRankCandidates(publishedOnly: boolean): Promise<CandidateRo
   return prisma.$queryRaw<CandidateRow[]>(Prisma.sql`
     SELECT p.id, p.name, p.address, p.city, p.district, p.category::text AS category, p.lat, p.lng,
            img.url AS image_url,
-           p.tags AS tags,
+           COALESCE(tg.tags, ARRAY[]::text[]) AS tags,
            ${norm(Prisma.sql`p.name`)} AS name_norm,
            ${norm(Prisma.sql`p.address`)} AS address_norm,
            ${norm(Prisma.sql`p.city`)} AS city_norm,
            ${norm(Prisma.sql`coalesce(p.district, '')`)} AS district_norm,
            COALESCE(
-             (SELECT array_agg(${norm(Prisma.sql`t.tag`)})
-              FROM unnest(p.tags) AS t(tag)),
+             (SELECT array_agg(${norm(Prisma.sql`t.name`)} ORDER BY pt.position, t.name)
+              FROM place_tags pt
+              JOIN tags t ON t.id = pt.tag_id
+              WHERE pt.place_id = p.id),
              ARRAY[]::text[]
            ) AS tags_norm,
            COALESCE(r.rating, 0)::float8 AS rating,
            COALESCE(r.review_count, 0)::int AS review_count
     FROM places p
+    LEFT JOIN LATERAL (
+      SELECT ARRAY_AGG(t.name ORDER BY pt.position, t.name) AS tags
+      FROM place_tags pt
+      JOIN tags t ON t.id = pt.tag_id
+      WHERE pt.place_id = p.id
+    ) tg ON true
     LEFT JOIN LATERAL (
       SELECT ROUND(AVG(rv.rating)::numeric, 1) AS rating, COUNT(*) AS review_count
       FROM reviews rv

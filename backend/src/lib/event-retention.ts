@@ -56,10 +56,11 @@ export async function maintainInteractionPartitions(): Promise<{
       if (!match?.[1]) continue
       const upper = new Date(match[1])
       if (Number.isNaN(upper.getTime()) || upper > cutoff) continue
+      if (!/^interaction_events_\d{4}_\d{2}$/u.test(row.relname)) continue
       try {
-        // Tên partition sinh từ năm/tháng do chính code này đặt — không có đầu
-        // vào người dùng, an toàn khi nội suy.
-        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS ${row.relname}`)
+        // Tên partition đã được kiểm tra chặt theo regex `interaction_events_YYYY_MM`
+        // và bọc nháy kép identifier trước khi thực thi.
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "${row.relname}"`)
         dropped.push(row.relname)
       } catch (error) {
         logger.warn({ err: error, partition: row.relname }, "không drop được partition cũ")

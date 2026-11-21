@@ -263,15 +263,21 @@ export async function addProposal(
           appliedAt: new Date(),
         },
       })
-      const current = await tx.room.findUniqueOrThrow({ where: { id: room.id } })
+      const [current] = await tx.$queryRaw<{ filter: unknown; version: number }[]>`
+        SELECT filter, version FROM rooms WHERE id = ${room.id}::uuid FOR UPDATE
+      `
+      if (!current) throw new Error("Phòng không tồn tại")
       const nextFilter = applyProposalToFilter(parseRoomFilter(current.filter), {
         kind: input.kind,
         field: input.field,
         value: input.value.trim(),
       })
       await tx.room.update({
-        where: { id: room.id },
-        data: { filter: serializeRoomFilter(nextFilter) },
+        where: { id: room.id, version: current.version },
+        data: {
+          filter: serializeRoomFilter(nextFilter),
+          version: { increment: 1 },
+        },
       })
     })
   } else {

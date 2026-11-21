@@ -152,7 +152,12 @@ export async function scoreAffinity(actor: RecommendationActor): Promise<Affinit
     const topSeedIds = seeds.slice(0, 5).map((s) => s.place_id)
     const contentRows = await prisma.$queryRaw<{ id: string; content_score: number }[]>(Prisma.sql`
       WITH seed_places AS (
-        SELECT p.id, p.category, p.district, p.tags, pe.embedding
+        SELECT p.id, p.category, p.district,
+               COALESCE(
+                 (SELECT ARRAY_AGG(pt.tag_id) FROM place_tags pt WHERE pt.place_id = p.id),
+                 ARRAY[]::uuid[]
+               ) AS tag_ids,
+               pe.embedding
         FROM places p
         LEFT JOIN place_embeddings pe ON pe.place_id = p.id
         WHERE p.id IN (${Prisma.join(topSeedIds)})
@@ -163,7 +168,9 @@ export async function scoreAffinity(actor: RecommendationActor): Promise<Affinit
           0.60 * GREATEST(0.0, COALESCE(1.0 - (cand_pe.embedding <=> sp.embedding), 0.0)) +
           0.25 * (CASE WHEN p.category = sp.category THEN 1.0 ELSE 0.0 END) +
           0.10 * (CASE WHEN p.district IS NOT NULL AND p.district = sp.district THEN 1.0 ELSE 0.0 END) +
-          0.05 * (CASE WHEN p.tags && sp.tags THEN 1.0 ELSE 0.0 END)
+          0.05 * (CASE WHEN EXISTS (
+            SELECT 1 FROM place_tags pt WHERE pt.place_id = p.id AND pt.tag_id = ANY(sp.tag_ids)
+          ) THEN 1.0 ELSE 0.0 END)
         )::float8 AS content_score
       FROM places p
       LEFT JOIN place_embeddings cand_pe ON cand_pe.place_id = p.id
@@ -258,7 +265,7 @@ export async function scoreColdStart(): Promise<ColdStartScore[]> {
           0.35 * CASE WHEN EXISTS (SELECT 1 FROM place_images pi WHERE pi.place_id = p.id) THEN 1.0 ELSE 0.0 END +
           0.20 * CASE WHEN p.description IS NOT NULL AND length(p.description) > 10 THEN 1.0 ELSE 0.0 END +
           0.20 * CASE WHEN p.opening_hours IS NOT NULL THEN 1.0 ELSE 0.0 END +
-          0.15 * CASE WHEN array_length(p.tags, 1) > 0 THEN 1.0 ELSE 0.0 END +
+          0.15 * CASE WHEN EXISTS (SELECT 1 FROM place_tags pt WHERE pt.place_id = p.id) THEN 1.0 ELSE 0.0 END +
           0.10 * CASE WHEN p.phone IS NOT NULL THEN 1.0 ELSE 0.0 END
         ) AS c_i
       FROM places p

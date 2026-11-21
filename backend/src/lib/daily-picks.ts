@@ -393,7 +393,9 @@ export async function getDailyPicks(pickDate: string): Promise<{
 }> {
   const rows = await prisma.$queryRaw<DailyPickRow[]>(Prisma.sql`
     SELECT dp.position, dp.reason, p.id, p.name, p.address, p.city, p.district,
-           p.category::text AS category, p.tags, p.price_level, p.lat, p.lng,
+           p.category::text AS category,
+           COALESCE(tg.tags, ARRAY[]::text[]) AS tags,
+           p.price_level, p.lat, p.lng,
            p.status::text AS status, p.opening_hours, p.created_at, p.published_at,
            COALESCE(r.rating, 0)::float8 AS rating,
            COALESCE(r.review_count, 0)::int AS review_count,
@@ -401,6 +403,12 @@ export async function getDailyPicks(pickDate: string): Promise<{
            img.url AS image_url, img.height AS image_height
     FROM daily_picks dp
     JOIN places p ON p.id = dp.place_id
+    LEFT JOIN LATERAL (
+      SELECT ARRAY_AGG(t.name ORDER BY pt.position, t.name) AS tags
+      FROM place_tags pt
+      JOIN tags t ON t.id = pt.tag_id
+      WHERE pt.place_id = p.id
+    ) tg ON true
     LEFT JOIN LATERAL (
       SELECT ROUND(AVG(rv.rating)::numeric, 1) AS rating, COUNT(*) AS review_count
       FROM reviews rv

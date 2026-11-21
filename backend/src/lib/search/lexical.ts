@@ -2,7 +2,7 @@ import { Prisma } from "../../../generated/prisma/client"
 import { normalizeSearchText, synonymVariants } from "../search-synonyms"
 import { NAME_HAYSTACK } from "./name-matcher"
 
-export const HAYSTACK = Prisma.sql`immutable_search_normalize(p.name || ' ' || p.address || ' ' || p.city || ' ' || coalesce(p.district, '') || ' ' || immutable_array_to_string(p.tags, ' '))`
+export const HAYSTACK = Prisma.sql`immutable_search_normalize(p.name || ' ' || p.address || ' ' || p.city || ' ' || coalesce(p.district, '') || ' ' || coalesce((SELECT string_agg(t.name, ' ' ORDER BY pt.position) FROM place_tags pt JOIN tags t ON t.id = pt.tag_id WHERE pt.place_id = p.id), ''))`
 export const COMPACT_HAYSTACK = Prisma.sql`replace(${HAYSTACK}, ' ', '')`
 
 export const QUERY_STOPWORDS = new Set([

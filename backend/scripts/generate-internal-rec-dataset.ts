@@ -69,10 +69,27 @@ function mulberry32(seed: number): () => number {
 
 async function main() {
   console.log("=== Khởi tạo Dataset Recommendation Nội bộ Rendez ===")
-  const placesRaw = await prisma.place.findMany({
-    where: { publishedAt: { not: null }, status: { not: "closed" }, deletedAt: null },
-    select: { id: true, name: true, category: true, district: true, tags: true },
-  })
+  const placesRaw = (
+    await prisma.place.findMany({
+      where: { publishedAt: { not: null }, status: { not: "closed" }, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        district: true,
+        placeTags: {
+          orderBy: { position: "asc" },
+          select: { tag: { select: { name: true } } },
+        },
+      },
+    })
+  ).map((pl) => ({
+    id: pl.id,
+    name: pl.name,
+    category: pl.category,
+    district: pl.district,
+    tags: pl.placeTags.map((pt) => pt.tag.name),
+  }))
 
   if (placesRaw.length === 0) {
     throw new Error("Không có place nào trong database để sinh dataset!")

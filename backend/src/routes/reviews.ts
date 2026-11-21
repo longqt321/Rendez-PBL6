@@ -110,11 +110,22 @@ export function createReviewsRouter() {
     }
 
     const userId = c.get("userId")
-    const review = await prisma.review.upsert({
-      where: { placeId_authorId: { placeId, authorId: userId } },
-      create: { placeId, authorId: userId, ...parsed.data },
-      update: { ...parsed.data, deletedAt: null },
-      select: { id: true },
+    const review = await prisma.$transaction(async (tx) => {
+      const existing = await tx.review.findFirst({
+        where: { placeId, authorId: userId, deletedAt: null },
+        select: { id: true },
+      })
+      if (existing) {
+        return tx.review.update({
+          where: { id: existing.id },
+          data: { ...parsed.data },
+          select: { id: true },
+        })
+      }
+      return tx.review.create({
+        data: { placeId, authorId: userId, ...parsed.data },
+        select: { id: true },
+      })
     })
 
     const rows = await prisma.$queryRaw<ReviewRow[]>(Prisma.sql`

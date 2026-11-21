@@ -208,6 +208,39 @@ function mergeTags(tags: string[], vibes: string[]): string[] {
   return out
 }
 
+async function syncPlaceSources(placeId: string, sources: string[]): Promise<void> {
+  await prisma.placeSource.deleteMany({ where: { placeId } })
+  const unique = [...new Set(sources.map((s) => s.trim()).filter(Boolean))]
+  for (const name of unique) {
+    const source = await prisma.source.upsert({
+      where: { name },
+      create: { name },
+      update: {},
+      select: { id: true },
+    })
+    await prisma.placeSource.create({
+      data: { placeId, sourceId: source.id },
+    })
+  }
+}
+
+async function syncPlaceTags(placeId: string, tags: string[]): Promise<void> {
+  await prisma.placeTag.deleteMany({ where: { placeId } })
+  for (const [position, rawName] of tags.entries()) {
+    const name = rawName.trim()
+    if (!name) continue
+    const tag = await prisma.tag.upsert({
+      where: { name },
+      create: { name },
+      update: {},
+      select: { id: true },
+    })
+    await prisma.placeTag.create({
+      data: { placeId, tagId: tag.id, position },
+    })
+  }
+}
+
 function toDate(value: string | null): Date | null {
   if (!value) return null
   const date = new Date(value)
@@ -414,14 +447,12 @@ async function main(): Promise<void> {
       district: raw.district,
       category: PRISMA_CATEGORY[mappedCategory],
       priceLevel: priceLevelFor(raw.id, mappedCategory, mode),
-      tags: mergeTags(raw.tags ?? [], raw.vibes ?? []),
       lat: raw.lat,
       lng: raw.lng,
       status: toStatus(raw.status),
       description: raw.description,
       phone: raw.phone,
       openingHours: raw.openingHours,
-      sources: raw.sources ?? [],
       geoSource: raw.geoSource,
       geoPrecision: raw.geoPrecision,
       venuePageUrl: raw.venuePageUrl,
@@ -433,6 +464,8 @@ async function main(): Promise<void> {
       imageNote: raw.imageNote,
       publishedAt,
     }
+
+    const mergedTags = mergeTags(raw.tags ?? [], raw.vibes ?? [])
 
     if (mode === "prod") {
       // Production: An toàn tuyệt đối (Non-destructive). Chỉ tạo mới hoặc vá các trường đang rỗng,
@@ -447,16 +480,17 @@ async function main(): Promise<void> {
           lat: true,
           lng: true,
           district: true,
-          tags: true,
+          _count: { select: { placeTags: true } },
         },
       })
       if (!existingPlace) {
         await prisma.place.create({ data: { id: raw.id, ...data } })
+        await syncPlaceTags(raw.id, mergedTags)
+        await syncPlaceSources(raw.id, raw.sources ?? [])
       } else {
         await prisma.place.update({
           where: { id: raw.id },
           data: {
-            sources: data.sources,
             geoSource: data.geoSource,
             geoPrecision: data.geoPrecision,
             osmId: data.osmId,
@@ -470,16 +504,21 @@ async function main(): Promise<void> {
             lat: existingPlace.lat ?? data.lat,
             lng: existingPlace.lng ?? data.lng,
             district: existingPlace.district ?? data.district,
-            tags: existingPlace.tags.length > 0 ? existingPlace.tags : data.tags,
           },
         })
+        await syncPlaceSources(raw.id, raw.sources ?? [])
+        if (existingPlace._count.placeTags === 0 && mergedTags.length > 0) {
+          await syncPlaceTags(raw.id, mergedTags)
+        }
       }
     } else {
       await prisma.place.upsert({
         where: { id: raw.id },
-        create: { id: raw.id, ...data },
+        create: { id: raw.id, ...data } as Parameters<typeof prisma.place.upsert>[0]["create"],
         update: data,
       })
+      await syncPlaceTags(raw.id, mergedTags)
+      await syncPlaceSources(raw.id, raw.sources ?? [])
     }
 
     const urls = (raw.images?.length ?? 0) > 0 ? raw.images : raw.image ? [raw.image] : []

@@ -35,9 +35,16 @@ function passageText(place: PlaceRow): string {
 
 async function main() {
   const places = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-    SELECT id, name, category::text AS category, district, tags
-    FROM places
-    WHERE published_at IS NOT NULL AND deleted_at IS NULL AND status <> 'closed'
+    SELECT p.id, p.name, p.category::text AS category, p.district,
+           COALESCE(
+             (SELECT ARRAY_AGG(t.name ORDER BY pt.position, t.name)
+              FROM place_tags pt
+              JOIN tags t ON t.id = pt.tag_id
+              WHERE pt.place_id = p.id),
+             ARRAY[]::text[]
+           ) AS tags
+    FROM places p
+    WHERE p.published_at IS NOT NULL AND p.deleted_at IS NULL AND p.status <> 'closed'
   `)
   console.log(`Lấy ${places.length} venue published`)
 
