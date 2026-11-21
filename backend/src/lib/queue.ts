@@ -1,6 +1,7 @@
 import { PgBoss } from "pg-boss"
 import { env } from "../env"
 import { logger } from "./logger"
+import { prisma } from "./prisma"
 import { getPickDate, pickDailyPicks } from "./daily-picks"
 import { detectPlaceSuggestions } from "./suggestions-job"
 import { maintainInteractionPartitions } from "./event-retention"
@@ -26,6 +27,10 @@ const AFFINITY_QUEUE = "refresh-affinity"
 const AFFINITY_DLQ = "refresh-affinity-dlq"
 
 const AFFINITY_CRON = "30 3 * * *"
+
+const AUTH_CLEANUP_QUEUE = "auth-cleanup"
+const AUTH_CLEANUP_DLQ = "auth-cleanup-dlq"
+const AUTH_CLEANUP_CRON = "15 4 * * *"
 
 let boss: PgBoss | null = null
 
@@ -110,6 +115,38 @@ export async function startQueue(): Promise<void> {
     }
   })
   await instance.schedule(AFFINITY_QUEUE, AFFINITY_CRON, null, {
+    tz: DAILY_PICKS_TIME_ZONE,
+    missed: "once",
+  })
+
+  // Dọn bản ghi hết hạn (session, verification, idempotency_keys) hàng ngày lúc 04:15.
+  await instance.createQueue(AUTH_CLEANUP_DLQ)
+  await instance.createQueue(AUTH_CLEANUP_QUEUE, {
+    retryLimit: 3,
+    retryDelay: 600,
+    retryBackoff: true,
+    deadLetter: AUTH_CLEANUP_DLQ,
+  })
+  await instance.work(AUTH_CLEANUP_QUEUE, async (jobs) => {
+    for (const job of jobs) {
+      const now = new Date()
+      const [sessions, verifications, idempotency] = await Promise.all([
+        prisma.session.deleteMany({ where: { expiresAt: { lt: now } } }),
+        prisma.verification.deleteMany({ where: { expiresAt: { lt: now } } }),
+        prisma.idempotencyKey.deleteMany({ where: { expiresAt: { lt: now } } }),
+      ])
+      logger.info(
+        {
+          jobId: job.id,
+          sessions: sessions.count,
+          verifications: verifications.count,
+          idempotency: idempotency.count,
+        },
+        "auth-cleanup xong",
+      )
+    }
+  })
+  await instance.schedule(AUTH_CLEANUP_QUEUE, AUTH_CLEANUP_CRON, null, {
     tz: DAILY_PICKS_TIME_ZONE,
     missed: "once",
   })

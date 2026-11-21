@@ -12,6 +12,8 @@ const envSchema = z.object({
       message: "DATABASE_URL phải là connection string Postgres",
     }),
 
+  REDIS_URL: z.string().url().or(z.literal("")).default(""),
+
   CORS_ORIGINS: z.string().default(""),
 
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),

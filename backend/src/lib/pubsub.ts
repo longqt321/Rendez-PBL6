@@ -46,10 +46,12 @@ class PostgresPubSub {
         this.scheduleReconnect()
       })
 
-      // Đăng ký lại toàn bộ channel nếu vừa reconnect
-      for (const channel of this.activeChannels) {
-        await this.listenerClient.query(`LISTEN ${channel}`).catch(() => {})
-      }
+      // Đăng ký lại toàn bộ channel song song nếu vừa reconnect
+      await Promise.all(
+        [...this.activeChannels].map((channel) =>
+          this.listenerClient?.query(`LISTEN ${channel}`).catch(() => {}),
+        ),
+      )
 
       this.isConnecting = false
       logger.info("Postgres PubSub (LISTEN/NOTIFY) đã sẵn sàng")

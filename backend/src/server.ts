@@ -4,6 +4,7 @@ import { logger } from "./lib/logger"
 import { prisma } from "./lib/prisma"
 import { pubsub } from "./lib/pubsub"
 import { startQueue, stopQueue } from "./lib/queue"
+import { closeRedis } from "./lib/redis"
 
 const app = createApp()
 
@@ -20,6 +21,7 @@ if (!isWorkerDisabled) {
 const server = Bun.serve({
   port: env.PORT,
   reusePort: true, // Cho phép nhiều tiến trình Bun bind cùng 1 cổng để tận dụng đa nhân CPU
+  idleTimeout: 30,
 
   fetch: (request, bunServer) =>
     app.fetch(request, { remoteAddress: bunServer.requestIP(request)?.address ?? "" }),
@@ -41,12 +43,13 @@ async function shutdown(signal: string): Promise<void> {
   shuttingDown = true
   logger.info({ signal, pid: process.pid }, "Nhận tín hiệu tắt — đóng server")
 
-  server.stop()
+  await server.stop()
   await pubsub.cleanup().catch((error) => logger.error({ err: error }, "Đóng PubSub lỗi"))
   if (!isWorkerDisabled) {
     await stopQueue().catch((error) => logger.error({ err: error }, "Đóng queue lỗi"))
   }
   await prisma.$disconnect().catch((error) => logger.error({ err: error }, "Đóng Prisma lỗi"))
+  await closeRedis()
   process.exit(0)
 }
 

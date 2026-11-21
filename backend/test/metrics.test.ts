@@ -34,7 +34,14 @@ describe("metrics", () => {
     expect(snapshot.cacheHitRatio).toBe(0.333)
 
     const places = snapshot.byEndpoint.find((entry) => entry.route === "GET /places")
-    expect(places).toEqual({ route: "GET /places", count: 2, avgMs: 20, cacheHits: 0 })
+    expect(places).toEqual({
+      route: "GET /places",
+      count: 2,
+      avgMs: 20,
+      p95Ms: 30,
+      p99Ms: 30,
+      cacheHits: 0,
+    })
 
     const suggestions = snapshot.byEndpoint.find(
       (entry) => entry.route === "GET /places/suggestions",
@@ -43,6 +50,8 @@ describe("metrics", () => {
       route: "GET /places/suggestions",
       count: 1,
       avgMs: 20,
+      p95Ms: 20,
+      p99Ms: 20,
       cacheHits: 1,
     })
   })

@@ -46,9 +46,11 @@ export async function detectPlaceSuggestions(postId?: string): Promise<number> {
   const candidates = (await fetchRankCandidates(false)).map(toSuggestionCandidate)
   if (candidates.length === 0) return 0
 
+  const normalizedCaptions = await Promise.all(posts.map((post) => normalizeCaption(post.caption)))
+
   let created = 0
-  for (const post of posts) {
-    const captionNorm = await normalizeCaption(post.caption)
+  for (const [idx, post] of posts.entries()) {
+    const captionNorm = normalizedCaptions[idx] ?? ""
     const ranked = rankPlaceSuggestions(captionNorm, candidates, SUGGESTIONS_PER_NOTIFICATION)
     if (ranked.length === 0) continue
 

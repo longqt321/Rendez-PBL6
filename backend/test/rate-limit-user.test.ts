@@ -3,7 +3,7 @@ import { startTestDb, stopTestDb } from "./helpers/pg"
 import { registerVerifiedUser } from "./helpers/auth"
 
 /**
- * Rate limit theo USER (`rateLimit({ byUser: true })`) — `/media` 10 URL/giờ/user.
+ * Rate limit theo USER (`rateLimit({ byUser: true })`) — `/media` 60 URL/giờ/user.
  *
  * Kiểm hai điều mà rate limit theo IP không làm được:
  * 1. Một tài khoản vượt ngưỡng thì nhận 429.
@@ -52,17 +52,17 @@ function requestMedia(cookie: string) {
 }
 
 describe("rate limit theo user", () => {
-  test("user vượt 10 URL/giờ nhận 429; user khác cùng IP vẫn dùng được", async () => {
+  test("user vượt 60 URL/giờ nhận 429; user khác cùng IP vẫn dùng được", async () => {
     const cookieA = await register("Người A", `rl_a_${suffix}`)
     const cookieB = await register("Người B", `rl_b_${suffix}`)
 
-    // 10 request đầu của A: trong ngưỡng.
-    for (let i = 0; i < 10; i += 1) {
+    // 60 request đầu của A: trong ngưỡng.
+    for (let i = 0; i < 60; i += 1) {
       const res = await requestMedia(cookieA)
       expect(res.status).toBe(201)
     }
 
-    // Request thứ 11 → 429 kèm Retry-After.
+    // Request thứ 61 → 429 kèm Retry-After.
     const blocked = await requestMedia(cookieA)
     expect(blocked.status).toBe(429)
     expect(blocked.headers.get("Retry-After")).not.toBeNull()

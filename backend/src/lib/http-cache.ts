@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto"
 import type { Context } from "hono"
+import { getRedis } from "./redis"
+import { recordRedisTiming, setRequestCacheHit } from "./request-context"
 
 function matchesEtag(header: string, etag: string): boolean {
   return header
@@ -54,9 +56,15 @@ export function noStore(c: Context, data: unknown): Response {
  * nhất là O(1). Single-flight: request thứ hai cùng key trong lúc loader đang
  * chạy sẽ chờ đúng promise đó thay vì bắn thêm query.
  */
-export function createTtlCache<T>(options: { ttlMs: number; maxEntries: number }) {
+export function createTtlCache<T>(options: {
+  ttlMs: number
+  maxEntries: number
+  namespace?: string
+}) {
   const entries = new Map<string, { value: T; expiresAt: number }>()
   const inflight = new Map<string, Promise<T>>()
+  const ttlSeconds = Math.max(1, Math.ceil(options.ttlMs / 1000))
+  const prefix = options.namespace ? `cache:${options.namespace}:` : "cache:"
 
   /**
    * Như `get` nhưng báo thêm `hit` — route dùng để gắn `meta.cacheHit`/metrics
@@ -67,17 +75,45 @@ export function createTtlCache<T>(options: { ttlMs: number; maxEntries: number }
     load: () => Promise<T>,
   ): Promise<{ value: T; hit: boolean }> {
     const hit = entries.get(key)
-    if (hit && hit.expiresAt > Date.now()) return { value: hit.value, hit: true }
+    if (hit && hit.expiresAt > Date.now()) {
+      setRequestCacheHit(true)
+      return { value: hit.value, hit: true }
+    }
+
+    const redis = getRedis()
+    if (redis) {
+      const startedAt = performance.now()
+      try {
+        const raw = await redis.get(`${prefix}${key}`)
+        if (raw !== null) {
+          const parsed = JSON.parse(raw) as T
+          entries.set(key, { value: parsed, expiresAt: Date.now() + options.ttlMs })
+          setRequestCacheHit(true)
+          return { value: parsed, hit: true }
+        }
+      } catch {
+        // Fallback sang loader nếu Redis lỗi
+      } finally {
+        recordRedisTiming(performance.now() - startedAt)
+      }
+    }
 
     const pending = inflight.get(key)
     if (pending) return { value: await pending, hit: false }
 
     const promise = load()
-      .then((value) => {
+      .then(async (value) => {
         entries.set(key, { value, expiresAt: Date.now() + options.ttlMs })
         if (entries.size > options.maxEntries) {
           const oldest = entries.keys().next().value
           if (oldest !== undefined) entries.delete(oldest)
+        }
+        if (redis) {
+          try {
+            await redis.set(`${prefix}${key}`, JSON.stringify(value), "EX", ttlSeconds)
+          } catch {
+            // Không làm hỏng luồng chính khi cache write lỗi
+          }
         }
         return value
       })

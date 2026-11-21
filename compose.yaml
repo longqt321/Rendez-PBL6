@@ -5,6 +5,12 @@ services:
   postgres:
     image: pgvector/pgvector:0.8.7-pg17
     container_name: rendez-postgres
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_stat_statements
+      - -c
+      - pg_stat_statements.track=all
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-rendez}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rendez_dev}
@@ -26,6 +32,35 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: rendez-redis
+    command:
+      - redis-server
+      - --maxmemory
+      - 128mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 192M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   # Chạy migration một lần rồi thoát; API chờ service này xong mới khởi động.
   migrate:
@@ -75,6 +110,7 @@ services:
       # thật thay vì IP của proxy (mặc định rỗng = gộp mọi user vào một bucket).
       # 172.16.0.0/12 là dải mạng bridge mặc định của Docker.
       TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.16.0.0/12}
+      REDIS_URL: redis://redis:6379
     ports:
       - "${API_PORT:-8000}:8000"
     deploy:
@@ -87,6 +123,8 @@ services:
           memory: 256M
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully

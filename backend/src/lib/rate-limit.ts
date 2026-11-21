@@ -1,6 +1,9 @@
 import { createMiddleware } from "hono/factory"
 import type { AppEnv } from "../app"
 import { env } from "../env"
+import { logger } from "./logger"
+import { getRedis } from "./redis"
+import { recordRedisTiming } from "./request-context"
 
 export interface RateLimitOptions {
   limit: number
@@ -90,6 +93,31 @@ export function hitRateLimit(key: string, windowSeconds: number): { count: numbe
   return { count: entry.count, resetAt: new Date(entry.resetAt) }
 }
 
+export async function hitRateLimitAsync(
+  key: string,
+  windowSeconds: number,
+): Promise<{ count: number; resetAt: Date }> {
+  const redis = getRedis()
+  if (redis) {
+    const startedAt = performance.now()
+    try {
+      const redisKey = `rl:${key}`
+      const count = await redis.incr(redisKey)
+      if (count === 1) {
+        await redis.expire(redisKey, windowSeconds)
+      }
+      const ttl = await redis.ttl(redisKey)
+      const resetMs = Date.now() + Math.max(1, ttl > 0 ? ttl : windowSeconds) * 1000
+      return { count, resetAt: new Date(resetMs) }
+    } catch (err) {
+      logger.warn({ err, key }, "Redis rate-limit lỗi, fallback in-memory")
+    } finally {
+      recordRedisTiming(performance.now() - startedAt)
+    }
+  }
+  return hitRateLimit(key, windowSeconds)
+}
+
 /** Middleware giới hạn theo IP (hoặc userId khi `byUser`) + scope; vượt trả 429 kèm `Retry-After`. */
 export function rateLimit(options: RateLimitOptions) {
   return createMiddleware<AppEnv>(async (c, next) => {
@@ -105,7 +133,7 @@ export function rateLimit(options: RateLimitOptions) {
         ? `user:${userId}`
         : clientIp(c.req.raw.headers, c.env?.remoteAddress)
     const key = `${options.scope}:${identity}`
-    const { count, resetAt } = hitRateLimit(key, options.windowSeconds)
+    const { count, resetAt } = await hitRateLimitAsync(key, options.windowSeconds)
     if (count > options.limit) {
       const retryAfter = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
       return c.json({ message: "Bạn thao tác quá nhanh, vui lòng thử lại sau" }, 429, {
