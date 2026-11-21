@@ -22,7 +22,8 @@
     "e2e": "cd frontend && bun run e2e",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
-    "db:migrate": "cd backend && bun run db:migrate",
+    "db:migrate": "docker exec rendez-postgres psql -U rendez -d rendez -c 'CREATE EXTENSION IF NOT EXISTS vector;' >/dev/null && docker exec rendez-postgres psql -U rendez -d template1 -c 'CREATE EXTENSION IF NOT EXISTS vector;' >/dev/null && cd backend && bun run db:deploy",
+    "db:migrate:dev": "docker exec rendez-postgres psql -U rendez -d template1 -c 'CREATE EXTENSION IF NOT EXISTS vector;' >/dev/null && cd backend && bun run db:migrate",
     "db:seed": "cd backend && bun run db:seed",
     "db:generate": "cd backend && bun run db:generate",
     "prepare": "husky"

@@ -1282,3 +1282,14 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
 - **Lỗi**: Khi lập kế hoạch (`/plan`) và có các câu hỏi cần người dùng chốt phương án thiết kế, agent lại viết câu hỏi dưới dạng danh sách text ở cuối file artifact thiết kế và trong phản hồi chat thay vì gọi công cụ `ask_question`.
 - **Nguyên nhân gốc**: Quên sử dụng công cụ tương tác `ask_question` đã được cung cấp cho các câu hỏi lựa chọn phương án (multiple-choice) khi làm rõ yêu cầu, khiến người dùng không có giao diện chọn đáp án trực tiếp.
 - **Cách phòng tránh**: Mọi câu hỏi làm rõ yêu cầu hoặc chốt phương án thiết kế có các lựa chọn cụ thể bắt buộc phải gọi tool `ask_question` (đặt phương án đề xuất lên đầu kèm tiền tố `(Recommended)`), tuyệt đối không đẩy câu hỏi vào trong file thiết kế bắt người dùng tự gõ câu trả lời.
+
+## L-056 — 2026-11-21: Hướng dẫn chạy `bun run db:migrate` (`prisma migrate dev`) gây lỗi `type "vector" does not exist` trên shadow database
+
+- **Lỗi**: Hướng dẫn người dùng chạy `bun run db:migrate` (gọi `prisma migrate dev`) khiến Prisma tạo shadow database mới chưa được bật extension `vector`, dẫn tới lỗi `P3006 / P3018: ERROR: type "vector" does not exist` tại migration `20261113080000_search_rec_foundation`.
+- **Nguyên nhân gốc**:
+  1. Khi chỉ cần áp dụng các migration đã có sẵn để chạy dự án, lệnh đúng phải là `prisma migrate deploy` (`bun run db:deploy`), không phải `prisma migrate dev` (vốn tạo shadow database tạm từ `template1` để kiểm tra schema drift).
+  2. Trong PostgreSQL, extension `vector` chưa được cài vào database mẫu `template1`, nên mọi shadow database do `prisma migrate dev` tự sinh ra đều thiếu kiểu `vector`.
+  3. Không tự chạy thử chính xác chuỗi lệnh hướng dẫn (`bun run db:migrate`) trên môi trường thực tế trước khi gửi cho người dùng.
+- **Cách phòng tránh**:
+  1. Bật sẵn `CREATE EXTENSION IF NOT EXISTS vector;` trên cả database `rendez` lẫn `template1` trong lệnh `db:migrate` / `db:migrate:dev` ở `package.json` gốc, đồng thời trỏ `bun run db:migrate` về `prisma migrate deploy` để áp dụng migration an toàn.
+  2. Trước khi đưa bất kỳ lệnh CLI hướng dẫn nào cho người dùng, phải chạy kiểm chứng lệnh đó trên terminal thực tế.
