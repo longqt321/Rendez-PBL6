@@ -6,6 +6,7 @@ import type {
 } from "@rendez/schema"
 import { toast } from "sonner"
 import {
+  getAdminObservability,
   getAdminOverview,
   getAdminPlaces,
   getAdminReports,
@@ -18,11 +19,14 @@ import {
   type AdminReportsQuery,
   type AdminUsersQuery,
   type AuditLogsQuery,
+  type ObservabilityEventKind,
 } from "../api/admin-api"
 
 export const ADMIN_KEYS = {
   all: ["admin"] as const,
   overview: () => ["admin", "overview"] as const,
+  observability: (query: { kind?: ObservabilityEventKind; q?: string }) =>
+    ["admin", "observability", query] as const,
   reports: (query: Omit<AdminReportsQuery, "cursor">) => ["admin", "reports", query] as const,
   places: (query: Omit<AdminPlacesQuery, "cursor">) => ["admin", "places", query] as const,
   users: (query: Omit<AdminUsersQuery, "cursor">) => ["admin", "users", query] as const,
@@ -33,6 +37,17 @@ export function useAdminOverview() {
   return useQuery({
     queryKey: ADMIN_KEYS.overview(),
     queryFn: getAdminOverview,
+  })
+}
+
+export function useAdminObservability(
+  query: { kind?: ObservabilityEventKind; q?: string } = {},
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: ADMIN_KEYS.observability(query),
+    queryFn: () => getAdminObservability(query),
+    enabled: options?.enabled ?? true,
   })
 }
 

@@ -90,9 +90,33 @@ vi.mock("../hooks/use-admin", () => ({
     fetchNextPage: vi.fn(),
     refetch: vi.fn(),
   }),
+  useAdminObservability: () => ({
+    data: {
+      latency: {
+        uptimeMs: 120_000,
+        totalQueries: 50,
+        avgLatencyMs: 14,
+        p50LatencyMs: 10,
+        p95LatencyMs: 32,
+        p99LatencyMs: 48,
+        cacheHitRatio: 0.72,
+        byEndpoint: [],
+      },
+      webVitals: [],
+      slowSql: [],
+      behavior24h: [],
+      summary: { errorCount: 0, slowCount: 0 },
+      events: [],
+    },
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
   useUpdateAdminReport: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateAdminPlace: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateAdminUser: () => ({ mutate: vi.fn(), isPending: false }),
+  ADMIN_KEYS: { all: ["admin"] },
 }))
 
 function renderAdmin(initialEntry = "/admin") {
@@ -113,26 +137,30 @@ describe("AdminPage", () => {
     authState.role = "admin"
   })
 
-  it("admin thấy đầy đủ 5 tab và số liệu tổng quan", () => {
+  it("admin thấy đầy đủ 6 mục điều hướng và số liệu tổng quan", () => {
     renderAdmin()
 
-    expect(screen.getByRole("heading", { level: 1, name: /Quản trị/u })).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "Tổng quan" })).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "Báo cáo" })).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "Địa điểm" })).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "Người dùng" })).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "Nhật ký" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { level: 1, name: /Trung tâm điều hành/u }),
+    ).toBeInTheDocument()
+    expect(screen.getAllByRole("button", { name: /Tổng quan/u }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /Báo cáo/u }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /Địa điểm/u }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /Người dùng/u }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /Hiệu suất & Log/u }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /Nhật ký kiểm toán/u }).length).toBeGreaterThan(0)
     expect(screen.getByText("340")).toBeInTheDocument()
   })
 
-  it("moderator không thấy tab Người dùng", () => {
+  it("moderator không thấy mục Người dùng và Hiệu suất & Log", () => {
     authState.role = "moderator"
     renderAdmin()
 
-    expect(screen.getByRole("tab", { name: "Tổng quan" })).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "Báo cáo" })).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "Địa điểm" })).toBeInTheDocument()
-    expect(screen.getByRole("tab", { name: "Nhật ký" })).toBeInTheDocument()
-    expect(screen.queryByRole("tab", { name: "Người dùng" })).not.toBeInTheDocument()
+    expect(screen.getAllByRole("button", { name: /Tổng quan/u }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /Báo cáo/u }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /Địa điểm/u }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /Nhật ký kiểm toán/u }).length).toBeGreaterThan(0)
+    expect(screen.queryByRole("button", { name: /Người dùng/u })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /Hiệu suất & Log/u })).not.toBeInTheDocument()
   })
 })

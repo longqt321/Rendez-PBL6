@@ -124,3 +124,87 @@ export async function getAuditLogs(query: AuditLogsQuery = {}): Promise<Page<Aud
   })
   return data
 }
+
+export type ObservabilityEventKind =
+  "all" | "slow_request" | "server_error" | "client_error" | "web_vital"
+
+export interface ObservabilityEventItem {
+  id: string
+  kind: Exclude<ObservabilityEventKind, "all">
+  timestamp: string
+  requestId?: string
+  traceId?: string
+  method?: string
+  route?: string
+  status?: number
+  durationMs?: number
+  timing?: {
+    dbMs: number
+    dbCount: number
+    redisMs: number
+    embedMs: number
+    externalMs: number
+    appMs: number
+  }
+  message?: string
+  metric?: "LCP" | "INP" | "CLS" | "FCP" | "TTFB"
+  value?: number
+  rating?: "good" | "needs-improvement" | "poor"
+  source?: string
+}
+
+export interface AdminObservability {
+  latency: {
+    uptimeMs: number
+    totalQueries: number
+    avgLatencyMs: number
+    p50LatencyMs: number
+    p95LatencyMs: number
+    p99LatencyMs: number
+    cacheHitRatio: number
+    byEndpoint: {
+      route: string
+      count: number
+      avgMs: number
+      p95Ms: number
+      p99Ms: number
+      cacheHits: number
+    }[]
+  }
+  webVitals: {
+    name: "LCP" | "INP" | "CLS"
+    p75: number | null
+    samples: number
+    poor: number
+    good: number
+  }[]
+  slowSql: {
+    query: string
+    calls: number
+    meanMs: number
+    totalMs: number
+    rows: number
+  }[]
+  behavior24h: {
+    eventType: string
+    count: number
+  }[]
+  summary: {
+    errorCount: number
+    slowCount: number
+  }
+  events: ObservabilityEventItem[]
+}
+
+export async function getAdminObservability(query?: {
+  kind?: ObservabilityEventKind
+  q?: string
+}): Promise<AdminObservability> {
+  const { data } = await api.get<AdminObservability>("/admin/observability", {
+    params: {
+      kind: query?.kind && query.kind !== "all" ? query.kind : undefined,
+      q: query?.q?.trim() ? query.q.trim() : undefined,
+    },
+  })
+  return data
+}

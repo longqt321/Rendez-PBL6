@@ -17,7 +17,7 @@ import { REPORT_REASON_META } from "@/features/places/lib/report-meta"
 import { formatNumber, formatRelativeTime } from "@/lib/format"
 import { useAdminOverview, useAdminReports, useAuditLogs } from "../hooks/use-admin"
 
-export type AdminTabKey = "overview" | "reports" | "places" | "users" | "logs"
+export type AdminTabKey = "overview" | "reports" | "places" | "users" | "observability" | "logs"
 
 interface OverviewTabProps {
   readonly onSelectTab: (tab: AdminTabKey) => void
