@@ -1,20 +1,21 @@
 # backend — RendeZ API
 
-Hono 4 + Bun + Prisma 7 + PostgreSQL 17 + better-auth + pg-boss.
+Hono 4 + Bun 1.3 + Prisma 7 + PostgreSQL 17 (`pgvector`, `pg_stat_statements`) + Redis 7 + better-auth + pg-boss.
 
-- Kế hoạch/nguồn sự thật: [`../docs/backend/ke-hoach-backend-chi-tiet.md`](../docs/backend/ke-hoach-backend-chi-tiet.md)
-- Stack đã cài & khác biệt Prisma 7: [`../docs/STACK-BE.md`](../docs/STACK-BE.md)
+- Stack đầy đủ: [`../docs/STACK.md`](../docs/STACK.md)
+- Tài liệu API: [`../docs/backend/API.md`](../docs/backend/API.md)
+- Vận hành & deploy: [`../docs/backend/RUNBOOK.md`](../docs/backend/RUNBOOK.md)
 
 ## Hiện trạng
 
-- 20 migration, 29 model Prisma (`schema.prisma`); seed chính thức **358 địa điểm** (`data/places-expanded.json`).
-- **40 file test** trong `test/` (`bun run test` chạy tuần tự qua `scripts/test-all.sh` với Testcontainers Postgres); typecheck + build 0 lỗi.
-- Auth better-auth: **bắt buộc xác thực email trước khi đăng nhập**; đăng nhập bằng email.
-- Tính năng chính:
-  - **Tìm kiếm & Gợi ý**: Hybrid search (pg_trgm + pgvector + structured intent + EGRF), **Gợi ý hôm nay** (cron 00:05 giờ VN, `src/lib/daily-picks.ts`), gợi ý cá nhân hoá + DES cold-start (`GET /places/recommended`, `src/lib/recommendations.ts`), sự kiện tương tác (`POST /events`).
-  - **Gợi ý theo dõi người dùng** (`src/lib/user-suggestions.ts`, route `users`).
-  - **Route OG** (`src/routes/og.ts`): HTML meta Open Graph cho bot preview Facebook/Zalo/Messenger khi chia sẻ bài/quán.
-  - **Rate limit & SSE**: rate limit hành động xã hội (`src/lib/rate-limit.ts`), SSE realtime qua Postgres `LISTEN/NOTIFY` (`src/lib/pubsub.ts`).
+- **23 migration**, **33 model Prisma** (`prisma/schema.prisma`, chuẩn 3NF cho `tags`/`place_tags` và `sources`/`place_sources`); seed chính thức **358 địa điểm** (`data/places-expanded.json`).
+- **44 file test** trong `test/` (`bun run test` chạy tuần tự qua `scripts/test-all.sh` với Testcontainers Postgres); typecheck + build 0 lỗi.
+- **Auth (`better-auth`)**: Bắt buộc xác thực email trước khi đăng nhập; cron `auth-cleanup` dọn `sessions`, `verifications`, `idempotency_keys` hết hạn hằng ngày (`04:15` giờ VN).
+- **Tính năng & Hạ tầng chính**:
+  - **Tìm kiếm & Gợi ý**: Hybrid search (`pg_trgm` + `pgvector` HNSW + structured intent + EGRF), **Gợi ý hôm nay** (`00:05` giờ VN), gợi ý cá nhân hoá + DES cold-start (`GET /places/recommended`), thu thập hành vi bulk `unnest` (`POST /events`).
+  - **Redis & Độ bền**: `Bun.RedisClient` (`src/lib/redis.ts`) cho rate-limit, cache, dedupe `/events`, ring buffer `/admin/observability` (kèm fallback in-memory); `cockatiel` circuit-breaker/timeout cho ONNX embeddings.
+  - **Observability**: `AsyncLocalStorage` (`src/lib/request-context.ts`) + Pino `mixin` + Canonical Log Line phân rã độ trễ (`db`, `redis`, `embed`, `external`, `app`), nối `traceparent` / `X-Request-Id`, `POST /telemetry` (`client_error` & `web_vital`) và `GET /admin/observability` (`pg_stat_statements` + `p50/p95/p99`).
+  - **Route OG & SSE**: Open Graph preview (`src/routes/og.ts`) và SSE phòng lọc nhóm qua Postgres `LISTEN/NOTIFY` (`src/lib/pubsub.ts`).
 
 ## Chạy dev
 
@@ -31,12 +32,12 @@ bun run dev:api            # http://localhost:8000/healthz
 
 ```bash
 bun run typecheck          # tsc --noEmit
-bun run test               # bun test (không cần DB)
-curl -i localhost:8000/healthz
+bun test test/observability.test.ts  # unit/app test nhanh không cần Docker
+bun run test               # toàn bộ 44 file test (Testcontainers Postgres)
+bun run build              # bundle backend/dist/server.js
 ```
 
 ## Ghi chú
 
-- `generated/` và `.env` bị gitignore; `prisma/migrations/` phải commit.
-- Prisma 7 không nhận `datasource.url` trong schema — URL nằm ở `prisma.config.ts`.
-- API chi tiết các route: `../docs/backend/API.md`. Vận hành: `../docs/backend/RUNBOOK.md`.
+- `generated/` và `.env` bị gitignore; `prisma/migrations/` phải commit và không sửa migration lịch sử.
+- Prisma 7 dùng driver adapter `@prisma/adapter-pg` + URL trong `prisma.config.ts`.

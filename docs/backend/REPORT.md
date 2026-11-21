@@ -1,19 +1,19 @@
 # Báo cáo kỹ thuật backend Rendez
 
-> Cập nhật số liệu tổng quan: 2026-11-19 (kiến trúc ban đầu xây dựng 2026-11-11 → 2026-11-12, bổ sung EGRF & DES ngày 2026-11-16). Các số liệu chạy e2e/test backend cũ ghi rõ ngày chụp khi chưa chạy lại trong phiên gần nhất.
+> Cập nhật số liệu tổng quan: 2026-11-21 (kiến trúc ban đầu xây dựng 2026-11-11 → 2026-11-12, bổ sung EGRF & DES ngày 2026-11-16, chuẩn hóa 3NF + Redis + Observability ngày 2026-11-21). Các số liệu chạy e2e/test backend cũ ghi rõ ngày chụp khi chưa chạy lại trong phiên gần nhất.
 
 ## 1. Tóm tắt
 
 | Hạng mục | Kết quả |
 | --- | --- |
-| Model Prisma (`schema.prisma`) | **29 model** (nghiệp vụ, auth, search/rec embedding & event) |
-| Migration đã áp dụng | **20 thư mục migration** |
-| Route handler tự viết | `routes/` (auth, places, posts, reviews, collections, rooms, notifications, events, users, media, og, system) + `GET /healthz` + `GET /readyz` + mount `/auth/*` của better-auth |
-| Test backend (`backend/test/`) | **40 file test** (Testcontainers Postgres, chạy tuần tự qua `scripts/test-all.sh`; đợt 2026-11-12 ghi nhận 256 pass / 25 file, chưa chạy lại 2026-11-19) |
+| Model Prisma (`schema.prisma`) | **33 model** (nghiệp vụ, auth, 3NF `tags`/`sources`, search/rec embedding & event) |
+| Migration đã áp dụng | **23 thư mục migration** |
+| Route handler tự viết | `routes/` (auth, places, posts, reviews, collections, rooms, notifications, events, telemetry, users, media, tiles, og, system, admin) + `GET /healthz` + `GET /readyz` + mount `/auth/*` của better-auth |
+| Test backend (`backend/test/`) | **44 file test** (Testcontainers Postgres, chạy tuần tự qua `scripts/test-all.sh`; `observability.test.ts` & `events.test.ts` pass 2026-11-21) |
 | e2e Playwright với backend thật | **22/22 pass** (12 spec, `VITE_ENABLE_MOCKS=false`, số liệu phiên 2026-11-11, chưa chạy lại) |
 | e2e Playwright với mock | **42 pass** (16 spec, project `mock`, số liệu phiên 2026-11-12, chưa chạy lại) |
-| Unit test frontend (Vitest) | **193 pass / 40 file** (đã chạy 2026-11-19) |
-| Typecheck + Lint + Build (FE & BE) | 0 lỗi, build pass (đã chạy 2026-11-19) |
+| Unit test frontend (Vitest) | **44 file test** (đã chạy pass 2026-11-21) |
+| Typecheck + Lint + Build (FE & BE) | 0 lỗi, build pass (đã chạy 2026-11-21) |
 | Seed chính thức | **358 địa điểm** (`backend/data/places-expanded.json`, D-066), **29 ảnh gốc (87 file WebP)** ở cold-start |
 | Đa tiến trình SSE | Postgres `LISTEN/NOTIFY` (`backend/src/lib/pubsub.ts`) kết hợp Bun `reusePort` |
 
@@ -25,15 +25,9 @@
   readiness `/readyz` (SELECT 1).
 - **Prisma 7.10.1** + `@prisma/adapter-pg`; datasource URL đặt trong `prisma.config.ts`
   (Prisma 7 không đọc `url` trong schema).
-- **pg-boss 12.38.1** cho job nền: `place-detect` (phát hiện địa điểm, cron 5 phút +
-  enqueue khi tạo bài không gắn địa điểm; DLQ + retry 5 lần backoff) và `daily-picks`
-  (chọn gợi ý hôm nay, cron 00:05 Asia/Ho_Chi_Minh — mục 8).
-- **Rate limit** lưu Postgres (`rate_limits`), UPSERT nguyên tử, có cả giới hạn theo IP
-  lẫn theo user; áp cho `/session`, `/register`, `POST /media`, và từ phiên 2026-11-12
-  áp thêm cho social theo user: `POST /posts` 30/giờ, like 30/phút, comment 10/phút,
-  follow 20/phút. Lỗi 429 trả kèm header
-  `Retry-After` (middleware phải trả `c.json(..., 429, headers)` trực tiếp vì `onError`
-  của Hono dựng lại Response và làm mất header đã set).
+- **pg-boss 12.38.1** cho job nền: `place-detect`, `daily-picks` (`00:05`), `event-retention` (`04:00`), `refresh-affinity` (`03:30`) và `auth-cleanup` (`04:15` Asia/Ho_Chi_Minh).
+- **Rate limit** dùng **Redis** (`redis:7-alpine`, fallback in-memory sliding window — đã gỡ bảng `rate_limits` khỏi Postgres), áp cho `/session`, `/register`, `POST /media`, `/events`, `/telemetry`, và các hành động social theo user. Lỗi 429 trả kèm header `Retry-After`.
+- **Observability**: `AsyncLocalStorage` + Pino `mixin` + Canonical Log Line (`timing`: `db`, `redis`, `embed`, `external`, `app`), nối `traceparent` / `X-Request-Id` FE ↔ BE, `pg_stat_statements`, ring buffer `obs:events` trên Redis và UI `/admin` (`GET /admin/observability`).
 - **R2 presigned PUT** tự ký SigV4 bằng `node:crypto` (không thêm SDK).
 - **Idempotency** (mục 6), **SSE thông báo theo user** (mục 7) và **8 tính năng mới
   2026-11-11 → 2026-11-12** (mục 8) là các bổ sung lớn.

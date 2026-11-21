@@ -432,11 +432,20 @@ client bỏ qua bước PUT, dùng thẳng `publicUrl`.
   rỗng số liệu; `GET` chỉ đọc nên không cần. Ngoài ra reset bị chặn `403` khi
   `NODE_ENV=production` — route này chỉ dành cho demo/dev.
 
-## 10c. Sự kiện tương tác (`/events`)
+## 10c. Sự kiện tương tác (`/events`) & Client Telemetry (`/telemetry`)
 
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
-| POST | `/events` | — | Nhận batch `{ events: [{ eventType, placeId?, postId?, query?, context?, sessionId?, anonId? }] }` (1–20 event); rate limit 120 req/phút/IP; kiểm `placeId` tồn tại (400 nếu không tồn tại); dedupe 5 phút in-memory; trả `202 { accepted, recorded }` |
+| POST | `/events` | — | Nhận batch `{ events: [{ eventId?, eventType, placeId?, postId?, query?, context?, sessionId?, anonId? }] }` (1–20 event); rate limit 120 req/phút/IP; kiểm `placeId` tồn tại (400 nếu không tồn tại); dedupe 5 phút qua Redis `SET NX EX 300` (fallback in-memory); bulk `INSERT` 1 query (`unnest`); trả `202 { accepted, recorded }` |
+| POST | `/telemetry` | — | Nhận batch `{ items: [{ kind: "error" \| "web-vital", ... }] }` (1–15 item); rate limit 60 req/phút/IP; ghi `client_error` & `web_vital` (`LCP`, `INP`, `CLS`) ra Pino JSON stdout + ring buffer `obs:events`; trả `202 { accepted }` |
+
+## 10d. Giám sát Admin (`/admin/observability`)
+
+| Method | Path | Auth | Ghi chú |
+|---|---|---|---|
+| GET | `/admin/observability` | `admin` | Hỗ trợ `?kind=all\|slow_request\|server_error\|client_error\|web_vital&q=...`. Trả về `latency` (`p50/p95/p99`, `byEndpoint`), `webVitals` ($p_{75}$), `slowSql` (top 10 từ `pg_stat_statements`), `behavior24h` (`interaction_events`), `summary` (`errorCount`, `slowCount`) và `events` từ ring buffer `obs:events`. |
+
+- **Trace Correlation**: Client gửi `X-Request-Id` và W3C `traceparent`; API kế thừa `trace_id` hợp lệ, gắn `X-Request-Id` vào response header và mọi Canonical Log Line.
 
 ## 11. Mã lỗi thường gặp
 

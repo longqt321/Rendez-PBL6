@@ -228,3 +228,22 @@ Retro dùng biến thể `wonk.css` chứ không phải `index.css` mặc địn
 `wonk.css` cùng kích thước với `index.css` nhưng có thêm trục `WONK` — cần file này để đặt
 `font-variation-settings: "WONK" 0` một cách tường minh cho tiêu đề (giá trị `0` = nét bình thường,
 không méo). Không dùng `WONK 1` cho văn bản (L-006).
+
+---
+
+## Backend & Hạ tầng (hợp nhất từ `STACK-BE.md`)
+
+| Thành phần / Gói | Phiên bản / Cấu hình | Vai trò |
+|---|---|---|
+| Bun | `1.3.14` | Runtime JS/TS, bundler (`bun build`), Redis client (`Bun.RedisClient`), test runner |
+| `hono` + `@hono/zod-openapi` | `4.13.17` / `1.6.3` | HTTP router, middleware, OpenAPI Zod validation |
+| `prisma` + `@prisma/client` + `@prisma/adapter-pg` | `7.10.1` | ORM + Driver Adapter (`pg` pool `max: 20`, `statement_timeout=15000`) |
+| PostgreSQL + `pgvector` + `pg_stat_statements` | `pgvector:0.8.7-pg17` | CSDL chính (33 model, 3NF, HNSW vector index, partition `interaction_events`) |
+| Redis (`redis:7-alpine`) | `0.5` CPU / `192MB` RAM (`--maxmemory 128mb`) | Rate limit, cache, dedupe `/events`, ring buffer `obs:events` (kèm fallback in-memory) |
+| `better-auth` | `1.7.19` | Xác thực email/session (cookie HttpOnly) |
+| `pg-boss` | `12.38.1` | Hàng đợi & cron nền (`daily-picks`, `place-detect`, `event-retention`, `refresh-affinity`, `auth-cleanup`) |
+| `pino` | `10.4.0` | Structured JSON logger + `redact` PII + `mixin` gắn `request_id`/`trace_id` |
+| `cockatiel` | `^4.0.0` | Timeout & circuit breaker cho ONNX embeddings |
+| `@huggingface/transformers` + `onnxruntime-node` | `4.3.2` / `1.31.1` | Embedding `Xenova/multilingual-e5-small` (384 chiều) |
+| `web-vitals` (Frontend RUM) | `6.2.3` | Thu thập Core Web Vitals (`LCP`, `INP`, `CLS`) gửi về `POST /api/v1/telemetry` |
+
