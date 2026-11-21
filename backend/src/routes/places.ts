@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import { parseNaturalFilterQuery } from "@rendez/schema"
 import type { AppEnv } from "../app"
 import {
   SLUG_ID_RE,
@@ -83,12 +84,21 @@ export function createPlacesRouter() {
         })
       }
 
+      const parsedChips = filters.q ? parseNaturalFilterQuery(filters.q).chips : []
+
       // Hiện chưa có cache ứng dụng cho danh sách → `cacheHit` luôn false; không
       // bịa true khi body đến thẳng từ DB.
       return c.json({
         items: page.items,
         next: page.next ? encodePlaceCursor(page.next) : null,
-        meta: { tookMs, cacheHit: false, totalResults: page.total, didYouMean },
+        meta: {
+          tookMs,
+          cacheHit: false,
+          totalResults: page.total,
+          didYouMean,
+          ...(parsedChips.length > 0 ? { parsedFilters: parsedChips } : {}),
+          ...(page.relaxedFilters ? { relaxedFilters: true } : {}),
+        },
       })
     },
   )
@@ -188,6 +198,8 @@ export function createPlacesRouter() {
     const result = await listPlacesInMap(filters, MAP_MAX_PLACES)
     const tookMs = Math.round(performance.now() - startedAt)
 
+    const parsedChips = filters.q ? parseNaturalFilterQuery(filters.q).chips : []
+
     // Dữ liệu công khai, đổi chậm — cho phép trình duyệt/CDN dùng lại 30 giây.
     // Giữ `total` cũ (FE đang dùng) và thêm `meta` cùng giá trị. ETag bỏ tookMs.
     return jsonWithCache(
@@ -195,7 +207,13 @@ export function createPlacesRouter() {
       {
         items: result.items,
         total: result.total,
-        meta: { tookMs, cacheHit: false, totalResults: result.total },
+        meta: {
+          tookMs,
+          cacheHit: false,
+          totalResults: result.total,
+          ...(parsedChips.length > 0 ? { parsedFilters: parsedChips } : {}),
+          ...(result.relaxedFilters ? { relaxedFilters: true } : {}),
+        },
       },
       { maxAge: 30, etagData: { items: result.items, total: result.total } },
     )

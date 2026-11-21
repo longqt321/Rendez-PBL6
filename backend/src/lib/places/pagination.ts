@@ -3,7 +3,10 @@ import { prisma } from "../prisma"
 import { selectPlaces } from "./select"
 import { toPlaceDto, type PlaceDto, type PlaceRow, type PlaceFilters } from "./types"
 import { distanceSql } from "./spatial"
+import { promotePlaceFilters } from "./query-promotion"
 import { hybridSearch, HYBRID_MAX_RESULTS } from "../search/hybrid"
+import { NAME_HAYSTACK } from "../search/name-matcher"
+import { normalizeSearchText } from "../search-synonyms"
 import type { PlaceCursor, PlaceSort } from "../cursor"
 
 export function cursorForSort(sort: PlaceSort, row: PlaceRow): PlaceCursor {
@@ -80,20 +83,12 @@ function buildSortClause(
   }
 }
 
-export async function listPlacesPaginated(
+async function runSqlPaginated(
   filters: PlaceFilters,
   cursor: PlaceCursor | null,
   pageSize: number,
   buildConditionsFn: (f: PlaceFilters) => Prisma.Sql[],
 ): Promise<{ items: PlaceDto[]; next: PlaceCursor | null; total: number }> {
-  if (filters.q && !cursor && filters.sort === "newest") {
-    const hybrid = await hybridSearch(filters as PlaceFilters & { q: string }, buildConditionsFn)
-    if (hybrid) {
-      const items = hybrid.items.slice(0, HYBRID_MAX_RESULTS)
-      return { items, next: null, total: items.length }
-    }
-  }
-
   const { orderBy, extraSelect, keyset } = buildSortClause(
     filters.sort,
     cursor,
@@ -122,4 +117,90 @@ export async function listPlacesPaginated(
   const next = rows.length > pageSize && last ? cursorForSort(filters.sort, last) : null
 
   return { items: page.map(toPlaceDto), next, total: Number(countRows[0]?.count ?? 0) }
+}
+
+async function hasExactVenueName(q: string, baseConditions: Prisma.Sql[]): Promise<boolean> {
+  const normalized = normalizeSearchText(q)
+  if (!normalized) return false
+  const rows = await prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+    SELECT p.id
+    FROM places p
+    WHERE ${Prisma.join(baseConditions, " AND ")}
+      AND ${NAME_HAYSTACK} = immutable_search_normalize(${normalized})
+    LIMIT 1
+  `)
+  return rows.length > 0
+}
+
+export async function listPlacesPaginated(
+  filters: PlaceFilters,
+  cursor: PlaceCursor | null,
+  pageSize: number,
+  buildConditionsFn: (f: PlaceFilters) => Prisma.Sql[],
+): Promise<{
+  items: PlaceDto[]
+  next: PlaceCursor | null
+  total: number
+  relaxedFilters?: boolean
+}> {
+  const promotion = promotePlaceFilters(filters)
+
+  // S-2 Pure-Intent SQL Fast-Path: khi query 100% bóc thành bộ lọc SQL cứng
+  // và không trùng chính xác tên quán, chạy SQL index trực tiếp (< 3ms)
+  // hỗ trợ đầy đủ mọi kiểu sort & cursor pagination vô hạn.
+  if (filters.q && promotion.isPureSqlFastPath) {
+    const baseConditions = buildConditionsFn({ ...filters, q: undefined })
+    const exactMatch = await hasExactVenueName(filters.q, baseConditions)
+    if (!exactMatch) {
+      const fastPage = await runSqlPaginated(
+        promotion.promotedFilters,
+        cursor,
+        pageSize,
+        buildConditionsFn,
+      )
+      if (fastPage.total > 0 || cursor !== null) {
+        return fastPage
+      }
+      // Nếu fast-path trả 0 trên trang 1 (vd tên quán bắt đầu bằng cụm đó ở quận khác), rơi về hybrid fallback.
+      const fallback = await hybridSearch(
+        filters as PlaceFilters & { q: string },
+        buildConditionsFn,
+      )
+      if (fallback && fallback.items.length > 0) {
+        const items = fallback.items.slice(0, HYBRID_MAX_RESULTS)
+        return { items, next: null, total: items.length, relaxedFilters: true }
+      }
+      return fastPage
+    }
+  }
+
+  if (filters.q && !cursor && filters.sort === "newest") {
+    const hybrid = await hybridSearch(filters as PlaceFilters & { q: string }, buildConditionsFn)
+    if (hybrid) {
+      const items = hybrid.items.slice(0, HYBRID_MAX_RESULTS)
+      return {
+        items,
+        next: null,
+        total: items.length,
+        ...(hybrid.relaxedFilters ? { relaxedFilters: true } : {}),
+      }
+    }
+  }
+
+  // Với sort=rating / sort=distance hoặc cursor > 1 khi có `q`, vẫn áp dụng promotedFilters
+  // (bộ lọc cứng bóc từ q + residualQuery) thay vì ép `AND` tất cả từ quận/giá vào `HAYSTACK`.
+  const sqlFilters =
+    filters.q && promotion.hasPromotedConstraints ? promotion.promotedFilters : filters
+  const page = await runSqlPaginated(sqlFilters, cursor, pageSize, buildConditionsFn)
+  if (
+    page.total === 0 &&
+    !cursor &&
+    filters.q &&
+    promotion.hasPromotedConstraints &&
+    sqlFilters !== filters
+  ) {
+    const relaxed = await runSqlPaginated(filters, cursor, pageSize, buildConditionsFn)
+    return relaxed.total > 0 ? { ...relaxed, relaxedFilters: true } : relaxed
+  }
+  return page
 }

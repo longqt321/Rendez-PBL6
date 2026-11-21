@@ -15,6 +15,28 @@ export interface FusionBranch {
   weight?: number
 }
 
+export interface ScoredRrfId {
+  id: string
+  score: number
+}
+
+/**
+ * Hợp nhất xếp hạng EGRF (Evidence-Gated Rank Fusion) và trả về kèm điểm để tie-break theo chất lượng.
+ */
+export function fuseRrfScored(branches: FusionBranch[], k: number = RRF_K): ScoredRrfId[] {
+  const scores = new Map<string, number>()
+  const add = ({ ids, weight = 1 }: FusionBranch) => {
+    if (weight <= 0) return
+    ids.forEach((id, index) => {
+      scores.set(id, (scores.get(id) ?? 0) + weight / (k + index + 1))
+    })
+  }
+  for (const branch of branches) add(branch)
+  return [...scores.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([id, score]) => ({ id, score }))
+}
+
 /**
  * Hợp nhất xếp hạng EGRF (Evidence-Gated Rank Fusion).
  * Cho phép tuỳ biến hệ số làm mịn k (mặc định RRF_K = 60 nếu không chỉ định).
@@ -44,15 +66,5 @@ export function fuseRrf(
     }
   }
 
-  const scores = new Map<string, number>()
-  const add = ({ ids, weight = 1 }: FusionBranch) => {
-    if (weight <= 0) return
-    ids.forEach((id, index) => {
-      scores.set(id, (scores.get(id) ?? 0) + weight / (k + index + 1))
-    })
-  }
-  for (const branch of branches) add(branch)
-  return [...scores.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([id]) => id)
+  return fuseRrfScored(branches, k).map((entry) => entry.id)
 }

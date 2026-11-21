@@ -2,13 +2,14 @@ import { Prisma } from "../../../generated/prisma/client"
 import { prisma } from "../prisma"
 import { normalizeSearchText, synonymVariants } from "../search-synonyms"
 import { detectIntentAttributes, extractMatchedPhrases } from "../intent-lexicon"
+import { promotePlaceFilters } from "../places/query-promotion"
 import { selectPlaces } from "../places/select"
 import { toPlaceDto, type PlaceDto, type PlaceRow, type PlaceFilters } from "../places/types"
 import { denseCandidates } from "./dense"
 import { nameCandidates } from "./name-matcher"
 import { structuredCandidates } from "./intent"
 import { fieldBoostedLexicalRank, QUERY_STOPWORDS } from "./lexical"
-import { fuseRrf, calculateEgrfK } from "./rrf"
+import { fuseRrfScored, calculateEgrfK } from "./rrf"
 
 export const HYBRID_POOL = 50
 export const HYBRID_MAX_RESULTS = 30
@@ -38,24 +39,45 @@ function findResidualEntityTokens(normalizedQuery: string, matchedPhrases: strin
   return remaining.split(/\s+/).filter((token) => token.length >= 2 && !QUERY_STOPWORDS.has(token))
 }
 
-export async function hybridSearch(
-  filters: PlaceFilters & { q: string },
-  buildConditionsFn: (f: PlaceFilters) => Prisma.Sql[],
-  poolLimit: number = HYBRID_POOL,
-): Promise<{ items: PlaceDto[]; total: number } | null> {
-  const attrConditions = buildConditionsFn({ ...filters, q: undefined })
-  const lexicalConditions = buildConditionsFn(filters)
-  const rankVariants = [filters.q, ...synonymVariants(normalizeSearchText(filters.q))]
+function bayesianQuality(row: PlaceRow): number {
+  const count = Number(row.review_count)
+  const avg = Number(row.rating)
+  return (count * avg + 10 * 3.8) / (count + 10)
+}
+
+async function runHybridPass(params: {
+  effectiveFilters: PlaceFilters & { q: string }
+  attrFilters: PlaceFilters
+  buildConditionsFn: (f: PlaceFilters) => Prisma.Sql[]
+  precomputedNames?: { exact: string[]; prefix: string[]; tokens: string[] }
+  poolLimit: number
+  corpusSize: number
+}): Promise<{ items: PlaceDto[]; total: number }> {
+  const {
+    effectiveFilters,
+    attrFilters,
+    buildConditionsFn,
+    precomputedNames,
+    poolLimit,
+    corpusSize,
+  } = params
+
+  const attrConditions = buildConditionsFn({ ...attrFilters, q: undefined })
+  const lexicalConditions = buildConditionsFn({ ...attrFilters, q: effectiveFilters.q })
+  const rankVariants = [
+    effectiveFilters.q,
+    ...synonymVariants(normalizeSearchText(effectiveFilters.q)),
+  ]
   const lexicalRank = fieldBoostedLexicalRank(rankVariants)
 
-  const intent = detectIntentAttributes(filters.q)
-  const matchedPhrases = extractMatchedPhrases(filters.q)
-  const normalizedQuery = normalizeSearchText(filters.q)
+  const intent = detectIntentAttributes(effectiveFilters.q)
+  const matchedPhrases = extractMatchedPhrases(effectiveFilters.q)
+  const normalizedQuery = normalizeSearchText(effectiveFilters.q)
   const residualEntityTokens = findResidualEntityTokens(normalizedQuery, matchedPhrases)
   const isPureIntentQuery = matchedPhrases.length > 0 && residualEntityTokens.length === 0
 
-  const [dense, lexicalRows, names, structuredRows, corpusCountRows] = await Promise.all([
-    denseCandidates(filters.q, poolLimit, attrConditions),
+  const [dense, lexicalRows, names, structuredRows] = await Promise.all([
+    denseCandidates(effectiveFilters.q, poolLimit, attrConditions),
     prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
       SELECT p.id
       FROM places p
@@ -63,28 +85,18 @@ export async function hybridSearch(
       ORDER BY ${lexicalRank} DESC, p.created_at DESC, p.id DESC
       LIMIT ${poolLimit}
     `),
-    nameCandidates(normalizedQuery, attrConditions, poolLimit),
+    precomputedNames ?? nameCandidates(normalizedQuery, attrConditions, poolLimit),
     structuredCandidates(intent, attrConditions, poolLimit),
-    prisma.$queryRaw<{ count: number }[]>(Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM places p
-      WHERE p.published_at IS NOT NULL AND p.status <> 'closed' AND p.deleted_at IS NULL
-    `),
   ])
 
-  // Evidence Extraction theo đặc tả EGRF (Section 3.1 & 3.2):
-  // Tín hiệu định danh thực thể: có quán khớp chính xác hoặc khớp tiền tố tên
+  // Evidence Extraction + Gating Controller (hiệu chỉnh S-5):
+  // - Chỉ triệt tiêu nhánh semantic/structured khi khớp CHÍNH XÁC tên quán (`hasExact`).
+  // - Khi chỉ khớp prefix hoặc 1-2 token tên quán (VD: "cà phê muối"), giữ nhánh ngữ nghĩa
+  //   & thuộc tính với trọng số cân bằng để không làm mất các quán có món trong tags/mô tả.
   const hasExact = names.exact.length > 0
   const hasPrefix = names.prefix.length > 0
   const hasTokens = names.tokens.length > 0
-  const hasIdentityEvidence = hasExact || hasPrefix
 
-  // Gating Controller (Ma trận trọng số động W(q)):
-  // 1. Khi query chứa token thực thể ngoài intent và có bằng chứng tên: triệt tiêu
-  //    structured/attribute & dense branch để ngăn "Fusion Tax" làm tụt quán chính xác.
-  // 2. Khi là query thuần ý định (category/quận/món/24-7) hoặc không có bằng chứng tên:
-  //    - Có Category / Structured intent: structuredWeight = 3.0, denseWeight = 1.0
-  //    - Không có structured attribute (query trừu tượng/ngữ nghĩa): denseWeight = 2.5, structuredWeight = 1.0
   const lexicalWeight = 1.0
   let exactWeight = 0
   let prefixWeight = 0
@@ -92,13 +104,17 @@ export async function hybridSearch(
   let denseWeight: number
   let structuredWeight: number
 
-  if (!isPureIntentQuery && (hasIdentityEvidence || hasTokens)) {
-    exactWeight = hasExact ? 5.0 : 0
+  if (hasExact && !isPureIntentQuery) {
+    exactWeight = 6.0
     prefixWeight = hasPrefix ? 3.0 : 0
-    tokenWeight = hasTokens ? 4.0 : 0
-    // Triệt tiêu nhánh thuộc tính khi truy vấn định danh tên riêng
+    tokenWeight = hasTokens ? 2.0 : 0
     structuredWeight = 0.0
     denseWeight = 0.0
+  } else if (!isPureIntentQuery && (hasPrefix || hasTokens)) {
+    prefixWeight = hasPrefix ? 3.0 : 0
+    tokenWeight = hasTokens ? 2.5 : 0
+    structuredWeight = 1.5
+    denseWeight = 1.2
   } else {
     const hasCategoryAttr =
       intent.categories.length > 0 ||
@@ -107,20 +123,18 @@ export async function hybridSearch(
       intent.alwaysOpen
     if (hasCategoryAttr) {
       structuredWeight = 3.0
-      denseWeight = 1.0
-      exactWeight = hasExact ? 1.5 : 0
-      prefixWeight = hasPrefix ? 0.5 : 0
-      tokenWeight = hasTokens ? 0.5 : 0
+      denseWeight = 1.2
+      exactWeight = hasExact ? 2.0 : 0
+      prefixWeight = hasPrefix ? 0.75 : 0
+      tokenWeight = hasTokens ? 0.75 : 0
     } else {
       structuredWeight = 1.0
       denseWeight = 2.5
     }
   }
 
-  const corpusSize = Number(corpusCountRows[0]?.count ?? 0)
   const egrfK = calculateEgrfK(corpusSize)
-
-  const ranked = fuseRrf(
+  const scored = fuseRrfScored(
     [
       { ids: lexicalRows.map((row) => row.id), weight: lexicalWeight },
       ...(dense ? [{ ids: dense.map((candidate) => candidate.id), weight: denseWeight }] : []),
@@ -131,14 +145,96 @@ export async function hybridSearch(
     ],
     egrfK,
   )
-  if (ranked.length === 0) return { items: [], total: 0 }
+  if (scored.length === 0) return { items: [], total: 0 }
+
+  const scoreById = new Map(scored.map((entry) => [entry.id, entry.score]))
+  const rankedIds = scored.map((entry) => entry.id)
 
   const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
     ${selectPlaces()}
-    WHERE p.id IN (${Prisma.join(ranked.map((id) => Prisma.sql`${id}`))})
+    WHERE p.id IN (${Prisma.join(rankedIds.map((id) => Prisma.sql`${id}`))})
       AND ${Prisma.join(attrConditions, " AND ")}
-    ORDER BY array_position(ARRAY[${Prisma.join(ranked.map((id) => Prisma.sql`${id}`))}]::text[], p.id)
   `)
 
+  // Quality-Aware RRF Tie-Breaking (S-6):
+  // Nhóm điểm RRF gần bằng nhau (1e-4) được phân định bằng ảnh thật & Bayesian rating thay vì ID.
+  rows.sort((a, b) => {
+    const scoreA = scoreById.get(a.id) ?? 0
+    const scoreB = scoreById.get(b.id) ?? 0
+    const bucketDiff = Math.round(scoreB * 10_000) - Math.round(scoreA * 10_000)
+    if (bucketDiff !== 0) return bucketDiff
+
+    const imgDiff = (b.image_url ? 1 : 0) - (a.image_url ? 1 : 0)
+    if (imgDiff !== 0) return imgDiff
+
+    const qualDiff = bayesianQuality(b) - bayesianQuality(a)
+    if (Math.abs(qualDiff) > 1e-4) return qualDiff
+
+    if (scoreB !== scoreA) return scoreB - scoreA
+    return a.id.localeCompare(b.id)
+  })
+
   return { items: rows.map(toPlaceDto), total: rows.length }
+}
+
+export async function hybridSearch(
+  filters: PlaceFilters & { q: string },
+  buildConditionsFn: (f: PlaceFilters) => Prisma.Sql[],
+  poolLimit: number = HYBRID_POOL,
+): Promise<{ items: PlaceDto[]; total: number; relaxedFilters?: boolean } | null> {
+  const baseAttrConditions = buildConditionsFn({ ...filters, q: undefined })
+  const normalizedFullQuery = normalizeSearchText(filters.q)
+  const promotion = promotePlaceFilters(filters)
+
+  const [guardNames, corpusCountRows] = await Promise.all([
+    nameCandidates(normalizedFullQuery, baseAttrConditions, poolLimit),
+    prisma.$queryRaw<{ count: number }[]>(Prisma.sql`
+      SELECT COUNT(*)::int AS count
+      FROM places p
+      WHERE p.published_at IS NOT NULL AND p.status <> 'closed' AND p.deleted_at IS NULL
+    `),
+  ])
+  const corpusSize = Number(corpusCountRows[0]?.count ?? 0)
+
+  // Entity Guard (S-1): nếu không khớp chính xác tên riêng 1 quán, promote bộ lọc cứng từ query
+  // và truyền phần text dư `residualQuery` vào bước chấm điểm vector/lexical (S-4).
+  const canPromote = guardNames.exact.length === 0 && promotion.hasPromotedConstraints
+
+  if (canPromote) {
+    const residualText = promotion.promotedFilters.q ?? filters.q
+    const promotedResult = await runHybridPass({
+      effectiveFilters: { ...promotion.promotedFilters, q: residualText },
+      attrFilters: promotion.promotedFilters,
+      buildConditionsFn,
+      poolLimit,
+      corpusSize,
+    })
+
+    if (promotedResult.items.length > 0) {
+      return promotedResult
+    }
+
+    // Auto-Relaxation: nếu lọc cứng trả về 0 (vd tên quán chứa chữ quận nhưng nằm quận khác),
+    // tự động nới lỏng về điều kiện gốc và gắn cờ `relaxedFilters: true`.
+    const fallbackResult = await runHybridPass({
+      effectiveFilters: filters,
+      attrFilters: filters,
+      buildConditionsFn,
+      precomputedNames: guardNames,
+      poolLimit,
+      corpusSize,
+    })
+    return fallbackResult.items.length > 0
+      ? { ...fallbackResult, relaxedFilters: true }
+      : fallbackResult
+  }
+
+  return runHybridPass({
+    effectiveFilters: filters,
+    attrFilters: filters,
+    buildConditionsFn,
+    precomputedNames: guardNames,
+    poolLimit,
+    corpusSize,
+  })
 }

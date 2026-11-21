@@ -73,16 +73,61 @@ describe("Search, ranking and recommendations regression fixes", () => {
     }
   })
 
-  test("tìm kiếm intent thuần 'cà phê Hải Châu' ưu tiên quán cà phê ở Hải Châu", async () => {
+  test("tìm kiếm intent thuần 'cà phê Hải Châu' lọc cứng 100% và hỗ trợ phân trang cursor", async () => {
     const res = await app.request(`/api/v1/places?q=${encodeURIComponent("cà phê Hải Châu")}`)
     expect(res.status).toBe(200)
     const json = (await res.json()) as {
       items: { category: string; district?: string | null }[]
+      next: string | null
+      meta?: { totalResults?: number; parsedFilters?: { field: string; value: string }[] }
     }
     expect(json.items.length).toBeGreaterThan(0)
-    for (const item of json.items.slice(0, 5)) {
+    for (const item of json.items) {
       expect(item.category).toBe("cafe")
       expect(item.district).toBe("Hải Châu")
+    }
+    expect(
+      json.meta?.parsedFilters?.some((f) => f.field === "district" && f.value === "Hải Châu"),
+    ).toBe(true)
+
+    if (json.next) {
+      const page2 = await app.request(
+        `/api/v1/places?q=${encodeURIComponent("cà phê Hải Châu")}&cursor=${encodeURIComponent(json.next)}`,
+      )
+      expect(page2.status).toBe(200)
+      const json2 = (await page2.json()) as {
+        items: { category: string; district?: string | null }[]
+      }
+      expect(json2.items.length).toBeGreaterThan(0)
+      for (const item of json2.items) {
+        expect(item.category).toBe("cafe")
+        expect(item.district).toBe("Hải Châu")
+      }
+    }
+  })
+
+  test("S-3: tìm kiếm gộp phủ định & mức giá ('quán ăn Hải Châu không hải sản giá rẻ')", async () => {
+    const res = await app.request(
+      `/api/v1/places?q=${encodeURIComponent("quán ăn Hải Châu không hải sản giá rẻ")}`,
+    )
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as {
+      items: {
+        name: string
+        address: string
+        category: string
+        district?: string | null
+        priceLevel: number
+        tags: string[]
+      }[]
+    }
+    expect(json.items.length).toBeGreaterThan(0)
+    for (const item of json.items) {
+      expect(item.category).toBe("restaurant")
+      expect(item.district).toBe("Hải Châu")
+      expect(item.priceLevel).toBeLessThanOrEqual(1)
+      const hay = `${item.name} ${item.address} ${item.tags.join(" ")}`.toLowerCase()
+      expect(hay).not.toContain("hải sản")
     }
   })
 
@@ -180,5 +225,44 @@ describe("Search, ranking and recommendations regression fixes", () => {
     for (const [, count] of categoryCounts) {
       expect(count).toBeLessThanOrEqual(3)
     }
+  })
+
+  test("R-1 & R-2: single-user content fallback hoạt động khi cache trống, và negative net-weight bị loại khỏi seed", async () => {
+    const cafePlace = await prisma.place.findFirst({
+      where: { publishedAt: { not: null }, deletedAt: null, category: "cafe" },
+      select: { id: true },
+    })
+    expect(cafePlace).toBeDefined()
+
+    // Đảm bảo seed này KHÔNG có dòng trong affinity_cache -> thử nghiệm single-user fallback
+    await prisma.affinityCache.deleteMany({ where: { placeId: cafePlace!.id } })
+
+    const singleAnon = "anon_single_user_r1"
+    await prisma.interactionEvent.create({
+      data: {
+        anonId: singleAnon,
+        placeId: cafePlace!.id,
+        eventType: "favorite",
+        weight: 3,
+      },
+    })
+
+    const rec = await getRecommendedPlaces({ userId: null, anonId: singleAnon }, 6)
+    expect(rec.strategy).toBe("affinity")
+    expect(rec.seedCount).toBe(1)
+    expect(rec.items.some((item) => item.id === cafePlace!.id)).toBe(false)
+
+    // R-2: khi actor huỷ lưu / ẩn (-5) khiến net-weight <= 0, không còn là seed dương nữa
+    await prisma.interactionEvent.create({
+      data: {
+        anonId: singleAnon,
+        placeId: cafePlace!.id,
+        eventType: "unsave",
+        weight: -5,
+      },
+    })
+    const recAfterHide = await getRecommendedPlaces({ userId: null, anonId: singleAnon }, 6)
+    expect(recAfterHide.strategy).toBe("cold-start")
+    expect(recAfterHide.seedCount).toBe(0)
   })
 })

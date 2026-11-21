@@ -14,6 +14,7 @@ import {
   UserIcon,
   UserPlusIcon,
   UsersIcon,
+  XIcon,
 } from "lucide-react"
 import { NavLink, Link, Outlet, useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
@@ -44,7 +45,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { MotionPill } from "@/components/shared/motion-primitives"
@@ -323,14 +329,13 @@ function SkinSwitch() {
 }
 
 function TopBar() {
-  const { draft, setDraft, submit } = useSearchQuerySync()
+  const { draft, setDraft, submit, clear, isFilterPage } = useSearchQuerySync()
   const { activeCode, getRoom, createRoom, joinRoom } = useRooms()
   const location = useLocation()
   const navigate = useNavigate()
   const [commandOpen, setCommandOpen] = useState(false)
   const [joinOpen, setJoinOpen] = useState(false)
   const room = activeCode ? getRoom(activeCode) : undefined
-  const isSearchBlocked = room !== undefined && FILTER_SHARED_PATHS.includes(location.pathname)
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -350,70 +355,85 @@ function TopBar() {
           <Brand />
         </div>
 
-        {isSearchBlocked ? (
-          <div className="ml-auto flex items-center gap-2 rounded-full border border-primary/30 bg-primary/8 px-3 py-1.5 text-xs text-foreground lg:ml-0">
-            <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
-            <span>Đang lọc theo phòng {room.name}</span>
-          </div>
-        ) : (
-          <div className="ml-auto flex w-full max-w-md items-center gap-2 lg:ml-0 lg:max-w-xl">
-            <form
-              role="search"
-              className="flex-1"
-              onSubmit={(event) => {
-                event.preventDefault()
-                submit()
-              }}
-            >
-              <InputGroup className="h-10 rounded-full bg-card/90 shadow-xs">
-                <InputGroupAddon>
-                  <SearchIcon />
-                </InputGroupAddon>
-                <InputGroupInput
-                  type="search"
-                  name="q"
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  placeholder="Tìm quán ăn, địa điểm, bài viết…"
-                  aria-label="Tìm kiếm"
-                />
-                <InputGroupAddon align="inline-end" className="hidden sm:flex">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="xs"
-                    className="h-6 rounded-full border border-border/70 px-2 text-xs text-muted-foreground"
-                    onClick={() => setCommandOpen(true)}
-                    aria-label="Mở bảng tìm nhanh"
+        <div className="ml-auto flex w-full max-w-md items-center gap-2 lg:ml-0 lg:max-w-xl">
+          <form
+            role="search"
+            className="flex-1"
+            onSubmit={(event) => {
+              event.preventDefault()
+              submit()
+            }}
+          >
+            <InputGroup className="h-10 rounded-full bg-card/90 shadow-xs">
+              <InputGroupAddon>
+                <SearchIcon />
+              </InputGroupAddon>
+              <InputGroupInput
+                type="search"
+                name="q"
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.nativeEvent.isComposing || event.keyCode === 229) return
+                  if (event.key === "Enter") {
+                    event.preventDefault()
+                    submit()
+                  }
+                }}
+                placeholder={
+                  isFilterPage
+                    ? "Tìm quán, món ăn, quận, mức giá (VD: cà phê Sơn Trà dưới 50k)…"
+                    : "Tìm riêng địa điểm, món ăn tại Đà Nẵng…"
+                }
+                aria-label="Tìm kiếm"
+              />
+              {draft ? (
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    size="icon-xs"
+                    className="rounded-full text-muted-foreground"
+                    onClick={clear}
+                    aria-label="Xoá từ khoá tìm kiếm"
                   >
-                    ⌘K
-                  </Button>
+                    <XIcon className="size-3.5" aria-hidden="true" />
+                  </InputGroupButton>
                 </InputGroupAddon>
-              </InputGroup>
-            </form>
-          </div>
-        )}
+              ) : null}
+              <InputGroupAddon align="inline-end" className="hidden sm:flex">
+                <InputGroupButton
+                  size="xs"
+                  className="rounded-full border border-border/70 px-2 text-xs text-muted-foreground"
+                  onClick={() => setCommandOpen(true)}
+                  aria-label="Mở bảng tìm nhanh"
+                >
+                  ⌘K
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
+          </form>
+        </div>
 
         <div className="ml-auto flex items-center gap-2">
           {room ? (
             <Button
               variant="outline"
               size="sm"
-              className="hidden gap-1.5 rounded-full border-primary/40 bg-primary/5 text-xs font-medium lg:inline-flex"
+              className="inline-flex gap-1.5 rounded-full border-primary/40 bg-primary/5 text-xs font-medium"
               render={<Link to={`/rooms/${room.code}`} />}
             >
               <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
-              {room.name}
+              <span className="max-w-28 truncate">{room.name}</span>
             </Button>
           ) : (
             <Button
               variant="outline"
               size="sm"
-              className="hidden gap-1.5 rounded-full text-xs font-medium lg:inline-flex"
+              className="inline-flex gap-1.5 rounded-full text-xs font-medium"
               onClick={() => setJoinOpen(true)}
             >
               <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
-              Đi cùng nhóm
+              <span className="hidden sm:inline">Đi cùng nhóm</span>
+              <span className="sm:hidden">Nhóm</span>
             </Button>
           )}
           <UserMenu />
@@ -437,7 +457,8 @@ function TopBar() {
                 onSelect={() => {
                   setCommandOpen(false)
                   setDraft(term)
-                  void navigate(`/search?q=${encodeURIComponent(term)}`)
+                  const targetPath = isFilterPage ? location.pathname : "/discover"
+                  void navigate(`${targetPath}?q=${encodeURIComponent(term)}`)
                 }}
               >
                 <SparklesIcon className="size-4 text-primary" aria-hidden="true" />

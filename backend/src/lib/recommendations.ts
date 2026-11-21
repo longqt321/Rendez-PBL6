@@ -81,17 +81,32 @@ export async function scoreAffinity(actor: RecommendationActor): Promise<Affinit
     ? Prisma.sql`user_id = ${actor.userId}::uuid`
     : Prisma.sql`anon_id = ${actor.anonId}`
 
+  // R-2 (Net-Positive Aggregation) + R-3 (Log-Dampened Seed Weighting):
+  // Bỏ lọc `weight > 0` ở WHERE và dồn sang `HAVING SUM(...) > 0` để hành động huỷ lưu / ẩn
+  // (-3 / -5) triệt tiêu được seed dương trước đó. Nén logarit tránh F5 xem lặp 1 quán đè bẹp save/review.
   const seeds = await prisma.$queryRaw<SeedRow[]>(Prisma.sql`
     SELECT place_id,
-           SUM(
-             weight * EXP(-LN(2) * GREATEST(0, EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400.0) / ${AFFINITY_HALF_LIFE_DAYS})
+           (
+             MAX(
+               CASE
+                 WHEN weight > 0 THEN weight * EXP(-LN(2) * GREATEST(0, EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400.0) / ${AFFINITY_HALF_LIFE_DAYS})
+                 ELSE 0.0
+               END
+             ) + LN(
+               1.0 + GREATEST(
+                 0.0,
+                 SUM(weight * EXP(-LN(2) * GREATEST(0, EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400.0) / ${AFFINITY_HALF_LIFE_DAYS}))
+               )
+             )
            )::float8 AS weight
     FROM interaction_events
     WHERE created_at >= ${since}
       AND place_id IS NOT NULL
-      AND weight > 0
       AND ${actorCondition}
     GROUP BY place_id
+    HAVING SUM(
+      weight * EXP(-LN(2) * GREATEST(0, EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400.0) / ${AFFINITY_HALF_LIFE_DAYS})
+    ) > 0
     ORDER BY weight DESC, place_id ASC
     LIMIT 50
   `)
@@ -102,32 +117,68 @@ export async function scoreAffinity(actor: RecommendationActor): Promise<Affinit
   if (totalWeight <= 0) return null
 
   const seedIds = seeds.map((seed) => seed.place_id)
-  const cacheRows = await prisma.$queryRaw<CacheRow[]>(Prisma.sql`
-    SELECT place_id, related
-    FROM affinity_cache
-    WHERE place_id IN (${Prisma.join(seedIds)})
-  `)
+  const [cacheRows, seenRows] = await Promise.all([
+    prisma.$queryRaw<CacheRow[]>(Prisma.sql`
+      SELECT place_id, related
+      FROM affinity_cache
+      WHERE place_id IN (${Prisma.join(seedIds)})
+    `),
+    // Loại place actor đã tương tác (mọi weight — đã ẩn/hủy thì không gợi ý lại).
+    prisma.$queryRaw<{ place_id: string }[]>(Prisma.sql`
+      SELECT DISTINCT place_id
+      FROM interaction_events
+      WHERE created_at >= ${since}
+        AND place_id IS NOT NULL
+        AND ${actorCondition}
+    `),
+  ])
   const cacheByPlace = new Map(cacheRows.map((entry) => [entry.place_id, entry.related]))
+  const seen = new Set(seenRows.map((row) => row.place_id))
 
   const scores = new Map<string, number>()
   for (const seed of seeds) {
     const share = seed.weight / totalWeight
     const related = cacheByPlace.get(seed.place_id) ?? []
     for (const item of related) {
-      if (item.score <= 0) continue
+      if (item.score <= 0 || seen.has(item.id)) continue
       scores.set(item.id, (scores.get(item.id) ?? 0) + share * item.score)
     }
   }
 
-  // Loại place actor đã tương tác (mọi weight — đã ẩn/hủy thì không gợi ý lại).
-  const seenRows = await prisma.$queryRaw<{ place_id: string }[]>(Prisma.sql`
-    SELECT DISTINCT place_id
-    FROM interaction_events
-    WHERE created_at >= ${since}
-      AND place_id IS NOT NULL
-      AND ${actorCondition}
-  `)
-  const seen = new Set(seenRows.map((row) => row.place_id))
+  // R-1 (Hybrid Collaborative + Content-Vector Affinity Fallback):
+  // Khi `affinity_cache` thưa (< 15 ứng viên, VD hệ thống ít user hoặc lần click đầu của user mới),
+  // bổ sung ứng viên tương đồng qua `place_embeddings` (pgvector) + cùng loại hình/quận/tags.
+  if (scores.size < 15) {
+    const topSeedIds = seeds.slice(0, 5).map((s) => s.place_id)
+    const contentRows = await prisma.$queryRaw<{ id: string; content_score: number }[]>(Prisma.sql`
+      WITH seed_places AS (
+        SELECT p.id, p.category, p.district, p.tags, pe.embedding
+        FROM places p
+        LEFT JOIN place_embeddings pe ON pe.place_id = p.id
+        WHERE p.id IN (${Prisma.join(topSeedIds)})
+      )
+      SELECT
+        p.id,
+        MAX(
+          0.60 * GREATEST(0.0, COALESCE(1.0 - (cand_pe.embedding <=> sp.embedding), 0.0)) +
+          0.25 * (CASE WHEN p.category = sp.category THEN 1.0 ELSE 0.0 END) +
+          0.10 * (CASE WHEN p.district IS NOT NULL AND p.district = sp.district THEN 1.0 ELSE 0.0 END) +
+          0.05 * (CASE WHEN p.tags && sp.tags THEN 1.0 ELSE 0.0 END)
+        )::float8 AS content_score
+      FROM places p
+      LEFT JOIN place_embeddings cand_pe ON cand_pe.place_id = p.id
+      CROSS JOIN seed_places sp
+      WHERE ${Prisma.join(baseConditions(), " AND ")}
+        ${seen.size > 0 ? Prisma.sql`AND p.id NOT IN (${Prisma.join([...seen])})` : Prisma.empty}
+      GROUP BY p.id
+      ORDER BY content_score DESC, p.created_at DESC, p.id ASC
+      LIMIT 40
+    `)
+    for (const row of contentRows) {
+      if (row.content_score <= 0 || seen.has(row.id)) continue
+      scores.set(row.id, (scores.get(row.id) ?? 0) + 0.5 * row.content_score)
+    }
+  }
 
   const ranked = [...scores.entries()]
     .filter(([placeId]) => !seen.has(placeId))

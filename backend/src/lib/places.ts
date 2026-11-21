@@ -71,14 +71,19 @@ export async function listPlaces(
   filters: PlaceFilters,
   cursor: PlaceCursor | null,
   pageSize: number,
-): Promise<{ items: PlaceDto[]; next: PlaceCursor | null; total: number }> {
+): Promise<{
+  items: PlaceDto[]
+  next: PlaceCursor | null
+  total: number
+  relaxedFilters?: boolean
+}> {
   return listPlacesPaginated(filters, cursor, pageSize, buildConditions)
 }
 
 export async function listPlacesInMapWrapper(
   filters: PlaceFilters,
   limit: number,
-): Promise<{ items: PlaceDto[]; total: number }> {
+): Promise<{ items: PlaceDto[]; total: number; relaxedFilters?: boolean }> {
   return listPlacesInMap(filters, limit, buildConditions)
 }
 

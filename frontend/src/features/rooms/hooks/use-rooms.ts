@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react"
+import type { UpdateRoomFilterInput } from "@rendez/schema"
 import { useSessionStorage } from "@uidotdev/usehooks"
 import { ApiError, api } from "@/lib/axios"
 import { env } from "@/lib/env"
 import { ACTIVE_ROOM_KEY } from "../lib/room"
-import type { Room } from "../types/room"
+import type { Room, RoomProposalField } from "../types/room"
 
 export type JoinRoomStatus = "joined" | "already" | "not-found" | "duplicate"
 
@@ -11,33 +12,31 @@ export type RoomStatus = "loading" | "ready" | "not-found" | "error"
 
 const POLL_INTERVAL_MS = 5_000
 
+export interface ProposalSubmitItem {
+  kind: "include" | "exclude"
+  field: RoomProposalField
+  value: string
+  autoApply?: boolean
+}
+
 export interface UseRoomsResult {
   rooms: Record<string, Room>
-
   activeCode: string
   setActiveCode: (code: string) => void
-
   getRoom: (code: string) => Room | undefined
-
   getRoomStatus: (code: string) => RoomStatus
-
   retryRoom: (code: string) => void
-
   createRoom: (name: string) => Promise<string>
-
   joinRoom: (code: string, displayName: string) => Promise<JoinRoomStatus>
-
-  addMyProposal: (
+  addMyProposal: (code: string, input: ProposalSubmitItem) => Promise<void>
+  addMyProposals: (
     code: string,
-    input: {
-      kind: "include" | "exclude"
-      field: "category" | "district" | "priceMax" | "keyword"
-      value: string
-    },
+    inputs: Omit<ProposalSubmitItem, "autoApply">[],
+    options?: { autoApply?: boolean; mode?: "append" | "replace" },
   ) => Promise<void>
-
   applyProposal: (code: string, proposalId: string) => Promise<string>
   dismissProposal: (code: string, proposalId: string) => Promise<void>
+  updateRoomFilter: (code: string, input: UpdateRoomFilterInput) => Promise<void>
   leaveRoom: (code: string) => Promise<void>
 }
 
@@ -59,7 +58,6 @@ export function useRooms(): UseRoomsResult {
   const [errorCodes, setErrorCodes] = useState<ReadonlySet<string>>(new Set())
 
   const fetchedRef = useRef(new Set<string>())
-
   const seqRef = useRef(0)
   const mutationSeqRef = useRef(new Map<string, number>())
 
@@ -89,12 +87,10 @@ export function useRooms(): UseRoomsResult {
       const startedSeq = ++seqRef.current
       try {
         const { data } = await api.get<Room>(`/rooms/${code}`)
-        // GET bắt đầu trước một mutation đã hoàn tất → dữ liệu cũ, bỏ qua.
         if (startedSeq < (mutationSeqRef.current.get(code) ?? 0)) return undefined
         storeRoom(data)
         return data
       } catch (error) {
-        // 404 = phòng không tồn tại; lỗi khác (mạng/5xx) là "error" để UI cho thử lại.
         if (error instanceof ApiError && error.status === 404) {
           setMissingCodes((prev) => new Set(prev).add(code))
         } else {
@@ -123,7 +119,6 @@ export function useRooms(): UseRoomsResult {
       if (rooms[code]) return "ready"
       if (missingCodes.has(code)) return "not-found"
       if (errorCodes.has(code)) return "error"
-      // Chưa fetch xong (hoặc chưa bắt đầu) — `getRoom` sẽ khởi động.
       return "loading"
     },
     [rooms, missingCodes, errorCodes],
@@ -143,14 +138,12 @@ export function useRooms(): UseRoomsResult {
     [fetchRoom],
   )
 
-  /** Đánh dấu phòng vừa nhận response mutation — GET cũ hơn sẽ bị bỏ qua. */
   const markMutation = useCallback((code: string) => {
     mutationSeqRef.current.set(code, ++seqRef.current)
   }, [])
 
   const createRoom = useCallback(
     async (name: string): Promise<string> => {
-      // 401 khi chưa đăng nhập — để lỗi nổi lên cho UI hiện toast.
       const { data } = await api.post<Room>("/rooms", { name })
       markMutation(data.code)
       storeRoom(data)
@@ -172,8 +165,6 @@ export function useRooms(): UseRoomsResult {
         storeRoom(data.room)
         fetchedRef.current.add(normalized)
         setActiveCode(normalized)
-        // `joined:false` = token cũ khớp thành viên (đã ở trong phòng) — thành
-        // công, không phải trùng tên. Trùng tên thật do server trả 409.
         return data.joined ? "joined" : "already"
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) return "not-found"
@@ -185,17 +176,42 @@ export function useRooms(): UseRoomsResult {
   )
 
   const addMyProposal = useCallback(
-    async (
-      code: string,
-      input: {
-        kind: "include" | "exclude"
-        field: "category" | "district" | "priceMax" | "keyword"
-        value: string
-      },
-    ) => {
+    async (code: string, input: ProposalSubmitItem) => {
       const { data } = await api.post<Room>(`/rooms/${code}/proposals`, input)
       markMutation(code)
       storeRoom(data)
+    },
+    [markMutation, storeRoom],
+  )
+
+  const addMyProposals = useCallback(
+    async (
+      code: string,
+      inputs: Omit<ProposalSubmitItem, "autoApply">[],
+      options?: { autoApply?: boolean; mode?: "append" | "replace" },
+    ) => {
+      if (options?.mode === "replace") {
+        const { data } = await api.post<Room>(`/rooms/${code}/filter`, {
+          action: "replace",
+          items: inputs,
+        })
+        markMutation(code)
+        storeRoom(data)
+        return
+      }
+      const autoApply = options?.autoApply ?? true
+      let latestRoom: Room | undefined
+      for (const item of inputs) {
+        const { data } = await api.post<Room>(`/rooms/${code}/proposals`, {
+          ...item,
+          autoApply,
+        })
+        latestRoom = data
+      }
+      if (latestRoom) {
+        markMutation(code)
+        storeRoom(latestRoom)
+      }
     },
     [markMutation, storeRoom],
   )
@@ -221,6 +237,15 @@ export function useRooms(): UseRoomsResult {
     [markMutation, storeRoom],
   )
 
+  const updateRoomFilter = useCallback(
+    async (code: string, input: UpdateRoomFilterInput) => {
+      const { data } = await api.post<Room>(`/rooms/${code}/filter`, input)
+      markMutation(code)
+      storeRoom(data)
+    },
+    [markMutation, storeRoom],
+  )
+
   const leaveRoom = useCallback(
     async (code: string) => {
       const me = rooms[code]?.members.find((member) => member.isMe)
@@ -237,14 +262,6 @@ export function useRooms(): UseRoomsResult {
     [rooms, setActiveCode],
   )
 
-  /**
-   * Đồng bộ phòng đang mở.
-   *
-   * Mock bật → polling qua axios adapter (EventSource không đi qua adapter).
-   * Mock tắt → SSE thật: server chỉ phát `room-updated` + `{version}`, client
-   * refetch để nhận DTO tính `isMe` theo đúng cookie/session của mình.
-   * SSE lỗi → đóng stream và chuyển sang polling 5s.
-   */
   useEffect(() => {
     if (!activeCode) return
 
@@ -295,8 +312,10 @@ export function useRooms(): UseRoomsResult {
     createRoom,
     joinRoom,
     addMyProposal,
+    addMyProposals,
     applyProposal,
     dismissProposal,
+    updateRoomFilter,
     leaveRoom,
   }
 }

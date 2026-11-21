@@ -77,12 +77,14 @@ export function computeItemItem(
     normalizedVectors.push(normalized)
   }
 
-  // (3) Tích vô hướng theo cặp place trong từng actor: O(Σ |vector_actor|²).
+  // (3) Tích vô hướng theo cặp place trong từng actor kèm tích luỹ bậc phổ biến từng place (itemNormSq).
   const accumulators = new Map<string, Map<string, number>>()
+  const itemNormSq = new Map<string, number>()
   for (const vector of normalizedVectors) {
     const entries = [...vector]
     for (let i = 0; i < entries.length; i += 1) {
       const [placeA, weightA] = entries[i]!
+      itemNormSq.set(placeA, (itemNormSq.get(placeA) ?? 0) + weightA * weightA)
       let row = accumulators.get(placeA)
       if (!row) {
         row = new Map<string, number>()
@@ -96,16 +98,18 @@ export function computeItemItem(
     }
   }
 
-  // (4) Lọc self + similarity không dương (tín hiệu loại trừ làm score ≤ 0,
-  // không phải gợi ý), sắp xếp giảm dần, cắt top-K. Tie-break theo id để kết
-  // quả tất định giữa các lần chạy.
+  // (4) Item-Degree Cosine Damping (R-4): chia cho (norm(A) * norm(B))^0.5 để khử thiên kiến quán đại trà.
+  // Lọc self + similarity không dương, sắp xếp giảm dần, cắt top-K.
   const result = new Map<string, AffinityItem[]>()
   for (const [placeId, row] of accumulators) {
+    const normASq = itemNormSq.get(placeId) ?? 1
     const items: AffinityItem[] = []
-    for (const [relatedId, score] of row) {
+    for (const [relatedId, rawScore] of row) {
       if (relatedId === placeId) continue
-      if (score <= 0) continue
-      items.push({ id: relatedId, score })
+      if (rawScore <= 0) continue
+      const normBSq = itemNormSq.get(relatedId) ?? 1
+      const damped = rawScore / Math.sqrt(Math.sqrt(normASq * normBSq))
+      items.push({ id: relatedId, score: damped })
     }
     if (items.length === 0) continue
     items.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
