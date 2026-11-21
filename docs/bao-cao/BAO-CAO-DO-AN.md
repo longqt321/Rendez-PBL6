@@ -37,7 +37,7 @@ Dù đã cố gắng, báo cáo khó tránh khỏi thiếu sót. Nhóm mong nh�
 
 ## TÓM TẮT
 
-Đồ án xây dựng một mạng xã hội khám phá địa điểm tại Đà Nẵng, gồm 358 địa điểm thuộc 6 hạng mục trên 6 quận. Hệ thống gồm 29 bảng dữ liệu, 12 nhóm endpoint và 356 ca kiểm thử tự động, chạy trên một máy chủ với 5 nhân và 3,5 GB bộ nhớ.
+Đồ án xây dựng một mạng xã hội khám phá địa điểm tại Đà Nẵng, gồm 358 địa điểm thuộc 6 hạng mục trên 6 quận. Hệ thống gồm 33 bảng dữ liệu (chuẩn 3NF, 23 migration), 15 nhóm route, Redis 7 và hệ thống quan sát hiệu suất/log, chạy trên một máy chủ với 5 nhân và 3,5 GB bộ nhớ.
 
 Đồ án thiết kế hai thuật toán. Thuật toán tìm kiếm lai ghép EGRF hợp nhất bốn nhánh tín hiệu, trong đó nhánh ngữ nghĩa và nhánh suy luận thuộc tính cho phép hệ thống hiểu ý định ẩn sau truy vấn thay vì chỉ khớp chữ nghĩa; trọng số các nhánh được chọn theo bằng chứng định danh có trong truy vấn. Trên tập nội bộ 344 truy vấn, EGRF đạt độ chính xác tại 5 là 0,820, so với 0,591 của hợp nhất xếp hạng chuẩn. Thuật toán gợi ý DES tính điểm theo trung bình Bayes có điều chỉnh và thêm nhiễu thay đổi theo khung giờ. Trên tập địa điểm đối chứng, DES kết hợp đạt độ triệu hồi tại 10 là 0,044, so với 0,035 của lọc cộng tác. Kiểm định bootstrap cho nDCG@10 cho chênh lệch trung bình 0,0046, khoảng tin cậy 95% [0,0028; 0,0065].
 
@@ -49,7 +49,7 @@ Kiểm thử tải dùng cấu hình giới hạn 2 nhân cho tầng dịch vụ
 
 ## ABSTRACT
 
-This project builds a social network for place discovery in Da Nang, covering 358 places in 23 categories across 6 urban districts. The system comprises 29 database tables, 12 endpoint groups and 356 automated test cases, running on a single server with 5 CPU cores and 3.5 GB of memory.
+This project builds a social network for place discovery in Da Nang, covering 358 places in 6 categories across 6 urban districts. The system comprises 33 database tables (3NF normalized, 23 migrations), 15 route groups, Redis 7, and end-to-end observability, running on a single server with 5 CPU cores and 3.5 GB of memory.
 
 The project designs two algorithms. The hybrid search algorithm EGRF fuses four signal branches; its semantic branch and its attribute-inference branch let the system understand the intent behind a query instead of matching surface text alone, while branch weights are selected according to the identifying evidence present in the query. On an internal set of 344 queries, EGRF achieves precision at 5 of 0.820, compared with 0.591 for standard rank fusion. The recommendation algorithm DES scores places by an adjusted Bayesian average and adds noise that varies by time window. On the reference place set, combined DES reaches recall at 10 of 0.044, compared with 0.035 for collaborative filtering. A bootstrap test on nDCG@10 gives a mean difference of 0.0046 with a 95% confidence interval of [0.0028, 0.0065].
 
@@ -882,7 +882,7 @@ Với người dùng đã có lịch sử, điểm cuối là tổng có trọng
 
 ## 3.7. Thiết kế dữ liệu
 
-Lược đồ dữ liệu gồm 29 bảng. Bảng 3.8 nhóm các bảng theo miền nghiệp vụ.
+Lược đồ dữ liệu gồm 33 bảng (chuẩn hóa 3NF). Bảng 3.8 nhóm các bảng theo miền nghiệp vụ.
 
 **Bảng 3.8. Mô tả các nhóm bảng dữ liệu**
 
@@ -890,12 +890,12 @@ Lược đồ dữ liệu gồm 29 bảng. Bảng 3.8 nhóm các bảng theo mi�
 |---|---|---|
 | Tài khoản và phiên | 4 | Người dùng, phiên, tài khoản liên kết, mã xác thực |
 | Quan hệ xã hội | 1 | Theo dõi giữa người dùng |
-| Địa điểm | 6 | Địa điểm, ảnh, đánh giá, báo cáo, vector, gợi ý hằng ngày |
+| Địa điểm | 10 | Địa điểm, ảnh, thẻ (`tags`, `place_tags`), nguồn (`sources`, `place_sources`), đánh giá, báo cáo, vector, gợi ý hằng ngày |
 | Nội dung | 7 | Bài đăng, ảnh bài, lượt thích, lượt lưu, bình luận, sự kiện tương tác |
 | Bộ sưu tập | 3 | Bộ sưu tập, địa điểm trong bộ sưu tập, lượt thích |
 | Phòng bình chọn | 3 | Phòng, thành viên phòng, đề xuất |
 | Thông báo | 2 | Thông báo, thông báo gợi ý địa điểm |
-| Hạ tầng | 3 | Giới hạn tần suất, khoá lũy đẳng, bộ đệm sở thích |
+| Hạ tầng | 3 | Khoá lũy đẳng, bộ đệm sở thích, nhật ký kiểm toán (`audit_logs`) |
 
 Hình 3.10 mô tả các lớp miền chính của hệ thống, gồm thuộc tính và hành vi. Thuộc tính lấy từ lược đồ dữ liệu; hành vi ánh xạ từ các hàm xử lý thật trong mã nguồn. Hai lớp dịch vụ `SearchService` và `RecommendationService` gói hai thuật toán EGRF và DES.
 
@@ -1317,13 +1317,13 @@ bun run dev                      # Ở cửa sổ khác, chạy giao diện Reac
 
 Lệnh `db:seed` có tính chất lũy đẳng: ưu tiên nạp tệp `backend/data/places-expanded.json` gồm 358 địa điểm đã làm giàu thông tin; nếu tệp không có thì dùng tệp dự phòng 491 địa điểm gốc. Chạy lại seed không tạo bản ghi trùng.
 
-**Chạy ở chế độ triển khai đầy đủ.** Một lệnh khởi động cả bốn dịch vụ:
+**Chạy ở chế độ triển khai đầy đủ.** Một lệnh khởi động các dịch vụ:
 
 ```bash
-docker compose up -d --build     # postgres + migrate + api + web
+docker compose up -d --build     # postgres + redis + migrate + api + web
 ```
 
-Compose khởi động PostgreSQL trước, chờ qua healthcheck, chạy migration một lần rồi thoát, sau đó API mới khởi động. Caddy phục vụ giao diện tĩnh và làm reverse proxy cho API.
+Compose khởi động PostgreSQL và Redis trước, chờ qua healthcheck, chạy migration một lần rồi thoát, sau đó API mới khởi động. Caddy/Nginx phục vụ giao diện tĩnh và làm reverse proxy cho API.
 
 **Dữ liệu mẫu.** Bộ dữ liệu 358 địa điểm lấy từ OpenStreetMap [20], đã làm giàu ảnh, giờ mở cửa và số điện thoại. Dữ liệu tương tác (bài đăng, đánh giá, bộ sưu tập) để rỗng sau seed, vì các số liệu trong báo cáo đo trên dữ liệu thật sinh ra khi chạy, không phải dữ liệu mẫu cài sẵn.
 
