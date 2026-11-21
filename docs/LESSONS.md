@@ -1293,3 +1293,33 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
 - **Cách phòng tránh**:
   1. Bật sẵn `CREATE EXTENSION IF NOT EXISTS vector;` trên cả database `rendez` lẫn `template1` trong lệnh `db:migrate` / `db:migrate:dev` ở `package.json` gốc, đồng thời trỏ `bun run db:migrate` về `prisma migrate deploy` để áp dụng migration an toàn.
   2. Trước khi đưa bất kỳ lệnh CLI hướng dẫn nào cho người dùng, phải chạy kiểm chứng lệnh đó trên terminal thực tế.
+
+## L-057 — 2026-11-21: Thay thanh search trên TopBar bằng nút mở `CommandDialog` bị thiếu `<Command>` context gây crash trang `/discover`
+
+- **Lỗi**: Trên trang `/discover`, khi người dùng click vào thanh tìm kiếm trên `TopBar` (được thay bằng nút `"Tìm nhanh hoặc chuyển trang… ⌘K"` mở `CommandDialog`), ứng dụng bị crash vào `ErrorBoundary` (`"Đã có lỗi xảy ra / Trang này không tải được"`). Đồng thời trong Rooms còn 3 bất cập UX: phần lịch sử đề xuất gây rối và làm cuộn cả 2 cột; ô nhập tiêu chí không rõ hành vi ghi đè hay cộng nối tiếp ở lượt gõ thứ 2; và khi đã vào phòng nhóm thì bị khoá không thể tự tìm kiếm riêng.
+- **Nguyên nhân gốc**:
+  1. Component `CommandDialog` trong `frontend/src/components/ui/command.tsx` đặt `<DialogHeader>` bên ngoài `<DialogContent>` và không bọc `{children}` trong `<Command>` (`CommandPrimitive` của `cmdk`). Khi `commandOpen` chuyển sang `true`, `CommandInput` được mount mà không có `Command` context bên ngoài nên ném lỗi runtime làm sập toàn bộ cây React.
+  2. Thay ô `<input>` tìm kiếm trên `TopBar` bằng nút mở modal `CommandDialog` khiến người dùng click vào với kỳ vọng gõ tìm kiếm trực tiếp nhưng lại kích hoạt modal lỗi.
+  3. Chưa tách biệt trạng thái lọc của phòng (`/rooms/:code`) với trạng thái tìm kiếm cá nhân trên `TopBar` / `/discover` / `/map` (`isSearchBlocked`), và chưa cố định chiều cao viewport (`h-[calc(100dvh-4.05rem)] overflow-hidden`) cho bố cục 2 cột của trang Rooms.
+- **Cách phòng tránh**:
+  1. Bọc `{children}` bên trong `<Command>` tại `CommandDialog` và viết unit test mount + mở `CommandDialog` thật để bắt lỗi context runtime.
+  2. Không biến thanh search chính trên `TopBar` thành nút giả; giữ thanh search thật hoạt động xuyên suốt (kể cả khi đang ở trong phòng nhóm) để người dùng luôn có thể tự tìm kiếm riêng.
+  3. Với layout dạng Studio 2 cột như `RoomPage`, cố định khung ngoài theo viewport (`lg:h-[calc(100dvh-4.05rem)] lg:overflow-hidden`) để banner và cột điều khiển bên trái đứng yên, chỉ cuộn danh sách kết quả bên phải.
+
+## L-058 — 2026-11-21: Tự viết thẻ HTML thuần (`<button>`, `<label>`, `<aside>`, `<div>` chia cột/cuộn) kèm Tailwind thay vì dùng bộ UI Components có sẵn
+
+- **Lỗi**: Khi chỉnh sửa `room-page.tsx`, `proposal-form.tsx`, `discover-toolbar.tsx` và `room-banner.tsx`, agent đã bỏ qua các primitive và UI component sẵn có của dự án (`PageContainer`, `SplitLayout`, `StickyAside`, `SplitMain`, `Card`/`CardHeader`/`CardContent`/`CardAction`, `FieldGroup`/`Field`/`FieldLabel`/`FieldDescription`, `ToggleGroup`/`ToggleGroupItem`, `InputGroupButton`, `AvatarGroup`, `ScrollArea`, `Separator`, `Button`) mà tự viết thẻ HTML thuần (`<div className="mx-auto ...">`, `<aside>`, `<label>`, `<button type="button">`, `<span>` làm vạch ngăn cách).
+- **Nguyên nhân gốc**: Khi cần tuỳ biến bố cục cố định và các nút gỡ chip / chuyển chế độ, agent vội viết HTML + utility class Tailwind trực tiếp thay vì kiểm tra và kết hợp các primitive trong `frontend/src/components/ui/*` và `frontend/src/components/layout/page-primitives.tsx`.
+- **Cách phòng tránh**:
+  1. Bắt buộc sử dụng các component trong `@/components/ui/*` và `@/components/layout/page-primitives`:
+     - Bố cục trang & chia cột: `PageContainer`, `SplitLayout`, `StickyAside`, `SplitMain`, `SurfaceCard`, `Card` (`CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter`).
+     - Biểu mẫu & nhãn: `FieldGroup`, `Field`, `FieldLabel`, `FieldTitle`, `FieldDescription`, `FieldSeparator`.
+     - Nút chọn & bật/tắt: `ToggleGroup`, `ToggleGroupItem`, `Toggle`, `Button`, `InputGroupButton`.
+     - Nhóm avatar, cuộn, phân cách: `AvatarGroup`, `ScrollArea`, `Separator`.
+  2. Tuyệt đối không viết thẻ `<button>`, `<label>`, `<aside>`, `<input>` HTML trần hoặc dùng `<span className="w-px ...">` thay cho `<Separator orientation="vertical" />` trong các file feature.
+
+## L-059 — 2026-11-21: Nhồi toàn bộ 15 chip filter vào 1 hàng `overflow-x-auto scrollbar-none` bên cạnh cụm nút phải gây che lấp bộ lọc
+
+- **Lỗi**: Trên `DiscoverToolbar` (`/discover` và `/map`), đặt 7 danh mục + 6 quận + 2 mức giá vào chung một vùng `flex-1 overflow-x-auto scrollbar-none` nằm cùng hàng với cụm nút `Gần tôi`, `Sắp xếp`, `Lưới/Bản đồ` khiến toàn bộ danh mục cuối, các quận và mức giá bị cắt ngang và che lấp hoàn toàn mà không có dấu hiệu cuộn.
+- **Nguyên nhân gốc**: Nhồi quá nhiều nút lọc vào một hàng ngang có `overflow-x-auto` kết hợp ẩn thanh cuộn (`scrollbar-none`) và bị cụm nút phải chiếm mất chiều rộng.
+- **Cách phòng tránh**: Tách rõ cấu trúc toolbar: Hàng 1 chỉ chứa 7 `Toggle` danh mục với `flex-wrap` (không bao giờ bị cắt chữ); Hàng 2 đặt các bộ lọc phụ (`Quận`, `Mức giá`) gọn trong `DropdownMenu` (với `Positioner z-1100` để nổi trên bản đồ) cùng `Gần tôi`, `Sắp xếp`, `Lưới/Bản đồ`.
