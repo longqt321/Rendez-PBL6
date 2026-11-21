@@ -58,8 +58,8 @@ Seed **không tự chạy** trong container. Nếu DB trống (lần đầu), ch
 docker compose run --rm migrate bun run seed
 ```
 
-Seed idempotent (chạy lại không nhân đôi), nạp corpus hiện tại **344 địa điểm
-Đà Nẵng** (OSM đã lọc). Kiểm tra:
+Seed idempotent (chạy lại không nhân đôi), nạp corpus chính thức **358 địa điểm
+Đà Nẵng** (`backend/data/places-expanded.json`). Kiểm tra:
 
 ```bash
 docker exec rendez-postgres psql -U rendez -d rendez -c "select count(*) from places;"
@@ -192,7 +192,7 @@ docker compose --env-file /srv/rendez/.env -f compose.yaml -f deploy/compose.pro
 
 ### Dữ liệu đầu
 
-- Seed nạp **344 địa điểm** (corpus OSM đã lọc, `backend/scripts/seed.ts`).
+- Seed nạp **358 địa điểm** (`backend/data/places-expanded.json`, `backend/scripts/seed.ts`).
   Đánh giá/bài đăng/bộ sưu tập để rỗng — nội dung do bạn tạo khi nghiệm thu.
 - Job nền pg-boss chạy cron `*/5 * * * *` (tự đề xuất địa điểm cho bài chưa gắn
   địa điểm) — không cần thao tác gì.
@@ -361,8 +361,9 @@ ngay từ ngoài, nhánh dev bị tree-shake khỏi bundle production.
 
 #### C. `/system` — số liệu vận hành
 
-FE **không có route `/system`** (đã grep toàn bộ `frontend/src` — chỉ API).
-Demo bằng curl:
+FE có route `/system` (`frontend/src/features/system/pages/system-page.tsx`, **ẩn khỏi
+thanh điều hướng**, chỉ mở trực tiếp khi demo) gọi `GET /system/stats` và `POST /system/reset`.
+Cũng có thể demo trực tiếp bằng curl:
 
 ```bash
 # Số liệu: uptime, tổng query, latency TB, tỉ lệ cache hit, đếm venue trong DB

@@ -59,8 +59,7 @@ Xem `.env.example`.
 - `src/lib/axios.ts` chỉ nạp mock khi `VITE_ENABLE_MOCKS=true` (dynamic import) nên bundle
   production không chứa mock.
 - Chuyển backend: đặt `VITE_API_BASE_URL` trỏ backend thật + `VITE_ENABLE_MOCKS=false`.
-  Không phải sửa feature/api/hook/component. Các việc backend cần làm: `../docs/BACKLOG.md`
-  mục "Cần backend implement".
+  Không phải sửa feature/api/hook/component. Các việc còn mở xem `../docs/BACKLOG.md`.
 
 ## Cấu trúc
 
@@ -82,6 +81,6 @@ Quy ước code: `../docs/CONVENTIONS.md`. Quyết định kiến trúc: `../doc
 
 - CI (`.github/workflows/ci.yml`): typecheck → lint → format:check → test → build.
 - Pre-commit (husky + lint-staged): prettier + eslint trên file staged.
-- Test: 135 test pass / 29 file (unit, Vitest). e2e Playwright: 42 test / 16 spec mock.
+- Test: **193 test pass / 40 file** (unit, Vitest). e2e Playwright: project `mock` (16 spec) & `backend` (12 spec).
 - logic thuần (`lib/format`, `features/rooms/lib/room`) và component có tương tác
   (`RatingStars`).

@@ -1873,7 +1873,7 @@ xử lý như trạng thái rỗng"** — chỉ lộ ra khi API không trả d�
   nhánh `isPending` và `isError || !me` (Empty + nút "Thử lại" gọi `refetch`).
 - **Lỗi mạng bị báo thành 404** (`place-detail`, `collection-detail`, `post-detail`): `isError ||
 !place` dùng chung một thông điệp "không tìm thấy / đã bị xoá" → người dùng tưởng dữ liệu mất.
-  Thêm [`isNotFoundError`](file:///home/longtran/Projects/frontend/src/lib/axios.ts) (ApiError 404)
+  Thêm [`isNotFoundError`](../frontend/src/lib/axios.ts) (ApiError 404)
   để phân biệt: 404 → "không tìm thấy" (không có nút thử lại); lỗi khác → "không tải được" +
   "Thử lại".
 - **Lỗi bị hiển thị thành rỗng** (`/saved`, `/search`, lưới bài đăng ở trang cá nhân): API lỗi thì
@@ -1898,7 +1898,7 @@ viết logic TS thuần thay vì gọi package. Rà toàn bộ code mới viết
 
 - **Khối `Empty + "Kiểm tra kết nối rồi thử lại." + nút "Thử lại"` bị copy ở 13 vị trí** — vi phạm
   "một nghiệp vụ một chỗ". Tách thành
-  [`ErrorState`](file:///home/longtran/Projects/frontend/src/components/shared/error-state.tsx)
+  [`ErrorState`](../frontend/src/components/shared/error-state.tsx)
   (`src/components/shared/`, dựng trên `Empty` + `Button` của shadcn — không tự viết HTML/CSS).
   Thay ở: discover, map, social, notification, profile, saved (×2), search (×2),
   `ProfilePostGrid`, settings, place-detail, collection-detail, post-detail. Thông điệp 404 riêng

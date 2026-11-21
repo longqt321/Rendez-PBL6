@@ -1,26 +1,21 @@
 # Báo cáo kỹ thuật backend Rendez
 
-> Cập nhật 2026-11-12 (phiên tự hành 2026-11-11 → 2026-11-12, gồm phiên 03:00 → 23:30
-> ngày 11-11). Mọi số liệu dưới đây lấy từ lần chạy thật trên máy dev (Postgres 17 trong
-> Docker, API trong container). Hạng mục chưa kiểm được ghi rõ ở mục **Chưa xác minh**.
+> Cập nhật số liệu tổng quan: 2026-11-19 (kiến trúc ban đầu xây dựng 2026-11-11 → 2026-11-12, bổ sung EGRF & DES ngày 2026-11-16). Các số liệu chạy e2e/test backend cũ ghi rõ ngày chụp khi chưa chạy lại trong phiên gần nhất.
 
 ## 1. Tóm tắt
 
 | Hạng mục | Kết quả |
 | --- | --- |
-| Bảng trong DB (schema `public`) | 27 (22 nghiệp vụ + 4 bảng better-auth + `_prisma_migrations`) |
-| Migration đã áp dụng | 18 |
-| Route handler tự viết | 56 trong `routes/` + `GET /healthz` + `GET /readyz` + mount `/auth/*` của better-auth |
-| Mã nguồn backend (`src/**/*.ts`) | 45 file, ~7.200 dòng (routes + lib + hạ tầng) |
-| Mã nguồn frontend (`frontend/src/**`) | 282 file, ~21.300 dòng |
-| Test backend (`bun test --parallel=1`) | **256 pass / 0 fail**, 25 file, ~154 giây |
-| e2e Playwright với backend thật | **22/22 pass** (12 spec, `VITE_ENABLE_MOCKS=false`) — số liệu phiên 2026-11-11, **chưa chạy lại** ngày 2026-11-12 |
-| e2e Playwright với mock | **42 pass** (16 spec, project `mock`) |
-| Unit test frontend | **170 pass** (37 file) |
-| Lint + typecheck (FE + BE) | 0 lỗi, 0 cảnh báo |
-| Seed | **358 địa điểm seed** (nguồn `collected-places-websearch.json` đã làm giàu đầy đủ 26 trường), **11 ảnh quán thật trong DB**, còn lại dùng placeholder |
-| DB dev | 3 user thật (đã dọn 167 user fixture test, 32 post rác, 6 phòng test) |
-| Container | `rendez-postgres` (healthy), `rendez-migrate-1` (one-shot OK), `rendez-api` (healthz/readyz 200) |
+| Model Prisma (`schema.prisma`) | **29 model** (nghiệp vụ, auth, search/rec embedding & event) |
+| Migration đã áp dụng | **20 thư mục migration** |
+| Route handler tự viết | `routes/` (auth, places, posts, reviews, collections, rooms, notifications, events, users, media, og, system) + `GET /healthz` + `GET /readyz` + mount `/auth/*` của better-auth |
+| Test backend (`backend/test/`) | **40 file test** (Testcontainers Postgres, chạy tuần tự qua `scripts/test-all.sh`; đợt 2026-11-12 ghi nhận 256 pass / 25 file, chưa chạy lại 2026-11-19) |
+| e2e Playwright với backend thật | **22/22 pass** (12 spec, `VITE_ENABLE_MOCKS=false`, số liệu phiên 2026-11-11, chưa chạy lại) |
+| e2e Playwright với mock | **42 pass** (16 spec, project `mock`, số liệu phiên 2026-11-12, chưa chạy lại) |
+| Unit test frontend (Vitest) | **193 pass / 40 file** (đã chạy 2026-11-19) |
+| Typecheck + Lint + Build (FE & BE) | 0 lỗi, build pass (đã chạy 2026-11-19) |
+| Seed chính thức | **358 địa điểm** (`backend/data/places-expanded.json`, D-066), **29 ảnh gốc (87 file WebP)** ở cold-start |
+| Đa tiến trình SSE | Postgres `LISTEN/NOTIFY` (`backend/src/lib/pubsub.ts`) kết hợp Bun `reusePort` |
 
 ## 2. Kiến trúc đã triển khai
 
@@ -45,13 +40,15 @@
 
 ## 3. Cơ sở dữ liệu
 
-27 bảng:
+29 model Prisma (20 migration):
 
-- Nghiệp vụ: `places`, `place_images`, `place_reports`, `posts`, `post_likes`,
-  `post_saves`, `comments`, `comment_likes`, `collections`, `collection_places`,
-  `collection_likes`, `reviews`, `follows`, `notifications`,
+- Nghiệp vụ: `places`, `place_images`, `place_reports`, `posts`, `post_images`,
+  `post_likes`, `post_saves`, `comments`, `comment_likes`, `collections`,
+  `collection_places`, `collection_likes`, `reviews`, `follows`, `notifications`,
   `place_suggestion_notifications`, `rooms`, `room_members`, `room_proposals`,
   `daily_picks`.
+- Search & Recommendation: `place_embeddings` (pgvector 384 chiều), `affinity_cache`,
+  `interaction_events` (partition theo tháng).
 - Hạ tầng: `rate_limits`, `idempotency_keys`.
 - better-auth: `users`, `sessions`, `accounts`, `verifications`.
 
@@ -196,20 +193,16 @@ Thiết kế chi tiết nằm ở `docs/thiet-ke/` (`goi-y-hom-nay.md`, `tim-ngu
 
 ## 9. Kiểm thử
 
-- **Unit/integration backend**: **256 test / 25 file**, mỗi file dùng Postgres thật qua
-  Testcontainers (`@testcontainers/postgresql`), chạy `--parallel=1`, ~154 giây.
-  Phân bố chính (đếm ở phiên 2026-11-11, chưa đếm lại toàn bộ): places 27, posts 25,
-  rooms 20, auth 16, collections 14, posts-images 8, idempotency 8, reviews 8,
-  profile 7, infra 7, notifications 6, rate-limit 11 (IP + user), users 6, http-cache 5,
-  suggestions-job 5, enums 5, notification-events 3, health 3, media 3; phiên 2026-11-12
-  thêm test cho daily-picks, user-suggestions, OG, sort/filter, xác thực email.
-- **e2e với mock**: **42 pass / 16 spec** (project `mock`) — không hồi quy frontend.
+- **Unit/integration backend**: **40 file test** trong `backend/test/`, chạy mỗi file một
+  process qua `backend/scripts/test-all.sh` bằng Postgres thật từ Testcontainers
+  (`@testcontainers/postgresql`). *(Số liệu tổng hợp 256 test / 25 file ở đợt 2026-11-12;
+  các đợt sau bổ sung thêm test cho search hybrid, events, affinity, DES cold-start,
+  delete-review, media validation…).*
+- **e2e với mock**: **42 pass / 16 spec** (project `mock`, số liệu đợt 2026-11-12 — chưa chạy lại 2026-11-19).
 - **e2e với backend thật**: 12 spec Playwright, app dev `:5199` với
-  `VITE_ENABLE_MOCKS=false`, API `:8000`, user demo đăng ký qua API trong `globalSetup`.
-  22/22 pass (số liệu phiên 2026-11-11, **chưa chạy lại** ngày 2026-11-12), kể cả case
-  suy giảm khi `POST /media` trả 503 (không có R2 trong container).
-- **Unit frontend**: **135 pass / 29 file**.
-- **Typecheck + lint**: FE + BE 0 lỗi, 0 cảnh báo.
+  `VITE_ENABLE_MOCKS=false`, API `:8000` (22/22 pass phiên 2026-11-11, chưa chạy lại).
+- **Unit frontend**: **193 pass / 40 file** (Vitest, đã chạy 2026-11-19).
+- **Typecheck + lint + build**: FE + BE 0 lỗi, build pass (đã chạy 2026-11-19).
 
 ## 10. Kiểm thử bảo mật & Hiệu năng chịu tải thực tế (Stress Test k6)
 
@@ -276,13 +269,11 @@ Kịch bản k6 mô phỏng hành vi người dùng thật phân tán (`X-Forwar
   sửa file cấu hình.
 - **Preview share thật trên Facebook/Zalo**: chưa kiểm — cần domain public để crawler
   của họ fetch `/og/*`; mới kiểm bằng UA giả lập qua nginx.
-- **`bun test` không có cờ `--parallel=1`**: chưa xác minh có race giữa các file test
-  dùng chung Postgres hay không; mọi số liệu 256 test đều chạy với `--parallel=1`.
-- **SSE nhiều instance**: pub/sub trong bộ nhớ (cả rooms lẫn notifications), chỉ đúng
-  khi chạy 1 instance API; cần Redis pub/sub khi scale ngang.
+- **`bun test` chạy trực tiếp không qua `scripts/test-all.sh`**: dễ ghi đè `DATABASE_URL`
+  giữa các file dùng Testcontainers; hiện mọi test chạy tuần tự từng process qua `test-all.sh`.
 - **Buffering SSE qua Caddy**: nginx đã đặt `proxy_buffering off`, nhưng chưa kiểm cấu
   hình Caddy thật trong môi trường chạy.
-- **Tải lớn**: dataset 344 dòng; chưa benchmark `unaccent + pg_trgm` ở ≥ 50k địa điểm.
+- **Tải lớn**: dataset hiện có 358 dòng; chưa benchmark `unaccent + pg_trgm` ở ≥ 50k địa điểm.
 - **Trình duyệt thật trên thiết bị di động**: e2e chỉ chạy Chromium desktop.
 
 ## 13. Hệ thống Tìm kiếm & Gợi ý (EGRF & DES — Cập nhật 2026-11-16)

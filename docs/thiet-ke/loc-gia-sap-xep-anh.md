@@ -1,6 +1,6 @@
 # Thiết kế: Lọc theo giá + Sắp xếp kết quả + Ảnh responsive (srcset WebP)
 
-> Trạng thái: bản thiết kế v1.1 — đã xử lý PASS-CÓ-ĐIỀU-KIỆN của review (M1–M7, ghi chú "bắt buộc" tại các mục tương ứng). **Tài liệu này KHÔNG sửa code, KHÔNG sửa dataset.**
+> Trạng thái: đã triển khai (2026-11-12) — lưu làm tài liệu thiết kế tham chiếu.
 > Phạm vi: bộ lọc khoảng giá + sắp xếp kết quả trên `/discover` và `/map`; giảm dung lượng tải ảnh của `/discover` bằng srcset WebP.
 > Quy mô: S–M. Không thêm dependency nặng, không thêm hạ tầng mới.
 

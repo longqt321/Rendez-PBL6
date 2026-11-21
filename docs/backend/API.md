@@ -132,12 +132,14 @@ Ràng buộc đầu vào:
 | GET | `/places` | — | `Page<Place>`, 9 item/trang, bộ lọc A7.9; `q` khớp không dấu + bỏ dấu câu |
 | GET | `/places/map` | — | `{items, total}`, chặn 300 item, `total` = số khớp thật |
 | GET | `/places/daily-picks` | — | `{date, items: [{place, reason, why}], next: null, meta}` — 3 quán job `daily-picks` chọn cho hôm nay (Asia/Ho_Chi_Minh); chưa có picks → `items: []` (200) |
+| GET | `/places/recommended` | — | `{items: Place[], next: null, meta: {tookMs, cacheHit, totalResults, strategy, seedCount}}` — nhận `?limit=` (1–20, mặc định 6) và `?anonId=`; trả gợi ý cá nhân hoá (affinity) hoặc DES cold-start |
 | GET | `/places/suggestions?q=&limit=` | — | `{suggestions: PlaceSuggestion[]}`; caption < 8 ký tự → rỗng; `limit` 1–10 (mặc định 3) |
 | GET | `/places/saved` | ✔ | `Page<Place>` gộp mọi bộ sưu tập của chính mình, loại trùng |
 | GET | `/places/:id` | — | `Place`; 404 nếu chưa publish/đã xoá |
 | GET | `/places/:id/posts` | — | `Page<Post>` chỉ bài gắn địa điểm, cursor keyset; 404 nếu place chưa publish |
 | GET | `/places/:id/reviews` | — | `{items: Review[], next: null}` mới nhất trước |
 | POST | `/places/:id/reviews` | ✔ | upsert 1 user 1 review (A7.4) → `201 Review` |
+| DELETE | `/places/:id/reviews` | ✔ | Xoá mềm đánh giá của chính mình tại địa điểm → `204 No Content` |
 | POST | `/places/:id/reports` | ✔ | `201 PlaceReport`; unique (place, reason, reporter) |
 
 ### 4.1. Tham số lọc của `/places` và `/places/map`
@@ -415,7 +417,7 @@ client bỏ qua bước PUT, dùng thẳng `publicUrl`.
   "avgLatencyMs": 8,
   "cacheHitRatio": 0.25,
   "byEndpoint": [{ "route": "GET /places", "count": 30, "avgMs": 7, "cacheHits": 0 }],
-  "venues": { "total": 344, "published": 120, "withImages": 60, "withTags": 344, "withHours": 200 }
+  "venues": { "total": 358, "published": 357, "withImages": 29, "withTags": 358, "withHours": 200 }
 }
 ```
 
@@ -429,6 +431,12 @@ client bỏ qua bước PUT, dùng thẳng `publicUrl`.
   là thao tác ghi nên gắn rate limit nhẹ 10 lần/phút/IP để chặn vòng lặp làm
   rỗng số liệu; `GET` chỉ đọc nên không cần. Ngoài ra reset bị chặn `403` khi
   `NODE_ENV=production` — route này chỉ dành cho demo/dev.
+
+## 10c. Sự kiện tương tác (`/events`)
+
+| Method | Path | Auth | Ghi chú |
+|---|---|---|---|
+| POST | `/events` | — | Nhận batch `{ events: [{ eventType, placeId?, postId?, query?, context?, sessionId?, anonId? }] }` (1–20 event); rate limit 120 req/phút/IP; kiểm `placeId` tồn tại (400 nếu không tồn tại); dedupe 5 phút in-memory; trả `202 { accepted, recorded }` |
 
 ## 11. Mã lỗi thường gặp
 

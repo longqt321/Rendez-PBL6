@@ -1270,3 +1270,15 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
      hoà thì chốt kết quả trước rồi mới đọc tiếp theo lô nhỏ.
   4. Khi gặp `504` liên tiếp (>=3 lần), dừng retry, thu gọn lại prompt (dùng tóm tắt thay
      vì nội dung thô) rồi mới gửi lại — không lặp cùng payload đầy.
+
+## L-054 — 2026-11-20: Dùng công cụ CLI truyền thống thay vì tuân thủ User Global Rules
+
+- **Lỗi**: Khi chạy `run_command`, agent vẫn dùng các lệnh cũ (`grep`, `ls -la`, `git diff`, v.v.) thay vì các công cụ tối ưu đã quy định trong User Global Rules.
+- **Nguyên nhân gốc**: Không rà soát quy tắc `Tooling mặc định (CLI Optimization)` trong User Global Rules trước khi soạn lệnh shell.
+- **Cách phòng tránh**: Luôn ưu tiên `rg` thay `grep -r`, `fd` thay `find -name`, `jq`/`jsonq` thay xử lý JSON thủ công, `eza -la`/`rtk ls` thay `ls -la`, `rtk diff` thay `git diff`, và `rtk err <cmd> <args>` để giữ output gọn và sạch context.
+
+## L-055 — 2026-11-20: Viết câu hỏi làm rõ trong file thiết kế / văn bản thay vì gọi tool `ask_question`
+
+- **Lỗi**: Khi lập kế hoạch (`/plan`) và có các câu hỏi cần người dùng chốt phương án thiết kế, agent lại viết câu hỏi dưới dạng danh sách text ở cuối file artifact thiết kế và trong phản hồi chat thay vì gọi công cụ `ask_question`.
+- **Nguyên nhân gốc**: Quên sử dụng công cụ tương tác `ask_question` đã được cung cấp cho các câu hỏi lựa chọn phương án (multiple-choice) khi làm rõ yêu cầu, khiến người dùng không có giao diện chọn đáp án trực tiếp.
+- **Cách phòng tránh**: Mọi câu hỏi làm rõ yêu cầu hoặc chốt phương án thiết kế có các lựa chọn cụ thể bắt buộc phải gọi tool `ask_question` (đặt phương án đề xuất lên đầu kèm tiền tố `(Recommended)`), tuyệt đối không đẩy câu hỏi vào trong file thiết kế bắt người dùng tự gõ câu trả lời.

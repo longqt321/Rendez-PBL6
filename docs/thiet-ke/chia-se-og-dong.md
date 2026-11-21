@@ -1,7 +1,7 @@
 # Thiết kế: Chia sẻ + OG động cho trang quán và bài viết
 
-> Trạng thái: bản thiết kế v1 — chờ review trước khi triển khai (quy mô S nhưng chạm hạ tầng serve: nginx + API + build FE).
-> Phạm vi: OG meta động cho `/discover/:id` và `/post/:id` khi bot mạng xã hội (Facebook/Zalo/Messenger) fetch link, + nút "Chia sẻ" tái dùng ở 2 trang chi tiết. KHÔNG sửa code trong tài liệu này.
+> Trạng thái: đã triển khai (2026-11-12) — lưu làm tài liệu thiết kế tham chiếu.
+> Phạm vi: OG meta động cho `/discover/:id` và `/post/:id` khi bot mạng xã hội (Facebook/Zalo/Messenger) fetch link, + nút "Chia sẻ" tái dùng ở 2 trang chi tiết.
 
 ## 1. Mục tiêu & phạm vi
 

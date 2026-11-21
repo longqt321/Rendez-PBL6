@@ -1,7 +1,7 @@
 # Thiết kế: Tìm người + gợi ý theo dõi
 
-> Trạng thái: bản thiết kế v1 — chờ review trước khi triển khai (quy mô S, mục "Tìm người + gợi ý theo dõi" trong `docs/KE-HOACH-HOAN-THIEN-NGAY.md`).
-> Phạm vi: hoàn chỉnh trải nghiệm tìm người ở tab "Người" của `/search` + gợi ý người nên theo dõi. KHÔNG sửa code trong tài liệu này.
+> Trạng thái: đã triển khai (2026-11-12) — lưu làm tài liệu thiết kế tham chiếu.
+> Phạm vi: hoàn chỉnh trải nghiệm tìm người ở tab "Người" của `/search` + gợi ý người nên theo dõi.
 
 ## 1. Mục tiêu & giá trị người dùng
 

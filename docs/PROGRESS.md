@@ -1,6 +1,19 @@
-# PROGRESS — Cập nhật phiên 2026-11-16
+# PROGRESS — Cập nhật phiên 2026-11-19
 
-## Trạng thái hiện tại: **EGRF & DES Triển khai Hoàn chỉnh, Benchmark Độc lập Quốc tế Đạt Chuẩn**
+## Trạng thái hiện tại: **Đã dọn dẹp tài liệu/asset cũ & sửa lỗi Nhóm A + Nhóm B**
+
+| Hạng mục | Trạng thái | Ghi chú |
+|---|---|---|
+| Dataset chính thức | ✅ **358 địa điểm** | `backend/data/places-expanded.json` (tồn tại 54 nhóm trùng toạ độ đang chờ sửa) |
+| Kiểm thử Frontend | ✅ **40 file / 193 test** | Vitest + typecheck + ESLint + build pass |
+| Backend build & typecheck | ✅ **Pass** | 20 migration, 29 model Prisma, 40 file test (`test-all.sh`, chưa chạy lại do Postgres chưa bật) |
+| Tài liệu & asset | ✅ **Đã dọn** | Xoá `docs/proposals`, `docs/design`, `docs/ai`, `docs/TOOLING.md`, `categories/` chết; sửa 10 lỗi đã chốt |
+
+---
+
+# Lưu trữ — phiên 2026-11-16
+
+## Trạng thái phiên 2026-11-16: **EGRF & DES Triển khai Hoàn chỉnh, Benchmark Độc lập Quốc tế Đạt Chuẩn**
 
 | Hạng mục | Trạng thái | Ghi chú |
 |---|---|---|
@@ -73,11 +86,8 @@ Chi tiết: `docs/LESSONS.md` L-020, L-021, L-022 · `DECISIONS-ai.md` D-AI-40..
 
 ### Đã cập nhật tài liệu
 
-- `docs/ai/filter-funnel.md` — lần chạy 3 (344 POI) đầy đủ funnel 8 tầng + lý do loại
-- `docs/ai/runbook-corpus.md` — funnel 8 tầng, `-min-signals`, `-max-branch`
-- `docs/LESSONS.md` — L-020..L-022
-- `DECISIONS-ai.md` — D-AI-40..44
-- `MUC-TIEU-DO-DUOC.md` — A1 đổi ≥600, thêm A1b/A1c
+- Tài liệu funnel corpus 344 POI (`docs/ai/*`) đã được dọn bỏ ở đợt rà soát 2026-11-19 sau khi chuyển sang corpus 358 web-search (D-066).
+- `docs/LESSONS.md` — L-020..L-022 · `docs/DECISIONS.md` — D-065/D-066
 - `docs/PROGRESS.md` — file này
 
 ### Chưa làm

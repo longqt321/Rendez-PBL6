@@ -18,8 +18,8 @@ Tính năng nổi bật:
 
 | Thư mục | Vai trò |
 | --- | --- |
-| `frontend/` | SPA React 19 + Vite 8 + TypeScript strict. Chạy độc lập bằng mock in-memory, hoặc nối backend thật bằng `VITE_ENABLE_MOCKS=false`. |
-| `backend/` | API Hono 4 + Prisma 7 + PostgreSQL 17 + better-auth + pg-boss. 256 test / 25 file; 18 migration; 27 bảng; seed 344 địa điểm (86 curated + 258 OSM). |
+| `frontend/` | SPA React 19 + Vite 8 + TypeScript strict. Chạy độc lập bằng mock in-memory, hoặc nối backend thật bằng `VITE_ENABLE_MOCKS=false`. 40 file / 193 unit test (Vitest). |
+| `backend/` | API Hono 4 + Prisma 7 + PostgreSQL 17 (pgvector) + better-auth + pg-boss. 40 file test (`test-all.sh` + Testcontainers); 20 migration; 29 model Prisma; seed 358 địa điểm (`backend/data/places-expanded.json`). |
 | `packages/schema/` | zod schema dùng chung frontend ↔ backend (8 file, chuyển từ frontend). |
 | `docs/` | Tài liệu chung: quyết định kiến trúc, hợp đồng API, bài học, kế hoạch backend, báo cáo đồ án, tài liệu thiết kế tính năng (`docs/thiet-ke/`). |
 

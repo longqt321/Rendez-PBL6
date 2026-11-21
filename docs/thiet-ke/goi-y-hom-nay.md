@@ -1,7 +1,7 @@
 # Thiết kế: "Gợi ý hôm nay" (Daily Picks)
 
-> Trạng thái: bản thiết kế v1 — chờ review khắt khe trước khi triển khai (quy trình Đợt 2 trong `docs/KE-HOACH-HOAN-THIEN-NGAY.md`).
-> Phạm vi: 3 quán gợi ý mỗi ngày ở đầu trang `/discover`. KHÔNG sửa code trong tài liệu này.
+> Trạng thái: đã triển khai (2026-11-12) — lưu làm tài liệu thiết kế tham chiếu.
+> Phạm vi: 3 quán gợi ý mỗi ngày ở đầu trang `/discover`.
 
 ## 1. Mục tiêu & giá trị người dùng
 

@@ -7,19 +7,14 @@ Hono 4 + Bun + Prisma 7 + PostgreSQL 17 + better-auth + pg-boss.
 
 ## Hiện trạng
 
-- 18 migration, 27 bảng; seed 344 địa điểm (86 curated + 258 OSM).
-- 256 test pass / 25 file (`bun test --parallel=1`, Testcontainers Postgres);
-  typecheck + lint 0 lỗi.
-- Auth better-auth: **bắt buộc xác thực email trước khi đăng nhập**; đăng nhập bằng
-  email (không còn username).
-- Tính năng mới:
-  - **Gợi ý hôm nay**: 3 quán hệ thống chọn mỗi ngày — job nền qua pg-boss chạy
-    00:05 giờ VN (`src/lib/daily-picks.ts`).
+- 20 migration, 29 model Prisma (`schema.prisma`); seed chính thức **358 địa điểm** (`data/places-expanded.json`).
+- **40 file test** trong `test/` (`bun run test` chạy tuần tự qua `scripts/test-all.sh` với Testcontainers Postgres); typecheck + build 0 lỗi.
+- Auth better-auth: **bắt buộc xác thực email trước khi đăng nhập**; đăng nhập bằng email.
+- Tính năng chính:
+  - **Tìm kiếm & Gợi ý**: Hybrid search (pg_trgm + pgvector + structured intent + EGRF), **Gợi ý hôm nay** (cron 00:05 giờ VN, `src/lib/daily-picks.ts`), gợi ý cá nhân hoá + DES cold-start (`GET /places/recommended`, `src/lib/recommendations.ts`), sự kiện tương tác (`POST /events`).
   - **Gợi ý theo dõi người dùng** (`src/lib/user-suggestions.ts`, route `users`).
-  - **Route OG** (`src/routes/og.ts`): HTML meta Open Graph cho bot preview
-    Facebook/Zalo/Messenger khi chia sẻ bài/quán.
-  - **Rate limit hành động xã hội** (`src/lib/rate-limit.ts`).
-- 45 file ~7.200 dòng.
+  - **Route OG** (`src/routes/og.ts`): HTML meta Open Graph cho bot preview Facebook/Zalo/Messenger khi chia sẻ bài/quán.
+  - **Rate limit & SSE**: rate limit hành động xã hội (`src/lib/rate-limit.ts`), SSE realtime qua Postgres `LISTEN/NOTIFY` (`src/lib/pubsub.ts`).
 
 ## Chạy dev
 
