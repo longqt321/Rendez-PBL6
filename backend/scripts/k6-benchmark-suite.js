@@ -5,9 +5,15 @@ import { Rate, Trend } from "k6/metrics"
 /**
  * Kịch bản benchmark & stress test tổng hợp cho Rendez API.
  *
+ * Profiles:
+ *   - smoke:            50 VUs (25s)
+ *   - benchmark:        100 → 500 → 1000 → 2000 → 3000 VUs (đa kịch bản, RPS cao)
+ *   - high_vu_low_rps:  1000 → 3000 → 5000 → 8000 → 10000 VUs (RPS thấp, giữ nhiều kết nối đồng thời để tìm ngưỡng VUs)
+ *   - extreme:          500 → 1000 → 2000 → 3000 → 5000 VUs
+ *
  * Cách chạy lại:
  *   k6 run backend/scripts/k6-benchmark-suite.js
- *   k6 run -e BASE_URL=http://127.0.0.1:8000 -e PROFILE=extreme backend/scripts/k6-benchmark-suite.js
+ *   k6 run -e PROFILE=high_vu_low_rps backend/scripts/k6-benchmark-suite.js
  */
 
 const BASE_URL = __ENV.BASE_URL || "http://127.0.0.1:8000"
@@ -21,9 +27,18 @@ const PROFILES = {
   ],
   benchmark: [
     { duration: "10s", target: 100 },
-    { duration: "15s", target: 500 },
-    { duration: "15s", target: 1000 },
+    { duration: "12s", target: 500 },
+    { duration: "12s", target: 1000 },
     { duration: "15s", target: 2000 },
+    { duration: "15s", target: 3000 },
+    { duration: "10s", target: 0 },
+  ],
+  high_vu_low_rps: [
+    { duration: "10s", target: 1000 },
+    { duration: "12s", target: 3000 },
+    { duration: "12s", target: 5000 },
+    { duration: "15s", target: 8000 },
+    { duration: "15s", target: 10000 },
     { duration: "10s", target: 0 },
   ],
   extreme: [
@@ -39,7 +54,6 @@ const PROFILES = {
 export const options = {
   stages: PROFILES[PROFILE] || PROFILES.benchmark,
   thresholds: {
-    // Mục tiêu đo điểm suy hao, chỉ cảnh báo nếu tỉ lệ lỗi vượt ngưỡng quá cao
     user_error_rate: ["rate<0.05"],
   },
 }
@@ -49,6 +63,9 @@ const searchLatency = new Trend("rendez_search_ms", true)
 const feedLatency = new Trend("rendez_feed_ms", true)
 const mapLatency = new Trend("rendez_map_ms", true)
 const detailLatency = new Trend("rendez_detail_ms", true)
+const socialLatency = new Trend("rendez_social_ms", true)
+const recLatency = new Trend("rendez_recommended_ms", true)
+const ogLatency = new Trend("rendez_og_ms", true)
 const eventsLatency = new Trend("rendez_events_batch_ms", true)
 const telemetryLatency = new Trend("rendez_telemetry_ms", true)
 
@@ -66,6 +83,14 @@ const SEARCH_QUERIES = [
   "quán nhậu",
   "pizza",
   "chay",
+  "bún đậu",
+]
+
+const FILTER_PARAMS = [
+  "category=cafe&sort=rating&limit=9",
+  "district=hai-chau&limit=9",
+  "category=food&priceLevel=2&limit=9",
+  "sort=newest&limit=9",
 ]
 
 const MAP_BBOXES = [
@@ -112,23 +137,52 @@ export default function () {
   let bucketTrend = overallLatency
   let expectedStatuses = [200]
 
-  if (r < 0.3) {
-    const q = randomItem(SEARCH_QUERIES)
-    res = http.get(`${BASE_URL}/api/v1/places?q=${encodeURIComponent(q)}&limit=10`, { headers })
+  if (r < 0.22) {
+    // Tìm kiếm hybrid + lọc thuộc tính
+    const url =
+      Math.random() < 0.65
+        ? `${BASE_URL}/api/v1/places?q=${encodeURIComponent(randomItem(SEARCH_QUERIES))}&limit=10`
+        : `${BASE_URL}/api/v1/places?${randomItem(FILTER_PARAMS)}`
+    res = http.get(url, { headers })
     bucketTrend = searchLatency
-  } else if (r < 0.5) {
+  } else if (r < 0.36) {
+    // Gợi ý nhanh & Daily Picks
     const path = Math.random() < 0.5 ? "/api/v1/places/suggestions" : "/api/v1/places/daily-picks"
     res = http.get(`${BASE_URL}${path}`, { headers })
     bucketTrend = feedLatency
-  } else if (r < 0.7) {
-    const bbox = randomItem(MAP_BBOXES)
-    res = http.get(`${BASE_URL}/api/v1/places/map?bbox=${bbox}`, { headers })
+  } else if (r < 0.5) {
+    // Bản đồ bounding box
+    res = http.get(`${BASE_URL}/api/v1/places/map?bbox=${randomItem(MAP_BBOXES)}`, { headers })
     bucketTrend = mapLatency
-  } else if (r < 0.85) {
-    const id = randomItem(PLACE_IDS)
-    res = http.get(`${BASE_URL}/api/v1/places/${id}`, { headers })
+  } else if (r < 0.62) {
+    // Chi tiết địa điểm
+    res = http.get(`${BASE_URL}/api/v1/places/${randomItem(PLACE_IDS)}`, { headers })
     bucketTrend = detailLatency
+  } else if (r < 0.72) {
+    // Gợi ý cá nhân hoá DES (cold-start anonId)
+    res = http.get(`${BASE_URL}/api/v1/places/recommended?anonId=k6-anon-${vuId}&limit=6`, {
+      headers,
+    })
+    bucketTrend = recLatency
+  } else if (r < 0.82) {
+    // Cộng đồng: feed bài đăng, bình luận địa điểm, gợi ý người dùng
+    const sub = Math.random()
+    const path =
+      sub < 0.5
+        ? "/api/v1/posts?limit=10"
+        : sub < 0.8
+          ? `/api/v1/places/${randomItem(PLACE_IDS)}/posts`
+          : "/api/v1/users?q=a&limit=10"
+    res = http.get(`${BASE_URL}${path}`, { headers })
+    bucketTrend = socialLatency
+  } else if (r < 0.88) {
+    // Open Graph bot preview HTML
+    res = http.get(`${BASE_URL}/api/v1/og/place/${randomItem(PLACE_IDS)}`, {
+      headers: { ...headers, Accept: "text/html" },
+    })
+    bucketTrend = ogLatency
   } else if (r < 0.95) {
+    // Batch interaction_events (bulk unnest INSERT + Redis dedupe)
     const batch = [
       {
         eventId: fakeUuid(vuId, iter, 1),
@@ -149,6 +203,7 @@ export default function () {
     bucketTrend = eventsLatency
     expectedStatuses = [202]
   } else {
+    // Telemetry RUM (Web Vitals)
     const items = [
       {
         kind: "web-vital",
@@ -173,5 +228,11 @@ export default function () {
   })
   errorRate.add(ok ? 0 : 1)
 
-  sleep(0.3 + Math.random() * 0.7)
+  if (PROFILE === "high_vu_low_rps") {
+    // Giữ nhiều VU sống đồng thời nhưng tần suất request thấp (5–9s/lần) để tìm ngưỡng kết nối/RAM/FD
+    sleep(5 + Math.random() * 4)
+  } else {
+    // Kịch bản benchmark: tăng mật độ request/giây
+    sleep(0.15 + Math.random() * 0.25)
+  }
 }
