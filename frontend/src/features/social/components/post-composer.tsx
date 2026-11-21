@@ -1,8 +1,17 @@
 import { useEffect, useId, useRef, useState } from "react"
 import { CheckIcon, ImagePlusIcon, MapPinIcon, SparklesIcon, XIcon } from "lucide-react"
+import { toast } from "sonner"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 import { Field, FieldLabel } from "@/components/ui/field"
 import {
   Item,
@@ -13,9 +22,15 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { SectionHeading } from "@/components/shared/section-heading"
+import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
+import { usePlaceSuggestions } from "@/features/places/hooks/use-place-suggestions"
+import { categoryLabel } from "@/features/places/lib/category-meta"
+import type { PlaceSummary } from "@/features/places/types/place"
+import { useMe } from "@/features/profile/hooks/use-me"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import {
   IMAGE_CONTENT_TYPES,
@@ -24,10 +39,6 @@ import {
   PLACE_SUGGESTION_MIN_CHARS,
 } from "@/lib/constants"
 import { formatNumber } from "@/lib/format"
-import { categoryLabel } from "@/features/places/lib/category-meta"
-import { usePlaceSuggestions } from "@/features/places/hooks/use-place-suggestions"
-import type { PlaceSummary } from "@/features/places/types/place"
-import { toast } from "sonner"
 import { isMediaUnavailableError, requestMediaUpload, uploadMediaFile } from "@/lib/media-upload"
 import { useCreatePost } from "../hooks/use-create-post"
 
@@ -42,27 +53,32 @@ interface PendingImage {
 }
 
 export function PostComposer({ onCreated }: PostComposerProps) {
+  const { data: me } = useMe()
   const [caption, setCaption] = useState("")
   const [selectedPlace, setSelectedPlace] = useState<PlaceSummary | null>(null)
-  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [placeQuery, setPlaceQuery] = useState("")
   const [images, setImages] = useState<PendingImage[]>([])
   const [uploading, setUploading] = useState(false)
-
   const [mediaUnavailable, setMediaUnavailable] = useState(false)
+
   const captionId = useId()
-  const suggestionsPanelId = useId()
   const fileInputId = useId()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageSeq = useRef(0)
-
   const submittingRef = useRef(false)
 
   const debouncedCaption = useDebouncedValue(caption, 450)
+  const debouncedPlaceQuery = useDebouncedValue(placeQuery, 250)
   const { data: suggestions = [], isFetching } = usePlaceSuggestions(debouncedCaption)
+  const placeLookup = useDiscoverPlaces(
+    { category: "all", district: "all", query: debouncedPlaceQuery, sort: "rating" },
+    { enabled: pickerOpen },
+  )
+  const searchedPlaces = placeLookup.data?.pages[0]?.items ?? []
+
   const createPost = useCreatePost()
 
-  // Preview là object URL — thu hồi khi composer unmount để không rò rỉ bộ nhớ.
-  // Preview rời từng ảnh được thu hồi ngay ở `removeImage`/submit thành công.
   const imagesRef = useRef(images)
   useEffect(() => {
     imagesRef.current = images
@@ -88,12 +104,9 @@ export function PostComposer({ onCreated }: PostComposerProps) {
     const files = Array.from(event.target.files ?? []).filter((file) =>
       (IMAGE_CONTENT_TYPES as readonly string[]).includes(file.type),
     )
-    event.target.value = "" // chọn lại cùng file vẫn kích hoạt onChange
+    event.target.value = ""
     if (files.length === 0) return
 
-    // Mọi side effect (đếm slot, tạo blob URL, toast) chạy TRƯỚC khi dispatch:
-    // updater của `setImages` phải thuần vì StrictMode gọi nó hai lần — tạo
-    // objectURL trong updater sẽ rò rỉ blob và lặp toast.
     const accepted = files.slice(0, MAX_POST_IMAGES - imagesRef.current.length)
     if (accepted.length === 0) {
       toast.error(`Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
@@ -116,9 +129,9 @@ export function PostComposer({ onCreated }: PostComposerProps) {
   }
 
   const canSubmit = caption.trim().length >= 3 && !createPost.isPending && !uploading
-  const canSuggest = caption.trim().length >= PLACE_SUGGESTION_MIN_CHARS
+  const showAutoSuggestions =
+    !selectedPlace && caption.trim().length >= PLACE_SUGGESTION_MIN_CHARS && suggestions.length > 0
 
-  /** Tải ảnh lên R2 qua presigned URL — trả mảng URL công khai theo thứ tự chọn. */
   async function uploadImages(): Promise<string[] | null> {
     if (imagesRef.current.length === 0) return []
     setUploading(true)
@@ -144,15 +157,11 @@ export function PostComposer({ onCreated }: PostComposerProps) {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
-    // `isPending` chỉ bật khi mutation chạy — upload ảnh diễn ra TRƯỚC đó, nên
-    // cần cờ riêng để bấm Đăng hai lần liên tiếp không tạo hai bài. Cờ chỉ được
-    // nhả sau khi mutation xong (`await mutateAsync`), không phải ngay sau khi
-    // gọi — nếu không vẫn còn khe double-submit trong lúc request đang bay.
     if (submittingRef.current || !canSubmit) return
     submittingRef.current = true
     try {
       const uploaded = await uploadImages()
-      if (uploaded === null) return // lỗi ảnh — giữ nguyên nội dung để người dùng thử lại
+      if (uploaded === null) return
 
       await createPost.mutateAsync({
         caption: caption.trim(),
@@ -162,11 +171,10 @@ export function PostComposer({ onCreated }: PostComposerProps) {
 
       setCaption("")
       setSelectedPlace(null)
-      setShowSuggestions(false)
+      setPlaceQuery("")
       clearImages()
       onCreated?.()
     } catch {
-      // Lỗi tạo bài: giữ nguyên nội dung + ảnh để người dùng thử lại.
       toast.error("Không đăng được bài. Thử lại nhé.")
     } finally {
       submittingRef.current = false
@@ -178,71 +186,82 @@ export function PostComposer({ onCreated }: PostComposerProps) {
       onSubmit={(event) => {
         void handleSubmit(event)
       }}
-      className="rounded-md border border-border bg-card p-4 shadow-(--shadow-soft)"
+      className="rounded-surface border border-border/80 bg-card p-4 shadow-(--shadow-soft) sm:p-5"
     >
-      <Collapsible open={showSuggestions} onOpenChange={setShowSuggestions}>
-        <Field className="gap-0">
-          <FieldLabel htmlFor={captionId} className="sr-only">
-            Nội dung bài đăng
-          </FieldLabel>
-          <Textarea
-            id={captionId}
-            value={caption}
-            onChange={(event) => setCaption(event.target.value)}
-            maxLength={MAX_CAPTION_LENGTH}
-            placeholder="Hôm nay bạn ăn gì? Kể vài dòng về quán, món, không khí…"
-            className="min-h-28 resize-none border-0 bg-transparent px-0 text-base shadow-none focus-visible:ring-0 md:text-base"
-          />
-        </Field>
-
-        {selectedPlace ? (
-          <div className="mt-3 flex items-center gap-2.5 rounded-md border border-border bg-secondary px-3 py-2 text-sm">
-            <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />
-            <span className="flex-1 font-semibold">{selectedPlace.name}</span>
-            <Badge variant="outline" className="h-6 text-sm">
-              {categoryLabel(selectedPlace.category)}
-            </Badge>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Bỏ gắn địa điểm"
-              onClick={() => setSelectedPlace(null)}
-            >
-              <XIcon />
-            </Button>
-          </div>
+      <div className="flex items-start gap-3">
+        {me ? (
+          <Avatar size="default" className="mt-1 hidden sm:flex">
+            {me.avatarUrl ? <AvatarImage src={me.avatarUrl} alt={me.name} /> : null}
+            <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
+              {me.initials}
+            </AvatarFallback>
+          </Avatar>
         ) : null}
 
-        {images.length > 0 ? (
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {images.map((image, index) => (
-              <li key={image.id} className="relative">
-                <img
-                  src={image.previewUrl}
-                  alt={`Ảnh sẽ đính kèm ${index + 1}`}
-                  className="size-20 rounded-md object-cover"
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="icon-sm"
-                  aria-label={`Xoá ảnh ${index + 1}`}
-                  className="absolute -top-1.5 -right-1.5 size-6 rounded-full shadow"
-                  onClick={() => removeImage(image.id)}
-                >
-                  <XIcon />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        <div className="min-w-0 flex-1">
+          <Field className="gap-0">
+            <FieldLabel htmlFor={captionId} className="sr-only">
+              Nội dung bài đăng
+            </FieldLabel>
+            <Textarea
+              id={captionId}
+              value={caption}
+              onChange={(event) => setCaption(event.target.value)}
+              maxLength={MAX_CAPTION_LENGTH}
+              placeholder="Viết bài..."
+              className="min-h-24 resize-none border-0 bg-transparent px-0 text-base shadow-none focus-visible:ring-0"
+            />
+          </Field>
 
-        <CollapsibleContent id={suggestionsPanelId}>
-          {suggestions.length > 0 ? (
-            <div className="mt-3 rounded-md border border-dashed border-border bg-muted/60 p-3">
-              <SectionHeading icon={<SparklesIcon className="size-3.5" aria-hidden="true" />}>
-                Địa điểm có thể bạn đang nói tới
+          {selectedPlace ? (
+            <div className="mt-3 flex items-center gap-2.5 rounded-control border border-primary/30 bg-primary/8 px-3 py-2 text-sm">
+              <MapPinIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate font-semibold">{selectedPlace.name}</span>
+              <Badge variant="outline" className="h-6 shrink-0 text-xs">
+                {categoryLabel(selectedPlace.category)}
+              </Badge>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Bỏ gắn địa điểm"
+                onClick={() => setSelectedPlace(null)}
+              >
+                <XIcon />
+              </Button>
+            </div>
+          ) : null}
+
+          {images.length > 0 ? (
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {images.map((image, index) => (
+                <li key={image.id} className="relative">
+                  <img
+                    src={image.previewUrl}
+                    alt={`Ảnh sẽ đính kèm ${index + 1}`}
+                    className="size-20 rounded-control border border-border object-cover"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon-sm"
+                    aria-label={`Xoá ảnh ${index + 1}`}
+                    className="absolute -top-1.5 -right-1.5 size-6 rounded-full shadow"
+                    onClick={() => removeImage(image.id)}
+                  >
+                    <XIcon />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {showAutoSuggestions ? (
+            <div className="mt-3 rounded-control border border-dashed border-border bg-muted/50 p-3">
+              <SectionHeading
+                icon={<SparklesIcon className="size-3.5 text-primary" aria-hidden="true" />}
+              >
+                Gợi ý địa điểm từ nội dung
               </SectionHeading>
               <ItemGroup className="mt-2 gap-1">
                 {suggestions.map(({ place, reason }) => (
@@ -254,14 +273,13 @@ export function PostComposer({ onCreated }: PostComposerProps) {
                         type="button"
                         onClick={() => {
                           setSelectedPlace(place)
-                          setShowSuggestions(false)
                         }}
                       />
                     }
-                    className="group gap-2 px-2 py-1.5 text-left hover:bg-accent/15"
+                    className="group gap-2 rounded-control px-2 py-1.5 text-left hover:bg-accent/40"
                   >
                     <ItemMedia variant="icon">
-                      <MapPinIcon className="size-3.5" aria-hidden="true" />
+                      <MapPinIcon className="size-3.5 text-primary" aria-hidden="true" />
                     </ItemMedia>
                     <ItemContent className="gap-0">
                       <ItemTitle className="line-clamp-none font-semibold">{place.name}</ItemTitle>
@@ -278,63 +296,116 @@ export function PostComposer({ onCreated }: PostComposerProps) {
               </ItemGroup>
             </div>
           ) : null}
-        </CollapsibleContent>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border pt-3">
-          <CollapsibleTrigger
-            render={<Button type="button" variant="ghost" />}
-            disabled={!canSuggest}
-          >
-            {isFetching ? <Spinner aria-label="Đang tìm gợi ý địa điểm" /> : <MapPinIcon />}
-            Gắn địa điểm
-            {suggestions.length > 0 ? (
-              <Badge variant="secondary" className="ml-1">
-                {suggestions.length}
-              </Badge>
-            ) : null}
-          </CollapsibleTrigger>
-
-          {/* 503 từ `POST /media` → ẩn nút upload, bài chữ vẫn đăng bình thường. */}
-          {mediaUnavailable ? (
-            <span className="text-sm text-muted-foreground">Tính năng ảnh chưa được cấu hình</span>
-          ) : (
-            <>
-              <input
-                ref={fileInputRef}
-                id={fileInputId}
-                type="file"
-                accept={IMAGE_CONTENT_TYPES.join(",")}
-                multiple
-                className="sr-only"
-                onChange={handleFilesSelected}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={images.length >= MAX_POST_IMAGES || uploading}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {uploading ? <Spinner aria-label="Đang tải ảnh lên" /> : <ImagePlusIcon />}
-                Thêm ảnh
-                {images.length > 0 ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
+            {/* Bộ chọn địa điểm chủ động luôn mở được bằng Command Combobox */}
+            <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+              <PopoverTrigger render={<Button type="button" variant="ghost" size="sm" />}>
+                {isFetching ? (
+                  <Spinner aria-label="Đang tìm gợi ý địa điểm" />
+                ) : (
+                  <MapPinIcon className="text-primary" />
+                )}
+                Gắn địa điểm
+                {suggestions.length > 0 && !selectedPlace ? (
                   <Badge variant="secondary" className="ml-1">
-                    {images.length}/{MAX_POST_IMAGES}
+                    {suggestions.length}
                   </Badge>
                 ) : null}
-              </Button>
-            </>
-          )}
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-80 p-0">
+                <Command shouldFilter={false}>
+                  <CommandInput
+                    value={placeQuery}
+                    onValueChange={setPlaceQuery}
+                    placeholder="Tìm tên quán tại Đà Nẵng…"
+                  />
+                  <CommandList>
+                    {placeLookup.isFetching ? (
+                      <div className="flex items-center justify-center py-6 text-xs text-muted-foreground">
+                        <Spinner className="mr-2 size-4" aria-label="Đang tìm địa điểm" />
+                        Đang tìm quán…
+                      </div>
+                    ) : searchedPlaces.length === 0 ? (
+                      <CommandEmpty>Không tìm thấy địa điểm nào.</CommandEmpty>
+                    ) : (
+                      <CommandGroup heading="Địa điểm tại Đà Nẵng">
+                        {searchedPlaces.slice(0, 8).map((place) => (
+                          <CommandItem
+                            key={place.id}
+                            value={place.id}
+                            onSelect={() => {
+                              setSelectedPlace({
+                                id: place.id,
+                                name: place.name,
+                                address: place.address,
+                                category: place.category,
+                                isPublished: place.publishedAt !== null,
+                              })
+                              setPickerOpen(false)
+                            }}
+                          >
+                            <MapPinIcon
+                              className="size-4 shrink-0 text-primary"
+                              aria-hidden="true"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium">{place.name}</p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                {place.address}
+                              </p>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
 
-          <span className="ml-auto text-sm text-muted-foreground">
-            {formatNumber(caption.trim().length)}/{formatNumber(MAX_CAPTION_LENGTH)}
-          </span>
+            {mediaUnavailable ? (
+              <span className="text-xs text-muted-foreground">Tính năng ảnh chưa cấu hình</span>
+            ) : (
+              <>
+                <input
+                  ref={fileInputRef}
+                  id={fileInputId}
+                  type="file"
+                  accept={IMAGE_CONTENT_TYPES.join(",")}
+                  multiple
+                  className="sr-only"
+                  onChange={handleFilesSelected}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={images.length >= MAX_POST_IMAGES || uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {uploading ? <Spinner aria-label="Đang tải ảnh lên" /> : <ImagePlusIcon />}
+                  Thêm ảnh
+                  {images.length > 0 ? (
+                    <Badge variant="secondary" className="ml-1">
+                      {images.length}/{MAX_POST_IMAGES}
+                    </Badge>
+                  ) : null}
+                </Button>
+              </>
+            )}
 
-          <Button type="submit" disabled={!canSubmit}>
-            {createPost.isPending || uploading ? <Spinner aria-label="Đang đăng bài" /> : null}
-            Đăng
-          </Button>
+            <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+              {formatNumber(caption.trim().length)}/{formatNumber(MAX_CAPTION_LENGTH)}
+            </span>
+
+            <Button type="submit" size="sm" disabled={!canSubmit}>
+              {createPost.isPending || uploading ? <Spinner aria-label="Đang đăng bài" /> : null}
+              Đăng bài
+            </Button>
+          </div>
         </div>
-      </Collapsible>
+      </div>
     </form>
   )
 }

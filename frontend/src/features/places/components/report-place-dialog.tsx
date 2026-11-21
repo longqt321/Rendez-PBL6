@@ -146,12 +146,15 @@ export function ReportPlaceDialog({ place, children }: ReportPlaceDialogProps) {
               id="report-detail"
               {...form.register("detail")}
               aria-invalid={!!form.formState.errors.detail}
+              aria-describedby={
+                form.formState.errors.detail ? "report-detail-error" : "report-detail-counter"
+              }
               placeholder="Ví dụ: quán đã chuyển sang đường Nguyễn Chí Thanh từ tháng 10…"
               className="min-h-20 resize-none"
               maxLength={MAX_REPORT_DETAIL_LENGTH}
             />
-            <FieldError errors={[form.formState.errors.detail]} />
-            <FieldDescription>
+            <FieldError id="report-detail-error" errors={[form.formState.errors.detail]} />
+            <FieldDescription id="report-detail-counter">
               {formatNumber(detail?.length ?? 0)}/{formatNumber(MAX_REPORT_DETAIL_LENGTH)} ký tự
             </FieldDescription>
           </Field>

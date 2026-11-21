@@ -63,7 +63,7 @@ function PrivateProfileNotice() {
         </EmptyMedia>
         <EmptyTitle>Hồ sơ riêng tư</EmptyTitle>
         <EmptyDescription>
-          Người này đã đặt hồ sơ ở chế độ riêng tư — chỉ chính họ xem được bài đăng và bộ sưu tập.
+          Người này đã đặt hồ sơ ở chế độ riêng tư, chỉ chính họ xem được bài đăng và bộ sưu tập.
         </EmptyDescription>
       </EmptyHeader>
     </Empty>
@@ -95,7 +95,7 @@ function ProfileTabContentInner({
     },
     saved: {
       title: "Chưa lưu bài nào",
-      description: "Các bài bạn lưu sẽ nằm ở đây — chỉ mình bạn nhìn thấy.",
+      description: "Các bài bạn lưu sẽ nằm ở đây và chỉ mình bạn nhìn thấy.",
     },
   }[tab]
 

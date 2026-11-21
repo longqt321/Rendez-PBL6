@@ -3,6 +3,7 @@ import type { RouteObject } from "react-router"
 import { Navigate } from "react-router"
 import { AppShell } from "@/components/layout/app-shell"
 import { RequireAuth } from "./require-auth"
+import { RequireRole } from "./require-role"
 import { RouteErrorPage } from "./route-error-page"
 
 const DiscoverPage = lazy(() =>
@@ -50,6 +51,9 @@ const RoomPage = lazy(() =>
 )
 const SettingsPage = lazy(() =>
   import("@/features/settings/pages/settings-page").then((m) => ({ default: m.SettingsPage })),
+)
+const AdminPage = lazy(() =>
+  import("@/features/admin/pages/admin-page").then((m) => ({ default: m.AdminPage })),
 )
 const NotFoundPage = lazy(() =>
   import("@/features/not-found/pages/not-found-page").then((m) => ({ default: m.NotFoundPage })),
@@ -141,6 +145,14 @@ export const routes: RouteObject[] = [
           <RequireAuth>
             <SettingsPage />
           </RequireAuth>
+        ),
+      },
+      {
+        path: "/admin",
+        element: (
+          <RequireRole roles={["admin", "moderator"]}>
+            <AdminPage />
+          </RequireRole>
         ),
       },
       // Trang demo vận hành — không có link trong nav, chỉ mở trực tiếp khi demo.

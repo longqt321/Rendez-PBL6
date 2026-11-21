@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest"
-import { describeProposal } from "./room"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { ACTIVE_ROOM_KEY, clearActiveRoom, describeProposal } from "./room"
 import type { RoomProposal } from "../types/room"
 
 describe("describeProposal", () => {
@@ -43,5 +43,27 @@ describe("describeProposal", () => {
     expect(describeProposal({ ...base, kind: "exclude", field: "keyword", value: "chay" })).toBe(
       "－ Từ khoá: chay",
     )
+  })
+})
+
+describe("clearActiveRoom", () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+  })
+
+  it("xoá ACTIVE_ROOM_KEY khỏi sessionStorage và phát StorageEvent", () => {
+    sessionStorage.setItem(ACTIVE_ROOM_KEY, "AB23CD")
+    const handler = vi.fn()
+    window.addEventListener("storage", handler)
+
+    clearActiveRoom()
+
+    expect(sessionStorage.getItem(ACTIVE_ROOM_KEY)).toBeNull()
+    expect(handler).toHaveBeenCalledTimes(1)
+    const event = handler.mock.calls[0]?.[0] as StorageEvent
+    expect(event.key).toBe(ACTIVE_ROOM_KEY)
+    expect(event.newValue).toBeNull()
+
+    window.removeEventListener("storage", handler)
   })
 })

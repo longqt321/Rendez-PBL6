@@ -1,7 +1,7 @@
+import { Link } from "react-router"
 import { HeartIcon, MoreHorizontalIcon, TrashIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Toggle } from "@/components/ui/toggle"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +17,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item"
+import { Toggle } from "@/components/ui/toggle"
 import { formatCount, formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useSetCommentLiked } from "../hooks/use-set-comment-liked"
@@ -32,26 +33,30 @@ export function CommentItem({ comment, onReply, onDelete }: CommentItemProps) {
   const setLiked = useSetCommentLiked(comment.postId)
 
   return (
-    <Item variant="default" className="border-transparent px-0 py-1">
+    <Item variant="default" className="border-transparent px-0 py-1.5">
       <ItemMedia>
-        <Avatar size="sm">
-          <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
-            {comment.author.initials}
-          </AvatarFallback>
-        </Avatar>
+        <Link to={`/u/${comment.author.handle}`}>
+          <Avatar size="sm">
+            <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
+              {comment.author.initials}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
       </ItemMedia>
 
       <ItemContent className="gap-0.5">
         <ItemTitle className="text-xs">
-          {comment.author.name}
+          <Link to={`/u/${comment.author.handle}`} className="font-semibold hover:underline">
+            {comment.author.name}
+          </Link>
           <span className="font-normal text-muted-foreground">
             @{comment.author.handle} · {formatRelativeTime(comment.createdAt)}
           </span>
         </ItemTitle>
 
-        <ItemDescription className="break-words whitespace-pre-line">
+        <ItemDescription className="break-words whitespace-pre-line text-foreground/90">
           {comment.replyTo !== null && (
-            <span className="font-medium text-foreground">@{comment.replyTo.handle} </span>
+            <span className="font-medium text-primary">@{comment.replyTo.handle} </span>
           )}
           {comment.body}
         </ItemDescription>

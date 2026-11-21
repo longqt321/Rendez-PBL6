@@ -18,6 +18,7 @@ export const MOCK_USERS: Record<string, UserProfile> = {
     followedByMe: false,
     isMe: true,
     privateProfile: false,
+    role: "admin",
   },
   "u-lan": {
     id: "u-lan",

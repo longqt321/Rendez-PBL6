@@ -1,20 +1,21 @@
 import { Link } from "react-router"
 import { BookmarkIcon, FolderPlusIcon, MapPinIcon } from "lucide-react"
+import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
+import { LoadMore } from "@/components/shared/load-more"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
-import { useSavedPlaces } from "../hooks/use-saved-places"
+import { CollectionCard } from "@/features/collections/components/collection-card"
+import { useCollections } from "@/features/collections/hooks/use-collection"
+import type { CollectionSummary } from "@/features/collections/types/collection"
 import { PlaceCard } from "@/features/places/components/place-card"
 import type { Place } from "@/features/places/types/place"
-import { usePosts } from "@/features/social/hooks/use-posts"
 import { PostCard } from "@/features/social/components/post-card"
+import { usePosts } from "@/features/social/hooks/use-posts"
 import type { Post } from "@/features/social/types/post"
-import { useCollections } from "@/features/collections/hooks/use-collection"
-import { CollectionCard } from "@/features/collections/components/collection-card"
-import type { CollectionSummary } from "@/features/collections/types/collection"
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
+import { useSavedPlaces } from "../hooks/use-saved-places"
 
 interface SavedPostsContentProps {
   readonly isPending: boolean
@@ -28,7 +29,7 @@ function SavedPostsContent({ isPending, postsError, savedPosts, onRetry }: Saved
     return (
       <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
         {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={`skel-post-${index}`} className="h-64 w-full rounded-md" />
+          <Skeleton key={`skel-post-${index}`} className="h-64 w-full rounded-surface" />
         ))}
       </div>
     )
@@ -38,7 +39,7 @@ function SavedPostsContent({ isPending, postsError, savedPosts, onRetry }: Saved
   }
   if (savedPosts.length === 0) {
     return (
-      <Empty className="mt-2">
+      <Empty className="mt-2 border border-dashed border-border">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <BookmarkIcon />
@@ -67,6 +68,8 @@ interface SavedPlacesContentProps {
   readonly onRetry: () => void
   readonly sentinelRef: React.Ref<HTMLDivElement>
   readonly hasNextPage: boolean
+  readonly isFetchingNextPage: boolean
+  readonly onFetchNextPage: () => unknown
 }
 
 function SavedPlacesContent({
@@ -76,12 +79,14 @@ function SavedPlacesContent({
   onRetry,
   sentinelRef,
   hasNextPage,
+  isFetchingNextPage,
+  onFetchNextPage,
 }: SavedPlacesContentProps) {
   if (savedPlacesPending) {
     return (
       <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={`skel-place-${index}`} className="h-64 w-full rounded-md" />
+          <Skeleton key={`skel-place-${index}`} className="h-64 w-full rounded-surface" />
         ))}
       </div>
     )
@@ -91,7 +96,7 @@ function SavedPlacesContent({
   }
   if (savedPlaces.length === 0) {
     return (
-      <Empty className="mt-2">
+      <Empty className="mt-2 border border-dashed border-border">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <MapPinIcon />
@@ -110,20 +115,21 @@ function SavedPlacesContent({
   }
   return (
     <>
-      <ul className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {savedPlaces.map((place) => (
           <li key={place.id}>
             <PlaceCard place={place} />
           </li>
         ))}
       </ul>
-      <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
-      {hasNextPage ? (
-        <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-          <Spinner aria-label="Đang tải thêm địa điểm" className="size-3" />
-          Đang tải thêm địa điểm…
-        </p>
-      ) : null}
+      <LoadMore
+        sentinelRef={sentinelRef}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={onFetchNextPage}
+        loadingLabel="Đang tải thêm địa điểm"
+        endMessage="Đã hiển thị hết địa điểm đã lưu."
+      />
     </>
   )
 }
@@ -145,7 +151,7 @@ function SavedCollectionsContent({
     return (
       <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={`skel-col-${index}`} className="h-40 w-full rounded-md" />
+          <Skeleton key={`skel-col-${index}`} className="h-44 w-full rounded-surface" />
         ))}
       </div>
     )
@@ -155,7 +161,7 @@ function SavedCollectionsContent({
   }
   if (!collections || collections.length === 0) {
     return (
-      <Empty className="mt-2">
+      <Empty className="mt-2 border border-dashed border-border">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <FolderPlusIcon />
@@ -169,7 +175,7 @@ function SavedCollectionsContent({
     )
   }
   return (
-    <ul className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {collections.map((collection) => (
         <li key={collection.id}>
           <CollectionCard collection={collection} />
@@ -209,27 +215,16 @@ export function SavedPage() {
   })
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 className="sr-only">Đã lưu</h1>
-      <Tabs defaultValue="posts">
+    <PageContainer size="wide">
+      <PageHeader title="Đã lưu & Bộ sưu tập" />
+      <Tabs defaultValue="places">
         <TabsList>
-          <TabsTrigger value="posts">Bài đăng</TabsTrigger>
-          <TabsTrigger value="places">Địa điểm</TabsTrigger>
-          <TabsTrigger value="collections">Bộ sưu tập</TabsTrigger>
+          <TabsTrigger value="places">Địa điểm ({savedPlaces.length})</TabsTrigger>
+          <TabsTrigger value="collections">Bộ sưu tập ({collections?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="posts">Bài đăng ({savedPosts.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="posts" className="mt-4">
-          <SavedPostsContent
-            isPending={isPending}
-            postsError={postsError}
-            savedPosts={savedPosts}
-            onRetry={() => {
-              refetchPosts().catch(() => {})
-            }}
-          />
-        </TabsContent>
-
-        <TabsContent value="places" className="mt-4">
+        <TabsContent value="places" className="mt-5">
           <SavedPlacesContent
             savedPlacesPending={savedPlacesPending}
             savedPlacesError={savedPlacesError}
@@ -239,10 +234,12 @@ export function SavedPage() {
             }}
             sentinelRef={savedPlacesSentinelRef}
             hasNextPage={savedPlacesHasNextPage}
+            isFetchingNextPage={savedPlacesFetchingNextPage}
+            onFetchNextPage={fetchNextSavedPlaces}
           />
         </TabsContent>
 
-        <TabsContent value="collections" className="mt-4">
+        <TabsContent value="collections" className="mt-5">
           <SavedCollectionsContent
             collectionsPending={collectionsPending}
             collectionsError={collectionsError}
@@ -252,7 +249,18 @@ export function SavedPage() {
             }}
           />
         </TabsContent>
+
+        <TabsContent value="posts" className="mt-5">
+          <SavedPostsContent
+            isPending={isPending}
+            postsError={postsError}
+            savedPosts={savedPosts}
+            onRetry={() => {
+              refetchPosts().catch(() => {})
+            }}
+          />
+        </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   )
 }

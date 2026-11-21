@@ -1,26 +1,56 @@
 import { Link } from "react-router"
 import { HeartIcon, LockIcon, MapPinIcon } from "lucide-react"
+import { CoverImage } from "@/components/shared/cover-image"
+import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { usePlace } from "@/features/places/hooks/use-place"
 import { formatCount, formatRelativeTime } from "@/lib/format"
 import type { CollectionSummary } from "../types/collection"
 
-export function CollectionCard({ collection }: Readonly<{ collection: CollectionSummary }>) {
+function CollectionPreviewTile({ placeId }: Readonly<{ placeId: string }>) {
+  const { data: place } = usePlace(placeId)
+
+  if (!place) {
+    return (
+      <div className="flex h-24 items-center justify-center bg-muted/80">
+        <MapPinIcon className="size-4 text-muted-foreground/50" aria-hidden="true" />
+      </div>
+    )
+  }
+
   return (
-    <Card className="relative gap-0 py-0">
-      <div className="grid grid-cols-3 gap-px bg-border">
-        {(collection.previewPlaceIds.length > 0
-          ? collection.previewPlaceIds
-          : Array.from({ length: 3 }, (_, index) => `empty-${index}`)
-        ).map((key) => (
-          <div key={key} className="flex h-22.5 items-center justify-center bg-muted">
-            <MapPinIcon className="size-5 text-muted-foreground/50" aria-hidden="true" />
+    <CoverImage
+      src={place.imageUrl}
+      placeholder={place.category}
+      name={place.name}
+      height={96}
+      sizes="140px"
+      alt={placeImageAlt(place)}
+      className="h-24 w-full"
+    />
+  )
+}
+
+export function CollectionCard({ collection }: Readonly<{ collection: CollectionSummary }>) {
+  const previewIds = collection.previewPlaceIds.slice(0, 3)
+  const emptySlotCount = Math.max(0, 3 - previewIds.length)
+
+  return (
+    <Card className="group relative gap-0 overflow-hidden border-border/80 py-0 shadow-(--shadow-soft) transition-all hover:-translate-y-0.5 hover:shadow-(--shadow-raised)">
+      <div className="grid grid-cols-3 gap-0.5 bg-border/60">
+        {previewIds.map((placeId) => (
+          <CollectionPreviewTile key={placeId} placeId={placeId} />
+        ))}
+        {Array.from({ length: emptySlotCount }).map((_, index) => (
+          <div key={`empty-${index}`} className="flex h-24 items-center justify-center bg-muted/60">
+            <MapPinIcon className="size-4 text-muted-foreground/40" aria-hidden="true" />
           </div>
         ))}
       </div>
 
       <CardHeader className="gap-1.5 px-4 pt-4">
-        <CardTitle className="flex items-center gap-2 text-base leading-tight font-bold">
+        <CardTitle className="flex items-center gap-2 font-display text-base leading-tight font-bold">
           <Link
             to={`/collections/${collection.id}`}
             className="outline-none after:absolute after:inset-0 focus-visible:underline"
@@ -33,8 +63,8 @@ export function CollectionCard({ collection }: Readonly<{ collection: Collection
         ) : null}
       </CardHeader>
 
-      <CardContent className="flex items-center gap-2 px-4 pt-1.5 pb-4 text-sm text-muted-foreground">
-        <span>{collection.placeCount} địa điểm</span>
+      <CardContent className="flex items-center gap-2 px-4 pt-2 pb-4 text-xs text-muted-foreground tabular-nums">
+        <span className="font-medium text-foreground">{collection.placeCount} địa điểm</span>
         {collection.isPrivate ? (
           <Badge variant="secondary" className="gap-1 text-xs">
             <LockIcon className="size-3" aria-hidden="true" />
@@ -48,7 +78,7 @@ export function CollectionCard({ collection }: Readonly<{ collection: Collection
           />
           {formatCount(collection.likeCount)}
         </span>
-        <span className="text-xs">{formatRelativeTime(collection.createdAt)}</span>
+        <span>{formatRelativeTime(collection.createdAt)}</span>
       </CardContent>
     </Card>
   )

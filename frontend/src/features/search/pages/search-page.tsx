@@ -1,9 +1,11 @@
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router"
-import { SearchXIcon, UsersIcon } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
+import { SearchXIcon, SparklesIcon, UsersIcon } from "lucide-react"
+import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
+import { LoadMore } from "@/components/shared/load-more"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import {
   Item,
@@ -15,33 +17,66 @@ import {
 } from "@/components/ui/item"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
+import { DidYouMean } from "@/features/places/components/did-you-mean"
 import { PlaceCard } from "@/features/places/components/place-card"
 import { PlaceCardSkeleton } from "@/features/places/components/place-card-skeleton"
-import { DidYouMean } from "@/features/places/components/did-you-mean"
+import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
 import type { Place } from "@/features/places/types/place"
-import { usePosts } from "@/features/social/hooks/use-posts"
-import { PostCard } from "@/features/social/components/post-card"
-import type { Post } from "@/features/social/types/post"
 import { useMe } from "@/features/profile/hooks/use-me"
 import type { UserProfile } from "@/features/profile/types/profile"
-import { formatCount } from "@/lib/format"
-import { useUsersSearch } from "../hooks/use-users-search"
-import { useUserSuggestions } from "../hooks/use-user-suggestions"
-import { UserSuggestionsSection } from "../components/user-suggestions-section"
-import { FollowButton } from "../components/follow-button"
-import { loginRedirectUrl } from "@/lib/axios"
+import { PostCard } from "@/features/social/components/post-card"
+import { usePosts } from "@/features/social/hooks/use-posts"
+import type { Post } from "@/features/social/types/post"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
+import { loginRedirectUrl } from "@/lib/axios"
+import { formatCount } from "@/lib/format"
+import { FollowButton } from "../components/follow-button"
+import { UserSuggestionsSection } from "../components/user-suggestions-section"
+import { useUserSuggestions } from "../hooks/use-user-suggestions"
+import { useUsersSearch } from "../hooks/use-users-search"
+
+const DANANG_SEARCH_SUGGESTIONS = [
+  "Mì Quảng",
+  "Bánh xèo",
+  "Bún chả cá",
+  "Hải sản",
+  "Cà phê",
+] as const
 
 export function SearchPage() {
   const [params] = useSearchParams()
   const query = (params.get("q") ?? "").trim()
 
-  // Rỗng từ khoá thì không có gì để tìm — trả người dùng về trang Khám phá.
-  // Tách component con để không gọi hook có điều kiện (rules-of-hooks).
   if (query.length === 0) return <Navigate to="/discover" replace />
 
   return <SearchResults query={query} />
+}
+
+interface SearchPaginationFooterProps {
+  readonly sentinelRef: React.Ref<HTMLDivElement>
+  readonly hasNextPage: boolean
+  readonly isFetchingNextPage: boolean
+  readonly onFetchNextPage: () => unknown
+  readonly label: string
+}
+
+function SearchPaginationFooter({
+  sentinelRef,
+  hasNextPage,
+  isFetchingNextPage,
+  onFetchNextPage,
+  label,
+}: SearchPaginationFooterProps) {
+  return (
+    <LoadMore
+      sentinelRef={sentinelRef}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={onFetchNextPage}
+      loadingLabel={`Đang tải thêm ${label}`}
+      endMessage={`Đã hiển thị hết kết quả ${label}.`}
+    />
+  )
 }
 
 interface SearchPlacesTabContentProps {
@@ -67,10 +102,10 @@ function SearchPlacesTabContent({
 }: SearchPlacesTabContentProps) {
   if (placesPending) {
     return (
-      <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+      <ul className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, index) => (
           <li key={`skel-sp-${index}`}>
-            <PlaceCardSkeleton imageHeight={280 + (index % 3) * 60} />
+            <PlaceCardSkeleton imageHeight={240} />
           </li>
         ))}
       </ul>
@@ -80,30 +115,24 @@ function SearchPlacesTabContent({
     return <ErrorState variant="plain" title="Không tải được kết quả địa điểm" onRetry={onRetry} />
   }
   if (places.length === 0) {
-    return <SearchEmptyBlock label="địa điểm" />
+    return <SearchEmptyBlock label="địa điểm" showSuggestions />
   }
   return (
     <>
-      <ul className="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+      <ul className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {places.map((place) => (
           <li key={place.id}>
             <PlaceCard place={place} />
           </li>
         ))}
       </ul>
-      <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
-      {hasNextPage ? (
-        <div className="mt-6 flex justify-center">
-          <Button variant="outline" onClick={onFetchNextPage} disabled={isFetchingNextPage}>
-            {isFetchingNextPage ? <Spinner aria-label="Đang tải thêm địa điểm" /> : null}
-            {isFetchingNextPage ? "Đang tải…" : "Tải thêm"}
-          </Button>
-        </div>
-      ) : (
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Đã hiển thị hết kết quả địa điểm.
-        </p>
-      )}
+      <SearchPaginationFooter
+        sentinelRef={sentinelRef}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onFetchNextPage={onFetchNextPage}
+        label="địa điểm"
+      />
     </>
   )
 }
@@ -113,6 +142,10 @@ interface SearchPostsTabContentProps {
   readonly postsError: boolean
   readonly posts: Post[]
   readonly onRetry: () => void
+  readonly sentinelRef: React.Ref<HTMLDivElement>
+  readonly hasNextPage: boolean
+  readonly isFetchingNextPage: boolean
+  readonly onFetchNextPage: () => unknown
 }
 
 function SearchPostsTabContent({
@@ -120,12 +153,16 @@ function SearchPostsTabContent({
   postsError,
   posts,
   onRetry,
+  sentinelRef,
+  hasNextPage,
+  isFetchingNextPage,
+  onFetchNextPage,
 }: SearchPostsTabContentProps) {
   if (postsPending) {
     return (
       <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
         {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={`skel-post-${index}`} className="h-64 w-full rounded-md" />
+          <Skeleton key={`skel-post-${index}`} className="h-64 w-full rounded-surface" />
         ))}
       </div>
     )
@@ -133,17 +170,28 @@ function SearchPostsTabContent({
   if (postsError) {
     return <ErrorState variant="plain" title="Không tải được kết quả bài đăng" onRetry={onRetry} />
   }
-  if (posts.length === 0) {
+  if (posts.length === 0 && !hasNextPage) {
     return <SearchEmptyBlock label="bài đăng" />
   }
   return (
-    <ul className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-      {posts.map((post) => (
-        <li key={post.id}>
-          <PostCard post={post} />
-        </li>
-      ))}
-    </ul>
+    <>
+      {posts.length > 0 ? (
+        <ul className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+          {posts.map((post) => (
+            <li key={post.id}>
+              <PostCard post={post} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <SearchPaginationFooter
+        sentinelRef={sentinelRef}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onFetchNextPage={onFetchNextPage}
+        label="bài đăng"
+      />
+    </>
   )
 }
 
@@ -155,6 +203,10 @@ interface SearchPeopleTabContentProps {
   readonly me: UserProfile | null | undefined
   readonly suggestionsLength: number
   readonly locationString: string
+  readonly sentinelRef: React.Ref<HTMLDivElement>
+  readonly hasNextPage: boolean
+  readonly isFetchingNextPage: boolean
+  readonly onFetchNextPage: () => unknown
 }
 
 function SearchPeopleBody({
@@ -165,12 +217,16 @@ function SearchPeopleBody({
   me,
   suggestionsLength,
   locationString,
+  sentinelRef,
+  hasNextPage,
+  isFetchingNextPage,
+  onFetchNextPage,
 }: SearchPeopleTabContentProps) {
   if (peoplePending) {
     return (
       <div className="grid max-w-xl grid-cols-1 gap-2">
         {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={`skel-usr-${index}`} className="h-16 w-full rounded-md" />
+          <Skeleton key={`skel-usr-${index}`} className="h-16 w-full rounded-surface" />
         ))}
       </div>
     )
@@ -186,7 +242,7 @@ function SearchPeopleBody({
         <SearchEmptyBlock label="người dùng" />
         {me && suggestionsLength > 0 ? (
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            Không tìm thấy ai tên này — thử những người được gợi ý bên trên.
+            Không tìm thấy ai tên này. Bạn có thể xem những người được gợi ý ở trên.
           </p>
         ) : null}
         {!me ? (
@@ -203,44 +259,53 @@ function SearchPeopleBody({
     )
   }
   return (
-    <ul className="grid max-w-xl grid-cols-1 gap-2" aria-label="Kết quả tìm kiếm người dùng">
-      {people.map((user) => (
-        <li key={user.id}>
-          <Item
-            variant="outline"
-            className="transition-colors hover:bg-muted"
-            render={<Link to={`/u/${user.handle}`} />}
-          >
-            <ItemMedia>
-              <Avatar size="lg">
-                {user.avatarUrl && (
-                  <AvatarImage src={user.avatarUrl} alt={`Ảnh đại diện của ${user.name}`} />
+    <>
+      <ul className="grid max-w-xl grid-cols-1 gap-2" aria-label="Kết quả tìm kiếm người dùng">
+        {people.map((user) => (
+          <li key={user.id}>
+            <Item
+              variant="outline"
+              className="rounded-surface bg-card transition-colors hover:bg-muted"
+              render={<Link to={`/u/${user.handle}`} />}
+            >
+              <ItemMedia>
+                <Avatar size="lg">
+                  {user.avatarUrl && (
+                    <AvatarImage src={user.avatarUrl} alt={`Ảnh đại diện của ${user.name}`} />
+                  )}
+                  <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
+                    {user.initials}
+                  </AvatarFallback>
+                </Avatar>
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle className="text-sm font-semibold">
+                  {user.name}
+                  {me && user.id === me.id ? " (bạn)" : ""}
+                </ItemTitle>
+                <ItemDescription className="text-xs">
+                  @{user.handle} · {formatCount(user.postCount)} bài đăng
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                {me && user.id === me.id ? (
+                  <UsersIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                ) : (
+                  <FollowButton user={user} />
                 )}
-                <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
-                  {user.initials}
-                </AvatarFallback>
-              </Avatar>
-            </ItemMedia>
-            <ItemContent>
-              <ItemTitle className="text-sm font-semibold">
-                {user.name}
-                {me && user.id === me.id ? " (bạn)" : ""}
-              </ItemTitle>
-              <ItemDescription className="text-xs">
-                @{user.handle} · {formatCount(user.postCount)} bài đăng
-              </ItemDescription>
-            </ItemContent>
-            <ItemActions>
-              {me && user.id === me.id ? (
-                <UsersIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              ) : (
-                <FollowButton user={user} />
-              )}
-            </ItemActions>
-          </Item>
-        </li>
-      ))}
-    </ul>
+              </ItemActions>
+            </Item>
+          </li>
+        ))}
+      </ul>
+      <SearchPaginationFooter
+        sentinelRef={sentinelRef}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onFetchNextPage={onFetchNextPage}
+        label="người dùng"
+      />
+    </>
   )
 }
 
@@ -268,43 +333,51 @@ function SearchResults({ query }: Readonly<{ query: string }>) {
     category: "all",
     query,
   })
-  // Cùng cơ chế cuộn vô hạn với `/discover`: sentinel lọt viewport thì tải trang kế.
   const placesSentinelRef = useInfiniteScroll({
     hasNextPage: placesHasNextPage,
     isFetchingNextPage: placesFetchingNext,
     fetchNextPage: fetchNextPlaces,
   })
-  // `q` được lọc server-side (GET /posts?q=); lọc client chỉ giữ bài có gắn địa điểm.
+
   const {
     posts: allPosts,
     isPending: postsPending,
     isError: postsError,
     refetch: refetchPosts,
+    hasNextPage: postsHasNextPage,
+    isFetchingNextPage: postsFetchingNext,
+    fetchNextPage: fetchNextPosts,
   } = usePosts({ filter: "all", q: query })
+  const postsSentinelRef = useInfiniteScroll({
+    hasNextPage: postsHasNextPage,
+    isFetchingNextPage: postsFetchingNext,
+    fetchNextPage: fetchNextPosts,
+  })
   const { data: me } = useMe()
-  // Tab Người: tìm trên API thật (`GET /users?q=`), không dùng dữ liệu mẫu.
   const {
     data: peopleData,
     isPending: peoplePending,
     isError: peopleError,
     refetch: refetchPeople,
+    hasNextPage: peopleHasNextPage,
+    isFetchingNextPage: peopleFetchingNext,
+    fetchNextPage: fetchNextPeople,
   } = useUsersSearch(query)
-  // Dùng lại đúng query của khối gợi ý (cùng key → không gọi thêm request) để
-  // biết có gợi ý hay không khi kết quả rỗng.
+  const peopleSentinelRef = useInfiniteScroll({
+    hasNextPage: peopleHasNextPage,
+    isFetchingNextPage: peopleFetchingNext,
+    fetchNextPage: fetchNextPeople,
+  })
   const { data: suggestions } = useUserSuggestions()
 
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
-  // `didYouMean` chỉ có ở endpoint tìm kiếm — server so khớp gần đúng (pg_trgm).
   const didYouMean = placesData?.pages[0]?.meta?.didYouMean
   const posts = allPosts.filter((post) => post.placeId !== null)
   const people = peopleData?.pages.flatMap((page) => page.items) ?? []
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 className="sr-only">Kết quả tìm kiếm</h1>
-      <p className="text-sm text-muted-foreground">
-        Kết quả cho <span className="font-semibold text-foreground">“{query}”</span>
-      </p>
+    <PageContainer size="wide">
+      <PageHeader title={`Kết quả cho “${query}”`} />
 
       <DidYouMean
         suggestion={didYouMean}
@@ -315,12 +388,27 @@ function SearchResults({ query }: Readonly<{ query: string }>) {
 
       <Tabs defaultValue="places" className="mt-4">
         <TabsList>
-          <TabsTrigger value="places">Địa điểm</TabsTrigger>
-          <TabsTrigger value="posts">Bài đăng</TabsTrigger>
-          <TabsTrigger value="people">Người</TabsTrigger>
+          <TabsTrigger value="places" className="gap-1.5">
+            Địa điểm
+            <Badge variant="secondary" className="px-1.5 py-0 text-xs tabular-nums">
+              {places.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="posts" className="gap-1.5">
+            Bài đăng
+            <Badge variant="secondary" className="px-1.5 py-0 text-xs tabular-nums">
+              {posts.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="people" className="gap-1.5">
+            Người
+            <Badge variant="secondary" className="px-1.5 py-0 text-xs tabular-nums">
+              {people.length}
+            </Badge>
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="places" className="mt-4">
+        <TabsContent value="places" className="mt-5">
           <SearchPlacesTabContent
             placesPending={placesPending}
             placesError={placesError}
@@ -335,7 +423,7 @@ function SearchResults({ query }: Readonly<{ query: string }>) {
           />
         </TabsContent>
 
-        <TabsContent value="posts" className="mt-4">
+        <TabsContent value="posts" className="mt-5">
           <SearchPostsTabContent
             postsPending={postsPending}
             postsError={postsError}
@@ -343,10 +431,14 @@ function SearchResults({ query }: Readonly<{ query: string }>) {
             onRetry={() => {
               refetchPosts().catch(() => {})
             }}
+            sentinelRef={postsSentinelRef}
+            hasNextPage={postsHasNextPage}
+            isFetchingNextPage={postsFetchingNext}
+            onFetchNextPage={fetchNextPosts}
           />
         </TabsContent>
 
-        <TabsContent value="people" className="mt-4">
+        <TabsContent value="people" className="mt-5">
           <SearchPeopleTabContent
             peoplePending={peoplePending}
             peopleError={peopleError}
@@ -357,16 +449,23 @@ function SearchResults({ query }: Readonly<{ query: string }>) {
             me={me}
             suggestionsLength={suggestions?.length ?? 0}
             locationString={`${location.pathname}${location.search}`}
+            sentinelRef={peopleSentinelRef}
+            hasNextPage={peopleHasNextPage}
+            isFetchingNextPage={peopleFetchingNext}
+            onFetchNextPage={fetchNextPeople}
           />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   )
 }
 
-function SearchEmptyBlock({ label }: Readonly<{ label: string }>) {
+function SearchEmptyBlock({
+  label,
+  showSuggestions = false,
+}: Readonly<{ label: string; showSuggestions?: boolean }>) {
   return (
-    <Empty className="mt-2">
+    <Empty className="mt-4 border border-dashed border-border bg-card/50 py-10">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <SearchXIcon />
@@ -374,6 +473,22 @@ function SearchEmptyBlock({ label }: Readonly<{ label: string }>) {
         <EmptyTitle>Không có {label} phù hợp</EmptyTitle>
         <EmptyDescription>Thử từ khoá khác hoặc ngắn hơn.</EmptyDescription>
       </EmptyHeader>
+      {showSuggestions ? (
+        <div className="mt-2 flex flex-wrap justify-center gap-2">
+          {DANANG_SEARCH_SUGGESTIONS.map((term) => (
+            <Button
+              key={term}
+              size="sm"
+              variant="outline"
+              className="rounded-full text-xs"
+              render={<Link to={`/search?q=${encodeURIComponent(term)}`} />}
+            >
+              <SparklesIcon className="size-3.5 text-primary" aria-hidden="true" />
+              {term}
+            </Button>
+          ))}
+        </div>
+      ) : null}
     </Empty>
   )
 }

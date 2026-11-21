@@ -57,3 +57,11 @@ backend/data/yelp/*.jsonl
 # External raw datasets for benchmarking (large files)
 backend/data/external/
 backend/data/archive/
+
+# Backup cục bộ và cấu hình/output tạm thời (không commit)
+backup/
+.sonar-config.json
+backend/data/eval/rec-scores-user-place.csv
+backend/data/eval/rec-scores-user-place.json
+backend/data/uploads/
+backend/data/tile-cache/

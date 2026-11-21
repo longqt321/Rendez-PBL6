@@ -32,4 +32,14 @@ describe("recently-viewed", () => {
     expect(ids[0]).toBe(`p-${RECENTLY_VIEWED_LIMIT + 2}`)
     expect(ids).not.toContain("p-0")
   })
+
+  it("tách lịch sử theo từng người xem, đổi tài khoản không lây lịch sử", () => {
+    recordPlaceView("a", "user-1")
+    recordPlaceView("b", "user-2")
+    recordPlaceView("c")
+
+    expect(getRecentlyViewedIds("user-1")).toEqual(["a"])
+    expect(getRecentlyViewedIds("user-2")).toEqual(["b"])
+    expect(getRecentlyViewedIds()).toEqual(["c"])
+  })
 })

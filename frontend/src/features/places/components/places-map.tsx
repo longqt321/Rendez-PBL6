@@ -1,30 +1,33 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router"
-import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet"
+import { MapContainer, Marker, Popup, useMap, useMapEvents } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import Supercluster from "supercluster"
 import type { Feature, Point } from "geojson"
-import { ExternalLinkIcon, NavigationIcon, StarIcon } from "lucide-react"
+import { ExternalLinkIcon, LayersIcon, NavigationIcon, StarIcon, XIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { CATEGORY_META, categoryIconSvg } from "../lib/category-meta"
-import { OSM_TILE_LAYER_PROPS } from "../lib/map-tiles"
+import { ResilientTileLayer } from "./resilient-tile-layer"
 import { formatDistance, formatRating } from "@/lib/format"
-import { calculateDistanceKm } from "../lib/danang-districts"
+import { calculateDistanceKm, DANANG_DISTRICT_CENTERS } from "../lib/danang-districts"
 import { priceLevelLabel } from "../lib/price-level"
 import { cn } from "@/lib/utils"
 import { DANANG_CENTER_TUPLE, DANANG_DEFAULT_ZOOM } from "@/lib/constants"
 import type { MapBounds } from "../api/get-map-places"
-import type { Place } from "../types/place"
+import type { Place, PlaceCategory } from "../types/place"
 
 interface PlacesMapProps {
   readonly places: Place[]
   readonly selectedPlaceId?: string | null
   readonly onSelectPlace?: (place: Place) => void
+  readonly onClearSelection?: () => void
+  readonly activeCategory?: PlaceCategory | "all"
+  readonly onCategorySelect?: (category: PlaceCategory | "all") => void
   readonly userCoordinates?: { lat: number; lng: number } | null
   readonly className?: string
 
@@ -35,6 +38,14 @@ interface PlacesMapProps {
   readonly fitKey?: string
 
   readonly isPlacesLoading?: boolean
+
+  readonly isPlaceholderData?: boolean
+
+  readonly isEmptyViewport?: boolean
+
+  readonly selectedDistrict?: string
+
+  readonly onFitApplied?: () => void
 
   readonly totalPlaces?: number
 }
@@ -82,37 +93,85 @@ function MapBoundsUpdater({
   selectedPlace,
   userCoordinates,
   fitKey,
+  isPlacesLoading,
+  isPlaceholderData,
+  selectedDistrict,
+  onFitApplied,
 }: Readonly<{
   places: Place[]
   selectedPlace?: Place
   userCoordinates?: { lat: number; lng: number } | null
   fitKey?: string
+  isPlacesLoading?: boolean
+  isPlaceholderData?: boolean
+  selectedDistrict?: string
+  onFitApplied?: () => void
 }>) {
   const map = useMap()
   const fittedKeyRef = useRef<string | null>(null)
+  const onFitAppliedRef = useRef(onFitApplied)
+  useEffect(() => {
+    onFitAppliedRef.current = onFitApplied
+  })
 
   useEffect(() => {
-    if (selectedPlace?.lat && selectedPlace?.lng) {
+    if (selectedPlace?.lat !== undefined && selectedPlace?.lng !== undefined) {
       map.flyTo([selectedPlace.lat, selectedPlace.lng], Math.max(map.getZoom(), 15), {
         duration: 0.8,
       })
       return
     }
 
-    // Đã căn cho khoá này rồi (hoặc đang chờ dữ liệu về) thì thôi.
+    // Đang chờ dữ liệu mới hoặc đang hiển thị placeholder của bộ lọc cũ → không fit.
+    if (isPlaceholderData || isPlacesLoading) return
+
+    // Đã căn cho khoá này rồi thì thôi.
     if (fittedKeyRef.current === fitKey) return
 
     const validPlaces = places.filter((p) => p.lat !== undefined && p.lng !== undefined)
     const points: [number, number][] = validPlaces.map((p) => [p.lat!, p.lng!])
-    if (userCoordinates) {
+    if (points.length === 0) {
+      const center = selectedDistrict ? DANANG_DISTRICT_CENTERS[selectedDistrict] : undefined
+      if (center) {
+        map.flyTo(center, 13, { duration: 0.6 })
+      }
+      fittedKeyRef.current = fitKey ?? null
+      onFitAppliedRef.current?.()
+      return
+    }
+
+    // Chỉ gộp vị trí người dùng vào fitBounds khi không lọc theo quận cụ thể
+    // và toạ độ người dùng thực sự nằm trong khu vực Đà Nẵng (tránh kéo văng bản đồ).
+    if (
+      !selectedDistrict &&
+      userCoordinates &&
+      userCoordinates.lat >= 15.95 &&
+      userCoordinates.lat <= 16.2 &&
+      userCoordinates.lng >= 108.05 &&
+      userCoordinates.lng <= 108.35
+    ) {
       points.push([userCoordinates.lat, userCoordinates.lng])
     }
-    if (points.length < 2) return
 
-    const bounds = L.latLngBounds(points)
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 })
+    const firstPoint = points[0]
+    if (points.length === 1 && firstPoint) {
+      map.flyTo(firstPoint, 16, { duration: 0.6 })
+    } else {
+      const bounds = L.latLngBounds(points)
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 })
+    }
     fittedKeyRef.current = fitKey ?? null
-  }, [fitKey, selectedPlace, userCoordinates, places, map])
+    onFitAppliedRef.current?.()
+  }, [
+    fitKey,
+    selectedPlace,
+    userCoordinates,
+    places,
+    isPlacesLoading,
+    isPlaceholderData,
+    selectedDistrict,
+    map,
+  ])
 
   return null
 }
@@ -171,8 +230,8 @@ function createPlacePinIcon(
     : ""
 
   const html = `
-    <div class="group flex cursor-pointer items-center gap-1.5 focus-visible:outline-none" role="button" tabindex="0" aria-label="${escapeHtml(place.name)}">
-      <span class="flex size-7 shrink-0 items-center justify-center rounded-full text-white shadow-md ring-2 ring-background transition-transform duration-200 group-focus-visible:ring-4 group-focus-visible:ring-primary/60 ${
+    <div class="group flex cursor-pointer items-center gap-1.5 focus-visible:outline-none">
+      <span class="flex size-7 shrink-0 items-center justify-center rounded-full text-primary-foreground shadow-md ring-2 ring-background transition-transform duration-200 ${
         isSelected ? "scale-110 ring-4 ring-primary/40" : "group-hover:scale-110"
       }" style="background-color: ${meta.color}">
         ${categoryIconSvg(place.category, 14)}
@@ -204,7 +263,7 @@ function getClusterSize(count: number): number {
 function createClusterIcon(count: number) {
   const size = getClusterSize(count)
   const html = `
-    <div class="flex items-center justify-center rounded-full bg-primary font-heading font-bold text-primary-foreground shadow-lg ring-4 ring-primary/25 transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/60" style="width: ${size}px; height: ${size}px; font-size: ${size >= 44 ? 14 : 12}px" role="button" tabindex="0" aria-label="${count} địa điểm — bấm để phóng to">
+    <div class="flex items-center justify-center rounded-full bg-primary font-heading font-bold text-primary-foreground shadow-lg ring-4 ring-primary/25 transition-transform duration-200 hover:scale-105" style="width: ${size}px; height: ${size}px; font-size: ${size >= 44 ? 14 : 12}px">
       ${count}
     </div>
   `
@@ -299,34 +358,87 @@ function ClusteredPlaceMarkers({
     if (marker && !marker.isPopupOpen()) marker.openPopup()
   }, [selectedPlaceId, clusters])
 
+  const renderedLeaves = useMemo(() => {
+    const groups = new Map<string, { place: Place; lat: number; lng: number }[]>()
+    for (const feature of clusters) {
+      if (isClusterProperties(feature.properties)) continue
+      const [lng, lat] = feature.geometry.coordinates
+      if (lat === undefined || lng === undefined) continue
+      const key = `${lat.toFixed(5)},${lng.toFixed(5)}`
+      const list = groups.get(key) ?? []
+      list.push({ place: feature.properties.place, lat, lng })
+      groups.set(key, list)
+    }
+
+    const out: { place: Place; displayLat: number; displayLng: number }[] = []
+    const canSpiderfy =
+      typeof map.latLngToLayerPoint === "function" && typeof map.layerPointToLatLng === "function"
+    for (const bucket of groups.values()) {
+      if (bucket.length === 1 || !canSpiderfy) {
+        for (const item of bucket) {
+          out.push({ place: item.place, displayLat: item.lat, displayLng: item.lng })
+        }
+        continue
+      }
+      const anchor = bucket[0]
+      if (!anchor) continue
+      const centerPx = map.latLngToLayerPoint([anchor.lat, anchor.lng])
+      const radiusPx = 20 + Math.min(bucket.length, 8) * 3
+      bucket.forEach((item, idx) => {
+        const angle = (2 * Math.PI * idx) / bucket.length - Math.PI / 2
+        const shifted = L.point(
+          centerPx.x + Math.cos(angle) * radiusPx,
+          centerPx.y + Math.sin(angle) * radiusPx,
+        )
+        const latLng = map.layerPointToLatLng(shifted)
+        out.push({ place: item.place, displayLat: latLng.lat, displayLng: latLng.lng })
+      })
+    }
+    return out
+  }, [clusters, map])
+
   /**
    * Tập quán được hiện tên — declutter theo thứ tự ưu tiên (đang chọn → điểm
-   * cao → nhiều đánh giá). Ước lượng khung nhãn bằng toạ độ pixel của Leaflet
-   * rồi bỏ nhãn nào chồng lên nhãn đã nhận: ở z17 vùng Hải Châu vẫn có ~48 pin
-   * nên nếu hiện hết thì 61 cặp nhãn đè nhau (đo thực tế).
+   * cao → nhiều đánh giá). Chỉ xét các cụm và pin lá ĐANG HIỂN THỊ (không để pin
+   * ẩn trong cụm chặn nhãn của pin đang tách rời).
    */
   const labeledIds = useMemo(() => {
-    const candidates = places
+    const candidates = renderedLeaves
       .filter(
-        (p) => p.id === selectedPlaceId || viewport.zoom >= LABEL_MIN_ZOOM || topPlaceIds.has(p.id),
+        ({ place }) =>
+          place.id === selectedPlaceId ||
+          viewport.zoom >= LABEL_MIN_ZOOM ||
+          topPlaceIds.has(place.id),
       )
       .sort((a, b) => {
-        const selectedDelta = Number(b.id === selectedPlaceId) - Number(a.id === selectedPlaceId)
-        return selectedDelta || b.rating - a.rating || b.reviewCount - a.reviewCount
+        const selectedDelta =
+          Number(b.place.id === selectedPlaceId) - Number(a.place.id === selectedPlaceId)
+        return (
+          selectedDelta ||
+          b.place.rating - a.place.rating ||
+          b.place.reviewCount - a.place.reviewCount
+        )
       })
 
     const taken: Array<{ x1: number; y1: number; x2: number; y2: number }> = []
     const shown = new Set<string>()
 
-    // Chấm pin của MỌI quán đều là vùng không được che — nhãn không đè lên pin
-    // khác (kể cả pin không có nhãn), tránh cảnh chữ phủ kín chấm màu.
-    for (const place of places) {
-      const point = map.latLngToContainerPoint([place.lat!, place.lng!])
+    for (const feature of clusters) {
+      if (!isClusterProperties(feature.properties)) continue
+      const [lng, lat] = feature.geometry.coordinates
+      if (lat === undefined || lng === undefined) continue
+      const point = map.latLngToContainerPoint([lat, lng])
+      const half = getClusterSize(feature.properties.point_count) / 2
+      taken.push({ x1: point.x - half, y1: point.y - half, x2: point.x + half, y2: point.y + half })
+    }
+
+    for (const { displayLat, displayLng } of renderedLeaves) {
+      const point = map.latLngToContainerPoint([displayLat, displayLng])
       taken.push({ x1: point.x - 14, y1: point.y - 14, x2: point.x + 14, y2: point.y + 14 })
     }
 
-    for (const place of candidates) {
-      const point = map.latLngToContainerPoint([place.lat!, place.lng!])
+    for (const { place, displayLat, displayLng } of candidates) {
+      const point = map.latLngToContainerPoint([displayLat, displayLng])
       const width = LABEL_BASE_WIDTH + place.name.length * LABEL_CHAR_WIDTH
       const rect = {
         x1: point.x + 16,
@@ -344,50 +456,48 @@ function ClusteredPlaceMarkers({
     }
 
     return shown
-  }, [places, selectedPlaceId, viewport, topPlaceIds, map])
+  }, [clusters, renderedLeaves, selectedPlaceId, viewport, topPlaceIds, map])
 
   return (
     <>
       {clusters.map((feature) => {
         const [lng, lat] = feature.geometry.coordinates
-        // Narrow trên chính `properties` (union) — narrow qua đường dẫn lồng
-        // `feature.properties` không được TS hỗ trợ.
         const props = feature.properties
+        if (!isClusterProperties(props)) return null
 
-        if (isClusterProperties(props)) {
-          const { cluster_id: clusterId, point_count: pointCount } = props
-          const expandCluster = () => {
-            // Phóng tới đúng mức zoom mà cụm này tách ra (chuẩn supercluster).
-            const expansionZoom = Math.min(index.getClusterExpansionZoom(clusterId), 18)
-            map.flyTo([lat, lng], expansionZoom, { duration: 0.5 })
-          }
-
-          return (
-            <Marker
-              key={`cluster-${clusterId}`}
-              position={[lat, lng]}
-              keyboard={true}
-              icon={createClusterIcon(pointCount)}
-              title={`${pointCount} địa điểm — bấm để phóng to`}
-              alt={`${pointCount} địa điểm — bấm để phóng to`}
-              eventHandlers={{
-                click: expandCluster,
-                keydown: (e) => {
-                  const key = e.originalEvent.key
-                  if (key === "Enter" || key === " " || key === "Spacebar") {
-                    e.originalEvent.preventDefault()
-                    expandCluster()
-                  }
-                },
-              }}
-            />
-          )
+        const { cluster_id: clusterId, point_count: pointCount } = props
+        const expandCluster = () => {
+          // Phóng tới đúng mức zoom mà cụm này tách ra (chuẩn supercluster).
+          const expansionZoom = Math.min(index.getClusterExpansionZoom(clusterId), 18)
+          map.flyTo([lat, lng], expansionZoom, { duration: 0.5 })
         }
 
-        const place = props.place
+        return (
+          <Marker
+            key={`cluster-${clusterId}`}
+            position={[lat, lng]}
+            keyboard={true}
+            icon={createClusterIcon(pointCount)}
+            title={`${pointCount} địa điểm, bấm để phóng to`}
+            alt={`${pointCount} địa điểm, bấm để phóng to`}
+            eventHandlers={{
+              click: expandCluster,
+              keydown: (e) => {
+                const key = e.originalEvent.key
+                if (key === "Enter" || key === " " || key === "Spacebar") {
+                  e.originalEvent.preventDefault()
+                  expandCluster()
+                }
+              },
+            }}
+          />
+        )
+      })}
+
+      {renderedLeaves.map(({ place, displayLat, displayLng }) => {
         const isSelected = place.id === selectedPlaceId
         const distanceKm =
-          userCoordinates && place.lat && place.lng
+          userCoordinates && place.lat !== undefined && place.lng !== undefined
             ? calculateDistanceKm(userCoordinates.lat, userCoordinates.lng, place.lat, place.lng)
             : undefined
         const showLabel = labeledIds.has(place.id)
@@ -403,7 +513,7 @@ function ClusteredPlaceMarkers({
         return (
           <Marker
             key={place.id}
-            position={[place.lat!, place.lng!]}
+            position={[displayLat, displayLng]}
             keyboard={true}
             icon={createPlacePinIcon(place, { isSelected, showLabel, distanceKm })}
             title={place.name}
@@ -479,7 +589,8 @@ function ClusteredPlaceMarkers({
                 <div className="pt-2">
                   <Button
                     size="sm"
-                    className="h-7 w-full text-xs"
+                    nativeButton={false}
+                    className="h-9 w-full text-xs"
                     render={<Link to={`/discover/${place.id}`} />}
                   >
                     Xem quán
@@ -495,16 +606,99 @@ function ClusteredPlaceMarkers({
   )
 }
 
+function MapCategoryLegend({
+  activeCategory = "all",
+  onCategorySelect,
+}: Readonly<{
+  activeCategory?: PlaceCategory | "all"
+  onCategorySelect?: (category: PlaceCategory | "all") => void
+}>) {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  return (
+    <div className="absolute right-3 bottom-14 z-1000 flex flex-col items-end gap-1.5 sm:top-auto sm:bottom-3">
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        className="h-9 gap-1.5 px-2.5 text-xs shadow-md backdrop-blur sm:hidden"
+        aria-expanded={mobileOpen}
+        aria-label={mobileOpen ? "Đóng chú giải loại hình" : "Mở chú giải loại hình"}
+        onClick={() => setMobileOpen((open) => !open)}
+      >
+        {mobileOpen ? (
+          <XIcon className="size-3.5" aria-hidden="true" />
+        ) : (
+          <LayersIcon className="size-3.5" aria-hidden="true" />
+        )}
+        Chú giải
+      </Button>
+
+      <div
+        className={cn(
+          "flex-col gap-1 rounded-surface border border-border/80 bg-background/92 p-2 text-xs shadow-(--shadow-raised) backdrop-blur-md sm:flex",
+          mobileOpen ? "flex" : "hidden",
+        )}
+      >
+        {Object.entries(CATEGORY_META).map(([category, meta]) => {
+          const cat = category as PlaceCategory
+          const isSelected = activeCategory === cat
+          const isDimmed = activeCategory !== "all" && !isSelected
+
+          if (onCategorySelect) {
+            return (
+              <button
+                key={category}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => onCategorySelect(isSelected ? "all" : cat)}
+                className={cn(
+                  "flex items-center gap-2 rounded-control px-2 py-1 text-left transition-colors hover:bg-muted",
+                  isSelected && "bg-primary/12 font-semibold text-primary",
+                  isDimmed && "opacity-55",
+                )}
+              >
+                <span
+                  className="inline-block size-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: meta.color }}
+                />
+                {meta.label}
+              </button>
+            )
+          }
+
+          return (
+            <span key={category} className="flex items-center gap-1.5 px-1 py-0.5">
+              <span
+                className="inline-block size-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: meta.color }}
+              />
+              {meta.label}
+            </span>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export function PlacesMap({
   places,
   selectedPlaceId,
   onSelectPlace,
+  onClearSelection,
+  activeCategory,
+  onCategorySelect,
   userCoordinates,
   className = "",
   height = "h-[650px]",
   onViewportChange,
   fitKey,
   isPlacesLoading = false,
+  isPlaceholderData = false,
+  isEmptyViewport = false,
+  selectedDistrict,
+  onFitApplied,
   totalPlaces,
 }: PlacesMapProps) {
   const { resolvedTheme } = useTheme()
@@ -520,8 +714,6 @@ export function PlacesMap({
     [validPlaces, selectedPlaceId],
   )
 
-  // Top quán nổi bật trong khung (điểm cao, nhiều đánh giá) — được hiện tên
-  // ngay cả khi zoom thấp để bản đồ có "điểm nhấn" thay vì chỉ toàn chấm màu.
   const topPlaceIds = useMemo(() => {
     const ranked = validPlaces.toSorted(
       (a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount,
@@ -529,10 +721,23 @@ export function PlacesMap({
     return new Set(ranked.slice(0, TOP_LABEL_COUNT).map((p) => p.id))
   }, [validPlaces])
 
+  const selectedDistanceKm =
+    selectedPlace &&
+    userCoordinates &&
+    selectedPlace.lat !== undefined &&
+    selectedPlace.lng !== undefined
+      ? calculateDistanceKm(
+          userCoordinates.lat,
+          userCoordinates.lng,
+          selectedPlace.lat,
+          selectedPlace.lng,
+        )
+      : undefined
+
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden rounded-xl border bg-muted shadow-inner",
+        "relative w-full overflow-hidden rounded-surface border bg-muted shadow-inner",
         height,
         className,
       )}
@@ -543,16 +748,19 @@ export function PlacesMap({
         scrollWheelZoom={true}
         className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
       >
-        <TileLayer {...OSM_TILE_LAYER_PROPS} />
+        <ResilientTileLayer />
         <MapBoundsUpdater
           places={validPlaces}
           selectedPlace={selectedPlace}
           userCoordinates={userCoordinates}
           fitKey={fitKey}
+          isPlacesLoading={isPlacesLoading}
+          isPlaceholderData={isPlaceholderData}
+          selectedDistrict={selectedDistrict}
+          onFitApplied={onFitApplied}
         />
         {onViewportChange ? <ViewportReporter onChange={onViewportChange} /> : null}
 
-        {/* Marker vị trí hiện tại của người dùng */}
         {userCoordinates ? (
           <Marker
             position={[userCoordinates.lat, userCoordinates.lng]}
@@ -576,21 +784,66 @@ export function PlacesMap({
         />
       </MapContainer>
 
-      {/* Chú giải màu pin theo loại hình — pin không còn chữ nên cần bảng màu */}
-      <div className="absolute top-3 right-3 z-1000 hidden flex-col gap-1 rounded-md border bg-background/90 px-2.5 py-2 text-xs shadow-md backdrop-blur sm:flex">
-        {Object.entries(CATEGORY_META).map(([category, meta]) => (
-          <span key={category} className="flex items-center gap-1.5">
-            <span
-              className="inline-block size-2.5 rounded-full"
-              style={{ backgroundColor: meta.color }}
-            />
-            {meta.label}
-          </span>
-        ))}
-      </div>
+      <MapCategoryLegend activeCategory={activeCategory} onCategorySelect={onCategorySelect} />
 
-      {/* Tóm tắt số lượng địa điểm trên bản đồ */}
-      <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-md border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur">
+      {selectedPlace ? (
+        <div className="absolute right-3 bottom-14 left-3 z-1000 mx-auto max-w-sm rounded-surface border border-border/80 bg-background/95 p-3 shadow-(--shadow-floating) backdrop-blur-md sm:right-auto sm:bottom-14 sm:left-3 sm:w-88">
+          <div className="flex items-start gap-3">
+            <CoverImage
+              src={selectedPlace.imageUrl}
+              placeholder={selectedPlace.category}
+              name={selectedPlace.name}
+              alt={placeImageAlt(selectedPlace)}
+              sizes="96px"
+              className="size-20 shrink-0 rounded-control"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-1">
+                <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                  {CATEGORY_META[selectedPlace.category]?.label}
+                </Badge>
+                {onClearSelection ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Đóng thẻ xem nhanh"
+                    onClick={onClearSelection}
+                  >
+                    <XIcon className="size-3.5" />
+                  </Button>
+                ) : null}
+              </div>
+              <h3 className="mt-1 truncate font-display text-sm font-bold text-foreground">
+                {selectedPlace.name}
+              </h3>
+              <p className="truncate text-xs text-muted-foreground">{selectedPlace.address}</p>
+              <div className="mt-1.5 flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1 font-semibold text-star tabular-nums">
+                  <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
+                  {formatRating(selectedPlace.rating)}
+                </span>
+                {selectedDistanceKm !== undefined ? (
+                  <span className="font-semibold text-primary">
+                    {formatDistance(selectedDistanceKm)}
+                  </span>
+                ) : null}
+                <Button size="xs" render={<Link to={`/discover/${selectedPlace.id}`} />}>
+                  Xem quán
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isEmptyViewport && validPlaces.length === 0 && !isPlacesLoading ? (
+        <div className="absolute right-3 bottom-14 left-3 z-1000 w-fit rounded-control border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-md backdrop-blur">
+          Không có địa điểm nào trong vùng này. Thu nhỏ hoặc kéo bản đồ để xem khu vực khác.
+        </div>
+      ) : null}
+
+      <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-control border border-border/80 bg-background/92 px-3 py-1.5 text-xs font-medium shadow-(--shadow-soft) backdrop-blur-md">
         <PlacesSummaryText
           isLoading={isPlacesLoading}
           validCount={validPlaces.length}
@@ -617,7 +870,7 @@ function PlacesSummaryText({
   if (totalCount !== undefined && totalCount > validCount) {
     return (
       <span>
-        Đang hiển thị {validCount}/{totalCount} địa điểm trong vùng xem — zoom sát hơn để xem hết
+        Đang hiển thị {validCount}/{totalCount} địa điểm trong vùng xem, zoom sát hơn để xem hết
       </span>
     )
   }

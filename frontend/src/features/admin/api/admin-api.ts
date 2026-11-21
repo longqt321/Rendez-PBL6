@@ -1,0 +1,126 @@
+import type {
+  AdminOverview,
+  AdminPlace,
+  AdminReport,
+  AdminReportStatus,
+  AdminUser,
+  AuditLogEntry,
+  UpdateAdminPlaceInput,
+  UpdateAdminReportInput,
+  UpdateAdminUserInput,
+  UserRole,
+} from "@rendez/schema"
+import { api } from "@/lib/axios"
+import type { Page } from "@/types/api"
+
+export type AdminReportStatusFilter = AdminReportStatus | "all"
+export type AdminPlaceVisibilityFilter = "all" | "published" | "unpublished" | "closed"
+export type AdminUserRoleFilter = UserRole | "all"
+export type AdminUserStatusFilter = "all" | "active" | "banned"
+
+export interface AdminReportsQuery {
+  status?: AdminReportStatusFilter
+  cursor?: string | null
+}
+
+export interface AdminPlacesQuery {
+  visibility?: AdminPlaceVisibilityFilter
+  district?: string
+  q?: string
+  cursor?: string | null
+}
+
+export interface AdminUsersQuery {
+  role?: AdminUserRoleFilter
+  status?: AdminUserStatusFilter
+  q?: string
+  cursor?: string | null
+}
+
+export interface AuditLogsQuery {
+  entity?: string
+  action?: string
+  q?: string
+  cursor?: string | null
+}
+
+export async function getAdminOverview(): Promise<AdminOverview> {
+  const { data } = await api.get<AdminOverview>("/admin/overview")
+  return data
+}
+
+export async function getAdminReports(query: AdminReportsQuery = {}): Promise<Page<AdminReport>> {
+  const { data } = await api.get<Page<AdminReport>>("/admin/reports", {
+    params: {
+      status: query.status ?? "pending",
+      cursor: query.cursor ?? undefined,
+    },
+  })
+  return data
+}
+
+export async function updateAdminReport(
+  reportId: string,
+  input: UpdateAdminReportInput,
+): Promise<AdminReport> {
+  const { data } = await api.patch<AdminReport>(
+    `/admin/reports/${encodeURIComponent(reportId)}`,
+    input,
+  )
+  return data
+}
+
+export async function getAdminPlaces(query: AdminPlacesQuery = {}): Promise<Page<AdminPlace>> {
+  const { data } = await api.get<Page<AdminPlace>>("/admin/places", {
+    params: {
+      visibility: query.visibility ?? "all",
+      district: query.district && query.district !== "all" ? query.district : undefined,
+      q: query.q?.trim() ? query.q.trim() : undefined,
+      cursor: query.cursor ?? undefined,
+    },
+  })
+  return data
+}
+
+export async function updateAdminPlace(
+  placeId: string,
+  input: UpdateAdminPlaceInput,
+): Promise<AdminPlace> {
+  const { data } = await api.patch<AdminPlace>(
+    `/admin/places/${encodeURIComponent(placeId)}`,
+    input,
+  )
+  return data
+}
+
+export async function getAdminUsers(query: AdminUsersQuery = {}): Promise<Page<AdminUser>> {
+  const { data } = await api.get<Page<AdminUser>>("/admin/users", {
+    params: {
+      role: query.role ?? "all",
+      status: query.status ?? "all",
+      q: query.q?.trim() ? query.q.trim() : undefined,
+      cursor: query.cursor ?? undefined,
+    },
+  })
+  return data
+}
+
+export async function updateAdminUser(
+  userId: string,
+  input: UpdateAdminUserInput,
+): Promise<AdminUser> {
+  const { data } = await api.patch<AdminUser>(`/admin/users/${encodeURIComponent(userId)}`, input)
+  return data
+}
+
+export async function getAuditLogs(query: AuditLogsQuery = {}): Promise<Page<AuditLogEntry>> {
+  const { data } = await api.get<Page<AuditLogEntry>>("/admin/audit-logs", {
+    params: {
+      entity: query.entity && query.entity !== "all" ? query.entity : undefined,
+      action: query.action && query.action !== "all" ? query.action : undefined,
+      q: query.q?.trim() ? query.q.trim() : undefined,
+      cursor: query.cursor ?? undefined,
+    },
+  })
+  return data
+}

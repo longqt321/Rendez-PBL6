@@ -2,8 +2,10 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { useNavigate } from "react-router"
-import { z } from "zod"
 import { toast } from "sonner"
+import { z } from "zod"
+import { PageContainer, PageHeader, SurfaceCard } from "@/components/layout/page-primitives"
+import { ErrorState } from "@/components/shared/error-state"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +18,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { ErrorState } from "@/components/shared/error-state"
 import {
   Field,
   FieldContent,
@@ -25,17 +26,16 @@ import {
   FieldGroup,
   FieldLabel,
   FieldLegend,
-  FieldSeparator,
   FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { useDeleteAccount } from "@/features/auth/hooks/use-delete-account"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { useUpdateMe } from "@/features/profile/hooks/use-update-me"
-import { useDeleteAccount } from "@/features/auth/hooks/use-delete-account"
 import { ProfileImagesField } from "@/features/settings/components/profile-images-field"
-import { Spinner } from "@/components/ui/spinner"
 import {
   MAX_PROFILE_BIO_LENGTH,
   MAX_PROFILE_LOCATION_LENGTH,
@@ -56,7 +56,6 @@ const settingsSchema = z.object({
 
 type SettingsForm = z.infer<typeof settingsSchema>
 
-/** Trang cài đặt — `/settings`. Dùng RHF + zod (đúng kế hoạch, form nhiều trường). */
 export function SettingsPage() {
   const { data: me, isPending, isError, refetch } = useMe()
   const updateMe = useUpdateMe()
@@ -78,25 +77,25 @@ export function SettingsPage() {
 
   if (isPending) {
     return (
-      <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
+      <PageContainer size="narrow">
         <h1 className="sr-only">Cài đặt</h1>
         <div className="flex items-center justify-center py-24">
           <Spinner className="size-6" aria-label="Đang tải cài đặt" />
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
   if (isError || !me) {
     return (
-      <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
+      <PageContainer size="narrow">
         <h1 className="sr-only">Cài đặt</h1>
         <ErrorState
           className="mt-10"
           title="Không tải được cài đặt"
           onRetry={() => void refetch()}
         />
-      </div>
+      </PageContainer>
     )
   }
 
@@ -108,51 +107,78 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 className="sr-only">Cài đặt</h1>
-      <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}>
-        <FieldGroup>
+    <PageContainer size="narrow" className="space-y-6">
+      <PageHeader title="Cài đặt tài khoản" />
+
+      <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)} className="space-y-6">
+        <SurfaceCard>
           <FieldSet>
-            <FieldLegend>Hồ sơ</FieldLegend>
+            <FieldLegend>Hồ sơ công khai</FieldLegend>
 
             <FieldGroup>
-              <Field>
+              <Field data-invalid={!!form.formState.errors.name}>
                 <FieldLabel htmlFor="settings-name">Tên hiển thị</FieldLabel>
-                <Input id="settings-name" {...form.register("name")} />
+                <Input
+                  id="settings-name"
+                  aria-invalid={!!form.formState.errors.name}
+                  aria-describedby={form.formState.errors.name ? "settings-name-error" : undefined}
+                  {...form.register("name")}
+                />
                 {form.formState.errors.name && (
-                  <FieldError>{form.formState.errors.name.message}</FieldError>
+                  <FieldError id="settings-name-error">
+                    {form.formState.errors.name.message}
+                  </FieldError>
                 )}
               </Field>
 
-              <Field>
+              <Field data-invalid={!!form.formState.errors.bio}>
                 <FieldLabel htmlFor="settings-bio">Giới thiệu</FieldLabel>
-                <Textarea id="settings-bio" rows={3} {...form.register("bio")} />
-                <FieldDescription>
+                <Textarea
+                  id="settings-bio"
+                  rows={3}
+                  aria-invalid={!!form.formState.errors.bio}
+                  aria-describedby={
+                    form.formState.errors.bio ? "settings-bio-error" : "settings-bio-hint"
+                  }
+                  {...form.register("bio")}
+                />
+                <FieldDescription id="settings-bio-hint">
                   Đoạn ngắn giới thiệu bản thân, tối đa 160 ký tự.
                 </FieldDescription>
                 {form.formState.errors.bio && (
-                  <FieldError>{form.formState.errors.bio.message}</FieldError>
+                  <FieldError id="settings-bio-error">
+                    {form.formState.errors.bio.message}
+                  </FieldError>
                 )}
               </Field>
 
-              <Field>
+              <Field data-invalid={!!form.formState.errors.location}>
                 <FieldLabel htmlFor="settings-location">Địa điểm</FieldLabel>
-                <Input id="settings-location" {...form.register("location")} />
+                <Input
+                  id="settings-location"
+                  aria-invalid={!!form.formState.errors.location}
+                  aria-describedby={
+                    form.formState.errors.location ? "settings-location-error" : undefined
+                  }
+                  {...form.register("location")}
+                />
                 {form.formState.errors.location && (
-                  <FieldError>{form.formState.errors.location.message}</FieldError>
+                  <FieldError id="settings-location-error">
+                    {form.formState.errors.location.message}
+                  </FieldError>
                 )}
               </Field>
             </FieldGroup>
           </FieldSet>
+        </SurfaceCard>
 
-          <FieldSeparator />
-
+        <SurfaceCard>
           <ProfileImagesField profile={me} />
+        </SurfaceCard>
 
-          <FieldSeparator />
-
+        <SurfaceCard>
           <FieldSet>
-            <FieldLegend>Riêng tư</FieldLegend>
+            <FieldLegend>Quyền riêng tư</FieldLegend>
 
             <FieldGroup>
               <Field orientation="horizontal">
@@ -162,10 +188,6 @@ export function SettingsPage() {
                     Chỉ người theo dõi mới xem được bài đăng của bạn.
                   </FieldDescription>
                 </FieldContent>
-                {/*
-                 * `Switch` của base-ui chỉ có `inputRef` + `onCheckedChange`, không nhận
-                 * `ref`/`onChange` → phải đi qua `Controller` thì giá trị form mới cập nhật.
-                 */}
                 <Controller
                   control={form.control}
                   name="privateProfile"
@@ -180,62 +202,64 @@ export function SettingsPage() {
               </Field>
             </FieldGroup>
           </FieldSet>
+        </SurfaceCard>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => form.reset()}>
-              Đặt lại
-            </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting || updateMe.isPending}>
-              Lưu thay đổi
-            </Button>
-          </div>
-        </FieldGroup>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
+            Đặt lại
+          </Button>
+          <Button type="submit" disabled={form.formState.isSubmitting || updateMe.isPending}>
+            Lưu thay đổi
+          </Button>
+        </div>
       </form>
 
-      <FieldSeparator className="my-8" />
-
-      <FieldSet>
-        <FieldLegend variant="label">Xoá tài khoản</FieldLegend>
-        <FieldDescription>
-          Tài khoản sẽ bị vô hiệu hoá và đăng xuất khỏi mọi thiết bị. Bài đăng và bình luận cũ vẫn
-          được giữ lại nhưng hồ sơ không còn hiển thị.
-        </FieldDescription>
-        <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-          <AlertDialogTrigger
-            render={
-              <Button type="button" variant="destructive" disabled={deleteAccount.isPending} />
-            }
-          >
-            Xoá tài khoản
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Xoá tài khoản?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Hành động này không thể hoàn tác. Bạn sẽ bị đăng xuất ngay lập tức.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Huỷ</AlertDialogCancel>
-              <AlertDialogAction
-                variant="destructive"
-                onClick={() => {
-                  deleteAccount.mutate(undefined, {
-                    onSuccess: () => {
-                      setConfirmDelete(false)
-                      toast.success("Đã xoá tài khoản.")
-                      void navigate("/login")
-                    },
-                    onError: (error) => toast.error(error.message),
-                  })
-                }}
-              >
-                Xoá tài khoản
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </FieldSet>
-    </div>
+      <SurfaceCard variant="danger">
+        <FieldSet>
+          <FieldLegend variant="label" className="text-destructive">
+            Vùng nguy hiểm · Xoá tài khoản
+          </FieldLegend>
+          <FieldDescription>
+            Tài khoản sẽ bị vô hiệu hoá và đăng xuất khỏi mọi thiết bị. Bài đăng và bình luận cũ vẫn
+            được giữ lại nhưng hồ sơ không còn hiển thị.
+          </FieldDescription>
+          <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+            <AlertDialogTrigger
+              render={
+                <Button type="button" variant="destructive" disabled={deleteAccount.isPending} />
+              }
+            >
+              Xoá tài khoản
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Xoá tài khoản?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Hành động này không thể hoàn tác. Bạn sẽ bị đăng xuất ngay lập tức.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Huỷ</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={() => {
+                    deleteAccount.mutate(undefined, {
+                      onSuccess: () => {
+                        setConfirmDelete(false)
+                        toast.success("Đã xoá tài khoản.")
+                        void navigate("/login")
+                      },
+                      onError: (error) => toast.error(error.message),
+                    })
+                  }}
+                >
+                  Xoá tài khoản
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </FieldSet>
+      </SurfaceCard>
+    </PageContainer>
   )
 }

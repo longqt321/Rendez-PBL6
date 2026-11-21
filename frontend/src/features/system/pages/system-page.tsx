@@ -42,7 +42,7 @@ function SystemStatsContent({
     return (
       <Card>
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          Không tải được số liệu — kiểm tra API có đang chạy không.
+          Không tải được số liệu. Kiểm tra xem máy chủ API có đang chạy không.
         </CardContent>
       </Card>
     )
@@ -66,7 +66,7 @@ function SystemStatsContent({
           <CardTitle className="text-3xl tabular-nums">{stats.avgLatencyMs} ms</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Tỉ lệ cache hit: {(stats.cacheHitRatio * 100).toFixed(0)}%
+          Tỉ lệ cache hit: {Math.round(stats.cacheHitRatio * 100)}%
         </CardContent>
       </Card>
       <Card>
@@ -141,15 +141,15 @@ export function SystemPage() {
   const stats = statsQuery.data
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-6 lg:px-8 lg:py-8">
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold">
+          <h1 className="flex items-center gap-2 font-heading text-2xl font-bold tracking-tight">
             <ActivityIcon className="size-5 text-primary" aria-hidden="true" />
             Số liệu vận hành
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Số liệu thật từ tiến trình API và cơ sở dữ liệu — trang demo, không có trong menu.
+          <p className="mt-1 text-sm text-muted-foreground">
+            Số liệu trực tiếp từ tiến trình API và cơ sở dữ liệu.
           </p>
         </div>
         <Button

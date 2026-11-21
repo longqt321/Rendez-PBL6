@@ -1,13 +1,18 @@
 import { SparklesIcon } from "lucide-react"
+import { SectionHeading } from "@/components/shared/section-heading"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 import { useRecommendedPlaces } from "../hooks/use-recommended-places"
 import { PlaceCard } from "./place-card"
 import { PlaceCardSkeleton } from "./place-card-skeleton"
 
 const RECOMMENDED_LIMIT = 6
-const SKELETON_KEYS = Array.from(
-  { length: RECOMMENDED_LIMIT },
-  (_, index) => `rec-skeleton-${index}`,
-)
+const SKELETON_KEYS = Array.from({ length: 3 }, (_, index) => `rec-skeleton-${index}`)
 
 export function RecommendedSection() {
   const { data, isPending, isError } = useRecommendedPlaces(RECOMMENDED_LIMIT)
@@ -16,14 +21,14 @@ export function RecommendedSection() {
   if (isPending) {
     return (
       <section aria-busy="true" className="mt-6">
-        <h2 className="font-heading text-lg font-bold">Gợi ý cho bạn</h2>
-        <ul className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-3">
+        <SectionHeading icon={<SparklesIcon className="size-4 text-primary" aria-hidden="true" />}>
+          Gợi ý cho bạn
+        </SectionHeading>
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {SKELETON_KEYS.map((key) => (
-            <li key={key}>
-              <PlaceCardSkeleton imageHeight={200} />
-            </li>
+            <PlaceCardSkeleton key={key} imageHeight={160} />
           ))}
-        </ul>
+        </div>
       </section>
     )
   }
@@ -31,27 +36,31 @@ export function RecommendedSection() {
 
   return (
     <section aria-labelledby="recommended-heading" className="mt-6">
-      <div className="flex items-baseline justify-between gap-2">
-        <h2
-          id="recommended-heading"
-          className="flex items-center gap-1.5 font-heading text-lg font-bold"
-        >
-          <SparklesIcon className="size-4 text-primary" aria-hidden="true" />
-          Gợi ý cho bạn
-        </h2>
-        <span className="hidden text-xs text-muted-foreground sm:inline">
-          Dựa trên lịch sử tương tác
-        </span>
-      </div>
+      <Carousel opts={{ align: "start" }} className="w-full">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-baseline gap-2">
+            <SectionHeading
+              id="recommended-heading"
+              icon={<SparklesIcon className="size-4 text-primary" aria-hidden="true" />}
+            >
+              Gợi ý cho bạn
+            </SectionHeading>
+            <span className="hidden text-xs text-muted-foreground sm:inline">Hợp gu của bạn</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CarouselPrevious className="static size-8 translate-y-0" />
+            <CarouselNext className="static size-8 translate-y-0" />
+          </div>
+        </div>
 
-      {/* Mobile: hàng ngang cuộn được như dải "Gợi ý hôm nay"; desktop: lưới 3 cột. */}
-      <ul className="-mx-4 mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
-        {data.map((place) => (
-          <li key={place.id} className="w-3/4 shrink-0 snap-start sm:w-auto">
-            <PlaceCard place={place} />
-          </li>
-        ))}
-      </ul>
+        <CarouselContent className="mt-3 -ml-4">
+          {data.map((place) => (
+            <CarouselItem key={place.id} className="basis-[85%] pl-4 sm:basis-1/2 lg:basis-[42%]">
+              <PlaceCard place={place} variant="horizontal" />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
     </section>
   )
 }

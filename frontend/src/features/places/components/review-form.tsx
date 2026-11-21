@@ -97,11 +97,12 @@ export function ReviewForm({ placeId, myReview, authorInitials, onDone }: Review
             id="review-content"
             {...form.register("content")}
             aria-invalid={!!form.formState.errors.content}
-            placeholder="Vị ngon, không gian, giá cả… chỉ bằng chữ thôi (không đính kèm ảnh hoặc file)"
+            aria-describedby={form.formState.errors.content ? "review-content-error" : undefined}
+            placeholder="Món ăn, không gian, phục vụ hoặc mức giá thế nào? Chia sẻ cảm nhận của bạn…"
             className="min-h-24"
             maxLength={MAX_REVIEW_CONTENT_LENGTH}
           />
-          <FieldError errors={[form.formState.errors.content]} />
+          <FieldError id="review-content-error" errors={[form.formState.errors.content]} />
         </Field>
         <div className="flex items-center justify-between gap-2">
           <FieldDescription>

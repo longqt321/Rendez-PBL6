@@ -165,28 +165,38 @@ export function RegisterPage() {
     >
       <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}>
         <FieldGroup>
-          <Field>
+          <Field data-invalid={!!form.formState.errors.name}>
             <FieldLabel htmlFor="register-name">Tên hiển thị</FieldLabel>
-            <Input id="register-name" autoComplete="name" {...form.register("name")} />
+            <Input
+              id="register-name"
+              autoComplete="name"
+              aria-invalid={!!form.formState.errors.name}
+              aria-describedby={form.formState.errors.name ? "register-name-error" : undefined}
+              {...form.register("name")}
+            />
             {form.formState.errors.name && (
-              <FieldError>{form.formState.errors.name.message}</FieldError>
+              <FieldError id="register-name-error">{form.formState.errors.name.message}</FieldError>
             )}
           </Field>
 
-          <Field>
+          <Field data-invalid={!!form.formState.errors.email}>
             <FieldLabel htmlFor="register-email">Email</FieldLabel>
             <Input
               id="register-email"
               type="email"
               autoComplete="email"
+              aria-invalid={!!form.formState.errors.email}
+              aria-describedby={form.formState.errors.email ? "register-email-error" : undefined}
               {...form.register("email")}
             />
             {form.formState.errors.email && (
-              <FieldError>{form.formState.errors.email.message}</FieldError>
+              <FieldError id="register-email-error">
+                {form.formState.errors.email.message}
+              </FieldError>
             )}
           </Field>
 
-          <Field>
+          <Field data-invalid={!!form.formState.errors.handle}>
             <FieldLabel htmlFor="register-handle">Tên người dùng</FieldLabel>
             <InputGroup>
               <InputGroupAddon align="inline-start">
@@ -196,39 +206,61 @@ export function RegisterPage() {
                 id="register-handle"
                 autoComplete="username"
                 placeholder="minhanh_eats"
+                aria-invalid={!!form.formState.errors.handle}
+                aria-describedby={
+                  form.formState.errors.handle ? "register-handle-error" : "register-handle-hint"
+                }
                 {...form.register("handle")}
               />
             </InputGroup>
-            <FieldDescription>
-              Bạn bè sẽ tìm thấy bạn qua tên này — chỉ chữ thường, số và dấu gạch dưới.
+            <FieldDescription id="register-handle-hint">
+              Bạn bè sẽ tìm thấy bạn qua tên này. Chỉ dùng chữ thường, số và dấu gạch dưới.
             </FieldDescription>
             {form.formState.errors.handle && (
-              <FieldError>{form.formState.errors.handle.message}</FieldError>
+              <FieldError id="register-handle-error">
+                {form.formState.errors.handle.message}
+              </FieldError>
             )}
           </Field>
 
-          <Field>
+          <Field data-invalid={!!form.formState.errors.password}>
             <FieldLabel htmlFor="register-password">Mật khẩu</FieldLabel>
             <PasswordInput
               id="register-password"
               autoComplete="new-password"
+              aria-invalid={!!form.formState.errors.password}
+              aria-describedby={
+                form.formState.errors.password
+                  ? "register-password-error"
+                  : "register-password-hint"
+              }
               {...form.register("password")}
             />
-            <FieldDescription>Ít nhất 8 ký tự.</FieldDescription>
+            <FieldDescription id="register-password-hint">Ít nhất 8 ký tự.</FieldDescription>
             {form.formState.errors.password && (
-              <FieldError>{form.formState.errors.password.message}</FieldError>
+              <FieldError id="register-password-error">
+                {form.formState.errors.password.message}
+              </FieldError>
             )}
           </Field>
 
-          <Field>
+          <Field data-invalid={!!form.formState.errors.confirmPassword}>
             <FieldLabel htmlFor="register-confirm-password">Nhập lại mật khẩu</FieldLabel>
             <PasswordInput
               id="register-confirm-password"
               autoComplete="new-password"
+              aria-invalid={!!form.formState.errors.confirmPassword}
+              aria-describedby={
+                form.formState.errors.confirmPassword
+                  ? "register-confirm-password-error"
+                  : undefined
+              }
               {...form.register("confirmPassword")}
             />
             {form.formState.errors.confirmPassword && (
-              <FieldError>{form.formState.errors.confirmPassword.message}</FieldError>
+              <FieldError id="register-confirm-password-error">
+                {form.formState.errors.confirmPassword.message}
+              </FieldError>
             )}
           </Field>
 

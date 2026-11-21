@@ -84,23 +84,34 @@ export function LoginPage() {
     >
       <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}>
         <FieldGroup>
-          <Field>
+          <Field data-invalid={!!form.formState.errors.email}>
             <FieldLabel htmlFor="login-email">Email</FieldLabel>
-            <Input id="login-email" type="email" autoComplete="email" {...form.register("email")} />
+            <Input
+              id="login-email"
+              type="email"
+              autoComplete="email"
+              aria-invalid={!!form.formState.errors.email}
+              aria-describedby={form.formState.errors.email ? "login-email-error" : undefined}
+              {...form.register("email")}
+            />
             {form.formState.errors.email && (
-              <FieldError>{form.formState.errors.email.message}</FieldError>
+              <FieldError id="login-email-error">{form.formState.errors.email.message}</FieldError>
             )}
           </Field>
 
-          <Field>
+          <Field data-invalid={!!form.formState.errors.password}>
             <FieldLabel htmlFor="login-password">Mật khẩu</FieldLabel>
             <PasswordInput
               id="login-password"
               autoComplete="current-password"
+              aria-invalid={!!form.formState.errors.password}
+              aria-describedby={form.formState.errors.password ? "login-password-error" : undefined}
               {...form.register("password")}
             />
             {form.formState.errors.password && (
-              <FieldError>{form.formState.errors.password.message}</FieldError>
+              <FieldError id="login-password-error">
+                {form.formState.errors.password.message}
+              </FieldError>
             )}
           </Field>
 

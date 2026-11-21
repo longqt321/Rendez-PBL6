@@ -2,16 +2,19 @@ import { waitFor } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 import { createTestQueryClient, renderWithQuery, waitForQuery } from "@/test/query-test-utils"
 import { useMe } from "@/features/profile/hooks/use-me"
+import { ACTIVE_ROOM_KEY } from "@/features/rooms/lib/room"
 import { useLogin } from "./use-login"
 import { useLogout } from "./use-logout"
 
 describe("useLogout", () => {
-  it("đăng xuất → GET /me trả 401 (chưa đăng nhập)", async () => {
+  it("đăng xuất → GET /me trả 401 (chưa đăng nhập) và xoá phòng đang hoạt động", async () => {
+    sessionStorage.setItem(ACTIVE_ROOM_KEY, "ROOM99")
     const client = createTestQueryClient()
     const { result } = renderWithQuery(() => useLogout(), client)
 
     result.current.mutate()
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(sessionStorage.getItem(ACTIVE_ROOM_KEY)).toBeNull()
 
     const { result: me } = renderWithQuery(() => useMe(), client)
     await waitForQuery(() => expect(me.current.isError).toBe(true))

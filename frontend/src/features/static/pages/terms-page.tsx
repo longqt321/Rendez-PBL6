@@ -5,7 +5,7 @@ export function TermsPage() {
   return (
     <StaticPage
       title="Điều khoản sử dụng"
-      description="Bản nháp — áp dụng cho việc dùng Rendez. Cập nhật lần cuối: 12/11/2026."
+      description="Quy định khi tạo tài khoản và sử dụng dịch vụ Rendez. Cập nhật lần cuối: 12/11/2026."
     >
       <StaticSection title="1. Tài khoản">
         <p>

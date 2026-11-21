@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link } from "react-router"
 import {
+  ArrowUpRightIcon,
   BookmarkIcon,
   HeartIcon,
   MapPinIcon,
@@ -14,13 +15,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Toggle } from "@/components/ui/toggle"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Toggle } from "@/components/ui/toggle"
+import { ImageLightbox } from "@/components/shared/image-lightbox"
 import { SafeImage } from "@/components/shared/safe-image"
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import { useMe } from "@/features/profile/hooks/use-me"
@@ -28,10 +30,10 @@ import { formatCount, formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useSetPostLiked } from "../hooks/use-set-post-liked"
 import { useSetPostSaved } from "../hooks/use-set-post-saved"
-import { PostCommentsInline } from "./post-comments-inline"
-import { CommentThread } from "./comment-thread"
-import { PostDeleteDialog } from "./post-delete-dialog"
 import type { Post } from "../types/post"
+import { CommentThread } from "./comment-thread"
+import { PostCommentsInline } from "./post-comments-inline"
+import { PostDeleteDialog } from "./post-delete-dialog"
 
 interface PostCardProps {
   post: Post
@@ -42,30 +44,33 @@ export function PostCard({ post }: PostCardProps) {
   const setSaved = useSetPostSaved()
   const [commentsOpen, setCommentsOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const { data: me } = useMe()
 
-  // `Post` không có `isMine` — xác định bằng so khớp tác giả với người dùng hiện tại.
   const isMine = me !== undefined && post.author.id === me.id
-
-  // Địa điểm do server nhúng kèm — không tra cứu id ở client.
   const place = post.place
 
   return (
-    <Card className="gap-0 py-0 shadow-(--shadow-soft)">
-      <header className="flex items-center gap-3 px-4 py-3">
-        <Avatar size="lg">
-          <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
-            {post.author.initials}
-          </AvatarFallback>
-        </Avatar>
+    <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-(--shadow-soft)">
+      <header className="flex items-center gap-3 px-4 pt-4 pb-2">
+        <Link to={`/u/${post.author.handle}`} className="shrink-0">
+          <Avatar size="lg">
+            <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
+              {post.author.initials}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-base leading-tight font-semibold">
-            <Link to={`/post/${post.id}`} className="outline-none hover:underline">
+          <p className="truncate text-sm leading-tight font-semibold">
+            <Link to={`/u/${post.author.handle}`} className="outline-none hover:underline">
               {post.author.name}
             </Link>
           </p>
-          <p className="truncate text-sm text-muted-foreground">
-            @{post.author.handle} · {formatRelativeTime(post.createdAt)}
+          <p className="truncate text-xs text-muted-foreground">
+            @{post.author.handle} ·{" "}
+            <Link to={`/post/${post.id}`} className="hover:underline">
+              {formatRelativeTime(post.createdAt)}
+            </Link>
           </p>
         </div>
         {isMine ? (
@@ -87,48 +92,63 @@ export function PostCard({ post }: PostCardProps) {
         ) : null}
       </header>
 
-      <div className="flex flex-col gap-3 p-4">
+      <div className="flex flex-col gap-3 p-4 pt-2">
         <p className="text-base leading-relaxed break-words whitespace-pre-line">{post.caption}</p>
 
-        {/* Ảnh bài đăng (G5b): 1 ảnh full, ≥2 lưới 2 cột — rỗng thì không render gì. */}
         {post.images.length > 0 ? (
           <div
-            className={cn("grid gap-1", post.images.length === 1 ? "grid-cols-1" : "grid-cols-2")}
+            className={cn("grid gap-1.5", post.images.length === 1 ? "grid-cols-1" : "grid-cols-2")}
           >
             {post.images.map((url, index) => (
-              <Link
+              <button
                 key={`${post.id}-${index}`}
-                to={`/post/${post.id}`}
-                className="block overflow-hidden rounded-md"
+                type="button"
+                onClick={() => setLightboxIndex(index)}
+                aria-label={`Phóng to ảnh ${index + 1}`}
+                className="group relative block overflow-hidden rounded-control bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <SafeImage
                   src={url}
                   alt={`Ảnh ${index + 1}/${post.images.length} của bài đăng`}
-                  className="aspect-square h-full w-full"
+                  className={cn(
+                    "w-full transition-transform duration-300 group-hover:scale-[1.02]",
+                    post.images.length === 1 ? "max-h-96" : "aspect-square",
+                  )}
                 />
-              </Link>
+              </button>
             ))}
           </div>
         ) : null}
 
         {place ? (
-          <div className="flex items-center gap-2.5 rounded-md border border-border/70 bg-muted/70 px-3 py-2">
-            <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />
+          <Link
+            to={`/discover/${place.id}`}
+            className="group flex items-center gap-3 rounded-surface border border-border/80 bg-muted/50 px-3.5 py-2.5 transition-colors hover:border-primary/45 hover:bg-primary/5"
+          >
+            <span className="grid size-8 shrink-0 place-items-center rounded-control bg-primary/12 text-primary">
+              <MapPinIcon className="size-4" aria-hidden="true" />
+            </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold">{place.name}</span>
-              <span className="block truncate text-sm text-muted-foreground">{place.address}</span>
+              <span className="block truncate text-sm font-semibold group-hover:text-primary">
+                {place.name}
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">{place.address}</span>
             </span>
             <Badge
               variant={place.isPublished ? "secondary" : "outline"}
-              className="h-6 shrink-0 text-sm"
+              className="h-6 shrink-0 text-xs"
             >
               {place.isPublished ? "Trên Khám phá" : categoryLabel(place.category)}
             </Badge>
-          </div>
+            <ArrowUpRightIcon
+              className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
+              aria-hidden="true"
+            />
+          </Link>
         ) : (
           <Alert className="flex items-center gap-2 border-dashed">
             <SparklesIcon className="size-4 shrink-0" aria-hidden="true" />
-            <AlertDescription>Chưa gắn địa điểm — hệ thống sẽ đề xuất cho bạn.</AlertDescription>
+            <AlertDescription>Bài viết chưa gắn địa điểm.</AlertDescription>
           </Alert>
         )}
 
@@ -137,22 +157,33 @@ export function PostCard({ post }: PostCardProps) {
             aria-label={post.likedByMe ? "Bỏ thích" : "Thích"}
             pressed={post.likedByMe}
             onPressedChange={(pressed) => setLiked.mutate({ postId: post.id, liked: pressed })}
-            className={cn(post.likedByMe && "text-primary")}
+            className={cn(
+              "gap-1.5 transition-transform active:scale-95",
+              post.likedByMe && "text-primary",
+            )}
           >
             <HeartIcon className={cn(post.likedByMe && "fill-current")} />
-            {formatCount(post.likeCount)}
+            <span className="tabular-nums">{formatCount(post.likeCount)}</span>
           </Toggle>
 
-          <Button variant="ghost" aria-label="Bình luận" onClick={() => setCommentsOpen(true)}>
+          <Button
+            variant="ghost"
+            aria-label="Bình luận"
+            className="gap-1.5"
+            onClick={() => setCommentsOpen(true)}
+          >
             <MessageCircleIcon />
-            {formatCount(post.commentCount)}
+            <span className="tabular-nums">{formatCount(post.commentCount)}</span>
           </Button>
 
           <Toggle
             aria-label={post.savedByMe ? "Bỏ lưu" : "Lưu bài"}
             pressed={post.savedByMe}
             onPressedChange={(pressed) => setSaved.mutate({ postId: post.id, saved: pressed })}
-            className={cn("ml-auto", post.savedByMe && "text-accent")}
+            className={cn(
+              "ml-auto transition-transform active:scale-95",
+              post.savedByMe && "text-primary",
+            )}
           >
             <BookmarkIcon className={cn(post.savedByMe && "fill-current")} />
           </Toggle>
@@ -161,10 +192,17 @@ export function PostCard({ post }: PostCardProps) {
 
       <PostCommentsInline post={post} />
 
-      {/* Thread đầy đủ — nút Bình luận ở footer cũng mở cùng thread. */}
       <CommentThread post={post} open={commentsOpen} onOpenChange={setCommentsOpen} />
 
       <PostDeleteDialog postId={post.id} open={deleteOpen} onClose={() => setDeleteOpen(false)} />
+
+      <ImageLightbox
+        images={post.images}
+        index={lightboxIndex ?? 0}
+        open={lightboxIndex !== null}
+        onClose={() => setLightboxIndex(null)}
+        altPrefix={`Bài đăng của ${post.author.name}`}
+      />
     </Card>
   )
 }

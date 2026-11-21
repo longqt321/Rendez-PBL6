@@ -26,11 +26,12 @@ export function discoverQueryKey(filters: DiscoverFilters) {
   ] as const
 }
 
-export function useDiscoverPlaces(filters: DiscoverFilters) {
+export function useDiscoverPlaces(filters: DiscoverFilters, options?: { enabled?: boolean }) {
   return useInfiniteQuery({
     queryKey: discoverQueryKey(filters),
     queryFn: ({ pageParam, signal }) => getPlaces(filters, pageParam, signal),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    enabled: options?.enabled ?? true,
   })
 }

@@ -4,6 +4,7 @@ import { checkApiContract } from "@/lib/api-contracts"
 import { env } from "@/lib/env"
 import { getAnonId } from "@/lib/events"
 import { safeRedirectPath } from "@/features/auth/lib/safe-redirect"
+import { clearActiveRoom } from "@/features/rooms/lib/room"
 
 declare module "axios" {
   export interface AxiosRequestConfig {
@@ -45,8 +46,8 @@ export function toApiError(error: unknown): Error {
   const message =
     serverMessage ??
     (status === 0
-      ? "Không kết nối được máy chủ — kiểm tra mạng rồi thử lại."
-      : "Máy chủ trả lỗi — thử lại sau.")
+      ? "Không kết nối được máy chủ, vui lòng kiểm tra mạng rồi thử lại."
+      : "Có lỗi từ máy chủ, vui lòng thử lại sau.")
   const code = typeof body?.code === "string" ? body.code : undefined
   return new ApiError(message, status, code)
 }
@@ -139,6 +140,7 @@ function getSessionChannel(): BroadcastChannel | null {
 }
 
 function clearSessionAndRedirect(notice: { title: string; description: string }) {
+  clearActiveRoom()
   toast.error(notice.title, { description: notice.description })
 
   const current = window.location.pathname + window.location.search

@@ -44,3 +44,25 @@ if (typeof window !== "undefined" && !("ResizeObserver" in window)) {
     value: ResizeObserverMock,
   })
 }
+
+if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = vi.fn()
+}
+
+if (typeof window !== "undefined" && !("IntersectionObserver" in window)) {
+  class IntersectionObserverMock implements IntersectionObserver {
+    readonly root: Element | Document | null = null
+    readonly rootMargin = ""
+    readonly scrollMargin = ""
+    readonly thresholds: ReadonlyArray<number> = []
+
+    observe = vi.fn()
+    unobserve = vi.fn()
+    disconnect = vi.fn()
+    takeRecords = vi.fn(() => [])
+  }
+  Object.defineProperty(window, "IntersectionObserver", {
+    writable: true,
+    value: IntersectionObserverMock,
+  })
+}

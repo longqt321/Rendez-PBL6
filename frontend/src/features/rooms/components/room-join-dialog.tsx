@@ -52,7 +52,7 @@ export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoi
         return
       }
       if (status === "duplicate") {
-        toast.error("Tên này đã có người dùng trong phòng — chọn tên khác")
+        toast.error("Tên này đã có người dùng trong phòng, vui lòng chọn tên khác")
         return
       }
       if (status === "already") {

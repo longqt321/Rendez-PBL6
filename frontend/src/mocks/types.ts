@@ -31,7 +31,11 @@ export interface MockReview {
 
 export type MockReviewSeed = MockReview
 
-export type MockReport = PlaceReport & { reporterId: string }
+export type MockReport = PlaceReport & {
+  reporterId: string
+  status?: "pending" | "reviewed" | "dismissed"
+  updatedAt?: string
+}
 
 export interface MockCollection {
   id: string

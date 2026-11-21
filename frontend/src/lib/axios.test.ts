@@ -66,7 +66,7 @@ describe("toApiError", () => {
 
   it("body không có thông điệp → thông báo chung theo status", () => {
     const error = toApiError(axiosErrorWith(500, {}))
-    expect(error.message).toBe("Máy chủ trả lỗi — thử lại sau.")
+    expect(error.message).toBe("Có lỗi từ máy chủ, vui lòng thử lại sau.")
   })
 
   it("lỗi không phải axios → giữ nguyên Error", () => {

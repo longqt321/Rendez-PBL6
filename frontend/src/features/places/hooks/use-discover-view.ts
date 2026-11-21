@@ -41,7 +41,8 @@ export interface DiscoverView {
   serverFilters: DiscoverFilters
 }
 
-export function useDiscoverView(): DiscoverView {
+export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView {
+  const fetchList = options?.fetchList ?? true
   const filters = useDiscoverFilters()
   const { activeCode, getRoom, createRoom, joinRoom, leaveRoom } = useRooms()
   const room = activeCode ? getRoom(activeCode) : undefined
@@ -98,7 +99,7 @@ export function useDiscoverView(): DiscoverView {
     if (coordinates) setCoords(coordinates)
   }, [filters.sort, coordinates, setCoords])
 
-  const query = useDiscoverPlaces(serverFilters)
+  const query = useDiscoverPlaces(serverFilters, { enabled: fetchList })
 
   const rawPlaces = useMemo(
     () => query.data?.pages.flatMap((page) => page.items) ?? [],
@@ -144,8 +145,8 @@ export function useDiscoverView(): DiscoverView {
     isLocating,
     locationError,
     locationGate,
-    isPending: query.isPending,
-    isError: query.isError,
+    isPending: fetchList ? query.isPending : false,
+    isError: fetchList ? query.isError : false,
     refetch: () => void query.refetch(),
     hasNextPage: query.hasNextPage ?? false,
     isFetchingNextPage: query.isFetchingNextPage,

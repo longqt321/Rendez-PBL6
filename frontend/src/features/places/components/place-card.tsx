@@ -6,12 +6,11 @@ import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { formatCount, formatDistance, formatRating } from "@/lib/format"
 import { emitPlaceClick } from "@/lib/events"
+import { cn } from "@/lib/utils"
 import { isOpenNow } from "../lib/opening-hours"
 import { categoryLabel } from "../lib/category-meta"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
-import type { DailyPick, Place } from "../types/place"
-
-type PickWhy = NonNullable<DailyPick["why"]>
+import type { DailyPickWhy, Place } from "../types/place"
 
 const NEW_PLACE_DAYS = 14
 
@@ -25,22 +24,37 @@ function isRecentlyPublished(publishedAt: string | null): boolean {
 interface PlaceCardProps {
   readonly place: Place
   readonly distanceKm?: number
-  readonly why?: PickWhy
+  readonly why?: DailyPickWhy
+  readonly variant?: "default" | "horizontal" | "featured"
+  readonly rankBadge?: string
+  readonly subtitleNote?: string
 }
 
 interface PlaceCardBadgesProps {
   readonly place: Place
   readonly isNew: boolean
   readonly openState: boolean | null
+  readonly rankBadge?: string
 }
 
-function PlaceCardBadges({ place, isNew, openState }: PlaceCardBadgesProps) {
+function PlaceCardBadges({ place, isNew, openState, rankBadge }: PlaceCardBadgesProps) {
   return (
     <>
-      <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+      {/* Lớp phủ mờ nhẹ chân ảnh giúp điểm đánh giá luôn sắc nét */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-foreground/45 to-transparent"
+      />
+
+      <div className="absolute top-2.5 left-2.5 flex flex-wrap items-center gap-1.5">
+        {rankBadge ? (
+          <span className="grid h-7 min-w-7 place-items-center rounded-control bg-primary px-2 font-display text-sm font-bold text-primary-foreground shadow-sm">
+            {rankBadge}
+          </span>
+        ) : null}
         <Badge
           variant="secondary"
-          className="h-6 border-border bg-secondary px-2 text-xs text-secondary-foreground"
+          className="h-6 border-border/70 bg-background/90 px-2 text-xs font-medium text-foreground backdrop-blur-sm"
         >
           {categoryLabel(place.category)}
         </Badge>
@@ -49,35 +63,43 @@ function PlaceCardBadges({ place, isNew, openState }: PlaceCardBadgesProps) {
             Mới
           </Badge>
         ) : null}
-        {place.district ? (
-          <Badge
-            variant="outline"
-            className="h-6 border-border/80 bg-background/80 px-2 text-xs font-medium backdrop-blur"
-          >
-            {place.district}
-          </Badge>
-        ) : null}
       </div>
-
-      {place.reviewCount > 0 ? (
-        <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-sm font-bold">
-          <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
-          {formatRating(place.rating)}
-        </span>
-      ) : null}
 
       {openState !== null ? (
         <Badge
           variant="outline"
           className={
             openState
-              ? "absolute top-2 right-2 h-6 border-transparent bg-open px-2 text-xs text-white"
-              : "absolute top-2 right-2 h-6 border-border/80 bg-background/80 px-2 text-xs font-medium text-muted-foreground backdrop-blur"
+              ? "absolute top-2.5 right-2.5 h-6 gap-1.5 border-transparent bg-open px-2 text-xs font-medium text-open-foreground shadow-xs"
+              : "absolute top-2.5 right-2.5 h-6 border-border/70 bg-background/85 px-2 text-xs font-medium text-muted-foreground backdrop-blur-sm"
           }
         >
-          {openState ? "Đang mở cửa" : "Đã đóng cửa"}
+          {openState ? (
+            <span className="size-1.5 rounded-full bg-open-foreground" aria-hidden="true" />
+          ) : null}
+          {openState ? "Đang mở" : "Đã đóng"}
         </Badge>
       ) : null}
+
+      <div className="absolute right-2.5 bottom-2.5 left-2.5 flex items-center justify-between gap-2">
+        {place.district ? (
+          <Badge
+            variant="outline"
+            className="h-6 border-border/50 bg-background/85 px-2 text-xs font-medium text-foreground backdrop-blur-sm"
+          >
+            {place.district}
+          </Badge>
+        ) : (
+          <span />
+        )}
+
+        {place.reviewCount > 0 ? (
+          <span className="flex items-center gap-1 rounded-control border border-border/50 bg-background/92 px-2 py-0.5 text-xs font-bold text-foreground tabular-nums shadow-xs backdrop-blur-sm">
+            <StarIcon className="size-3.5 fill-star text-star" aria-hidden="true" />
+            {formatRating(place.rating)}
+          </span>
+        ) : null}
+      </div>
     </>
   )
 }
@@ -108,26 +130,23 @@ function PlaceCardTags({ tags }: Readonly<{ tags: string[] }>) {
   )
 }
 
-function PlaceCardWhyBlock({ why }: Readonly<{ why: PickWhy }>) {
+function PlaceCardWhyBlock({ why }: Readonly<{ why: DailyPickWhy }>) {
+  const signals = why.signals.slice(0, 3)
+  if (signals.length === 0) return null
+
   return (
     <div className="flex flex-wrap items-center gap-1" aria-label="Vì sao gợi ý">
-      <Badge
-        variant="secondary"
-        className="h-5 gap-1 px-1.5 text-xs font-medium text-secondary-foreground"
-      >
-        <SparklesIcon className="size-3" aria-hidden="true" />
-        Điểm gợi ý {why.matchPercent}/100
-      </Badge>
-      {why.district ? <span className="text-xs text-muted-foreground">{why.district}</span> : null}
-      {why.openNow !== null ? (
-        <span className="text-xs text-muted-foreground">· {why.openNow ? "Đang mở" : "Đóng"}</span>
-      ) : null}
-      {why.signals.slice(0, 3).map((signal) => (
+      {signals.map((signal, index) => (
         <Badge
           key={signal}
-          variant="outline"
-          className="h-5 px-1.5 text-xs font-normal text-muted-foreground"
+          variant={index === 0 ? "secondary" : "outline"}
+          className={
+            index === 0
+              ? "h-5 gap-1 px-1.5 text-xs font-medium text-secondary-foreground"
+              : "h-5 px-1.5 text-xs font-normal text-muted-foreground"
+          }
         >
+          {index === 0 ? <SparklesIcon className="size-3 text-primary" aria-hidden="true" /> : null}
           {signal}
         </Badge>
       ))}
@@ -135,30 +154,103 @@ function PlaceCardWhyBlock({ why }: Readonly<{ why: PickWhy }>) {
   )
 }
 
-export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
-  // `null` = không có dữ liệu giờ mở cửa → không hiện badge.
+export function PlaceCard({
+  place,
+  distanceKm,
+  why,
+  variant = "default",
+  rankBadge,
+  subtitleNote,
+}: PlaceCardProps) {
   const openState = isOpenNow(place.openingHours ?? null)
   const isNew = isRecentlyPublished(place.publishedAt)
 
+  if (variant === "horizontal") {
+    return (
+      <Card className="group relative flex-row items-stretch gap-0 overflow-hidden border-border/80 p-0 shadow-(--shadow-soft) transition-all duration-300 hover:-translate-y-0.5 hover:shadow-(--shadow-raised)">
+        <CoverImage
+          src={place.imageUrl}
+          placeholder={place.category}
+          name={place.name}
+          alt={placeImageAlt(place)}
+          sizes="(min-width: 768px) 220px, 140px"
+          className="w-32 shrink-0 sm:w-40"
+          imgClassName="transition-transform duration-500 group-hover:scale-105"
+        >
+          {rankBadge ? (
+            <span className="absolute top-2 left-2 grid h-6 min-w-6 place-items-center rounded-control bg-primary px-1.5 font-display text-xs font-bold text-primary-foreground shadow-sm">
+              {rankBadge}
+            </span>
+          ) : null}
+        </CoverImage>
+
+        <CardContent className="flex min-w-0 flex-1 flex-col gap-1.5 p-3.5">
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span className="truncate font-medium text-primary">
+              {categoryLabel(place.category)}
+              {place.district ? ` · ${place.district}` : ""}
+            </span>
+            {place.reviewCount > 0 ? (
+              <span className="flex shrink-0 items-center gap-1 font-bold text-foreground tabular-nums">
+                <StarIcon className="size-3 fill-star text-star" aria-hidden="true" />
+                {formatRating(place.rating)}
+              </span>
+            ) : null}
+          </div>
+
+          <h3 className="font-display text-base leading-snug font-bold tracking-tight">
+            <Link
+              to={`/discover/${place.id}`}
+              onClick={() => emitPlaceClick(place.id)}
+              className="line-clamp-1 outline-none after:absolute after:inset-0 focus-visible:underline"
+            >
+              {place.name}
+            </Link>
+          </h3>
+
+          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPinIcon className="size-3 shrink-0" aria-hidden="true" />
+            <span className="truncate">{place.address}</span>
+          </p>
+
+          {subtitleNote ? (
+            <p className="line-clamp-1 text-xs font-medium text-foreground/80">{subtitleNote}</p>
+          ) : null}
+
+          {why ? <PlaceCardWhyBlock why={why} /> : null}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const imageHeight = variant === "featured" ? 300 : place.imageHeight
+
   return (
-    <Card className="group relative gap-0 p-0 shadow-(--shadow-soft) transition-shadow hover:shadow-(--shadow-raised)">
-      {/* Chiều cao ảnh do server trả về (`imageHeight`) → lưới mobile có nhịp masonry. */}
+    <Card className="group relative gap-0 overflow-hidden border-border/80 p-0 shadow-(--shadow-soft) transition-all duration-300 hover:-translate-y-0.5 hover:shadow-(--shadow-raised)">
       <CoverImage
         src={place.imageUrl}
         placeholder={place.category}
         name={place.name}
-        height={place.imageHeight}
+        height={imageHeight}
         alt={placeImageAlt(place)}
-        // Card rộng tối đa ~370 CSS px (3 cột × max-w-6xl) → DPR2 = 740: chọn
-        // 400w mobile (2 cột), 800w desktop; ảnh gốc chỉ cho hero.
-        sizes="(min-width: 768px) 33vw, 50vw"
-        className="w-full shrink-0 rounded-t-xl"
+        sizes={
+          variant === "featured"
+            ? "(min-width: 1024px) 60vw, 100vw"
+            : "(min-width: 768px) 33vw, 50vw"
+        }
+        className="w-full shrink-0"
+        imgClassName="transition-transform duration-500 ease-out group-hover:scale-105"
       >
-        <PlaceCardBadges place={place} isNew={isNew} openState={openState} />
+        <PlaceCardBadges place={place} isNew={isNew} openState={openState} rankBadge={rankBadge} />
       </CoverImage>
 
       <CardContent className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="font-heading text-base leading-tight font-bold">
+        <h3
+          className={cn(
+            "font-display leading-snug font-bold tracking-tight",
+            variant === "featured" ? "text-xl" : "text-base",
+          )}
+        >
           <Link
             to={`/discover/${place.id}`}
             onClick={() => emitPlaceClick(place.id)}
@@ -167,6 +259,10 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
             {place.name}
           </Link>
         </h3>
+
+        {subtitleNote ? (
+          <p className="line-clamp-2 text-sm leading-relaxed text-foreground/85">{subtitleNote}</p>
+        ) : null}
 
         <PlaceCardTags tags={place.tags} />
 
@@ -177,18 +273,24 @@ export function PlaceCard({ place, distanceKm, why }: PlaceCardProps) {
 
         {why ? <PlaceCardWhyBlock why={why} /> : null}
 
-        <div className="mt-auto flex items-center justify-between pt-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            {/* 0 đánh giá: không render gì (tránh nhãn "Chưa có đánh giá" lặp trên mọi card). */}
-            {place.reviewCount > 0 ? <span>{formatCount(place.reviewCount)} đánh giá</span> : null}
+        <div className="mt-auto flex items-center justify-between border-t border-border/50 pt-2.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 tabular-nums">
+            {place.reviewCount > 0 ? (
+              <span>{formatCount(place.reviewCount)} đánh giá</span>
+            ) : (
+              <span>Chưa có đánh giá</span>
+            )}
             {distanceKm !== undefined ? (
-              <span className="flex items-center gap-0.5 text-xs font-semibold text-primary">
-                <NavigationIcon className="size-3" />
+              <span className="flex items-center gap-0.5 font-semibold text-primary">
+                <NavigationIcon className="size-3" aria-hidden="true" />
                 {formatDistance(distanceKm)}
               </span>
             ) : null}
           </div>
-          <span aria-label={priceLevelAriaLabel(place.priceLevel)} className="font-bold">
+          <span
+            aria-label={priceLevelAriaLabel(place.priceLevel)}
+            className="font-semibold text-foreground"
+          >
             {priceLevelLabel(place.priceLevel)}
           </span>
         </div>

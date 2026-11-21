@@ -17,13 +17,23 @@ export interface MapPlacesPage {
 
 export async function getMapPlaces(
   filters: DiscoverFilters,
-  bounds: MapBounds,
+  bounds: MapBounds | null,
   signal?: AbortSignal,
 ): Promise<MapPlacesPage> {
+  const params = placesQueryParams(filters)
   const { data } = await api.get<MapPlacesPage>("/places/map", {
     params: {
-      bbox: [bounds.minLng, bounds.minLat, bounds.maxLng, bounds.maxLat].join(","),
-      ...placesQueryParams(filters),
+      ...(bounds
+        ? { bbox: [bounds.minLng, bounds.minLat, bounds.maxLng, bounds.maxLat].join(",") }
+        : {}),
+      category: params.category,
+      district: params.district,
+      q: params.q,
+      priceMax: params.priceMax,
+      excludeCategory: params.excludeCategory,
+      excludeDistrict: params.excludeDistrict,
+      includeKeyword: params.includeKeyword,
+      excludeKeyword: params.excludeKeyword,
     },
     signal,
   })

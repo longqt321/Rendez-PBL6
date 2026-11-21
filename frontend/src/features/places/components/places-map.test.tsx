@@ -77,6 +77,8 @@ vi.mock("react-leaflet", () => {
         getNorth: () => 16.1,
       }),
       latLngToContainerPoint: () => ({ x: 100, y: 100 }),
+      latLngToLayerPoint: () => ({ x: 100, y: 100 }),
+      layerPointToLatLng: () => ({ lat: 16.07, lng: 108.22 }),
       fitBounds: vi.fn(),
     }),
     useMapEvents: vi.fn(),
@@ -128,14 +130,13 @@ describe("PlacesMap marker keyboard accessibility", () => {
     expect(placeMarker?.getAttribute("data-keyboard")).toBe("true")
   })
 
-  it("chứa thuộc tính a11y (role='button', tabindex='0', aria-label) trong divIcon HTML", () => {
+  it("không lồng role='button' hay tabindex bên trong divIcon (mỗi marker chỉ 1 điểm dừng Tab)", () => {
     const { getAllByTestId } = render(<PlacesMap places={MOCK_PLACES} />)
     const markers = getAllByTestId("map-marker")
     const placeMarker = markers.find((m) => m.getAttribute("data-title") === "Cà phê Long")
 
-    const pinEl = placeMarker?.querySelector('[role="button"][tabindex="0"]')
-    expect(pinEl).toBeInTheDocument()
-    expect(pinEl?.getAttribute("aria-label")).toBe("Cà phê Long")
+    expect(placeMarker?.firstElementChild?.querySelector('[role="button"], [tabindex]')).toBeNull()
+    expect(placeMarker?.getAttribute("aria-label")).toBe("Cà phê Long")
   })
 
   it("gọi onSelectPlace khi người dùng nhấn Enter hoặc Space trên marker", () => {

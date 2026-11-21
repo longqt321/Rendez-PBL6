@@ -1,4 +1,4 @@
-import { MapContainer, Marker, TileLayer } from "react-leaflet"
+import { MapContainer, Marker } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { ExternalLinkIcon, MapPinIcon } from "lucide-react"
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { formatCoordinate } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import { OSM_TILE_LAYER_PROPS } from "../lib/map-tiles"
+import { ResilientTileLayer } from "./resilient-tile-layer"
 import { formatLocation } from "../lib/format-location"
 import type { Place } from "../types/place"
 
@@ -58,7 +58,7 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
   })
   const shouldRenderMap = entry?.isIntersecting === true
 
-  if (!place.lat || !place.lng) {
+  if (place.lat === undefined || place.lng === undefined) {
     return (
       <Empty className="h-56 w-full flex-none border bg-muted">
         <EmptyHeader>
@@ -85,12 +85,13 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
       >
         {shouldRenderMap ? (
           <MapContainer
+            key={place.id}
             center={position}
             zoom={16}
             scrollWheelZoom={false}
             className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
           >
-            <TileLayer {...OSM_TILE_LAYER_PROPS} />
+            <ResilientTileLayer />
             <Marker position={position} icon={createDetailMarkerIcon()} />
           </MapContainer>
         ) : null}

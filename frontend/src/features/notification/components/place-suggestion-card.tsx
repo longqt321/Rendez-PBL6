@@ -58,8 +58,8 @@ export function PlaceSuggestionCard({ notification }: PlaceSuggestionCardProps) 
         </p>
 
         <p className="text-xs">
-          Bài đăng của bạn chưa gắn địa điểm. Hệ thống tìm thấy {notification.suggestions.length}{" "}
-          địa điểm phù hợp — chọn đúng quán để đưa lên Khám phá.
+          Bạn có muốn gắn một trong {notification.suggestions.length} quán gợi ý dưới đây vào bài
+          viết này không?
         </p>
 
         <ItemGroup className="gap-2">

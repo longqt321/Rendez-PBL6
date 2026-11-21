@@ -5,17 +5,20 @@ export function SectionHeading({
   children,
   icon,
   className,
+  id,
   as: Tag = "h2",
 }: Readonly<{
   children: ReactNode
   icon?: ReactNode
   className?: string
+  id?: string
   as?: "h2" | "h3" | "p"
 }>) {
   return (
     <Tag
+      id={id}
       className={cn(
-        "flex items-center gap-1.5 font-heading text-sm font-bold tracking-wide uppercase",
+        "flex items-center gap-2 font-heading text-lg font-bold tracking-tight",
         className,
       )}
     >

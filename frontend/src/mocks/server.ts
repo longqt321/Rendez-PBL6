@@ -13,6 +13,15 @@ import { priceLevelLabel } from "@/features/places/lib/price-level"
 import type { Post } from "@/features/social/types/post"
 import type { Comment, CommentSort } from "@/features/social/types/comment"
 import type { Page } from "@/types/api"
+import type {
+  AdminOverview,
+  AdminPlace,
+  AdminReport,
+  AdminReportStatus,
+  AdminUser,
+  AuditLogEntry,
+  UserRole,
+} from "@rendez/schema"
 import { MOCK_NOTIFICATIONS } from "./fixtures/notifications"
 import { MOCK_PLACES, type MockPlace } from "./fixtures/cold-start-places"
 import { MOCK_POSTS } from "./fixtures/posts"
@@ -41,6 +50,9 @@ import {
   MAX_ROOM_NAME_LENGTH,
   MIN_CAPTION_LENGTH,
   POST_IMAGE_INVALID_MESSAGE,
+  updateAdminPlaceInputSchema,
+  updateAdminReportInputSchema,
+  updateAdminUserInputSchema,
   validatePostImageUrls,
 } from "@rendez/schema"
 import type {
@@ -130,7 +142,43 @@ const db = {
   roomTokens: {} as Record<string, string>,
 
   authenticated: env.devBypassAuth,
+
+  userAdminState: {} as Record<
+    string,
+    { role: UserRole; bannedAt: string | null; banReason: string | null }
+  >,
+
+  placeModerationState: {} as Record<
+    string,
+    { status: string | null; note: string | null; moderatedAt: string | null }
+  >,
+
+  auditLogs: [] as AuditLogEntry[],
 }
+
+const seedPlace = db.places[0]
+if (seedPlace) {
+  db.reports.push({
+    id: "report-seed-1",
+    placeId: seedPlace.id,
+    reason: "wrong-info",
+    detail: "Giờ mở cửa cuối tuần thay đổi từ 08:00.",
+    createdAt: new Date(Date.now() - 3 * 3600_000).toISOString(),
+    updatedAt: new Date(Date.now() - 3 * 3600_000).toISOString(),
+    reporterId: "u-lan",
+    status: "pending",
+  })
+}
+db.auditLogs.push({
+  id: "audit-seed-1",
+  action: "place.publish",
+  entity: "place",
+  entityId: seedPlace?.id ?? null,
+  meta: { name: seedPlace?.name ?? "Địa điểm" },
+  ip: "127.0.0.1",
+  createdAt: new Date(Date.now() - 3600_000).toISOString(),
+  actor: { id: "u-me", name: "Minh Anh", handle: "minhanh.eats", role: "admin" },
+})
 
 // Tổng hợp review seed vào rating/reviewCount của place — nếu không, place
 // hiện rating=0 dù đã có review, lệch với số review hiển thị trên trang quán.
@@ -156,6 +204,93 @@ let userSeq = 0
 let roomSeq = 0
 let roomMemberSeq = 0
 let roomProposalSeq = 0
+let auditLogSeq = 1
+
+function requireMockRole(config: InternalAxiosRequestConfig, roles: UserRole[]): UserRole {
+  if (!db.authenticated) unauthorized(config, "Chưa đăng nhập")
+  const role: UserRole = db.userAdminState[db.me.id]?.role ?? db.me.role ?? "user"
+  if (!roles.includes(role)) forbidden(config, "Bạn không có quyền truy cập khu vực này")
+  return role
+}
+
+function appendMockAuditLog(
+  action: string,
+  entity: string,
+  entityId: string | null,
+  meta: Record<string, unknown>,
+): void {
+  const actorRole: UserRole = db.userAdminState[db.me.id]?.role ?? db.me.role ?? "admin"
+  db.auditLogs.unshift({
+    id: `audit-${++auditLogSeq}`,
+    action,
+    entity,
+    entityId,
+    meta,
+    ip: "127.0.0.1",
+    createdAt: new Date().toISOString(),
+    actor: { id: db.me.id, name: db.me.name, handle: db.me.handle, role: actorRole },
+  })
+}
+
+function toMockAdminReport(report: MockReport): AdminReport {
+  const place = findPlace(report.placeId)
+  const reporter = db.users[report.reporterId]
+  return {
+    id: report.id,
+    placeId: report.placeId,
+    placeName: place?.name ?? report.placeId,
+    placePublished: place ? place.publishedAt !== null : false,
+    placeStatus: place?.status ?? "unknown",
+    reporterName: reporter?.name ?? "Người dùng",
+    reporterHandle: reporter?.handle ?? "user",
+    reason: report.reason,
+    detail: report.detail,
+    status: report.status ?? "pending",
+    createdAt: report.createdAt,
+    updatedAt: report.updatedAt ?? report.createdAt,
+  }
+}
+
+function toMockAdminPlace(place: MockPlace): AdminPlace {
+  const mod = db.placeModerationState[place.id]
+  return {
+    id: place.id,
+    name: place.name,
+    address: place.address,
+    district: place.district ?? null,
+    category: place.category,
+    priceLevel: place.priceLevel,
+    status: place.status ?? "unknown",
+    lat: place.lat ?? null,
+    lng: place.lng ?? null,
+    publishedAt: place.publishedAt,
+    moderationStatus: mod?.status ?? null,
+    moderationNote: mod?.note ?? null,
+    moderatedAt: mod?.moderatedAt ?? null,
+    reviewCount: place.reviewCount,
+    reportCount: db.reports.filter((item) => item.placeId === place.id).length,
+    createdAt: place.publishedAt ?? "2026-11-10T00:00:00Z",
+  }
+}
+
+function toMockAdminUser(userId: string): AdminUser {
+  const user = db.users[userId]
+  const adminMeta = db.userAdminState[userId]
+  const account = db.accounts.find((acc) => acc.userId === userId)
+  return {
+    id: user.id,
+    name: user.name,
+    handle: user.handle,
+    email: account?.email ?? `${user.handle}@rendez.test`,
+    emailVerified: account?.verified ?? true,
+    role: adminMeta?.role ?? user.role ?? (user.id === "u-me" ? "admin" : "user"),
+    bannedAt: adminMeta?.bannedAt ?? null,
+    banReason: adminMeta?.banReason ?? null,
+    postCount: db.posts.filter((p) => p.author.id === user.id).length,
+    reviewCount: db.reviews.filter((r) => r.author.id === user.id).length,
+    createdAt: user.joinedAt,
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Serialize: chuyển bản ghi nội bộ thành đúng hợp đồng API
@@ -2209,6 +2344,258 @@ const routes: Route[] = [
       mockMetrics.routes.clear()
       mockMetrics.startedAt = Date.now()
       return { reset: true }
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // Quản trị `/admin/*`
+  // -------------------------------------------------------------------------
+  {
+    method: "get",
+    pattern: /^\/admin\/overview$/,
+    handler: (config) => {
+      requireMockRole(config, ["admin", "moderator"])
+      const byEndpoint = [...mockMetrics.routes.entries()]
+        .map(([route, count]) => ({ route, count }))
+        .sort((a, b) => b.count - a.count)
+      const userList = Object.keys(db.users)
+        .filter((id) => !db.deletedUserIds.has(id))
+        .map(toMockAdminUser)
+      const reports = db.reports.map(toMockAdminReport)
+      return {
+        uptimeMs: Date.now() - mockMetrics.startedAt,
+        totalQueries: [...mockMetrics.routes.values()].reduce((sum, count) => sum + count, 0),
+        avgLatencyMs: RESPONSE_DELAY_MS + scenario.delayMs,
+        cacheHitRatio: 0,
+        byEndpoint,
+        venues: {
+          total: db.places.length,
+          published: db.places.filter((p) => p.publishedAt !== null).length,
+          unpublished: db.places.filter((p) => p.publishedAt === null).length,
+          closed: db.places.filter((p) => p.status === "closed").length,
+          withImages: db.places.filter((p) => p.imageUrl !== undefined).length,
+          withTags: db.places.filter((p) => p.tags.length > 0).length,
+          withHours: db.places.filter((p) => p.openingHours !== undefined).length,
+        },
+        reports: {
+          pending: reports.filter((r) => r.status === "pending").length,
+          reviewed: reports.filter((r) => r.status === "reviewed").length,
+          dismissed: reports.filter((r) => r.status === "dismissed").length,
+          total: reports.length,
+        },
+        users: {
+          total: userList.length,
+          active: userList.filter((u) => u.bannedAt === null).length,
+          banned: userList.filter((u) => u.bannedAt !== null).length,
+          admins: userList.filter((u) => u.role === "admin").length,
+          moderators: userList.filter((u) => u.role === "moderator").length,
+        },
+        activity: {
+          auditLogs24h: db.auditLogs.length,
+          interactionEvents24h: 0,
+        },
+      } satisfies AdminOverview
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/admin\/reports$/,
+    handler: (config) => {
+      requireMockRole(config, ["admin", "moderator"])
+      const { status = "pending", cursor } = query(config)
+      const filtered = db.reports
+        .map(toMockAdminReport)
+        .filter((r) => status === "all" || r.status === (status as AdminReportStatus))
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+      return paginate(filtered, cursor ?? null, 20)
+    },
+  },
+  {
+    method: "patch",
+    pattern: /^\/admin\/reports\/([^/]+)$/,
+    handler: (config, [reportId]) => {
+      requireMockRole(config, ["admin", "moderator"])
+      const report = db.reports.find((item) => item.id === reportId)
+      if (!report) notFound(config, "Không tìm thấy báo cáo")
+      const parsed = updateAdminReportInputSchema.safeParse(parseBody(config))
+      if (!parsed.success)
+        badRequest(config, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
+      const now = new Date().toISOString()
+      report.status = parsed.data.status
+      report.updatedAt = now
+      const place = findPlace(report.placeId)
+      if (place) {
+        if (parsed.data.placeAction === "unpublish") place.publishedAt = null
+        else if (parsed.data.placeAction === "close") place.status = "closed"
+        db.placeModerationState[place.id] = {
+          status: parsed.data.placeAction !== "none" ? parsed.data.placeAction : "report_reviewed",
+          note: parsed.data.moderationNote ?? null,
+          moderatedAt: now,
+        }
+      }
+      appendMockAuditLog("report.resolve", "place_report", report.id, {
+        placeId: report.placeId,
+        placeName: place?.name ?? report.placeId,
+        nextStatus: parsed.data.status,
+        placeAction: parsed.data.placeAction,
+      })
+      return toMockAdminReport(report)
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/admin\/places$/,
+    handler: (config) => {
+      requireMockRole(config, ["admin", "moderator"])
+      const { q, visibility = "all", district, cursor } = query(config)
+      const needle = typeof q === "string" ? normalizeText(q.trim()) : ""
+      const filtered = db.places
+        .filter((p) => {
+          if (visibility === "published" && (p.publishedAt === null || p.status === "closed"))
+            return false
+          if (visibility === "unpublished" && p.publishedAt !== null) return false
+          if (visibility === "closed" && p.status !== "closed") return false
+          if (district && district !== "all" && p.district !== district) return false
+          if (
+            needle &&
+            !normalizeText(`${p.name} ${p.address} ${p.district ?? ""}`).includes(needle)
+          ) {
+            return false
+          }
+          return true
+        })
+        .map(toMockAdminPlace)
+      return paginate(filtered, cursor ?? null, 20)
+    },
+  },
+  {
+    method: "patch",
+    pattern: /^\/admin\/places\/([^/]+)$/,
+    handler: (config, [placeId]) => {
+      requireMockRole(config, ["admin", "moderator"])
+      const place = findPlace(placeId)
+      if (!place) notFound(config, "Không tìm thấy địa điểm")
+      const parsed = updateAdminPlaceInputSchema.safeParse(parseBody(config))
+      if (!parsed.success)
+        badRequest(config, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
+      const now = new Date().toISOString()
+      const input = parsed.data
+      if (input.published !== undefined)
+        place.publishedAt = input.published ? (place.publishedAt ?? now) : null
+      if (input.status !== undefined) place.status = input.status
+      if (input.name !== undefined) place.name = input.name
+      if (input.address !== undefined) place.address = input.address
+      if (input.district !== undefined) place.district = input.district ?? undefined
+      if (input.category !== undefined) place.category = input.category
+      if (input.priceLevel !== undefined) place.priceLevel = input.priceLevel
+      if (input.lat !== undefined) place.lat = input.lat ?? undefined
+      if (input.lng !== undefined) place.lng = input.lng ?? undefined
+      db.placeModerationState[place.id] = {
+        status: "edited",
+        note: input.moderationNote ?? null,
+        moderatedAt: now,
+      }
+      appendMockAuditLog("place.update", "place", place.id, { name: place.name })
+      return toMockAdminPlace(place)
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/admin\/users$/,
+    handler: (config) => {
+      requireMockRole(config, ["admin"])
+      const { q, role = "all", status = "all", cursor } = query(config)
+      const needle = typeof q === "string" ? q.trim().toLowerCase() : ""
+      const items = Object.keys(db.users)
+        .filter((id) => !db.deletedUserIds.has(id))
+        .map(toMockAdminUser)
+        .filter((u) => {
+          if (role !== "all" && u.role !== role) return false
+          if (status === "active" && u.bannedAt !== null) return false
+          if (status === "banned" && u.bannedAt === null) return false
+          if (
+            needle &&
+            !u.name.toLowerCase().includes(needle) &&
+            !u.handle.toLowerCase().includes(needle) &&
+            !u.email.toLowerCase().includes(needle)
+          ) {
+            return false
+          }
+          return true
+        })
+      return paginate(items, cursor ?? null, 20)
+    },
+  },
+  {
+    method: "patch",
+    pattern: /^\/admin\/users\/([^/]+)$/,
+    handler: (config, [targetId]) => {
+      requireMockRole(config, ["admin"])
+      if (!db.users[targetId] || db.deletedUserIds.has(targetId)) {
+        notFound(config, "Không tìm thấy người dùng")
+      }
+      const parsed = updateAdminUserInputSchema.safeParse(parseBody(config))
+      if (!parsed.success)
+        badRequest(config, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
+      if (targetId === db.me.id && parsed.data.banned === true) {
+        badRequest(config, "Không thể tự khoá tài khoản của chính mình")
+      }
+      if (targetId === db.me.id && parsed.data.role && parsed.data.role !== "admin") {
+        badRequest(config, "Không thể tự hạ quyền của chính mình")
+      }
+      const current = toMockAdminUser(targetId)
+      const nextRole = parsed.data.role ?? current.role
+      const nextBannedAt =
+        parsed.data.banned === true
+          ? (current.bannedAt ?? new Date().toISOString())
+          : parsed.data.banned === false
+            ? null
+            : current.bannedAt
+      const nextBanReason =
+        parsed.data.banned === false
+          ? null
+          : parsed.data.banReason !== undefined
+            ? parsed.data.banReason
+            : current.banReason
+      db.userAdminState[targetId] = {
+        role: nextRole,
+        bannedAt: nextBannedAt,
+        banReason: nextBanReason,
+      }
+      appendMockAuditLog(
+        parsed.data.banned !== undefined
+          ? parsed.data.banned
+            ? "user.ban"
+            : "user.unban"
+          : "user.role_change",
+        "user",
+        targetId,
+        { handle: current.handle, roleFrom: current.role, roleTo: nextRole },
+      )
+      return toMockAdminUser(targetId)
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/admin\/audit-logs$/,
+    handler: (config) => {
+      requireMockRole(config, ["admin", "moderator"])
+      const { entity = "all", action = "all", q, cursor } = query(config)
+      const needle = typeof q === "string" ? q.trim().toLowerCase() : ""
+      const items = db.auditLogs.filter((entry) => {
+        if (entity !== "all" && entry.entity !== entity) return false
+        if (action !== "all" && entry.action !== action) return false
+        if (
+          needle &&
+          !entry.action.toLowerCase().includes(needle) &&
+          !(entry.entityId ?? "").toLowerCase().includes(needle) &&
+          !(entry.actor?.handle ?? "").toLowerCase().includes(needle)
+        ) {
+          return false
+        }
+        return true
+      })
+      return paginate(items, cursor ?? null, 20)
     },
   },
 ]

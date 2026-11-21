@@ -31,13 +31,13 @@ export function useUserLocation() {
     if (!requested || !geo?.error) return null
     switch (geo.error.code) {
       case geo.error.PERMISSION_DENIED:
-        return "Bạn đã từ chối quyền vị trí — đang dùng vị trí trung tâm Đà Nẵng."
+        return "Bạn đã từ chối quyền vị trí. Đang dùng vị trí trung tâm Đà Nẵng."
       case geo.error.POSITION_UNAVAILABLE:
-        return "Không xác định được vị trí — đang dùng vị trí trung tâm Đà Nẵng."
+        return "Không xác định được vị trí. Đang dùng vị trí trung tâm Đà Nẵng."
       case geo.error.TIMEOUT:
-        return "Lấy vị trí quá lâu — đang dùng vị trí trung tâm Đà Nẵng."
+        return "Lấy vị trí quá lâu. Đang dùng vị trí trung tâm Đà Nẵng."
       default:
-        return "Không lấy được toạ độ GPS — đang dùng vị trí trung tâm Đà Nẵng."
+        return "Không lấy được toạ độ GPS. Đang dùng vị trí trung tâm Đà Nẵng."
     }
   }, [requested, geo])
 

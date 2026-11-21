@@ -2,18 +2,9 @@ import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router"
 import { ArrowLeftIcon, LockIcon, LogInIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react"
 import { toast } from "sonner"
-import { Badge } from "@/components/ui/badge"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
+import { PageContainer, SurfaceCard } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
-import { Card, CardContent } from "@/components/ui/card"
+import { ShareButton } from "@/components/shared/share-button"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,19 +15,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Badge } from "@/components/ui/badge"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Item, ItemGroup } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { ShareButton } from "@/components/shared/share-button"
-import { isNotFoundError, isUnauthorizedError } from "@/lib/axios"
-import { useMe } from "@/features/profile/hooks/use-me"
 import { PlaceCard } from "@/features/places/components/place-card"
+import { PlaceCardSkeleton } from "@/features/places/components/place-card-skeleton"
 import { usePlace } from "@/features/places/hooks/use-place"
-import { useCollection } from "../hooks/use-collection"
-import { useDeleteCollection, useSetCollectionPlace } from "../hooks/use-collections"
+import { useMe } from "@/features/profile/hooks/use-me"
+import { isNotFoundError, isUnauthorizedError } from "@/lib/axios"
 import { CollectionLikeButton } from "../components/collection-like-button"
 import { EditCollectionDialog } from "../components/edit-collection-dialog"
+import { useCollection } from "../hooks/use-collection"
+import { useDeleteCollection, useSetCollectionPlace } from "../hooks/use-collections"
 import type { Collection } from "../types/collection"
 
 interface CollectionPlaceItemProps {
@@ -50,11 +51,7 @@ function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPla
   const setPlace = useSetCollectionPlace()
 
   if (isPending) {
-    return (
-      <div className="flex h-72 items-center justify-center rounded-md border bg-card text-sm text-muted-foreground">
-        <Spinner aria-label="Đang tải địa điểm" /> Đang tải…
-      </div>
-    )
+    return <PlaceCardSkeleton imageHeight={200} />
   }
   if (!place) return null
 
@@ -78,7 +75,7 @@ function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPla
               <Button
                 variant="outline"
                 size="icon-sm"
-                className="absolute top-2 right-2 z-10 bg-background/90 backdrop-blur"
+                className="absolute top-2.5 right-2.5 z-10 bg-background/90 backdrop-blur"
                 aria-label={`Bỏ ${place.name} khỏi bộ sưu tập`}
                 disabled={setPlace.isPending}
                 onClick={handleRemove}
@@ -94,10 +91,9 @@ function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPla
   )
 }
 
-/** Trạng thái không tìm thấy bộ sưu tập — dùng khi URL thiếu `id`. */
 function CollectionNotFound() {
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+    <PageContainer size="wide">
       <h1 className="sr-only">Không tìm thấy bộ sưu tập</h1>
       <Empty className="mt-8">
         <EmptyHeader>
@@ -105,7 +101,7 @@ function CollectionNotFound() {
           <EmptyDescription>Bộ sưu tập có thể đã bị xoá hoặc link không đúng.</EmptyDescription>
         </EmptyHeader>
       </Empty>
-    </div>
+    </PageContainer>
   )
 }
 
@@ -116,25 +112,28 @@ interface CollectionHeaderCardProps {
 
 function CollectionHeaderCard({ collection, onDeleteClick }: CollectionHeaderCardProps) {
   return (
-    <Card className="mt-4">
-      <CardContent className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <h1 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-bold tracking-tight">
-            {collection.name}
+    <SurfaceCard variant="accent" padding="lg" className="mt-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+              {collection.name}
+            </h1>
             {collection.isPrivate ? (
               <Badge variant="secondary" className="gap-1 text-xs">
                 <LockIcon className="size-3" aria-hidden="true" />
                 Riêng tư
               </Badge>
             ) : null}
-          </h1>
+          </div>
           {collection.description ? (
-            <p className="text-sm break-words whitespace-pre-line text-muted-foreground">
+            <p className="max-w-2xl text-sm leading-relaxed break-words whitespace-pre-line text-muted-foreground">
               {collection.description}
             </p>
           ) : null}
-          <p className="text-sm text-muted-foreground">
-            {collection.placeIds.length} địa điểm ·{" "}
+          <p className="text-sm text-muted-foreground tabular-nums">
+            <span className="font-semibold text-foreground">{collection.placeIds.length}</span> địa
+            điểm ·{" "}
             {collection.isMine ? (
               collection.owner.name
             ) : (
@@ -174,15 +173,15 @@ function CollectionHeaderCard({ collection, onDeleteClick }: CollectionHeaderCar
             </>
           ) : null}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </SurfaceCard>
   )
 }
 
 function CollectionPlacesList({ collection }: Readonly<{ collection: Collection }>) {
   if (collection.placeIds.length === 0) {
     return (
-      <Empty className="mt-8">
+      <Empty className="mt-8 border border-dashed border-border">
         <EmptyHeader>
           <EmptyTitle>Bộ sưu tập đang trống</EmptyTitle>
           <EmptyDescription>
@@ -197,7 +196,7 @@ function CollectionPlacesList({ collection }: Readonly<{ collection: Collection 
     )
   }
   return (
-    <ItemGroup className="mt-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ItemGroup className="mt-6 grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {collection.placeIds.map((placeId) => (
         <Item key={placeId} role="listitem" className="h-full border-0 p-0 [&>*]:w-full">
           <CollectionPlaceItem
@@ -211,18 +210,12 @@ function CollectionPlacesList({ collection }: Readonly<{ collection: Collection 
   )
 }
 
-/** Trang chi tiết bộ sưu tập — `/collections/:id`. */
 export function CollectionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: collection, isPending, isError, error, refetch } = useCollection(id ?? "")
   const deleteCollection = useDeleteCollection()
   const [confirming, setConfirming] = useState(false)
-  /**
-   * Bộ sưu tập công khai xem được khi chưa đăng nhập. Guest không được thấy
-   * breadcrumb/nút "Về trang Đã lưu" (`/saved` cần phiên → 401 giả "lỗi mạng");
-   * thay bằng CTA đăng nhập quay lại đúng bộ sưu tập này.
-   */
   const { data: me, error: meError } = useMe()
   const isGuest = !me && isUnauthorizedError(meError)
 
@@ -230,20 +223,19 @@ export function CollectionDetailPage() {
 
   if (isPending) {
     return (
-      <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+      <PageContainer size="wide">
         <h1 className="sr-only">Chi tiết bộ sưu tập</h1>
         <p className="py-16 text-center text-sm text-muted-foreground">
           <Spinner aria-label="Đang tải bộ sưu tập" /> Đang tải bộ sưu tập…
         </p>
-      </div>
+      </PageContainer>
     )
   }
 
   if (isError || !collection) {
-    // 404 = bộ sưu tập không tồn tại; lỗi khác (mạng/5xx) = thử lại được.
     const notFound = isNotFoundError(error) || (!isError && !collection)
     return (
-      <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+      <PageContainer size="wide">
         <h1 className="sr-only">{notFound ? "Không tìm thấy bộ sưu tập" : "Lỗi tải bộ sưu tập"}</h1>
         <ErrorState
           className="mt-8"
@@ -257,7 +249,7 @@ export function CollectionDetailPage() {
                 }
           }
         />
-      </div>
+      </PageContainer>
     )
   }
 
@@ -277,7 +269,7 @@ export function CollectionDetailPage() {
   const loginNextUrl = `/login?next=${encodeURIComponent(targetPath)}`
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+    <PageContainer size="wide">
       {isGuest ? null : (
         <Breadcrumb>
           <BreadcrumbList>
@@ -341,6 +333,6 @@ export function CollectionDetailPage() {
           Về trang Đã lưu
         </Button>
       )}
-    </div>
+    </PageContainer>
   )
 }

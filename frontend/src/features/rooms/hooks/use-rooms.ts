@@ -2,13 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { useSessionStorage } from "@uidotdev/usehooks"
 import { ApiError, api } from "@/lib/axios"
 import { env } from "@/lib/env"
+import { ACTIVE_ROOM_KEY } from "../lib/room"
 import type { Room } from "../types/room"
 
 export type JoinRoomStatus = "joined" | "already" | "not-found" | "duplicate"
 
 export type RoomStatus = "loading" | "ready" | "not-found" | "error"
-
-const ACTIVE_ROOM_KEY = "danang-room-active"
 
 const POLL_INTERVAL_MS = 5_000
 

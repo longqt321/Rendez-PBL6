@@ -27,6 +27,41 @@ describe("checkApiContract", () => {
         next: null,
       }),
     ).toBeNull()
+    expect(
+      checkApiContract("GET", "/places/map", {
+        items: [place],
+        total: 1,
+      }),
+    ).toBeNull()
+    expect(
+      checkApiContract("GET", "/places/saved", {
+        items: [place],
+        next: null,
+      }),
+    ).toBeNull()
+    expect(
+      checkApiContract("GET", "/places/recommended", {
+        items: [place],
+        next: null,
+      }),
+    ).toBeNull()
+    expect(
+      checkApiContract("GET", "/places/daily-picks", {
+        date: "2026-11-19",
+        items: [{ place, reason: "Gợi ý" }],
+      }),
+    ).toBeNull()
+  })
+
+  it("các path cố định dưới /places không bị /places/:id nuốt", () => {
+    expect(findContract("GET", "/places/map")?.pattern.source).toBe(String.raw`^\/places\/map$`)
+    expect(findContract("GET", "/places/saved")?.pattern.source).toBe(String.raw`^\/places\/saved$`)
+    expect(findContract("GET", "/places/daily-picks")?.pattern.source).toBe(
+      String.raw`^\/places\/daily-picks$`,
+    )
+    expect(findContract("GET", "/places/recommended")?.pattern.source).toBe(
+      String.raw`^\/places\/recommended$`,
+    )
   })
 
   it("response thiếu field → safeParse fail với thông điệp zod", () => {

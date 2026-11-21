@@ -1,1 +1,15 @@
 bunx lint-staged
+
+# Anti-AI-slop hook: chặn eyebrow heading thừa và em-dash (—) trong UI copy
+staged_tsx=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^frontend/src/(features|components)/.*\.tsx$' | grep -v '\.test\.tsx$' || true)
+if [ -n "$staged_tsx" ]; then
+  if grep -nE 'eyebrow=' $staged_tsx; then
+    echo "ERROR: Phát hiện eyebrow= (AI slop). Xoá eyebrow thừa trước khi commit."
+    exit 1
+  fi
+  # Kiểm tra em-dash (—) trong dòng code/JSX không phải comment (// hoặc /* hoặc * hoặc {/*)
+  if grep -n '—' $staged_tsx | grep -vE ':[0-9]+:[[:space:]]*(//|/\*|\*|\{/\*)' | grep -vE '">"|"—"' ; then
+    echo "ERROR: Phát hiện dấu em-dash (—) trong UI copy (AI slop). Thay bằng dấu câu chuẩn."
+    exit 1
+  fi
+fi

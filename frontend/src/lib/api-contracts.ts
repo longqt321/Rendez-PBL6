@@ -10,8 +10,14 @@ import { userSuggestionsSchema, userProfileSchema } from "@/features/profile/typ
 import { commentSchema } from "@/features/social/types/comment.schema"
 import { postSchema } from "@/features/social/types/post.schema"
 import {
+  adminOverviewSchema,
+  adminPlaceSchema,
+  adminReportSchema,
+  adminUserSchema,
   appliedProposalSchema,
+  auditLogSchema,
   createRoomResponseSchema,
+  dailyPicksSchema,
   joinRoomResponseSchema,
   roomSchema,
 } from "@rendez/schema"
@@ -28,6 +34,11 @@ const suggestionsResponseSchema = z.object({
   suggestions: z.array(placeSuggestionSchema),
 })
 
+const mapPlacesResponseSchema = z.object({
+  items: z.array(placeSchema),
+  total: z.number(),
+})
+
 const mediaTicketSchema = z.object({
   uploadUrl: z.string(),
   publicUrl: z.string(),
@@ -39,6 +50,12 @@ const mediaTicketSchema = z.object({
 export const API_CONTRACTS: ApiContract[] = [
   // Địa điểm — mục cụ thể phải đứng trước `:id`.
   { pattern: /^\/places\/suggestions$/, method: "GET", schema: suggestionsResponseSchema },
+  // Các route cố định dưới đây phải đứng TRƯỚC `/places/:id`, nếu không pattern
+  // `:id` sẽ nuốt "daily-picks" / "recommended" / "map" / "saved" và validate sai shape.
+  { pattern: /^\/places\/daily-picks$/, method: "GET", schema: dailyPicksSchema },
+  { pattern: /^\/places\/recommended$/, method: "GET", schema: pageSchema(placeSchema) },
+  { pattern: /^\/places\/map$/, method: "GET", schema: mapPlacesResponseSchema },
+  { pattern: /^\/places\/saved$/, method: "GET", schema: pageSchema(placeSchema) },
   { pattern: /^\/places\/[^/]+\/reviews$/, method: "GET", schema: pageSchema(reviewSchema) },
   { pattern: /^\/places\/[^/]+\/reviews$/, method: "POST", schema: reviewSchema },
   { pattern: /^\/places\/[^/]+\/reports$/, method: "POST", schema: placeReportSchema },
@@ -103,6 +120,16 @@ export const API_CONTRACTS: ApiContract[] = [
   { pattern: /^\/rooms\/[^/]+\/members\/[^/]+$/, method: "DELETE", schema: roomSchema },
   { pattern: /^\/rooms\/[^/]+$/, method: "GET", schema: roomSchema },
   { pattern: /^\/rooms$/, method: "POST", schema: createRoomResponseSchema },
+
+  // Quản trị và nhật ký hoạt động.
+  { pattern: /^\/admin\/overview$/, method: "GET", schema: adminOverviewSchema },
+  { pattern: /^\/admin\/reports$/, method: "GET", schema: pageSchema(adminReportSchema) },
+  { pattern: /^\/admin\/reports\/[^/]+$/, method: "PATCH", schema: adminReportSchema },
+  { pattern: /^\/admin\/places$/, method: "GET", schema: pageSchema(adminPlaceSchema) },
+  { pattern: /^\/admin\/places\/[^/]+$/, method: "PATCH", schema: adminPlaceSchema },
+  { pattern: /^\/admin\/users$/, method: "GET", schema: pageSchema(adminUserSchema) },
+  { pattern: /^\/admin\/users\/[^/]+$/, method: "PATCH", schema: adminUserSchema },
+  { pattern: /^\/admin\/audit-logs$/, method: "GET", schema: pageSchema(auditLogSchema) },
 ]
 
 export function findContract(method: string, url: string): ApiContract | undefined {

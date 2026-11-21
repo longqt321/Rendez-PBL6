@@ -1,32 +1,44 @@
 import { HistoryIcon } from "lucide-react"
+import { SectionHeading } from "@/components/shared/section-heading"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 import { useRecentlyViewed } from "../hooks/use-recently-viewed"
 import { PlaceCard } from "./place-card"
 
 export function RecentlyViewedSection() {
   const { data, isPending, isError } = useRecentlyViewed()
 
-  if (isError) return null
-  if (isPending) return null
-  if (!data || data.length === 0) return null
+  if (isError || isPending || !data || data.length === 0) return null
 
   return (
     <section aria-labelledby="recently-viewed-heading" className="mt-6">
-      <div className="flex items-baseline justify-between gap-2">
-        <h2
-          id="recently-viewed-heading"
-          className="flex items-center gap-2 font-heading text-lg font-bold"
-        >
-          <HistoryIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-          Bạn vừa xem
-        </h2>
-      </div>
-      <ul className="mt-3 grid grid-cols-2 items-start gap-4 md:grid-cols-3">
-        {data.map((place) => (
-          <li key={place.id}>
-            <PlaceCard place={place} />
-          </li>
-        ))}
-      </ul>
+      <Carousel opts={{ align: "start" }} className="w-full">
+        <div className="flex items-center justify-between gap-2">
+          <SectionHeading
+            id="recently-viewed-heading"
+            icon={<HistoryIcon className="size-4 text-muted-foreground" aria-hidden="true" />}
+          >
+            Bạn vừa xem
+          </SectionHeading>
+          <div className="flex items-center gap-1.5">
+            <CarouselPrevious className="static size-8 translate-y-0" />
+            <CarouselNext className="static size-8 translate-y-0" />
+          </div>
+        </div>
+
+        <CarouselContent className="mt-3 -ml-4">
+          {data.map((place) => (
+            <CarouselItem key={place.id} className="basis-[85%] pl-4 sm:basis-1/2 lg:basis-[42%]">
+              <PlaceCard place={place} variant="horizontal" />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
     </section>
   )
 }

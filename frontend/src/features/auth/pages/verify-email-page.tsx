@@ -29,7 +29,7 @@ export function VerifyEmailPage() {
     return (
       <AuthLayout
         title="Email đã được xác thực"
-        description="Tài khoản của bạn đã sẵn sàng — nếu vừa bấm link trong email, bạn đã được đăng nhập."
+        description="Tài khoản của bạn đã sẵn sàng. Nếu vừa bấm liên kết trong email, bạn đã được đăng nhập."
         footer={
           <Link to="/login" className="text-primary underline-offset-4 hover:underline">
             Sang trang đăng nhập

@@ -24,7 +24,19 @@ export function snapBounds(bounds: MapBounds): MapBounds {
   }
 }
 
-export function mapPlacesQueryKey(filters: DiscoverFilters, snapped: MapBounds) {
+export function mapPlacesQueryKey(filters: DiscoverFilters, snapped: MapBounds | null) {
+  const filterParts = [
+    filters.category,
+    filters.district ?? "all",
+    filters.query,
+    filters.priceMax ?? "all",
+    filters.room,
+  ] as const
+
+  if (!snapped) {
+    return ["places", "map", "fit", ...filterParts] as const
+  }
+
   return [
     "places",
     "map",
@@ -32,19 +44,22 @@ export function mapPlacesQueryKey(filters: DiscoverFilters, snapped: MapBounds) 
     snapped.minLat,
     snapped.maxLng,
     snapped.maxLat,
-    filters.category,
-    filters.district ?? "all",
-    filters.query,
-    filters.room,
+    ...filterParts,
   ] as const
 }
 
-export function useMapPlaces(filters: DiscoverFilters, bounds: MapBounds | null) {
+export function useMapPlaces(
+  filters: DiscoverFilters,
+  bounds: MapBounds | null,
+  options?: { allowUnbounded?: boolean },
+) {
   const snapped = bounds ? snapBounds(bounds) : null
+  const allowUnbounded = options?.allowUnbounded === true
+  const shouldFetch = snapped !== null || allowUnbounded
 
   return useQuery({
-    queryKey: snapped ? mapPlacesQueryKey(filters, snapped) : ["places", "map", "idle"],
-    queryFn: snapped ? ({ signal }) => getMapPlaces(filters, snapped, signal) : skipToken,
+    queryKey: shouldFetch ? mapPlacesQueryKey(filters, snapped) : ["places", "map", "idle"],
+    queryFn: shouldFetch ? ({ signal }) => getMapPlaces(filters, snapped, signal) : skipToken,
     staleTime: 5 * 60_000,
     gcTime: 10 * 60_000,
     placeholderData: keepPreviousData,

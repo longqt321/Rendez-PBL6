@@ -1,16 +1,28 @@
-import { useState } from "react"
-import { SparklesIcon, UsersIcon } from "lucide-react"
+import { Link, useSearchParams } from "react-router"
+import { CompassIcon, MapPinIcon, UsersIcon } from "lucide-react"
+import {
+  PageContainer,
+  PageHeader,
+  SplitLayout,
+  SplitMain,
+  StickyAside,
+  SurfaceCard,
+} from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
+import { LoadMore } from "@/components/shared/load-more"
+import { StaggerItem, StaggerList } from "@/components/shared/motion-primitives"
+import { SectionHeading } from "@/components/shared/section-heading"
+import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { useMe } from "@/features/profile/hooks/use-me"
-import { usePosts } from "../hooks/use-posts"
-import type { Post, PostFeedFilter } from "../types/post"
+import { UserSuggestionsSection } from "@/features/search/components/user-suggestions-section"
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { PostCard } from "../components/post-card"
 import { PostComposer } from "../components/post-composer"
+import { usePosts } from "../hooks/use-posts"
+import type { Post, PostFeedFilter } from "../types/post"
 
 interface SocialFeedContentProps {
   readonly isPending: boolean
@@ -27,7 +39,7 @@ function SocialFeedContent({ isPending, isError, posts, filter, onRetry }: Socia
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={`skel-feed-${index}`}
-            className="flex flex-col gap-3 rounded-surface border border-border/20 p-4"
+            className="flex flex-col gap-3 rounded-surface border border-border/50 bg-card p-4"
           >
             <div className="flex items-center gap-3">
               <Skeleton className="size-10 rounded-full" />
@@ -51,7 +63,7 @@ function SocialFeedContent({ isPending, isError, posts, filter, onRetry }: Socia
   }
   if (posts.length === 0) {
     return (
-      <Empty className="mt-10 border border-dashed border-border">
+      <Empty className="mt-10 border border-dashed border-border bg-card/50">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <UsersIcon />
@@ -67,19 +79,43 @@ function SocialFeedContent({ isPending, isError, posts, filter, onRetry }: Socia
     )
   }
   return (
-    <ul className="mt-4 flex flex-col gap-4">
+    <StaggerList className="mt-4 flex flex-col gap-4">
       {posts.map((post) => (
-        <li key={post.id}>
+        <StaggerItem key={post.id}>
           <PostCard post={post} />
-        </li>
+        </StaggerItem>
       ))}
-    </ul>
+    </StaggerList>
   )
 }
 
+const VALID_SOCIAL_FILTERS: ReadonlySet<PostFeedFilter> = new Set([
+  "all",
+  "unplaced",
+  "following",
+  "mine",
+])
+
 export function SocialPage() {
-  const [filter, setFilter] = useState<PostFeedFilter>("all")
-  const { data: me } = useMe()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { data: me, isPending: mePending } = useMe()
+
+  const rawFilter = searchParams.get("filter")
+  const parsedFilter: PostFeedFilter =
+    rawFilter && VALID_SOCIAL_FILTERS.has(rawFilter as PostFeedFilter)
+      ? (rawFilter as PostFeedFilter)
+      : "all"
+  const filter: PostFeedFilter =
+    parsedFilter === "following" && !mePending && !me ? "all" : parsedFilter
+
+  function handleFilterChange(next: string) {
+    if (!VALID_SOCIAL_FILTERS.has(next as PostFeedFilter)) return
+    const updated = new URLSearchParams(searchParams)
+    if (next === "all") updated.delete("filter")
+    else updated.set("filter", next)
+    setSearchParams(updated, { replace: true })
+  }
+
   const { posts, isPending, isError, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
     usePosts({ filter })
 
@@ -90,50 +126,68 @@ export function SocialPage() {
   })
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 className="sr-only">Cộng đồng — bài viết về Đà Nẵng</h1>
-      <PostComposer />
+    <PageContainer size="wide">
+      <PageHeader title="Cộng đồng" />
 
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
-        <Tabs value={filter} onValueChange={(value) => setFilter(value as PostFeedFilter)}>
-          <TabsList>
-            <TabsTrigger value="all">Tất cả</TabsTrigger>
-            <TabsTrigger value="unplaced">Chưa gắn địa điểm</TabsTrigger>
-            {/* Chỉ hiện khi đã đăng nhập — người khách không có "đang theo dõi". */}
-            {me && <TabsTrigger value="following">Đang theo dõi</TabsTrigger>}
-            <TabsTrigger value="mine">Của tôi</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+      <SplitLayout ratio="8-4" gap="lg">
+        <SplitMain span={8}>
+          <PostComposer />
 
-      <SocialFeedContent
-        isPending={isPending}
-        isError={isError}
-        posts={posts}
-        filter={filter}
-        onRetry={() => {
-          refetch().catch(() => {})
-        }}
-      />
-
-      {posts.length > 0 ? (
-        <>
-          <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
-          <div className="mt-6 flex justify-center">
-            {hasNextPage ? (
-              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Spinner aria-label="Đang tải thêm bài đăng" className="size-3" />
-                Đang tải thêm bài đăng…
-              </p>
-            ) : (
-              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <SparklesIcon className="size-3" aria-hidden="true" />
-                Đề xuất địa điểm do hệ thống tạo, bạn xem ở trang Thông báo.
-              </p>
-            )}
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
+            <Tabs value={filter} onValueChange={handleFilterChange}>
+              <TabsList>
+                <TabsTrigger value="all">Tất cả</TabsTrigger>
+                <TabsTrigger value="unplaced">Chưa gắn địa điểm</TabsTrigger>
+                {me && <TabsTrigger value="following">Đang theo dõi</TabsTrigger>}
+                <TabsTrigger value="mine">Của tôi</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
-        </>
-      ) : null}
-    </div>
+
+          <SocialFeedContent
+            isPending={isPending}
+            isError={isError}
+            posts={posts}
+            filter={filter}
+            onRetry={() => {
+              refetch().catch(() => {})
+            }}
+          />
+
+          {posts.length > 0 ? (
+            <LoadMore
+              sentinelRef={sentinelRef}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              onLoadMore={fetchNextPage}
+              loadingLabel="Đang tải thêm bài đăng"
+              endMessage="Đã hiển thị hết bài viết."
+            />
+          ) : null}
+        </SplitMain>
+
+        <StickyAside span={4} className="hidden space-y-5 lg:block">
+          <SurfaceCard>
+            <UserSuggestionsSection variant="sidebar" />
+          </SurfaceCard>
+
+          <SurfaceCard variant="subtle" className="space-y-3">
+            <SectionHeading
+              icon={<MapPinIcon className="size-4 text-primary" aria-hidden="true" />}
+            >
+              Khám phá nhanh
+            </SectionHeading>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Gắn địa điểm vào bài đăng để bạn bè xem được vị trí quán trên bản đồ và lưu ngay vào
+              bộ sưu tập.
+            </p>
+            <Button variant="outline" size="sm" className="w-full" render={<Link to="/discover" />}>
+              <CompassIcon className="size-3.5" aria-hidden="true" />
+              Mở danh sách địa điểm
+            </Button>
+          </SurfaceCard>
+        </StickyAside>
+      </SplitLayout>
+    </PageContainer>
   )
 }

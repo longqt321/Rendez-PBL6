@@ -1,6 +1,28 @@
 import { useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import { CameraIcon, FlagIcon, MapPinIcon, StarIcon, FolderPlusIcon } from "lucide-react"
+import {
+  CameraIcon,
+  ExpandIcon,
+  FlagIcon,
+  FolderPlusIcon,
+  MapPinIcon,
+  SparklesIcon,
+  StarIcon,
+} from "lucide-react"
+import {
+  PageContainer,
+  SplitLayout,
+  SplitMain,
+  StickyAside,
+  SurfaceCard,
+} from "@/components/layout/page-primitives"
+import { CoverImage } from "@/components/shared/cover-image"
+import { ErrorState } from "@/components/shared/error-state"
+import { ImageLightbox } from "@/components/shared/image-lightbox"
+import { placeImageAlt } from "@/components/shared/place-image-alt"
+import { SectionHeading } from "@/components/shared/section-heading"
+import { ShareButton } from "@/components/shared/share-button"
+import { Badge } from "@/components/ui/badge"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,38 +31,43 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ErrorState } from "@/components/shared/error-state"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Item, ItemActions, ItemContent, ItemGroup } from "@/components/ui/item"
+import { Progress } from "@/components/ui/progress"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CoverImage } from "@/components/shared/cover-image"
-import { placeImageAlt } from "@/components/shared/place-image-alt"
-import { SectionHeading } from "@/components/shared/section-heading"
-import { ShareButton } from "@/components/shared/share-button"
+import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
+import { useMe } from "@/features/profile/hooks/use-me"
+import { PostCard } from "@/features/social/components/post-card"
+import type { Post } from "@/features/social/types/post"
+import { isNotFoundError } from "@/lib/axios"
 import { formatCount, formatRating } from "@/lib/format"
-import { categoryLabel } from "../lib/category-meta"
-import { isOpenNow } from "../lib/opening-hours"
-import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
+import { CheckInDialog } from "../components/check-in-dialog"
+import { PlaceCard } from "../components/place-card"
+import { PlaceMiniMap } from "../components/place-mini-map"
+import { ReportPlaceDialog } from "../components/report-place-dialog"
+import { ReviewDeleteDialog } from "../components/review-delete-dialog"
+import { ReviewForm } from "../components/review-form"
+import { ReviewItem } from "../components/review-item"
+import { useDiscoverPlaces } from "../hooks/use-discover-places"
 import { usePlace } from "../hooks/use-place"
 import { usePlacePosts } from "../hooks/use-place-posts"
 import { usePlaceReviews } from "../hooks/use-place-reviews"
-import { useMe } from "@/features/profile/hooks/use-me"
-import { isNotFoundError } from "@/lib/axios"
-import { ReviewForm } from "../components/review-form"
-import { ReviewItem } from "../components/review-item"
-import { ReviewDeleteDialog } from "../components/review-delete-dialog"
-import type { Review } from "../types/review"
-import type { Post } from "@/features/social/types/post"
-import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
-import { PlaceMiniMap } from "../components/place-mini-map"
-import { CheckInDialog } from "../components/check-in-dialog"
-import { ReportPlaceDialog } from "../components/report-place-dialog"
+import { categoryLabel } from "../lib/category-meta"
 import { formatLocation } from "../lib/format-location"
-import { recordPlaceView } from "../lib/recently-viewed"
+import { isOpenNow } from "../lib/opening-hours"
+import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
+import { GUEST_SCOPE, recordPlaceView } from "../lib/recently-viewed"
+import type { Review } from "../types/review"
 
 export function PlaceDetailPage() {
   const { id } = useParams()
@@ -59,16 +86,30 @@ export function PlaceDetailPage() {
     isError: reviewsError,
     refetch: refetchReviews,
   } = usePlaceReviews(placeId)
-  const { data: me } = useMe()
+  const { data: me, isPending: mePending } = useMe()
 
-  // Ghi lịch sử "Bạn vừa xem" khi địa điểm tải xong (chỉ id, không lưu dữ liệu
-  // địa điểm — dải "Bạn vừa xem" fetch lại theo id, tránh bản sao dữ liệu cũ).
+  const similarQuery = useDiscoverPlaces(
+    {
+      category: place?.category ?? "all",
+      district: place?.district ?? "all",
+      query: "",
+      sort: "rating",
+    },
+    { enabled: place !== undefined },
+  )
+  const similarPlaces = (similarQuery.data?.pages[0]?.items ?? [])
+    .filter((item) => item.id !== placeId)
+    .slice(0, 6)
+
   useEffect(() => {
-    if (place?.id !== undefined) recordPlaceView(place.id)
-  }, [place?.id])
+    if (mePending) return
+    if (place?.id !== undefined) recordPlaceView(place.id, me?.id ?? GUEST_SCOPE)
+  }, [place?.id, me?.id, mePending])
+
   const [editingReview, setEditingReview] = useState<Review | null>(null)
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [deletingReview, setDeletingReview] = useState<Review | null>(null)
+  const [heroLightboxOpen, setHeroLightboxOpen] = useState(false)
   const myReview = reviews?.find((review) => review.isMine) ?? null
   const reviewFormVisible = showReviewForm || editingReview !== null
 
@@ -79,20 +120,19 @@ export function PlaceDetailPage() {
 
   if (isPending) {
     return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-6 lg:px-8 lg:py-8">
+      <PageContainer size="default">
         <h1 className="sr-only">Chi tiết địa điểm</h1>
         <div className="flex items-center justify-center py-24">
           <Spinner className="size-6" aria-label="Đang tải thông tin địa điểm" />
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
   if (isError || !place) {
-    // 404 = địa điểm không tồn tại (thử lại vô ích); lỗi khác (mạng/5xx) = thử lại được.
     const notFound = isNotFoundError(error) || (!isError && !place)
     return (
-      <div className="mx-auto max-w-md px-4 py-20">
+      <PageContainer size="narrow" className="py-20">
         <h1 className="sr-only">{notFound ? "Không tìm thấy địa điểm" : "Lỗi tải địa điểm"}</h1>
         <ErrorState
           icon={<MapPinIcon />}
@@ -104,16 +144,16 @@ export function PlaceDetailPage() {
             <Button render={<Link to="/discover" />}>Về trang Khám phá</Button>
           ) : undefined}
         </ErrorState>
-      </div>
+      </PageContainer>
     )
   }
 
-  // `null` = không có dữ liệu giờ mở cửa → không hiện badge.
   const openState = isOpenNow(place.openingHours ?? null)
+  const hasRealImage = Boolean(place.imageUrl)
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-6 lg:px-8 lg:py-8">
-      <Breadcrumb>
+    <PageContainer size="wide">
+      <Breadcrumb className="mb-4">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink render={<Link to="/discover" />}>Khám phá</BreadcrumbLink>
@@ -125,141 +165,240 @@ export function PlaceDetailPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <Card className="mt-4 gap-0 p-0">
-        <CoverImage
-          src={place.imageUrl}
-          placeholder={place.category}
-          name={place.name}
-          height={280}
-          className="w-full rounded-t-xl"
-          alt={placeImageAlt(place)}
-          // Hero chiếm toàn chiều rộng khung nội dung → 100vw; ưu tiên LCP.
-          sizes="100vw"
-          priority
-        />
+      {/* Adaptive Editorial Hero */}
+      <SurfaceCard padding="none" className="overflow-hidden">
+        {hasRealImage ? (
+          <div className="relative">
+            <CoverImage
+              src={place.imageUrl}
+              placeholder={place.category}
+              name={place.name}
+              height={320}
+              className="w-full"
+              alt={placeImageAlt(place)}
+              sizes="100vw"
+              priority
+            >
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-foreground/65 via-foreground/15 to-transparent"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="absolute top-3 right-3 gap-1.5 bg-background/85 backdrop-blur-sm"
+                onClick={() => setHeroLightboxOpen(true)}
+              >
+                <ExpandIcon className="size-3.5" aria-hidden="true" />
+                Xem ảnh lớn
+              </Button>
+            </CoverImage>
+          </div>
+        ) : (
+          <CoverImage
+            placeholder={place.category}
+            name={place.name}
+            height={168}
+            className="w-full"
+            alt={placeImageAlt(place)}
+          />
+        )}
 
-        <CardContent className="flex flex-col gap-2 p-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-heading text-xl font-bold tracking-tight">{place.name}</h1>
-            <Badge variant="secondary">{categoryLabel(place.category)}</Badge>
-            {place.status === "closed" ? <Badge variant="destructive">Đã đóng cửa</Badge> : null}
-            <OpenStatusBadge openState={openState} />
+        <div className="flex flex-wrap items-start justify-between gap-4 p-5 sm:p-6">
+          <div className="min-w-0 flex-1 space-y-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">{categoryLabel(place.category)}</Badge>
+              {place.district ? <Badge variant="outline">{place.district}</Badge> : null}
+              {place.status === "closed" ? <Badge variant="destructive">Đã đóng cửa</Badge> : null}
+              <OpenStatusBadge openState={openState} />
+            </div>
+
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+              {place.name}
+            </h1>
+
+            <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
+              <MapPinIcon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+              <span>{formatLocation(place.address, place.city)}</span>
+            </p>
+
+            {place.description ? (
+              <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                {place.description}
+              </p>
+            ) : null}
+
+            {place.tags.length > 0 ? (
+              <ul className="flex flex-wrap gap-1.5 pt-1">
+                {place.tags.map((tag) => (
+                  <li key={tag}>
+                    <Badge variant="outline" className="font-normal">
+                      #{tag}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
 
-          <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
-            <MapPinIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {formatLocation(place.address, place.city)}
-          </p>
+          {/* Rating Medallion */}
+          <SurfaceCard variant="subtle" padding="sm" className="flex shrink-0 items-center gap-4">
+            <div className="text-center">
+              {place.reviewCount > 0 ? (
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="font-display text-3xl font-bold tabular-nums">
+                    {formatRating(place.rating)}
+                  </span>
+                  <StarIcon className="size-4 fill-star text-star" aria-hidden="true" />
+                </div>
+              ) : (
+                <span className="font-display text-xl font-bold text-muted-foreground">-</span>
+              )}
+              <p className="text-xs text-muted-foreground tabular-nums">
+                {place.reviewCount > 0
+                  ? `${formatCount(place.reviewCount)} đánh giá`
+                  : "Chưa có đánh giá"}
+              </p>
+            </div>
+            <div className="h-9 w-px bg-border" aria-hidden="true" />
+            <div className="text-center">
+              <span
+                aria-label={priceLevelAriaLabel(place.priceLevel)}
+                className="font-display text-lg font-bold"
+              >
+                {priceLevelLabel(place.priceLevel)}
+              </span>
+              <p className="text-xs text-muted-foreground">Mức giá</p>
+            </div>
+          </SurfaceCard>
+        </div>
+      </SurfaceCard>
 
-          {place.description ? (
-            <p className="text-sm leading-relaxed text-muted-foreground">{place.description}</p>
+      {/* 2-Column Editorial Split Layout */}
+      <SplitLayout ratio="8-4" gap="lg" className="mt-8">
+        <SplitMain span={8} className="space-y-6">
+          {/* Biểu đồ phân bổ sao đánh giá */}
+          {reviews && reviews.length > 0 ? (
+            <RatingSummaryCard rating={place.rating} reviews={reviews} />
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            {place.reviewCount > 0 ? (
-              <>
-                <span className="flex items-center gap-1 font-bold text-foreground">
-                  <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
-                  {formatRating(place.rating)}
-                </span>
-                <span>{formatCount(place.reviewCount)} đánh giá</span>
-              </>
-            ) : (
-              <span>Chưa có đánh giá</span>
-            )}
-            <span aria-label={priceLevelAriaLabel(place.priceLevel)} className="font-bold">
-              {priceLevelLabel(place.priceLevel)}
-            </span>
-          </div>
+          <Tabs defaultValue="reviews">
+            <TabsList>
+              <TabsTrigger value="reviews">
+                Đánh giá{reviews && reviews.length > 0 ? ` (${reviews.length})` : ""}
+              </TabsTrigger>
+              <TabsTrigger value="posts">
+                Bài đăng check-in{posts.length > 0 ? ` (${posts.length})` : ""}
+              </TabsTrigger>
+            </TabsList>
 
-          <ul className="mt-1 flex flex-wrap gap-1.5">
-            {place.tags.map((tag) => (
-              <li key={tag}>
-                <Badge variant="outline">#{tag}</Badge>
-              </li>
-            ))}
-          </ul>
+            <TabsContent value="reviews" className="mt-4">
+              <div className="flex flex-col gap-4">
+                <ReviewTrigger
+                  reviewFormVisible={reviewFormVisible}
+                  myReview={myReview}
+                  editingReview={editingReview}
+                  placeId={placeId}
+                  authorInitials={me?.initials ?? "Tôi"}
+                  closeReviewForm={closeReviewForm}
+                  setEditingReview={setEditingReview}
+                  setShowReviewForm={setShowReviewForm}
+                />
+                <ReviewsListContent
+                  reviewsPending={reviewsPending}
+                  reviewsError={reviewsError}
+                  reviews={reviews}
+                  refetchReviews={refetchReviews}
+                  setEditingReview={setEditingReview}
+                  setDeletingReview={setDeletingReview}
+                />
+              </div>
+            </TabsContent>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <SaveToCollectionDialog placeId={placeId} placeName={place.name}>
-              <Button variant="outline">
-                <FolderPlusIcon />
-                Lưu vào bộ sưu tập
-              </Button>
-            </SaveToCollectionDialog>
-            <CheckInDialog place={place}>
-              <Button>
-                <CameraIcon />
-                Đăng bài check-in tại đây
-              </Button>
-            </CheckInDialog>
-            <ShareButton title={place.name} url={`/discover/${placeId}`} />
-            <ReportPlaceDialog place={place}>
-              <Button variant="ghost" className="text-muted-foreground">
-                <FlagIcon />
-                Báo cáo
-              </Button>
-            </ReportPlaceDialog>
-          </div>
-        </CardContent>
-      </Card>
+            <TabsContent value="posts" className="mt-4">
+              <PostsTabContent
+                postsPending={postsPending}
+                postsError={postsError}
+                posts={posts}
+                refetchPosts={refetchPosts}
+              />
+            </TabsContent>
+          </Tabs>
+        </SplitMain>
 
-      <Tabs defaultValue="reviews" className="mt-6">
-        <TabsList>
-          <TabsTrigger value="reviews">
-            Đánh giá{reviews && reviews.length > 0 ? ` (${reviews.length})` : ""}
-          </TabsTrigger>
-          <TabsTrigger value="posts">Bài đăng</TabsTrigger>
-          <TabsTrigger value="overview">Tổng quan</TabsTrigger>
-        </TabsList>
+        {/* Cột phải Sticky: Luôn hiển thị Hành động & Bản đồ vị trí */}
+        <StickyAside span={4} className="space-y-5">
+          <SurfaceCard className="space-y-3">
+            <SectionHeading>Tương tác tại địa điểm</SectionHeading>
+            <div className="flex flex-col gap-2">
+              <CheckInDialog place={place}>
+                <Button className="w-full justify-center">
+                  <CameraIcon />
+                  Đăng bài check-in tại đây
+                </Button>
+              </CheckInDialog>
 
-        <TabsContent value="reviews" className="mt-4">
-          <div className="flex flex-col gap-4">
-            <ReviewTrigger
-              reviewFormVisible={reviewFormVisible}
-              myReview={myReview}
-              editingReview={editingReview}
-              placeId={placeId}
-              authorInitials={me?.initials ?? "Tôi"}
-              closeReviewForm={closeReviewForm}
-              setEditingReview={setEditingReview}
-              setShowReviewForm={setShowReviewForm}
-            />
-            <ReviewsListContent
-              reviewsPending={reviewsPending}
-              reviewsError={reviewsError}
-              reviews={reviews}
-              refetchReviews={refetchReviews}
-              setEditingReview={setEditingReview}
-              setDeletingReview={setDeletingReview}
-            />
-          </div>
-        </TabsContent>
+              <SaveToCollectionDialog placeId={placeId} placeName={place.name}>
+                <Button variant="outline" className="w-full justify-center">
+                  <FolderPlusIcon />
+                  Lưu vào bộ sưu tập
+                </Button>
+              </SaveToCollectionDialog>
 
-        <TabsContent value="posts" className="mt-4">
-          <PostsTabContent
-            postsPending={postsPending}
-            postsError={postsError}
-            posts={posts}
-            refetchPosts={refetchPosts}
-          />
-        </TabsContent>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <ShareButton title={place.name} url={`/discover/${placeId}`} size="default" />
+                <ReportPlaceDialog place={place}>
+                  <Button variant="ghost" className="text-muted-foreground">
+                    <FlagIcon />
+                    Báo cáo
+                  </Button>
+                </ReportPlaceDialog>
+              </div>
+            </div>
+          </SurfaceCard>
 
-        <TabsContent value="overview" className="mt-4 flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
+          <SurfaceCard className="space-y-3">
             <SectionHeading>Vị trí & Chỉ đường</SectionHeading>
             <PlaceMiniMap place={place} />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <SectionHeading>Giới thiệu</SectionHeading>
-            <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-              {place.name} nằm ở {place.city}. Địa điểm do cộng đồng đăng và được kiểm duyệt trước
-              khi xuất hiện trên trang Khám phá.
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {place.name} nằm ở {place.city}. Địa điểm do cộng đồng đóng góp và được kiểm duyệt
+              trước khi hiển thị.
             </p>
-          </div>
-        </TabsContent>
-      </Tabs>
+          </SurfaceCard>
+        </StickyAside>
+      </SplitLayout>
+
+      {/* Dải Địa điểm tương tự */}
+      {similarPlaces.length > 0 ? (
+        <section aria-labelledby="similar-places-heading" className="mt-12">
+          <Carousel opts={{ align: "start" }} className="w-full">
+            <div className="flex items-center justify-between gap-2">
+              <SectionHeading
+                id="similar-places-heading"
+                icon={<SparklesIcon className="size-4 text-primary" aria-hidden="true" />}
+              >
+                Quán tương tự tại Đà Nẵng
+              </SectionHeading>
+              <div className="flex items-center gap-1.5">
+                <CarouselPrevious className="static size-8 translate-y-0" />
+                <CarouselNext className="static size-8 translate-y-0" />
+              </div>
+            </div>
+
+            <CarouselContent className="mt-4 -ml-4">
+              {similarPlaces.map((similar) => (
+                <CarouselItem
+                  key={similar.id}
+                  className="basis-[85%] pl-4 sm:basis-1/2 lg:basis-1/3"
+                >
+                  <PlaceCard place={similar} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        </section>
+      ) : null}
 
       <ReviewDeleteDialog
         placeId={placeId}
@@ -271,13 +410,68 @@ export function PlaceDetailPage() {
           }
         }}
       />
-    </div>
+
+      {place.imageUrl ? (
+        <ImageLightbox
+          images={[place.imageUrl]}
+          index={0}
+          open={heroLightboxOpen}
+          onClose={() => setHeroLightboxOpen(false)}
+          altPrefix={place.name}
+        />
+      ) : null}
+    </PageContainer>
+  )
+}
+
+function RatingSummaryCard({ rating, reviews }: Readonly<{ rating: number; reviews: Review[] }>) {
+  const total = reviews.length
+  const counts = [5, 4, 3, 2, 1].map((star) => ({
+    star,
+    count: reviews.filter((r) => Math.round(r.rating) === star).length,
+  }))
+
+  return (
+    <SurfaceCard variant="subtle" padding="md">
+      <div className="grid grid-cols-1 items-center gap-5 sm:grid-cols-12">
+        <div className="text-center sm:col-span-4">
+          <p className="font-display text-4xl font-bold tracking-tight tabular-nums">
+            {formatRating(rating)}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+            Dựa trên {formatCount(total)} đánh giá
+          </p>
+        </div>
+
+        <div className="space-y-1.5 sm:col-span-8">
+          {counts.map(({ star, count }) => {
+            const percent = total > 0 ? Math.round((count / total) * 100) : 0
+            return (
+              <div key={star} className="flex items-center gap-2.5 text-xs">
+                <span className="flex w-8 shrink-0 items-center gap-0.5 font-medium tabular-nums">
+                  {star}
+                  <StarIcon className="size-3 fill-star text-star" aria-hidden="true" />
+                </span>
+                <Progress
+                  value={percent}
+                  className="flex-1"
+                  aria-label={`${star} sao: ${percent}%`}
+                />
+                <span className="w-8 shrink-0 text-right text-muted-foreground tabular-nums">
+                  {count}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </SurfaceCard>
   )
 }
 
 function OpenStatusBadge({ openState }: Readonly<{ openState: boolean | null }>) {
   if (openState === true) {
-    return <Badge className="bg-open text-white">Đang mở cửa</Badge>
+    return <Badge className="bg-open text-open-foreground">Đang mở cửa</Badge>
   }
   if (openState === false) {
     return (
@@ -418,22 +612,12 @@ function PostsTabContent({
     )
   }
   return (
-    <ItemGroup className="gap-3">
+    <ul className="flex flex-col gap-4">
       {posts.map((post) => (
-        <Item
-          key={post.id}
-          variant="outline"
-          render={<Link to={`/post/${post.id}`} />}
-          className="items-start gap-3 rounded-surface p-3 hover:bg-muted"
-        >
-          <ItemContent>
-            <p className="text-xs text-muted-foreground">
-              {post.author.name} · {post.commentCount} bình luận · {post.likeCount} thích
-            </p>
-            <p className="line-clamp-3 text-sm leading-snug">{post.caption}</p>
-          </ItemContent>
-        </Item>
+        <li key={post.id}>
+          <PostCard post={post} />
+        </li>
       ))}
-    </ItemGroup>
+    </ul>
   )
 }

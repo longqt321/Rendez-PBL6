@@ -5,7 +5,7 @@ export function AboutPage() {
   return (
     <StaticPage
       title="Về Rendez"
-      description="Rendez giúp bạn và nhóm bạn chọn quán nhanh hơn — bằng trải nghiệm thật của cộng đồng Đà Nẵng."
+      description="Rendez giúp bạn và nhóm bạn chọn quán nhanh hơn từ trải nghiệm thật của cộng đồng Đà Nẵng."
     >
       <StaticSection title="Rendez là gì?">
         <p>
@@ -18,8 +18,8 @@ export function AboutPage() {
       <StaticSection title="Vì sao chọn quán theo nhóm lại khó?">
         <p>
           Mỗi người một gu, một ngân sách, một khoảng di chuyển. Phòng lọc nhóm của Rendez gom sở
-          thích cả nhóm trong một mã phòng duy nhất và đề xuất quán vừa ý mọi người — thay vì cả
-          nhóm lướt tin nhắn cả tiếng đồng hồ.
+          thích cả nhóm trong một mã phòng duy nhất và đề xuất quán vừa ý mọi người, thay vì cả nhóm
+          lướt tin nhắn cả tiếng đồng hồ.
         </p>
       </StaticSection>
 

@@ -60,7 +60,7 @@ function CollectionDialogList({
     return (
       <Empty className="border border-dashed border-border">
         <EmptyHeader>
-          <EmptyTitle>Chưa có bộ sưu tập nào — tạo bên dưới.</EmptyTitle>
+          <EmptyTitle>Chưa có bộ sưu tập nào. Hãy tạo bên dưới.</EmptyTitle>
         </EmptyHeader>
       </Empty>
     )
