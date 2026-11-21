@@ -29,6 +29,7 @@ import { prisma } from "../lib/prisma"
 import { clientIp } from "../lib/rate-limit"
 import { requireAuth, requireRole } from "../lib/session"
 import { invalidateSuggestionCache } from "../lib/suggestions"
+import { invalidatePlacesReadCaches } from "./places"
 
 const ADMIN_PAGE_SIZE = 20
 
@@ -437,7 +438,10 @@ export function createAdminRouter() {
       })
     })
 
-    if (placeAction !== "none") invalidateSuggestionCache()
+    if (placeAction !== "none") {
+      invalidateSuggestionCache()
+      invalidatePlacesReadCaches()
+    }
     return c.json(updatedReport)
   })
 

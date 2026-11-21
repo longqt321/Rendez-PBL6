@@ -3,6 +3,7 @@ import { z } from "zod"
 import type { AppEnv } from "../app"
 import { EVENT_TO_KIND } from "../lib/interaction-weights"
 import { recordEventsBatch, type RecordEventInput } from "../lib/interaction-events"
+import { createTtlCache } from "../lib/http-cache"
 import { prisma } from "../lib/prisma"
 import { rateLimit } from "../lib/rate-limit"
 import { getRedis } from "../lib/redis"
@@ -40,6 +41,12 @@ const batchSchema = z.object({
 const DEDUPE_TTL_SECONDS = 5 * 60
 const DEDUPE_TTL_MS = DEDUPE_TTL_SECONDS * 1000
 const seen = new Map<string, number>()
+
+const validPlaceCache = createTtlCache<boolean>({
+  ttlMs: 300_000,
+  maxEntries: 1_000,
+  namespace: "valid-place",
+})
 
 function dedupeKey(actor: string, e: z.infer<typeof eventSchema>): string {
   if (e.eventId) return `id:${actor}:${e.eventId}`
@@ -106,11 +113,15 @@ export function createEventsRouter() {
         ),
       ]
       if (placeIds.length > 0) {
-        const found = await prisma.place.findMany({
-          where: { id: { in: placeIds } },
-          select: { id: true },
-        })
-        if (found.length !== placeIds.length) {
+        const checks = await Promise.all(
+          placeIds.map((id) =>
+            validPlaceCache.get(id, async () => {
+              const row = await prisma.place.findUnique({ where: { id }, select: { id: true } })
+              return Boolean(row)
+            }),
+          ),
+        )
+        if (checks.some((exists) => !exists)) {
           return c.json({ accepted: 0, recorded: 0, error: "placeId không tồn tại" }, 400)
         }
       }

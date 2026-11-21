@@ -28,13 +28,19 @@ function ipv4ToInt(ip: string): number | null {
   return value >>> 0
 }
 
+function normalizeIp(ip: string): string {
+  const trimmed = ip.trim()
+  return trimmed.startsWith("::ffff:") ? trimmed.slice(7) : trimmed
+}
+
 function matchesProxy(address: string, pattern: string): boolean {
+  const normalizedAddress = normalizeIp(address)
   const [network, bitsRaw] = pattern.split("/")
-  if (bitsRaw === undefined) return address === pattern
+  if (bitsRaw === undefined) return normalizedAddress === normalizeIp(pattern)
 
   const bits = Number(bitsRaw)
-  const addressInt = ipv4ToInt(address)
-  const networkInt = ipv4ToInt(network ?? "")
+  const addressInt = ipv4ToInt(normalizedAddress)
+  const networkInt = ipv4ToInt(normalizeIp(network ?? ""))
   if (addressInt === null || networkInt === null) return false
   if (!Number.isInteger(bits) || bits < 0 || bits > 32) return false
 
@@ -43,17 +49,18 @@ function matchesProxy(address: string, pattern: string): boolean {
 }
 
 export function clientIp(headers: Headers, remoteAddress: string | undefined): string {
+  const normalizedRemote = remoteAddress ? normalizeIp(remoteAddress) : undefined
   const forwarded = headers.get("x-forwarded-for")
   const fromTrustedProxy =
-    remoteAddress !== undefined &&
-    env.trustedProxies.some((pattern) => matchesProxy(remoteAddress, pattern))
+    normalizedRemote !== undefined &&
+    env.trustedProxies.some((pattern) => matchesProxy(normalizedRemote, pattern))
 
-  if (forwarded && (fromTrustedProxy || remoteAddress === undefined)) {
+  if (forwarded && (fromTrustedProxy || normalizedRemote === undefined)) {
     const first = forwarded.split(",")[0]?.trim()
-    if (first) return first
+    if (first) return normalizeIp(first)
   }
 
-  return remoteAddress || headers.get("x-real-ip") || "unknown"
+  return normalizedRemote || headers.get("x-real-ip") || "unknown"
 }
 
 interface BucketEntry {

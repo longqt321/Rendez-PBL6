@@ -27,7 +27,7 @@ Danh sách các việc thật sự còn mở (cập nhật 2026-11-21 sau đợt
 - [ ] **Tile bản đồ production**: OpenStreetMap tile công cộng không phù hợp traffic lớn; đổi sang nhà cung cấp có SLA/key (MapTiler, Carto, Stadia) hoặc self-host trước khi mở công khai.
 - [ ] **Tách `DATABASE_URL` test riêng & bỏ Prisma singleton**: hiện `bun run test` trong `backend/` chạy từng file process riêng qua `scripts/test-all.sh` bằng Testcontainers Postgres.
 - [ ] **Cấu hình production**: chạy `caddy validate` trên máy có Caddy, thiết lập staging/monitoring và lịch diễn tập restore backup DB định kỳ; đưa job e2e backend thật vào CI khi cần.
-- [ ] **Mở rộng đo lường hành vi & rollup (khi tăng trưởng)**: gắn `trackEvent` cho `place_impression`, `place_detail_view`, `filter_change`, `place_share` trên UI; khi vượt ngưỡng traffic cao, cân nhắc đẩy `POST /events` qua Redis Stream + job rollup bảng tổng hợp theo ngày.
+- [ ] **Mở rộng đo lường hành vi & rollup (khi tăng trưởng)**: gắn `trackEvent` cho `place_impression`, `place_detail_view`, `filter_change`, `place_share` trên UI; khi vượt ngưỡng traffic cao, cân nhắc đẩy `POST /events` qua Redis Stream + job rollup bảng tổng hợp theo ngày. *(Đã tối ưu server-side `createTtlCache` cho `/places`, `/places/map`, `/places/:id`, `/places/daily-picks`, cache `validPlaceCache` ở `/events` và sửa chuẩn hoá `::ffff:` trong `rate-limit.ts`.)*
 
 ## 4. Kỹ thuật & Nợ code
 

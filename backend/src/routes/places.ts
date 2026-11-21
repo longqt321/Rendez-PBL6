@@ -22,7 +22,7 @@ import { recordEventForRequest } from "../lib/interaction-events"
 import { rateLimit } from "../lib/rate-limit"
 import { listPosts } from "../lib/posts"
 import { rankPlaceSuggestions } from "../lib/ranking"
-import { jsonWithCache } from "../lib/http-cache"
+import { createTtlCache, jsonWithCache } from "../lib/http-cache"
 import { getDailyPicks, getPickDate } from "../lib/daily-picks"
 import { getRecommendedPlaces } from "../lib/recommendations"
 import {
@@ -43,6 +43,39 @@ const DEFAULT_SUGGESTIONS = 3
 
 const MIN_CAPTION_CHARS = 8
 
+const placesListCache = createTtlCache<{
+  items: Awaited<ReturnType<typeof listPlaces>>["items"]
+  next: string | null
+  total: number
+  relaxedFilters?: boolean
+  didYouMean: string | null
+}>({ ttlMs: 15_000, maxEntries: 256, namespace: "places-list" })
+
+const dailyPicksCache = createTtlCache<Awaited<ReturnType<typeof getDailyPicks>>>({
+  ttlMs: 300_000,
+  maxEntries: 8,
+  namespace: "daily-picks",
+})
+
+const mapPlacesCache = createTtlCache<Awaited<ReturnType<typeof listPlacesInMap>>>({
+  ttlMs: 30_000,
+  maxEntries: 256,
+  namespace: "places-map",
+})
+
+const placeDetailCache = createTtlCache<NonNullable<Awaited<ReturnType<typeof findPublicPlace>>>>({
+  ttlMs: 60_000,
+  maxEntries: 512,
+  namespace: "place-detail",
+})
+
+export function invalidatePlacesReadCaches(): void {
+  placesListCache.clear()
+  dailyPicksCache.clear()
+  mapPlacesCache.clear()
+  placeDetailCache.clear()
+}
+
 export function createPlacesRouter() {
   const router = new Hono<AppEnv>()
 
@@ -62,42 +95,44 @@ export function createPlacesRouter() {
       const cursor = decoded?.kind === filters.sort ? decoded : null
 
       const startedAt = performance.now()
-      const page = await listPlaces(filters, cursor, PLACES_PAGE_SIZE)
-
-      // "Ý bạn là…": chỉ khi tìm kiếm KHÔNG có kết quả nào và từ khoá đủ dài để
-      // trigram có ý nghĩa (ngắn hơn là so khớp ngẫu nhiên).
-      const didYouMean =
-        page.total === 0 && filters.q !== undefined && filters.q.trim().length >= 3
-          ? await findDidYouMean(filters.q)
-          : null
-      // Đo SAU didYouMean: đó cũng là một query DB thật trong cùng response, đo
-      // trước sẽ báo tookMs thấp hơn thời gian người dùng thực sự chờ.
+      const cacheKey = JSON.stringify({ filters, cursor })
+      const { value: cached, hit } = await placesListCache.getWithStatus(cacheKey, async () => {
+        const page = await listPlaces(filters, cursor, PLACES_PAGE_SIZE)
+        const didYouMean =
+          page.total === 0 && filters.q !== undefined && filters.q.trim().length >= 3
+            ? await findDidYouMean(filters.q)
+            : null
+        return {
+          items: page.items,
+          next: page.next ? encodePlaceCursor(page.next) : null,
+          total: page.total,
+          ...(page.relaxedFilters ? { relaxedFilters: true } : {}),
+          didYouMean,
+        }
+      })
+      c.set("cacheHit", hit)
       const tookMs = Math.round(performance.now() - startedAt)
 
       // Tín hiệu tìm kiếm cho recommendation (P0): chỉ ghi khi có `q` thật.
-      // Fire-and-forget — telemetry không được cộng round-trip DB vào latency
-      // của endpoint search (cùng lý do với `place_detail_view`).
       if (filters.q !== undefined && filters.q.trim().length > 0) {
         void recordEventForRequest(c, "search_query", {
           query: filters.q,
-          context: { resultsCount: page.total },
+          context: { resultsCount: cached.total },
         })
       }
 
       const parsedChips = filters.q ? parseNaturalFilterQuery(filters.q).chips : []
 
-      // Hiện chưa có cache ứng dụng cho danh sách → `cacheHit` luôn false; không
-      // bịa true khi body đến thẳng từ DB.
       return c.json({
-        items: page.items,
-        next: page.next ? encodePlaceCursor(page.next) : null,
+        items: cached.items,
+        next: cached.next,
         meta: {
           tookMs,
-          cacheHit: false,
-          totalResults: page.total,
-          didYouMean,
+          cacheHit: hit,
+          totalResults: cached.total,
+          didYouMean: cached.didYouMean,
           ...(parsedChips.length > 0 ? { parsedFilters: parsedChips } : {}),
-          ...(page.relaxedFilters ? { relaxedFilters: true } : {}),
+          ...(cached.relaxedFilters ? { relaxedFilters: true } : {}),
         },
       })
     },
@@ -147,21 +182,20 @@ export function createPlacesRouter() {
 
   router.get("/places/daily-picks", async (c) => {
     const startedAt = performance.now()
-    const result = await getDailyPicks(getPickDate())
+    const pickDate = getPickDate()
+    const { value: result, hit } = await dailyPicksCache.getWithStatus(pickDate, () =>
+      getDailyPicks(pickDate),
+    )
+    c.set("cacheHit", hit)
     const tookMs = Math.round(performance.now() - startedAt)
 
-    // Công khai, giống nhau với mọi người — 5 phút đủ gánh traffic trong ngày
-    // mà vẫn ngắn hơn chu kỳ đổi dữ liệu (ngày). `cacheHit` là cache ỨNG DỤNG
-    // (chưa có cho route này) nên false — HTTP cache không tính.
-    // ETag tính từ dữ liệu ổn định (bỏ `meta.tookMs`) — nếu tính cả tookMs thì
-    // ETag đổi mỗi request và 304 không bao giờ khớp.
     return jsonWithCache(
       c,
       {
         date: result.date,
         items: result.items,
         next: null,
-        meta: { tookMs, cacheHit: false, totalResults: result.items.length },
+        meta: { tookMs, cacheHit: hit, totalResults: result.items.length },
       },
       { maxAge: 300, etagData: { date: result.date, items: result.items } },
     )
@@ -195,13 +229,14 @@ export function createPlacesRouter() {
   router.get("/places/map", async (c) => {
     const filters = parsePlaceFilters(c.req.query())
     const startedAt = performance.now()
-    const result = await listPlacesInMap(filters, MAP_MAX_PLACES)
+    const { value: result, hit } = await mapPlacesCache.getWithStatus(JSON.stringify(filters), () =>
+      listPlacesInMap(filters, MAP_MAX_PLACES),
+    )
+    c.set("cacheHit", hit)
     const tookMs = Math.round(performance.now() - startedAt)
 
     const parsedChips = filters.q ? parseNaturalFilterQuery(filters.q).chips : []
 
-    // Dữ liệu công khai, đổi chậm — cho phép trình duyệt/CDN dùng lại 30 giây.
-    // Giữ `total` cũ (FE đang dùng) và thêm `meta` cùng giá trị. ETag bỏ tookMs.
     return jsonWithCache(
       c,
       {
@@ -209,7 +244,7 @@ export function createPlacesRouter() {
         total: result.total,
         meta: {
           tookMs,
-          cacheHit: false,
+          cacheHit: hit,
           totalResults: result.total,
           ...(parsedChips.length > 0 ? { parsedFilters: parsedChips } : {}),
           ...(result.relaxedFilters ? { relaxedFilters: true } : {}),
@@ -254,8 +289,12 @@ export function createPlacesRouter() {
     const id = c.req.param("id")
     if (!SLUG_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")
 
-    const place = await findPublicPlace(id)
-    if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
+    const { value: place, hit } = await placeDetailCache.getWithStatus(id, async () => {
+      const found = await findPublicPlace(id)
+      if (!found) throw new ApiError(404, "Không tìm thấy địa điểm")
+      return found
+    })
+    c.set("cacheHit", hit)
     // Fire-and-forget: telemetry không được cộng round-trip DB vào latency.
     void recordEventForRequest(c, "place_detail_view", { placeId: id })
     return jsonWithCache(c, place, { maxAge: 60 })
