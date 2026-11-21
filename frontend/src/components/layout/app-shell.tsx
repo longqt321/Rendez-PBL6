@@ -1,23 +1,35 @@
-import { Suspense, useEffect, useRef } from "react"
+import { Suspense, useEffect, useRef, useState } from "react"
 import {
+  ArrowRightIcon,
   BookmarkIcon,
+  CompassIcon,
   HelpCircleIcon,
   LogInIcon,
   LogOutIcon,
-  MapPinIcon,
   PaletteIcon,
   SearchIcon,
   SettingsIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
   UserIcon,
   UserPlusIcon,
+  UsersIcon,
 } from "lucide-react"
 import { NavLink, Link, Outlet, useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { useSkin } from "@/app/providers/skin-context"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { PageLoading } from "@/components/shared/page-loading"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,17 +45,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import { Spinner } from "@/components/ui/spinner"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { MotionPill } from "@/components/shared/motion-primitives"
+import { PageLoading } from "@/components/shared/page-loading"
 import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
 import { useNotificationStream } from "@/features/notification/hooks/use-notification-stream"
 import { useLogout } from "@/features/auth/hooks/use-logout"
 import { useMe } from "@/features/profile/hooks/use-me"
-import { isUnauthorizedError } from "@/lib/axios"
-import { Spinner } from "@/components/ui/spinner"
+import { RoomJoinDialog } from "@/features/rooms/components/room-join-dialog"
 import { useRooms } from "@/features/rooms/hooks/use-rooms"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
+import { isUnauthorizedError } from "@/lib/axios"
 import { env } from "@/lib/env"
 import { cn } from "@/lib/utils"
-import { FILTER_SHARED_PATHS, NAV_ITEMS, type NavItem } from "./nav-items"
+import { FILTER_SHARED_PATHS, MOBILE_NAV_ITEMS, NAV_ITEMS, type NavItem } from "./nav-items"
+import { ThemeToggle } from "./theme-toggle"
 
 const PAGE_TITLES: [RegExp, string][] = [
   [/^\/discover\/[^/]+$/, "Địa điểm"],
@@ -59,16 +76,22 @@ const PAGE_TITLES: [RegExp, string][] = [
   [/^\/saved$/, "Đã lưu"],
   [/^\/profile$/, "Trang cá nhân"],
   [/^\/settings$/, "Cài đặt"],
+  [/^\/admin$/, "Quản trị"],
   [/^\/help$/, "Trợ giúp"],
   [/^\/about$/, "Giới thiệu"],
   [/^\/terms$/, "Điều khoản sử dụng"],
   [/^\/privacy$/, "Chính sách bảo mật"],
-  // Trang demo vận hành (không có link trong nav) — vẫn cần tiêu đề tab đúng,
-  // nếu không nó rơi vào catch-all 404 và tab ghi sai "Không tìm thấy trang".
   [/^\/system$/, "Số liệu vận hành"],
-  // Catch-all cuối cùng: mọi path còn lại là route 404.
   [/^.*$/, "Không tìm thấy trang"],
 ]
+
+const QUICK_SEARCH_SUGGESTIONS = [
+  "Mì Quảng",
+  "Bánh xèo",
+  "Bún chả cá",
+  "Cà phê Sơn Trà",
+  "Hải sản",
+] as const
 
 function titleForPath(pathname: string): string | undefined {
   const match = PAGE_TITLES.find(([pattern]) => pattern.test(pathname))
@@ -82,10 +105,6 @@ function useDocumentTitle(pathname: string) {
   }, [pathname])
 }
 
-/**
- * Chuyển route thì đưa focus về đầu nội dung — điều hướng bàn phím/screen
- * reader không bị "mất vị trí" sau khi trang mới render.
- */
 function useFocusMainOnNavigate(pathname: string, mainRef: React.RefObject<HTMLElement | null>) {
   const isFirstRender = useRef(true)
   useEffect(() => {
@@ -96,25 +115,16 @@ function useFocusMainOnNavigate(pathname: string, mainRef: React.RefObject<HTMLE
     mainRef.current?.focus()
   }, [pathname, mainRef])
 }
-import { ThemeToggle } from "./theme-toggle"
 
 interface AppShellProps {
   children?: React.ReactNode
 }
 
-/**
- * Layout global:
- * - PC: nav dọc bên trái, topbar (search + avatar) trên cùng.
- * - Mobile: topbar trên cùng, nav ngang cố định dưới cùng.
- *
- * Dùng làm layout route: không truyền `children` thì render `<Outlet />`.
- */
 export function AppShell({ children }: Readonly<AppShellProps>) {
   const location = useLocation()
   const mainRef = useRef<HTMLElement>(null)
   useDocumentTitle(location.pathname)
   useFocusMainOnNavigate(location.pathname, mainRef)
-  // Một kết nối SSE cho toàn app: badge + danh sách cập nhật ngay (G6.3).
   useNotificationStream()
 
   return (
@@ -126,10 +136,9 @@ export function AppShell({ children }: Readonly<AppShellProps>) {
         Bỏ qua tới nội dung
       </a>
       <SideNav />
-      <div className="flex min-h-dvh flex-col lg:pl-56">
+      <div className="flex min-h-dvh flex-col lg:pl-60">
         <TopBar />
-        {/* pb-20 chừa chỗ cho bottom nav trên mobile */}
-        <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 pb-20 outline-none lg:pb-0">
+        <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 pb-24 outline-none lg:pb-0">
           {children ?? (
             <Suspense fallback={<PageLoading />}>
               <Outlet />
@@ -144,41 +153,46 @@ export function AppShell({ children }: Readonly<AppShellProps>) {
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2">
+    <Link to="/discover" className="group flex items-center gap-2.5 outline-none">
       <span
         aria-hidden="true"
-        className="grid size-8 place-items-center rounded-control border border-border bg-secondary text-sm font-bold text-secondary-foreground"
+        className="grid size-9 place-items-center rounded-control bg-primary text-primary-foreground shadow-(--shadow-soft) transition-transform group-hover:scale-105"
       >
-        R
+        <CompassIcon className="size-4.5" />
       </span>
-      <span className="font-heading text-lg leading-none font-bold tracking-tight">Rendez</span>
-    </div>
+      <span className="flex flex-col">
+        <span className="font-display text-lg leading-none font-bold tracking-tight text-foreground">
+          Rendez
+        </span>
+        <span className="text-xs leading-tight font-medium text-muted-foreground">
+          Đà Nẵng Guide
+        </span>
+      </span>
+    </Link>
   )
 }
 
-/**
- * Trả về hàm dựng `to` cho một mục nav.
- *
- * Đứng ở `/discover` hoặc `/map` thì mang theo `?category=&district=&q=&nearby=`
- * khi bấm mục còn lại — bộ lọc của hai trang là một, đổi cách nhìn không mất
- * search/filter. Ở trang khác thì không mang gì.
- */
 function useNavTarget() {
   const location = useLocation()
   const carrySearch = FILTER_SHARED_PATHS.includes(location.pathname) ? location.search : ""
-
   return (item: NavItem) => (item.sharesFilters ? item.to + carrySearch : item.to)
 }
 
 function SideNav() {
   const { data: unread = 0 } = useUnreadNotificationCount()
+  const { data: me } = useMe()
+  const { activeCode, getRoom } = useRooms()
+  const activeRoom = activeCode ? getRoom(activeCode) : undefined
   const navTarget = useNavTarget()
+  const isStaff = me?.role === "admin" || me?.role === "moderator"
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-border bg-sidebar px-4 py-5 lg:flex">
-      <Brand />
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border/80 bg-sidebar/95 px-4 py-5 backdrop-blur-md lg:flex">
+      <div className="px-1">
+        <Brand />
+      </div>
 
-      <nav aria-label="Điều hướng chính" className="mt-8 flex flex-col gap-1">
+      <nav aria-label="Điều hướng chính" className="mt-7 flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           return (
@@ -187,32 +201,95 @@ function SideNav() {
               to={navTarget(item)}
               className={({ isActive }) =>
                 cn(
-                  "group flex items-center gap-3 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                  "group relative isolate flex items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium transition-colors",
                   isActive
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-transparent hover:border-border hover:bg-muted",
+                    ? "text-primary-foreground"
+                    : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 )
               }
             >
-              <Icon className="size-4 shrink-0" aria-hidden="true" />
-              <span className="flex-1">{item.label}</span>
-              {item.to === "/notification" && unread > 0 ? (
-                <Badge variant="secondary" className="min-w-5 px-1 text-xs font-bold">
-                  {unread}
-                </Badge>
-              ) : null}
+              {({ isActive }) => (
+                <>
+                  {isActive ? <MotionPill layoutId="sidenav-active" /> : null}
+                  <Icon className="size-4 shrink-0" aria-hidden="true" />
+                  <span className="flex-1">{item.label}</span>
+                  {item.to === "/notification" && unread > 0 ? (
+                    <Badge
+                      variant={isActive ? "secondary" : "default"}
+                      className="min-w-5 px-1.5 text-xs font-bold tabular-nums"
+                    >
+                      {unread}
+                    </Badge>
+                  ) : null}
+                </>
+              )}
             </NavLink>
           )
         })}
+
+        {isStaff ? (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              cn(
+                "group relative isolate mt-2 flex items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive
+                  ? "text-primary-foreground"
+                  : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              )
+            }
+          >
+            {({ isActive }) => (
+              <>
+                {isActive ? <MotionPill layoutId="sidenav-active" /> : null}
+                <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
+                <span className="flex-1">Quản trị</span>
+              </>
+            )}
+          </NavLink>
+        ) : null}
       </nav>
 
-      <div className="mt-auto flex flex-col gap-3 border-t border-dashed border-border pt-4">
+      {activeRoom ? (
+        <div className="mt-6 rounded-surface border border-primary/35 bg-primary/8 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+              <UsersIcon className="size-3.5" aria-hidden="true" />
+              Phòng đang lọc
+            </span>
+            <Badge variant="secondary" className="font-mono text-xs">
+              {activeRoom.code}
+            </Badge>
+          </div>
+          <p className="mt-1.5 truncate text-sm font-semibold">{activeRoom.name}</p>
+          <p className="text-xs text-muted-foreground">{activeRoom.members.length} thành viên</p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-2.5 w-full justify-between text-xs"
+            render={<Link to={`/rooms/${activeRoom.code}`} />}
+          >
+            Vào bàn chốt quán
+            <ArrowRightIcon className="size-3.5" aria-hidden="true" />
+          </Button>
+        </div>
+      ) : null}
+
+      <div className="mt-auto flex flex-col gap-3 border-t border-border/70 pt-4">
         <SkinSwitch />
-        {/* Chỉ hiện khi mock server đang phục dữ liệu — prod gọi backend thật. */}
         {env.enableMocks ? (
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Dữ liệu minh hoạ. Chưa kết nối backend.
-          </p>
+          <div className="flex items-center justify-between">
+            <Tooltip>
+              <TooltipTrigger
+                render={<Badge variant="outline" className="cursor-help text-xs font-normal" />}
+              >
+                Chế độ Demo
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Đang sử dụng dữ liệu minh hoạ cục bộ tại Đà Nẵng.
+              </TooltipContent>
+            </Tooltip>
+          </div>
         ) : null}
       </div>
     </aside>
@@ -220,66 +297,182 @@ function SideNav() {
 }
 
 function SkinSwitch() {
+  const { skin, setSkin } = useSkin()
+
   return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-xs font-medium text-muted-foreground">Giao diện</span>
-      <ThemeToggle />
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-muted-foreground">Ánh sáng</span>
+        <ThemeToggle />
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-muted-foreground">Bảng màu</span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1.5 px-2 text-xs"
+          onClick={() => setSkin(skin === "default" ? "retro" : "default")}
+        >
+          <PaletteIcon className="size-3.5" aria-hidden="true" />
+          {skin === "default" ? "Ấm áp" : "Hiện đại"}
+        </Button>
+      </div>
     </div>
   )
 }
 
 function TopBar() {
   const { draft, setDraft, submit } = useSearchQuerySync()
-  const { activeCode, getRoom } = useRooms()
+  const { activeCode, getRoom, createRoom, joinRoom } = useRooms()
   const location = useLocation()
+  const navigate = useNavigate()
+  const [commandOpen, setCommandOpen] = useState(false)
+  const [joinOpen, setJoinOpen] = useState(false)
   const room = activeCode ? getRoom(activeCode) : undefined
-  /**
-   * Đang trong phòng lọc nhóm trên trang lọc: kết quả do `RoomFilter` của phòng
-   * quyết định nên tìm kiếm cá nhân không có tác dụng — ẩn ô tìm kiếm, đồng bộ
-   * với việc ẩn chips quận + popover Lọc trong `DiscoverToolbar`.
-   */
   const isSearchBlocked = room !== undefined && FILTER_SHARED_PATHS.includes(location.pathname)
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault()
+        setCommandOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
+
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 lg:px-8">
+    <header className="sticky top-0 z-20 border-b border-border/80 bg-background/88 backdrop-blur-md">
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 lg:px-8">
         <div className="lg:hidden">
           <Brand />
         </div>
 
         {isSearchBlocked ? (
-          <p className="ml-auto text-xs text-muted-foreground">
-            Đang lọc theo phòng — tìm kiếm cá nhân tạm tắt
-          </p>
+          <div className="ml-auto flex items-center gap-2 rounded-full border border-primary/30 bg-primary/8 px-3 py-1.5 text-xs text-foreground lg:ml-0">
+            <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
+            <span>Đang lọc theo phòng {room.name}</span>
+          </div>
         ) : (
-          <form
-            role="search"
-            className="ml-auto w-full max-w-lg lg:ml-0 lg:max-w-xl"
-            onSubmit={(event) => {
-              event.preventDefault()
-              submit()
-            }}
-          >
-            <InputGroup className="h-10">
-              <InputGroupAddon>
-                <SearchIcon />
-              </InputGroupAddon>
-              <InputGroupInput
-                type="search"
-                name="q"
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                placeholder="Tìm quán ăn, địa điểm, bài viết…"
-                aria-label="Tìm kiếm"
-              />
-            </InputGroup>
-          </form>
+          <div className="ml-auto flex w-full max-w-md items-center gap-2 lg:ml-0 lg:max-w-xl">
+            <form
+              role="search"
+              className="flex-1"
+              onSubmit={(event) => {
+                event.preventDefault()
+                submit()
+              }}
+            >
+              <InputGroup className="h-10 rounded-full bg-card/90 shadow-xs">
+                <InputGroupAddon>
+                  <SearchIcon />
+                </InputGroupAddon>
+                <InputGroupInput
+                  type="search"
+                  name="q"
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  placeholder="Tìm quán ăn, địa điểm, bài viết…"
+                  aria-label="Tìm kiếm"
+                />
+                <InputGroupAddon align="inline-end" className="hidden sm:flex">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    className="h-6 rounded-full border border-border/70 px-2 text-xs text-muted-foreground"
+                    onClick={() => setCommandOpen(true)}
+                    aria-label="Mở bảng tìm nhanh"
+                  >
+                    ⌘K
+                  </Button>
+                </InputGroupAddon>
+              </InputGroup>
+            </form>
+          </div>
         )}
 
         <div className="ml-auto flex items-center gap-2">
+          {room ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden gap-1.5 rounded-full border-primary/40 bg-primary/5 text-xs font-medium lg:inline-flex"
+              render={<Link to={`/rooms/${room.code}`} />}
+            >
+              <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
+              {room.name}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden gap-1.5 rounded-full text-xs font-medium lg:inline-flex"
+              onClick={() => setJoinOpen(true)}
+            >
+              <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
+              Đi cùng nhóm
+            </Button>
+          )}
           <UserMenu />
         </div>
       </div>
+
+      <CommandDialog
+        open={commandOpen}
+        onOpenChange={setCommandOpen}
+        title="Tìm nhanh trên Rendez"
+        description="Tìm món ăn đặc sản Đà Nẵng hoặc chuyển nhanh tới trang chức năng."
+      >
+        <CommandInput placeholder="Gõ tên món ăn, quán hoặc trang muốn mở…" />
+        <CommandList>
+          <CommandEmpty>Không tìm thấy gợi ý phù hợp.</CommandEmpty>
+          <CommandGroup heading="Món ngon Đà Nẵng">
+            {QUICK_SEARCH_SUGGESTIONS.map((term) => (
+              <CommandItem
+                key={term}
+                value={term}
+                onSelect={() => {
+                  setCommandOpen(false)
+                  setDraft(term)
+                  void navigate(`/search?q=${encodeURIComponent(term)}`)
+                }}
+              >
+                <SparklesIcon className="size-4 text-primary" aria-hidden="true" />
+                <span>Tìm “{term}”</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandSeparator />
+          <CommandGroup heading="Điều hướng nhanh">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon
+              return (
+                <CommandItem
+                  key={item.to}
+                  value={item.label}
+                  onSelect={() => {
+                    setCommandOpen(false)
+                    void navigate(item.to)
+                  }}
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                  <span>{item.label}</span>
+                </CommandItem>
+              )
+            })}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+
+      <RoomJoinDialog
+        open={joinOpen}
+        onOpenChange={setJoinOpen}
+        onCreate={createRoom}
+        onJoin={(code, displayName) => joinRoom(code, displayName || "Khách")}
+      />
     </header>
   )
 }
@@ -290,11 +483,6 @@ function UserMenu() {
   const { mutate: logout, isPending: isLoggingOut } = useLogout()
   const navigate = useNavigate()
 
-  /**
-   * Đăng xuất: gọi server, xoá cache rồi về trang chủ (nơi hiển thị trạng thái
-   * khách). Toast xác nhận để người dùng biết thao tác đã xong (V1-10) — trước
-   * đây menu chỉ đổi sang trạng thái khách, dễ tưởng bấm hụt.
-   */
   const handleLogout = () => {
     logout(undefined, {
       onSuccess: () => {
@@ -308,7 +496,7 @@ function UserMenu() {
   if (isPending) {
     menuContent = (
       <DropdownMenuItem disabled>
-        <Spinner />
+        <Spinner aria-label="Đang tải hồ sơ" />
         Đang tải hồ sơ…
       </DropdownMenuItem>
     )
@@ -321,7 +509,7 @@ function UserMenu() {
             <span className="block text-xs font-normal text-muted-foreground">@{me.handle}</span>
             <Link
               to="/profile"
-              className="mt-1 block text-xs font-medium text-foreground underline underline-offset-2"
+              className="mt-1 block text-xs font-medium text-primary underline underline-offset-2"
             >
               Xem trang cá nhân →
             </Link>
@@ -333,14 +521,16 @@ function UserMenu() {
           </DropdownMenuItem>
           <DropdownMenuItem render={<Link to="/saved" />}>
             <BookmarkIcon />
-            Bài đăng đã lưu
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link to="/profile?tab=pinned" />}>
-            <MapPinIcon />
-            Địa điểm đã ghim
+            Địa điểm & Bộ sưu tập
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        {me.role === "admin" || me.role === "moderator" ? (
+          <DropdownMenuItem render={<Link to="/admin" />}>
+            <ShieldCheckIcon />
+            Quản trị
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem render={<Link to="/settings" />}>
           <SettingsIcon />
           Cài đặt
@@ -348,15 +538,15 @@ function UserMenu() {
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <PaletteIcon />
-            Giao diện
+            Bảng màu
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             <DropdownMenuRadioGroup
               value={skin}
               onValueChange={(value) => setSkin(value as typeof skin)}
             >
-              <DropdownMenuRadioItem value="default">Mặc định</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="retro">Retro</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="default">Ấm áp (Terracotta)</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="retro">Hiện đại (Cobalt)</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
@@ -372,7 +562,6 @@ function UserMenu() {
       </>
     )
   } else if (isUnauthorizedError(error)) {
-    // Chưa đăng nhập: lối tắt vào cả đăng nhập và đăng ký (V1-10).
     menuContent = (
       <>
         <DropdownMenuItem onClick={() => void navigate("/login")}>
@@ -386,12 +575,10 @@ function UserMenu() {
       </>
     )
   } else {
-    // Lỗi khác 401 (mạng, 5xx): người dùng vẫn có thể đã đăng nhập — không
-    // được hiện "Đăng nhập" như thể phiên đã mất.
     menuContent = (
       <DropdownMenuItem onClick={() => void refetch()}>
         <UserIcon />
-        Không tải được hồ sơ — thử lại
+        Không tải được hồ sơ. Nhấn để thử lại
       </DropdownMenuItem>
     )
   }
@@ -401,18 +588,24 @@ function UserMenu() {
       <DropdownMenuTrigger
         render={
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             aria-label="Mở menu người dùng"
-            className="size-10 rounded-full"
+            className="h-10 gap-2 rounded-full px-1.5 md:pr-3"
           />
         }
       >
-        <Avatar size="lg">
+        <Avatar size="default">
+          {me?.avatarUrl ? <AvatarImage src={me.avatarUrl} alt={me.name} /> : null}
           <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
             {me?.initials ?? <UserIcon className="size-4" />}
           </AvatarFallback>
         </Avatar>
+        {me ? (
+          <span className="hidden max-w-28 truncate text-xs font-semibold md:inline">
+            {me.name}
+          </span>
+        ) : null}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         {menuContent}
@@ -427,19 +620,19 @@ function BottomNav() {
 
   return (
     <nav
-      aria-label="Điều hướng chính"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      aria-label="Điều hướng di động"
+      className="fixed inset-x-3 bottom-3 z-30 rounded-2xl border border-border/80 bg-background/90 pb-[env(safe-area-inset-bottom)] shadow-(--shadow-floating) backdrop-blur-md lg:hidden"
     >
-      <ul className="mx-auto flex max-w-md items-stretch">
-        {NAV_ITEMS.map((item) => {
+      <ul className="mx-auto flex max-w-lg items-stretch">
+        {MOBILE_NAV_ITEMS.map((item) => {
           const Icon = item.icon
           return (
-            <li key={item.to} className="flex-1">
+            <li key={item.to} className="min-w-0 flex-1">
               <NavLink
                 to={navTarget(item)}
                 className={({ isActive }) =>
                   cn(
-                    "relative flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors",
+                    "relative flex min-w-0 flex-col items-center gap-1 px-1 py-2.5 text-xs font-medium transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground",
                   )
                 }
@@ -455,11 +648,11 @@ function BottomNav() {
                         />
                       ) : null}
                     </span>
-                    <span>{item.label}</span>
+                    <span className="max-w-full truncate">{item.label}</span>
                     {isActive ? (
-                      <span
-                        aria-hidden="true"
-                        className="absolute inset-x-4 top-0 h-0.5 bg-primary"
+                      <MotionPill
+                        layoutId="mobile-nav-pill"
+                        className="inset-x-3 top-0 bottom-auto h-0.5 rounded-full"
                       />
                     ) : null}
                   </>

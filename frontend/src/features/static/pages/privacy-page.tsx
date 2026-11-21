@@ -5,7 +5,7 @@ export function PrivacyPage() {
   return (
     <StaticPage
       title="Chính sách bảo mật"
-      description="Bản nháp — cho biết Rendez thu thập gì và dùng để làm gì. Cập nhật lần cuối: 12/11/2026."
+      description="Thông tin về cách Rendez thu thập, sử dụng và bảo vệ dữ liệu của bạn. Cập nhật lần cuối: 12/11/2026."
     >
       <StaticSection title="Dữ liệu chúng tôi lưu">
         <p>

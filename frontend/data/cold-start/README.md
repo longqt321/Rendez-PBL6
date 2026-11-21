@@ -1,6 +1,11 @@
 # Cold-start data — quán ăn & cafe Đà Nẵng
 
-Bộ data **thật** (không mock) dùng để seed khi nối backend. Độc lập với frontend/backend.
+> [!NOTE]
+> **Trạng thái chỉ đọc (theo D-065/D-066):** `places.json` hiện chỉ được giữ làm fixture
+> chỉ đọc cho mock server FE (`frontend/src/mocks/`) và tham chiếu ảnh thật trong `images/venues/`.
+> Nguồn sự thật chính thức của backend hiện là `backend/data/places-expanded.json` (358 địa điểm).
+
+Bộ data **thật** (không mock) ban đầu dùng cho mock server và fallback seed. Độc lập với runtime API.
 
 ## Quy mô (tái sinh 2026-11-09, quyết định D-046)
 

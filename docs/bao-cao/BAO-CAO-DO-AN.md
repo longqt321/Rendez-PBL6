@@ -87,11 +87,12 @@ Load testing uses a configuration that limits the service tier to 2 cores. The 9
 | Hình 3.4 | Sequence diagram luồng tác vụ nền |
 | Hình 3.5 | Sequence diagram luồng bình chọn nhóm thời gian thực |
 | Hình 3.6 | Sequence diagram luồng tải ảnh qua URL có chữ ký |
-| Hình 3.7 | Activity diagram luồng tìm kiếm địa điểm |
-| Hình 3.8 | Activity diagram luồng đăng bài và phát hiện địa điểm |
-| Hình 3.9 | Sơ đồ lớp các lớp miền nghiệp vụ chính |
-| Hình 3.10 | Sơ đồ thực thể liên kết (theo miền, 29 bảng) |
-| Hình 3.11 | Sơ đồ điều hướng các màn hình chính |
+| Hình 3.7 | State diagram vòng đời một đề xuất trong phòng bình chọn |
+| Hình 3.8 | Activity diagram luồng tìm kiếm địa điểm |
+| Hình 3.9 | Activity diagram luồng đăng bài và phát hiện địa điểm |
+| Hình 3.10 | Sơ đồ lớp các lớp miền nghiệp vụ chính |
+| Hình 3.11 | Sơ đồ thực thể liên kết (theo miền, 29 bảng) |
+| Hình 3.12 | Sơ đồ điều hướng các màn hình chính |
 | Hình 4.1 | Biểu đồ thời gian phản hồi theo mức tải |
 | Hình 4.2 | Biểu đồ độ chính xác tìm kiếm trên tập nội bộ |
 | Hình 4.3 | Biểu đồ độ triệu hồi gợi ý trên tập địa điểm |
@@ -260,7 +261,7 @@ Báo cáo gồm năm chương. Chương 1 trình bày bài toán, mục tiêu v�
 
 **pg-boss.** pg-boss lưu tác vụ bất đồng bộ trong bảng của PostgreSQL. Mỗi tác vụ có trạng thái chờ, đang xử lý hoặc hoàn tất, kèm thời hạn xử lý. Đồ án dùng pg-boss cho bốn loại tác vụ nền [5].
 
-**Prisma.** Prisma định nghĩa lược đồ dữ liệu, sinh migration có phiên bản và sinh kiểu dữ liệu cho mã ứng dụng. Đồ án dùng Prisma cho 20 migration và toàn bộ truy vấn nghiệp vụ [2].
+**Prisma.** Prisma định nghĩa lược đồ dữ liệu, sinh migration có phiên bản và sinh kiểu dữ liệu cho mã ứng dụng. Đồ án dùng Prisma cho 21 migration và toàn bộ truy vấn nghiệp vụ [2].
 
 **Better Auth.** Better Auth quản lý tài khoản, mật khẩu và phiên theo mô hình lưu phiên phía máy chủ. Đồ án dùng Better Auth cho đăng ký, đăng nhập, khôi phục mật khẩu và xác thực email [3].
 
@@ -295,27 +296,101 @@ Hai quyết định công nghệ dưới đây có nhiều phương án thay th�
 | Chi phí phù hợp corpus 358 bản ghi | Phù hợp | Không tương xứng |
 | Kết luận | Chọn cho corpus hiện tại | Không chọn |
 
-## 2.3. Cơ sở lý thuyết của hai thuật toán
+## 2.3. Cơ sở lý thuyết
 
-Hai thuật toán EGRF và DES ở Chương 3 được xây dựng trên bốn nền tảng lý thuyết có sẵn. Mục này trình bày từng nền tảng và nêu lý do chọn, để phần thiết kế ở Chương 3 chỉ cần mô tả cách áp dụng mà không phải giải thích lại lý thuyết.
+Mục này trình bày những nền tảng lý thuyết mà thiết kế và hiện thực Rendez dựa vào, chia thành bốn nhóm: tìm kiếm thông tin, hệ thống gợi ý và xử lý cold-start, thiết kế giao diện web, và thiết kế backend.
 
-**Hợp nhất xếp hạng nghịch đảo (Reciprocal Rank Fusion).** Khi một truy vấn được xử lý bởi nhiều nhánh tìm kiếm, mỗi nhánh trả về một danh sách xếp hạng riêng. Hợp nhất xếp hạng nghịch đảo (RRF) gộp các danh sách này bằng cách cộng điểm của mỗi tài liệu theo nghịch đảo thứ hạng của nó trong từng danh sách [12]. Điểm RRF của tài liệu $d$ là:
+### 2.3.1. Cơ sở lý thuyết về hệ thống tìm kiếm thông tin
+
+Người dùng tìm địa điểm theo hai cách khác nhau: gõ đúng tên quán, hoặc mô tả điều mình muốn mà chưa biết tên. Một hệ tìm kiếm tốt phải làm được cả hai, nên cần kết hợp tìm theo từ khoá và tìm theo ngữ nghĩa.
+
+**1. Xếp hạng theo từ khoá với BM25**
+
+BM25 chấm điểm mức liên quan giữa truy vấn $Q$ và một địa điểm $D$ dựa trên ba yếu tố: từ khoá xuất hiện bao nhiêu lần trong $D$, từ đó hiếm hay phổ biến trong toàn bộ dữ liệu, và $D$ dài hay ngắn so với mặt bằng chung [13]:
+
+$$\text{Score}(D, Q) = \sum_{i=1}^{n} \text{IDF}(q_i) \cdot \frac{f(q_i, D) \cdot (k_1 + 1)}{f(q_i, D) + k_1 \cdot \left(1 - b + b \cdot \frac{|D|}{\text{avgdl}}\right)}$$
+
+Trong đó $f(q_i, D)$ là số lần từ $q_i$ xuất hiện trong $D$; $|D|$ và $\text{avgdl}$ là độ dài của $D$ và độ dài trung bình của cả kho dữ liệu; $k_1$ và $b$ là hai tham số điều chỉnh, thường lấy $k_1 \in [1.2, 2.0]$ và $b = 0.75$.
+
+BM25 mạnh nhất khi người dùng gõ đúng tên riêng hoặc địa danh, ví dụ "bún chả cá Bà Mua". Ngược lại, nó gần như không hiểu được những câu mô tả như "quán yên tĩnh để nói chuyện".
+
+**2. Tìm theo ngữ nghĩa bằng vector và độ tương đồng cosine**
+
+Để hiểu được những câu mô tả như vậy, mỗi địa điểm và mỗi truy vấn được chuyển thành một vector 384 chiều. Hai vector càng gần nhau về hướng thì nội dung càng giống nhau, đo bằng độ tương đồng cosine:
+
+$$\text{Sim}_{\cos}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2} = \frac{\sum_{i=1}^{d} u_i v_i}{\sqrt{\sum_{i=1}^{d} u_i^2} \sqrt{\sum_{i=1}^{d} v_i^2}}$$
+
+Cách này giúp tìm ra địa điểm phù hợp dù người dùng dùng từ đồng nghĩa, mô tả cảm xúc hay bối cảnh, chẳng hạn "chỗ lãng mạn ngắm hoàng hôn".
+
+**3. Gộp kết quả nhiều nhánh bằng RRF**
+
+Bốn nhánh tìm kiếm trả về bốn danh sách, mỗi danh sách chấm điểm theo một thang khác nhau nên không cộng trực tiếp được. RRF bỏ qua điểm số, chỉ dùng thứ hạng để gộp [12]:
 
 $$S(d) = \sum_{r \in R} \frac{w_r}{k + \mathrm{rank}_r(d)}$$
 
-trong đó $k$ là hằng số làm mịn, tránh trường hợp một tài liệu đứng đầu tuyệt đối ở một nhánh lấn át toàn bộ kết quả. Cormack và cộng sự cho thấy RRF đạt chất lượng cao hơn nhiều phương pháp hợp nhất dựa trên điểm số, vì nó chỉ dùng thứ hạng nên không cần chuẩn hoá điểm giữa các nhánh có thang đo khác nhau [12]. Đây là lý do EGRF chọn RRF thay vì hợp nhất theo điểm: bốn nhánh của EGRF trả về điểm trên các thang khác nhau (tương đồng trigram, khoảng cách cosine, khớp chính xác), không thể cộng trực tiếp. RRF còn cho phép gắn trọng số $w_r$ vào từng nhánh, là cơ chế để EGRF điều chỉnh độ tin cậy theo bằng chứng định danh.
+Ở đây $R$ là tập bốn nhánh, $\mathrm{rank}_r(d)$ là vị trí của địa điểm $d$ trong danh sách của nhánh $r$, $w_r$ là trọng số của nhánh, và $k$ là hằng số làm mịn để một địa điểm đứng đầu ở một nhánh không lấn át toàn bộ kết quả.
 
-**Xếp hạng theo xác suất (BM25).** Nhánh khớp từ khoá của EGRF dùng BM25 làm nền xếp hạng. BM25 xếp hạng tài liệu theo xác suất liên quan giữa truy vấn và tài liệu, kết hợp ba yếu tố: tần suất từ trong tài liệu, độ hiếm của từ trong toàn bộ corpus và độ dài tài liệu [13]. Khác với mô hình vector, BM25 khớp chính xác các thuật ngữ nên mạnh với truy vấn có tên riêng hoặc thuật ngữ đặc trưng. Đây là lý do trên hai tập khoa học ở mục 4.5.3, khớp từ khoá đạt nDCG@10 cao hơn EGRF: khi tín hiệu từ khoá đã đủ mạnh và tài liệu tiếng Anh chuyên ngành hẹp, khớp chính xác thuật ngữ hiệu quả hơn hợp nhất đa nhánh.
+### 2.3.2. Cơ sở lý thuyết về hệ thống gợi ý và bài toán cold-start
 
-**Lọc cộng tác dựa trên vật phẩm.** Lọc cộng tác dựa trên vật phẩm (item-based collaborative filtering) dự đoán sở thích của người dùng bằng cách tìm các vật phẩm tương tự với những gì người dùng đã tương tác [14]. Độ tương tự giữa hai vật phẩm tính từ ma trận tương tác của toàn bộ người dùng, thường bằng độ tương đồng cosine. Phương pháp này ổn định hơn lọc cộng tác dựa trên người dùng vì số vật phẩm ít thay đổi hơn số người dùng, nên ma trận tương tự vật phẩm có thể tính lại theo chu kỳ thay vì theo thời gian thực. DES dùng cách tiếp cận này để tính điểm sở thích: mỗi loại sự kiện tương tác (xem, thích, lưu, đánh giá) có một trọng số riêng, điểm tổng hợp trên các địa điểm cùng hạng mục hoặc cùng quận và suy giảm theo thời gian.
+Phần gợi ý giúp người dùng tìm được địa điểm phù hợp mà không cần gõ tìm kiếm. Khó khăn nằm ở chỗ dữ liệu tương tác ban đầu rất ít, nên hệ thống phải vẫn cho ra kết quả hợp lý khi chưa có gì để học.
 
-**Trung bình Bayes có điều chỉnh và bài toán cold-start.** Bài toán cold-start xảy ra khi hệ gợi ý thiếu dữ liệu tương tác để xếp hạng, đặc biệt với vật phẩm mới hoặc người dùng mới [19]. Schein và cộng sự phân loại các hướng giải quyết cold-start và chỉ ra rằng khi thiếu dữ liệu tương tác, hệ thống cần dựa vào thông tin nội tại của vật phẩm hoặc tiên nghiệm thống kê thay vì dữ liệu cộng tác [19]. Trung bình Bayes có điều chỉnh là một hướng như vậy: điểm của một vật phẩm được co về điểm trung bình tiên nghiệm $\mu_0$ bằng một khối lượng tiên nghiệm $m$, nên vật phẩm có ít lượt đánh giá sẽ gần $\mu_0$ thay vì bị chi phối bởi một vài đánh giá đầu tiên. Công thức là:
+**1. Lọc cộng tác dựa trên vật phẩm**
+
+Ý tưởng khá trực quan: nếu người dùng từng thích quán A, mà quán B có tập người thích gần giống A, thì nhiều khả năng người đó cũng thích B [14]. Độ giống nhau giữa hai địa điểm $i$ và $j$ tính trên vector đánh giá của những người đã tương tác với cả hai:
+
+$$\text{sim}(i, j) = \frac{\sum_{u \in U} (r_{u,i} - \bar{r}_u)(r_{u,j} - \bar{r}_u)}{\sqrt{\sum_{u \in U} (r_{u,i} - \bar{r}_u)^2} \sqrt{\sum_{u \in U} (r_{u,j} - \bar{r}_u)^2}}$$
+
+Cách tính theo vật phẩm ổn định hơn tính theo người dùng, vì danh sách địa điểm thay đổi chậm hơn nhiều so với danh sách người dùng. Nhờ vậy có thể tính trước định kỳ rồi lưu vào bộ đệm, không phải tính lại mỗi lần có người mở ứng dụng.
+
+**2. Điểm trung bình Bayes có điều chỉnh cho địa điểm mới**
+
+Một địa điểm vừa đưa lên hệ thống thường chưa có đánh giá, hoặc chỉ có vài lượt. Đây là bài toán cold-start phía vật phẩm (item cold-start) [19]. Nếu lấy trung bình cộng đơn thuần, một quán mới nhận hai lượt 5 sao sẽ vượt mặt quán lâu năm có 4,7 sao từ 500 lượt, rõ ràng không công bằng. Cách xử lý là kéo điểm của địa điểm ít đánh giá về mức trung bình chung $\mu_0$ của toàn hệ thống:
 
 $$\hat{R}(i) = \frac{v_i \cdot \bar{r}_i + m_i \cdot \mu_0}{v_i + m_i}$$
 
-với $v_i$ là số lượt đánh giá và $\bar{r}_i$ là điểm trung bình của vật phẩm $i$. Khi $v_i$ nhỏ, điểm $\hat{R}(i)$ gần $\mu_0$; khi $v_i$ lớn, điểm tiến về $\bar{r}_i$. DES dùng chính cơ chế này làm nền xử lý cold-start: khối lượng tiên nghiệm $m_i$ tăng theo độ hoàn thiện thông tin của địa điểm, nên địa điểm mới nhưng có đủ ảnh, giờ mở cửa, số điện thoại và mô tả vẫn được xếp hạng hợp lý mà không cần chờ lượt đánh giá.
+Trong đó $v_i$ là số lượt đánh giá thật, $\bar{r}_i$ là điểm trung bình hiện có, và $m_i$ là "độ tin cậy" gán cho địa điểm. Khi $v_i$ còn nhỏ, điểm $\hat{R}(i)$ nằm gần $\mu_0$; khi $v_i$ lớn dần, điểm tiến về $\bar{r}_i$. Điểm đáng chú ý là $m_i$ không cố định mà tăng theo độ đầy đủ của hồ sơ địa điểm: địa điểm mới nhưng đã có ảnh, giờ mở cửa, số điện thoại và mô tả chi tiết sẽ được tin tưởng hơn địa điểm mới chỉ có mỗi cái tên.
 
-Bốn nền tảng trên bổ sung cho nhau. RRF và BM25 giải quyết bài toán xếp hạng kết quả tìm kiếm; lọc cộng tác dựa trên vật phẩm và trung bình Bayes giải quyết bài toán gợi ý khi dữ liệu tương tác thiếu hoặc không đồng đều. EGRF và DES ở Chương 3 là cách kết hợp các nền tảng này cho đặc thù dữ liệu địa điểm Đà Nẵng.
+### 2.3.3. Cơ sở lý thuyết về thiết kế ứng dụng web
+
+Giao diện Rendez phải vừa dễ dùng với người lần đầu mở, vừa đủ nhanh khi người dùng thao tác liên tục trên bản đồ và bảng tin. Hai nền tảng dưới đây định hình cách làm đó.
+
+**1. Giao diện dựng từ các thành phần**
+
+Giao diện được chia thành các thành phần độc lập, mỗi thành phần tự giữ trạng thái của mình và ghép lại thành cây giao diện [9]. Dữ liệu chảy một chiều từ thành phần cha xuống con, nên khi trạng thái đổi thì giao diện tự cập nhật theo:
+
+$$\text{UI} = f(\text{State})$$
+
+Cách tổ chức này giúp một lỗi ở màn hình chi tiết địa điểm không lan sang bản đồ hay bảng tin, đồng thời cho phép cập nhật cục bộ những vùng thay đổi thay vì dựng lại cả trang.
+
+**2. Nguyên tắc dễ dùng và khả năng tiếp cận**
+
+Phần giao diện bám theo mười nguyên tắc dễ dùng của Nielsen [30] và hướng dẫn tiếp cận nội dung WCAG 2.1 [29]. Ba điểm được chú trọng nhất:
+
+- **Cho người dùng biết hệ thống đang làm gì.** Tìm kiếm, lọc hay bình chọn đều phản hồi ngay, không để người dùng đoán.
+- **Giữ mọi thứ nhất quán.** Danh sách địa điểm và các ghim trên bản đồ luôn phản ánh cùng một tập kết quả.
+- **Tôn trọng giới hạn cảm nhận thời gian.** Dưới 100 ms thì người dùng thấy như tức thời, dưới 1 giây vẫn giữ được mạch suy nghĩ, còn quá 10 giây thì họ bắt đầu mất tập trung [23]. Các ngưỡng này là mốc để đặt chỉ tiêu hiệu năng ở Chương 3.
+
+### 2.3.4. Cơ sở lý thuyết về thiết kế hệ thống backend
+
+Backend của Rendez phải chạy gọn trên một máy chủ tài nguyên giới hạn, nên mọi quyết định thiết kế đều xoay quanh ba chữ: đơn giản để vận hành, nhất quán về dữ liệu, và tiết kiệm tài nguyên [26].
+
+**1. Kiến trúc RESTful và máy chủ không nhớ trạng thái**
+
+Dịch vụ backend được tổ chức theo mô hình REST của Fielding [24], [25]: mỗi tài nguyên có một địa chỉ URI rõ ràng, thao tác bằng các phương thức HTTP chuẩn (GET, POST, PATCH, DELETE), và máy chủ không nhớ trạng thái giữa các yêu cầu. Mỗi yêu cầu đều mang theo đủ thông tin để xử lý, nên thêm tiến trình xử lý hay thêm máy chủ đều đơn giản: phiên đăng nhập nằm trong cookie có chữ ký ở phía máy khách, không cần lưu tập trung ở đâu cả.
+
+**2. Tính lũy đẳng và xử lý khi nhiều người cùng thao tác**
+
+Mạng di động hay chập chờn, nên một yêu cầu tạo bài hoặc bình chọn có thể bị gửi đi hai lần mà người dùng không hề biết. Tính lũy đẳng (idempotency) bảo đảm thao tác đó chạy một lần hay nhiều lần thì kết quả vẫn như nhau [26]:
+
+$$f(f(x)) = f(x)$$
+
+Hệ thống lưu một khoá lũy đẳng kèm mỗi yêu cầu; thấy khoá đã xử lý thì trả lại kết quả cũ thay vì tạo bản ghi thứ hai.
+
+Riêng phòng bình chọn nhóm, vấn đề thường gặp là hai người cùng bấm áp một đề xuất vào bộ lọc phòng. Thay vì khoá bản ghi và cho người kia chờ (khoá bi quan, dễ làm nghẽn hàng đợi cơ sở dữ liệu), hệ thống dùng cách đổi trạng thái có điều kiện: chỉ nhận khi đề xuất còn đang mở, ai đến sau sẽ nhận lỗi xung đột. Một câu lệnh cập nhật là đủ:
+
+$$\text{UPDATE table SET status = 'applied' WHERE id = :id AND status = 'open'}$$
+
+Cách này gọi là kiểm soát tương tranh lạc quan (optimistic concurrency control), hay nói gọn là "cập nhật nếu còn nguyên trạng thái cũ". Hai người cùng bấm chỉ một người thành công, không xảy ra tình trạng hai người cùng ghi đè dữ liệu của nhau.
 
 ---
 
@@ -668,7 +743,25 @@ sequenceDiagram
 
 **Hình 3.6. Sequence diagram luồng tải ảnh qua URL có chữ ký**
 
-Hình 3.7 trình bày activity diagram của luồng tìm kiếm địa điểm. Sơ đồ thể hiện nhánh rẽ quyết định giữa tìm kiếm lai ghép EGRF và phân trang thông thường, cùng hai nhánh phụ là gợi ý "Ý bạn là" khi không có kết quả và ghi nhận sự kiện tìm kiếm.
+Ngoài dòng xử lý, đề xuất trong phòng bình chọn còn có vòng đời riêng thể hiện qua các trạng thái. Hình 3.7 là state diagram của một đề xuất. Đề xuất được tạo ở trạng thái mở. Chủ phòng hoặc tác giả có thể áp đề xuất vào bộ lọc phòng, hoặc bỏ đề xuất. Cả hai chuyển trạng thái đều dùng so sánh và đổi có điều kiện trên trạng thái mở, nên hai người áp cùng lúc chỉ một người thành công, người kia nhận xung đột. Sau khi sang trạng thái đã áp dụng hoặc đã bỏ, đề xuất không còn nhận thao tác nào.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Mo: POST /proposals
+    Mo --> ApDung: apply (CAS thành công)
+    Mo --> Bo: dismiss (CAS thành công)
+    Mo --> Mo: apply / dismiss (CAS thất bại → 409)
+    ApDung --> [*]
+    Bo --> [*]
+
+    Mo: Mở (open)
+    ApDung: Đã áp dụng (applied)
+    Bo: Đã bỏ (dismissed)
+```
+
+**Hình 3.7. State diagram vòng đời một đề xuất trong phòng bình chọn**
+
+Hình 3.8 trình bày activity diagram của luồng tìm kiếm địa điểm. Sơ đồ thể hiện nhánh rẽ quyết định giữa tìm kiếm lai ghép EGRF và phân trang thông thường, cùng hai nhánh phụ là gợi ý "Ý bạn là" khi không có kết quả và ghi nhận sự kiện tìm kiếm.
 
 ```mermaid
 flowchart TD
@@ -702,9 +795,9 @@ flowchart TD
     O --> P(["Trả JSON: items, next, meta"])
 ```
 
-**Hình 3.7. Activity diagram luồng tìm kiếm địa điểm**
+**Hình 3.8. Activity diagram luồng tìm kiếm địa điểm**
 
-Hình 3.8 trình bày activity diagram của luồng đăng bài và phát hiện địa điểm. Sơ đồ tách hai pha: pha xử lý yêu cầu đồng bộ tạo bài và ảnh trong một giao dịch, và pha xử lý nền phát hiện địa điểm cho bài chưa gắn thẻ.
+Hình 3.9 trình bày activity diagram của luồng đăng bài và phát hiện địa điểm. Sơ đồ tách hai pha: pha xử lý yêu cầu đồng bộ tạo bài và ảnh trong một giao dịch, và pha xử lý nền phát hiện địa điểm cho bài chưa gắn thẻ.
 
 ```mermaid
 flowchart TD
@@ -740,7 +833,7 @@ flowchart TD
     W8 --> W9
 ```
 
-**Hình 3.8. Activity diagram luồng đăng bài và phát hiện địa điểm**
+**Hình 3.9. Activity diagram luồng đăng bài và phát hiện địa điểm**
 
 ## 3.6. Thiết kế thuật toán
 
@@ -804,7 +897,7 @@ Lược đồ dữ liệu gồm 29 bảng. Bảng 3.8 nhóm các bảng theo mi�
 | Thông báo | 2 | Thông báo, thông báo gợi ý địa điểm |
 | Hạ tầng | 3 | Giới hạn tần suất, khoá lũy đẳng, bộ đệm sở thích |
 
-Hình 3.9 mô tả các lớp miền chính của hệ thống, gồm thuộc tính và hành vi. Thuộc tính lấy từ lược đồ dữ liệu; hành vi ánh xạ từ các hàm xử lý thật trong mã nguồn. Hai lớp dịch vụ `SearchService` và `RecommendationService` gói hai thuật toán EGRF và DES.
+Hình 3.10 mô tả các lớp miền chính của hệ thống, gồm thuộc tính và hành vi. Thuộc tính lấy từ lược đồ dữ liệu; hành vi ánh xạ từ các hàm xử lý thật trong mã nguồn. Hai lớp dịch vụ `SearchService` và `RecommendationService` gói hai thuật toán EGRF và DES.
 
 ```mermaid
 classDiagram
@@ -901,23 +994,23 @@ classDiagram
         +getRecommended(user)
     }
 
-    User "1" --> "*" Post : tao
-    User "1" --> "*" Review : viet
-    User "1" --> "*" Collection : so huu
-    User "1" --> "*" Room : tao
-    User "1" --> "*" Notification : nhan
-    Place "1" --> "*" Review : nhan
-    Place "1" --> "*" Post : duoc gan the
-    Collection "*" --> "*" Place : chua
-    Room "1" *-- "*" RoomProposal : gom
-    Room "*" --> "*" User : thanh vien
-    SearchService ..> Place : xep hang
-    RecommendationService ..> Place : xep hang
+    User "1" --> "*" Post : creates
+    User "1" --> "*" Review : writes
+    User "1" --> "*" Collection : owns
+    User "1" --> "*" Room : creates
+    User "1" --> "*" Notification : receives
+    Place "1" --> "*" Review : receives
+    Place "1" --> "*" Post : tagged in
+    Collection "*" --> "*" Place : contains
+    Room "1" *-- "*" RoomProposal : groups
+    Room "*" --> "*" User : joins
+    SearchService ..> Place : ranks
+    RecommendationService ..> Place : ranks
 ```
 
-**Hình 3.9. Sơ đồ lớp các lớp miền nghiệp vụ chính**
+**Hình 3.10. Sơ đồ lớp các lớp miền nghiệp vụ chính**
 
-Hình 3.10 mô tả quan hệ giữa các bảng, chia theo tám miền nghiệp vụ. Sơ đồ gộp các bảng cùng miền để giữ kích thước đọc được; tên bảng dùng dạng tiếng Việt không dấu.
+Hình 3.11 mô tả quan hệ giữa các bảng, chia theo tám miền nghiệp vụ. Sơ đồ gộp các bảng cùng miền để giữ kích thước đọc được; tên bảng dùng dạng tiếng Việt không dấu.
 
 ```mermaid
 erDiagram
@@ -1027,7 +1120,7 @@ erDiagram
     }
 ```
 
-**Hình 3.10. Sơ đồ thực thể liên kết (theo miền, 29 bảng)**
+**Hình 3.11. Sơ đồ thực thể liên kết (theo miền, 29 bảng)**
 
 Hai sơ đồ dưới đây tách riêng miền tài khoản và miền phòng bình chọn để thấy rõ khoá và quan hệ.
 
@@ -1127,6 +1220,8 @@ Bảng 3.9 mô tả cấu trúc bảng địa điểm, bảng trung tâm của h
 
 Bảng vector địa điểm lưu trường 384 chiều và một giá trị băm nội dung để biết khi nào phải tính lại vector. Bảng sự kiện tương tác được phân vùng theo tháng, kèm một phân vùng mặc định để không mất sự kiện ngoài khoảng khai báo.
 
+Lược đồ dữ liệu đi qua 21 migration có phiên bản, mỗi migration một thay đổi có chủ đích. Hai migration tiêu biểu cho thấy cách lược đồ phục vụ hai thuật toán ở mục 3.6. Migration `search_rec_foundation` tạo bảng vector địa điểm và bảng sự kiện tương tác: bảng vector dùng kiểu `vector(384)` của `pgvector` cho nhánh ngữ nghĩa của EGRF, bảng sự kiện phân vùng theo tháng làm nguồn học duy nhất cho DES và cho bộ đệm sở thích. Migration `affinity_cache` tạo bảng đệm sở thích người dùng theo hạng mục và quận, để DES không phải tính lại điểm sở thích từ bảng sự kiện ở mỗi lần gợi ý. Các migration còn lại thêm chỉ mục cho tìm kiếm, ràng buộc dữ liệu và bảo mật phòng bình chọn; danh sách đầy đủ ở Phụ lục A.
+
 ## 3.8. Thiết kế giao diện
 
 Giao diện gồm bảy màn hình chính: khám phá và tìm kiếm, chi tiết địa điểm, bảng tin, soạn bài, hồ sơ cá nhân, bộ sưu tập và phòng bình chọn nhóm.
@@ -1135,7 +1230,7 @@ Màn hình khám phá gồm thanh tìm kiếm, bộ lọc theo quận và hạng
 
 Danh sách và bản đồ chia sẻ cùng một nguồn dữ liệu: thao tác kéo bản đồ cập nhật danh sách và ngược lại. Trình tải ảnh dùng URL có chữ ký và hiển thị tiến trình tải trực tiếp từ kho lưu trữ. Danh sách ảnh dùng thuộc tính kích thước và tập nguồn thay thế để trình duyệt chọn biến thể phù hợp.
 
-Hình 3.11 mô tả điều hướng giữa các màn hình chính. Nhóm màn hình công khai gồm khám phá, bản đồ và chi tiết địa điểm. Nhóm yêu cầu phiên gồm bảng tin, hồ sơ, bộ sưu tập, thông báo và phòng bình chọn.
+Hình 3.12 mô tả điều hướng giữa các màn hình chính. Nhóm màn hình công khai gồm khám phá, bản đồ và chi tiết địa điểm. Nhóm yêu cầu phiên gồm bảng tin, hồ sơ, bộ sưu tập, thông báo và phòng bình chọn.
 
 ```mermaid
 flowchart TD
@@ -1159,7 +1254,7 @@ flowchart TD
     Auth["Đăng nhập /login"] --> Profile
 ```
 
-**Hình 3.11. Sơ đồ điều hướng các màn hình chính**
+**Hình 3.12. Sơ đồ điều hướng các màn hình chính**
 
 ## 3.9. Thiết kế bảo mật
 
@@ -1213,7 +1308,7 @@ Dự án chạy được theo hai chế độ: phát triển trên máy cục b�
 bun install                      # Cài phụ thuộc cho cả monorepo
 bun run db:up                    # Khởi động PostgreSQL (image pgvector)
 cd backend && cp .env.example .env   # Tạo tệp môi trường nếu chưa có
-bun run db:migrate               # Chạy 20 migration có phiên bản
+bun run db:migrate               # Chạy 21 migration có phiên bản
 bun run db:generate              # Sinh kiểu dữ liệu Prisma cho mã ứng dụng
 bun run db:seed                  # Nạp 358 địa điểm mẫu
 bun run dev:api                  # Chạy API ở cổng cấu hình
@@ -1264,7 +1359,7 @@ rendez/
 ├── backend/
 │   ├── prisma/
 │   │   ├── schema.prisma     # Lược đồ 29 bảng
-│   │   └── migrations/       # 20 migration có phiên bản
+│   │   └── migrations/       # 21 migration có phiên bản
 │   ├── src/
 │   │   ├── server.ts         # Điểm khởi động, chia sẻ cổng nhiều tiến trình
 │   │   ├── app.ts            # Gắn định tuyến Hono và middleware
@@ -1454,23 +1549,23 @@ Bảng 4.10 ghi kết quả gợi ý trên bốn tập đối chứng.
 
 | Tập | Người dùng | Phương pháp | R@5 | R@10 | R@20 | nDCG@10 |
 |---|---|---|---|---|---|---|
-| Địa điểm | 1.709 | Ngẫu nhiên | 0,000 | 0,000 | 0,001 | 0,000 |
-| | | Phổ biến | 0,014 | 0,025 | 0,046 | 0,013 |
+| Yelp | 1.709 | Ngẫu nhiên | 0,000 | 0,000 | 0,001 | 0,000 |
+| | | Similarity | 0,014 | 0,025 | 0,046 | 0,013 |
 | | | DES thuần | 0,011 | 0,023 | 0,042 | 0,011 |
 | | | Lọc cộng tác | 0,017 | 0,035 | 0,077 | 0,017 |
 | | | DES kết hợp | 0,023 | 0,044 | 0,087 | 0,021 |
-| Phim nhỏ | 943 | Ngẫu nhiên | 0,002 | 0,004 | 0,013 | 0,002 |
-| | | Phổ biến | 0,052 | 0,087 | 0,140 | 0,046 |
+| MovieLens-100k | 943 | Ngẫu nhiên | 0,002 | 0,004 | 0,013 | 0,002 |
+| | | Similarity | 0,052 | 0,087 | 0,140 | 0,046 |
 | | | DES thuần | 0,040 | 0,053 | 0,082 | 0,030 |
 | | | Lọc cộng tác | 0,081 | 0,118 | 0,170 | 0,064 |
 | | | DES kết hợp | 0,080 | 0,115 | 0,166 | 0,064 |
-| Phim lớn | 2.000 | Ngẫu nhiên | 0,004 | 0,005 | 0,006 | 0,003 |
-| | | Phổ biến | 0,023 | 0,042 | 0,074 | 0,021 |
+| MovieLens-1M | 2.000 | Ngẫu nhiên | 0,004 | 0,005 | 0,006 | 0,003 |
+| | | Similarity | 0,023 | 0,042 | 0,074 | 0,021 |
 | | | DES thuần | 0,022 | 0,035 | 0,055 | 0,017 |
 | | | Lọc cộng tác | 0,041 | 0,071 | 0,117 | 0,036 |
 | | | DES kết hợp | 0,041 | 0,070 | 0,116 | 0,036 |
 | Nội bộ | 278 | Ngẫu nhiên | 0,022 | 0,036 | 0,058 | 0,017 |
-| | | Phổ biến | 0,025 | 0,054 | 0,112 | 0,026 |
+| | | Similarity | 0,025 | 0,054 | 0,112 | 0,026 |
 | | | Lọc cộng tác | 0,047 | 0,079 | 0,140 | 0,041 |
 
 Hình 4.3 biểu diễn độ triệu hồi tại 10 trên tập địa điểm.
@@ -1619,6 +1714,24 @@ Hệ thống gồm 29 bảng dữ liệu, 12 nhóm endpoint, chạy trên máy c
 [22] OWASP Foundation. *OWASP Application Security Verification Standard*. https://owasp.org/www-project-application-security-verification-standard/ (truy cập 10/11/2026).
 
 [23] Nielsen, J. (1993). *Response Times: The 3 Important Limits*. Nielsen Norman Group. https://www.nngroup.com/articles/response-times-3-important-limits/ (truy cập 10/11/2026).
+
+[24] Fielding, R. T. (2000). *Architectural Styles and the Design of Network-based Software Architectures*. Luận văn tiến sĩ, University of California, Irvine.
+
+[25] Pautasso, C., Zimmermann, O., và Leymann, F. (2008). *RESTful Web Services vs. "Big" Web Services: Making the Right Architectural Decision*. Proceedings of the 17th International Conference on World Wide Web, tr. 801–810.
+
+[26] Kleppmann, M. (2017). *Designing Data-Intensive Applications*. O'Reilly Media.
+
+[27] Liskov, B. (1988). *Data Abstraction and Hierarchy*. ACM SIGPLAN Notices, 23(5), tr. 17–34.
+
+[28] Gamma, E., Helm, R., Johnson, R., và Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.
+
+[29] W3C. *Web Content Accessibility Guidelines (WCAG) 2.1*. https://www.w3.org/TR/WCAG21/ (truy cập 10/11/2026).
+
+[30] Nielsen, J. (1994). *10 Usability Heuristics for User Interface Design*. Nielsen Norman Group. https://www.nngroup.com/articles/ten-usability-heuristics/ (truy cập 10/11/2026).
+
+[31] Reimers, N., và Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks*. Proceedings of EMNLP-IJCNLP 2019, tr. 3982–3992.
+
+[32] Karpukhin, V., Oğuz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen, D., và Yih, W. (2020). *Dense Passage Retrieval for Open-Domain Question Answering*. Proceedings of EMNLP 2020, tr. 6769–6781.
 
 ---
 

@@ -145,12 +145,12 @@ const (
 // ---------- Kiểu dữ liệu raw OSM ----------
 
 type rawElement struct {
-	Type      string            `json:"type"`
-	ID        int64             `json:"id"`
-	Lat       *float64          `json:"lat"`
-	Lon       *float64          `json:"lon"`
-	Timestamp string            `json:"timestamp"` // chỉ có khi query dùng `out meta`
-	Version   int               `json:"version"`
+	Type      string   `json:"type"`
+	ID        int64    `json:"id"`
+	Lat       *float64 `json:"lat"`
+	Lon       *float64 `json:"lon"`
+	Timestamp string   `json:"timestamp"` // chỉ có khi query dùng `out meta`
+	Version   int      `json:"version"`
 	Center    *struct {
 		Lat float64 `json:"lat"`
 		Lon float64 `json:"lon"`
@@ -486,8 +486,14 @@ var nonFoodMarkers = []string{
 	// Văn phòng / kho / showroom — không phải điểm đến (audit 2026-11-11:
 	// "Văn phòng Tổng công ty Doticom" → banh-mi, 4× "TaKing Kho" → sieu-thi).
 	"van phong", "cong ty", "showroom", "kho so", "kho hang", "trung tam bao hanh",
-	// Bán lẻ phi thực phẩm lọt qua từ khoá "mart"/"siêu thị" trong tên.
+	// Bán lẻ phi thực phẩm & giải trí/thể thao/tâm linh ngoài phạm vi F&B/Nightlife.
 	"noi that", "thiet bi", "dien may", "luu niem", "souvenir",
+	"san bong", "pickleball", "ho boi", "be boi", "boi loi", "the thao",
+	"ban cung", "archery", "climbing", "paintball", "skatepark", "patin",
+	"nha sach", "fahasa", "thu vien", "bao tang", "nghia trung",
+	"rap chieu phim", "cgv", "lotte cinema", "galaxy cinema", "starlight cinema",
+	"metiz", "tiniworld", "timezone", "baby farm", "escape room",
+	"coworking", "laundry", "giat say",
 }
 
 // nearMarkers: tên mô tả VỊ TRÍ so với POI khác — không phải tên cơ sở (L-020).
@@ -833,21 +839,26 @@ func realWebsite(tags map[string]string) string {
 // Loại hẳn: cửa hàng tiện lợi, tạp hóa, cửa hàng thực phẩm, cửa hàng rượu,
 // nông trại. Giữ: mall + siêu thị lớn (điểm mua sắm thật), chợ nổi tiếng.
 
+// App giữ phạm vi thuần Ẩm thực, Cà phê & Nightlife (F&B):
+// Loại hẳn các nhóm phi F&B (tiện ích bán lẻ, chợ tổng hợp, rạp phim, bida,
+// bowling, arcade, công viên nước, spa/massage, karaoke, nông trại).
 var dropCategories = map[string]bool{
 	catCuaHangTienLoi:  true,
 	catTapHoa:          true,
 	catCuaHangThucPham: true,
 	catCuaHangRuou:     true,
 	catFarm:            true,
-}
-
-var keepRetailCategories = map[string]bool{catMall: true, catSieuThi: true}
-
-// famousMarkets: chợ lớn/nổi tiếng ở Đà Nẵng (nguồn: cổng du lịch ĐN).
-var famousMarkets = []string{
-	"cho han", "cho con", "cho dong da", "cho bac my an", "cho hoa khanh",
-	"cho cam le", "cho hoa an", "cho hoa cam", "cho tuy loan", "cho non nuoc",
-	"cho man thai", "cho nai hien dong", "cho an hai",
+	catSieuThi:         true,
+	catCho:             true,
+	catMall:            true,
+	catKaraoke:         true,
+	catCinema:          true,
+	catBida:            true,
+	catBowling:         true,
+	catArcade:          true,
+	catWaterPark:       true,
+	catSpa:             true,
+	catMassage:         true,
 }
 
 // chainNames: chuỗi F&B/giải trí có mặt thật ở ĐN — tín hiệu "kinh doanh thật"
@@ -885,20 +896,8 @@ func businessSignals(tags map[string]string, name string) int {
 
 // isNotable: giữ địa điểm? Trả (giữ, lý do loại).
 func isNotable(tags map[string]string, name, cat string, minSignals int) (bool, string) {
-	if dropCategories[cat] {
-		return false, "loai-hinh-tien-ich"
-	}
-	if keepRetailCategories[cat] {
-		return true, ""
-	}
-	if cat == catCho {
-		flat := removeDiacritics(strings.ToLower(name))
-		for _, m := range famousMarkets {
-			if containsWord(flat, m) {
-				return true, ""
-			}
-		}
-		return false, "cho-nho"
+	if dropCategories[cat] || cat == catKhac {
+		return false, "loai-hinh-phi-fnb"
 	}
 	if businessSignals(tags, name) >= minSignals {
 		return true, ""
@@ -1262,9 +1261,9 @@ func normalizeDistrict(s string) string {
 //
 // Ba nhóm tín hiệu, đều có trong dữ liệu OSM (không bịa):
 //
-//	1. Chất lượng tên (0–40) — có dấu tiếng Việt, nhiều từ, không viết hoa toàn bộ
-//	2. Độ đầy đủ metadata (0–30) — giờ mở cửa, điện thoại, website, cuisine, địa chỉ
-//	3. Độ "còn sống" (0–30) — timestamp sửa đổi gần đây + số version
+//  1. Chất lượng tên (0–40) — có dấu tiếng Việt, nhiều từ, không viết hoa toàn bộ
+//  2. Độ đầy đủ metadata (0–30) — giờ mở cửa, điện thoại, website, cuisine, địa chỉ
+//  3. Độ "còn sống" (0–30) — timestamp sửa đổi gần đây + số version
 //
 // KHÔNG dùng review/rating vì OSM không có. KHÔNG gọi Google vì không có API key
 // và sẽ bị rate-limit khi quét hàng nghìn POI — xem ghi chú trong runbook.
@@ -2075,19 +2074,9 @@ func printWarnings(st corpusStats, fn funnel, capCafe float64, cafeDropped int) 
 		warn("QUY MÔ NHỎ: %d (<600) — cân nhắc giảm -min-signals xuống 1 hoặc fetch thêm vùng", fn.T6)
 	}
 
-	// 6. Tỉ lệ giải trí — corpus không còn thuần ẩm thực (D-AI-37)
+	// 6. Tỉ lệ giải trí (chỉ giữ music-box có đồ uống)
 	if p := pct(st.entCount, fn.T6); p > 30 {
-		warn("GIẢI TRÍ CHIẾM %.1f%% (>30%%) — nên tách corpus ẩm thực / giải trí khi đánh giá", p)
-	}
-	if st.entCount == 0 {
-		warn("KHÔNG CÓ POI GIẢI TRÍ: vòng L7 chưa chạy hoặc query không khớp")
-	}
-
-	// 7. Loại hình user yêu cầu phải có mặt (sau D-AI-42 chỉ còn mall + siêu thị lớn)
-	for _, cat := range []string{catSieuThi, catMall} {
-		if st.catCount[cat] == 0 {
-			warn("THIẾU LOẠI HÌNH: không có POI nào nhãn %q (siêu thị lớn / TTTM) — kiểm tra L6", cat)
-		}
+		warn("GIẢI TRÍ CHIẾM %.1f%% (>30%%) — nên kiểm tra bộ lọc thuần F&B", p)
 	}
 
 	// 7b. Bộ lọc nổi bật loại quá nhiều → corpus có thể đã mất quán nổi tiếng

@@ -19,11 +19,18 @@ interface ColdStartPlace {
 }
 
 const CATEGORY_MAP: Record<string, PlaceCategory> = {
+  restaurant: "restaurant",
+  bakery: "bakery",
+  dessert: "dessert",
+  "street-food": "street-food",
+  bar: "bar",
+  "bar-pub": "bar",
   cafe: "cafe",
   "banh-mi": "bakery",
   "banh-ngot": "bakery",
   che: "dessert",
   "kem-bo": "dessert",
+  "kem-trang-mieng": "dessert",
   "kem-trang-miem": "dessert",
   "sinh-to": "dessert",
   "tra-sua": "dessert",
@@ -35,9 +42,10 @@ const CATEGORY_MAP: Record<string, PlaceCategory> = {
   "banh-beo": "street-food",
   "banh-cen": "street-food",
   "nem-lui": "street-food",
+  "cho-dem": "street-food",
   banh: "bakery",
   // Các nhóm còn lại (hai-san, lau, pho, bun, com, quan-an, viet-nam, nhat,
-  // thai, han, y, an, goi-ca, chay, banh-canh, bun-mam, khac…) → restaurant.
+  // thai, han, y, an-do, goi-ca, chay, banh-canh, bun-mam…) → restaurant.
 }
 
 const UNPUBLISHED_IDS = new Set(["ram-cuon-cai-di-hoa-6152681085"])
