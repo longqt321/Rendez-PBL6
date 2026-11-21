@@ -1,0 +1,11 @@
+{
+  "backlog-guard": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "./hooks/backlog-guard/backlog-guard",
+        "timeout": 10
+      }
+    ]
+  }
+}
