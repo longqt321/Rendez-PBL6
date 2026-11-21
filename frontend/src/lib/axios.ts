@@ -3,6 +3,7 @@ import { toast } from "sonner"
 import { checkApiContract } from "@/lib/api-contracts"
 import { env } from "@/lib/env"
 import { getAnonId } from "@/lib/events"
+import { createTraceparent } from "@/lib/telemetry"
 import { safeRedirectPath } from "@/features/auth/lib/safe-redirect"
 import { clearActiveRoom } from "@/features/rooms/lib/room"
 
@@ -15,12 +16,14 @@ declare module "axios" {
 export class ApiError extends Error {
   readonly status: number
   readonly code?: string
+  readonly requestId?: string
 
-  constructor(message: string, status: number, code?: string) {
+  constructor(message: string, status: number, code?: string, requestId?: string) {
     super(message)
     this.name = "ApiError"
     this.status = status
     this.code = code
+    this.requestId = requestId
   }
 }
 
@@ -49,7 +52,10 @@ export function toApiError(error: unknown): Error {
       ? "Không kết nối được máy chủ, vui lòng kiểm tra mạng rồi thử lại."
       : "Có lỗi từ máy chủ, vui lòng thử lại sau.")
   const code = typeof body?.code === "string" ? body.code : undefined
-  return new ApiError(message, status, code)
+  const headers = error.response?.headers as Record<string, unknown> | undefined
+  const rawRequestId = headers?.["x-request-id"]
+  const requestId = typeof rawRequestId === "string" ? rawRequestId : undefined
+  return new ApiError(message, status, code, requestId)
 }
 
 const mockAdapter =
@@ -69,6 +75,10 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const id = getAnonId()
   if (id) config.headers.set("x-anon-id", id)
+  if (!env.enableMocks) {
+    config.headers.set("x-request-id", crypto.randomUUID())
+    config.headers.set("traceparent", createTraceparent())
+  }
   return config
 })
 

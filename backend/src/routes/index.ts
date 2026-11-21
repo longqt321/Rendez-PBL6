@@ -16,6 +16,7 @@ import { createTilesRouter } from "./tiles"
 import { createOgRouter } from "./og"
 import { createSystemRouter } from "./system"
 import { createEventsRouter } from "./events"
+import { createTelemetryRouter } from "./telemetry"
 import { createAdminRouter } from "./admin"
 
 function normalizeRoutePath(path: string): string {
@@ -111,6 +112,9 @@ export function createApiRouter() {
 
   // Thu thập sự kiện tương tác (P0 đo lường) — `/events`.
   api.route("/", createEventsRouter())
+
+  // Thu thập client errors & Core Web Vitals (RUM) — `/telemetry`.
+  api.route("/", createTelemetryRouter())
 
   // Quản trị và nhật ký hoạt động — `/admin/*`.
   api.route("/", createAdminRouter())

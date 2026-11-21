@@ -1,9 +1,26 @@
 import { pipeline, type FeatureExtractionPipeline, env } from "@huggingface/transformers"
+import {
+  ConsecutiveBreaker,
+  TimeoutStrategy,
+  circuitBreaker,
+  handleAll,
+  timeout,
+  wrap,
+} from "cockatiel"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { logger } from "./logger"
+import { recordEmbedTiming } from "./request-context"
 
 const MODEL_ID = "Xenova/multilingual-e5-small"
+
+const encodePolicy = wrap(
+  circuitBreaker(handleAll, {
+    halfOpenAfter: 30_000,
+    breaker: new ConsecutiveBreaker(3),
+  }),
+  timeout(3_000, TimeoutStrategy.Aggressive),
+)
 
 env.cacheDir = process.env.TRANSFORMERS_CACHE_DIR ?? join(tmpdir(), "rendez-transformers-cache")
 
@@ -41,11 +58,14 @@ void (async () => {
 async function encode(texts: string[]): Promise<Float32Array[] | null> {
   const pipe = await getExtractor()
   if (!pipe) return null
+  const startedAt = performance.now()
   try {
-    const output = await pipe(texts, {
-      pooling: "mean",
-      normalize: true,
-    })
+    const output = await encodePolicy.execute(() =>
+      pipe(texts, {
+        pooling: "mean",
+        normalize: true,
+      }),
+    )
     // Kết quả shape [batch, 384] — tách từng dòng.
     const dims = output.dims as number[]
     const batchSize = dims[0] ?? texts.length
@@ -59,6 +79,8 @@ async function encode(texts: string[]): Promise<Float32Array[] | null> {
   } catch (err) {
     logger.warn({ err }, "embeddings: encode thất bại")
     return null
+  } finally {
+    recordEmbedTiming(performance.now() - startedAt)
   }
 }
 

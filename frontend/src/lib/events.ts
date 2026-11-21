@@ -2,6 +2,26 @@ import { env } from "@/lib/env"
 
 const ANON_ID_KEY = "rendez_anon_id"
 const SESSION_ID_KEY = "rendez_session_id"
+const FLUSH_INTERVAL_MS = 5_000
+const MAX_BATCH_SIZE = 20
+
+export interface TrackEventInput {
+  eventType: string
+  placeId?: string
+  postId?: string
+  query?: string
+  context?: Record<string, unknown>
+}
+
+interface QueuedEvent extends TrackEventInput {
+  eventId: string
+  anonId?: string
+  sessionId?: string
+}
+
+const queue: QueuedEvent[] = []
+let flushTimer: ReturnType<typeof setTimeout> | null = null
+let lifecycleBound = false
 
 function getStorage(name: "localStorage" | "sessionStorage"): Storage | null {
   try {
@@ -32,19 +52,13 @@ function sessionId(): string | undefined {
   return readOrCreateId(getStorage("sessionStorage"), SESSION_ID_KEY)
 }
 
-export function emitPlaceClick(placeId: string): void {
+function sendBatch(events: QueuedEvent[]): void {
+  if (events.length === 0 || env.enableMocks) return
   try {
-    const event = {
-      eventType: "place_click",
-      placeId,
-      anonId: getAnonId(),
-      sessionId: sessionId(),
-    }
-    const body = JSON.stringify({ events: [event] })
+    const body = JSON.stringify({ events })
     const url = `${env.apiBaseUrl}/events`
 
     if (typeof navigator.sendBeacon === "function") {
-      // Blob có content-type application/json để BE parse được body.
       if (navigator.sendBeacon(url, new Blob([body], { type: "application/json" }))) {
         return
       }
@@ -59,4 +73,52 @@ export function emitPlaceClick(placeId: string): void {
   } catch {
     // Telemetry không bao giờ làm hỏng tương tác người dùng.
   }
+}
+
+export function flushEvents(): void {
+  if (flushTimer !== null) {
+    clearTimeout(flushTimer)
+    flushTimer = null
+  }
+  while (queue.length > 0) {
+    sendBatch(queue.splice(0, MAX_BATCH_SIZE))
+  }
+}
+
+function ensureLifecycleFlush(): void {
+  if (lifecycleBound || typeof window === "undefined") return
+  lifecycleBound = true
+  window.addEventListener("pagehide", flushEvents)
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") flushEvents()
+    })
+  }
+}
+
+export function trackEvent(input: TrackEventInput): void {
+  if (env.enableMocks) return
+  try {
+    ensureLifecycleFlush()
+    queue.push({
+      ...input,
+      eventId: crypto.randomUUID(),
+      anonId: getAnonId(),
+      sessionId: sessionId(),
+    })
+
+    if (queue.length >= MAX_BATCH_SIZE) {
+      flushEvents()
+      return
+    }
+    if (flushTimer === null) {
+      flushTimer = setTimeout(flushEvents, FLUSH_INTERVAL_MS)
+    }
+  } catch {
+    // Telemetry không bao giờ làm hỏng tương tác người dùng.
+  }
+}
+
+export function emitPlaceClick(placeId: string): void {
+  trackEvent({ eventType: "place_click", placeId })
 }

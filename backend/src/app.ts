@@ -1,17 +1,27 @@
 import { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
+import { routePath } from "hono/route"
 import { HTTPException } from "hono/http-exception"
 import { bodyLimit } from "hono/body-limit"
 import { secureHeaders } from "hono/secure-headers"
 import { env } from "./env"
 import { isNulByteError } from "./lib/errors"
 import { logger } from "./lib/logger"
+import { pushObservabilityEvent } from "./lib/observability-store"
 import { prisma } from "./lib/prisma"
+import {
+  generateTraceId,
+  parseTraceparent,
+  runWithRequestContext,
+  type RequestContextStore,
+} from "./lib/request-context"
 import { createApiRouter } from "./routes"
 import type { UserRole } from "@rendez/schema"
 
 interface AppVariables {
   requestId: string
+
+  traceId: string
 
   userId: string
 
@@ -19,6 +29,8 @@ interface AppVariables {
 
   cacheHit?: boolean
 }
+
+const SAFE_REQUEST_ID_RE = /^[A-Za-z0-9_-]{8,64}$/
 
 export type AppEnv = {
   Variables: AppVariables
@@ -36,12 +48,92 @@ export function createApp() {
     },
   })
 
-  // Request id: sinh sớm để mọi log/lỗi đều có mã đối chiếu.
+  // Request context + Canonical Log Line: sinh/kế thừa trace_id sớm để mọi log/lỗi đều có mã đối chiếu.
   app.use("*", async (c, next) => {
-    const requestId = crypto.randomUUID()
+    const incomingRequestId = c.req.header("x-request-id")?.trim()
+    const requestId =
+      incomingRequestId && SAFE_REQUEST_ID_RE.test(incomingRequestId)
+        ? incomingRequestId
+        : crypto.randomUUID()
+    const traceId = parseTraceparent(c.req.header("traceparent")) ?? generateTraceId()
+
+    const store: RequestContextStore = {
+      requestId,
+      traceId,
+      dbMs: 0,
+      dbCount: 0,
+      redisMs: 0,
+      embedMs: 0,
+      externalMs: 0,
+    }
+
     c.set("requestId", requestId)
+    c.set("traceId", traceId)
     c.header("X-Request-Id", requestId)
-    await next()
+
+    const startedAt = performance.now()
+    await runWithRequestContext(store, () => next())
+
+    const durationMs = Math.round(performance.now() - startedAt)
+    const status = c.res.status
+    const matchedRoute = routePath(c)
+    const route = matchedRoute && matchedRoute !== "/*" ? matchedRoute : c.req.path
+    const dbMs = Math.round(store.dbMs)
+    const redisMs = Math.round(store.redisMs)
+    const embedMs = Math.round(store.embedMs)
+    const externalMs = Math.round(store.externalMs)
+    const appMs = Math.max(0, durationMs - dbMs - redisMs - embedMs - externalMs)
+
+    const payload = {
+      type: "canonical_request",
+      "http.request.method": c.req.method,
+      "http.route": route,
+      "url.path": c.req.path,
+      "http.response.status_code": status,
+      duration_ms: durationMs,
+      ...(c.get("cacheHit") !== undefined || store.cacheHit !== undefined
+        ? { "cache.hit": c.get("cacheHit") ?? store.cacheHit }
+        : {}),
+      timing: {
+        db_ms: dbMs,
+        db_count: store.dbCount,
+        redis_ms: redisMs,
+        embed_ms: embedMs,
+        external_ms: externalMs,
+        app_ms: appMs,
+      },
+    }
+
+    const isLowValueProbe =
+      status === 200 &&
+      (c.req.path === "/healthz" ||
+        c.req.path === "/readyz" ||
+        c.req.path.startsWith("/api/v1/tiles/"))
+
+    if (status >= 500) logger.error(payload, "request")
+    else if (status >= 400 || durationMs > 500) logger.warn(payload, "request")
+    else if (isLowValueProbe) logger.debug(payload, "request")
+    else logger.info(payload, "request")
+
+    if (status >= 500 || durationMs > 500) {
+      pushObservabilityEvent({
+        kind: status >= 500 ? "server_error" : "slow_request",
+        requestId,
+        traceId,
+        method: c.req.method,
+        route,
+        status,
+        durationMs,
+        timing: {
+          dbMs,
+          dbCount: store.dbCount,
+          redisMs,
+          embedMs,
+          externalMs,
+          appMs,
+        },
+      })
+    }
   })
 
   if (env.corsOrigins.length > 0) {
@@ -50,7 +142,15 @@ export function createApp() {
       cors({
         origin: env.corsOrigins,
         credentials: true,
-        allowHeaders: ["Content-Type", "Authorization", "Idempotency-Key"],
+        allowHeaders: [
+          "Content-Type",
+          "Authorization",
+          "Idempotency-Key",
+          "traceparent",
+          "X-Request-Id",
+          "X-Anon-Id",
+        ],
+        exposeHeaders: ["X-Request-Id"],
       }),
     )
   }
@@ -88,24 +188,6 @@ export function createApp() {
       maxSize,
       onError: (ctx) => ctx.json({ message: "Nội dung request quá lớn" }, 413),
     })(c, next)
-  })
-
-  // Structured log một dòng/request: không log query string (có thể chứa từ khoá).
-  app.use("*", async (c, next) => {
-    const startedAt = performance.now()
-    await next()
-    const durationMs = Math.round(performance.now() - startedAt)
-    const status = c.res.status
-    const payload = {
-      requestId: c.get("requestId"),
-      method: c.req.method,
-      path: c.req.path,
-      status,
-      durationMs,
-    }
-    if (status >= 500) logger.error(payload, "request")
-    else if (status >= 400 || durationMs > 1000) logger.warn(payload, "request")
-    else logger.info(payload, "request")
   })
 
   app.get("/healthz", (c) => c.json({ status: "ok" }))

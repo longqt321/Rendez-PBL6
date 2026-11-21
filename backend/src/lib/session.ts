@@ -5,11 +5,14 @@ import type { AppEnv } from "../app"
 import { ApiError } from "./errors"
 import { auth } from "./auth"
 import { prisma } from "./prisma"
+import { setRequestUserId } from "./request-context"
 import type { User } from "../../generated/prisma/client"
 
 export async function getViewer(c: Context<AppEnv>): Promise<User | null> {
   const result = await auth.api.getSession({ headers: c.req.raw.headers })
-  return (result?.user as User | undefined) ?? null
+  const user = (result?.user as User | undefined) ?? null
+  if (user) setRequestUserId(user.id)
+  return user
 }
 
 export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {

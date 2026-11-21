@@ -16,6 +16,7 @@ import { createStorage } from "unstorage"
 import fsLiteDriver from "unstorage/drivers/fs-lite"
 import type { AppEnv } from "../app"
 import { logger } from "../lib/logger"
+import { recordExternalTiming } from "../lib/request-context"
 
 const TILE_CACHE_DIR = join(import.meta.dir, "../../data/tile-cache")
 const TILE_FILE_RE = /^(\d+)\.png$/u
@@ -70,21 +71,26 @@ function getOfflineFallbackTile(): Promise<Uint8Array> {
 }
 
 async function fetchUpstreamTile(url: string, signal?: AbortSignal): Promise<Uint8Array> {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Rendez-Danang-Culinary-Guide/1.0 (+https://rendez.local)",
-      Accept: "image/png,image/*;q=0.9",
-    },
-    signal,
-  })
-  if (!res.ok) {
-    throw new Error(`Tile upstream trả HTTP ${res.status} (${url})`)
+  const startedAt = performance.now()
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Rendez-Danang-Culinary-Guide/1.0 (+https://rendez.local)",
+        Accept: "image/png,image/*;q=0.9",
+      },
+      signal,
+    })
+    if (!res.ok) {
+      throw new Error(`Tile upstream trả HTTP ${res.status} (${url})`)
+    }
+    const buf = new Uint8Array(await res.arrayBuffer())
+    if (buf.byteLength < 64) {
+      throw new Error(`Tile upstream rỗng (${url})`)
+    }
+    return buf
+  } finally {
+    recordExternalTiming(performance.now() - startedAt)
   }
-  const buf = new Uint8Array(await res.arrayBuffer())
-  if (buf.byteLength < 64) {
-    throw new Error(`Tile upstream rỗng (${url})`)
-  }
-  return buf
 }
 
 async function readDiskTile(storageKey: string): Promise<Uint8Array | null> {

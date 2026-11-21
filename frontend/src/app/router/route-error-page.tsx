@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { isRouteErrorResponse, Link, useRouteError } from "react-router"
 import { TriangleAlertIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,11 +10,29 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
+import { ApiError } from "@/lib/axios"
 import { formatNumber } from "@/lib/format"
+import { reportClientError } from "@/lib/telemetry"
 
 export function RouteErrorPage() {
   const error = useRouteError()
   const status = isRouteErrorResponse(error) ? error.status : null
+
+  useEffect(() => {
+    const message =
+      error instanceof Error
+        ? error.message
+        : isRouteErrorResponse(error)
+          ? `${error.status} ${error.statusText}`
+          : "Route error"
+    reportClientError({
+      message,
+      stack: error instanceof Error ? error.stack : undefined,
+      source: "react-boundary",
+      apiRequestId: error instanceof ApiError ? error.requestId : undefined,
+      status: error instanceof ApiError ? error.status : (status ?? undefined),
+    })
+  }, [error, status])
 
   return (
     <div className="flex min-h-dvh items-center justify-center px-4 py-10">

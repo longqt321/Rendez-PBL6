@@ -2,9 +2,11 @@ import { Hono } from "hono"
 import { z } from "zod"
 import type { AppEnv } from "../app"
 import { EVENT_TO_KIND } from "../lib/interaction-weights"
-import { recordEvent } from "../lib/interaction-events"
+import { recordEventsBatch, type RecordEventInput } from "../lib/interaction-events"
 import { prisma } from "../lib/prisma"
 import { rateLimit } from "../lib/rate-limit"
+import { getRedis } from "../lib/redis"
+import { recordRedisTiming } from "../lib/request-context"
 import { getViewer } from "../lib/session"
 
 /**
@@ -15,11 +17,12 @@ import { getViewer } from "../lib/session"
  * làm hỏng trải nghiệm người dùng vì telemetry. Response luôn 202 kèm số
  * event đã nhận/đã ghi.
  *
- * Dedupe 5 phút ở tầng ứng dụng (in-memory Set) — bảng partition theo tháng
- * không thể có UNIQUE constraint chứa bucket thời gian.
+ * Dedupe 5 phút qua Redis `SET NX EX 300` (fallback in-memory Map khi không có
+ * Redis) và bulk INSERT 1 query duy nhất xuống `interaction_events`.
  */
 
 const eventSchema = z.object({
+  eventId: z.string().uuid().optional(),
   eventType: z.string().min(1).max(64),
   placeId: z.string().min(1).max(128).optional(),
   postId: z.string().uuid().optional(),
@@ -34,10 +37,12 @@ const batchSchema = z.object({
   events: z.array(eventSchema).min(1).max(20),
 })
 
-const DEDUPE_TTL_MS = 5 * 60 * 1000
+const DEDUPE_TTL_SECONDS = 5 * 60
+const DEDUPE_TTL_MS = DEDUPE_TTL_SECONDS * 1000
 const seen = new Map<string, number>()
 
 function dedupeKey(actor: string, e: z.infer<typeof eventSchema>): string {
+  if (e.eventId) return `id:${actor}:${e.eventId}`
   return `${actor}|${e.eventType}|${e.placeId ?? ""}|${e.postId ?? ""}`
 }
 
@@ -46,6 +51,35 @@ function pruneSeen(now: number): void {
   for (const [key, at] of seen) {
     if (now - at > DEDUPE_TTL_MS) seen.delete(key)
   }
+}
+
+async function claimDedupeKeys(keys: string[]): Promise<boolean[]> {
+  if (keys.length === 0) return []
+  const redis = getRedis()
+  if (redis) {
+    const startedAt = performance.now()
+    try {
+      const results = await Promise.all(
+        keys.map((key) =>
+          redis.set(`dedupe:evt:${key}`, "1", "NX", "EX", String(DEDUPE_TTL_SECONDS)),
+        ),
+      )
+      return results.map((res) => res === "OK")
+    } catch {
+      // Fallback sang in-memory bên dưới khi Redis lỗi
+    } finally {
+      recordRedisTiming(performance.now() - startedAt)
+    }
+  }
+
+  const now = Date.now()
+  pruneSeen(now)
+  return keys.map((key) => {
+    const last = seen.get(key)
+    if (last !== undefined && now - last < DEDUPE_TTL_MS) return false
+    seen.set(key, now)
+    return true
+  })
 }
 
 export function createEventsRouter() {
@@ -63,8 +97,7 @@ export function createEventsRouter() {
       }
 
       // `interaction_events.place_id` là FK tới `places(id)` — id rác sẽ làm FK
-      // violation và event bị bỏ âm thầm. Kiểm tồn tại một lần cho cả batch
-      // (chỉ cần tồn tại, không cần published — event cho bản nháp vẫn hợp lệ).
+      // violation và event bị bỏ âm thầm. Kiểm tồn tại một lần cho cả batch.
       const placeIds = [
         ...new Set(
           parsed.data.events
@@ -82,39 +115,35 @@ export function createEventsRouter() {
         }
       }
 
-      const now = Date.now()
-      pruneSeen(now)
-
-      let recorded = 0
+      const candidates: { key: string; input: RecordEventInput }[] = []
+      const batchSeen = new Set<string>()
       for (const event of parsed.data.events) {
-        // Event ngoài taxonomy: đếm là "accepted" nhưng không ghi — FE có thể
-        // gửi event mới trước khi BE cập nhật taxonomy.
         if (!EVENT_TO_KIND[event.eventType]) continue
-
         const actor = viewer?.id ?? event.anonId
         if (!actor) continue
 
         const key = dedupeKey(actor, event)
-        const last = seen.get(key)
-        if (last !== undefined && now - last < DEDUPE_TTL_MS) continue
+        if (batchSeen.has(key)) continue
+        batchSeen.add(key)
 
-        const ok = await recordEvent({
-          eventType: event.eventType,
-          userId: viewer?.id ?? null,
-          anonId: viewer ? null : (event.anonId ?? null),
-          placeId: event.placeId ?? null,
-          postId: event.postId ?? null,
-          query: event.query ?? null,
-          context: event.context ?? {},
-          sessionId: event.sessionId ?? null,
+        candidates.push({
+          key,
+          input: {
+            eventType: event.eventType,
+            userId: viewer?.id ?? null,
+            anonId: viewer ? null : (event.anonId ?? null),
+            placeId: event.placeId ?? null,
+            postId: event.postId ?? null,
+            query: event.query ?? null,
+            context: event.context ?? {},
+            sessionId: event.sessionId ?? null,
+          },
         })
-        // Đánh dấu dedupe + đếm CHỈ khi ghi thành công thật (recordEvent trả
-        // false khi DB lỗi) — không báo "recorded" sai.
-        if (ok) {
-          seen.set(key, now)
-          recorded += 1
-        }
       }
+
+      const claimed = await claimDedupeKeys(candidates.map((item) => item.key))
+      const toInsert = candidates.filter((_, idx) => claimed[idx]).map((item) => item.input)
+      const recorded = await recordEventsBatch(toInsert)
 
       return c.json({ accepted: parsed.data.events.length, recorded }, 202)
     },
