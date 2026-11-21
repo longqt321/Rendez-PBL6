@@ -1,5 +1,6 @@
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router"
-import { SearchXIcon, SparklesIcon, UsersIcon } from "lucide-react"
+import { parseNaturalFilterQuery } from "@rendez/schema"
+import { CompassIcon, MapIcon, SearchXIcon, SparklesIcon, UsersIcon } from "lucide-react"
 import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
 import { LoadMore } from "@/components/shared/load-more"
@@ -370,6 +371,7 @@ function SearchResults({ query }: Readonly<{ query: string }>) {
   })
   const { data: suggestions } = useUserSuggestions()
 
+  const parsedQuery = parseNaturalFilterQuery(query)
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
   const didYouMean = placesData?.pages[0]?.meta?.didYouMean
   const posts = allPosts.filter((post) => post.placeId !== null)
@@ -377,7 +379,46 @@ function SearchResults({ query }: Readonly<{ query: string }>) {
 
   return (
     <PageContainer size="wide">
-      <PageHeader title={`Kết quả cho “${query}”`} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <PageHeader title={`Kết quả cho “${query}”`} />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            render={<Link to={`/discover?q=${encodeURIComponent(query)}`} />}
+          >
+            <CompassIcon className="size-3.5 text-primary" aria-hidden="true" />
+            Mở trong Khám phá
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            render={<Link to={`/map?q=${encodeURIComponent(query)}`} />}
+          >
+            <MapIcon className="size-3.5 text-primary" aria-hidden="true" />
+            Xem trên Bản đồ
+          </Button>
+        </div>
+      </div>
+
+      {parsedQuery.chips.length > 0 ? (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-medium text-muted-foreground">Đã áp dụng lọc tự động:</span>
+          {parsedQuery.chips.map((chip) => (
+            <Badge
+              key={chip.id}
+              variant="outline"
+              className={
+                chip.kind === "exclude"
+                  ? "border-destructive/40 bg-destructive/10 text-xs text-destructive"
+                  : "border-primary/40 bg-primary/10 text-xs text-primary"
+              }
+            >
+              {chip.label}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
 
       <DidYouMean
         suggestion={didYouMean}

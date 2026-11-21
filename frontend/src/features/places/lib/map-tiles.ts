@@ -22,14 +22,18 @@ export const OSM_TILE_LAYER_PROPS: Pick<
   TileLayerProps,
   "url" | "attribution" | "minNativeZoom" | "errorTileUrl"
 > &
-  Pick<TileLayerProps, "updateWhenIdle" | "keepBuffer" | "maxNativeZoom" | "detectRetina"> = {
+  Pick<
+    TileLayerProps,
+    "updateWhenIdle" | "updateWhenZooming" | "keepBuffer" | "maxNativeZoom" | "detectRetina"
+  > = {
   url: OSM_TILE_URL,
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   updateWhenIdle: true,
-  keepBuffer: 3,
+  updateWhenZooming: false,
+  keepBuffer: 6,
   minNativeZoom: 10,
-  maxNativeZoom: 18,
+  maxNativeZoom: 16,
   detectRetina: false,
   errorTileUrl: FALLBACK_ERROR_TILE_URL,
 }

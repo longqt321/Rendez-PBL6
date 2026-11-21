@@ -90,7 +90,6 @@ function escapeHtml(value: string): string {
 
 function MapBoundsUpdater({
   places,
-  selectedPlace,
   userCoordinates,
   fitKey,
   isPlacesLoading,
@@ -99,7 +98,6 @@ function MapBoundsUpdater({
   onFitApplied,
 }: Readonly<{
   places: Place[]
-  selectedPlace?: Place
   userCoordinates?: { lat: number; lng: number } | null
   fitKey?: string
   isPlacesLoading?: boolean
@@ -115,13 +113,6 @@ function MapBoundsUpdater({
   })
 
   useEffect(() => {
-    if (selectedPlace?.lat !== undefined && selectedPlace?.lng !== undefined) {
-      map.flyTo([selectedPlace.lat, selectedPlace.lng], Math.max(map.getZoom(), 15), {
-        duration: 0.8,
-      })
-      return
-    }
-
     // Đang chờ dữ liệu mới hoặc đang hiển thị placeholder của bộ lọc cũ → không fit.
     if (isPlaceholderData || isPlacesLoading) return
 
@@ -162,16 +153,7 @@ function MapBoundsUpdater({
     }
     fittedKeyRef.current = fitKey ?? null
     onFitAppliedRef.current?.()
-  }, [
-    fitKey,
-    selectedPlace,
-    userCoordinates,
-    places,
-    isPlacesLoading,
-    isPlaceholderData,
-    selectedDistrict,
-    map,
-  ])
+  }, [fitKey, userCoordinates, places, isPlacesLoading, isPlaceholderData, selectedDistrict, map])
 
   return null
 }
@@ -532,7 +514,7 @@ function ClusteredPlaceMarkers({
               },
             }}
           >
-            <Popup className="place-popup" closeButton={false}>
+            <Popup className="place-popup" closeButton={false} autoPan={false}>
               {/* Ngoại lệ có chủ đích: popup Leaflet tự quản khung/overflow nên dùng `div`, không bọc `Card` (ring + overflow-hidden phá layout popup). Xem docs/CONVENTIONS.md. */}
               <div className="flex max-w-65 min-w-55 flex-col gap-2 p-1">
                 <div className="relative h-28 w-full overflow-hidden rounded-md bg-muted">
@@ -545,16 +527,17 @@ function ClusteredPlaceMarkers({
                     sizes="260px"
                     className="h-full w-full object-cover"
                   />
-                  <div className="absolute top-2 left-2 flex gap-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {CATEGORY_META[place.category]?.label}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1">
+                  <Badge variant="secondary" className="text-[11px]">
+                    {CATEGORY_META[place.category]?.label}
+                  </Badge>
+                  {place.district ? (
+                    <Badge variant="outline" className="text-[11px]">
+                      {place.district}
                     </Badge>
-                    {place.district ? (
-                      <Badge variant="outline" className="bg-background/80 text-xs backdrop-blur">
-                        {place.district}
-                      </Badge>
-                    ) : null}
-                  </div>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-col gap-1">
@@ -590,7 +573,7 @@ function ClusteredPlaceMarkers({
                   <Button
                     size="sm"
                     nativeButton={false}
-                    className="h-9 w-full text-xs"
+                    className="h-9 w-full text-xs !text-primary-foreground"
                     render={<Link to={`/discover/${place.id}`} />}
                   >
                     Xem quán
@@ -751,7 +734,6 @@ export function PlacesMap({
         <ResilientTileLayer />
         <MapBoundsUpdater
           places={validPlaces}
-          selectedPlace={selectedPlace}
           userCoordinates={userCoordinates}
           fitKey={fitKey}
           isPlacesLoading={isPlacesLoading}

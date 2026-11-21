@@ -5,6 +5,7 @@ import { ErrorState } from "@/components/shared/error-state"
 import { LoadMore } from "@/components/shared/load-more"
 import { StaggerItem, StaggerList } from "@/components/shared/motion-primitives"
 import { SectionHeading } from "@/components/shared/section-heading"
+import { Alert, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
@@ -129,6 +130,14 @@ export function DiscoverPage() {
       <PageHeader title="Khám phá địa điểm Đà Nẵng" />
 
       <DiscoverToolbar view={view} mode="grid" />
+
+      {view.meta?.relaxedFilters ? (
+        <Alert className="mt-4 border-primary/30 bg-primary/5">
+          <AlertTitle className="text-xs font-normal text-foreground">
+            Đã tự động mở rộng bộ lọc vì chưa có quán nào khớp đồng thời mọi điều kiện bạn nhập.
+          </AlertTitle>
+        </Alert>
+      ) : null}
 
       <DidYouMean suggestion={view.meta?.didYouMean} onSelect={filters.setDraftQuery} />
 

@@ -23,6 +23,7 @@ export function ResilientTileLayer() {
     const layer = L.tileLayer.fallback(OSM_TILE_URL, {
       attribution: OSM_TILE_LAYER_PROPS.attribution,
       updateWhenIdle: OSM_TILE_LAYER_PROPS.updateWhenIdle,
+      updateWhenZooming: OSM_TILE_LAYER_PROPS.updateWhenZooming,
       keepBuffer: OSM_TILE_LAYER_PROPS.keepBuffer,
       minNativeZoom: OSM_TILE_LAYER_PROPS.minNativeZoom,
       maxNativeZoom: OSM_TILE_LAYER_PROPS.maxNativeZoom,

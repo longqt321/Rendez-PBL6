@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSearchParams } from "react-router"
+import {
+  parseNaturalFilterQuery,
+  removeChipFromQuery,
+  type ParsedFilterChip,
+  type ParsedNaturalQuery,
+} from "@rendez/schema"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import type { DiscoverSort } from "../api/get-places"
 import type { PlaceCategory } from "../types/place"
@@ -19,28 +25,22 @@ const VALID_SORTS = new Set<DiscoverSort>(["newest", "rating", "distance"])
 
 export interface DiscoverFiltersState {
   category: PlaceCategory | "all"
-
   district: string
-
   query: string
-
   draftQuery: string
   setDraftQuery: (value: string) => void
-
+  commitQueryNow: (value?: string) => void
+  parsedQuery: ParsedNaturalQuery
+  removeParsedChip: (chip: ParsedFilterChip) => void
   priceMax: PriceMaxFilter
   setPriceMax: (value: PriceMaxFilter) => void
-
   sort: DiscoverSort
   setSort: (value: DiscoverSort) => void
-
   setCoords: (coords: { lat: number; lng: number } | null) => void
-
   isNearbyActive: boolean
   setCategory: (value: PlaceCategory | "all") => void
   setDistrict: (value: string) => void
-
   setIsNearbyActive: (value: boolean) => void
-
   resetAll: () => void
   activeFilterCount: number
 }
@@ -64,19 +64,7 @@ export function useDiscoverFilters(): DiscoverFiltersState {
     ? (rawPriceMax as 1 | 2 | 3)
     : "all"
 
-  // Tương thích ngược: `?nearby=1` (link cũ) → `sort=distance`; `sort` thắng
-  // khi cả hai cùng xuất hiện. Chuẩn hoá ngay bằng `replace` để URL sạch.
-  const hasLegacyNearby = params.get("nearby") === "1"
-  useEffect(() => {
-    if (!hasLegacyNearby) return
-    const updated = new URLSearchParams(params)
-    updated.delete("nearby")
-    if (!updated.get("sort")) updated.set("sort", "distance")
-    setParams(updated, { replace: true })
-  }, [hasLegacyNearby, params, setParams])
-
-  const effectiveSort: DiscoverSort = sort === "newest" && hasLegacyNearby ? "distance" : sort
-  const isNearbyActive = effectiveSort === "distance"
+  const isNearbyActive = sort === "distance"
 
   const patch = useCallback(
     (next: Record<string, string | null>) => {
@@ -96,11 +84,9 @@ export function useDiscoverFilters(): DiscoverFiltersState {
   )
 
   const [draftQuery, setDraftQuery] = useState(query)
-  const debouncedDraft = useDebouncedValue(draftQuery, 300)
-
+  const debouncedDraft = useDebouncedValue(draftQuery, 280)
   const lastWritten = useRef(query)
 
-  // URL đổi từ bên ngoài (back/forward, link chia sẻ) → nạp lại ô nhập.
   useEffect(() => {
     if (query === lastWritten.current) return
     lastWritten.current = query
@@ -115,8 +101,33 @@ export function useDiscoverFilters(): DiscoverFiltersState {
     patch({ q: trimmed })
   }, [debouncedDraft, draftQuery, query, patch])
 
+  const commitQueryNow = useCallback(
+    (nextValue?: string) => {
+      const value = (nextValue ?? draftQuery).trim()
+      if (nextValue !== undefined) setDraftQuery(nextValue)
+      lastWritten.current = value
+      patch({ q: value })
+    },
+    [draftQuery, patch],
+  )
+
+  const parsedQuery = useMemo(() => parseNaturalFilterQuery(draftQuery), [draftQuery])
+
+  const removeParsedChip = useCallback(
+    (chip: ParsedFilterChip) => {
+      if (chip.field === "nearMe") {
+        patch({ sort: null, lat: null, lng: null })
+      }
+      const nextQuery = removeChipFromQuery(draftQuery, chip)
+      lastWritten.current = nextQuery
+      setDraftQuery(nextQuery)
+      patch({ q: nextQuery })
+    },
+    [draftQuery, patch],
+  )
+
   const setSort = useCallback(
-    (value: DiscoverSort) => patch({ sort: value === "newest" ? null : value, nearby: null }),
+    (value: DiscoverSort) => patch({ sort: value === "newest" ? null : value }),
     [patch],
   )
 
@@ -146,9 +157,12 @@ export function useDiscoverFilters(): DiscoverFiltersState {
     query,
     draftQuery,
     setDraftQuery,
+    commitQueryNow,
+    parsedQuery,
+    removeParsedChip,
     priceMax,
     setPriceMax: (value) => patch({ priceMax: value === "all" ? null : String(value) }),
-    sort: effectiveSort,
+    sort,
     setSort,
     setCoords,
     isNearbyActive,
@@ -164,7 +178,6 @@ export function useDiscoverFilters(): DiscoverFiltersState {
         q: null,
         priceMax: null,
         sort: null,
-        nearby: null,
         lat: null,
         lng: null,
       })

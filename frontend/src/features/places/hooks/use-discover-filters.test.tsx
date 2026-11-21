@@ -20,7 +20,7 @@ function renderFilters(initialUrl: string) {
   return result
 }
 
-describe("useDiscoverFilters — priceMax & sort", () => {
+describe("useDiscoverFilters - Smart Search & Filter state", () => {
   it("đọc ?priceMax=2&sort=rating đúng state", () => {
     const { result } = renderFilters("/discover?priceMax=2&sort=rating")
     expect(result.current.filters.priceMax).toBe(2)
@@ -29,28 +29,13 @@ describe("useDiscoverFilters — priceMax & sort", () => {
     expect(result.current.filters.activeFilterCount).toBe(1)
   })
 
-  it("giá trị rác → mặc định (all / newest)", () => {
+  it("giá trị rác -> mặc định (all / newest)", () => {
     const { result } = renderFilters("/discover?priceMax=9&sort=tuyet-voi")
     expect(result.current.filters.priceMax).toBe("all")
     expect(result.current.filters.sort).toBe("newest")
   })
 
-  it("?nearby=1 (link cũ) → sort=distance, nearby bị xoá khỏi URL sau chuẩn hoá", async () => {
-    const { result } = renderFilters("/discover?nearby=1")
-    expect(result.current.filters.sort).toBe("distance")
-    expect(result.current.filters.isNearbyActive).toBe(true)
-    await waitFor(() => expect(result.current.search).not.toContain("nearby"))
-    expect(result.current.search).toContain("sort=distance")
-  })
-
-  it("?nearby=1&sort=rating → sort thắng, nearby bị bỏ", async () => {
-    const { result } = renderFilters("/discover?nearby=1&sort=rating")
-    expect(result.current.filters.sort).toBe("rating")
-    expect(result.current.filters.isNearbyActive).toBe(false)
-    await waitFor(() => expect(result.current.search).not.toContain("nearby"))
-  })
-
-  it("tắt 'Gần đây' → sort về newest (không nhớ sort cũ)", () => {
+  it("tắt 'Gần tôi' -> sort về newest", () => {
     const { result } = renderFilters("/discover?sort=distance")
     expect(result.current.filters.isNearbyActive).toBe(true)
     act(() => result.current.filters.setIsNearbyActive(false))
@@ -58,11 +43,32 @@ describe("useDiscoverFilters — priceMax & sort", () => {
     expect(result.current.filters.isNearbyActive).toBe(false)
   })
 
-  it("setSort('distance') ghi sort=distance và xoá nearby", async () => {
-    const { result } = renderFilters("/discover?nearby=1")
-    act(() => result.current.filters.setSort("distance"))
-    await waitFor(() => expect(result.current.search).toContain("sort=distance"))
-    expect(result.current.search).not.toContain("nearby")
+  it("parsedQuery bóc đúng thuộc tính tự nhiên và removeParsedChip gỡ chính xác khỏi URL", async () => {
+    const { result } = renderFilters(
+      "/discover?q=" + encodeURIComponent("cà phê ở Sơn Trà dưới 50k"),
+    )
+    expect(result.current.filters.parsedQuery.categories).toEqual(["cafe"])
+    expect(result.current.filters.parsedQuery.districts).toEqual(["Sơn Trà"])
+    expect(result.current.filters.parsedQuery.priceMax).toBe(1)
+    expect(result.current.filters.parsedQuery.residualQuery).toBe("")
+
+    const districtChip = result.current.filters.parsedQuery.chips.find(
+      (c) => c.field === "district",
+    )
+    expect(districtChip).toBeDefined()
+
+    act(() => result.current.filters.removeParsedChip(districtChip!))
+    await waitFor(() => expect(result.current.filters.query).not.toContain("Sơn Trà"))
+    expect(result.current.filters.parsedQuery.districts).toEqual([])
+    expect(result.current.filters.parsedQuery.categories).toEqual(["cafe"])
+  })
+
+  it("commitQueryNow ghi ngay q lên URL mà không cần đợi debounce", async () => {
+    const { result } = renderFilters("/discover")
+    act(() => result.current.filters.commitQueryNow("bánh xèo Hải Châu"))
+    await waitFor(() =>
+      expect(new URLSearchParams(result.current.search).get("q")).toBe("bánh xèo Hải Châu"),
+    )
   })
 
   it("setPriceMax ghi priceMax lên URL; 'all' xoá khỏi URL", async () => {
@@ -73,11 +79,12 @@ describe("useDiscoverFilters — priceMax & sort", () => {
     await waitFor(() => expect(result.current.search).not.toContain("priceMax"))
   })
 
-  it("resetAll xoá cả sort, priceMax và nearby", async () => {
-    const { result } = renderFilters("/discover?priceMax=2&sort=distance&nearby=1")
+  it("resetAll xoá toàn bộ query, sort, priceMax", async () => {
+    const { result } = renderFilters("/discover?q=cafe&priceMax=2&sort=distance")
     act(() => result.current.filters.resetAll())
     await waitFor(() => expect(result.current.search).toBe(""))
     expect(result.current.filters.priceMax).toBe("all")
     expect(result.current.filters.sort).toBe("newest")
+    expect(result.current.filters.query).toBe("")
   })
 })
