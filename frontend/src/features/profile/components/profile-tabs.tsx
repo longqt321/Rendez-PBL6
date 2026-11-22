@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router"
+import { parseAsStringLiteral, useQueryState } from "nuqs"
 import { LockIcon } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -15,20 +15,20 @@ const POST_TABS: ProfileTab[] = ["posts", "pinned", "saved"]
 const TAB_VALUES = ["posts", "pinned", "saved", "collections"] as const
 type TabValue = (typeof TAB_VALUES)[number]
 
-function isTabValue(value: string | null): value is TabValue {
-  return value !== null && (TAB_VALUES as readonly string[]).includes(value)
-}
-
 export function ProfileTabs({ profile }: ProfileTabsProps) {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const rawTab = searchParams.get("tab")
-  const tab: TabValue =
-    isTabValue(rawTab) && (rawTab !== "saved" || profile.isMe) ? rawTab : "posts"
+  const [rawTab, setRawTab] = useQueryState(
+    "tab",
+    parseAsStringLiteral(TAB_VALUES).withDefault("posts").withOptions({ history: "replace" }),
+  )
+  const tab: TabValue = rawTab !== "saved" || profile.isMe ? rawTab : "posts"
 
   return (
     <Tabs
       value={tab}
-      onValueChange={(value) => setSearchParams(value === "posts" ? {} : { tab: String(value) })}
+      onValueChange={(value) => {
+        const next = String(value) as TabValue
+        void setRawTab(next === "posts" ? null : next)
+      }}
     >
       <TabsList>
         <TabsTrigger value="posts">Bài đăng</TabsTrigger>

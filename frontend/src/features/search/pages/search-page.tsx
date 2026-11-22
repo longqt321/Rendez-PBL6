@@ -1,4 +1,5 @@
-import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router"
+import { Link, Navigate, useLocation, useNavigate } from "react-router"
+import { parseAsString, useQueryState } from "nuqs"
 import { parseNaturalFilterQuery } from "@rendez/schema"
 import { CompassIcon, MapIcon, SearchXIcon, SparklesIcon, UsersIcon } from "lucide-react"
 import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
@@ -45,8 +46,8 @@ const DANANG_SEARCH_SUGGESTIONS = [
 ] as const
 
 export function SearchPage() {
-  const [params] = useSearchParams()
-  const query = (params.get("q") ?? "").trim()
+  const [rawQuery] = useQueryState("q", parseAsString.withDefault(""))
+  const query = rawQuery.trim()
 
   if (query.length === 0) return <Navigate to="/discover" replace />
 

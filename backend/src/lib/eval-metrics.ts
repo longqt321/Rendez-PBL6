@@ -1,3 +1,5 @@
+import { mean, quantile } from "simple-statistics"
+
 export interface Metrics {
   p5: number
   p10: number
@@ -25,9 +27,8 @@ export function score(ids: string[], labels: Record<string, number>): Omit<Metri
 }
 
 export function percentile(values: number[], p: number): number {
-  const sorted = [...values].sort((a, b) => a - b)
-  const idx = Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length))
-  return Math.round(sorted[idx] ?? 0)
+  if (values.length === 0) return 0
+  return Math.round(quantile(values, Math.min(1, Math.max(0, p / 100))))
 }
 
 export function mulberry32(seed: number): () => number {
@@ -56,18 +57,17 @@ function sampleMean(diffs: number[], rng: () => number): number {
 
 export function pairedBootstrap(diffs: number[], iterations = 10_000, seed = 42): BootstrapResult {
   if (diffs.length === 0) return { meanDelta: 0, ciLow: 0, ciHigh: 0, pOneSided: 1 }
-  const meanDelta = diffs.reduce((s, x) => s + x, 0) / diffs.length
+  const meanDelta = mean(diffs)
   const rng = mulberry32(seed)
   const means: number[] = []
   for (let i = 0; i < iterations; i++) {
     means.push(sampleMean(diffs, rng))
   }
-  means.sort((a, b) => a - b)
   const geZero = means.filter((m) => m <= 0).length
   return {
     meanDelta,
-    ciLow: means[Math.floor(iterations * 0.025)] ?? meanDelta,
-    ciHigh: means[Math.floor(iterations * 0.975)] ?? meanDelta,
+    ciLow: quantile(means, 0.025),
+    ciHigh: quantile(means, 0.975),
     pOneSided: geZero / iterations,
   }
 }

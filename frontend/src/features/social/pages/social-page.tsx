@@ -1,4 +1,5 @@
-import { Link, useSearchParams } from "react-router"
+import { Link } from "react-router"
+import { parseAsStringLiteral, useQueryState } from "nuqs"
 import { CompassIcon, MapPinIcon, UsersIcon } from "lucide-react"
 import {
   PageContainer,
@@ -25,13 +26,21 @@ import type { Post, PostFeedFilter } from "../types/post"
 
 interface SocialFeedContentProps {
   readonly isPending: boolean
+  readonly isUpdating: boolean
   readonly isError: boolean
   readonly posts: Post[]
   readonly filter: PostFeedFilter
   readonly onRetry: () => void
 }
 
-function SocialFeedContent({ isPending, isError, posts, filter, onRetry }: SocialFeedContentProps) {
+function SocialFeedContent({
+  isPending,
+  isUpdating,
+  isError,
+  posts,
+  filter,
+  onRetry,
+}: SocialFeedContentProps) {
   if (isPending) {
     return (
       <div className="mt-4 flex flex-col gap-4">
@@ -78,7 +87,9 @@ function SocialFeedContent({ isPending, isError, posts, filter, onRetry }: Socia
     )
   }
   return (
-    <StaggerList className="mt-4 flex flex-col gap-4">
+    <StaggerList
+      className={`mt-4 flex flex-col gap-4 transition-opacity duration-150 ${isUpdating ? "opacity-65" : ""}`}
+    >
       {posts.map((post) => (
         <StaggerItem key={post.id}>
           <PostCard post={post} />
@@ -88,35 +99,35 @@ function SocialFeedContent({ isPending, isError, posts, filter, onRetry }: Socia
   )
 }
 
-const VALID_SOCIAL_FILTERS: ReadonlySet<PostFeedFilter> = new Set([
-  "all",
-  "unplaced",
-  "following",
-  "mine",
-])
+const SOCIAL_FILTER_VALUES = ["all", "unplaced", "following", "mine"] as const
 
 export function SocialPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [rawFilter, setRawFilter] = useQueryState(
+    "filter",
+    parseAsStringLiteral(SOCIAL_FILTER_VALUES)
+      .withDefault("all")
+      .withOptions({ history: "replace" }),
+  )
   const { data: me, isPending: mePending } = useMe()
 
-  const rawFilter = searchParams.get("filter")
-  const parsedFilter: PostFeedFilter =
-    rawFilter && VALID_SOCIAL_FILTERS.has(rawFilter as PostFeedFilter)
-      ? (rawFilter as PostFeedFilter)
-      : "all"
-  const filter: PostFeedFilter =
-    parsedFilter === "following" && !mePending && !me ? "all" : parsedFilter
+  const filter: PostFeedFilter = rawFilter === "following" && !mePending && !me ? "all" : rawFilter
 
   function handleFilterChange(next: string) {
-    if (!VALID_SOCIAL_FILTERS.has(next as PostFeedFilter)) return
-    const updated = new URLSearchParams(searchParams)
-    if (next === "all") updated.delete("filter")
-    else updated.set("filter", next)
-    setSearchParams(updated, { replace: true })
+    if (!(SOCIAL_FILTER_VALUES as readonly string[]).includes(next)) return
+    void setRawFilter(next === "all" ? null : (next as (typeof SOCIAL_FILTER_VALUES)[number]))
   }
 
-  const { posts, isPending, isError, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    usePosts({ filter })
+  const {
+    posts,
+    isPending,
+    isFetching,
+    isPlaceholderData,
+    isError,
+    refetch,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = usePosts({ filter })
 
   const sentinelRef = useInfiniteScroll({
     hasNextPage,
@@ -145,6 +156,7 @@ export function SocialPage() {
 
           <SocialFeedContent
             isPending={isPending}
+            isUpdating={isFetching && isPlaceholderData}
             isError={isError}
             posts={posts}
             filter={filter}

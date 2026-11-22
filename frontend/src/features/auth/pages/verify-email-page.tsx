@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { Link, useNavigate, useSearchParams } from "react-router"
+import { Link, useNavigate } from "react-router"
+import { parseAsString, useQueryState } from "nuqs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -17,13 +18,13 @@ function errorMessage(code: string): string {
 }
 
 export function VerifyEmailPage() {
-  const [searchParams] = useSearchParams()
+  const [errorCode] = useQueryState("error", parseAsString)
+  const [verifiedParam] = useQueryState("verified", parseAsString)
   const navigate = useNavigate()
   const resend = useSendVerificationEmail()
   useAuthPageTitle("Xác thực email")
   const [email, setEmail] = useState("")
-  const errorCode = searchParams.get("error")
-  const verified = searchParams.get("verified") === "1"
+  const verified = verifiedParam === "1"
 
   if (verified && !errorCode) {
     return (

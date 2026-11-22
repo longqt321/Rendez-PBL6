@@ -26,7 +26,10 @@ describe("useUsersSearch", () => {
 
     q = "khong-ai-nhu-the"
     rerender()
-    await waitForQuery(() => expect(result.current.isSuccess).toBe(true))
+    await waitForQuery(() => {
+      expect(result.current.isSuccess).toBe(true)
+      expect(result.current.isPlaceholderData).toBe(false)
+    })
     expect(result.current.data?.pages.flatMap((page) => page.items)).toEqual([])
   })
 })

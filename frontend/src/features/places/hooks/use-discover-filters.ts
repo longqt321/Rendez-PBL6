@@ -6,7 +6,7 @@ import {
   type ParsedFilterChip,
   type ParsedNaturalQuery,
 } from "@rendez/schema"
-import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useDebounce } from "@uidotdev/usehooks"
 import type { DiscoverSort } from "../api/get-places"
 import type { PlaceCategory } from "../types/place"
 
@@ -73,7 +73,7 @@ export function useDiscoverFilters(): DiscoverFiltersState {
   const isNearbyActive = sort === "distance"
 
   const [draftQuery, setDraftQuery] = useState(query)
-  const debouncedDraft = useDebouncedValue(draftQuery, 280)
+  const debouncedDraft = useDebounce(draftQuery, 280)
   const lastWritten = useRef(query)
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import {
   timeout,
   wrap,
 } from "cockatiel"
+import escapeHtml from "escape-html"
 import nodemailer, { type Transporter } from "nodemailer"
 import { env } from "../env"
 
@@ -45,15 +46,6 @@ async function sendResilientMail(
 export const RESET_PASSWORD_SUBJECT = "Đặt lại mật khẩu Rendez"
 export const VERIFY_EMAIL_SUBJECT = "Xác thực email Rendez"
 export const ACCOUNT_EXISTS_SUBJECT = "Tài khoản Rendez của bạn đã tồn tại"
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;")
-}
 
 export interface ResetPasswordMailInput {
   to: string

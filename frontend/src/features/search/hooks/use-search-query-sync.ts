@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { parseAsString, useQueryState } from "nuqs"
 import { useLocation, useNavigate } from "react-router"
-import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useDebounce } from "@uidotdev/usehooks"
 import { FILTER_SHARED_PATHS } from "@/components/layout/nav-items"
 
 export function useSearchQuerySync() {
@@ -17,7 +17,7 @@ export function useSearchQuerySync() {
   const urlQuery = isSearchPage || isFilterPage ? qParam : ""
 
   const [draft, setDraft] = useState(urlQuery)
-  const debouncedDraft = useDebouncedValue(draft, 280)
+  const debouncedDraft = useDebounce(draft, 280)
   const lastWritten = useRef(urlQuery)
   const urlQueryRef = useRef(urlQuery)
 

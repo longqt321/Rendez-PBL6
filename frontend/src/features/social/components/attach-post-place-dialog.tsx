@@ -13,7 +13,7 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { ResponsiveModal } from "@/components/shared/responsive-modal"
 import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
-import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useDebounce } from "@uidotdev/usehooks"
 import { useUpdatePostPlace } from "../hooks/use-update-post-place"
 
 interface AttachPostPlaceDialogProps {
@@ -31,7 +31,7 @@ export function AttachPostPlaceDialog({
   onOpenChange,
 }: AttachPostPlaceDialogProps) {
   const [query, setQuery] = useState("")
-  const debouncedQuery = useDebouncedValue(query, 200)
+  const debouncedQuery = useDebounce(query, 200)
   const placeLookup = useDiscoverPlaces(
     { category: "all", query: debouncedQuery.trim() },
     { enabled: open },

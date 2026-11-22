@@ -45,7 +45,7 @@ import { PlaceCardSkeleton } from "@/features/places/components/place-card-skele
 import { PlacesMap } from "@/features/places/components/places-map"
 import { useDiscoverPlaces } from "@/features/places/hooks/use-discover-places"
 import { useMapPlaces } from "@/features/places/hooks/use-map-places"
-import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useDebounce } from "@uidotdev/usehooks"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { MAX_MEMBER_NAME_LENGTH } from "@/lib/constants"
 import { formatInitials } from "@/lib/format"
@@ -414,7 +414,7 @@ function RoomMatchingPlaces({
   const [sort, setSort] = useState<"rating" | "newest">("rating")
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null)
   const [personalSearchDraft, setPersonalSearchDraft] = useState("")
-  const personalSearch = useDebouncedValue(personalSearchDraft.trim(), 250)
+  const personalSearch = useDebounce(personalSearchDraft.trim(), 250)
 
   const roomFilterPayload = {
     categories: room.filter.categories,

@@ -32,7 +32,7 @@ import { usePlaceSuggestions } from "@/features/places/hooks/use-place-suggestio
 import { categoryLabel } from "@/features/places/lib/category-meta"
 import type { PlaceSummary } from "@/features/places/types/place"
 import { useMe } from "@/features/profile/hooks/use-me"
-import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useDebounce } from "@uidotdev/usehooks"
 import {
   IMAGE_CONTENT_TYPES,
   MAX_CAPTION_LENGTH,
@@ -68,8 +68,8 @@ export function PostComposer({ onCreated }: PostComposerProps) {
   const imageSeq = useRef(0)
   const submittingRef = useRef(false)
 
-  const debouncedCaption = useDebouncedValue(caption, 450)
-  const debouncedPlaceQuery = useDebouncedValue(placeQuery, 250)
+  const debouncedCaption = useDebounce(caption, 450)
+  const debouncedPlaceQuery = useDebounce(placeQuery, 250)
   const { data: suggestions = [], isFetching } = usePlaceSuggestions(debouncedCaption)
   const placeLookup = useDiscoverPlaces(
     { category: "all", district: "all", query: debouncedPlaceQuery, sort: "rating" },

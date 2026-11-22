@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { Link, Navigate, useNavigate, useSearchParams } from "react-router"
+import { Link, Navigate, useNavigate } from "react-router"
+import { parseAsString, useQueryState } from "nuqs"
 import { z } from "zod"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -36,8 +37,8 @@ const LOGIN_FIELDS = ["email", "password"] as const
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const next = safeRedirectPath(searchParams.get("next"))
+  const [nextParam] = useQueryState("next", parseAsString)
+  const next = safeRedirectPath(nextParam)
   const login = useLogin()
   const resend = useSendVerificationEmail()
   useAuthPageTitle("Đăng nhập")

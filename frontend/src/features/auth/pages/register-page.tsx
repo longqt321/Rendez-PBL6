@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { Link, Navigate, useSearchParams } from "react-router"
+import { Link, Navigate } from "react-router"
+import { parseAsString, useQueryState } from "nuqs"
 import { z } from "zod"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -55,8 +56,8 @@ type RegisterForm = z.infer<typeof registerSchema>
 const REGISTER_FIELDS = ["name", "email", "handle", "password"] as const
 
 export function RegisterPage() {
-  const [searchParams] = useSearchParams()
-  const next = safeRedirectPath(searchParams.get("next"))
+  const [nextParam] = useQueryState("next", parseAsString)
+  const next = safeRedirectPath(nextParam)
   const register = useRegister()
   const resend = useSendVerificationEmail()
   useAuthPageTitle("Tạo tài khoản")

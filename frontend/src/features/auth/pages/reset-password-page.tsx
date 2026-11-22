@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { Link, useSearchParams } from "react-router"
+import { Link } from "react-router"
+import { parseAsString, useQueryState } from "nuqs"
 import { z } from "zod"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -28,8 +29,7 @@ const resetSchema = z
 type ResetForm = z.infer<typeof resetSchema>
 
 export function ResetPasswordPage() {
-  const [searchParams] = useSearchParams()
-  const token = searchParams.get("token") ?? ""
+  const [token] = useQueryState("token", parseAsString.withDefault(""))
   const reset = useResetPassword()
   useAuthPageTitle("Đặt lại mật khẩu")
 

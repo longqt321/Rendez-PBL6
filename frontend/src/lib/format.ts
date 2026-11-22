@@ -1,39 +1,23 @@
-const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
-  ["year", 31_536_000],
-  ["month", 2_592_000],
-  ["week", 604_800],
-  ["day", 86_400],
-  ["hour", 3_600],
-  ["minute", 60],
-  ["second", 1],
-]
+import { format, formatDistance as formatDateDistance, isValid, parseISO } from "date-fns"
+import { vi } from "date-fns/locale"
 
-const rtf = new Intl.RelativeTimeFormat("vi", { numeric: "auto" })
 const numberFormat = new Intl.NumberFormat("vi")
 const compactFormat = new Intl.NumberFormat("vi", {
   notation: "compact",
   maximumFractionDigits: 1,
 })
-const dateFormat = new Intl.DateTimeFormat("vi-VN", {
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-})
+
+function parseDateSafe(iso: string): Date | null {
+  const parsed = parseISO(iso)
+  if (isValid(parsed)) return parsed
+  const fallback = new Date(iso)
+  return isValid(fallback) ? fallback : null
+}
 
 export function formatRelativeTime(iso: string, now: number = Date.now()): string {
-  const time = new Date(iso).getTime()
-  // Ngày không hợp lệ → `NaN` → `rtf.format` ném RangeError làm trắng trang.
-  if (Number.isNaN(time)) return ""
-
-  const diffSeconds = (time - now) / 1000
-  const abs = Math.abs(diffSeconds)
-
-  for (const [unit, seconds] of UNITS) {
-    if (abs >= seconds || unit === "second") {
-      return rtf.format(Math.round(diffSeconds / seconds), unit)
-    }
-  }
-  return "bây giờ"
+  const date = parseDateSafe(iso)
+  if (!date) return ""
+  return formatDateDistance(date, new Date(now), { addSuffix: true, locale: vi })
 }
 
 export function formatCount(value: number): string {
@@ -45,23 +29,15 @@ export function formatNumber(value: number): string {
 }
 
 export function formatDate(iso: string): string {
-  const time = new Date(iso).getTime()
-  if (Number.isNaN(time)) return ""
-  return dateFormat.format(time)
+  const date = parseDateSafe(iso)
+  if (!date) return ""
+  return format(date, "dd/MM/yyyy", { locale: vi })
 }
 
-const dateTimeFormat = new Intl.DateTimeFormat("vi-VN", {
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-})
-
 export function formatDateTime(iso: string): string {
-  const time = new Date(iso).getTime()
-  if (Number.isNaN(time)) return ""
-  return dateTimeFormat.format(time)
+  const date = parseDateSafe(iso)
+  if (!date) return ""
+  return format(date, "dd/MM/yyyy HH:mm", { locale: vi })
 }
 
 const ratingFormat = new Intl.NumberFormat("vi", {

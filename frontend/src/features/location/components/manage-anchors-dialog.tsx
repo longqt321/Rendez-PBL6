@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useDebounce } from "@uidotdev/usehooks"
 import {
   BriefcaseIcon,
   CheckIcon,
@@ -30,7 +31,6 @@ import {
 } from "@/components/ui/item"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
-import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { searchAddress, type GeocodeSuggestion } from "../api/location-api"
 import {
   useCreateAnchor,
@@ -61,7 +61,7 @@ export function ManageAnchorsSection({ enabled, onSelectAnchor }: ManageAnchorsS
   const [kind, setKind] = useState<AnchorKind>("home")
   const [label, setLabel] = useState("Nhà riêng")
   const [addressQuery, setAddressQuery] = useState("")
-  const debouncedQuery = useDebouncedValue(addressQuery.trim(), 350)
+  const debouncedQuery = useDebounce(addressQuery.trim(), 350)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [pickedCoords, setPickedCoords] = useState<{
     lat: number

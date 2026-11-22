@@ -1,3 +1,4 @@
+import escapeHtml from "escape-html"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router"
 import { MapContainer, Marker, Popup, useMap, useMapEvents } from "react-leaflet"
@@ -81,15 +82,6 @@ function isClusterProperties(
   props: ClusterProperties | ClusterPointProps,
 ): props is ClusterProperties {
   return "cluster" in props && props.cluster === true
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;")
 }
 
 function MapBoundsUpdater({

@@ -1,4 +1,6 @@
+import { groupBy } from "es-toolkit"
 import type { Hono } from "hono"
+import { quantile } from "simple-statistics"
 import { Prisma } from "../../../generated/prisma/client"
 import type { AppEnv } from "../../app"
 import { sanitizeObservabilityMessage, shouldMaskAdminPii } from "../../lib/admin-privacy"
@@ -48,41 +50,37 @@ export function registerAdminObservabilityRoutes(router: Hono<AppEnv>): void {
 
     let errorCount = 0
     let slowCount = 0
-    const vitalsMap = new Map<CoreVitalName, { values: number[]; poor: number; good: number }>()
-
     for (const ev of allEvents) {
       if (ev.kind === "server_error" || ev.kind === "client_error") errorCount += 1
       else if (ev.kind === "slow_request") slowCount += 1
-      if (
-        ev.kind === "web_vital" &&
-        (ev.metric === "LCP" || ev.metric === "INP" || ev.metric === "CLS") &&
-        typeof ev.value === "number"
-      ) {
-        const entry = vitalsMap.get(ev.metric) ?? { values: [], poor: 0, good: 0 }
-        entry.values.push(ev.value)
-        if (ev.rating === "poor") entry.poor += 1
-        else if (ev.rating === "good") entry.good += 1
-        vitalsMap.set(ev.metric, entry)
-      }
     }
 
+    const vitalEventsByMetric = groupBy(
+      allEvents.filter(
+        (ev): ev is typeof ev & { metric: CoreVitalName; value: number } =>
+          ev.kind === "web_vital" &&
+          (ev.metric === "LCP" || ev.metric === "INP" || ev.metric === "CLS") &&
+          typeof ev.value === "number",
+      ),
+      (ev) => ev.metric,
+    )
+
     const webVitals = CORE_VITAL_NAMES.map((name) => {
-      const entry = vitalsMap.get(name)
-      if (!entry || entry.values.length === 0) {
+      const items = vitalEventsByMetric[name] ?? []
+      if (items.length === 0) {
         return { name, p75: null, samples: 0, poor: 0, good: 0 }
       }
-      const sorted = [...entry.values].sort((a, b) => a - b)
-      const idx = Math.min(
-        sorted.length - 1,
-        Math.max(0, Math.ceil(ADMIN_CONSTANTS.WEB_VITALS_PERCENTILE * sorted.length) - 1),
+      const p75Value = quantile(
+        items.map((ev) => ev.value),
+        ADMIN_CONSTANTS.WEB_VITALS_PERCENTILE,
       )
       const decimals = name === "CLS" ? ADMIN_CONSTANTS.CLS_DECIMAL_PLACES : 0
       return {
         name,
-        p75: Number((sorted[idx] ?? 0).toFixed(decimals)),
-        samples: entry.values.length,
-        poor: entry.poor,
-        good: entry.good,
+        p75: Number(p75Value.toFixed(decimals)),
+        samples: items.length,
+        poor: items.filter((ev) => ev.rating === "poor").length,
+        good: items.filter((ev) => ev.rating === "good").length,
       }
     })
 

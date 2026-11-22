@@ -1,14 +1,8 @@
+import { DANANG_DISTRICTS_CANONICAL } from "@rendez/schema"
 import distance from "@turf/distance"
 import { point } from "@turf/helpers"
 
-export const DANANG_DISTRICTS = [
-  "Hải Châu",
-  "Thanh Khê",
-  "Sơn Trà",
-  "Ngũ Hành Sơn",
-  "Liên Chiểu",
-  "Cẩm Lệ",
-] as const
+export const DANANG_DISTRICTS = DANANG_DISTRICTS_CANONICAL
 
 export const DANANG_DISTRICT_CENTERS: Readonly<Record<string, [number, number]>> = {
   "Hải Châu": [16.061, 108.219],
