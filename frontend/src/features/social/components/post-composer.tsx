@@ -397,11 +397,11 @@ export function PostComposer({ onCreated }: PostComposerProps) {
               </>
             )}
 
-            <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+            <span className="ml-auto hidden text-xs text-muted-foreground tabular-nums sm:inline">
               {formatNumber(caption.trim().length)}/{formatNumber(MAX_CAPTION_LENGTH)}
             </span>
 
-            <Button type="submit" size="sm" disabled={!canSubmit}>
+            <Button type="submit" size="sm" className="ml-auto sm:ml-0" disabled={!canSubmit}>
               {createPost.isPending || uploading ? <Spinner aria-label="Đang đăng bài" /> : null}
               Đăng bài
             </Button>

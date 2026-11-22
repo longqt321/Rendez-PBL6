@@ -4,16 +4,8 @@ import { Controller, useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
 import { CheckIcon, LockIcon } from "lucide-react"
 import { toast } from "sonner"
+import { ResponsiveModal } from "@/components/shared/responsive-modal"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
@@ -92,93 +84,89 @@ export function EditCollectionDialog({ collection, children }: EditCollectionDia
   })
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={children} />
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
-          <DialogHeader>
-            <DialogTitle>Sửa bộ sưu tập</DialogTitle>
-            <DialogDescription>
-              Đổi tên, mô tả và quyền riêng tư. Địa điểm trong bộ sưu tập không bị ảnh hưởng.
-            </DialogDescription>
-          </DialogHeader>
+    <ResponsiveModal
+      open={open}
+      onOpenChange={handleOpenChange}
+      trigger={children}
+      title="Sửa bộ sưu tập"
+      description="Đổi tên, mô tả và quyền riêng tư. Địa điểm trong bộ sưu tập không bị ảnh hưởng."
+    >
+      <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
+        <FieldGroup className="gap-4">
+          <Field>
+            <FieldLabel htmlFor="collection-name">Tên bộ sưu tập</FieldLabel>
+            <Input
+              id="collection-name"
+              maxLength={MAX_COLLECTION_NAME_LENGTH}
+              placeholder="Ví dụ: Quán hẹn hò"
+              autoComplete="off"
+              aria-invalid={Boolean(form.formState.errors.name)}
+              {...form.register("name")}
+            />
+            <FieldDescription>
+              {formatNumber(name.trim().length)}/{formatNumber(MAX_COLLECTION_NAME_LENGTH)} ký tự
+            </FieldDescription>
+            <FieldError>{form.formState.errors.name?.message}</FieldError>
+          </Field>
 
-          <FieldGroup className="gap-4">
-            <Field>
-              <FieldLabel htmlFor="collection-name">Tên bộ sưu tập</FieldLabel>
-              <Input
-                id="collection-name"
-                maxLength={MAX_COLLECTION_NAME_LENGTH}
-                placeholder="Ví dụ: Quán hẹn hò"
-                autoComplete="off"
-                aria-invalid={Boolean(form.formState.errors.name)}
-                {...form.register("name")}
-              />
-              <FieldDescription>
-                {formatNumber(name.trim().length)}/{formatNumber(MAX_COLLECTION_NAME_LENGTH)} ký tự
-              </FieldDescription>
-              <FieldError>{form.formState.errors.name?.message}</FieldError>
-            </Field>
+          <Field>
+            <FieldLabel htmlFor="collection-description">Mô tả</FieldLabel>
+            <Textarea
+              id="collection-description"
+              maxLength={MAX_COLLECTION_DESCRIPTION_LENGTH}
+              rows={3}
+              placeholder="Ghi chú ngắn để bạn nhớ vì sao lập bộ sưu tập này…"
+              className="min-h-20 resize-none"
+              aria-invalid={Boolean(form.formState.errors.description)}
+              {...form.register("description")}
+            />
+            <FieldDescription>
+              {formatNumber(description.trim().length)}/
+              {formatNumber(MAX_COLLECTION_DESCRIPTION_LENGTH)} ký tự
+            </FieldDescription>
+            <FieldError>{form.formState.errors.description?.message}</FieldError>
+          </Field>
 
-            <Field>
-              <FieldLabel htmlFor="collection-description">Mô tả</FieldLabel>
-              <Textarea
-                id="collection-description"
-                maxLength={MAX_COLLECTION_DESCRIPTION_LENGTH}
-                rows={3}
-                placeholder="Ghi chú ngắn để bạn nhớ vì sao lập bộ sưu tập này…"
-                className="min-h-20 resize-none"
-                aria-invalid={Boolean(form.formState.errors.description)}
-                {...form.register("description")}
-              />
-              <FieldDescription>
-                {formatNumber(description.trim().length)}/
-                {formatNumber(MAX_COLLECTION_DESCRIPTION_LENGTH)} ký tự
-              </FieldDescription>
-              <FieldError>{form.formState.errors.description?.message}</FieldError>
-            </Field>
-
-            <Field orientation="horizontal">
-              <FieldLabel htmlFor="collection-private" className="flex-1">
-                <LockIcon className="size-3.5" aria-hidden="true" />
-                Riêng tư
-              </FieldLabel>
-              {/* base-ui Switch không nhận ref/onChange → bắt buộc đi qua Controller. */}
-              <Controller
-                control={form.control}
-                name="isPrivate"
-                render={({ field }) => (
-                  <Switch
-                    id="collection-private"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    aria-describedby="collection-private-hint"
-                  />
-                )}
-              />
-            </Field>
-            <p id="collection-private-hint" className="-mt-2 text-xs text-muted-foreground">
-              {isPrivate
-                ? "Chỉ mình bạn thấy bộ sưu tập này ở trang cá nhân."
-                : "Mọi người xem được ở trang cá nhân của bạn."}
-            </p>
-          </FieldGroup>
-
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Huỷ
-            </Button>
-            <Button type="submit" disabled={updateCollection.isPending}>
-              {updateCollection.isPending ? (
-                <Spinner aria-label="Đang lưu bộ sưu tập" />
-              ) : (
-                <CheckIcon />
+          <Field orientation="horizontal">
+            <FieldLabel htmlFor="collection-private" className="flex-1">
+              <LockIcon className="size-3.5" aria-hidden="true" />
+              Riêng tư
+            </FieldLabel>
+            {/* base-ui Switch không nhận ref/onChange → bắt buộc đi qua Controller. */}
+            <Controller
+              control={form.control}
+              name="isPrivate"
+              render={({ field }) => (
+                <Switch
+                  id="collection-private"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  aria-describedby="collection-private-hint"
+                />
               )}
-              Lưu thay đổi
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            />
+          </Field>
+          <p id="collection-private-hint" className="-mt-2 text-xs text-muted-foreground">
+            {isPrivate
+              ? "Chỉ mình bạn thấy bộ sưu tập này ở trang cá nhân."
+              : "Mọi người xem được ở trang cá nhân của bạn."}
+          </p>
+        </FieldGroup>
+
+        <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            Huỷ
+          </Button>
+          <Button type="submit" disabled={updateCollection.isPending}>
+            {updateCollection.isPending ? (
+              <Spinner aria-label="Đang lưu bộ sưu tập" />
+            ) : (
+              <CheckIcon />
+            )}
+            Lưu thay đổi
+          </Button>
+        </div>
+      </form>
+    </ResponsiveModal>
   )
 }

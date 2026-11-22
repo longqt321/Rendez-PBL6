@@ -47,15 +47,18 @@ export function RecommendedSection() {
             </SectionHeading>
             <span className="hidden text-xs text-muted-foreground sm:inline">Hợp gu của bạn</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="hidden items-center gap-1.5 sm:flex">
             <CarouselPrevious className="static size-8 translate-y-0" />
             <CarouselNext className="static size-8 translate-y-0" />
           </div>
         </div>
 
-        <CarouselContent className="mt-3 -ml-4">
+        <CarouselContent className="mt-3 -ml-3 sm:-ml-4">
           {data.map((place) => (
-            <CarouselItem key={place.id} className="basis-[85%] pl-4 sm:basis-1/2 lg:basis-[42%]">
+            <CarouselItem
+              key={place.id}
+              className="basis-[85%] pl-3 sm:basis-1/2 sm:pl-4 lg:basis-[42%]"
+            >
               <PlaceCard place={place} variant="horizontal" />
             </CarouselItem>
           ))}

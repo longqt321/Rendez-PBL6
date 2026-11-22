@@ -4,16 +4,8 @@ import { FlagIcon } from "lucide-react"
 import { Controller, useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
 import { toast } from "sonner"
+import { ResponsiveModal } from "@/components/shared/responsive-modal"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -90,91 +82,87 @@ export function ReportPlaceDialog({ place, children }: ReportPlaceDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={children} />
-      <DialogContent className="sm:max-w-md">
-        <form
-          onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
-          className="flex flex-col gap-4"
-        >
-          <DialogHeader>
-            <DialogTitle>Báo cáo {place.name}</DialogTitle>
-            <DialogDescription>
-              Thông tin sẽ được kiểm duyệt viên xem lại trước khi cập nhật lên bản đồ.
-            </DialogDescription>
-          </DialogHeader>
-
-          <Field data-invalid={!!form.formState.errors.reason}>
-            <FieldLabel>Lý do báo cáo</FieldLabel>
-            <Controller
-              control={form.control}
-              name="reason"
-              render={({ field }) => (
-                <RadioGroup<PlaceReportReason>
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  aria-label="Chọn lý do báo cáo"
-                  className="gap-2"
-                >
-                  {PLACE_REPORT_REASONS.map((reason) => (
-                    <Label
-                      key={reason}
-                      className="flex cursor-pointer items-start gap-3 rounded-surface border p-3 font-normal outline-none has-data-checked:border-primary has-data-checked:bg-primary/5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
-                    >
-                      <RadioGroupItem value={reason} className="mt-0.5" />
-                      <span className="flex flex-col gap-0.5">
-                        <span className="text-sm font-medium">
-                          {REPORT_REASON_META[reason].label}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {REPORT_REASON_META[reason].description}
-                        </span>
+    <ResponsiveModal
+      open={open}
+      onOpenChange={handleOpenChange}
+      trigger={children}
+      title={`Báo cáo ${place.name}`}
+      description="Thông tin sẽ được kiểm duyệt viên xem lại trước khi cập nhật lên bản đồ."
+    >
+      <form
+        onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
+        className="flex flex-col gap-4"
+      >
+        <Field data-invalid={!!form.formState.errors.reason}>
+          <FieldLabel>Lý do báo cáo</FieldLabel>
+          <Controller
+            control={form.control}
+            name="reason"
+            render={({ field }) => (
+              <RadioGroup<PlaceReportReason>
+                value={field.value}
+                onValueChange={field.onChange}
+                aria-label="Chọn lý do báo cáo"
+                className="gap-2"
+              >
+                {PLACE_REPORT_REASONS.map((reason) => (
+                  <Label
+                    key={reason}
+                    className="flex cursor-pointer items-start gap-3 rounded-surface border p-3 font-normal outline-none has-data-checked:border-primary has-data-checked:bg-primary/5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
+                  >
+                    <RadioGroupItem value={reason} className="mt-0.5" />
+                    <span className="flex flex-col gap-0.5">
+                      <span className="text-sm font-medium">
+                        {REPORT_REASON_META[reason].label}
                       </span>
-                    </Label>
-                  ))}
-                </RadioGroup>
-              )}
-            />
-            <FieldError errors={[form.formState.errors.reason]} />
-          </Field>
+                      <span className="text-xs text-muted-foreground">
+                        {REPORT_REASON_META[reason].description}
+                      </span>
+                    </span>
+                  </Label>
+                ))}
+              </RadioGroup>
+            )}
+          />
+          <FieldError errors={[form.formState.errors.reason]} />
+        </Field>
 
-          <Field data-invalid={!!form.formState.errors.detail}>
-            <FieldLabel htmlFor="report-detail">
-              Ghi chú thêm {detailRequired ? "(bắt buộc)" : "(không bắt buộc)"}
-            </FieldLabel>
-            <Textarea
-              id="report-detail"
-              {...form.register("detail")}
-              aria-invalid={!!form.formState.errors.detail}
-              aria-describedby={
-                form.formState.errors.detail ? "report-detail-error" : "report-detail-counter"
-              }
-              placeholder="Ví dụ: quán đã chuyển sang đường Nguyễn Chí Thanh từ tháng 10…"
-              className="min-h-20 resize-none"
-              maxLength={MAX_REPORT_DETAIL_LENGTH}
-            />
-            <FieldError id="report-detail-error" errors={[form.formState.errors.detail]} />
-            <FieldDescription id="report-detail-counter">
-              {formatNumber(detail?.length ?? 0)}/{formatNumber(MAX_REPORT_DETAIL_LENGTH)} ký tự
-            </FieldDescription>
-          </Field>
+        <Field data-invalid={!!form.formState.errors.detail}>
+          <FieldLabel htmlFor="report-detail">
+            Ghi chú thêm {detailRequired ? "(bắt buộc)" : "(không bắt buộc)"}
+          </FieldLabel>
+          <Textarea
+            id="report-detail"
+            {...form.register("detail")}
+            aria-invalid={!!form.formState.errors.detail}
+            aria-describedby={
+              form.formState.errors.detail ? "report-detail-error" : "report-detail-counter"
+            }
+            placeholder="Ví dụ: quán đã chuyển sang đường Nguyễn Chí Thanh từ tháng 10…"
+            className="min-h-20 resize-none"
+            maxLength={MAX_REPORT_DETAIL_LENGTH}
+          />
+          <FieldError id="report-detail-error" errors={[form.formState.errors.detail]} />
+          <FieldDescription id="report-detail-counter">
+            {formatNumber(detail?.length ?? 0)}/{formatNumber(MAX_REPORT_DETAIL_LENGTH)} ký tự
+          </FieldDescription>
+        </Field>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => handleOpenChange(false)}
-              disabled={createReport.isPending}
-            >
-              Huỷ
-            </Button>
-            <Button type="submit" disabled={createReport.isPending}>
-              {createReport.isPending ? <Spinner aria-label="Đang gửi báo cáo" /> : <FlagIcon />}
-              Gửi báo cáo
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => handleOpenChange(false)}
+            disabled={createReport.isPending}
+          >
+            Huỷ
+          </Button>
+          <Button type="submit" disabled={createReport.isPending}>
+            {createReport.isPending ? <Spinner aria-label="Đang gửi báo cáo" /> : <FlagIcon />}
+            Gửi báo cáo
+          </Button>
+        </div>
+      </form>
+    </ResponsiveModal>
   )
 }

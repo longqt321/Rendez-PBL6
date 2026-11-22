@@ -3,16 +3,8 @@ import { useQueryClient } from "@tanstack/react-query"
 import { CameraIcon, ImagePlusIcon, MapPinIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
+import { ResponsiveModal } from "@/components/shared/responsive-modal"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
@@ -157,117 +149,113 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={children} />
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
-          <DialogHeader>
-            <DialogTitle>Check-in tại {place.name}</DialogTitle>
-            <DialogDescription>
-              Chia sẻ cảm nhận và hình ảnh món ăn của bạn tại địa điểm này.
-            </DialogDescription>
-          </DialogHeader>
+    <ResponsiveModal
+      open={open}
+      onOpenChange={handleOpenChange}
+      trigger={children}
+      title={`Check-in tại ${place.name}`}
+      description="Chia sẻ cảm nhận và hình ảnh món ăn của bạn tại địa điểm này."
+    >
+      <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
+        <Item variant="muted" size="sm" className="bg-secondary">
+          <ItemMedia variant="icon">
+            <MapPinIcon aria-hidden="true" />
+          </ItemMedia>
+          <ItemContent>
+            <ItemTitle className="font-semibold">{place.name}</ItemTitle>
+          </ItemContent>
+          <ItemActions>
+            <Badge variant="outline" className="h-6 text-sm">
+              {categoryLabel(place.category)}
+            </Badge>
+          </ItemActions>
+        </Item>
 
-          <Item variant="muted" size="sm" className="bg-secondary">
-            <ItemMedia variant="icon">
-              <MapPinIcon aria-hidden="true" />
-            </ItemMedia>
-            <ItemContent>
-              <ItemTitle className="font-semibold">{place.name}</ItemTitle>
-            </ItemContent>
-            <ItemActions>
-              <Badge variant="outline" className="h-6 text-sm">
-                {categoryLabel(place.category)}
-              </Badge>
-            </ItemActions>
-          </Item>
+        <Field>
+          <FieldLabel htmlFor="checkin-caption">Nội dung bài đăng</FieldLabel>
+          <Textarea
+            id="checkin-caption"
+            value={caption}
+            onChange={(event) => setCaption(event.target.value.slice(0, MAX_CAPTION_LENGTH))}
+            maxLength={MAX_CAPTION_LENGTH}
+            rows={4}
+            placeholder="Bạn vừa ăn gì ở đây? Không khí, giá cả, điểm đáng quay lại…"
+            className="min-h-24 resize-none"
+            autoFocus
+          />
+          <FieldDescription>
+            {formatNumber(caption.trim().length)}/{formatNumber(MAX_CAPTION_LENGTH)} ký tự
+          </FieldDescription>
+        </Field>
 
-          <Field>
-            <FieldLabel htmlFor="checkin-caption">Nội dung bài đăng</FieldLabel>
-            <Textarea
-              id="checkin-caption"
-              value={caption}
-              onChange={(event) => setCaption(event.target.value.slice(0, MAX_CAPTION_LENGTH))}
-              maxLength={MAX_CAPTION_LENGTH}
-              rows={4}
-              placeholder="Bạn vừa ăn gì ở đây? Không khí, giá cả, điểm đáng quay lại…"
-              className="min-h-24 resize-none"
-              autoFocus
+        {images.length > 0 ? (
+          <ul className="flex flex-wrap gap-2">
+            {images.map((image, index) => (
+              <li key={image.id} className="relative">
+                <img
+                  src={image.previewUrl}
+                  alt={`Ảnh check-in ${index + 1}`}
+                  className="size-20 rounded-control border border-border object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon-sm"
+                  aria-label={`Xoá ảnh ${index + 1}`}
+                  className="absolute -top-1.5 -right-1.5 size-6 rounded-full shadow"
+                  onClick={() => removeImage(image.id)}
+                >
+                  <XIcon />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {!mediaUnavailable ? (
+          <div className="flex items-center justify-between gap-2">
+            <input
+              ref={fileInputRef}
+              id={fileInputId}
+              type="file"
+              accept={IMAGE_CONTENT_TYPES.join(",")}
+              multiple
+              className="sr-only"
+              onChange={handleFilesSelected}
             />
-            <FieldDescription>
-              {formatNumber(caption.trim().length)}/{formatNumber(MAX_CAPTION_LENGTH)} ký tự
-            </FieldDescription>
-          </Field>
-
-          {images.length > 0 ? (
-            <ul className="flex flex-wrap gap-2">
-              {images.map((image, index) => (
-                <li key={image.id} className="relative">
-                  <img
-                    src={image.previewUrl}
-                    alt={`Ảnh check-in ${index + 1}`}
-                    className="size-20 rounded-control border border-border object-cover"
-                  />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="icon-sm"
-                    aria-label={`Xoá ảnh ${index + 1}`}
-                    className="absolute -top-1.5 -right-1.5 size-6 rounded-full shadow"
-                    onClick={() => removeImage(image.id)}
-                  >
-                    <XIcon />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
-          {!mediaUnavailable ? (
-            <div className="flex items-center justify-between gap-2">
-              <input
-                ref={fileInputRef}
-                id={fileInputId}
-                type="file"
-                accept={IMAGE_CONTENT_TYPES.join(",")}
-                multiple
-                className="sr-only"
-                onChange={handleFilesSelected}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={images.length >= MAX_POST_IMAGES || uploading}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {uploading ? <Spinner aria-label="Đang tải ảnh lên" /> : <ImagePlusIcon />}
-                Thêm ảnh món ăn
-                {images.length > 0 ? (
-                  <Badge variant="secondary" className="ml-1">
-                    {images.length}/{MAX_POST_IMAGES}
-                  </Badge>
-                ) : null}
-              </Button>
-              <span className="text-xs text-muted-foreground">Tối đa {MAX_POST_IMAGES} ảnh</span>
-            </div>
-          ) : null}
-
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Huỷ
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={images.length >= MAX_POST_IMAGES || uploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploading ? <Spinner aria-label="Đang tải ảnh lên" /> : <ImagePlusIcon />}
+              Thêm ảnh món ăn
+              {images.length > 0 ? (
+                <Badge variant="secondary" className="ml-1">
+                  {images.length}/{MAX_POST_IMAGES}
+                </Badge>
+              ) : null}
             </Button>
-            <Button type="submit" disabled={!canSubmit}>
-              {createPost.isPending || uploading ? (
-                <Spinner aria-label="Đang đăng check-in" />
-              ) : (
-                <CameraIcon />
-              )}
-              Đăng check-in
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <span className="text-xs text-muted-foreground">Tối đa {MAX_POST_IMAGES} ảnh</span>
+          </div>
+        ) : null}
+
+        <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            Huỷ
+          </Button>
+          <Button type="submit" disabled={!canSubmit}>
+            {createPost.isPending || uploading ? (
+              <Spinner aria-label="Đang đăng check-in" />
+            ) : (
+              <CameraIcon />
+            )}
+            Đăng check-in
+          </Button>
+        </div>
+      </form>
+    </ResponsiveModal>
   )
 }

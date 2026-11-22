@@ -1,16 +1,8 @@
 import { useState } from "react"
 import { CheckIcon, PlusIcon } from "lucide-react"
 import { toast } from "sonner"
+import { ResponsiveModal } from "@/components/shared/responsive-modal"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -173,82 +165,74 @@ export function SaveToCollectionDialog({
   }
 
   return (
-    <Dialog
+    <ResponsiveModal
       open={open}
       onOpenChange={(next) => {
         setOpen(next)
         if (!next) reset()
       }}
+      trigger={children}
+      title={`Lưu “${placeName}” vào bộ sưu tập`}
+      description="Bật công tắc để lưu, tắt để bỏ khỏi bộ sưu tập. Một địa điểm nằm trong nhiều bộ sưu tập được."
     >
-      <DialogTrigger render={children} />
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Lưu “{placeName}” vào bộ sưu tập</DialogTitle>
-          <DialogDescription>
-            Bật công tắc để lưu, tắt để bỏ khỏi bộ sưu tập. Một địa điểm nằm trong nhiều bộ sưu tập
-            được.
-          </DialogDescription>
-        </DialogHeader>
+      <div className="max-h-64 overflow-y-auto">
+        <CollectionDialogList
+          isPending={isPending}
+          collections={collections}
+          isSetPlacePending={setPlace.isPending}
+          onToggle={handleToggle}
+        />
+      </div>
 
-        <div className="max-h-64 overflow-y-auto">
-          <CollectionDialogList
-            isPending={isPending}
-            collections={collections}
-            isSetPlacePending={setPlace.isPending}
-            onToggle={handleToggle}
-          />
-        </div>
-
-        <div className="flex flex-col gap-2 rounded-md border p-3">
-          <Field>
-            <FieldLabel htmlFor="new-collection-name">Tạo bộ sưu tập mới</FieldLabel>
-            <div className="flex items-center gap-2">
-              <Input
-                id="new-collection-name"
-                value={newName}
-                onChange={(event) =>
-                  setNewName(event.target.value.slice(0, MAX_COLLECTION_NAME_LENGTH))
-                }
-                placeholder="Ví dụ: Quán hẹn hò"
-                maxLength={MAX_COLLECTION_NAME_LENGTH}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                disabled={newName.trim().length === 0 || createCollection.isPending}
-                onClick={handleCreate}
-              >
-                {createCollection.isPending ? (
-                  <Spinner aria-label="Đang tạo bộ sưu tập" />
-                ) : (
-                  <PlusIcon />
-                )}
-                Tạo
-              </Button>
-            </div>
-          </Field>
-          <Field orientation="horizontal">
-            <FieldLabel
-              htmlFor="new-collection-private"
-              className="flex-1 text-sm text-muted-foreground"
-            >
-              Riêng tư (không hiện ở trang cá nhân)
-            </FieldLabel>
-            <Switch
-              id="new-collection-private"
-              checked={newPrivate}
-              onCheckedChange={setNewPrivate}
+      <div className="flex flex-col gap-2 rounded-md border p-3">
+        <Field>
+          <FieldLabel htmlFor="new-collection-name">Tạo bộ sưu tập mới</FieldLabel>
+          <div className="flex items-center gap-2">
+            <Input
+              id="new-collection-name"
+              value={newName}
+              onChange={(event) =>
+                setNewName(event.target.value.slice(0, MAX_COLLECTION_NAME_LENGTH))
+              }
+              placeholder="Ví dụ: Quán hẹn hò"
+              maxLength={MAX_COLLECTION_NAME_LENGTH}
             />
-          </Field>
-        </div>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={newName.trim().length === 0 || createCollection.isPending}
+              onClick={handleCreate}
+            >
+              {createCollection.isPending ? (
+                <Spinner aria-label="Đang tạo bộ sưu tập" />
+              ) : (
+                <PlusIcon />
+              )}
+              Tạo
+            </Button>
+          </div>
+        </Field>
+        <Field orientation="horizontal">
+          <FieldLabel
+            htmlFor="new-collection-private"
+            className="flex-1 text-sm text-muted-foreground"
+          >
+            Riêng tư (không hiện ở trang cá nhân)
+          </FieldLabel>
+          <Switch
+            id="new-collection-private"
+            checked={newPrivate}
+            onCheckedChange={setNewPrivate}
+          />
+        </Field>
+      </div>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>
-            <CheckIcon />
-            Xong
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <div className="mt-4 flex justify-end">
+        <Button variant="ghost" onClick={() => setOpen(false)}>
+          <CheckIcon />
+          Xong
+        </Button>
+      </div>
+    </ResponsiveModal>
   )
 }

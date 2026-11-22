@@ -1,6 +1,6 @@
 import { SearchXIcon } from "lucide-react"
 import { Link } from "react-router"
-import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
+import { PageContainer } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
 import { LoadMore } from "@/components/shared/load-more"
 import { StaggerItem, StaggerList } from "@/components/shared/motion-primitives"
@@ -126,8 +126,8 @@ export function DiscoverPage() {
   })
 
   return (
-    <PageContainer size="wide">
-      <PageHeader title="Khám phá địa điểm Đà Nẵng" />
+    <PageContainer size="wide" className="pt-0 pb-6 md:py-6 lg:py-8">
+      <h1 className="sr-only">Khám phá địa điểm Đà Nẵng</h1>
 
       <DiscoverToolbar view={view} mode="grid" />
 

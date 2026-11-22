@@ -2,7 +2,6 @@ import { Link, useSearchParams } from "react-router"
 import { CompassIcon, MapPinIcon, UsersIcon } from "lucide-react"
 import {
   PageContainer,
-  PageHeader,
   SplitLayout,
   SplitMain,
   StickyAside,
@@ -127,15 +126,15 @@ export function SocialPage() {
 
   return (
     <PageContainer size="wide">
-      <PageHeader title="Cộng đồng" />
+      <h1 className="sr-only">Cộng đồng</h1>
 
       <SplitLayout ratio="8-4" gap="lg">
         <SplitMain span={8}>
           <PostComposer />
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
-            <Tabs value={filter} onValueChange={handleFilterChange}>
-              <TabsList>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
+            <Tabs value={filter} onValueChange={handleFilterChange} className="w-full sm:w-auto">
+              <TabsList className="max-w-full scrollbar-none overflow-x-auto">
                 <TabsTrigger value="all">Tất cả</TabsTrigger>
                 <TabsTrigger value="unplaced">Chưa gắn địa điểm</TabsTrigger>
                 {me && <TabsTrigger value="following">Đang theo dõi</TabsTrigger>}

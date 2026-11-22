@@ -15,7 +15,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
-import { useMediaQuery } from "@base-ui/react/unstable-use-media-query"
+import { useIsDesktop } from "@/hooks/use-breakpoint"
 import type { Post } from "../types/post"
 import { CommentThreadPanel } from "./comment-thread-panel"
 import { PostPreview } from "./post-preview"
@@ -27,7 +27,7 @@ interface CommentThreadProps {
 }
 
 export function CommentThread({ post, open, onOpenChange }: CommentThreadProps) {
-  const isDesktop = useMediaQuery("(min-width: 768px)", { noSsr: true })
+  const isDesktop = useIsDesktop()
 
   if (isDesktop) {
     return (

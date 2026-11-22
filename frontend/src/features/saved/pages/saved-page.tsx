@@ -1,6 +1,6 @@
 import { Link } from "react-router"
 import { BookmarkIcon, FolderPlusIcon, MapPinIcon } from "lucide-react"
-import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
+import { PageContainer } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
 import { LoadMore } from "@/components/shared/load-more"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -216,9 +216,9 @@ export function SavedPage() {
 
   return (
     <PageContainer size="wide">
-      <PageHeader title="Đã lưu & Bộ sưu tập" />
+      <h1 className="sr-only">Đã lưu & Bộ sưu tập</h1>
       <Tabs defaultValue="places">
-        <TabsList>
+        <TabsList className="max-w-full scrollbar-none overflow-x-auto">
           <TabsTrigger value="places">Địa điểm ({savedPlaces.length})</TabsTrigger>
           <TabsTrigger value="collections">Bộ sưu tập ({collections?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="posts">Bài đăng ({savedPosts.length})</TabsTrigger>

@@ -1,15 +1,8 @@
 import { useState } from "react"
 import { PlusIcon, SparklesIcon, UsersIcon } from "lucide-react"
 import { toast } from "sonner"
+import { ResponsiveModal } from "@/components/shared/responsive-modal"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -73,118 +66,116 @@ export function RoomJoinDialog({ open, onOpenChange, onCreate, onJoin }: RoomJoi
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <UsersIcon className="size-4 text-primary" aria-hidden="true" />
-            Đi cùng nhóm
-          </DialogTitle>
-          <DialogDescription>
-            Tạo bàn tròn chọn quán hoặc tham gia phòng bạn bè qua mã 6 ký tự.
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title={
+        <span className="flex items-center gap-2">
+          <UsersIcon className="size-4 text-primary" aria-hidden="true" />
+          Đi cùng nhóm
+        </span>
+      }
+      description="Tạo bàn tròn chọn quán hoặc tham gia phòng bạn bè qua mã 6 ký tự."
+    >
+      <Tabs defaultValue="create" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="create">Tạo phòng mới</TabsTrigger>
+          <TabsTrigger value="join">Vào bằng mã</TabsTrigger>
+        </TabsList>
 
-        <Tabs defaultValue="create" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="create">Tạo phòng mới</TabsTrigger>
-            <TabsTrigger value="join">Vào bằng mã</TabsTrigger>
-          </TabsList>
+        <TabsContent value="create" className="mt-4 space-y-3">
+          <Field>
+            <FieldLabel htmlFor="room-create-name">Tên buổi hẹn / nhóm</FieldLabel>
+            <Input
+              id="room-create-name"
+              maxLength={MAX_ROOM_NAME_LENGTH}
+              placeholder="Ví dụ: Đi ăn thứ 6"
+              autoComplete="off"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.nativeEvent.isComposing || event.keyCode === 229) return
+                if (event.key === "Enter") void handleCreate()
+              }}
+            />
+            <FieldDescription>
+              Chạm nhanh gợi ý bên dưới hoặc đặt tên tuỳ ý (mã phòng sinh tự động).
+            </FieldDescription>
+          </Field>
 
-          <TabsContent value="create" className="mt-4 space-y-3">
-            <Field>
-              <FieldLabel htmlFor="room-create-name">Tên buổi hẹn / nhóm</FieldLabel>
-              <Input
-                id="room-create-name"
-                maxLength={MAX_ROOM_NAME_LENGTH}
-                placeholder="Ví dụ: Đi ăn thứ 6"
-                autoComplete="off"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.nativeEvent.isComposing || event.keyCode === 229) return
-                  if (event.key === "Enter") void handleCreate()
-                }}
-              />
-              <FieldDescription>
-                Chạm nhanh gợi ý bên dưới hoặc đặt tên tuỳ ý (mã phòng sinh tự động).
-              </FieldDescription>
-            </Field>
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_ROOM_NAMES.map((preset) => (
+              <Button
+                key={preset}
+                type="button"
+                size="xs"
+                variant="outline"
+                className="rounded-full text-xs"
+                onClick={() => setName(preset)}
+              >
+                <SparklesIcon className="size-3 text-primary" aria-hidden="true" />
+                {preset}
+              </Button>
+            ))}
+          </div>
 
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_ROOM_NAMES.map((preset) => (
-                <Button
-                  key={preset}
-                  type="button"
-                  size="xs"
-                  variant="outline"
-                  className="rounded-full text-xs"
-                  onClick={() => setName(preset)}
-                >
-                  <SparklesIcon className="size-3 text-primary" aria-hidden="true" />
-                  {preset}
-                </Button>
-              ))}
-            </div>
-
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => void handleCreate()}
-              disabled={pending}
-            >
-              <PlusIcon className="size-4" aria-hidden="true" />
-              Tạo phòng & bắt đầu chốt quán
-            </Button>
-          </TabsContent>
-
-          <TabsContent value="join" className="mt-4 space-y-3">
-            <Field>
-              <FieldLabel htmlFor="room-join-code">Mã phòng (6 ký tự)</FieldLabel>
-              <Input
-                id="room-join-code"
-                placeholder="VD: A9K4M2"
-                maxLength={ROOM_CODE_LENGTH}
-                autoComplete="off"
-                className="font-mono uppercase"
-                value={code}
-                onChange={(event) => setCode(event.target.value.toUpperCase())}
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="room-join-display-name">Tên hiển thị của bạn</FieldLabel>
-              <Input
-                id="room-join-display-name"
-                placeholder="VD: Minh Anh"
-                maxLength={MAX_MEMBER_NAME_LENGTH}
-                autoComplete="off"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.nativeEvent.isComposing || event.keyCode === 229) return
-                  if (event.key === "Enter" && code.trim()) void handleJoin()
-                }}
-              />
-            </Field>
-
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => void handleJoin()}
-              disabled={pending || code.trim().length < ROOM_CODE_LENGTH}
-            >
-              Vào phòng
-            </Button>
-          </TabsContent>
-        </Tabs>
-
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Đóng
+          <Button
+            type="button"
+            className="w-full"
+            onClick={() => void handleCreate()}
+            disabled={pending}
+          >
+            <PlusIcon className="size-4" aria-hidden="true" />
+            Tạo phòng & bắt đầu chốt quán
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </TabsContent>
+
+        <TabsContent value="join" className="mt-4 space-y-3">
+          <Field>
+            <FieldLabel htmlFor="room-join-code">Mã phòng (6 ký tự)</FieldLabel>
+            <Input
+              id="room-join-code"
+              placeholder="VD: A9K4M2"
+              maxLength={ROOM_CODE_LENGTH}
+              autoComplete="off"
+              className="font-mono uppercase"
+              value={code}
+              onChange={(event) => setCode(event.target.value.toUpperCase())}
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="room-join-display-name">Tên hiển thị của bạn</FieldLabel>
+            <Input
+              id="room-join-display-name"
+              placeholder="VD: Minh Anh"
+              maxLength={MAX_MEMBER_NAME_LENGTH}
+              autoComplete="off"
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.nativeEvent.isComposing || event.keyCode === 229) return
+                if (event.key === "Enter" && code.trim()) void handleJoin()
+              }}
+            />
+          </Field>
+
+          <Button
+            type="button"
+            className="w-full"
+            onClick={() => void handleJoin()}
+            disabled={pending || code.trim().length < ROOM_CODE_LENGTH}
+          >
+            Vào phòng
+          </Button>
+        </TabsContent>
+      </Tabs>
+
+      <div className="mt-4 flex justify-end">
+        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+          Đóng
+        </Button>
+      </div>
+    </ResponsiveModal>
   )
 }

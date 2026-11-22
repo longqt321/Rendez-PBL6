@@ -61,7 +61,7 @@ export function DailyPicksSection() {
   return (
     <section
       aria-labelledby="daily-picks-heading"
-      className="mt-6 rounded-surface border border-border/70 bg-card/55 p-4 shadow-(--shadow-soft) sm:p-5"
+      className="mt-4 sm:mt-6 sm:rounded-surface sm:border sm:border-border/70 sm:bg-card/55 sm:p-5 sm:shadow-(--shadow-soft)"
     >
       <div className="flex items-baseline justify-between gap-2">
         <SectionHeading
@@ -106,11 +106,11 @@ export function DailyPicksSection() {
           ) : null}
         </BentoGrid>
       ) : (
-        <div className="mt-4">
+        <div className="-mx-4 mt-3 px-4 sm:mx-0 sm:mt-4 sm:px-0">
           <Carousel opts={{ align: "start" }} className="w-full">
             <CarouselContent className="-ml-3">
               {data.items.map(({ place, reason, why }, idx) => (
-                <CarouselItem key={place.id} className="basis-[84%] pl-3 sm:basis-1/2">
+                <CarouselItem key={place.id} className="basis-[82%] pl-3 sm:basis-1/2">
                   <PlaceCard
                     place={place}
                     why={why}
@@ -120,7 +120,7 @@ export function DailyPicksSection() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <div className="mt-3 flex justify-end gap-2">
+            <div className="mt-3 hidden justify-end gap-2 sm:flex">
               <CarouselPrevious className="static translate-y-0" />
               <CarouselNext className="static translate-y-0" />
             </div>
