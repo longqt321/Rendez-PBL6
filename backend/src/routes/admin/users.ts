@@ -1,7 +1,6 @@
 import { updateAdminUserInputSchema } from "@rendez/schema"
 import type { Hono } from "hono"
-import type { UserRole as PrismaUserRole } from "../../../generated/prisma/client"
-import { Prisma } from "../../../generated/prisma/client"
+import type { Prisma, UserRole as PrismaUserRole } from "../../../generated/prisma/client"
 import type { AppEnv } from "../../app"
 import { shouldMaskAdminPii } from "../../lib/admin-privacy"
 import { recordAuditLog } from "../../lib/audit-log"
@@ -16,7 +15,6 @@ import {
   parseAdminCursor,
   reqIp,
   toAdminUserDto,
-  type UserAdminRow,
 } from "./shared"
 
 export function registerAdminUserRoutes(router: Hono<AppEnv>): void {
@@ -28,54 +26,86 @@ export function registerAdminUserRoutes(router: Hono<AppEnv>): void {
     const rawQ = c.req.query("q")?.trim()
     const cursor = parseAdminCursor(c.req.query("cursor"), UUID_ID_RE)
 
-    const conditions: Prisma.Sql[] = [Prisma.sql`u.deleted_at IS NULL`]
+    const andFilters: Prisma.UserWhereInput[] = [{ deletedAt: null }]
     if (role !== "all") {
-      conditions.push(Prisma.sql`u.role = ${role}::user_role`)
+      andFilters.push({ role: role as PrismaUserRole })
     }
     if (status === "active") {
-      conditions.push(Prisma.sql`u.banned_at IS NULL`)
+      andFilters.push({ bannedAt: null })
     } else if (status === "banned") {
-      conditions.push(Prisma.sql`u.banned_at IS NOT NULL`)
+      andFilters.push({ bannedAt: { not: null } })
     }
     if (rawQ && rawQ.length > 0) {
       const q = rawQ.slice(0, ADMIN_CONSTANTS.SEARCH_QUERY_MAX_LEN)
-      const likePattern = `%${q}%`
-      conditions.push(
-        Prisma.sql`(u.name ILIKE ${likePattern} OR u.handle ILIKE ${likePattern} OR u.email ILIKE ${likePattern})`,
-      )
+      andFilters.push({
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { handle: { contains: q, mode: "insensitive" } },
+          { email: { contains: q, mode: "insensitive" } },
+        ],
+      })
     }
     if (cursor) {
-      conditions.push(
-        Prisma.sql`(u.created_at, u.id) < (${cursor.createdAt}::timestamptz, ${cursor.id}::uuid)`,
-      )
+      andFilters.push({
+        OR: [
+          { createdAt: { lt: cursor.createdAt } },
+          { createdAt: cursor.createdAt, id: { lt: cursor.id } },
+        ],
+      })
     }
 
-    const rows = await prisma.$queryRaw<UserAdminRow[]>(Prisma.sql`
-      SELECT u.id, u.name, u.handle, u.email, u.email_verified,
-             u.role::text AS role, u.banned_at, u.ban_reason, u.created_at,
-             COALESCE(p.post_count, 0)::int AS post_count,
-             COALESCE(rv.review_count, 0)::int AS review_count
-      FROM users u
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*) AS post_count FROM posts ps WHERE ps.author_id = u.id AND ps.deleted_at IS NULL
-      ) p ON true
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*) AS review_count FROM reviews r WHERE r.author_id = u.id AND r.deleted_at IS NULL
-      ) rv ON true
-      WHERE ${Prisma.join(conditions, " AND ")}
-      ORDER BY u.created_at DESC, u.id DESC
-      LIMIT ${ADMIN_CONSTANTS.PAGE_SIZE + 1}
-    `)
+    const rows = await prisma.user.findMany({
+      where: { AND: andFilters },
+      select: {
+        id: true,
+        name: true,
+        handle: true,
+        email: true,
+        emailVerified: true,
+        role: true,
+        bannedAt: true,
+        banReason: true,
+        createdAt: true,
+        _count: {
+          select: {
+            posts: { where: { deletedAt: null } },
+            reviews: { where: { deletedAt: null } },
+          },
+        },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: ADMIN_CONSTANTS.PAGE_SIZE + 1,
+    })
 
     const page = rows.slice(0, ADMIN_CONSTANTS.PAGE_SIZE)
     const last = page.at(-1)
     const next =
       rows.length > ADMIN_CONSTANTS.PAGE_SIZE && last
-        ? encodeCursor({ createdAt: last.created_at, id: last.id })
+        ? encodeCursor({ createdAt: last.createdAt, id: last.id })
         : null
 
     const maskPii = shouldMaskAdminPii()
-    return c.json({ items: page.map((row) => toAdminUserDto(row, maskPii)), next })
+    return c.json({
+      items: page.map((row) =>
+        toAdminUserDto(
+          {
+            id: row.id,
+            name: row.name,
+            handle: row.handle,
+            email: row.email,
+            email_verified: row.emailVerified,
+            role: row.role,
+            banned_at: row.bannedAt,
+            ban_reason: row.banReason,
+            post_count: row._count.posts,
+            review_count: row._count.reviews,
+            created_at: row.createdAt,
+          },
+          maskPii,
+        ),
+      ),
+      next,
+    })
   })
 
   router.patch("/admin/users/:id", requireRole("admin"), async (c) => {
@@ -118,6 +148,23 @@ export function registerAdminUserRoutes(router: Hono<AppEnv>): void {
       const updated = await tx.user.update({
         where: { id },
         data: { role: nextRole, bannedAt: nextBannedAt, banReason: nextBanReason },
+        select: {
+          id: true,
+          name: true,
+          handle: true,
+          email: true,
+          emailVerified: true,
+          role: true,
+          bannedAt: true,
+          banReason: true,
+          createdAt: true,
+          _count: {
+            select: {
+              posts: { where: { deletedAt: null } },
+              reviews: { where: { deletedAt: null } },
+            },
+          },
+        },
       })
 
       if (input.banned === true) {
@@ -145,12 +192,6 @@ export function registerAdminUserRoutes(router: Hono<AppEnv>): void {
         tx,
       )
 
-      const counts = await tx.$queryRaw<{ post_count: number; review_count: number }[]>(Prisma.sql`
-        SELECT
-          (SELECT COUNT(*)::int FROM posts WHERE author_id = ${id}::uuid AND deleted_at IS NULL) AS post_count,
-          (SELECT COUNT(*)::int FROM reviews WHERE author_id = ${id}::uuid AND deleted_at IS NULL) AS review_count
-      `)
-
       return toAdminUserDto(
         {
           id: updated.id,
@@ -161,8 +202,8 @@ export function registerAdminUserRoutes(router: Hono<AppEnv>): void {
           role: updated.role,
           banned_at: updated.bannedAt,
           ban_reason: updated.banReason,
-          post_count: Number(counts[0]?.post_count ?? 0),
-          review_count: Number(counts[0]?.review_count ?? 0),
+          post_count: updated._count.posts,
+          review_count: updated._count.reviews,
           created_at: updated.createdAt,
         },
         shouldMaskAdminPii(),

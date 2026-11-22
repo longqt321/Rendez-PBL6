@@ -8,6 +8,15 @@ export interface MetricsSnapshot {
   p95LatencyMs: number
   p99LatencyMs: number
   cacheHitRatio: number
+  errors4xx: number
+  errors5xx: number
+  errorRate4xx: number
+  errorRate5xx: number
+  security: {
+    unauthorized401: number
+    forbidden403: number
+    rateLimited429: number
+  }
   byEndpoint: {
     route: string
     count: number
@@ -15,6 +24,8 @@ export interface MetricsSnapshot {
     p95Ms: number
     p99Ms: number
     cacheHits: number
+    errorCount5xx: number
+    errorRate5xx: number
   }[]
 }
 
@@ -33,25 +44,52 @@ function createHistogram() {
 
 type RouteHistogram = ReturnType<typeof createHistogram>
 
-const endpoints = new Map<
-  string,
-  { count: number; totalMs: number; cacheHits: number; histogram: RouteHistogram }
->()
+interface EndpointStat {
+  count: number
+  totalMs: number
+  cacheHits: number
+  errors4xx: number
+  errors5xx: number
+  histogram: RouteHistogram
+}
 
+const endpoints = new Map<string, EndpointStat>()
 let globalHistogram = createHistogram()
+let unauthorized401 = 0
+let forbidden403 = 0
+let rateLimited429 = 0
 
-export function recordRequest(route: string, durationMs: number, cacheHit: boolean): void {
+function roundRatio(numerator: number, denominator: number): number {
+  if (denominator === 0) return 0
+  return Math.round((numerator / denominator) * 10_000) / 10_000
+}
+
+export function recordRequest(
+  route: string,
+  durationMs: number,
+  cacheHit: boolean,
+  status = 200,
+): void {
   const key = endpoints.has(route) || endpoints.size < MAX_ROUTES ? route : "OTHER"
   const stat = endpoints.get(key) ?? {
     count: 0,
     totalMs: 0,
     cacheHits: 0,
+    errors4xx: 0,
+    errors5xx: 0,
     histogram: createHistogram(),
   }
   const clamped = Math.min(MAX_TRACKABLE_MS, Math.max(0, Math.round(durationMs)))
   stat.count += 1
   stat.totalMs += clamped
   if (cacheHit) stat.cacheHits += 1
+  if (status >= 500) stat.errors5xx += 1
+  else if (status >= 400) stat.errors4xx += 1
+
+  if (status === 401) unauthorized401 += 1
+  else if (status === 403) forbidden403 += 1
+  else if (status === 429) rateLimited429 += 1
+
   stat.histogram.recordValue(clamped)
   globalHistogram.recordValue(clamped)
   endpoints.set(key, stat)
@@ -66,12 +104,24 @@ export function metricsSnapshot(): MetricsSnapshot {
       p95Ms: stat.count === 0 ? 0 : Math.round(stat.histogram.getValueAtPercentile(95)),
       p99Ms: stat.count === 0 ? 0 : Math.round(stat.histogram.getValueAtPercentile(99)),
       cacheHits: stat.cacheHits,
+      errorCount5xx: stat.errors5xx,
+      errorRate5xx: roundRatio(stat.errors5xx, stat.count),
     }))
     .sort((a, b) => b.count - a.count || a.route.localeCompare(b.route))
 
-  const totalQueries = byEndpoint.reduce((sum, entry) => sum + entry.count, 0)
-  const totalMs = [...endpoints.values()].reduce((sum, stat) => sum + stat.totalMs, 0)
-  const cacheHits = [...endpoints.values()].reduce((sum, stat) => sum + stat.cacheHits, 0)
+  let totalQueries = 0
+  let totalMs = 0
+  let cacheHits = 0
+  let errors4xx = 0
+  let errors5xx = 0
+
+  for (const stat of endpoints.values()) {
+    totalQueries += stat.count
+    totalMs += stat.totalMs
+    cacheHits += stat.cacheHits
+    errors4xx += stat.errors4xx
+    errors5xx += stat.errors5xx
+  }
 
   return {
     uptimeMs: Date.now() - startedAt,
@@ -81,6 +131,15 @@ export function metricsSnapshot(): MetricsSnapshot {
     p95LatencyMs: totalQueries === 0 ? 0 : Math.round(globalHistogram.getValueAtPercentile(95)),
     p99LatencyMs: totalQueries === 0 ? 0 : Math.round(globalHistogram.getValueAtPercentile(99)),
     cacheHitRatio: totalQueries === 0 ? 0 : Math.round((cacheHits / totalQueries) * 1000) / 1000,
+    errors4xx,
+    errors5xx,
+    errorRate4xx: roundRatio(errors4xx, totalQueries),
+    errorRate5xx: roundRatio(errors5xx, totalQueries),
+    security: {
+      unauthorized401,
+      forbidden403,
+      rateLimited429,
+    },
     byEndpoint,
   }
 }
@@ -88,4 +147,7 @@ export function metricsSnapshot(): MetricsSnapshot {
 export function resetMetrics(): void {
   endpoints.clear()
   globalHistogram = createHistogram()
+  unauthorized401 = 0
+  forbidden403 = 0
+  rateLimited429 = 0
 }

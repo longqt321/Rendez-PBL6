@@ -41,6 +41,8 @@ describe("metrics", () => {
       p95Ms: 30,
       p99Ms: 30,
       cacheHits: 0,
+      errorCount5xx: 0,
+      errorRate5xx: 0,
     })
 
     const suggestions = snapshot.byEndpoint.find(
@@ -53,7 +55,30 @@ describe("metrics", () => {
       p95Ms: 20,
       p99Ms: 20,
       cacheHits: 1,
+      errorCount5xx: 0,
+      errorRate5xx: 0,
     })
+  })
+
+  test("đếm chính xác tỷ lệ lỗi 4xx/5xx và tín hiệu bảo mật 401/403/429", () => {
+    recordRequest("GET /places", 15, false, 200)
+    recordRequest("GET /places", 40, false, 500)
+    recordRequest("POST /auth", 10, false, 401)
+    recordRequest("GET /admin/users", 8, false, 403)
+    recordRequest("POST /posts", 5, false, 429)
+
+    const snapshot = metricsSnapshot()
+    expect(snapshot.errors5xx).toBe(1)
+    expect(snapshot.errors4xx).toBe(3)
+    expect(snapshot.errorRate5xx).toBe(0.2)
+    expect(snapshot.security).toEqual({
+      unauthorized401: 1,
+      forbidden403: 1,
+      rateLimited429: 1,
+    })
+    const places = snapshot.byEndpoint.find((entry) => entry.route === "GET /places")
+    expect(places?.errorCount5xx).toBe(1)
+    expect(places?.errorRate5xx).toBe(0.5)
   })
 
   test("byEndpoint sắp theo số request giảm dần", () => {

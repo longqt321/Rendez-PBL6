@@ -1,4 +1,3 @@
-import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { formatInitials } from "./profile"
 
@@ -16,21 +15,44 @@ export interface CollectionRow {
   place_ids: string[]
 }
 
-function selectCollection(viewerId: string | null): Prisma.Sql {
-  const viewer = Prisma.sql`${viewerId}::uuid`
-  return Prisma.sql`
-    SELECT c.id, c.name, c.description, c.is_private, c.created_at,
-           u.id AS owner_id, u.name AS owner_name, u.handle AS owner_handle,
-           (SELECT COUNT(*) FROM collection_likes cl WHERE cl.collection_id = c.id)::int AS like_count,
-           EXISTS (SELECT 1 FROM collection_likes cl
-                   WHERE cl.collection_id = c.id AND cl.user_id = ${viewer}) AS liked_by_me,
-           ARRAY(
-             SELECT cp.place_id FROM collection_places cp
-             WHERE cp.collection_id = c.id ORDER BY cp.position
-           ) AS place_ids
-    FROM collections c
-    JOIN users u ON u.id = c.owner_id
-  `
+function buildCollectionInclude(viewerId: string | null) {
+  return {
+    owner: { select: { id: true, name: true, handle: true } },
+    items: {
+      select: { placeId: true },
+      orderBy: { position: "asc" as const },
+    },
+    _count: { select: { likes: true } },
+    likes: viewerId ? { where: { userId: viewerId }, select: { userId: true } } : false,
+  } as const
+}
+
+type PrismaCollectionRecord = {
+  id: string
+  name: string
+  description: string
+  isPrivate: boolean
+  createdAt: Date
+  owner: { id: string; name: string; handle: string }
+  items: { placeId: string }[]
+  _count: { likes: number }
+  likes?: { userId: string }[]
+}
+
+function toCollectionRow(record: PrismaCollectionRecord): CollectionRow {
+  return {
+    id: record.id,
+    name: record.name,
+    description: record.description,
+    is_private: record.isPrivate,
+    created_at: record.createdAt,
+    owner_id: record.owner.id,
+    owner_name: record.owner.name,
+    owner_handle: record.owner.handle,
+    like_count: record._count.likes,
+    liked_by_me: Array.isArray(record.likes) && record.likes.length > 0,
+    place_ids: record.items.map((item) => item.placeId),
+  }
 }
 
 export function toCollectionDto(row: CollectionRow, viewerId: string | null) {
@@ -74,23 +96,26 @@ export const DEFAULT_COLLECTION_LIMIT = 50
 const MAX_COLLECTION_LIMIT = 100
 
 /** Bộ sưu tập của một user (đã lọc private theo quyền xem). */
-export function listCollectionsOfOwner(
+export async function listCollectionsOfOwner(
   ownerId: string,
   viewerId: string | null,
   limit: number = DEFAULT_COLLECTION_LIMIT,
 ): Promise<CollectionRow[]> {
-  // Chặn limit rác / âm / vượt cap — cùng cách parse với routes/places.ts.
   const safeLimit = Number.isFinite(limit)
     ? Math.min(MAX_COLLECTION_LIMIT, Math.max(1, Math.trunc(limit)))
     : DEFAULT_COLLECTION_LIMIT
 
-  return prisma.$queryRaw<CollectionRow[]>(Prisma.sql`
-    ${selectCollection(viewerId)}
-    WHERE c.owner_id = ${ownerId}::uuid AND c.deleted_at IS NULL
-      AND (c.is_private = false OR c.owner_id = ${Prisma.sql`${viewerId}::uuid`})
-    ORDER BY c.created_at DESC, c.id DESC
-    LIMIT ${safeLimit}
-  `)
+  const records = await prisma.collection.findMany({
+    where: {
+      ownerId,
+      deletedAt: null,
+      ...(viewerId === ownerId ? {} : { isPrivate: false }),
+    },
+    include: buildCollectionInclude(viewerId),
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take: safeLimit,
+  })
+  return records.map((record) => toCollectionRow(record as PrismaCollectionRecord))
 }
 
 /** Một bộ sưu tập nhìn được bởi viewer — private của người khác trả `null` (404). */
@@ -98,23 +123,24 @@ export async function findCollection(
   id: string,
   viewerId: string | null,
 ): Promise<CollectionRow | null> {
-  const rows = await prisma.$queryRaw<CollectionRow[]>(Prisma.sql`
-    ${selectCollection(viewerId)}
-    WHERE c.id = ${id}::uuid AND c.deleted_at IS NULL
-      AND (c.is_private = false OR c.owner_id = ${Prisma.sql`${viewerId}::uuid`})
-    LIMIT 1
-  `)
-  return rows[0] ?? null
+  const record = await prisma.collection.findFirst({
+    where: {
+      id,
+      deletedAt: null,
+      OR: [{ isPrivate: false }, ...(viewerId ? [{ ownerId: viewerId }] : [])],
+    },
+    include: buildCollectionInclude(viewerId),
+  })
+  return record ? toCollectionRow(record as PrismaCollectionRecord) : null
 }
 
 export async function findCollectionById(
   id: string,
   viewerId: string | null,
 ): Promise<CollectionRow | null> {
-  const rows = await prisma.$queryRaw<CollectionRow[]>(Prisma.sql`
-    ${selectCollection(viewerId)}
-    WHERE c.id = ${id}::uuid AND c.deleted_at IS NULL
-    LIMIT 1
-  `)
-  return rows[0] ?? null
+  const record = await prisma.collection.findFirst({
+    where: { id, deletedAt: null },
+    include: buildCollectionInclude(viewerId),
+  })
+  return record ? toCollectionRow(record as PrismaCollectionRecord) : null
 }

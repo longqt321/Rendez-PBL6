@@ -32,6 +32,7 @@ import {
   EVENT_COLUMNS,
   type EndpointMetricRow,
 } from "./observability/observability-columns"
+import { OpsHealthCard } from "./observability/ops-health-card"
 import { SystemHealthBanner } from "./observability/system-health-banner"
 import { WebVitalsCard } from "./observability/web-vitals-card"
 import { AdminDataTable } from "./shared/admin-data-table"
@@ -176,6 +177,9 @@ export function ObservabilityTab() {
         <WebVitalsCard webVitals={webVitals} className="xl:col-span-6" />
         <BehaviorChart behavior24h={behavior24h} className="xl:col-span-6" />
       </div>
+
+      {/* Vùng 4b: Tải hạ tầng, Bảo mật & Chất lượng tìm kiếm */}
+      <OpsHealthCard data={data} />
 
       {/* Vùng 5: Bảng tra cứu chi tiết theo chức năng và nhật ký sự cố */}
       <Card>

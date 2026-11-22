@@ -1,4 +1,5 @@
 import type { AdminOverview } from "@rendez/schema"
+import { subHours } from "date-fns"
 import type { Hono } from "hono"
 import { Prisma } from "../../../generated/prisma/client"
 import type { AppEnv } from "../../app"
@@ -21,26 +22,6 @@ interface VenueStatsRow {
   with_hours: number
 }
 
-interface ReportStatsRow {
-  pending: number
-  reviewed: number
-  dismissed: number
-  total: number
-}
-
-interface UserStatsRow {
-  total: number
-  active: number
-  banned: number
-  admins: number
-  moderators: number
-}
-
-interface ActivityStatsRow {
-  audit_logs_24h: number
-  interaction_events_24h: number
-}
-
 interface DailyTrendRow {
   date: string
   interactions: number
@@ -49,23 +30,11 @@ interface DailyTrendRow {
   audit_logs: number
 }
 
-interface CategoryBreakdownRow {
-  category: string
-  total: number
-  published: number
-}
-
 interface DistrictBreakdownRow {
   district: string
   published: number
   unpublished: number
   closed: number
-}
-
-interface ReportReasonBreakdownRow {
-  reason: string
-  pending: number
-  total: number
 }
 
 export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
@@ -76,16 +45,22 @@ export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
     const redis = getRedis()
     const lookbackDays = ADMIN_CONSTANTS.TREND_LOOKBACK_DAYS
     const filterWindowDays = ADMIN_CONSTANTS.TREND_FILTER_WINDOW_DAYS
+    const since24h = subHours(new Date(), 24)
 
     const [
       venueRows,
-      reportRows,
-      userRows,
-      activityRows,
+      reportStatusGroups,
+      userTotal,
+      userBanned,
+      userRoleGroups,
+      auditLogs24h,
+      interactionEvents24h,
       trendRows,
-      categoryRows,
+      categoryTotalGroups,
+      categoryPublishedGroups,
       districtRows,
-      reasonRows,
+      reasonTotalGroups,
+      reasonPendingGroups,
     ] = await Promise.all([
       prisma.$queryRaw<VenueStatsRow[]>(Prisma.sql`
         SELECT COUNT(*)::int AS total,
@@ -102,27 +77,19 @@ export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
         FROM places p
         WHERE p.deleted_at IS NULL
       `),
-      prisma.$queryRaw<ReportStatsRow[]>(Prisma.sql`
-        SELECT COUNT(*) FILTER (WHERE status = 'pending')::int AS pending,
-               COUNT(*) FILTER (WHERE status = 'reviewed')::int AS reviewed,
-               COUNT(*) FILTER (WHERE status = 'dismissed')::int AS dismissed,
-               COUNT(*)::int AS total
-        FROM place_reports
-      `),
-      prisma.$queryRaw<UserStatsRow[]>(Prisma.sql`
-        SELECT COUNT(*)::int AS total,
-               COUNT(*) FILTER (WHERE banned_at IS NULL)::int AS active,
-               COUNT(*) FILTER (WHERE banned_at IS NOT NULL)::int AS banned,
-               COUNT(*) FILTER (WHERE role = 'admin')::int AS admins,
-               COUNT(*) FILTER (WHERE role = 'moderator')::int AS moderators
-        FROM users
-        WHERE deleted_at IS NULL
-      `),
-      prisma.$queryRaw<ActivityStatsRow[]>(Prisma.sql`
-        SELECT
-          (SELECT COUNT(*)::int FROM audit_logs WHERE created_at >= NOW() - INTERVAL '24 hours') AS audit_logs_24h,
-          (SELECT COUNT(*)::int FROM interaction_events WHERE created_at >= NOW() - INTERVAL '24 hours') AS interaction_events_24h
-      `),
+      prisma.placeReport.groupBy({
+        by: ["status"],
+        _count: { status: true },
+      }),
+      prisma.user.count({ where: { deletedAt: null } }),
+      prisma.user.count({ where: { deletedAt: null, bannedAt: { not: null } } }),
+      prisma.user.groupBy({
+        by: ["role"],
+        where: { deletedAt: null },
+        _count: { role: true },
+      }),
+      prisma.auditLog.count({ where: { createdAt: { gte: since24h } } }),
+      prisma.interactionEvent.count({ where: { createdAt: { gte: since24h } } }),
       prisma.$queryRaw<DailyTrendRow[]>(Prisma.sql`
         WITH days AS (
           SELECT generate_series(
@@ -167,15 +134,17 @@ export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
         LEFT JOIN al ON al.day = d.day
         ORDER BY d.day ASC
       `),
-      prisma.$queryRaw<CategoryBreakdownRow[]>(Prisma.sql`
-        SELECT p.category::text AS category,
-               COUNT(*)::int AS total,
-               COUNT(*) FILTER (WHERE p.published_at IS NOT NULL)::int AS published
-        FROM places p
-        WHERE p.deleted_at IS NULL
-        GROUP BY p.category
-        ORDER BY total DESC
-      `),
+      prisma.place.groupBy({
+        by: ["category"],
+        where: { deletedAt: null },
+        _count: { category: true },
+        orderBy: { _count: { category: "desc" } },
+      }),
+      prisma.place.groupBy({
+        by: ["category"],
+        where: { deletedAt: null, publishedAt: { not: null } },
+        _count: { category: true },
+      }),
       prisma.$queryRaw<DistrictBreakdownRow[]>(Prisma.sql`
         SELECT COALESCE(NULLIF(TRIM(p.district), ''), 'Chưa rõ') AS district,
                COUNT(*) FILTER (WHERE p.published_at IS NOT NULL AND p.status <> 'closed')::int AS published,
@@ -186,20 +155,32 @@ export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
         GROUP BY 1
         ORDER BY COUNT(*) DESC, 1 ASC
       `),
-      prisma.$queryRaw<ReportReasonBreakdownRow[]>(Prisma.sql`
-        SELECT pr.reason::text AS reason,
-               COUNT(*) FILTER (WHERE pr.status = 'pending')::int AS pending,
-               COUNT(*)::int AS total
-        FROM place_reports pr
-        GROUP BY pr.reason
-        ORDER BY total DESC
-      `),
+      prisma.placeReport.groupBy({
+        by: ["reason"],
+        _count: { reason: true },
+        orderBy: { _count: { reason: "desc" } },
+      }),
+      prisma.placeReport.groupBy({
+        by: ["reason"],
+        where: { status: "pending" },
+        _count: { reason: true },
+      }),
     ])
 
     const v = venueRows[0]
-    const r = reportRows[0]
-    const u = userRows[0]
-    const a = activityRows[0]
+
+    const reportCounts = Object.fromEntries(
+      reportStatusGroups.map((g) => [g.status, g._count.status]),
+    )
+    const pendingReports = reportCounts.pending ?? 0
+    const reviewedReports = reportCounts.reviewed ?? 0
+    const dismissedReports = reportCounts.dismissed ?? 0
+
+    const roleCounts = Object.fromEntries(userRoleGroups.map((g) => [g.role, g._count.role]))
+    const publishedByCategory = new Map(
+      categoryPublishedGroups.map((g) => [g.category, g._count.category]),
+    )
+    const pendingByReason = new Map(reasonPendingGroups.map((g) => [g.reason, g._count.reason]))
 
     const overview: AdminOverview = {
       uptimeMs: snapshot.uptimeMs,
@@ -225,21 +206,21 @@ export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
         withHours: Number(v?.with_hours ?? 0),
       },
       reports: {
-        pending: Number(r?.pending ?? 0),
-        reviewed: Number(r?.reviewed ?? 0),
-        dismissed: Number(r?.dismissed ?? 0),
-        total: Number(r?.total ?? 0),
+        pending: pendingReports,
+        reviewed: reviewedReports,
+        dismissed: dismissedReports,
+        total: pendingReports + reviewedReports + dismissedReports,
       },
       users: {
-        total: Number(u?.total ?? 0),
-        active: Number(u?.active ?? 0),
-        banned: Number(u?.banned ?? 0),
-        admins: Number(u?.admins ?? 0),
-        moderators: Number(u?.moderators ?? 0),
+        total: userTotal,
+        active: userTotal - userBanned,
+        banned: userBanned,
+        admins: roleCounts.admin ?? 0,
+        moderators: roleCounts.moderator ?? 0,
       },
       activity: {
-        auditLogs24h: Number(a?.audit_logs_24h ?? 0),
-        interactionEvents24h: Number(a?.interaction_events_24h ?? 0),
+        auditLogs24h,
+        interactionEvents24h,
       },
       trends14d: trendRows.map((row) => ({
         date: row.date,
@@ -248,10 +229,10 @@ export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
         reports: Number(row.reports),
         auditLogs: Number(row.audit_logs),
       })),
-      venuesByCategory: categoryRows.map((row) => ({
+      venuesByCategory: categoryTotalGroups.map((row) => ({
         category: toApiCategory(row.category),
-        total: Number(row.total),
-        published: Number(row.published),
+        total: row._count.category,
+        published: publishedByCategory.get(row.category) ?? 0,
       })),
       venuesByDistrict: districtRows.map((row) => ({
         district: row.district,
@@ -259,10 +240,10 @@ export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
         unpublished: Number(row.unpublished),
         closed: Number(row.closed),
       })),
-      reportsByReason: reasonRows.map((row) => ({
+      reportsByReason: reasonTotalGroups.map((row) => ({
         reason: toApiReportReason(row.reason),
-        pending: Number(row.pending),
-        total: Number(row.total),
+        pending: pendingByReason.get(row.reason) ?? 0,
+        total: row._count.reason,
       })),
     }
 

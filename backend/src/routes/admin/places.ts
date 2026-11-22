@@ -165,14 +165,18 @@ export function registerAdminPlaceRoutes(router: Hono<AppEnv>): void {
         changes.moderationNote = input.moderationNote || null
       }
 
-      const updated = await tx.place.update({ where: { id }, data })
-      const counts = await tx.$queryRaw<
-        { review_count: number; report_count: number }[]
-      >(Prisma.sql`
-        SELECT
-          (SELECT COUNT(*)::int FROM reviews WHERE place_id = ${id} AND deleted_at IS NULL) AS review_count,
-          (SELECT COUNT(*)::int FROM place_reports WHERE place_id = ${id}) AS report_count
-      `)
+      const updated = await tx.place.update({
+        where: { id },
+        data,
+        include: {
+          _count: {
+            select: {
+              reviews: { where: { deletedAt: null } },
+              reports: true,
+            },
+          },
+        },
+      })
 
       const nonVisibilityKeys = Object.keys(changes).filter(
         (key) => key !== "published" && key !== "moderationNote",
@@ -210,8 +214,8 @@ export function registerAdminPlaceRoutes(router: Hono<AppEnv>): void {
         moderation_status: updated.moderationStatus,
         moderation_note: updated.moderationNote,
         moderated_at: updated.moderatedAt,
-        review_count: Number(counts[0]?.review_count ?? 0),
-        report_count: Number(counts[0]?.report_count ?? 0),
+        review_count: updated._count.reviews,
+        report_count: updated._count.reports,
         created_at: updated.createdAt,
       })
     })

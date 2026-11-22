@@ -30,9 +30,11 @@ export function SystemHealthBanner({ data }: Readonly<{ data: AdminObservability
   )
   const dominantStage = findDominantTimingStage(aggregateTiming)
 
-  const hasErrors = summary.errorCount > 0
+  const hasErrors = summary.errorCount > 0 || (latency.errors5xx ?? 0) > 0
   const hasSlowness =
-    summary.slowCount > 0 || latency.p95LatencyMs >= ADMIN_UI.OBSERVABILITY_SLOW_P95_MS
+    summary.slowCount > 0 ||
+    latency.p95LatencyMs >= ADMIN_UI.OBSERVABILITY_SLOW_P95_MS ||
+    (data.infrastructure?.dbPool.waiting ?? 0) > 0
 
   const statusTone = hasErrors ? "danger" : hasSlowness ? "warning" : "healthy"
 

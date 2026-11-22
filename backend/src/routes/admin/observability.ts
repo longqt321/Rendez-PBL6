@@ -1,4 +1,5 @@
-import { groupBy } from "es-toolkit"
+import { subHours } from "date-fns"
+import { countBy, groupBy } from "es-toolkit"
 import type { Hono } from "hono"
 import { quantile } from "simple-statistics"
 import { Prisma } from "../../../generated/prisma/client"
@@ -6,38 +7,58 @@ import type { AppEnv } from "../../app"
 import { sanitizeObservabilityMessage, shouldMaskAdminPii } from "../../lib/admin-privacy"
 import { metricsSnapshot } from "../../lib/metrics"
 import { listObservabilityEvents } from "../../lib/observability-store"
-import { prisma } from "../../lib/prisma"
+import { getDbPoolStats, prisma } from "../../lib/prisma"
+import { getRedis } from "../../lib/redis"
 import { requireRole } from "../../lib/session"
 import { ADMIN_CONSTANTS } from "./shared"
 
 const CORE_VITAL_NAMES = ["LCP", "INP", "CLS"] as const
 type CoreVitalName = (typeof CORE_VITAL_NAMES)[number]
 
+const BYTES_PER_MB = 1024 * 1024
+const TOP_ZERO_QUERIES_LIMIT = 6
+const SEARCH_SAMPLE_LIMIT = 500
+
+function isZeroResultSearch(context: unknown): boolean {
+  if (!context || typeof context !== "object") return false
+  const record = context as Record<string, unknown>
+  return record.resultCount === 0 || record.total === 0 || record.zeroResult === true
+}
+
 export function registerAdminObservabilityRoutes(router: Hono<AppEnv>): void {
   router.get("/admin/observability", requireRole("admin"), async (c) => {
     const kindFilter = c.req.query("kind")?.trim() ?? "all"
     const searchQ = c.req.query("q")?.trim().toLowerCase() ?? ""
+    const since24h = subHours(new Date(), 24)
 
-    const [snapshot, allEvents, behaviorRows, slowSqlRows] = await Promise.all([
+    const [snapshot, allEvents, behaviorGroups, searchEvents, slowSqlRows] = await Promise.all([
       Promise.resolve(metricsSnapshot()),
       listObservabilityEvents(ADMIN_CONSTANTS.OBSERVABILITY_RING_LIMIT),
-      prisma.$queryRaw<{ event_type: string; total: number }[]>(Prisma.sql`
-        SELECT event_type, COUNT(*)::int AS total
-        FROM interaction_events
-        WHERE created_at >= NOW() - INTERVAL '24 hours'
-        GROUP BY event_type
-        ORDER BY total DESC
-        LIMIT ${ADMIN_CONSTANTS.OBSERVABILITY_BEHAVIOR_LIMIT}
-      `),
+      prisma.interactionEvent.groupBy({
+        by: ["eventType"],
+        where: { createdAt: { gte: since24h } },
+        _count: { eventType: true },
+        orderBy: { _count: { eventType: "desc" } },
+        take: ADMIN_CONSTANTS.OBSERVABILITY_BEHAVIOR_LIMIT,
+      }),
+      prisma.interactionEvent.findMany({
+        where: {
+          createdAt: { gte: since24h },
+          eventType: { in: ["search", "search_query", "search_zero_result"] },
+        },
+        select: { eventType: true, query: true, context: true },
+        orderBy: { createdAt: "desc" },
+        take: SEARCH_SAMPLE_LIMIT,
+      }),
       prisma
         .$queryRaw<
           { query: string; calls: number; mean_ms: number; total_ms: number; rows: number }[]
         >(
           Prisma.sql`
-            SELECT LEFT(query, ${ADMIN_CONSTANTS.OBSERVABILITY_SQL_PREVIEW_LEN}) AS query,
+            SELECT LEFT(query, 240) AS query,
                    calls::int AS calls,
-                   ROUND(mean_exec_time::numeric, 2)::float8 AS mean_ms,
-                   ROUND(total_exec_time::numeric, 1)::float8 AS total_ms,
+                   ROUND(mean_exec_time::numeric, 1)::float AS mean_ms,
+                   ROUND(total_exec_time::numeric, 1)::float AS total_ms,
                    rows::int AS rows
             FROM pg_stat_statements
             WHERE query NOT ILIKE '%pg_stat_statements%'
@@ -84,6 +105,28 @@ export function registerAdminObservabilityRoutes(router: Hono<AppEnv>): void {
       }
     })
 
+    const zeroResultEvents = searchEvents.filter(
+      (ev) => ev.eventType === "search_zero_result" || isZeroResultSearch(ev.context),
+    )
+    const zeroQueryCounts = countBy(
+      zeroResultEvents
+        .map((ev) => ev.query?.trim().toLowerCase() ?? "")
+        .filter((q) => q.length > 0),
+      (q) => q,
+    )
+    const topZeroQueries = Object.entries(zeroQueryCounts)
+      .map(([query, count]) => ({ query, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, TOP_ZERO_QUERIES_LIMIT)
+
+    const totalSearches = searchEvents.length
+    const zeroResultSearches = zeroResultEvents.length
+    const zeroResultRate =
+      totalSearches === 0 ? 0 : Math.round((zeroResultSearches / totalSearches) * 1000) / 1000
+
+    const mem = process.memoryUsage()
+    const redis = getRedis()
+
     const maskPii = shouldMaskAdminPii()
     const filteredEvents = allEvents
       .filter((ev) => kindFilter === "all" || ev.kind === kindFilter)
@@ -111,7 +154,25 @@ export function registerAdminObservabilityRoutes(router: Hono<AppEnv>): void {
         p95LatencyMs: snapshot.p95LatencyMs,
         p99LatencyMs: snapshot.p99LatencyMs,
         cacheHitRatio: snapshot.cacheHitRatio,
+        errors4xx: snapshot.errors4xx,
+        errors5xx: snapshot.errors5xx,
+        errorRate4xx: snapshot.errorRate4xx,
+        errorRate5xx: snapshot.errorRate5xx,
         byEndpoint: snapshot.byEndpoint.slice(0, ADMIN_CONSTANTS.OBSERVABILITY_TOP_ENDPOINTS),
+      },
+      security: snapshot.security,
+      infrastructure: {
+        dbPool: getDbPoolStats(),
+        memoryRssMb: Math.round(mem.rss / BYTES_PER_MB),
+        heapUsedMb: Math.round(mem.heapUsed / BYTES_PER_MB),
+        heapTotalMb: Math.round(mem.heapTotal / BYTES_PER_MB),
+        redisConnected: Boolean(redis?.connected),
+      },
+      searchQuality24h: {
+        totalSearches,
+        zeroResultSearches,
+        zeroResultRate,
+        topZeroQueries,
       },
       webVitals,
       slowSql: slowSqlRows.map((row) => ({
@@ -121,9 +182,9 @@ export function registerAdminObservabilityRoutes(router: Hono<AppEnv>): void {
         totalMs: Number(row.total_ms),
         rows: Number(row.rows),
       })),
-      behavior24h: behaviorRows.map((row) => ({
-        eventType: row.event_type,
-        count: Number(row.total),
+      behavior24h: behaviorGroups.map((row) => ({
+        eventType: row.eventType,
+        count: row._count.eventType,
       })),
       summary: { errorCount, slowCount },
       events: filteredEvents,

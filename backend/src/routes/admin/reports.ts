@@ -1,7 +1,10 @@
 import { updateAdminReportInputSchema } from "@rendez/schema"
 import type { Hono } from "hono"
-import type { PlaceStatus as PrismaPlaceStatus } from "../../../generated/prisma/client"
-import { Prisma } from "../../../generated/prisma/client"
+import type {
+  PlaceStatus as PrismaPlaceStatus,
+  Prisma,
+  ReportStatus as PrismaReportStatus,
+} from "../../../generated/prisma/client"
 import type { AppEnv } from "../../app"
 import { recordAuditLog } from "../../lib/audit-log"
 import { UUID_ID_RE, encodeCursor, requireUuid } from "../../lib/cursor"
@@ -16,7 +19,6 @@ import {
   parseAdminCursor,
   reqIp,
   toAdminReportDto,
-  type ReportRow,
 } from "./shared"
 
 export function registerAdminReportRoutes(router: Hono<AppEnv>): void {
@@ -25,37 +27,55 @@ export function registerAdminReportRoutes(router: Hono<AppEnv>): void {
     const status = REPORT_STATUS_FILTERS.has(rawStatus) ? rawStatus : "pending"
     const cursor = parseAdminCursor(c.req.query("cursor"), UUID_ID_RE)
 
-    const conditions: Prisma.Sql[] = [Prisma.sql`p.deleted_at IS NULL`]
-    if (status !== "all") {
-      conditions.push(Prisma.sql`pr.status = ${status}::report_status`)
-    }
-    if (cursor) {
-      conditions.push(
-        Prisma.sql`(pr.created_at, pr.id) < (${cursor.createdAt}::timestamptz, ${cursor.id}::uuid)`,
-      )
+    const where: Prisma.PlaceReportWhereInput = {
+      place: { deletedAt: null },
+      ...(status !== "all" ? { status: status as PrismaReportStatus } : {}),
+      ...(cursor
+        ? {
+            OR: [
+              { createdAt: { lt: cursor.createdAt } },
+              { createdAt: cursor.createdAt, id: { lt: cursor.id } },
+            ],
+          }
+        : {}),
     }
 
-    const rows = await prisma.$queryRaw<ReportRow[]>(Prisma.sql`
-      SELECT pr.id, pr.place_id, p.name AS place_name, p.published_at AS place_published_at,
-             p.status::text AS place_status, u.name AS reporter_name, u.handle AS reporter_handle,
-             pr.reason::text AS reason, pr.detail, pr.status::text AS status,
-             pr.created_at, pr.updated_at
-      FROM place_reports pr
-      JOIN places p ON p.id = pr.place_id
-      JOIN users u ON u.id = pr.reporter_id
-      WHERE ${Prisma.join(conditions, " AND ")}
-      ORDER BY pr.created_at DESC, pr.id DESC
-      LIMIT ${ADMIN_CONSTANTS.PAGE_SIZE + 1}
-    `)
+    const rows = await prisma.placeReport.findMany({
+      where,
+      include: {
+        place: { select: { name: true, publishedAt: true, status: true } },
+        reporter: { select: { name: true, handle: true } },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: ADMIN_CONSTANTS.PAGE_SIZE + 1,
+    })
 
     const page = rows.slice(0, ADMIN_CONSTANTS.PAGE_SIZE)
     const last = page.at(-1)
     const next =
       rows.length > ADMIN_CONSTANTS.PAGE_SIZE && last
-        ? encodeCursor({ createdAt: last.created_at, id: last.id })
+        ? encodeCursor({ createdAt: last.createdAt, id: last.id })
         : null
 
-    return c.json({ items: page.map(toAdminReportDto), next })
+    return c.json({
+      items: page.map((row) =>
+        toAdminReportDto({
+          id: row.id,
+          place_id: row.placeId,
+          place_name: row.place.name,
+          place_published_at: row.place.publishedAt,
+          place_status: row.place.status,
+          reporter_name: row.reporter.name,
+          reporter_handle: row.reporter.handle,
+          reason: row.reason,
+          detail: row.detail,
+          status: row.status,
+          created_at: row.createdAt,
+          updated_at: row.updatedAt,
+        }),
+      ),
+      next,
+    })
   })
 
   router.patch("/admin/reports/:id", requireRole("admin", "moderator"), async (c) => {

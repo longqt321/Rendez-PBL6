@@ -1,4 +1,3 @@
-import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { formatInitials } from "./profile"
 
@@ -15,6 +14,50 @@ export interface CommentRow {
   parent_deleted: boolean
   like_count: number
   liked_by_me: boolean
+}
+
+function buildCommentInclude(viewerId: string | null) {
+  return {
+    author: { select: { name: true, handle: true } },
+    parent: {
+      select: {
+        deletedAt: true,
+        author: { select: { handle: true } },
+      },
+    },
+    _count: { select: { likes: true } },
+    likes: viewerId ? { where: { userId: viewerId }, select: { userId: true } } : false,
+  } as const
+}
+
+type PrismaCommentRecord = {
+  id: string
+  postId: string
+  parentId: string | null
+  body: string
+  createdAt: Date
+  authorId: string
+  author: { name: string; handle: string }
+  parent: { deletedAt: Date | null; author: { handle: string } } | null
+  _count: { likes: number }
+  likes?: { userId: string }[]
+}
+
+function toCommentRow(record: PrismaCommentRecord): CommentRow {
+  return {
+    id: record.id,
+    post_id: record.postId,
+    parent_id: record.parentId,
+    body: record.body,
+    created_at: record.createdAt,
+    author_id: record.authorId,
+    author_name: record.author.name,
+    author_handle: record.author.handle,
+    parent_handle: record.parent?.author.handle ?? null,
+    parent_deleted: record.parent ? record.parent.deletedAt !== null : false,
+    like_count: record._count.likes,
+    liked_by_me: Array.isArray(record.likes) && record.likes.length > 0,
+  }
 }
 
 export function toCommentDto(row: CommentRow, viewerId: string | null) {
@@ -49,27 +92,8 @@ export function parseCommentSort(raw: string | undefined): CommentSort {
   return raw === "top" ? "top" : "new"
 }
 
-function selectComments(viewerId: string | null): Prisma.Sql {
-  const viewer = Prisma.sql`${viewerId}::uuid`
-  return Prisma.sql`
-    SELECT c.id, c.post_id, c.parent_id, c.body, c.created_at, c.author_id,
-           u.name AS author_name, u.handle AS author_handle,
-           parent_u.handle AS parent_handle, parent.deleted_at IS NOT NULL AS parent_deleted,
-           (SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id = c.id)::int AS like_count,
-           EXISTS (SELECT 1 FROM comment_likes cl WHERE cl.comment_id = c.id AND cl.user_id = ${viewer}) AS liked_by_me
-    FROM comments c
-    JOIN users u ON u.id = c.author_id
-    LEFT JOIN comments parent ON parent.id = c.parent_id
-    LEFT JOIN users parent_u ON parent_u.id = parent.author_id
-  `
-}
-
 /**
  * Toàn bộ bình luận còn sống của một bài — đủ để xếp hạng + ghép reply ở JS.
- *
- * `limit` áp dụng lên danh sách phẳng SAU khi ghép reply (mặc định 50, trần 100
- * ở route). Cắt giữa cha và reply vẫn an toàn: `replyTo` của reply lấy từ dữ
- * liệu SQL của chính nó, không phụ thuộc cha còn nằm trong kết quả hay không.
  */
 export async function listCommentsForPost(
   postId: string,
@@ -77,11 +101,12 @@ export async function listCommentsForPost(
   sort: CommentSort = "new",
   limit?: number,
 ): Promise<CommentDto[]> {
-  const rows = await prisma.$queryRaw<CommentRow[]>(Prisma.sql`
-    ${selectComments(viewerId)}
-    WHERE c.post_id = ${postId}::uuid AND c.deleted_at IS NULL
-    ORDER BY c.created_at ASC, c.id ASC
-  `)
+  const records = await prisma.comment.findMany({
+    where: { postId, deletedAt: null },
+    include: buildCommentInclude(viewerId),
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+  })
+  const rows = records.map((record) => toCommentRow(record as PrismaCommentRecord))
 
   const byParent = new Map<string | null, CommentRow[]>()
   for (const row of rows) {
@@ -92,21 +117,18 @@ export async function listCommentsForPost(
 
   const topLevel = byParent.get(null) ?? []
   if (sort === "top") {
-    // "top": nhiều like trước; hoà thì mới nhất trước (tất định, khớp thứ tự mock).
     topLevel.sort(
       (a, b) =>
         Number(b.like_count) - Number(a.like_count) ||
         b.created_at.getTime() - a.created_at.getTime(),
     )
   } else {
-    // Sort "new": cha mới nhất trước (mock so `Date.parse` giảm dần).
     topLevel.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
   }
 
   const items: CommentDto[] = []
   for (const parent of topLevel) {
     items.push(toCommentDto(parent, viewerId))
-    // Reply đi kèm ngay sau cha, theo thời gian tăng dần (A6.7).
     const replies = byParent.get(parent.id) ?? []
     replies.sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
     for (const reply of replies) items.push(toCommentDto(reply, viewerId))
@@ -116,11 +138,9 @@ export async function listCommentsForPost(
 
 /** Bình luận còn sống theo id — `null` khi không tồn tại/đã xoá. */
 export async function findComment(id: string, viewerId: string | null): Promise<CommentDto | null> {
-  const rows = await prisma.$queryRaw<CommentRow[]>(Prisma.sql`
-    ${selectComments(viewerId)}
-    WHERE c.id = ${id}::uuid AND c.deleted_at IS NULL
-    LIMIT 1
-  `)
-  const row = rows[0]
-  return row ? toCommentDto(row, viewerId) : null
+  const record = await prisma.comment.findFirst({
+    where: { id, deletedAt: null },
+    include: buildCommentInclude(viewerId),
+  })
+  return record ? toCommentDto(toCommentRow(record as PrismaCommentRecord), viewerId) : null
 }

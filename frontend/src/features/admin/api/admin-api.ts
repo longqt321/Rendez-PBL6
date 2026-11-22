@@ -167,6 +167,10 @@ export interface AdminObservability {
     p95LatencyMs: number
     p99LatencyMs: number
     cacheHitRatio: number
+    errors4xx?: number
+    errors5xx?: number
+    errorRate4xx?: number
+    errorRate5xx?: number
     byEndpoint: {
       route: string
       count: number
@@ -174,7 +178,32 @@ export interface AdminObservability {
       p95Ms: number
       p99Ms: number
       cacheHits: number
+      errorCount5xx?: number
+      errorRate5xx?: number
     }[]
+  }
+  security?: {
+    unauthorized401: number
+    forbidden403: number
+    rateLimited429: number
+  }
+  infrastructure?: {
+    dbPool: {
+      total: number
+      idle: number
+      waiting: number
+      max: number
+    }
+    memoryRssMb: number
+    heapUsedMb: number
+    heapTotalMb: number
+    redisConnected: boolean
+  }
+  searchQuality24h?: {
+    totalSearches: number
+    zeroResultSearches: number
+    zeroResultRate: number
+    topZeroQueries: { query: string; count: number }[]
   }
   webVitals: {
     name: "LCP" | "INP" | "CLS"

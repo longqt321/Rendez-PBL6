@@ -59,6 +59,7 @@ export function createApiRouter() {
             route,
             Math.round(performance.now() - startedAt),
             c.get("cacheHit") ?? false,
+            c.res.status,
           )
         }
       }
