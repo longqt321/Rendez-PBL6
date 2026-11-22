@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef, useState } from "react"
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
+import { useDropzone, type Accept } from "react-dropzone"
 import { CheckIcon, ImagePlusIcon, MapPinIcon, SparklesIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -64,7 +65,6 @@ export function PostComposer({ onCreated }: PostComposerProps) {
 
   const captionId = useId()
   const fileInputId = useId()
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const imageSeq = useRef(0)
   const submittingRef = useRef(false)
 
@@ -100,11 +100,10 @@ export function PostComposer({ onCreated }: PostComposerProps) {
     setImages([])
   }
 
-  function handleFilesSelected(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []).filter((file) =>
+  const handleDropFiles = useCallback((acceptedFiles: File[]) => {
+    const files = acceptedFiles.filter((file) =>
       (IMAGE_CONTENT_TYPES as readonly string[]).includes(file.type),
     )
-    event.target.value = ""
     if (files.length === 0) return
 
     const accepted = files.slice(0, MAX_POST_IMAGES - imagesRef.current.length)
@@ -126,7 +125,21 @@ export function PostComposer({ onCreated }: PostComposerProps) {
     })
 
     setImages((current) => [...current, ...added])
-  }
+  }, [])
+
+  const imageAccept = useMemo<Accept>(
+    () => Object.fromEntries(IMAGE_CONTENT_TYPES.map((type) => [type, []])),
+    [],
+  )
+
+  const { getInputProps, open: openImagePicker } = useDropzone({
+    accept: imageAccept,
+    multiple: true,
+    noClick: true,
+    noKeyboard: true,
+    disabled: images.length >= MAX_POST_IMAGES || uploading || mediaUnavailable,
+    onDropAccepted: handleDropFiles,
+  })
 
   const canSubmit = caption.trim().length >= 3 && !createPost.isPending && !uploading
   const showAutoSuggestions =
@@ -369,14 +382,10 @@ export function PostComposer({ onCreated }: PostComposerProps) {
             ) : (
               <>
                 <input
-                  ref={fileInputRef}
-                  id={fileInputId}
-                  type="file"
-                  aria-label="Chọn ảnh đính kèm"
-                  accept={IMAGE_CONTENT_TYPES.join(",")}
-                  multiple
-                  className="sr-only"
-                  onChange={handleFilesSelected}
+                  {...getInputProps({
+                    id: fileInputId,
+                    "aria-label": "Chọn ảnh đính kèm",
+                  })}
                 />
                 <Button
                   type="button"
@@ -384,7 +393,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
                   size="sm"
                   className="min-h-11 sm:min-h-0"
                   disabled={images.length >= MAX_POST_IMAGES || uploading}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={openImagePicker}
                 >
                   {uploading ? <Spinner aria-label="Đang tải ảnh lên" /> : <ImagePlusIcon />}
                   Thêm ảnh

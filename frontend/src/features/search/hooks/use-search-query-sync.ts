@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useLocation, useNavigate, useSearchParams } from "react-router"
+import { parseAsString, useQueryState } from "nuqs"
+import { useLocation, useNavigate } from "react-router"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { FILTER_SHARED_PATHS } from "@/components/layout/nav-items"
 
 export function useSearchQuerySync() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [params, setParams] = useSearchParams()
+  const [qParam, setQParam] = useQueryState(
+    "q",
+    parseAsString.withDefault("").withOptions({ history: "replace", shallow: false }),
+  )
 
   const isSearchPage = location.pathname === "/search"
   const isFilterPage = FILTER_SHARED_PATHS.includes(location.pathname)
-  const urlQuery = isSearchPage || isFilterPage ? (params.get("q") ?? "") : ""
+  const urlQuery = isSearchPage || isFilterPage ? qParam : ""
 
   const [draft, setDraft] = useState(urlQuery)
   const debouncedDraft = useDebouncedValue(draft, 280)
@@ -20,26 +24,10 @@ export function useSearchQuerySync() {
   useEffect(() => {
     urlQueryRef.current = urlQuery
     if (urlQuery === lastWritten.current) return
-    // Không ghi đè nếu người dùng đang gõ dở (draft chưa debounce xong)
     if (draft.trim() !== lastWritten.current) return
     lastWritten.current = urlQuery
     setDraft(urlQuery)
   }, [urlQuery, draft])
-
-  const patchFilterQuery = useCallback(
-    (trimmed: string) => {
-      setParams(
-        (prev) => {
-          const updated = new URLSearchParams(prev)
-          if (trimmed) updated.set("q", trimmed)
-          else updated.delete("q")
-          return updated
-        },
-        { replace: true },
-      )
-    },
-    [setParams],
-  )
 
   useEffect(() => {
     if (!isSearchPage && !isFilterPage) return
@@ -53,7 +41,7 @@ export function useSearchQuerySync() {
 
     lastWritten.current = trimmed
     if (isFilterPage) {
-      patchFilterQuery(trimmed)
+      void setQParam(trimmed || null)
       return
     }
 
@@ -62,28 +50,28 @@ export function useSearchQuerySync() {
       return
     }
 
-    void setParams({ q: trimmed }, { replace: true })
-  }, [debouncedDraft, draft, isSearchPage, isFilterPage, navigate, setParams, patchFilterQuery])
+    void setQParam(trimmed)
+  }, [debouncedDraft, draft, isSearchPage, isFilterPage, navigate, setQParam])
 
   const submit = useCallback(() => {
     const trimmed = draft.trim()
     lastWritten.current = trimmed
     if (isFilterPage) {
-      patchFilterQuery(trimmed)
+      void setQParam(trimmed || null)
       return
     }
     void navigate(trimmed ? `/discover?q=${encodeURIComponent(trimmed)}` : "/discover")
-  }, [draft, isFilterPage, navigate, patchFilterQuery])
+  }, [draft, isFilterPage, navigate, setQParam])
 
   const clear = useCallback(() => {
     lastWritten.current = ""
     setDraft("")
     if (isFilterPage) {
-      patchFilterQuery("")
+      void setQParam(null)
     } else if (isSearchPage) {
       void navigate("/discover", { replace: true })
     }
-  }, [isFilterPage, isSearchPage, navigate, patchFilterQuery])
+  }, [isFilterPage, isSearchPage, navigate, setQParam])
 
   return { draft, setDraft, submit, clear, isFilterPage }
 }

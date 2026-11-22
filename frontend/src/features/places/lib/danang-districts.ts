@@ -1,3 +1,6 @@
+import distance from "@turf/distance"
+import { point } from "@turf/helpers"
+
 export const DANANG_DISTRICTS = [
   "Hải Châu",
   "Thanh Khê",
@@ -22,15 +25,5 @@ export function calculateDistanceKm(
   lat2: number,
   lng2: number,
 ): number {
-  const R = 6371 // Bán kính trái đất (km)
-  const dLat = ((lat2 - lat1) * Math.PI) / 180
-  const dLng = ((lng2 - lng1) * Math.PI) / 180
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return R * c
+  return distance(point([lng1, lat1]), point([lng2, lat2]), { units: "kilometers" })
 }

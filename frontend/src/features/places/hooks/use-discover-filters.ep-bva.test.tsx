@@ -1,4 +1,5 @@
 import { act } from "@testing-library/react"
+import { NuqsAdapter } from "nuqs/adapters/react-router/v8"
 import { MemoryRouter, useLocation } from "react-router"
 import { renderHook } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
@@ -6,6 +7,7 @@ import type { ReactNode } from "react"
 import { useDiscoverFilters } from "./use-discover-filters"
 
 function renderFilters(initialUrl: string) {
+  window.history.replaceState(null, "", initialUrl)
   return renderHook(
     () => ({
       filters: useDiscoverFilters(),
@@ -13,7 +15,9 @@ function renderFilters(initialUrl: string) {
     }),
     {
       wrapper: ({ children }: { children: ReactNode }) => (
-        <MemoryRouter initialEntries={[initialUrl]}>{children}</MemoryRouter>
+        <MemoryRouter initialEntries={[initialUrl]}>
+          <NuqsAdapter>{children}</NuqsAdapter>
+        </MemoryRouter>
       ),
     },
   )

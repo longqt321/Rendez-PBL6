@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import type { GeolocationState } from "@uidotdev/usehooks"
+import { useLocalStorage, type GeolocationState } from "@uidotdev/usehooks"
 import type { CityLandmark, SyncedLocation, UserLocationAnchor } from "@rendez/schema"
 import { upsertSyncedLocation } from "@/features/location/api/location-api"
 import {
@@ -33,11 +33,11 @@ export interface ResolvedLocationSource {
 }
 
 export const ACTIVE_LOCATION_SOURCE_STORAGE_KEY = "rendez.active-location-source"
-const LOCATION_SOURCE_EVENT = "rendez:location-source-change"
 const HIGH_ACCURACY_THRESHOLD_METERS = 150
 const SYNC_MAX_ACCURACY_METERS = 1000
 const SYNC_MIN_INTERVAL_MS = 60_000
 const SYNC_MIN_DISTANCE_KM = 0.05 // 50m
+let sharedLastMobileSync: { lat: number; lng: number; at: number } | null = null
 
 const GEOLOCATION_OPTIONS: PositionOptions = {
   timeout: 8000,
@@ -60,19 +60,16 @@ export function detectHardwareGpsDevice(): boolean {
   return coarsePointer && navigator.maxTouchPoints > 0
 }
 
-function readStoredSourceKey(): string | null {
-  try {
-    return window.localStorage.getItem(ACTIVE_LOCATION_SOURCE_STORAGE_KEY)
-  } catch {
-    return null
-  }
-}
-
 export function writeStoredSourceKey(key: string | null): void {
   try {
-    if (key) window.localStorage.setItem(ACTIVE_LOCATION_SOURCE_STORAGE_KEY, key)
+    if (key) window.localStorage.setItem(ACTIVE_LOCATION_SOURCE_STORAGE_KEY, JSON.stringify(key))
     else window.localStorage.removeItem(ACTIVE_LOCATION_SOURCE_STORAGE_KEY)
-    window.dispatchEvent(new CustomEvent(LOCATION_SOURCE_EVENT, { detail: key }))
+    window.dispatchEvent(
+      new StorageEvent("storage", {
+        key: ACTIVE_LOCATION_SOURCE_STORAGE_KEY,
+        newValue: key ? JSON.stringify(key) : null,
+      }),
+    )
   } catch {
     // Bỏ qua trong môi trường private/restricted storage
   }
@@ -193,6 +190,19 @@ export async function syncLocationToServer(
   coords: { latitude: number; longitude: number; accuracy: number },
 ): Promise<SyncedLocation | null> {
   if (coords.accuracy > SYNC_MAX_ACCURACY_METERS) return null
+  const now = Date.now()
+  if (sharedLastMobileSync) {
+    const movedKm = calculateDistanceKm(
+      sharedLastMobileSync.lat,
+      sharedLastMobileSync.lng,
+      coords.latitude,
+      coords.longitude,
+    )
+    if (now - sharedLastMobileSync.at < SYNC_MIN_INTERVAL_MS && movedKm < SYNC_MIN_DISTANCE_KM) {
+      return null
+    }
+  }
+  sharedLastMobileSync = { lat: coords.latitude, lng: coords.longitude, at: now }
   const loc = await upsertSyncedLocation({
     lat: coords.latitude,
     lng: coords.longitude,
@@ -235,42 +245,18 @@ export function useUserLocation() {
   const hasHardwareGps = useMemo(() => detectHardwareGpsDevice(), [])
   const [requested, setRequested] = useState(false)
   const [geo, setGeo] = useState<GeolocationState | null>(null)
-  const [selectedSourceKey, setSelectedSourceKey] = useState<string | null>(() =>
-    readStoredSourceKey(),
+  const [selectedSourceKey, setSelectedSourceKey] = useLocalStorage<string | null>(
+    ACTIVE_LOCATION_SOURCE_STORAGE_KEY,
+    null,
   )
 
   const { data: landmarks = [] } = useLandmarks()
   const { data: anchors = [] } = useMyAnchors(isAuthenticated)
   const { data: syncedLocation = null } = useSyncedLocation(isAuthenticated)
 
-  const lastSyncRef = useRef<{ lat: number; lng: number; at: number } | null>(null)
-
-  useEffect(() => {
-    function onSourceChange(e: Event) {
-      const detail = (e as CustomEvent<string | null>).detail ?? null
-      setSelectedSourceKey(detail)
-    }
-    window.addEventListener(LOCATION_SOURCE_EVENT, onSourceChange)
-    return () => window.removeEventListener(LOCATION_SOURCE_EVENT, onSourceChange)
-  }, [])
-
   const pushMobileGps = useCallback(
     (lat: number, lng: number, accuracy: number) => {
-      if (accuracy > SYNC_MAX_ACCURACY_METERS) return
-      const now = Date.now()
-      const prev = lastSyncRef.current
-      if (prev) {
-        const movedKm = calculateDistanceKm(prev.lat, prev.lng, lat, lng)
-        if (now - prev.at < SYNC_MIN_INTERVAL_MS && movedKm < SYNC_MIN_DISTANCE_KM) {
-          return
-        }
-      }
-      lastSyncRef.current = { lat, lng, at: now }
-      void upsertSyncedLocation({ lat, lng, accuracy })
-        .then((loc) => {
-          qc.setQueryData(LOCATION_QUERY_KEYS.syncedLocation, loc)
-        })
-        .catch(() => {})
+      void syncLocationToServer(qc, { latitude: lat, longitude: lng, accuracy }).catch(() => {})
     },
     [qc],
   )
@@ -319,18 +305,18 @@ export function useUserLocation() {
   const clearLocation = useCallback(() => {
     setRequested(false)
     setGeo(null)
-    writeStoredSourceKey(null)
-  }, [])
+    setSelectedSourceKey(null)
+  }, [setSelectedSourceKey])
 
   const selectLocationSource = useCallback(
     (key: string | null) => {
-      writeStoredSourceKey(key)
+      setSelectedSourceKey(key)
       if (key === null) {
         setRequested(true)
         void qc.invalidateQueries({ queryKey: LOCATION_QUERY_KEYS.syncedLocation })
       }
     },
-    [qc],
+    [qc, setSelectedSourceKey],
   )
 
   return {

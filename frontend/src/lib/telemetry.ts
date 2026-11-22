@@ -145,6 +145,11 @@ export function initClientTelemetry(): void {
   })
 
   window.addEventListener("pagehide", flushTelemetry)
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") flushTelemetry()
+    })
+  }
   onLCP(recordWebVital)
   onINP(recordWebVital)
   onCLS(recordWebVital)

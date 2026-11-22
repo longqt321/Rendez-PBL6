@@ -16,7 +16,16 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatNumber, formatRelativeTime } from "@/lib/format"
 import type { ObservabilityEventKind } from "../api/admin-api"
@@ -351,12 +360,7 @@ export function ObservabilityTab() {
                           {formatNumber(item.count)}
                         </span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-primary"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
+                      <Progress value={pct} aria-label={`Tỉ lệ ${item.eventType}`} />
                     </div>
                   )
                 })}
@@ -375,38 +379,36 @@ export function ObservabilityTab() {
           {latency.byEndpoint.length === 0 ? (
             <p className="text-sm text-muted-foreground">Chưa ghi nhận request nào.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b text-muted-foreground">
-                  <tr>
-                    <th className="py-2 pr-4 font-medium">Route</th>
-                    <th className="px-3 py-2 text-right font-medium">Requests</th>
-                    <th className="px-3 py-2 text-right font-medium">Avg</th>
-                    <th className="px-3 py-2 text-right font-medium">p95</th>
-                    <th className="px-3 py-2 text-right font-medium">p99</th>
-                    <th className="py-2 pl-3 text-right font-medium">Cache Hits</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {latency.byEndpoint.map((ep) => (
-                    <tr key={ep.route}>
-                      <td className="py-2 pr-4 font-mono">{ep.route}</td>
-                      <td className="px-3 py-2 text-right tabular-nums">
-                        {formatNumber(ep.count)}
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums">{ep.avgMs} ms</td>
-                      <td className="px-3 py-2 text-right font-medium tabular-nums">
-                        {ep.p95Ms} ms
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums">{ep.p99Ms} ms</td>
-                      <td className="py-2 pl-3 text-right tabular-nums">
-                        {formatNumber(ep.cacheHits)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pr-4 pl-0">Route</TableHead>
+                  <TableHead className="text-right">Requests</TableHead>
+                  <TableHead className="text-right">Avg</TableHead>
+                  <TableHead className="text-right">p95</TableHead>
+                  <TableHead className="text-right">p99</TableHead>
+                  <TableHead className="pr-0 pl-3 text-right">Cache Hits</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {latency.byEndpoint.map((ep) => (
+                  <TableRow key={ep.route}>
+                    <TableCell className="pr-4 pl-0 font-mono">{ep.route}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatNumber(ep.count)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{ep.avgMs} ms</TableCell>
+                    <TableCell className="text-right font-medium tabular-nums">
+                      {ep.p95Ms} ms
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{ep.p99Ms} ms</TableCell>
+                    <TableCell className="pr-0 pl-3 text-right tabular-nums">
+                      {formatNumber(ep.cacheHits)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>

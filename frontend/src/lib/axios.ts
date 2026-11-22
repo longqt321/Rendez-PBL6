@@ -154,10 +154,19 @@ function clearSessionAndRedirect(notice: { title: string; description: string })
   toast.error(notice.title, { description: notice.description })
 
   const current = window.location.pathname + window.location.search
-  if (window.location.pathname.startsWith("/login")) return
+  if (window.location.pathname.startsWith("/login")) {
+    sessionExpiryHandled = false
+    return
+  }
   const target = loginRedirectUrl(current)
   // Trễ để toast kịp đọc; điều hướng cả trang xoá cache query của phiên cũ.
-  window.setTimeout(() => sessionRedirect.to(target), sessionRedirect.delayMs)
+  window.setTimeout(() => {
+    if (window.location.pathname.startsWith("/login")) {
+      sessionExpiryHandled = false
+      return
+    }
+    sessionRedirect.to(target)
+  }, sessionRedirect.delayMs)
 }
 
 function handleRemoteLogout() {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useSearchParams } from "react-router"
+import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs"
 import {
   parseNaturalFilterQuery,
   removeChipFromQuery,
@@ -12,16 +12,28 @@ import type { PlaceCategory } from "../types/place"
 
 export type PriceMaxFilter = 1 | 2 | 3 | "all"
 
-const VALID_CATEGORIES = new Set<PlaceCategory>([
+const PLACE_CATEGORIES = [
   "cafe",
   "restaurant",
   "street-food",
   "bakery",
   "dessert",
   "bar",
-])
+] as const satisfies readonly PlaceCategory[]
 
-const VALID_SORTS = new Set<DiscoverSort>(["newest", "rating", "distance"])
+const DISCOVER_SORTS = ["newest", "rating", "distance"] as const satisfies readonly DiscoverSort[]
+
+const PRICE_LEVELS = ["1", "2", "3"] as const
+
+const discoverSearchParsers = {
+  category: parseAsStringLiteral(PLACE_CATEGORIES),
+  district: parseAsString.withDefault("all"),
+  q: parseAsString.withDefault(""),
+  sort: parseAsStringLiteral(DISCOVER_SORTS).withDefault("newest"),
+  priceMax: parseAsStringLiteral(PRICE_LEVELS),
+  lat: parseAsString,
+  lng: parseAsString,
+}
 
 export interface DiscoverFiltersState {
   category: PlaceCategory | "all"
@@ -46,42 +58,19 @@ export interface DiscoverFiltersState {
 }
 
 export function useDiscoverFilters(): DiscoverFiltersState {
-  const [params, setParams] = useSearchParams()
+  const [urlState, setUrlState] = useQueryStates(discoverSearchParsers, {
+    history: "replace",
+    shallow: false,
+  })
 
-  const rawCategory = params.get("category") ?? "all"
-  const category = VALID_CATEGORIES.has(rawCategory as PlaceCategory)
-    ? (rawCategory as PlaceCategory)
+  const category: PlaceCategory | "all" = urlState.category ?? "all"
+  const district = urlState.district || "all"
+  const query = urlState.q
+  const sort: DiscoverSort = urlState.sort
+  const priceMax: PriceMaxFilter = urlState.priceMax
+    ? (Number(urlState.priceMax) as 1 | 2 | 3)
     : "all"
-  const district = params.get("district") ?? "all"
-  const query = params.get("q") ?? ""
-
-  const rawSort = params.get("sort")
-  const sort: DiscoverSort =
-    rawSort && VALID_SORTS.has(rawSort as DiscoverSort) ? (rawSort as DiscoverSort) : "newest"
-
-  const rawPriceMax = Number(params.get("priceMax"))
-  const priceMax: PriceMaxFilter = [1, 2, 3].includes(rawPriceMax)
-    ? (rawPriceMax as 1 | 2 | 3)
-    : "all"
-
   const isNearbyActive = sort === "distance"
-
-  const patch = useCallback(
-    (next: Record<string, string | null>) => {
-      setParams(
-        (prev) => {
-          const updated = new URLSearchParams(prev)
-          for (const [key, value] of Object.entries(next)) {
-            if (value === null || value === "" || value === "all") updated.delete(key)
-            else updated.set(key, value)
-          }
-          return updated
-        },
-        { replace: true },
-      )
-    },
-    [setParams],
-  )
 
   const [draftQuery, setDraftQuery] = useState(query)
   const debouncedDraft = useDebouncedValue(draftQuery, 280)
@@ -98,47 +87,49 @@ export function useDiscoverFilters(): DiscoverFiltersState {
     const trimmed = draftQuery.trim()
     if (trimmed === query) return
     lastWritten.current = trimmed
-    patch({ q: trimmed })
-  }, [debouncedDraft, draftQuery, query, patch])
+    void setUrlState({ q: trimmed || null })
+  }, [debouncedDraft, draftQuery, query, setUrlState])
 
   const commitQueryNow = useCallback(
     (nextValue?: string) => {
       const value = (nextValue ?? draftQuery).trim()
       if (nextValue !== undefined) setDraftQuery(nextValue)
       lastWritten.current = value
-      patch({ q: value })
+      void setUrlState({ q: value || null })
     },
-    [draftQuery, patch],
+    [draftQuery, setUrlState],
   )
 
   const parsedQuery = useMemo(() => parseNaturalFilterQuery(draftQuery), [draftQuery])
 
   const removeParsedChip = useCallback(
     (chip: ParsedFilterChip) => {
-      if (chip.field === "nearMe") {
-        patch({ sort: null, lat: null, lng: null })
-      }
       const nextQuery = removeChipFromQuery(draftQuery, chip)
       lastWritten.current = nextQuery
       setDraftQuery(nextQuery)
-      patch({ q: nextQuery })
+      void setUrlState({
+        q: nextQuery || null,
+        ...(chip.field === "nearMe" ? { sort: null, lat: null, lng: null } : {}),
+      })
     },
-    [draftQuery, patch],
+    [draftQuery, setUrlState],
   )
 
   const setSort = useCallback(
-    (value: DiscoverSort) => patch({ sort: value === "newest" ? null : value }),
-    [patch],
+    (value: DiscoverSort) => {
+      void setUrlState({ sort: value === "newest" ? null : value })
+    },
+    [setUrlState],
   )
 
   const setCoords = useCallback(
     (coords: { lat: number; lng: number } | null) => {
       const lat = coords ? coords.lat.toFixed(4) : null
       const lng = coords ? coords.lng.toFixed(4) : null
-      if ((params.get("lat") ?? null) === lat && (params.get("lng") ?? null) === lng) return
-      patch({ lat, lng })
+      if ((urlState.lat ?? null) === lat && (urlState.lng ?? null) === lng) return
+      void setUrlState({ lat, lng })
     },
-    [patch, params],
+    [setUrlState, urlState.lat, urlState.lng],
   )
 
   const activeFilterCount = useMemo(
@@ -161,18 +152,19 @@ export function useDiscoverFilters(): DiscoverFiltersState {
     parsedQuery,
     removeParsedChip,
     priceMax,
-    setPriceMax: (value) => patch({ priceMax: value === "all" ? null : String(value) }),
+    setPriceMax: (value) =>
+      void setUrlState({ priceMax: value === "all" ? null : (String(value) as "1" | "2" | "3") }),
     sort,
     setSort,
     setCoords,
     isNearbyActive,
-    setCategory: (value) => patch({ category: value }),
-    setDistrict: (value) => patch({ district: value }),
+    setCategory: (value) => void setUrlState({ category: value === "all" ? null : value }),
+    setDistrict: (value) => void setUrlState({ district: value === "all" ? null : value }),
     setIsNearbyActive: (value) => setSort(value ? "distance" : "newest"),
     resetAll: () => {
       lastWritten.current = ""
       setDraftQuery("")
-      patch({
+      void setUrlState({
         category: null,
         district: null,
         q: null,
