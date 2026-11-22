@@ -7,8 +7,8 @@ import { Rate, Trend } from "k6/metrics"
  *
  * Profiles:
  *   - smoke:            50 VUs (25s)
- *   - benchmark:        100 → 500 → 1000 → 2000 → 3000 VUs (đa kịch bản, RPS cao)
- *   - high_vu_low_rps:  1000 → 3000 → 5000 → 8000 → 10000 VUs (RPS thấp, giữ nhiều kết nối đồng thời để tìm ngưỡng VUs)
+ *   - benchmark:        100 → 500 → 1000 → 2000 → 3000 → 4000 → 5000 → 6000 → 8000 VUs (đa kịch bản, RPS cao)
+ *   - high_vu_low_rps:  1000 → 3000 → 5000 → 8000 → 10000 → 15000 → 20000 → 25000 → 30000 → 35000 VUs (RPS thấp, giữ nhiều kết nối đồng thời để tìm ngưỡng VUs)
  *   - extreme:          500 → 1000 → 2000 → 3000 → 5000 VUs
  *
  * Cách chạy lại:
@@ -31,6 +31,10 @@ const PROFILES = {
     { duration: "12s", target: 1000 },
     { duration: "15s", target: 2000 },
     { duration: "15s", target: 3000 },
+    { duration: "15s", target: 4000 },
+    { duration: "15s", target: 5000 },
+    { duration: "15s", target: 6000 },
+    { duration: "15s", target: 8000 },
     { duration: "10s", target: 0 },
   ],
   high_vu_low_rps: [
@@ -39,6 +43,11 @@ const PROFILES = {
     { duration: "12s", target: 5000 },
     { duration: "15s", target: 8000 },
     { duration: "15s", target: 10000 },
+    { duration: "15s", target: 15000 },
+    { duration: "15s", target: 20000 },
+    { duration: "15s", target: 25000 },
+    { duration: "15s", target: 30000 },
+    { duration: "15s", target: 35000 },
     { duration: "10s", target: 0 },
   ],
   extreme: [

@@ -4,13 +4,17 @@ Danh sách các việc thật sự còn mở (cập nhật 2026-11-21 sau đợt
 
 ## 1. Dữ liệu & Bản đồ
 
-- [ ] **Ảnh quán thật**: phần lớn trong 360 địa điểm chưa có ảnh venue thật, đang hiển thị `PlacePlaceholder`; cần nguồn ảnh hợp pháp trước khi phát hành công khai.
+- [ ] **Ảnh quán thật**: phần lớn trong 360 địa điểm chưa có ảnh venue thật, đang hiển thị `PlacePlaceholder`; cần nguồn ảnh hợp pháp trước khi phát hành công khai. *(Đã có tab `Ảnh món thật` & `Bảng giá / Menu` qua `F-079` cho cộng đồng tự đóng góp.)*
+- [x] **Áp dụng migration & seed mới (`20261122142200_f002_f079_f040`)**: đã chạy `bun run db:migrate`, `bun run db:seed` (đồng bộ `ReviewTier`, `PlaceMediaKind`, `RoomCandidate`/`RoomVote`, sửa SQL `rv.rating` còn sót trong `daily-picks.ts`/`suggestions.ts`/`recommendations.ts` và `og.ts`), và cấu hình `dev:all`/`db:up`/`dev:api` tự bật Postgres + Redis cục bộ.
 - [ ] **Backfill embedding cho corpus 360 địa điểm**: chạy `cd backend && bun run scripts/embed-places.ts` khi Postgres bật để kích hoạt nhánh dense search và đo lại benchmark v3–v7.
 - [ ] **Dữ liệu `price_level`**: nguồn thu thập thiếu mức giá đồng đều nên lọc mức giá chỉ có tác dụng khi bổ sung dữ liệu thật.
 - [ ] **Hạn mức cụm trên bản đồ / tối ưu `/map`**: giảm mật độ cụm ở zoom thành phố nếu pin dày (`useMapPlaces` đã tách khỏi hook `/discover`).
 
 ## 2. Tính năng & UX / A11y
 
+- [x] **Triển khai `F-002`, `F-079`, `F-040` (Clean Break)**: thay thang 1–5 sao bằng 3 mức (`Ổn` / `Rất ngon` / `Phải thử`) + món nên gọi, tách tab `Ảnh món thật` & `Bảng giá / Menu` (kèm zoom lightbox), và thêm bình chọn nhóm (`Swipe & Match`, `Ranked-Choice IRV`, `Random Wheel`) trong `/rooms/:code`.
+- [x] **Mốc vị trí quen thuộc & Đồng bộ GPS từ điện thoại (`20261122172000_location_anchors_and_landmarks`)**: tách 2 bảng `UserLocationAnchor` (mốc cá nhân tối đa 10/user) & `CityLandmark` (địa danh nổi tiếng công khai), đồng bộ GPS chính xác (`<= 150m`) qua Redis (`PUT/GET/DELETE /me/location`), `LocationSwitcher` + `ManageAnchorsDialog` trên UI và thứ tự ưu tiên 6 tầng trong `useUserLocation`.
+- [ ] **Nâng cấp `F-040` mở rộng**: thêm `F-034` (Thiệp mời chốt kèo & RSVP) và `F-039` (Gợi ý theo dịp đi & đối tượng) ở đợt tiếp theo.
 - [ ] **Chỉnh sửa & ghim bài viết**: `DELETE /posts/:id` đã có, còn thiếu API/UI sửa nội dung bài (`PATCH /posts/:id`) và ghim bài cho tab "Đã ghim" ở hồ sơ.
 - [ ] **Kéo thả sắp xếp địa điểm trong bộ sưu tập**: hiện có thêm/xoá từng địa điểm; chưa có sắp xếp thứ tự (gợi ý `@dnd-kit/core` + `@dnd-kit/sortable`).
 - [ ] **Tạo bộ sưu tập trực tiếp trên `/saved`**: hiện chỉ tạo được bên trong dialog "Lưu vào bộ sưu tập" ở trang quán.
