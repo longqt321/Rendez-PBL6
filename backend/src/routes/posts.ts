@@ -214,34 +214,40 @@ export function createPostsRouter() {
   })
 
   /**
-   * Gắn địa điểm vào bài — side effects A7.3 trong MỘT transaction:
-   * gán placeId, publish place nếu chưa, đánh dấu đã đọc mọi thông báo đề xuất
-   * của bài này.
+   * Gắn, đổi hoặc gỡ địa điểm của bài đăng — side effects A7.3 trong MỘT transaction:
+   * gán placeId (hoặc `null` để gỡ địa điểm), publish place nếu chưa bị Admin gỡ,
+   * đánh dấu đã đọc mọi thông báo đề xuất của bài này.
    */
   router.patch("/posts/:id/place", requireAuth, async (c) => {
     const postId = requireUuid(c.req.param("id"), "Không tìm thấy bài đăng")
-    // Hợp đồng mock: thiếu `placeId` trả 404 "Thiếu placeId" (không phải 400).
-    const parsed = z.object({ placeId: z.string().min(1) }).safeParse(await readJson(c))
+    // Hợp đồng mock: thiếu `placeId` trả 404 "Thiếu placeId" (cho phép `placeId: null` để gỡ địa điểm).
+    const parsed = z.object({ placeId: z.string().min(1).nullable() }).safeParse(await readJson(c))
     if (!parsed.success) throw new ApiError(404, "Thiếu placeId")
     const placeId = parsed.data.placeId
     const userId = c.get("userId")
 
     const post = await prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
-      select: { id: true, authorId: true },
+      select: { id: true, authorId: true, placeId: true },
     })
     if (!post) throw new ApiError(404, "Không tìm thấy bài đăng")
     if (post.authorId !== userId) throw new ApiError(403, "Không phải bài đăng của bạn")
 
-    const place = await prisma.place.findFirst({
-      where: { id: placeId, deletedAt: null },
-      select: { id: true, publishedAt: true },
-    })
-    if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
+    let shouldPublishPlace = false
+    if (placeId !== null) {
+      const place = await prisma.place.findFirst({
+        where: { id: placeId, deletedAt: null },
+        select: { id: true, publishedAt: true, moderationStatus: true },
+      })
+      if (!place || place.moderationStatus === "unpublish") {
+        throw new ApiError(404, "Không tìm thấy địa điểm")
+      }
+      shouldPublishPlace = place.publishedAt === null
+    }
 
     await prisma.$transaction([
       prisma.post.update({ where: { id: postId }, data: { placeId } }),
-      ...(place.publishedAt === null
+      ...(placeId !== null && shouldPublishPlace
         ? [prisma.place.update({ where: { id: placeId }, data: { publishedAt: new Date() } })]
         : []),
       prisma.notification.updateMany({
@@ -255,11 +261,11 @@ export function createPostsRouter() {
       }),
     ])
 
-    // Place vừa được publish → cache ứng viên gợi ý đã cũ (G2).
-    if (place.publishedAt === null) {
+    // Luôn xoá cache đọc địa điểm khi bài viết gắn/đổi/gỡ địa điểm (cập nhật bài & media của quán).
+    if (shouldPublishPlace) {
       invalidateSuggestionCache()
-      invalidatePlacesReadCaches()
     }
+    invalidatePlacesReadCaches()
 
     const updated = await findPost(postId, userId)
     if (!updated) throw new ApiError(404, "Không tìm thấy bài đăng")
@@ -299,7 +305,7 @@ export function createPostsRouter() {
         })
       }
     } else if (!liked && existing) {
-      await prisma.postLike.delete({ where: { postId_userId: { postId, userId } } })
+      await prisma.postLike.deleteMany({ where: { postId, userId } })
     }
 
     if (liked) await recordEvent({ eventType: "post_like", userId, postId })
@@ -330,7 +336,7 @@ export function createPostsRouter() {
       await prisma.postSave.createMany({ data: [{ postId, userId }], skipDuplicates: true })
     }
     if (!saved && existing) {
-      await prisma.postSave.delete({ where: { postId_userId: { postId, userId } } })
+      await prisma.postSave.deleteMany({ where: { postId, userId } })
     }
 
     if (saved) await recordEvent({ eventType: "post_save", userId, postId })

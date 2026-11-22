@@ -5,7 +5,7 @@ export function useUpdatePostPlace() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ postId, placeId }: { postId: string; placeId: string }) =>
+    mutationFn: ({ postId, placeId }: { postId: string; placeId: string | null }) =>
       updatePostPlace(postId, placeId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["posts"] })

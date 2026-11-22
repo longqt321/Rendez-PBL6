@@ -33,6 +33,7 @@ import { useSetPostLiked } from "../hooks/use-set-post-liked"
 import { useSetPostSaved } from "../hooks/use-set-post-saved"
 import type { Post } from "../types/post"
 import { CommentThread } from "./comment-thread"
+import { AttachPostPlaceDialog } from "./attach-post-place-dialog"
 import { PostCommentsInline } from "./post-comments-inline"
 import { PostDeleteDialog } from "./post-delete-dialog"
 
@@ -45,6 +46,7 @@ export function PostCard({ post }: PostCardProps) {
   const setSaved = useSetPostSaved()
   const [commentsOpen, setCommentsOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [attachPlaceOpen, setAttachPlaceOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const { data: me } = useMe()
 
@@ -112,6 +114,10 @@ export function PostCard({ post }: PostCardProps) {
               }
             />
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setAttachPlaceOpen(true)}>
+                <MapPinIcon />
+                {place ? "Đổi địa điểm" : "Gắn địa điểm"}
+              </DropdownMenuItem>
               <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
                 Xoá bài
                 <Trash2Icon />
@@ -178,7 +184,19 @@ export function PostCard({ post }: PostCardProps) {
         ) : (
           <Alert className="flex items-center gap-2 border-dashed">
             <SparklesIcon className="size-4 shrink-0" aria-hidden="true" />
-            <AlertDescription>Bài viết chưa gắn địa điểm.</AlertDescription>
+            <AlertDescription className="flex-1">Bài viết chưa gắn địa điểm.</AlertDescription>
+            {isMine ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                className="shrink-0 gap-1"
+                onClick={() => setAttachPlaceOpen(true)}
+              >
+                <MapPinIcon className="size-3.5 text-primary" aria-hidden="true" />
+                Gắn địa điểm
+              </Button>
+            ) : null}
           </Alert>
         )}
 
@@ -225,6 +243,15 @@ export function PostCard({ post }: PostCardProps) {
       <CommentThread post={post} open={commentsOpen} onOpenChange={setCommentsOpen} />
 
       <PostDeleteDialog postId={post.id} open={deleteOpen} onClose={() => setDeleteOpen(false)} />
+
+      {isMine ? (
+        <AttachPostPlaceDialog
+          postId={post.id}
+          currentPlaceId={place?.id ?? null}
+          open={attachPlaceOpen}
+          onOpenChange={setAttachPlaceOpen}
+        />
+      ) : null}
 
       <ImageLightbox
         images={post.images}
