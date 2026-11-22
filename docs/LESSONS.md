@@ -1323,3 +1323,31 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
 - **Lỗi**: Trên `DiscoverToolbar` (`/discover` và `/map`), đặt 7 danh mục + 6 quận + 2 mức giá vào chung một vùng `flex-1 overflow-x-auto scrollbar-none` nằm cùng hàng với cụm nút `Gần tôi`, `Sắp xếp`, `Lưới/Bản đồ` khiến toàn bộ danh mục cuối, các quận và mức giá bị cắt ngang và che lấp hoàn toàn mà không có dấu hiệu cuộn.
 - **Nguyên nhân gốc**: Nhồi quá nhiều nút lọc vào một hàng ngang có `overflow-x-auto` kết hợp ẩn thanh cuộn (`scrollbar-none`) và bị cụm nút phải chiếm mất chiều rộng.
 - **Cách phòng tránh**: Tách rõ cấu trúc toolbar: Hàng 1 chỉ chứa 7 `Toggle` danh mục với `flex-wrap` (không bao giờ bị cắt chữ); Hàng 2 đặt các bộ lọc phụ (`Quận`, `Mức giá`) gọn trong `DropdownMenu` (với `Positioner z-1100` để nổi trên bản đồ) cùng `Gần tôi`, `Sắp xếp`, `Lưới/Bản đồ`.
+
+
+## L-060 — 2026-11-22: God Components, magic numbers, bỏ sót package chuẩn và lệch ngôn ngữ thiết kế trong Admin Portal
+
+**Lỗi người dùng chỉ ra:**
+1. Nhiều file Admin phình to (`backend/src/routes/admin.ts` 1.129 dòng, `observability-tab.tsx` 995 dòng, `places-tab.tsx` 906 dòng, `overview-tab.tsx` 685 dòng), ôm đồm cả biểu đồ, bảng, ngăn kéo chi tiết, hằng số và helper trong cùng một file.
+2. Còn magic numbers rải rác (`72`, `24`, `3_600_000`, `60_000`, `500`, `2500`, `10`, `300`...), lặp lại hàm (`formatShortDate` lặp ở 2 file, viết lại `initials` dù `@/lib/format` đã có `formatInitials`), tự viết che email/cắt ngày/format SQL và vẽ thanh Web Vitals bằng 3 thẻ `<div>` thay vì tìm package chuẩn (`maskdata`, `date-fns`, `sql-formatter`, Recharts).
+3. Lệch ngôn ngữ thiết kế & văn phong so với hệ thống Rendez: trộn màu Tailwind cứng (`amber-500`, `emerald-500`, `indigo-500`) thay vì semantic tokens (`--primary`, `--open`, `--star`, `--destructive`), tự ghép nhiều khối `div`/`span`/`p` lặp thay vì dùng `Item`/`Alert`/`Card`, văn phong mô tả dài dòng và pha trộn viết tắt/Anh–Việt.
+
+**Nguyên nhân gốc:** Triển khai nhanh trong một đợt dài nên nhồi toàn bộ thành phần vào 1 file/tab, quên kiểm tra package cộng đồng cho các bài toán phụ (masking, SQL formatting, date diff/format), và không rà lại token màu/typography chung của hệ thống trước khi báo hoàn tất.
+
+**Cách khắc phục & phòng tránh:**
+- Chia tách theo domain & Single Responsibility ngay từ đầu: backend `routes/admin/*` tách 7 module nhỏ (<220 dòng/file); frontend tách mỗi tab thành thư mục domain (`overview/`, `observability/`, `reports/`, `places/`, `users/`, `audit-logs/`) + tập trung toàn bộ hằng số vào `lib/admin-constants.ts`.
+- Bắt buộc tìm kiếm và cài package chuẩn cộng đồng cho mọi tiện ích tiêu chuẩn (`maskdata`, `sql-formatter`, `date-fns`, `recharts`, `@tanstack/react-table`, `shadcn/ui`) và tái sử dụng helper có sẵn (`formatInitials`).
+- Thống nhất 100% hệ design token của Rendez (`--primary`, `--open`, `--star`, `--destructive`, `--chart-1..5`), dùng UI primitives (`Item`, `Alert`, `Card`, `ChartContainer`, `AdminStatGrid`), văn phong thuần Việt ngắn gọn nhất quán.
+- Giữ rõ nguồn dữ liệu thực duy nhất từ Backend `/api/v1/*` trên dev/staging/prod (`VITE_ENABLE_MOCKS` mặc định `false`, chỉ bật khi chạy `dev:mock` hoặc test).
+
+
+## L-061 — 2026-11-22: Trưng bày câu lệnh SQL thô và thuật ngữ quá hàn lâm trên Dashboard quản trị
+
+**Lỗi người dùng chỉ ra:** Dashboard Hiệu suất & Quan sát hiển thị trực tiếp bảng câu lệnh SQL từ `pg_stat_statements` cùng nhiều thuật ngữ kỹ thuật sâu (`p50/p95/p99`, `RUM`, `LCP/INP/CLS`, `Trace ID`, `snake_case` event) ngay trên màn hình chính, gây khó theo dõi cho người vận hành không chuyên lập trình.
+
+**Nguyên nhân gốc:** Thiết kế màn hình Observability theo góc nhìn developer debug (raw APM/SQL) thay vì góc nhìn người quan sát vận hành (cần biết chức năng/API nào chậm và bước nào trong luồng lấy dữ liệu đang bị nghẽn).
+
+**Cách khắc phục & phòng tránh:**
+- Bố cục lại theo **Kim tự tháp ngược 4 vùng**: Thanh trạng thái tổng thể 3 giây (`SystemHealthBanner`) → 4 KPI diễn giải bằng ngôn ngữ đời thường → Chẩn đoán điểm nghẽn (Chức năng/API chậm nhất + Bước xử lý chậm nhất) → Trải nghiệm trên thiết bị người dùng & Hoạt động 24h → Bảng tra cứu & Ngăn kéo chi tiết.
+- Ánh xạ toàn bộ route API (`describeApiRoute`), bước xử lý (`TIMING_STAGE_LABELS`), chỉ số Web Vitals (`WEB_VITAL_META`) và sự kiện hành vi (`describeBehaviorEvent`) sang tiếng Việt dễ hiểu; tự động tính và nổi bật **khâu chậm nhất** (`findDominantTimingStage`).
+- Loại bỏ bảng SQL thô và gói `sql-formatter` (vừa gọn thông tin cho người không chuyên, vừa giảm ~280KB kích thước chunk `admin-page`). Mã đối chiếu kỹ thuật (`Request ID`, `Trace ID`) ẩn gọn ở cuối ngăn kéo chi tiết (Progressive Disclosure).
