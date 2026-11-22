@@ -1,39 +1,23 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { AdminReport, AdminReportStatus } from "@rendez/schema"
-import { FlagIcon } from "lucide-react"
+import { ExternalLinkIcon, FlagIcon } from "lucide-react"
+import { parseAsStringLiteral, useQueryState } from "nuqs"
 import { Link } from "react-router"
-import { ErrorState } from "@/components/shared/error-state"
-import { LoadMore } from "@/components/shared/load-more"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemTitle,
-} from "@/components/ui/item"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Spinner } from "@/components/ui/spinner"
-import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { REPORT_REASON_META } from "@/features/places/lib/report-meta"
-import { formatRelativeTime } from "@/lib/format"
+import { formatNumber, formatRelativeTime } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import type { AdminReportStatusFilter } from "../api/admin-api"
-import { useAdminReports, useUpdateAdminReport } from "../hooks/use-admin"
+import { useAdminOverview, useAdminReports } from "../hooks/use-admin"
+import { resolveReportSlaUrgency } from "../lib/admin-constants"
+import { ReportResolutionSheet } from "./reports/report-resolution-sheet"
+import { ReportsCharts } from "./reports/reports-charts"
+import { AdminDataTable, type AdminColumnDef } from "./shared/admin-data-table"
+
+const REPORT_STATUS_VALUES = ["pending", "reviewed", "dismissed", "all"] as const
 
 const REPORT_STATUS_LABELS: Record<AdminReportStatus, string> = {
   pending: "Chờ xử lý",
@@ -49,251 +33,223 @@ const REPORT_STATUS_FILTERS: { value: AdminReportStatusFilter; label: string }[]
 ]
 
 export function ReportsTab() {
-  const [status, setStatus] = useState<AdminReportStatusFilter>("pending")
+  const [status, setStatus] = useQueryState(
+    "rStatus",
+    parseAsStringLiteral(REPORT_STATUS_VALUES)
+      .withDefault("pending")
+      .withOptions({ history: "replace" }),
+  )
   const [editing, setEditing] = useState<AdminReport | null>(null)
+  const overviewQuery = useAdminOverview()
   const reportsQuery = useAdminReports({ status })
 
-  const reports = reportsQuery.data?.pages.flatMap((page) => page.items) ?? []
+  const reports = useMemo(
+    () => reportsQuery.data?.pages.flatMap((page) => page.items) ?? [],
+    [reportsQuery.data],
+  )
+
+  const columns = useMemo<AdminColumnDef<AdminReport>[]>(
+    () => [
+      {
+        accessorKey: "placeName",
+        header: "Địa điểm",
+        cell: ({ row }) => {
+          const item = row.original
+          return (
+            <div className="max-w-56 space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="truncate font-medium text-foreground">{item.placeName}</span>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="size-6 shrink-0"
+                  aria-label={`Mở ${item.placeName}`}
+                  onClick={(event) => event.stopPropagation()}
+                  render={
+                    <Link
+                      to={`/discover/${item.placeId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  }
+                >
+                  <ExternalLinkIcon className="size-3" aria-hidden="true" />
+                </Button>
+              </div>
+              {!item.placePublished || item.placeStatus === "closed" ? (
+                <span className="block text-[11px] text-muted-foreground">
+                  {!item.placePublished ? "Đang ẩn" : ""}
+                  {!item.placePublished && item.placeStatus === "closed" ? " · " : ""}
+                  {item.placeStatus === "closed" ? "Đóng cửa" : ""}
+                </span>
+              ) : null}
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: "reason",
+        header: "Lý do",
+        cell: ({ row }) => (
+          <Badge variant="outline" className="text-xs">
+            {REPORT_REASON_META[row.original.reason].label}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "reporterHandle",
+        header: "Người báo cáo",
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground">@{row.original.reporterHandle}</span>
+        ),
+      },
+      {
+        accessorKey: "detail",
+        header: "Nội dung",
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span className="block max-w-60 truncate text-xs text-muted-foreground">
+            {row.original.detail ?? "-"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "createdAt",
+        header: "Thời gian",
+        cell: ({ row }) => {
+          const urgency = resolveReportSlaUrgency(row.original.status, row.original.createdAt)
+          return (
+            <span
+              className={cn(
+                "text-xs whitespace-nowrap tabular-nums",
+                urgency === "critical" && "font-semibold text-destructive",
+                urgency === "warning" && "font-semibold text-star",
+                urgency === "normal" && "text-muted-foreground",
+              )}
+            >
+              {formatRelativeTime(row.original.createdAt)}
+            </span>
+          )
+        },
+      },
+      {
+        accessorKey: "status",
+        header: "Trạng thái",
+        cell: ({ row }) => (
+          <Badge
+            variant={
+              row.original.status === "pending"
+                ? "destructive"
+                : row.original.status === "reviewed"
+                  ? "secondary"
+                  : "outline"
+            }
+          >
+            {REPORT_STATUS_LABELS[row.original.status]}
+          </Badge>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Thao tác",
+        enableSorting: false,
+        enableHiding: false,
+        cell: ({ row }) => (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={(event) => {
+              event.stopPropagation()
+              setEditing(row.original)
+            }}
+          >
+            Xử lý
+          </Button>
+        ),
+      },
+    ],
+    [],
+  )
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <ToggleGroup
-          value={[status]}
-          onValueChange={(next) => {
-            const selected = next[0] as AdminReportStatusFilter | undefined
-            if (selected) setStatus(selected)
-          }}
-          variant="outline"
-          size="sm"
-          aria-label="Lọc trạng thái báo cáo"
-        >
-          {REPORT_STATUS_FILTERS.map((item) => (
-            <ToggleGroupItem
-              key={item.value}
-              value={item.value}
-              className="min-h-9 px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground sm:min-h-8"
-            >
-              {item.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+    <div className="flex flex-col gap-5">
+      <ReportsCharts overview={overviewQuery.data} />
 
-      {reportsQuery.isPending ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={`rep-skel-${index}`} className="h-20 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : reportsQuery.isError ? (
-        <ErrorState
-          variant="plain"
-          title="Không tải được danh sách báo cáo"
-          onRetry={() => void reportsQuery.refetch()}
-        />
-      ) : reports.length === 0 ? (
-        <Empty className="border border-dashed border-border">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <FlagIcon />
-            </EmptyMedia>
-            <EmptyTitle>Không có báo cáo nào</EmptyTitle>
-            <EmptyDescription>Chưa có phản ánh nào thuộc trạng thái đang chọn.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <>
-          <ItemGroup className="gap-2">
-            {reports.map((report) => (
-              <Item key={report.id} variant="outline" className="items-start gap-3">
-                <ItemContent className="gap-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <ItemTitle className="text-sm font-semibold">
-                      <Link
-                        to={`/discover/${report.placeId}`}
-                        className="underline-offset-2 hover:underline"
-                      >
-                        {report.placeName}
-                      </Link>
-                    </ItemTitle>
-                    <Badge
-                      variant={
-                        report.status === "pending"
-                          ? "destructive"
-                          : report.status === "reviewed"
-                            ? "secondary"
-                            : "outline"
-                      }
-                    >
-                      {REPORT_STATUS_LABELS[report.status]}
-                    </Badge>
-                    <Badge variant="outline">{REPORT_REASON_META[report.reason].label}</Badge>
-                  </div>
-                  <ItemDescription className="text-xs">
-                    Người báo cáo: @{report.reporterHandle} · {formatRelativeTime(report.createdAt)}
-                    {!report.placePublished ? " · Quán đang ẩn" : ""}
-                    {report.placeStatus === "closed" ? " · Quán đã đóng cửa" : ""}
-                  </ItemDescription>
-                  {report.detail ? (
-                    <p className="mt-1 text-sm text-foreground">{report.detail}</p>
+      <AdminDataTable
+        columns={columns}
+        data={reports}
+        getRowId={(row) => row.id}
+        isPending={reportsQuery.isPending}
+        isError={reportsQuery.isError}
+        errorTitle="Không tải được báo cáo"
+        onRetry={() => void reportsQuery.refetch()}
+        onRowClick={setEditing}
+        enableColumnToggle
+        ariaLabel="Bảng báo cáo"
+        toolbarExtra={
+          <ToggleGroup
+            value={[status]}
+            onValueChange={(next) => {
+              const selected = next[0] as AdminReportStatusFilter | undefined
+              if (selected) void setStatus(selected)
+            }}
+            variant="outline"
+            size="sm"
+            aria-label="Lọc trạng thái báo cáo"
+          >
+            {REPORT_STATUS_FILTERS.map((item) => {
+              const count =
+                item.value === "pending"
+                  ? overviewQuery.data?.reports.pending
+                  : item.value === "reviewed"
+                    ? overviewQuery.data?.reports.reviewed
+                    : item.value === "dismissed"
+                      ? overviewQuery.data?.reports.dismissed
+                      : overviewQuery.data?.reports.total
+              return (
+                <ToggleGroupItem
+                  key={item.value}
+                  value={item.value}
+                  className="min-h-9 gap-1.5 px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground sm:min-h-8"
+                >
+                  {item.label}
+                  {count !== undefined ? (
+                    <span className="font-mono text-[11px] tabular-nums opacity-80">
+                      ({formatNumber(count)})
+                    </span>
                   ) : null}
-                </ItemContent>
-                <ItemActions>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="min-h-9 sm:min-h-8"
-                    onClick={() => setEditing(report)}
-                  >
-                    Xử lý
-                  </Button>
-                </ItemActions>
-              </Item>
-            ))}
-          </ItemGroup>
+                </ToggleGroupItem>
+              )
+            })}
+          </ToggleGroup>
+        }
+        emptyState={
+          <Empty className="border border-dashed border-border">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <FlagIcon />
+              </EmptyMedia>
+              <EmptyTitle>Không có báo cáo</EmptyTitle>
+              <EmptyDescription>Chưa có phản ánh thuộc trạng thái đang chọn.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        }
+        pagination={{
+          hasNextPage: reportsQuery.hasNextPage,
+          isFetchingNextPage: reportsQuery.isFetchingNextPage,
+          onLoadMore: () => void reportsQuery.fetchNextPage(),
+          loadingLabel: "Đang tải thêm",
+          endMessage: "Đã hiển thị hết danh sách.",
+        }}
+      />
 
-          <LoadMore
-            hasNextPage={reportsQuery.hasNextPage}
-            isFetchingNextPage={reportsQuery.isFetchingNextPage}
-            onLoadMore={() => reportsQuery.fetchNextPage()}
-            loadingLabel="Đang tải thêm báo cáo"
-            endMessage="Đã hiển thị hết danh sách báo cáo."
-          />
-        </>
-      )}
-
-      <ReportResolutionDialog
+      <ReportResolutionSheet
         key={editing?.id ?? "none"}
         report={editing}
         onClose={() => setEditing(null)}
       />
     </div>
-  )
-}
-
-function ReportResolutionDialog({
-  report,
-  onClose,
-}: Readonly<{
-  report: AdminReport | null
-  onClose: () => void
-}>) {
-  const [decision, setDecision] = useState<"reviewed" | "dismissed">("reviewed")
-  const [placeAction, setPlaceAction] = useState<"none" | "unpublish" | "close">("none")
-  const [note, setNote] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const updateReport = useUpdateAdminReport()
-
-  if (!report) return null
-
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault()
-    if (!report) return
-    if (note.trim().length > 300) {
-      setError("Ghi chú tối đa 300 ký tự")
-      return
-    }
-    setError(null)
-    updateReport.mutate(
-      {
-        reportId: report.id,
-        input: {
-          status: decision,
-          placeAction: decision === "reviewed" ? placeAction : "none",
-          moderationNote: note.trim() ? note.trim() : undefined,
-        },
-      },
-      {
-        onSuccess: () => onClose(),
-      },
-    )
-  }
-
-  return (
-    <Dialog open={report !== null} onOpenChange={(next) => (!next ? onClose() : undefined)}>
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <DialogHeader>
-            <DialogTitle>Xử lý báo cáo: {report.placeName}</DialogTitle>
-            <DialogDescription>
-              Lý do: {REPORT_REASON_META[report.reason].label} · @{report.reporterHandle}
-            </DialogDescription>
-          </DialogHeader>
-
-          <Field>
-            <FieldLabel>Kết luận kiểm duyệt</FieldLabel>
-            <RadioGroup<"reviewed" | "dismissed">
-              value={decision}
-              onValueChange={(value) => setDecision(value)}
-              className="gap-2"
-            >
-              <Label className="flex cursor-pointer items-center gap-2 rounded-surface border p-2.5 font-normal">
-                <RadioGroupItem value="reviewed" />
-                <span>Xác nhận và đánh dấu đã xử lý</span>
-              </Label>
-              <Label className="flex cursor-pointer items-center gap-2 rounded-surface border p-2.5 font-normal">
-                <RadioGroupItem value="dismissed" />
-                <span>Bỏ qua báo cáo</span>
-              </Label>
-            </RadioGroup>
-          </Field>
-
-          {decision === "reviewed" ? (
-            <Field>
-              <FieldLabel>Tác động lên địa điểm</FieldLabel>
-              <RadioGroup<"none" | "unpublish" | "close">
-                value={placeAction}
-                onValueChange={(value) => setPlaceAction(value)}
-                className="gap-2"
-              >
-                <Label className="flex cursor-pointer items-center gap-2 rounded-surface border p-2.5 font-normal">
-                  <RadioGroupItem value="none" />
-                  <span>Chỉ ghi nhận báo cáo</span>
-                </Label>
-                <Label className="flex cursor-pointer items-center gap-2 rounded-surface border p-2.5 font-normal">
-                  <RadioGroupItem value="unpublish" />
-                  <span>Gỡ khỏi Khám phá (ẩn quán)</span>
-                </Label>
-                <Label className="flex cursor-pointer items-center gap-2 rounded-surface border p-2.5 font-normal">
-                  <RadioGroupItem value="close" />
-                  <span>Đánh dấu quán đã đóng cửa</span>
-                </Label>
-              </RadioGroup>
-            </Field>
-          ) : null}
-
-          <Field data-invalid={!!error}>
-            <FieldLabel htmlFor="report-moderation-note">Ghi chú kiểm duyệt</FieldLabel>
-            <Textarea
-              id="report-moderation-note"
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="Ghi chú lý do xử lý (không bắt buộc)…"
-              className="min-h-20 resize-none"
-              maxLength={300}
-              aria-invalid={!!error}
-              aria-describedby={error ? "report-moderation-note-error" : undefined}
-            />
-            {error ? <FieldError id="report-moderation-note-error">{error}</FieldError> : null}
-          </Field>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onClose}
-              disabled={updateReport.isPending}
-            >
-              Huỷ
-            </Button>
-            <Button type="submit" disabled={updateReport.isPending}>
-              {updateReport.isPending ? <Spinner aria-label="Đang lưu xử lý" /> : null}
-              Lưu kết quả
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
   )
 }

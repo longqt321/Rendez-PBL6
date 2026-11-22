@@ -1,11 +1,20 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import type { AdminRuntimeEnv } from "@rendez/schema"
 import { render, screen } from "@testing-library/react"
+import { NuqsAdapter } from "nuqs/adapters/react-router/v8"
 import { MemoryRouter } from "react-router"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { AdminPage } from "./admin-page"
 
-const authState = vi.hoisted((): { role: "admin" | "moderator" } => ({
+const testState = vi.hoisted((): { role: "admin" | "moderator"; runtimeEnv: AdminRuntimeEnv } => ({
   role: "admin",
+  runtimeEnv: "development",
+}))
+
+vi.mock("@/hooks/use-breakpoint", () => ({
+  BREAKPOINTS: { md: "(min-width: 768px)", lg: "(min-width: 1024px)" },
+  useIsDesktop: () => true,
+  useIsMobile: () => false,
 }))
 
 vi.mock("@/features/profile/hooks/use-me", () => ({
@@ -22,7 +31,7 @@ vi.mock("@/features/profile/hooks/use-me", () => ({
       followersCount: 0,
       followingCount: 0,
       postCount: 0,
-      role: authState.role,
+      role: testState.role,
     },
     isPending: false,
     isError: false,
@@ -37,6 +46,14 @@ vi.mock("../hooks/use-admin", () => ({
       avgLatencyMs: 14,
       cacheHitRatio: 0.72,
       byEndpoint: [],
+      runtime: {
+        env: testState.runtimeEnv,
+        piiMasked: testState.runtimeEnv !== "development",
+        redisConnected: true,
+        mailConfigured: false,
+        mediaStorage: "local",
+        demoAutoVerifyEmail: true,
+      },
       venues: {
         total: 358,
         published: 340,
@@ -49,9 +66,23 @@ vi.mock("../hooks/use-admin", () => ({
       reports: { pending: 3, reviewed: 12, dismissed: 2, total: 17 },
       users: { total: 42, active: 40, banned: 2, admins: 1, moderators: 2 },
       activity: { auditLogs24h: 9, interactionEvents24h: 120 },
+      trends14d: [
+        { date: "2026-11-21", interactions: 80, reviews: 4, reports: 1, auditLogs: 3 },
+        { date: "2026-11-22", interactions: 120, reviews: 6, reports: 2, auditLogs: 9 },
+      ],
+      venuesByCategory: [
+        { category: "cafe", total: 140, published: 135 },
+        { category: "restaurant", total: 120, published: 112 },
+      ],
+      venuesByDistrict: [
+        { district: "Hải Châu", published: 150, unpublished: 4, closed: 2 },
+        { district: "Sơn Trà", published: 100, unpublished: 3, closed: 1 },
+      ],
+      reportsByReason: [{ reason: "closed", pending: 2, total: 5 }],
     },
     isPending: false,
     isError: false,
+    isFetching: false,
     refetch: vi.fn(),
   }),
   useAdminReports: () => ({
@@ -126,7 +157,9 @@ function renderAdmin(initialEntry = "/admin") {
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[initialEntry]}>
-        <AdminPage />
+        <NuqsAdapter>
+          <AdminPage />
+        </NuqsAdapter>
       </MemoryRouter>
     </QueryClientProvider>,
   )
@@ -134,26 +167,30 @@ function renderAdmin(initialEntry = "/admin") {
 
 describe("AdminPage", () => {
   beforeEach(() => {
-    authState.role = "admin"
+    testState.role = "admin"
+    testState.runtimeEnv = "development"
   })
 
-  it("admin thấy đầy đủ 6 mục điều hướng và số liệu tổng quan", () => {
+  it("admin thấy đầy đủ 6 mục điều hướng, thẻ chẩn đoán Dev và số liệu tổng quan", () => {
     renderAdmin()
 
-    expect(
-      screen.getByRole("heading", { level: 1, name: /Trung tâm điều hành/u }),
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Trung tâm điều hành/u)).toBeInTheDocument()
     expect(screen.getAllByRole("button", { name: /Tổng quan/u }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole("button", { name: /Báo cáo/u }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole("button", { name: /Địa điểm/u }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole("button", { name: /Người dùng/u }).length).toBeGreaterThan(0)
-    expect(screen.getAllByRole("button", { name: /Hiệu suất & Log/u }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: /Hiệu suất & Quan sát/u }).length).toBeGreaterThan(
+      0,
+    )
     expect(screen.getAllByRole("button", { name: /Nhật ký kiểm toán/u }).length).toBeGreaterThan(0)
     expect(screen.getByText("340")).toBeInTheDocument()
+    expect(screen.getByText(/DEV · Sandbox/u)).toBeInTheDocument()
+    expect(screen.getByText(/Chẩn đoán Runtime/u)).toBeInTheDocument()
+    expect(document.title).toContain("[DEV]")
   })
 
-  it("moderator không thấy mục Người dùng và Hiệu suất & Log", () => {
-    authState.role = "moderator"
+  it("moderator không thấy mục Người dùng và Hiệu suất & Quan sát", () => {
+    testState.role = "moderator"
     renderAdmin()
 
     expect(screen.getAllByRole("button", { name: /Tổng quan/u }).length).toBeGreaterThan(0)
@@ -161,6 +198,15 @@ describe("AdminPage", () => {
     expect(screen.getAllByRole("button", { name: /Địa điểm/u }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole("button", { name: /Nhật ký kiểm toán/u }).length).toBeGreaterThan(0)
     expect(screen.queryByRole("button", { name: /Người dùng/u })).not.toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: /Hiệu suất & Log/u })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /Hiệu suất & Quan sát/u })).not.toBeInTheDocument()
+  })
+
+  it("môi trường production hiện banner cảnh báo đỏ và ẩn thẻ chẩn đoán Dev", () => {
+    testState.runtimeEnv = "production"
+    renderAdmin()
+
+    expect(screen.getByText(/Dữ liệu người dùng thật/u)).toBeInTheDocument()
+    expect(screen.queryByText(/Chẩn đoán Runtime/u)).not.toBeInTheDocument()
+    expect(document.title).toContain("[PROD]")
   })
 })

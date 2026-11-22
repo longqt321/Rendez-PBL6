@@ -1,205 +1,167 @@
-import { ArrowRightIcon, FlagIcon, MapPinIcon, ScrollTextIcon, UsersIcon } from "lucide-react"
+import type { PlaceCategory } from "@rendez/schema"
+import { ActivityIcon, FlagIcon, MapPinIcon, UsersIcon } from "lucide-react"
 import { ErrorState } from "@/components/shared/error-state"
-import { SectionHeading } from "@/components/shared/section-heading"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemTitle,
-} from "@/components/ui/item"
 import { Skeleton } from "@/components/ui/skeleton"
-import { REPORT_REASON_META } from "@/features/places/lib/report-meta"
-import { formatNumber, formatRelativeTime } from "@/lib/format"
+import { formatNumber } from "@/lib/format"
 import { useAdminOverview, useAdminReports, useAuditLogs } from "../hooks/use-admin"
+import { ADMIN_UI } from "../lib/admin-constants"
+import { ActivityTrendChart } from "./overview/activity-trend-chart"
+import { CategoryDonutChart } from "./overview/category-donut-chart"
+import { DevRuntimeCard } from "./overview/dev-runtime-card"
+import { OverviewRecentPanel } from "./overview/overview-recent-panel"
+import { VenueQualityChart } from "./overview/venue-quality-chart"
+import { useAdminRuntime } from "./shared/admin-env-store"
+import { AdminKpiCard } from "./shared/admin-kpi-card"
 
 export type AdminTabKey = "overview" | "reports" | "places" | "users" | "observability" | "logs"
 
 interface OverviewTabProps {
   readonly onSelectTab: (tab: AdminTabKey) => void
+  readonly onNavigateToPlaces?: (filters?: {
+    category?: PlaceCategory
+    district?: string
+    visibility?: "published" | "unpublished" | "closed"
+  }) => void
+  readonly isAdmin?: boolean
 }
 
-export function OverviewTab({ onSelectTab }: OverviewTabProps) {
+export function OverviewTab({ onSelectTab, onNavigateToPlaces, isAdmin = true }: OverviewTabProps) {
   const overviewQuery = useAdminOverview()
   const pendingReportsQuery = useAdminReports({ status: "pending" })
   const recentLogsQuery = useAuditLogs({})
+  const { isProd, runtime } = useAdminRuntime()
 
   if (overviewQuery.isPending) {
     return (
-      <div className="flex flex-col gap-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={`admin-kpi-${index}`} className="h-28 w-full rounded-xl" />
+            <Skeleton key={`admin-kpi-${index}`} className="h-32 w-full rounded-xl" />
           ))}
         </div>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <Skeleton className="h-64 w-full rounded-xl" />
-          <Skeleton className="h-64 w-full rounded-xl" />
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+          <Skeleton className="h-80 w-full rounded-xl xl:col-span-8" />
+          <Skeleton className="h-80 w-full rounded-xl xl:col-span-4" />
         </div>
       </div>
     )
   }
 
-  if (overviewQuery.isError || !overviewQuery.data) {
+  const data = overviewQuery.data
+  if (overviewQuery.isError || !data) {
     return (
       <ErrorState
         variant="plain"
-        title="Không tải được tổng quan quản trị"
+        title="Không tải được tổng quan"
         onRetry={() => void overviewQuery.refetch()}
       />
     )
   }
 
-  const data = overviewQuery.data
   const pendingReports =
-    pendingReportsQuery.data?.pages.flatMap((page) => page.items).slice(0, 5) ?? []
-  const recentLogs = recentLogsQuery.data?.pages.flatMap((page) => page.items).slice(0, 5) ?? []
-  const cacheHitPercent = Math.round(data.cacheHitRatio * 100)
+    pendingReportsQuery.data?.pages
+      .flatMap((page) => page.items)
+      .slice(0, ADMIN_UI.OVERVIEW_RECENT_ITEMS_LIMIT) ?? []
+  const recentLogs =
+    recentLogsQuery.data?.pages
+      .flatMap((page) => page.items)
+      .slice(0, ADMIN_UI.OVERVIEW_RECENT_ITEMS_LIMIT) ?? []
+
+  const cacheHitPercent = Math.round(data.cacheHitRatio * ADMIN_UI.PERCENT_SCALE)
+  const publishedPercent =
+    data.venues.total > 0
+      ? Math.round((data.venues.published / data.venues.total) * ADMIN_UI.PERCENT_SCALE)
+      : 0
+  const resolvedReportsPercent =
+    data.reports.total > 0
+      ? Math.round(
+          ((data.reports.reviewed + data.reports.dismissed) / data.reports.total) *
+            ADMIN_UI.PERCENT_SCALE,
+        )
+      : ADMIN_UI.PERCENT_SCALE
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <MapPinIcon className="size-4 text-primary" aria-hidden="true" />
-              Địa điểm đang hiển thị
-            </CardDescription>
-            <CardTitle className="font-display text-3xl tabular-nums">
-              {formatNumber(data.venues.published)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs text-muted-foreground">
-            Tổng {formatNumber(data.venues.total)} quán · {formatNumber(data.venues.unpublished)}{" "}
-            đang ẩn · {formatNumber(data.venues.closed)} đóng cửa
-          </CardContent>
-        </Card>
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <AdminKpiCard
+          label="Địa điểm hiển thị"
+          value={formatNumber(data.venues.published)}
+          icon={MapPinIcon}
+          tone="success"
+          badge={{ label: `${publishedPercent}%`, variant: "secondary" }}
+          progress={{ value: publishedPercent, label: "Tỷ lệ địa điểm hiển thị" }}
+          subtitle={`${formatNumber(data.venues.total)} tổng · ${formatNumber(data.venues.unpublished)} ẩn · ${formatNumber(data.venues.closed)} đóng cửa`}
+          onClick={() => onSelectTab("places")}
+          actionLabel="Mở Địa điểm"
+        />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <FlagIcon className="size-4 text-primary" aria-hidden="true" />
-              Báo cáo chờ xử lý
-            </CardDescription>
-            <CardTitle className="font-display text-3xl tabular-nums">
-              {formatNumber(data.reports.pending)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs text-muted-foreground">
-            Đã xử lý {formatNumber(data.reports.reviewed)} · Bỏ qua{" "}
-            {formatNumber(data.reports.dismissed)}
-          </CardContent>
-        </Card>
+        <AdminKpiCard
+          label="Báo cáo chờ duyệt"
+          value={formatNumber(data.reports.pending)}
+          icon={FlagIcon}
+          tone={data.reports.pending > 0 ? "danger" : "success"}
+          badge={{
+            label: data.reports.pending > 0 ? "Cần xử lý" : "Đã xử lý hết",
+            variant: data.reports.pending > 0 ? "destructive" : "secondary",
+          }}
+          progress={{ value: resolvedReportsPercent, label: "Tỷ lệ báo cáo đã xử lý" }}
+          subtitle={`${formatNumber(data.reports.reviewed)} đã xử lý · ${formatNumber(data.reports.dismissed)} bỏ qua`}
+          onClick={() => onSelectTab("reports")}
+          actionLabel="Mở Báo cáo"
+        />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <UsersIcon className="size-4 text-primary" aria-hidden="true" />
-              Người dùng
-            </CardDescription>
-            <CardTitle className="font-display text-3xl tabular-nums">
-              {formatNumber(data.users.total)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs text-muted-foreground">
-            Hoạt động {formatNumber(data.users.active)} · Đang khoá{" "}
-            {formatNumber(data.users.banned)}
-          </CardContent>
-        </Card>
+        <AdminKpiCard
+          label="Người dùng"
+          value={formatNumber(data.users.total)}
+          icon={UsersIcon}
+          tone="default"
+          badge={
+            data.users.banned > 0
+              ? { label: `${formatNumber(data.users.banned)} khoá`, variant: "destructive" }
+              : {
+                  label: `${data.users.admins + data.users.moderators} vận hành`,
+                  variant: "outline",
+                }
+          }
+          subtitle={`${formatNumber(data.users.active)} hoạt động · ${formatNumber(data.users.admins)} quản trị · ${formatNumber(data.users.moderators)} kiểm duyệt`}
+          onClick={isAdmin ? () => onSelectTab("users") : undefined}
+          actionLabel="Mở Người dùng"
+        />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <ScrollTextIcon className="size-4 text-primary" aria-hidden="true" />
-              Hoạt động 24 giờ
-            </CardDescription>
-            <CardTitle className="font-display text-3xl tabular-nums">
-              {formatNumber(data.activity.interactionEvents24h)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs text-muted-foreground">
-            {formatNumber(data.activity.auditLogs24h)} nhật ký quản trị · Cache hit{" "}
-            {cacheHitPercent}%
-          </CardContent>
-        </Card>
+        <AdminKpiCard
+          label="Tương tác 24 giờ"
+          value={formatNumber(data.activity.interactionEvents24h)}
+          icon={ActivityIcon}
+          tone="warning"
+          badge={{ label: `Cache ${cacheHitPercent}%`, variant: "outline" }}
+          progress={{ value: cacheHitPercent, label: "Tỷ lệ cache hit" }}
+          subtitle={`${formatNumber(data.activity.auditLogs24h)} nhật ký · TB ${formatNumber(Math.round(data.avgLatencyMs))}ms`}
+          onClick={isAdmin ? () => onSelectTab("observability") : () => onSelectTab("logs")}
+          actionLabel={isAdmin ? "Mở Hiệu suất" : "Mở Nhật ký"}
+        />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2">
-            <div>
-              <SectionHeading>Báo cáo mới nhất</SectionHeading>
-              <CardDescription>Các phản ánh đang chờ kiểm duyệt viên xem xét.</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => onSelectTab("reports")}>
-              Xem tất cả
-              <ArrowRightIcon className="size-3.5" aria-hidden="true" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {pendingReports.length === 0 ? (
-              <p className="py-4 text-sm text-muted-foreground">Không có báo cáo nào đang chờ.</p>
-            ) : (
-              <ItemGroup className="gap-2">
-                {pendingReports.map((report) => (
-                  <Item key={report.id} variant="outline" size="sm">
-                    <ItemContent>
-                      <ItemTitle className="text-sm font-medium">{report.placeName}</ItemTitle>
-                      <ItemDescription className="text-xs">
-                        @{report.reporterHandle} · {REPORT_REASON_META[report.reason].label} ·{" "}
-                        {formatRelativeTime(report.createdAt)}
-                      </ItemDescription>
-                    </ItemContent>
-                    <ItemActions>
-                      <Badge variant="outline">Chờ xử lý</Badge>
-                    </ItemActions>
-                  </Item>
-                ))}
-              </ItemGroup>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2">
-            <div>
-              <SectionHeading>Nhật ký gần đây</SectionHeading>
-              <CardDescription>Thay đổi quản trị và sự kiện bảo mật mới ghi nhận.</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => onSelectTab("logs")}>
-              Xem tất cả
-              <ArrowRightIcon className="size-3.5" aria-hidden="true" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {recentLogs.length === 0 ? (
-              <p className="py-4 text-sm text-muted-foreground">Chưa có nhật ký hoạt động nào.</p>
-            ) : (
-              <ItemGroup className="gap-2">
-                {recentLogs.map((entry) => (
-                  <Item key={entry.id} variant="outline" size="sm">
-                    <ItemContent>
-                      <ItemTitle className="text-sm font-medium">{entry.action}</ItemTitle>
-                      <ItemDescription className="text-xs">
-                        {entry.actor ? `@${entry.actor.handle}` : "Hệ thống"} · {entry.entity}
-                        {entry.entityId ? ` (${entry.entityId})` : ""} ·{" "}
-                        {formatRelativeTime(entry.createdAt)}
-                      </ItemDescription>
-                    </ItemContent>
-                    <ItemActions>
-                      <Badge variant="secondary">{entry.entity}</Badge>
-                    </ItemActions>
-                  </Item>
-                ))}
-              </ItemGroup>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <ActivityTrendChart trends={data.trends14d} className="xl:col-span-8" />
+        <CategoryDonutChart
+          categories={data.venuesByCategory}
+          onSelectCategory={(category) => onNavigateToPlaces?.({ category })}
+          className="xl:col-span-4"
+        />
       </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <VenueQualityChart venues={data.venues} className="xl:col-span-5" />
+        <OverviewRecentPanel
+          pendingCount={data.reports.pending}
+          pendingReports={pendingReports}
+          recentLogs={recentLogs}
+          onSelectTab={onSelectTab}
+          className="xl:col-span-7"
+        />
+      </div>
+
+      {!isProd ? <DevRuntimeCard runtime={runtime} uptimeMs={data.uptimeMs} /> : null}
     </div>
   )
 }

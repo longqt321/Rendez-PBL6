@@ -50,6 +50,20 @@ export function formatDate(iso: string): string {
   return dateFormat.format(time)
 }
 
+const dateTimeFormat = new Intl.DateTimeFormat("vi-VN", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+})
+
+export function formatDateTime(iso: string): string {
+  const time = new Date(iso).getTime()
+  if (Number.isNaN(time)) return ""
+  return dateTimeFormat.format(time)
+}
+
 const ratingFormat = new Intl.NumberFormat("vi", {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,

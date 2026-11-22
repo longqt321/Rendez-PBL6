@@ -115,15 +115,21 @@ describe("Admin RBAC & Operations", () => {
   test("moderator đọc được overview/reports/places/audit-logs nhưng bị 403 ở /admin/users", async () => {
     const overviewRes = await req("/api/v1/admin/overview", {}, moderatorUser.cookie)
     expect(overviewRes.status).toBe(200)
-    expect(adminOverviewSchema.safeParse(await overviewRes.json()).success).toBe(true)
+    const overviewParsed = adminOverviewSchema.parse(await overviewRes.json())
+    expect(overviewParsed.runtime.env).toBe("development")
+    expect(overviewParsed.runtime.piiMasked).toBe(false)
+    expect(overviewParsed.trends14d).toHaveLength(14)
+    expect(overviewParsed.venuesByCategory.length).toBeGreaterThan(0)
+    expect(overviewParsed.venuesByDistrict.length).toBeGreaterThan(0)
 
     const reportsRes = await req("/api/v1/admin/reports", {}, moderatorUser.cookie)
     expect(reportsRes.status).toBe(200)
     expect(reportPageSchema.safeParse(await reportsRes.json()).success).toBe(true)
 
-    const placesRes = await req("/api/v1/admin/places", {}, moderatorUser.cookie)
+    const placesRes = await req("/api/v1/admin/places?category=cafe", {}, moderatorUser.cookie)
     expect(placesRes.status).toBe(200)
-    expect(placePageSchema.safeParse(await placesRes.json()).success).toBe(true)
+    const filteredPlaces = placePageSchema.parse(await placesRes.json())
+    expect(filteredPlaces.items.every((p) => p.category === "cafe")).toBe(true)
 
     const logsRes = await req("/api/v1/admin/audit-logs", {}, moderatorUser.cookie)
     expect(logsRes.status).toBe(200)
@@ -237,5 +243,28 @@ describe("Admin RBAC & Operations", () => {
       }),
     })
     expect(loginWhileBanned.status).toBe(403)
+  })
+
+  test("APP_ENV=production bật runtime.env=production và che email người dùng trong /admin/users", async () => {
+    const prevAppEnv = process.env.APP_ENV
+    process.env.APP_ENV = "production"
+    try {
+      const overviewRes = await req("/api/v1/admin/overview", {}, adminUser.cookie)
+      expect(overviewRes.status).toBe(200)
+      const overview = adminOverviewSchema.parse(await overviewRes.json())
+      expect(overview.runtime.env).toBe("production")
+      expect(overview.runtime.piiMasked).toBe(true)
+
+      const usersRes = await req("/api/v1/admin/users?q=regular_adm_t", {}, adminUser.cookie)
+      expect(usersRes.status).toBe(200)
+      const page = userPageSchema.parse(await usersRes.json())
+      const target = page.items.find((u) => u.id === regularUser.id)
+      expect(target).toBeDefined()
+      expect(target!.email).toContain("***@")
+      expect(target!.email).not.toBe("regular_adm_t@rendez.test")
+    } finally {
+      if (prevAppEnv === undefined) delete process.env.APP_ENV
+      else process.env.APP_ENV = prevAppEnv
+    }
   })
 })

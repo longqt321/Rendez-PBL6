@@ -27,12 +27,26 @@ const placeCategorySchema = z.enum([
 
 const placeStatusSchema = z.enum(["open", "closed", "unknown"]);
 
+const adminRuntimeEnvSchema = z.enum([
+  "development",
+  "staging",
+  "production",
+]);
+
 export const adminOverviewSchema = z.object({
   uptimeMs: z.number(),
   totalQueries: z.number(),
   avgLatencyMs: z.number(),
   cacheHitRatio: z.number(),
   byEndpoint: z.array(z.object({ route: z.string(), count: z.number() })),
+  runtime: z.object({
+    env: adminRuntimeEnvSchema,
+    piiMasked: z.boolean(),
+    redisConnected: z.boolean(),
+    mailConfigured: z.boolean(),
+    mediaStorage: z.enum(["r2", "local"]),
+    demoAutoVerifyEmail: z.boolean(),
+  }),
   venues: z.object({
     total: z.number(),
     published: z.number(),
@@ -59,6 +73,37 @@ export const adminOverviewSchema = z.object({
     auditLogs24h: z.number(),
     interactionEvents24h: z.number(),
   }),
+  trends14d: z.array(
+    z.object({
+      date: z.string(),
+      interactions: z.number(),
+      reviews: z.number(),
+      reports: z.number(),
+      auditLogs: z.number(),
+    }),
+  ),
+  venuesByCategory: z.array(
+    z.object({
+      category: placeCategorySchema,
+      total: z.number(),
+      published: z.number(),
+    }),
+  ),
+  venuesByDistrict: z.array(
+    z.object({
+      district: z.string(),
+      published: z.number(),
+      unpublished: z.number(),
+      closed: z.number(),
+    }),
+  ),
+  reportsByReason: z.array(
+    z.object({
+      reason: z.enum(PLACE_REPORT_REASONS),
+      pending: z.number(),
+      total: z.number(),
+    }),
+  ),
 }) satisfies z.ZodType<AdminOverview>;
 
 export const adminReportSchema = z.object({

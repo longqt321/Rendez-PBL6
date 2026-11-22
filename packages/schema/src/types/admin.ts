@@ -4,12 +4,51 @@ import type { UserRole } from "./profile";
 
 export type AdminReportStatus = "pending" | "reviewed" | "dismissed";
 
+export type AdminRuntimeEnv = "development" | "staging" | "production";
+
+export interface AdminRuntimeInfo {
+  env: AdminRuntimeEnv;
+  piiMasked: boolean;
+  redisConnected: boolean;
+  mailConfigured: boolean;
+  mediaStorage: "r2" | "local";
+  demoAutoVerifyEmail: boolean;
+}
+
+export interface AdminDailyTrend {
+  date: string;
+  interactions: number;
+  reviews: number;
+  reports: number;
+  auditLogs: number;
+}
+
+export interface AdminCategoryBreakdown {
+  category: PlaceCategory;
+  total: number;
+  published: number;
+}
+
+export interface AdminDistrictBreakdown {
+  district: string;
+  published: number;
+  unpublished: number;
+  closed: number;
+}
+
+export interface AdminReportReasonBreakdown {
+  reason: PlaceReportReason;
+  pending: number;
+  total: number;
+}
+
 export interface AdminOverview {
   uptimeMs: number;
   totalQueries: number;
   avgLatencyMs: number;
   cacheHitRatio: number;
   byEndpoint: { route: string; count: number }[];
+  runtime: AdminRuntimeInfo;
   venues: {
     total: number;
     published: number;
@@ -36,6 +75,10 @@ export interface AdminOverview {
     auditLogs24h: number;
     interactionEvents24h: number;
   };
+  trends14d: AdminDailyTrend[];
+  venuesByCategory: AdminCategoryBreakdown[];
+  venuesByDistrict: AdminDistrictBreakdown[];
+  reportsByReason: AdminReportReasonBreakdown[];
 }
 
 export interface AdminReport {

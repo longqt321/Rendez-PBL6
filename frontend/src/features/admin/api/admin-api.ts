@@ -5,6 +5,7 @@ import type {
   AdminReportStatus,
   AdminUser,
   AuditLogEntry,
+  PlaceCategory,
   UpdateAdminPlaceInput,
   UpdateAdminReportInput,
   UpdateAdminUserInput,
@@ -23,9 +24,12 @@ export interface AdminReportsQuery {
   cursor?: string | null
 }
 
+export type AdminPlaceCategoryFilter = PlaceCategory | "all"
+
 export interface AdminPlacesQuery {
   visibility?: AdminPlaceVisibilityFilter
   district?: string
+  category?: AdminPlaceCategoryFilter
   q?: string
   cursor?: string | null
 }
@@ -75,6 +79,7 @@ export async function getAdminPlaces(query: AdminPlacesQuery = {}): Promise<Page
     params: {
       visibility: query.visibility ?? "all",
       district: query.district && query.district !== "all" ? query.district : undefined,
+      category: query.category && query.category !== "all" ? query.category : undefined,
       q: query.q?.trim() ? query.q.trim() : undefined,
       cursor: query.cursor ?? undefined,
     },

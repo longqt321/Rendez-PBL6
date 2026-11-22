@@ -14,7 +14,11 @@ export function useAuthPageTitle(title: string): void {
  * `null` khi chưa đăng nhập. `GET /me` 401 không retry (xem `query-provider`)
  * nên guest không phải chờ.
  */
+export function defaultAuthenticatedPath(role?: string | null): string {
+  return role === "admin" || role === "moderator" ? "/admin" : "/discover"
+}
+
 export function useAuthenticatedRedirect(next?: string | null): string | null {
   const { data: me } = useMe()
-  return me ? (next ?? "/discover") : null
+  return me ? (next ?? defaultAuthenticatedPath(me.role)) : null
 }

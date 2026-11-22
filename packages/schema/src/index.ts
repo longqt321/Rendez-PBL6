@@ -14,10 +14,16 @@ export { PLACE_REPORT_REASONS, type PlaceReport, type PlaceReportReason } from "
 export type { RecommendedDishCount, Review, ReviewTier, ReviewTierSummary } from "./types/review"
 export type { UserProfile, ProfileTab, UserSuggestion, UserRole } from "./types/profile"
 export type {
+  AdminCategoryBreakdown,
+  AdminDailyTrend,
+  AdminDistrictBreakdown,
   AdminOverview,
   AdminPlace,
   AdminReport,
+  AdminReportReasonBreakdown,
   AdminReportStatus,
+  AdminRuntimeEnv,
+  AdminRuntimeInfo,
   AdminUser,
   AuditLogActor,
   AuditLogEntry,

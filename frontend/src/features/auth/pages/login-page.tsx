@@ -8,7 +8,11 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/com
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useLogin } from "../hooks/use-login"
-import { useAuthenticatedRedirect, useAuthPageTitle } from "../hooks/use-auth-page"
+import {
+  defaultAuthenticatedPath,
+  useAuthenticatedRedirect,
+  useAuthPageTitle,
+} from "../hooks/use-auth-page"
 import { useSendVerificationEmail } from "../hooks/use-send-verification-email"
 import { AuthLayout } from "../components/auth-layout"
 import { PasswordInput } from "../components/password-input"
@@ -51,8 +55,8 @@ export function LoginPage() {
 
   const onSubmit = (values: LoginForm) => {
     login.mutate(values, {
-      onSuccess: () => {
-        void navigate(next ?? "/discover")
+      onSuccess: (profile) => {
+        void navigate(next ?? defaultAuthenticatedPath(profile.role))
       },
       onError: (error) => {
         const field = serverErrorField(error.message, LOGIN_FIELDS)

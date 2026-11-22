@@ -2768,12 +2768,77 @@ const routes: Route[] = [
         .filter((id) => !db.deletedUserIds.has(id))
         .map(toMockAdminUser)
       const reports = db.reports.map(toMockAdminReport)
+      const today = new Date()
+      const trends14d = Array.from({ length: 14 }, (_, idx) => {
+        const d = new Date(today)
+        d.setDate(today.getDate() - (13 - idx))
+        const date = d.toISOString().slice(0, 10)
+        return {
+          date,
+          interactions: 20 + ((idx * 17) % 60),
+          reviews: 2 + ((idx * 5) % 9),
+          reports: idx % 4 === 0 ? 1 : 0,
+          auditLogs: 1 + (idx % 3),
+        }
+      })
+      const categoryCounts = new Map<
+        PlaceCategory,
+        { category: PlaceCategory; total: number; published: number }
+      >()
+      const districtCounts = new Map<
+        string,
+        { district: string; published: number; unpublished: number; closed: number }
+      >()
+      for (const place of db.places) {
+        const cat = categoryCounts.get(place.category) ?? {
+          category: place.category,
+          total: 0,
+          published: 0,
+        }
+        cat.total += 1
+        if (place.publishedAt !== null) cat.published += 1
+        categoryCounts.set(place.category, cat)
+
+        const distName = place.district?.trim() || "Chưa rõ"
+        const dist = districtCounts.get(distName) ?? {
+          district: distName,
+          published: 0,
+          unpublished: 0,
+          closed: 0,
+        }
+        if (place.status === "closed") dist.closed += 1
+        else if (place.publishedAt === null) dist.unpublished += 1
+        else dist.published += 1
+        districtCounts.set(distName, dist)
+      }
+      const reasonCounts = new Map<
+        AdminReport["reason"],
+        { reason: AdminReport["reason"]; pending: number; total: number }
+      >()
+      for (const report of reports) {
+        const entry = reasonCounts.get(report.reason) ?? {
+          reason: report.reason,
+          pending: 0,
+          total: 0,
+        }
+        entry.total += 1
+        if (report.status === "pending") entry.pending += 1
+        reasonCounts.set(report.reason, entry)
+      }
       return {
         uptimeMs: Date.now() - mockMetrics.startedAt,
         totalQueries: [...mockMetrics.routes.values()].reduce((sum, count) => sum + count, 0),
         avgLatencyMs: RESPONSE_DELAY_MS + scenario.delayMs,
-        cacheHitRatio: 0,
+        cacheHitRatio: 0.42,
         byEndpoint,
+        runtime: {
+          env: "development",
+          piiMasked: false,
+          redisConnected: false,
+          mailConfigured: false,
+          mediaStorage: "local",
+          demoAutoVerifyEmail: true,
+        },
         venues: {
           total: db.places.length,
           published: db.places.filter((p) => p.publishedAt !== null).length,
@@ -2798,8 +2863,15 @@ const routes: Route[] = [
         },
         activity: {
           auditLogs24h: db.auditLogs.length,
-          interactionEvents24h: 0,
+          interactionEvents24h: 84,
         },
+        trends14d,
+        venuesByCategory: [...categoryCounts.values()].sort((a, b) => b.total - a.total),
+        venuesByDistrict: [...districtCounts.values()].sort(
+          (a, b) =>
+            b.published + b.unpublished + b.closed - (a.published + a.unpublished + a.closed),
+        ),
+        reportsByReason: [...reasonCounts.values()].sort((a, b) => b.total - a.total),
       } satisfies AdminOverview
     },
   },
@@ -2853,7 +2925,7 @@ const routes: Route[] = [
     pattern: /^\/admin\/places$/,
     handler: (config) => {
       requireMockRole(config, ["admin", "moderator"])
-      const { q, visibility = "all", district, cursor } = query(config)
+      const { q, visibility = "all", district, category, cursor } = query(config)
       const needle = typeof q === "string" ? normalizeText(q.trim()) : ""
       const filtered = db.places
         .filter((p) => {
@@ -2862,6 +2934,7 @@ const routes: Route[] = [
           if (visibility === "unpublished" && p.publishedAt !== null) return false
           if (visibility === "closed" && p.status !== "closed") return false
           if (district && district !== "all" && p.district !== district) return false
+          if (category && category !== "all" && p.category !== category) return false
           if (
             needle &&
             !normalizeText(`${p.name} ${p.address} ${p.district ?? ""}`).includes(needle)
@@ -3002,6 +3075,134 @@ const routes: Route[] = [
         return true
       })
       return paginate(items, cursor ?? null, 20)
+    },
+  },
+  {
+    method: "get",
+    pattern: /^\/admin\/observability$/,
+    handler: (config) => {
+      requireMockRole(config, ["admin"])
+      const { kind = "all", q } = query(config)
+      const needle = typeof q === "string" ? q.trim().toLowerCase() : ""
+      const now = Date.now()
+      const allEvents = [
+        {
+          id: "obs-1",
+          kind: "slow_request" as const,
+          timestamp: new Date(now - 4 * 60_000).toISOString(),
+          requestId: "req-mock-001",
+          traceId: "4bf92f3577b34da6a3ce929d0e0e4736",
+          method: "GET",
+          route: "/api/v1/places",
+          status: 200,
+          durationMs: 642,
+          timing: { dbMs: 310, dbCount: 4, redisMs: 12, embedMs: 265, externalMs: 0, appMs: 55 },
+          source: "backend",
+        },
+        {
+          id: "obs-2",
+          kind: "slow_request" as const,
+          timestamp: new Date(now - 11 * 60_000).toISOString(),
+          requestId: "req-mock-002",
+          traceId: "9a1c8e2144d01fa9b8ce112a5c3d9011",
+          method: "GET",
+          route: "/api/v1/places/recommended",
+          status: 200,
+          durationMs: 538,
+          timing: { dbMs: 240, dbCount: 3, redisMs: 18, embedMs: 210, externalMs: 0, appMs: 70 },
+          source: "backend",
+        },
+        {
+          id: "obs-3",
+          kind: "web_vital" as const,
+          timestamp: new Date(now - 15 * 60_000).toISOString(),
+          route: "/discover",
+          metric: "LCP" as const,
+          value: 1420,
+          rating: "good" as const,
+          source: "frontend",
+        },
+      ]
+      const filteredEvents = allEvents.filter((ev) => {
+        if (kind !== "all" && ev.kind !== kind) return false
+        if (!needle) return true
+        return (
+          (ev.route?.toLowerCase().includes(needle) ?? false) ||
+          ("traceId" in ev && (ev.traceId?.toLowerCase().includes(needle) ?? false))
+        )
+      })
+      return {
+        latency: {
+          uptimeMs: Date.now() - mockMetrics.startedAt,
+          totalQueries: Math.max(
+            24,
+            [...mockMetrics.routes.values()].reduce((sum, count) => sum + count, 0),
+          ),
+          avgLatencyMs: 42,
+          p50LatencyMs: 28,
+          p95LatencyMs: 185,
+          p99LatencyMs: 540,
+          cacheHitRatio: 0.68,
+          byEndpoint: [
+            {
+              route: "GET /api/v1/places",
+              count: 84,
+              avgMs: 68,
+              p95Ms: 210,
+              p99Ms: 642,
+              cacheHits: 52,
+            },
+            {
+              route: "GET /api/v1/places/recommended",
+              count: 46,
+              avgMs: 92,
+              p95Ms: 295,
+              p99Ms: 538,
+              cacheHits: 28,
+            },
+            {
+              route: "GET /api/v1/posts",
+              count: 38,
+              avgMs: 34,
+              p95Ms: 95,
+              p99Ms: 140,
+              cacheHits: 21,
+            },
+            { route: "GET /api/v1/me", count: 62, avgMs: 14, p95Ms: 32, p99Ms: 48, cacheHits: 0 },
+          ],
+        },
+        webVitals: [
+          { name: "LCP" as const, p75: 1420, samples: 24, good: 20, poor: 1 },
+          { name: "INP" as const, p75: 96, samples: 18, good: 16, poor: 0 },
+          { name: "CLS" as const, p75: 0.04, samples: 24, good: 22, poor: 0 },
+        ],
+        slowSql: [
+          {
+            query:
+              "SELECT p.id, p.name, p.category FROM places p WHERE p.deleted_at IS NULL ORDER BY p.created_at DESC LIMIT $1",
+            calls: 128,
+            meanMs: 18.4,
+            totalMs: 2355.2,
+            rows: 2560,
+          },
+          {
+            query:
+              "SELECT event_type, COUNT(*)::int FROM interaction_events WHERE created_at >= NOW() - INTERVAL '24 hours' GROUP BY event_type",
+            calls: 16,
+            meanMs: 11.2,
+            totalMs: 179.2,
+            rows: 96,
+          },
+        ],
+        behavior24h: [
+          { eventType: "place_view", count: 142 },
+          { eventType: "search_query", count: 68 },
+          { eventType: "place_save", count: 31 },
+          { eventType: "review_create", count: 14 },
+        ],
+        summary: { errorCount: 0, slowCount: 2 },
+        events: filteredEvents,
+      }
     },
   },
 ]

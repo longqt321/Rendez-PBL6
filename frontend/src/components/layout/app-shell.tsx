@@ -145,6 +145,7 @@ export function AppShell({ children }: Readonly<AppShellProps>) {
       </a>
       <SideNav />
       <div className="flex min-h-dvh flex-col lg:pl-60">
+        <StaffContextBanner />
         <TopBar />
         <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 pb-20 outline-none lg:pb-0">
           {children ?? (
@@ -156,6 +157,34 @@ export function AppShell({ children }: Readonly<AppShellProps>) {
       </div>
       <BottomNav />
       <ScrollRestoration />
+    </div>
+  )
+}
+
+function StaffContextBanner() {
+  const { data: me } = useMe()
+  if (!me || (me.role !== "admin" && me.role !== "moderator")) return null
+
+  return (
+    <div
+      role="status"
+      className="flex flex-wrap items-center justify-between gap-2 border-b border-primary/25 bg-primary/8 px-4 py-1.5 text-xs text-foreground"
+    >
+      <span className="flex items-center gap-1.5">
+        <ShieldCheckIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+        <span>
+          Đang xem trang công khai bằng tài khoản{" "}
+          <strong>{me.role === "admin" ? "Quản trị viên" : "Kiểm duyệt viên"}</strong>
+        </span>
+      </span>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 px-2.5 text-xs"
+        render={<Link to="/admin" />}
+      >
+        Quay lại Trung tâm điều hành
+      </Button>
     </div>
   )
 }

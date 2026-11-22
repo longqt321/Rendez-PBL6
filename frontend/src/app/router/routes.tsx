@@ -1,7 +1,8 @@
-import { lazy } from "react"
+import { lazy, Suspense } from "react"
 import type { RouteObject } from "react-router"
 import { Navigate } from "react-router"
 import { AppShell } from "@/components/layout/app-shell"
+import { PageLoading } from "@/components/shared/page-loading"
 import { RequireAuth } from "./require-auth"
 import { RequireRole } from "./require-role"
 import { RouteErrorPage } from "./route-error-page"
@@ -116,6 +117,22 @@ export const routes: RouteObject[] = [
     element: <VerifyEmailPage />,
     errorElement: <RouteErrorPage />,
   },
+  /*
+   * Trung tâm điều hành `/admin` đứng NGOÀI `AppShell` consumer:
+   * sử dụng `AdminShell` độc lập (sidebar quản trị + phân biệt môi trường Dev/Prod)
+   * và được lazy-load riêng để không làm tăng bundle cho người dùng cuối.
+   */
+  {
+    path: "/admin",
+    element: (
+      <RequireRole roles={["admin", "moderator"]}>
+        <Suspense fallback={<PageLoading />}>
+          <AdminPage />
+        </Suspense>
+      </RequireRole>
+    ),
+    errorElement: <RouteErrorPage />,
+  },
   {
     element: <AppShell />,
     errorElement: <RouteErrorPage />,
@@ -152,14 +169,6 @@ export const routes: RouteObject[] = [
           <RequireAuth>
             <SettingsPage />
           </RequireAuth>
-        ),
-      },
-      {
-        path: "/admin",
-        element: (
-          <RequireRole roles={["admin", "moderator"]}>
-            <AdminPage />
-          </RequireRole>
         ),
       },
       // Trang demo vận hành — không có link trong nav, chỉ mở trực tiếp khi demo.
