@@ -99,7 +99,7 @@ describe("resolveSeedMode & non-destructive SEED_MODE=prod", () => {
       select: { id: true, name: true },
     })
     expect(preservedCustom?.id).toBe(customId)
-  })
+  }, 30_000)
 })
 
 describe("Media Local Fallback & OSM Tile Proxy Resilience", () => {

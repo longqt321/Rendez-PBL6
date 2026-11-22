@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Item } from "@/components/ui/item"
 import { formatRelativeTime } from "@/lib/format"
 import type { Review } from "../types/review"
-import { RatingStars } from "./rating-stars"
+import { ReviewTierBadge } from "./review-tier-badge"
 
 interface ReviewItemProps {
   review: Review
@@ -37,7 +37,17 @@ export function ReviewItem({ review, onEdit, onDelete }: ReviewItemProps) {
           >
             {review.author.name}
           </Link>
-          <span className="text-xs text-muted-foreground">@{review.author.handle}</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+            <span>@{review.author.handle}</span>
+            {review.authorReviewCount !== undefined ? (
+              <span>· {review.authorReviewCount} đánh giá</span>
+            ) : null}
+            {review.isFollowingAuthor ? (
+              <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-medium">
+                Đang theo dõi
+              </Badge>
+            ) : null}
+          </div>
         </div>
         {review.isMine ? (
           <div className="flex items-center gap-1">
@@ -62,15 +72,27 @@ export function ReviewItem({ review, onEdit, onDelete }: ReviewItemProps) {
           </div>
         ) : null}
       </header>
-      <div className="flex items-center gap-2">
-        <RatingStars value={review.rating} size="sm" />
+      <div className="flex flex-wrap items-center gap-2">
+        <ReviewTierBadge tier={review.tier} />
         <Badge variant="secondary" className="text-xs font-normal">
           {formatRelativeTime(review.createdAt)}
         </Badge>
       </div>
-      <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
-        {review.content}
-      </p>
+      {review.recommendedDishes.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-medium text-muted-foreground">Món nên gọi:</span>
+          {review.recommendedDishes.map((dish) => (
+            <Badge key={dish} variant="outline" className="text-xs font-normal">
+              {dish}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
+      {review.content ? (
+        <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+          {review.content}
+        </p>
+      ) : null}
     </Item>
   )
 }

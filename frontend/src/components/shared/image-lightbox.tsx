@@ -1,4 +1,5 @@
 import Lightbox from "yet-another-react-lightbox"
+import Zoom from "yet-another-react-lightbox/plugins/zoom"
 import "yet-another-react-lightbox/styles.css"
 
 interface ImageLightboxProps {
@@ -29,6 +30,8 @@ export function ImageLightbox({
         alt: `${altPrefix} ${idx + 1}`,
       }))}
       carousel={{ finite: images.length <= 1 }}
+      plugins={[Zoom]}
+      zoom={{ maxZoomPixelRatio: 3, doubleTapDelay: 250 }}
       render={{
         buttonPrev: images.length <= 1 ? () => null : undefined,
         buttonNext: images.length <= 1 ? () => null : undefined,

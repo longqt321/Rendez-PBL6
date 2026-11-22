@@ -71,7 +71,8 @@ export function fetchRankCandidates(publishedOnly: boolean): Promise<CandidateRo
       WHERE pt.place_id = p.id
     ) tg ON true
     LEFT JOIN LATERAL (
-      SELECT ROUND(AVG(rv.rating)::numeric, 1) AS rating, COUNT(*) AS review_count
+      SELECT ROUND(AVG(CASE rv.tier WHEN 'must_try' THEN 5.0 WHEN 'good' THEN 4.0 WHEN 'ok' THEN 3.0 ELSE 0.0 END)::numeric, 1) AS rating,
+             COUNT(*) AS review_count
       FROM reviews rv
       WHERE rv.place_id = p.id AND rv.deleted_at IS NULL
     ) r ON true

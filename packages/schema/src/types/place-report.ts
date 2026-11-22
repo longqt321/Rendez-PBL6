@@ -1,5 +1,12 @@
 
-export const PLACE_REPORT_REASONS = ["closed", "wrong-info", "duplicate", "other"] as const
+export const PLACE_REPORT_REASONS = [
+  "closed",
+  "wrong-info",
+  "duplicate",
+  "outdated_menu",
+  "wrong_image",
+  "other",
+] as const
 
 export type PlaceReportReason = (typeof PLACE_REPORT_REASONS)[number]
 

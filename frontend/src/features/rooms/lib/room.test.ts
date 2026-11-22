@@ -69,6 +69,11 @@ describe("naturalQueryToProposalInputs & roomFilterChips", () => {
       id: "r1",
       code: "AB23CD",
       name: "Nhóm chill",
+      phase: "filtering",
+      votingMode: "swipe_match",
+      candidates: [],
+      voteSummaries: [],
+      votingProgress: { votedMemberIds: [], totalActiveMembers: 0, matchedCandidateIds: [] },
       members: [],
       proposals: [],
       filter: {

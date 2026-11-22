@@ -27,7 +27,7 @@ describe("useDiscoverPlaces", () => {
       expect(typeof place.id).toBe("string")
       expect(typeof place.name).toBe("string")
       expect(VALID_CATEGORIES).toContain(place.category)
-      expect(typeof place.rating).toBe("number")
+      expect(typeof place.positiveRatio).toBe("number")
     }
   })
 

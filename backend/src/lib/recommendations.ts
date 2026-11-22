@@ -270,7 +270,8 @@ export async function scoreColdStart(): Promise<ColdStartScore[]> {
         ) AS c_i
       FROM places p
       LEFT JOIN LATERAL (
-        SELECT COUNT(*)::int AS review_count, COALESCE(AVG(rv.rating)::float8, 0.0) AS rating
+        SELECT COUNT(*)::int AS review_count,
+               COALESCE(AVG(CASE rv.tier WHEN 'must_try' THEN 5.0 WHEN 'good' THEN 4.0 WHEN 'ok' THEN 3.0 ELSE 0.0 END)::float8, 0.0) AS rating
         FROM reviews rv
         WHERE rv.place_id = p.id AND rv.deleted_at IS NULL
       ) r ON true

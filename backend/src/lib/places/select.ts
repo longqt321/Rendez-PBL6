@@ -5,7 +5,8 @@ export function selectPlaces(extra: Prisma.Sql = Prisma.empty): Prisma.Sql {
   SELECT p.id, p.name, p.address, p.city, p.district, p.category::text AS category,
          COALESCE(tg.tags, ARRAY[]::text[]) AS tags,
          p.price_level, p.lat, p.lng, p.status::text AS status, p.description, p.opening_hours, p.created_at, p.published_at,
-         COALESCE(r.rating, 0)::float8 AS rating,
+         COALESCE(r.positive_ratio, 0)::int AS positive_ratio,
+         COALESCE(r.must_try_count, 0)::int AS must_try_count,
          COALESCE(r.review_count, 0)::int AS review_count,
          img.url AS image_url, img.height AS image_height${extra}
   FROM places p
@@ -16,7 +17,10 @@ export function selectPlaces(extra: Prisma.Sql = Prisma.empty): Prisma.Sql {
     WHERE pt.place_id = p.id
   ) tg ON true
   LEFT JOIN LATERAL (
-    SELECT ROUND(AVG(rv.rating)::numeric, 1) AS rating, COUNT(*) AS review_count
+    SELECT
+      COALESCE(ROUND(100.0 * COUNT(*) FILTER (WHERE rv.tier IN ('good', 'must_try')) / NULLIF(COUNT(*), 0))::int, 0) AS positive_ratio,
+      COUNT(*) FILTER (WHERE rv.tier = 'must_try')::int AS must_try_count,
+      COUNT(*) AS review_count
     FROM reviews rv
     WHERE rv.place_id = p.id AND rv.deleted_at IS NULL
   ) r ON true

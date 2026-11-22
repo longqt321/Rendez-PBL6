@@ -50,6 +50,8 @@ import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { MAX_MEMBER_NAME_LENGTH } from "@/lib/constants"
 import { formatInitials } from "@/lib/format"
 import { ProposalForm } from "../components/proposal-form"
+import { RoomVotingPanel } from "../components/room-voting-panel"
+import { useRoomVoting } from "../hooks/use-room-voting"
 import { useRooms, type RoomStatus } from "../hooks/use-rooms"
 import { roomFilterChips, type ParsedRoomProposalInput, type RoomFilterChip } from "../lib/room"
 import type { Room, RoomProposalField } from "../types/room"
@@ -61,6 +63,7 @@ export function RoomPage() {
   const {
     getRoom,
     getRoomStatus,
+    storeRoom,
     retryRoom,
     activeCode,
     joinRoom,
@@ -387,6 +390,7 @@ export function RoomPage() {
             room={room}
             canReset={isMember && activeChips.length > 0}
             onResetFilters={handleResetFilters}
+            onRoomUpdated={storeRoom}
           />
         </SplitMain>
       </SplitLayout>
@@ -398,12 +402,15 @@ function RoomMatchingPlaces({
   room,
   canReset,
   onResetFilters,
+  onRoomUpdated,
 }: Readonly<{
   room: Room
   canReset: boolean
   onResetFilters: () => Promise<void>
+  onRoomUpdated: (room: Room) => void
 }>) {
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid")
+  const voting = useRoomVoting(room.code, onRoomUpdated)
   const [sort, setSort] = useState<"rating" | "newest">("rating")
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null)
   const [personalSearchDraft, setPersonalSearchDraft] = useState("")
@@ -590,12 +597,31 @@ function RoomMatchingPlaces({
       ) : (
         <ScrollArea className="lg:min-h-0 lg:flex-1 lg:overflow-hidden">
           <div className="space-y-4 pr-2.5 pb-4">
+            <RoomVotingPanel
+              room={room}
+              isOwner={Boolean(room.members.some((m) => m.isMe))}
+              onRoomUpdated={onRoomUpdated}
+            />
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {places.map((place) => (
-                <li key={place.id}>
-                  <PlaceCard place={place} />
-                </li>
-              ))}
+              {places.map((place) => {
+                const inCandidates = room.candidates.some((c) => c.placeId === place.id)
+                return (
+                  <li key={place.id} className="flex flex-col gap-1.5">
+                    <PlaceCard place={place} />
+                    {room.phase === "filtering" ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={inCandidates ? "secondary" : "outline"}
+                        disabled={inCandidates || voting.pending}
+                        onClick={() => void voting.addCandidate(place.id)}
+                      >
+                        {inCandidates ? "Đã thêm vào bình chọn" : "+ Thêm vào bình chọn"}
+                      </Button>
+                    ) : null}
+                  </li>
+                )
+              })}
             </ul>
             <LoadMore
               sentinelRef={sentinelRef}

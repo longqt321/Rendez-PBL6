@@ -14,7 +14,7 @@ export function cursorForSort(sort: PlaceSort, row: PlaceRow): PlaceCursor {
     case "rating":
       return {
         kind: "rating",
-        rating: Number(row.rating),
+        rating: Number(row.positive_ratio),
         reviewCount: Number(row.review_count),
         createdAt: row.created_at,
         id: row.id,
@@ -44,11 +44,11 @@ function buildSortClause(
     case "rating": {
       const keyset =
         matchingCursor?.kind === "rating"
-          ? Prisma.sql`(COALESCE(r.rating, 0), r.review_count, p.created_at, p.id)
-          < (${matchingCursor.rating}::float8, ${matchingCursor.reviewCount}::int, ${matchingCursor.createdAt}::timestamptz, ${matchingCursor.id})`
+          ? Prisma.sql`(COALESCE(r.positive_ratio, 0), r.review_count, p.created_at, p.id)
+          < (${matchingCursor.rating}::int, ${matchingCursor.reviewCount}::int, ${matchingCursor.createdAt}::timestamptz, ${matchingCursor.id})`
           : null
       return {
-        orderBy: Prisma.sql`COALESCE(r.rating, 0) DESC, r.review_count DESC, p.created_at DESC, p.id DESC`,
+        orderBy: Prisma.sql`COALESCE(r.positive_ratio, 0) DESC, r.review_count DESC, p.created_at DESC, p.id DESC`,
         extraSelect: Prisma.empty,
         keyset,
       }

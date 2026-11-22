@@ -99,7 +99,7 @@ describe("DELETE /places/:id/reviews", () => {
     const postRes = await call(`/api/v1/places/${placeId}/reviews`, {
       method: "POST",
       cookie: user.cookie,
-      body: JSON.stringify({ rating: 5, content: "Quán tuyệt vời trước khi xoá" }),
+      body: JSON.stringify({ tier: "must_try", content: "Quán tuyệt vời trước khi xoá" }),
     })
     expect(postRes.status).toBe(201)
     const createdReview = (await postRes.json()) as { id: string }
@@ -149,7 +149,7 @@ describe("DELETE /places/:id/reviews", () => {
     const rePostRes = await call(`/api/v1/places/${placeId}/reviews`, {
       method: "POST",
       cookie: user.cookie,
-      body: JSON.stringify({ rating: 4, content: "Đánh giá lại sau khi xoá" }),
+      body: JSON.stringify({ tier: "good", content: "Đánh giá lại sau khi xoá" }),
     })
     expect(rePostRes.status).toBe(201)
 

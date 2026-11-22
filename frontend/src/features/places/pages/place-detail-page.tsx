@@ -42,7 +42,6 @@ import {
 } from "@/components/ui/carousel"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Item, ItemActions, ItemContent, ItemGroup } from "@/components/ui/item"
-import { Progress } from "@/components/ui/progress"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
@@ -50,13 +49,17 @@ import { useMe } from "@/features/profile/hooks/use-me"
 import { PostCard } from "@/features/social/components/post-card"
 import type { Post } from "@/features/social/types/post"
 import { isNotFoundError } from "@/lib/axios"
-import { formatCount, formatRating } from "@/lib/format"
+import { formatCount } from "@/lib/format"
 import { CheckInDialog } from "../components/check-in-dialog"
 import { PlaceCard } from "../components/place-card"
 import { PlaceMiniMap } from "../components/place-mini-map"
 import { ReportPlaceDialog } from "../components/report-place-dialog"
 import { ReviewDeleteDialog } from "../components/review-delete-dialog"
+import { PlaceMediaTabs } from "../components/place-media-tabs"
+import { PlaceTierSummary } from "../components/place-tier-summary"
+import { REVIEW_TIER_META } from "../lib/review-tier-meta"
 import { ReviewForm } from "../components/review-form"
+import type { ReviewTier } from "@rendez/schema"
 import { ReviewItem } from "../components/review-item"
 import { useDiscoverPlaces } from "../hooks/use-discover-places"
 import { usePlace } from "../hooks/use-place"
@@ -108,6 +111,7 @@ export function PlaceDetailPage() {
 
   const [editingReview, setEditingReview] = useState<Review | null>(null)
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [selectedTier, setSelectedTier] = useState<ReviewTier | null>(null)
   const [deletingReview, setDeletingReview] = useState<Review | null>(null)
   const [heroLightboxOpen, setHeroLightboxOpen] = useState(false)
   const myReview = reviews?.find((review) => review.isMine) ?? null
@@ -205,7 +209,7 @@ export function PlaceDetailPage() {
           />
         )}
 
-        <div className="flex flex-wrap items-start justify-between gap-4 p-5 sm:p-6">
+        <div className="flex flex-col gap-4 p-5 sm:p-6 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0 flex-1 space-y-2.5">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{categoryLabel(place.category)}</Badge>
@@ -243,23 +247,38 @@ export function PlaceDetailPage() {
           </div>
 
           {/* Rating Medallion */}
-          <SurfaceCard variant="subtle" padding="sm" className="flex shrink-0 items-center gap-4">
+          <SurfaceCard
+            variant="subtle"
+            padding="sm"
+            className="flex w-full shrink-0 items-center justify-around gap-4 md:w-auto md:justify-start"
+          >
             <div className="text-center">
               {place.reviewCount > 0 ? (
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="font-display text-3xl font-bold tabular-nums">
-                    {formatRating(place.rating)}
-                  </span>
-                  <StarIcon className="size-4 fill-star text-star" aria-hidden="true" />
-                </div>
+                place.reviewCount >= 5 ? (
+                  <>
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="font-display text-2xl font-bold tabular-nums">
+                        {place.mustTryCount ?? 0}/{place.reviewCount}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Phải thử</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="font-display text-2xl font-bold tabular-nums">
+                        {formatCount(place.reviewCount)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Đánh giá</p>
+                  </>
+                )
               ) : (
-                <span className="font-display text-xl font-bold text-muted-foreground">-</span>
+                <>
+                  <span className="font-display text-xl font-bold text-muted-foreground">-</span>
+                  <p className="text-xs text-muted-foreground">Chưa có đánh giá</p>
+                </>
               )}
-              <p className="text-xs text-muted-foreground tabular-nums">
-                {place.reviewCount > 0
-                  ? `${formatCount(place.reviewCount)} đánh giá`
-                  : "Chưa có đánh giá"}
-              </p>
             </div>
             <div className="h-9 w-px bg-border" aria-hidden="true" />
             <div className="text-center">
@@ -278,10 +297,15 @@ export function PlaceDetailPage() {
       {/* 2-Column Editorial Split Layout */}
       <SplitLayout ratio="8-4" gap="lg" className="mt-8">
         <SplitMain span={8} className="space-y-6">
-          {/* Biểu đồ phân bổ sao đánh giá */}
-          {reviews && reviews.length > 0 ? (
-            <RatingSummaryCard rating={place.rating} reviews={reviews} />
-          ) : null}
+          <PlaceMediaTabs placeId={placeId} placeName={place.name} canUpload={Boolean(me)} />
+
+          <PlaceTierSummary
+            summary={place.tierSummary}
+            topDishes={place.topRecommendedDishes}
+            reviews={reviews}
+            selectedTier={selectedTier}
+            onSelectTier={setSelectedTier}
+          />
 
           <Tabs defaultValue="reviews">
             <TabsList>
@@ -301,6 +325,7 @@ export function PlaceDetailPage() {
                   editingReview={editingReview}
                   placeId={placeId}
                   authorInitials={me?.initials ?? "Tôi"}
+                  suggestedDishes={(place.topRecommendedDishes ?? []).map((d) => d.dishName)}
                   closeReviewForm={closeReviewForm}
                   setEditingReview={setEditingReview}
                   setShowReviewForm={setShowReviewForm}
@@ -308,7 +333,7 @@ export function PlaceDetailPage() {
                 <ReviewsListContent
                   reviewsPending={reviewsPending}
                   reviewsError={reviewsError}
-                  reviews={reviews}
+                  reviews={selectedTier ? reviews?.filter((r) => r.tier === selectedTier) : reviews}
                   refetchReviews={refetchReviews}
                   setEditingReview={setEditingReview}
                   setDeletingReview={setDeletingReview}
@@ -424,51 +449,6 @@ export function PlaceDetailPage() {
   )
 }
 
-function RatingSummaryCard({ rating, reviews }: Readonly<{ rating: number; reviews: Review[] }>) {
-  const total = reviews.length
-  const counts = [5, 4, 3, 2, 1].map((star) => ({
-    star,
-    count: reviews.filter((r) => Math.round(r.rating) === star).length,
-  }))
-
-  return (
-    <SurfaceCard variant="subtle" padding="md">
-      <div className="grid grid-cols-1 items-center gap-5 sm:grid-cols-12">
-        <div className="text-center sm:col-span-4">
-          <p className="font-display text-4xl font-bold tracking-tight tabular-nums">
-            {formatRating(rating)}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-            Dựa trên {formatCount(total)} đánh giá
-          </p>
-        </div>
-
-        <div className="space-y-1.5 sm:col-span-8">
-          {counts.map(({ star, count }) => {
-            const percent = total > 0 ? Math.round((count / total) * 100) : 0
-            return (
-              <div key={star} className="flex items-center gap-2.5 text-xs">
-                <span className="flex w-8 shrink-0 items-center gap-0.5 font-medium tabular-nums">
-                  {star}
-                  <StarIcon className="size-3 fill-star text-star" aria-hidden="true" />
-                </span>
-                <Progress
-                  value={percent}
-                  className="flex-1"
-                  aria-label={`${star} sao: ${percent}%`}
-                />
-                <span className="w-8 shrink-0 text-right text-muted-foreground tabular-nums">
-                  {count}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </SurfaceCard>
-  )
-}
-
 function OpenStatusBadge({ openState }: Readonly<{ openState: boolean | null }>) {
   if (openState === true) {
     return <Badge className="bg-open text-open-foreground">Đang mở cửa</Badge>
@@ -489,6 +469,7 @@ function ReviewTrigger({
   editingReview,
   placeId,
   authorInitials,
+  suggestedDishes,
   closeReviewForm,
   setEditingReview,
   setShowReviewForm,
@@ -498,6 +479,7 @@ function ReviewTrigger({
   editingReview: Review | null
   placeId: string
   authorInitials: string
+  suggestedDishes: string[]
   closeReviewForm: () => void
   setEditingReview: (review: Review | null) => void
   setShowReviewForm: (show: boolean) => void
@@ -510,6 +492,7 @@ function ReviewTrigger({
           placeId={placeId}
           myReview={editingReview}
           authorInitials={authorInitials}
+          suggestedDishes={suggestedDishes}
           onDone={closeReviewForm}
         />
       </Card>
@@ -520,7 +503,7 @@ function ReviewTrigger({
       <Item variant="outline" className="justify-between gap-3 p-4">
         <ItemContent>
           <p className="text-sm text-muted-foreground">
-            Bạn đã đánh giá {myReview.rating}/5 sao cho địa điểm này.
+            Bạn đã đánh giá "{REVIEW_TIER_META[myReview.tier].label}" cho địa điểm này.
           </p>
         </ItemContent>
         <ItemActions>

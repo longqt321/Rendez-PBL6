@@ -471,6 +471,8 @@ describe("Daily Picks (Gợi ý hôm nay)", () => {
     await prisma.dailyPick.deleteMany({
       where: { pickDate: new Date(`${picks.getPickDate()}T00:00:00Z`) },
     })
+    const { invalidatePlacesReadCaches } = await import("../src/routes/places")
+    invalidatePlacesReadCaches()
     const res = await app.request("/api/v1/places/daily-picks")
     expect(res.status).toBe(200)
     const body = (await res.json()) as { items: unknown[] }
@@ -610,10 +612,10 @@ describe("GET /places — sort", () => {
       take: 2,
     })
     await prisma.review.create({
-      data: { placeId: targets[0]!.id, authorId: user.id, rating: 5, content: "test" },
+      data: { placeId: targets[0]!.id, authorId: user.id, tier: "must_try", content: "test" },
     })
     await prisma.review.create({
-      data: { placeId: targets[1]!.id, authorId: user.id, rating: 3, content: "test" },
+      data: { placeId: targets[1]!.id, authorId: user.id, tier: "ok", content: "test" },
     })
 
     const ids = await collectAll("sort=rating")
@@ -654,6 +656,8 @@ describe("GET /places — sort", () => {
         // lat/lng để trống — đúng nhánh `distance IS NULL`.
       },
     })
+    const { invalidatePlacesReadCaches } = await import("../src/routes/places")
+    invalidatePlacesReadCaches()
 
     const ids = await collectAll("sort=distance&lat=16.06&lng=108.22")
     const nullPlaceIndex = ids.findIndex((id) => id.startsWith("test-null-coords-"))

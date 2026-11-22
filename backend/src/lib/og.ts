@@ -74,7 +74,12 @@ export function absoluteImageUrl(raw: string | null | undefined, version: number
 /** Meta cho trang quán: tên quán + địa chỉ (kèm điểm nếu có đánh giá). */
 export function placeOgMeta(place: PlaceDto, version: number): OgMeta {
   const address = [place.address, place.district, place.city].filter(Boolean).join(", ")
-  const rating = place.reviewCount > 0 ? ` (rating ★ ${place.rating.toFixed(1)})` : ""
+  const rating =
+    place.reviewCount >= 5
+      ? ` (${place.mustTryCount ?? 0}/${place.reviewCount} người khuyên thử)`
+      : place.reviewCount > 0
+        ? ` (${place.reviewCount} đánh giá)`
+        : ""
 
   return {
     title: place.name,

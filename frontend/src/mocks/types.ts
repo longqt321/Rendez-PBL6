@@ -1,5 +1,6 @@
 import type { Author, Post } from "@/features/social/types/post"
 import type { PlaceReport } from "@/features/places/types/place-report"
+import type { ReviewTier } from "@rendez/schema"
 import type { RoomFilter, RoomProposal } from "@/features/rooms/types/room"
 
 export type MockPost = Omit<Post, "place">
@@ -23,7 +24,9 @@ export interface MockReview {
   placeId: string
   author: Author
 
-  rating: number
+  tier: ReviewTier
+  recommendedDishes: string[]
+  quickTags: string[]
 
   content: string
   createdAt: string

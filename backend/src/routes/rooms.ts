@@ -2,9 +2,13 @@ import { Hono } from "hono"
 import type { Context } from "hono"
 import { streamSSE, type SSEStreamingApi } from "hono/streaming"
 import {
+  addRoomCandidateInputSchema,
+  castRoomVoteInputSchema,
   createProposalInputSchema,
   createRoomInputSchema,
+  finalizeRoomVotingInputSchema,
   joinRoomInputSchema,
+  startRoomVotingInputSchema,
   updateRoomFilterInputSchema,
   type Room,
 } from "@rendez/schema"
@@ -13,6 +17,13 @@ import { ApiError } from "../lib/errors"
 import { prisma } from "../lib/prisma"
 import { toApiProposalField } from "../lib/enums"
 import { publishRoom, roomVersion, subscribeRoom } from "../lib/room-events"
+import {
+  addRoomCandidate,
+  castRoomVote,
+  finalizeRoomVoting,
+  removeRoomCandidate,
+  startRoomVoting,
+} from "../lib/room-voting"
 import { resolveRoomActor, tryResolveRoomActor } from "../lib/room-actor"
 import { clearRoomTokenCookie, readRoomToken, setRoomTokenCookie } from "../lib/room-token"
 import { rateLimit } from "../lib/rate-limit"
@@ -274,6 +285,91 @@ export function createRoomsRouter() {
     publishRoom(code)
     const viewer = await getViewer(c)
     return c.json(toRoomDto(updated, viewer?.id ?? null, null))
+  })
+
+  router.post("/rooms/:code/candidates", async (c) => {
+    const code = requireCode(c.req.param("code"))
+    const room = await loadRoom(code)
+    const actor = await resolveRoomActor(c, room)
+
+    const raw = await c.req.json().catch(() => null)
+    const parsed = addRoomCandidateInputSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu ứng viên không hợp lệ")
+    }
+
+    const updated = await addRoomCandidate(code, actor.memberId, parsed.data.placeId)
+    if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
+    const viewer = await getViewer(c)
+    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId), 201)
+  })
+
+  router.delete("/rooms/:code/candidates/:candidateId", async (c) => {
+    const code = requireCode(c.req.param("code"))
+    const room = await loadRoom(code)
+    const actor = await resolveRoomActor(c, room)
+
+    const candidateId = c.req.param("candidateId")
+    requireUuid(candidateId, "Ứng viên không hợp lệ", 404)
+
+    const updated = await removeRoomCandidate(code, candidateId)
+    if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
+    const viewer = await getViewer(c)
+    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId))
+  })
+
+  router.post("/rooms/:code/voting/start", requireAuth, async (c) => {
+    const code = requireCode(c.req.param("code"))
+    const raw = await c.req.json().catch(() => null)
+    const parsed = startRoomVotingInputSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Cấu hình bình chọn không hợp lệ")
+    }
+
+    const userId = c.get("userId")
+    const updated = await startRoomVoting(
+      code,
+      userId,
+      parsed.data.votingMode,
+      parsed.data.votingDeadlineAt,
+    )
+    if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
+    const viewer = await getViewer(c)
+    const actor = await tryResolveRoomActor(c, updated, viewer)
+    return c.json(toRoomDto(updated, userId, actor?.memberId ?? null))
+  })
+
+  router.post("/rooms/:code/votes", async (c) => {
+    const code = requireCode(c.req.param("code"))
+    const room = await loadRoom(code)
+    const actor = await resolveRoomActor(c, room)
+
+    const raw = await c.req.json().catch(() => null)
+    const parsed = castRoomVoteInputSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Phiếu bầu không hợp lệ")
+    }
+
+    const updated = await castRoomVote(code, actor.memberId, parsed.data)
+    if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
+    const viewer = await getViewer(c)
+    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId))
+  })
+
+  router.post("/rooms/:code/voting/finalize", requireAuth, async (c) => {
+    const code = requireCode(c.req.param("code"))
+    const raw = await c.req.json().catch(() => ({}))
+    const parsed = finalizeRoomVotingInputSchema.safeParse(raw ?? {})
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu chốt quán không hợp lệ")
+    }
+
+    const userId = c.get("userId")
+    const updated = await finalizeRoomVoting(code, userId, parsed.data.winnerPlaceId)
+    if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
+    const viewer = await getViewer(c)
+    const actor = await tryResolveRoomActor(c, updated, viewer)
+    return c.json(toRoomDto(updated, userId, actor?.memberId ?? null))
   })
 
   router.get("/rooms/:code/events", rateLimit(EVENTS_RATE_LIMIT), async (c) => {

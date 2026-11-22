@@ -1,14 +1,15 @@
-import { MapPinIcon, NavigationIcon, SparklesIcon, StarIcon } from "lucide-react"
+import { MapPinIcon, NavigationIcon, SparklesIcon } from "lucide-react"
 import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
-import { formatCount, formatDistance, formatRating } from "@/lib/format"
+import { formatCount, formatDistance } from "@/lib/format"
 import { emitPlaceClick } from "@/lib/events"
 import { cn } from "@/lib/utils"
 import { isOpenNow } from "../lib/opening-hours"
 import { categoryLabel } from "../lib/category-meta"
+import { formatPlaceTrustLabel } from "../lib/review-tier-meta"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
 import type { DailyPickWhy, Place } from "../types/place"
 
@@ -95,8 +96,7 @@ function PlaceCardBadges({ place, isNew, openState, rankBadge }: PlaceCardBadges
 
         {place.reviewCount > 0 ? (
           <span className="flex items-center gap-1 rounded-control border border-border/50 bg-background/92 px-2 py-0.5 text-xs font-bold text-foreground tabular-nums shadow-xs backdrop-blur-sm">
-            <StarIcon className="size-3.5 fill-star text-star" aria-hidden="true" />
-            {formatRating(place.rating)}
+            {formatPlaceTrustLabel(place.mustTryCount, place.reviewCount)}
           </span>
         ) : null}
       </div>
@@ -192,8 +192,7 @@ export function PlaceCard({
             </span>
             {place.reviewCount > 0 ? (
               <span className="flex shrink-0 items-center gap-1 font-bold text-foreground tabular-nums">
-                <StarIcon className="size-3 fill-star text-star" aria-hidden="true" />
-                {formatRating(place.rating)}
+                {formatPlaceTrustLabel(place.mustTryCount, place.reviewCount)}
               </span>
             ) : null}
           </div>

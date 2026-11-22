@@ -41,8 +41,8 @@ function findResidualEntityTokens(normalizedQuery: string, matchedPhrases: strin
 
 function bayesianQuality(row: PlaceRow): number {
   const count = Number(row.review_count)
-  const avg = Number(row.rating)
-  return (count * avg + 10 * 3.8) / (count + 10)
+  const ratio = Number(row.positive_ratio) / 20
+  return (count * ratio + 10 * 3.8) / (count + 10)
 }
 
 async function runHybridPass(params: {

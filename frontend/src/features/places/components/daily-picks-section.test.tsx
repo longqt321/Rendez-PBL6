@@ -24,7 +24,7 @@ const PLACE: Place = {
   city: "Đà Nẵng",
   category: "restaurant",
   tags: [],
-  rating: 4.8,
+  positiveRatio: 90,
   reviewCount: 10,
   priceLevel: 2,
   imageHeight: 320,

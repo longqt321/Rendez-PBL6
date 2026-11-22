@@ -58,7 +58,7 @@ describe("GET /places/:id/reviews?limit", () => {
       data: users.map((user, i) => ({
         placeId,
         authorId: user.id,
-        rating: 3 + i,
+        tier: "good",
         content: `Đánh giá limit ${i}`,
         createdAt: new Date(Date.now() - (users.length - i) * 60_000),
       })),

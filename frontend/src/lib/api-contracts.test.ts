@@ -13,7 +13,7 @@ describe("checkApiContract", () => {
       city: "Đà Nẵng",
       category: "cafe",
       tags: ["view-đẹp"],
-      rating: 4.5,
+      positiveRatio: 90,
       reviewCount: 12,
       priceLevel: 2,
       imageSeed: "seed",
@@ -117,6 +117,11 @@ describe("checkApiContract", () => {
       id: "r1",
       code: "AB23CD",
       name: "Nhóm",
+      phase: "filtering",
+      votingMode: "swipe_match",
+      candidates: [],
+      voteSummaries: [],
+      votingProgress: { votedMemberIds: [], totalActiveMembers: 1, matchedCandidateIds: [] },
       members: [{ id: "m1", displayName: "Bạn", isMe: true, joinedAt: "" }],
       proposals: [
         {

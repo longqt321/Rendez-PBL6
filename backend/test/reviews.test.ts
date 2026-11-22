@@ -86,17 +86,15 @@ describe("reviews + reports", () => {
   test("POST review cần đăng nhập", async () => {
     const res = await call(`/api/v1/places/${placeId}/reviews`, {
       method: "POST",
-      body: JSON.stringify({ rating: 5, content: "Ngon" }),
+      body: JSON.stringify({ tier: "must_try", content: "Ngon" }),
     })
     expect(res.status).toBe(401)
   })
 
-  test("POST review từ chối rating sai và content rỗng", async () => {
+  test("POST review từ chối tier sai và quá nhiều món", async () => {
     for (const body of [
-      { rating: 0, content: "X" },
-      { rating: 6, content: "X" },
-      { rating: 4.5, content: "X" },
-      { rating: 4, content: "   " },
+      { tier: "bad", content: "X" },
+      { tier: "must_try", recommendedDishes: ["A", "B", "C", "D"] },
     ]) {
       const res = await call(`/api/v1/places/${placeId}/reviews`, {
         method: "POST",
@@ -111,50 +109,60 @@ describe("reviews + reports", () => {
     const create = await call(`/api/v1/places/${placeId}/reviews`, {
       method: "POST",
       cookie: user.cookie,
-      body: JSON.stringify({ rating: 5, content: "Rất ngon" }),
+      body: JSON.stringify({
+        tier: "must_try",
+        content: "Rất ngon",
+        recommendedDishes: ["Mì quảng ếch"],
+      }),
     })
     expect(create.status).toBe(201)
-    const created = (await create.json()) as { id: string; isMine: boolean; rating: number }
+    const created = (await create.json()) as {
+      id: string
+      isMine: boolean
+      tier: string
+      recommendedDishes: string[]
+    }
     expect(created.isMine).toBe(true)
-    expect(created.rating).toBe(5)
+    expect(created.tier).toBe("must_try")
+    expect(created.recommendedDishes).toEqual(["Mì quảng ếch"])
 
     // Ghi đè cùng user — không tăng số review.
     const update = await call(`/api/v1/places/${placeId}/reviews`, {
       method: "POST",
       cookie: user.cookie,
-      body: JSON.stringify({ rating: 2, content: "Đổi ý" }),
+      body: JSON.stringify({ tier: "ok", content: "Đổi ý" }),
     })
     expect(update.status).toBe(201)
-    const updated = (await update.json()) as { id: string; rating: number }
+    const updated = (await update.json()) as { id: string; tier: string }
     expect(updated.id).toBe(created.id)
-    expect(updated.rating).toBe(2)
+    expect(updated.tier).toBe("ok")
 
-    // Aggregate tăng dần: reviewCount = số dòng reviews thật, rating là AVG.
+    // Aggregate tăng dần: reviewCount = số dòng reviews thật, positiveRatio là tỷ lệ good/must_try.
     const rows = await prisma.review.findMany({
       where: { placeId, deletedAt: null },
-      select: { rating: true },
+      select: { tier: true },
     })
     expect(rows).toHaveLength(1)
     const detail = await call(`/api/v1/places/${placeId}`)
-    const place = (await detail.json()) as { rating: number; reviewCount: number }
+    const place = (await detail.json()) as { positiveRatio: number; reviewCount: number }
     expect(place.reviewCount).toBe(rows.length)
-    expect(place.rating).toBeCloseTo(rows.reduce((s, r) => s + r.rating, 0) / rows.length, 1)
+    expect(place.positiveRatio).toBe(0)
   })
 
   test("isMine chỉ đúng với tác giả", async () => {
     await call(`/api/v1/places/${placeId}/reviews`, {
       method: "POST",
       cookie: other.cookie,
-      body: JSON.stringify({ rating: 4, content: "Cũng được" }),
+      body: JSON.stringify({ tier: "good", content: "Cũng được" }),
     })
     const res = await call(`/api/v1/places/${placeId}/reviews`, { cookie: user.cookie })
     const body = (await res.json()) as {
-      items: Array<{ isMine: boolean; rating: number }>
+      items: Array<{ isMine: boolean; tier: string }>
     }
     const mine = body.items.find((r) => r.isMine)
     const theirs = body.items.find((r) => !r.isMine)
-    expect(mine?.rating).toBe(2)
-    expect(theirs?.rating).toBe(4)
+    expect(mine?.tier).toBe("ok")
+    expect(theirs?.tier).toBe("good")
   })
 
   test("POST report: other cần detail, unique place+reason+reporter (A7.5)", async () => {

@@ -5,13 +5,50 @@ import { toPlaceDto, type PlaceDto, type PlaceRow } from "./types"
 import type { Cursor } from "../cursor"
 
 export async function findPublicPlace(id: string): Promise<PlaceDto | null> {
-  const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-    ${selectPlaces()}
-    WHERE p.id = ${id} AND p.published_at IS NOT NULL AND p.deleted_at IS NULL
-    LIMIT 1
-  `)
+  const [rows, tierRows, dishRows] = await Promise.all([
+    prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
+      ${selectPlaces()}
+      WHERE p.id = ${id} AND p.published_at IS NOT NULL AND p.deleted_at IS NULL
+      LIMIT 1
+    `),
+    prisma.$queryRaw<
+      Array<{ must_try_count: number; good_count: number; ok_count: number; total_reviews: number }>
+    >(Prisma.sql`
+      SELECT
+        COUNT(*) FILTER (WHERE tier = 'must_try')::int AS must_try_count,
+        COUNT(*) FILTER (WHERE tier = 'good')::int AS good_count,
+        COUNT(*) FILTER (WHERE tier = 'ok')::int AS ok_count,
+        COUNT(*)::int AS total_reviews
+      FROM reviews
+      WHERE place_id = ${id} AND deleted_at IS NULL
+    `),
+    prisma.$queryRaw<Array<{ dish_name: string; count: number }>>(Prisma.sql`
+      SELECT TRIM(dish) AS dish_name, COUNT(*)::int AS count
+      FROM reviews r, LATERAL unnest(r.recommended_dishes) AS dish
+      WHERE r.place_id = ${id} AND r.deleted_at IS NULL AND TRIM(dish) <> ''
+      GROUP BY LOWER(TRIM(dish)), TRIM(dish)
+      ORDER BY count DESC, dish_name ASC
+      LIMIT 5
+    `),
+  ])
   const row = rows[0]
-  return row ? toPlaceDto(row) : null
+  if (!row) return null
+  const t = tierRows[0] ?? { must_try_count: 0, good_count: 0, ok_count: 0, total_reviews: 0 }
+  const positiveRatio =
+    t.total_reviews > 0
+      ? Math.round((100 * (t.must_try_count + t.good_count)) / t.total_reviews)
+      : 0
+  return {
+    ...toPlaceDto(row),
+    tierSummary: {
+      mustTryCount: t.must_try_count,
+      goodCount: t.good_count,
+      okCount: t.ok_count,
+      totalReviews: t.total_reviews,
+      positiveRatio,
+    },
+    topRecommendedDishes: dishRows.map((d) => ({ dishName: d.dish_name, count: d.count })),
+  }
 }
 
 export async function findPublicPlaceWithVersion(

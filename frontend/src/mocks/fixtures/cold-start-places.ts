@@ -63,7 +63,7 @@ export const COLD_START_PLACES: MockPlace[] = places.map((raw, index) => {
     district: raw.district ?? undefined,
     category: CATEGORY_MAP[raw.category] ?? "restaurant",
     tags: [],
-    rating: 0,
+    positiveRatio: 0,
     reviewCount: 0,
     priceLevel: 1,
     imageUrl: raw.image ? `/data/cold-start/${raw.image}` : undefined,

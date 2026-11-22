@@ -6,16 +6,19 @@ import { ROOM_TOKEN_TTL_SECONDS, hashRoomToken, issueRoomToken } from "./room-to
 import {
   CATEGORY_LABEL,
   parseApiCategory,
+  toApiCategory,
   toApiProposalField,
   toPrismaCategory,
   toPrismaProposalField,
 } from "./enums"
 import type {
   Room,
+  RoomCandidate,
   RoomFilter,
   RoomMember,
   RoomProposal,
   RoomProposalField,
+  RoomVoteSummary,
   UpdateRoomFilterInput,
 } from "@rendez/schema"
 
@@ -88,6 +91,19 @@ export function serializeRoomFilter(filter: RoomFilter): Prisma.InputJsonValue {
 const ROOM_INCLUDE = {
   members: { orderBy: { joinedAt: "asc" } },
   proposals: { orderBy: { createdAt: "desc" } },
+  candidates: {
+    orderBy: { createdAt: "asc" },
+    include: {
+      place: {
+        include: {
+          images: { orderBy: { position: "asc" }, take: 1 },
+          placeTags: { include: { tag: true }, orderBy: { position: "asc" } },
+          reviews: { where: { deletedAt: null }, select: { tier: true } },
+        },
+      },
+    },
+  },
+  votes: true,
 } satisfies Prisma.RoomInclude
 
 type RoomWithRelations = Prisma.RoomGetPayload<{ include: typeof ROOM_INCLUDE }>
@@ -106,6 +122,8 @@ export function toRoomDto(
     joinedAt: member.joinedAt.toISOString(),
   }))
 
+  const myMemberId = members.find((m) => m.isMe)?.id ?? null
+
   const proposals: RoomProposal[] = room.proposals.map((proposal) => ({
     id: proposal.id,
     memberId: proposal.memberId,
@@ -116,12 +134,90 @@ export function toRoomDto(
     createdAt: proposal.createdAt.toISOString(),
   }))
 
+  const candidates: RoomCandidate[] = room.candidates.map((cand) => {
+    const p = cand.place
+    const totalReviews = p.reviews.length
+    const positiveCount = p.reviews.filter((r) => r.tier === "good" || r.tier === "must_try").length
+    const positiveRatio = totalReviews > 0 ? Math.round((100 * positiveCount) / totalReviews) : 0
+    const img = p.images[0]
+    return {
+      id: cand.id,
+      placeId: cand.placeId,
+      addedByMemberId: cand.addedByMemberId,
+      createdAt: cand.createdAt.toISOString(),
+      place: {
+        id: p.id,
+        name: p.name,
+        address: p.address,
+        city: p.city,
+        ...(p.district ? { district: p.district } : {}),
+        category: toApiCategory(p.category),
+        tags: p.placeTags.map((pt) => pt.tag.name),
+        positiveRatio,
+        reviewCount: totalReviews,
+        priceLevel: (p.priceLevel === 1 || p.priceLevel === 2 || p.priceLevel === 3
+          ? p.priceLevel
+          : 2) as 1 | 2 | 3,
+        ...(img ? { imageUrl: img.url, imageHeight: img.height } : { imageHeight: 320 }),
+        ...(p.lat !== null ? { lat: p.lat } : {}),
+        ...(p.lng !== null ? { lng: p.lng } : {}),
+        status: p.status,
+        ...(p.description ? { description: p.description } : {}),
+        ...(p.openingHours ? { openingHours: p.openingHours } : {}),
+        publishedAt: p.publishedAt ? p.publishedAt.toISOString() : null,
+      },
+    }
+  })
+
+  const activeMemberIds = new Set(members.map((m) => m.id))
+  const votedMemberIds = new Set<string>()
+  const voteSummaries: RoomVoteSummary[] = candidates.map((cand) => {
+    const candVotes = room.votes.filter((v) => v.candidateId === cand.id)
+    let likeCount = 0
+    let passCount = 0
+    let myDecision: "like" | "pass" | undefined
+    let myRank: number | undefined
+    for (const v of candVotes) {
+      if (activeMemberIds.has(v.memberId)) votedMemberIds.add(v.memberId)
+      if (v.decision === "like") likeCount++
+      if (v.decision === "pass") passCount++
+      if (myMemberId && v.memberId === myMemberId) {
+        if (v.decision === "like" || v.decision === "pass") myDecision = v.decision
+        if (v.rank !== null) myRank = v.rank
+      }
+    }
+    return {
+      candidateId: cand.id,
+      likeCount,
+      passCount,
+      ...(myDecision ? { myDecision } : {}),
+      ...(myRank ? { myRank } : {}),
+    }
+  })
+
+  const matchedCandidateIds =
+    members.length > 0
+      ? voteSummaries.filter((s) => s.likeCount >= members.length).map((s) => s.candidateId)
+      : []
+
   return {
     id: room.id,
     code: room.code,
     name: room.name,
+    phase: room.phase,
+    votingMode: room.votingMode,
+    votingDeadlineAt: room.votingDeadlineAt ? room.votingDeadlineAt.toISOString() : null,
+    winnerPlaceId: room.winnerPlaceId ?? null,
+    lockedAt: room.lockedAt ? room.lockedAt.toISOString() : null,
     members,
     proposals,
+    candidates,
+    voteSummaries,
+    votingProgress: {
+      votedMemberIds: [...votedMemberIds],
+      totalActiveMembers: members.length,
+      matchedCandidateIds,
+    },
     filter: parseRoomFilter(room.filter),
     createdAt: room.createdAt.toISOString(),
   }

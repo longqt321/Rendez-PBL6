@@ -183,14 +183,63 @@ db.auditLogs.push({
 
 // Tổng hợp review seed vào rating/reviewCount của place — nếu không, place
 // hiện rating=0 dù đã có review, lệch với số review hiển thị trên trang quán.
-for (const review of db.reviews) {
-  const place = db.places.find((item) => item.id === review.placeId)
-  if (!place) continue
-  place.rating = (place.rating * place.reviewCount + review.rating) / (place.reviewCount + 1)
-  place.reviewCount += 1
+function recomputePlaceTierStats(place: MockPlace) {
+  const revs = db.reviews.filter((r) => r.placeId === place.id)
+  place.reviewCount = revs.length
+  const pos = revs.filter((r) => r.tier === "good" || r.tier === "must_try").length
+  place.positiveRatio = revs.length > 0 ? Math.round((100 * pos) / revs.length) : 0
+  place.mustTryCount = revs.filter((r) => r.tier === "must_try").length
 }
 for (const place of db.places) {
-  place.rating = Math.round(place.rating * 10) / 10
+  recomputePlaceTierStats(place)
+}
+
+const mockPlaceMedia = new Map<
+  string,
+  Array<{
+    id: string
+    url: string
+    kind: "venue" | "dish_real" | "menu_price"
+    capturedAt: string
+    sourceType: "place" | "post"
+    authorName?: string
+  }>
+>()
+const mockRoomVoting = new Map<
+  string,
+  {
+    phase: "filtering" | "voting" | "locked"
+    votingMode: "swipe_match" | "ranked_choice" | "random_wheel"
+    winnerPlaceId: string | null
+    candidates: Array<{
+      id: string
+      placeId: string
+      addedByMemberId: string
+      place: Place
+      createdAt: string
+    }>
+    votes: Array<{
+      candidateId: string
+      memberId: string
+      decision?: "like" | "pass"
+      rank?: number
+    }>
+  }
+>()
+
+function getRoomVotingState(code: string) {
+  let st = mockRoomVoting.get(code)
+  if (!st) {
+    st = {
+      phase: "filtering",
+      votingMode: "swipe_match",
+      winnerPlaceId: null,
+      candidates: [],
+      votes: [],
+    }
+    mockRoomVoting.set(code, st)
+  }
+  return st
 }
 
 const notifiedPostIds = new Set<string>()
@@ -306,7 +355,8 @@ function toPlaceDto(place: MockPlace): Place {
     district: place.district,
     category: place.category,
     tags: place.tags,
-    rating: place.rating,
+    positiveRatio: place.positiveRatio,
+    mustTryCount: place.mustTryCount ?? 0,
     reviewCount: place.reviewCount,
     priceLevel: place.priceLevel,
     imageUrl: place.imageUrl,
@@ -384,7 +434,7 @@ function sortPublishedPlaces(items: Place[], sort?: string, lat?: string, lng?: 
       const aHas = a.reviewCount > 0
       const bHas = b.reviewCount > 0
       if (aHas !== bHas) return aHas ? -1 : 1
-      if (aHas && a.rating !== b.rating) return b.rating - a.rating
+      if (aHas && a.positiveRatio !== b.positiveRatio) return b.positiveRatio - a.positiveRatio
       return 0
     })
   }
@@ -725,7 +775,13 @@ function toReviewDto(review: MockReview): Review {
     id: review.id,
     placeId: review.placeId,
     author: review.author,
-    rating: review.rating,
+    tier: review.tier,
+    recommendedDishes: review.recommendedDishes ?? [],
+    quickTags: review.quickTags ?? [],
+    authorReviewCount: db.reviews.filter((r) => r.author.id === review.author.id).length,
+    isFollowingAuthor: Boolean(
+      Object.values(db.users).find((u) => u.id === review.author.id)?.followedByMe,
+    ),
     content: review.content,
     createdAt: review.createdAt,
     isMine: review.author.id === CURRENT_USER.id,
@@ -910,34 +966,40 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
   const place = findPlace(placeId)
   if (!place || place.publishedAt === null) notFound(config, "Không tìm thấy địa điểm")
 
-  const body = parseBody<{ rating?: unknown; content?: unknown }>(config)
-  const rating = Number(body.rating)
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    badRequest(config, "Số sao phải là số nguyên từ 1 đến 5")
-  }
+  const body = parseBody<{
+    tier?: unknown
+    content?: unknown
+    recommendedDishes?: unknown
+    quickTags?: unknown
+  }>(config)
+  const tier =
+    body.tier === "ok" || body.tier === "good" || body.tier === "must_try" ? body.tier : null
+  if (!tier) badRequest(config, "Mức đánh giá không hợp lệ")
   const content = typeof body.content === "string" ? body.content.trim() : ""
-  if (content.length === 0) badRequest(config, "Nội dung đánh giá trống")
   if (content.length > MAX_REVIEW_CONTENT_LENGTH) {
     badRequest(config, `Nội dung đánh giá tối đa ${MAX_REVIEW_CONTENT_LENGTH} ký tự`)
   }
+  const recommendedDishes = Array.isArray(body.recommendedDishes)
+    ? body.recommendedDishes
+        .filter((d): d is string => typeof d === "string" && d.trim().length > 0)
+        .slice(0, 3)
+    : []
+  const quickTags = Array.isArray(body.quickTags)
+    ? body.quickTags
+        .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
+        .slice(0, 3)
+    : []
 
   const existing = db.reviews.find(
     (review) => review.placeId === placeId && review.author.id === CURRENT_USER.id,
   )
-  // Điểm trung bình là aggregate tăng dần (như backend thật với dữ liệu lớn):
-  // tạo mới → cộng vào trung bình có trọng số; ghi đè → trừ điểm cũ cộng điểm mới.
   if (existing) {
-    place.rating = (place.rating * place.reviewCount - existing.rating + rating) / place.reviewCount
-  } else {
-    place.rating = (place.rating * place.reviewCount + rating) / (place.reviewCount + 1)
-    place.reviewCount += 1
-  }
-  // Hiển thị 1 chữ số thập phân (khớp `formatRating`).
-  place.rating = Math.round(place.rating * 10) / 10
-  if (existing) {
-    existing.rating = rating
+    existing.tier = tier!
     existing.content = content
+    existing.recommendedDishes = recommendedDishes
+    existing.quickTags = quickTags
     existing.createdAt = new Date().toISOString()
+    recomputePlaceTierStats(place)
     return toReviewDto(existing)
   }
 
@@ -946,11 +1008,14 @@ function createReview(config: InternalAxiosRequestConfig, placeId: string): Revi
     id: `r-new-${reviewSeq}`,
     placeId,
     author: CURRENT_USER,
-    rating,
+    tier,
+    recommendedDishes,
+    quickTags,
     content,
     createdAt: new Date().toISOString(),
   }
   db.reviews.push(review)
+  recomputePlaceTierStats(place)
   return toReviewDto(review)
 }
 
@@ -963,17 +1028,8 @@ function deleteReview(config: InternalAxiosRequestConfig, placeId: string): void
   )
   if (idx === -1) notFound(config, "Không tìm thấy đánh giá")
 
-  const removed = db.reviews[idx]
   db.reviews.splice(idx, 1)
-
-  if (place.reviewCount > 1) {
-    place.rating = (place.rating * place.reviewCount - removed.rating) / (place.reviewCount - 1)
-    place.reviewCount -= 1
-    place.rating = Math.round(place.rating * 10) / 10
-  } else {
-    place.rating = 0
-    place.reviewCount = 0
-  }
+  recomputePlaceTierStats(place)
 }
 
 /**
@@ -1437,6 +1493,50 @@ function toRoomDto(room: MockRoom): Room {
     id: room.id,
     code: room.code,
     name: room.name,
+    ...(() => {
+      const st = getRoomVotingState(room.code)
+      const me = room.members.find((m) => m.userId === CURRENT_USER.id)
+      const votedIds = new Set<string>()
+      const voteSummaries = st.candidates.map((c) => {
+        const cv = st.votes.filter((v) => v.candidateId === c.id)
+        let likeCount = 0
+        let passCount = 0
+        let myDecision: "like" | "pass" | undefined
+        let myRank: number | undefined
+        for (const v of cv) {
+          votedIds.add(v.memberId)
+          if (v.decision === "like") likeCount++
+          if (v.decision === "pass") passCount++
+          if (me && v.memberId === me.id) {
+            myDecision = v.decision
+            myRank = v.rank
+          }
+        }
+        return {
+          candidateId: c.id,
+          likeCount,
+          passCount,
+          ...(myDecision ? { myDecision } : {}),
+          ...(myRank ? { myRank } : {}),
+        }
+      })
+      return {
+        phase: st.phase,
+        votingMode: st.votingMode,
+        votingDeadlineAt: null,
+        winnerPlaceId: st.winnerPlaceId,
+        lockedAt: st.phase === "locked" ? new Date().toISOString() : null,
+        candidates: st.candidates,
+        voteSummaries,
+        votingProgress: {
+          votedMemberIds: [...votedIds],
+          totalActiveMembers: room.members.length,
+          matchedCandidateIds: voteSummaries
+            .filter((vs) => vs.likeCount >= room.members.length && room.members.length > 0)
+            .map((vs) => vs.candidateId),
+        },
+      }
+    })(),
     members: room.members.map((member) => ({
       id: member.id,
       displayName: member.displayName,
@@ -2235,6 +2335,147 @@ const routes: Route[] = [
       if (!notification) notFound(config, "Không tìm thấy thông báo")
       notification.read = true
       return toNotificationDto(notification)
+    },
+  },
+
+  {
+    method: "get",
+    pattern: /^\/places\/([^/]+)\/media$/,
+    handler: (config, match) => {
+      const placeId = match[0]
+      const place = findPlace(placeId)
+      if (!place) notFound(config, "Không tìm thấy địa điểm")
+      const custom = mockPlaceMedia.get(placeId) ?? []
+      const seeded = place.imageUrl
+        ? [
+            {
+              id: `pm-${placeId}-1`,
+              url: place.imageUrl,
+              kind: "dish_real" as const,
+              capturedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+              sourceType: "post" as const,
+              authorName: "Lan Anh",
+            },
+            {
+              id: `pm-${placeId}-2`,
+              url: place.imageUrl,
+              kind: "venue" as const,
+              capturedAt: new Date(Date.now() - 86400000 * 10).toISOString(),
+              sourceType: "place" as const,
+              authorName: "Rendez",
+            },
+          ]
+        : []
+      return { items: [...custom, ...seeded], next: null }
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/places\/([^/]+)\/images$/,
+    handler: (config, match) => {
+      const placeId = match[0]
+      const body = parseBody<{
+        images: Array<{ url: string; kind: "venue" | "dish_real" | "menu_price" }>
+      }>(config)
+      const list = mockPlaceMedia.get(placeId) ?? []
+      const created = (body.images ?? []).map((img, i) => ({
+        id: `pm-up-${Date.now()}-${i}`,
+        url: img.url,
+        kind: img.kind,
+        capturedAt: new Date().toISOString(),
+        sourceType: "place" as const,
+        authorName: db.me.name,
+      }))
+      mockPlaceMedia.set(placeId, [...created, ...list])
+      return { items: created }
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/rooms\/([^/]+)\/candidates$/,
+    handler: (config, match) => {
+      const code = match[0]
+      const room = db.rooms.find((r) => r.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      const body = parseBody<{ placeId: string }>(config)
+      const place = findPlace(body.placeId)
+      if (!place) notFound(config, "Không tìm thấy quán")
+      const st = getRoomVotingState(room.code)
+      if (!st.candidates.some((c) => c.placeId === place.id)) {
+        st.candidates.push({
+          id: `cand-${Date.now()}-${st.candidates.length}`,
+          placeId: place.id,
+          addedByMemberId: room.members[0]?.id ?? "m1",
+          place: toPlaceDto(place),
+          createdAt: new Date().toISOString(),
+        })
+      }
+      return toRoomDto(room)
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/rooms\/([^/]+)\/voting\/start$/,
+    handler: (config, match) => {
+      const code = match[0]
+      const room = db.rooms.find((r) => r.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      const body = parseBody<{ votingMode: "swipe_match" | "ranked_choice" | "random_wheel" }>(
+        config,
+      )
+      const st = getRoomVotingState(room.code)
+      st.votingMode = body.votingMode
+      if (body.votingMode === "random_wheel" && st.candidates.length > 0) {
+        st.phase = "locked"
+        st.winnerPlaceId = st.candidates[0].placeId
+      } else {
+        st.phase = "voting"
+      }
+      return toRoomDto(room)
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/rooms\/([^/]+)\/votes$/,
+    handler: (config, match) => {
+      const code = match[0]
+      const room = db.rooms.find((r) => r.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      const st = getRoomVotingState(room.code)
+      const meId =
+        room.members.find((m) => m.userId === CURRENT_USER.id)?.id ?? room.members[0]?.id ?? "m1"
+      const body = parseBody<{
+        mode: string
+        candidateId?: string
+        decision?: "like" | "pass"
+        rankings?: Array<{ candidateId: string; rank: number }>
+      }>(config)
+      if (body.mode === "swipe_match" && body.candidateId && body.decision) {
+        st.votes = st.votes.filter(
+          (v) => !(v.candidateId === body.candidateId && v.memberId === meId),
+        )
+        st.votes.push({ candidateId: body.candidateId, memberId: meId, decision: body.decision })
+      } else if (body.mode === "ranked_choice" && Array.isArray(body.rankings)) {
+        st.votes = st.votes.filter((v) => v.memberId !== meId)
+        for (const r of body.rankings) {
+          st.votes.push({ candidateId: r.candidateId, memberId: meId, rank: r.rank })
+        }
+      }
+      return toRoomDto(room)
+    },
+  },
+  {
+    method: "post",
+    pattern: /^\/rooms\/([^/]+)\/voting\/finalize$/,
+    handler: (config, match) => {
+      const code = match[0]
+      const room = db.rooms.find((r) => r.code === code.toUpperCase())
+      if (!room) notFound(config, "Không tìm thấy phòng")
+      const st = getRoomVotingState(room.code)
+      const body = parseBody<{ winnerPlaceId?: string }>(config)
+      st.phase = "locked"
+      st.winnerPlaceId = body.winnerPlaceId ?? st.candidates[0]?.placeId ?? null
+      return toRoomDto(room)
     },
   },
 

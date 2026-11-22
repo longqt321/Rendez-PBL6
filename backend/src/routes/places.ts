@@ -1,6 +1,14 @@
 import { Hono } from "hono"
-import { parseNaturalFilterQuery } from "@rendez/schema"
+import {
+  addPlaceImagesInputSchema,
+  parseNaturalFilterQuery,
+  placeMediaKindSchema,
+  type PlaceMediaItem,
+} from "@rendez/schema"
 import type { AppEnv } from "../app"
+import { Prisma } from "../../generated/prisma/client"
+import { prisma } from "../lib/prisma"
+import { idempotency } from "../lib/idempotency"
 import {
   SLUG_ID_RE,
   decodeCursor,
@@ -283,6 +291,113 @@ export function createPlacesRouter() {
       pageSize: PLACE_POSTS_PAGE_SIZE,
     })
     return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
+  })
+
+  router.get("/places/:id/media", async (c) => {
+    const id = c.req.param("id")
+    if (!SLUG_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")
+    const found = await prisma.place.findFirst({
+      where: { id, publishedAt: { not: null }, deletedAt: null },
+      select: { id: true },
+    })
+    if (!found) throw new ApiError(404, "Không tìm thấy địa điểm")
+
+    const rawKind = c.req.query("kind")
+    const parsedKind = rawKind ? placeMediaKindSchema.safeParse(rawKind) : null
+    if (parsedKind && !parsedKind.success) {
+      throw new ApiError(400, "Loại ảnh không hợp lệ")
+    }
+    const kindFilter = parsedKind?.success
+      ? Prisma.sql`AND kind = ${parsedKind.data}::place_media_kind`
+      : Prisma.empty
+
+    const rows = await prisma.$queryRaw<
+      Array<{
+        id: string
+        url: string
+        kind: "venue" | "dish_real" | "menu_price"
+        captured_at: Date
+        source_type: "place" | "post"
+        author_name: string | null
+        post_id: string | null
+      }>
+    >(Prisma.sql`
+      SELECT id, url, kind, captured_at, source_type, author_name, post_id
+      FROM (
+        SELECT pi.id::text AS id, pi.url, pi.kind::text AS kind, pi.captured_at,
+               'place'::text AS source_type, u.name AS author_name, NULL::text AS post_id
+        FROM place_images pi
+        LEFT JOIN users u ON u.id = pi.uploaded_by_id
+        WHERE pi.place_id = ${id}
+        UNION ALL
+        SELECT psi.id::text AS id, psi.url, psi.kind::text AS kind, psi.captured_at,
+               'post'::text AS source_type, u.name AS author_name, p.id::text AS post_id
+        FROM post_images psi
+        JOIN posts p ON p.id = psi.post_id
+        JOIN users u ON u.id = p.author_id
+        WHERE p.place_id = ${id} AND p.deleted_at IS NULL
+      ) combined
+      WHERE 1=1 ${kindFilter}
+      ORDER BY captured_at DESC
+      LIMIT 60
+    `)
+
+    const items: PlaceMediaItem[] = rows.map((r) => ({
+      id: r.id,
+      url: r.url,
+      kind: r.kind,
+      capturedAt: r.captured_at.toISOString(),
+      sourceType: r.source_type,
+      ...(r.author_name ? { authorName: r.author_name } : {}),
+      ...(r.post_id ? { postId: r.post_id } : {}),
+    }))
+    return c.json({ items, next: null })
+  })
+
+  router.post("/places/:id/images", requireAuth, idempotency(), async (c) => {
+    const id = c.req.param("id")
+    if (!SLUG_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")
+    const found = await prisma.place.findFirst({
+      where: { id, publishedAt: { not: null }, deletedAt: null },
+      select: { id: true },
+    })
+    if (!found) throw new ApiError(404, "Không tìm thấy địa điểm")
+
+    const raw = await c.req.json().catch(() => null)
+    const parsed = addPlaceImagesInputSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu ảnh không hợp lệ")
+    }
+
+    const userId = c.get("userId")
+    const created = await prisma.$transaction(
+      parsed.data.images.map((img, idx) =>
+        prisma.placeImage.create({
+          data: {
+            placeId: id,
+            url: img.url,
+            kind: img.kind,
+            uploadedById: userId,
+            position: 100 + idx,
+          },
+          select: { id: true, url: true, kind: true, capturedAt: true },
+        }),
+      ),
+    )
+    invalidatePlacesReadCaches()
+
+    return c.json(
+      {
+        items: created.map((item) => ({
+          id: item.id,
+          url: item.url,
+          kind: item.kind,
+          capturedAt: item.capturedAt.toISOString(),
+          sourceType: "place" as const,
+        })),
+      },
+      201,
+    )
   })
 
   router.get("/places/:id", async (c) => {

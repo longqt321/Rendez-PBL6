@@ -11,7 +11,7 @@ const BASE_PLACE: Place = {
   city: "Đà Nẵng",
   category: "cafe",
   tags: ["yên tĩnh", "cà phê"],
-  rating: 4.7,
+  positiveRatio: 90,
   reviewCount: 15,
   priceLevel: 1,
   imageHeight: 300,

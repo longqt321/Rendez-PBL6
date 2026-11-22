@@ -1,5 +1,16 @@
 import { z } from "zod"
-import type { Room, RoomFilter, RoomMember, RoomProposal } from "./types/room"
+import { placeSchema } from "./place.schema"
+import type {
+  Room,
+  RoomCandidate,
+  RoomFilter,
+  RoomMember,
+  RoomPhase,
+  RoomProposal,
+  RoomVoteSummary,
+  RoomVotingMode,
+  RoomVotingProgress,
+} from "./types/room"
 
 const placeCategoryEnum = z.enum([
   "cafe",
@@ -9,6 +20,18 @@ const placeCategoryEnum = z.enum([
   "dessert",
   "bar",
 ])
+
+export const roomPhaseSchema = z.enum([
+  "filtering",
+  "voting",
+  "locked",
+]) satisfies z.ZodType<RoomPhase>
+
+export const roomVotingModeSchema = z.enum([
+  "swipe_match",
+  "ranked_choice",
+  "random_wheel",
+]) satisfies z.ZodType<RoomVotingMode>
 
 export const roomMemberSchema = z.object({
   id: z.string(),
@@ -37,12 +60,42 @@ export const roomFilterSchema = z.object({
   priceMax: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
 }) satisfies z.ZodType<RoomFilter>
 
+export const roomCandidateSchema = z.object({
+  id: z.string(),
+  placeId: z.string(),
+  addedByMemberId: z.string(),
+  place: placeSchema,
+  createdAt: z.string(),
+}) satisfies z.ZodType<RoomCandidate>
+
+export const roomVoteSummarySchema = z.object({
+  candidateId: z.string(),
+  likeCount: z.number().int().min(0),
+  passCount: z.number().int().min(0),
+  myDecision: z.enum(["like", "pass"]).optional(),
+  myRank: z.number().int().min(1).max(3).optional(),
+}) satisfies z.ZodType<RoomVoteSummary>
+
+export const roomVotingProgressSchema = z.object({
+  votedMemberIds: z.array(z.string()),
+  totalActiveMembers: z.number().int().min(0),
+  matchedCandidateIds: z.array(z.string()),
+}) satisfies z.ZodType<RoomVotingProgress>
+
 export const roomSchema = z.object({
   id: z.string(),
   code: z.string(),
   name: z.string(),
+  phase: roomPhaseSchema,
+  votingMode: roomVotingModeSchema,
+  votingDeadlineAt: z.string().nullable().optional(),
+  winnerPlaceId: z.string().nullable().optional(),
+  lockedAt: z.string().nullable().optional(),
   members: z.array(roomMemberSchema),
   proposals: z.array(roomProposalSchema),
+  candidates: z.array(roomCandidateSchema),
+  voteSummaries: z.array(roomVoteSummarySchema),
+  votingProgress: roomVotingProgressSchema,
   filter: roomFilterSchema,
   createdAt: z.string(),
 }) satisfies z.ZodType<Room>
@@ -100,5 +153,42 @@ export const updateRoomFilterInputSchema = z.union([
   }),
 ])
 
+export const addRoomCandidateInputSchema = z.object({
+  placeId: z.string().trim().min(1),
+})
+
+export const startRoomVotingInputSchema = z.object({
+  votingMode: roomVotingModeSchema,
+  votingDeadlineAt: z.string().datetime().optional(),
+})
+
+export const castRoomVoteInputSchema = z.union([
+  z.object({
+    mode: z.literal("swipe_match"),
+    candidateId: z.string().uuid(),
+    decision: z.enum(["like", "pass"]),
+  }),
+  z.object({
+    mode: z.literal("ranked_choice"),
+    rankings: z
+      .array(
+        z.object({
+          candidateId: z.string().uuid(),
+          rank: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+        }),
+      )
+      .min(1)
+      .max(3),
+  }),
+])
+
+export const finalizeRoomVotingInputSchema = z.object({
+  winnerPlaceId: z.string().trim().min(1).optional(),
+})
+
 export type CreateProposalInput = z.infer<typeof createProposalInputSchema>
 export type UpdateRoomFilterInput = z.infer<typeof updateRoomFilterInputSchema>
+export type AddRoomCandidateInput = z.infer<typeof addRoomCandidateInputSchema>
+export type StartRoomVotingInput = z.infer<typeof startRoomVotingInputSchema>
+export type CastRoomVoteInput = z.infer<typeof castRoomVoteInputSchema>
+export type FinalizeRoomVotingInput = z.infer<typeof finalizeRoomVotingInputSchema>

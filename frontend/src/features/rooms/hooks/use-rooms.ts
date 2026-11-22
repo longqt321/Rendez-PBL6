@@ -25,6 +25,7 @@ export interface UseRoomsResult {
   setActiveCode: (code: string) => void
   getRoom: (code: string) => Room | undefined
   getRoomStatus: (code: string) => RoomStatus
+  storeRoom: (room: Room) => void
   retryRoom: (code: string) => void
   createRoom: (name: string) => Promise<string>
   joinRoom: (code: string, displayName: string) => Promise<JoinRoomStatus>
@@ -308,6 +309,7 @@ export function useRooms(): UseRoomsResult {
     setActiveCode,
     getRoom,
     getRoomStatus,
+    storeRoom,
     retryRoom,
     createRoom,
     joinRoom,

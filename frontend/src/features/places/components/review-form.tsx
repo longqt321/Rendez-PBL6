@@ -1,139 +1,246 @@
 import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { SendIcon, Trash2Icon } from "lucide-react"
-import { Controller, useForm, useWatch } from "react-hook-form"
-import { z } from "zod"
+import { PlusIcon, SendIcon, Trash2Icon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { MAX_REVIEW_CONTENT_LENGTH } from "@/lib/constants"
 import { formatNumber } from "@/lib/format"
+import { cn } from "@/lib/utils"
+import type { ReviewTier } from "@rendez/schema"
 import type { Review } from "../types/review"
 import { useUpsertReview } from "../hooks/use-upsert-review"
-import { RatingStars } from "./rating-stars"
 import { ReviewDeleteDialog } from "./review-delete-dialog"
+import { REVIEW_TIER_META } from "../lib/review-tier-meta"
 
 interface ReviewFormProps {
   placeId: string
-
   myReview: Review | null
   authorInitials: string
+  suggestedDishes?: string[]
   onDone?: () => void
 }
 
-const reviewSchema = z.object({
-  rating: z.number().int().min(1, "Chọn số sao đánh giá").max(5),
-  content: z
-    .string()
-    .trim()
-    .min(1, "Nhập nội dung đánh giá")
-    .max(
-      MAX_REVIEW_CONTENT_LENGTH,
-      `Nội dung tối đa ${formatNumber(MAX_REVIEW_CONTENT_LENGTH)} ký tự`,
-    ),
-})
+const TIER_ORDER: ReviewTier[] = ["must_try", "good", "ok"]
 
-type ReviewFormValues = z.infer<typeof reviewSchema>
-
-/**
- * Form viết/ghi đè đánh giá: chỉ chọn sao 1–5 và gõ text.
- *
- * Không có ô upload ảnh hay file — đúng thiết kế, server cũng từ chối trường đính
- * kèm. Gửi lại đánh giá đã có là ghi đè (một người một đánh giá mỗi địa điểm).
- */
-export function ReviewForm({ placeId, myReview, authorInitials, onDone }: ReviewFormProps) {
+export function ReviewForm({
+  placeId,
+  myReview,
+  authorInitials,
+  suggestedDishes = [],
+  onDone,
+}: ReviewFormProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const form = useForm<ReviewFormValues>({
-    resolver: zodResolver(reviewSchema),
-    defaultValues: {
-      rating: myReview?.rating ?? 0,
-      content: myReview?.content ?? "",
-    },
-  })
+  const [tier, setTier] = useState<ReviewTier | null>(myReview?.tier ?? null)
+  const [content, setContent] = useState(myReview?.content ?? "")
+  const [dishes, setDishes] = useState<string[]>(myReview?.recommendedDishes ?? [])
+  const [dishDraft, setDishDraft] = useState("")
   const upsert = useUpsertReview(placeId)
-  const content = useWatch({ control: form.control, name: "content" })
 
-  function onSubmit(values: ReviewFormValues) {
-    upsert.mutate(values, {
-      onSuccess: (review) => {
-        toast.success(myReview ? "Đã cập nhật đánh giá" : "Đã gửi đánh giá, cảm ơn bạn!")
-        onDone?.()
-        void review
+  function toggleDish(dishName: string) {
+    const clean = dishName.trim()
+    if (!clean) return
+    const exists = dishes.some((d) => d.toLowerCase() === clean.toLowerCase())
+    if (exists) {
+      setDishes((prev) => prev.filter((d) => d.toLowerCase() !== clean.toLowerCase()))
+      return
+    }
+    if (dishes.length >= 3) {
+      toast.info("Chọn tối đa 3 món nên gọi")
+      return
+    }
+    setDishes((prev) => [...prev, clean.slice(0, 40)])
+  }
+
+  function addCustomDish() {
+    if (!dishDraft.trim()) return
+    toggleDish(dishDraft)
+    setDishDraft("")
+  }
+
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
+    if (!tier) {
+      toast.error("Hãy chọn mức đánh giá của bạn")
+      return
+    }
+    upsert.mutate(
+      {
+        tier,
+        content: content.trim(),
+        recommendedDishes: dishes,
+        quickTags: [],
       },
-      onError: () => toast.error("Không gửi được đánh giá, thử lại nhé"),
-    })
+      {
+        onSuccess: () => {
+          toast.success(myReview ? "Đã cập nhật đánh giá" : "Đã gửi đánh giá, cảm ơn bạn!")
+          onDone?.()
+        },
+        onError: () => toast.error("Không gửi được đánh giá, thử lại nhé"),
+      },
+    )
   }
 
   return (
     <>
-      <form
-        onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
-        className="flex flex-col gap-3"
-      >
-        <div className="flex items-center gap-3">
-          <Avatar size="lg">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="flex items-start gap-3">
+          <Avatar size="lg" className="mt-1">
             <AvatarFallback>{authorInitials}</AvatarFallback>
           </Avatar>
-          <Field data-invalid={!!form.formState.errors.rating}>
+          <div className="flex flex-1 flex-col gap-2">
             <FieldLabel className="text-sm font-medium">
-              {myReview ? "Đánh giá của bạn" : "Chia sẻ trải nghiệm của bạn"}
+              {myReview ? "Đánh giá của bạn" : "Bạn thấy quán này thế nào?"}
             </FieldLabel>
-            <Controller
-              control={form.control}
-              name="rating"
-              render={({ field }) => <RatingStars value={field.value} onChange={field.onChange} />}
-            />
-            <FieldError errors={[form.formState.errors.rating]} />
-          </Field>
-        </div>
-        <Field data-invalid={!!form.formState.errors.content}>
-          <FieldLabel htmlFor="review-content" className="sr-only">
-            Nội dung đánh giá
-          </FieldLabel>
-          <Textarea
-            id="review-content"
-            {...form.register("content")}
-            aria-invalid={!!form.formState.errors.content}
-            aria-describedby={form.formState.errors.content ? "review-content-error" : undefined}
-            placeholder="Món ăn, không gian, phục vụ hoặc mức giá thế nào? Chia sẻ cảm nhận của bạn…"
-            className="min-h-24"
-            maxLength={MAX_REVIEW_CONTENT_LENGTH}
-          />
-          <FieldError id="review-content-error" errors={[form.formState.errors.content]} />
-        </Field>
-        <div className="flex items-center justify-between gap-2">
-          <FieldDescription>
-            {formatNumber(content.length)}/{formatNumber(MAX_REVIEW_CONTENT_LENGTH)}
-          </FieldDescription>
-          <div className="flex items-center gap-2">
-            {myReview ? (
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={upsert.isPending}
-              >
-                <Trash2Icon />
-                Xoá đánh giá
-              </Button>
-            ) : null}
-            {onDone ? (
-              <Button type="button" variant="ghost" onClick={onDone} disabled={upsert.isPending}>
-                Huỷ
-              </Button>
-            ) : null}
-            <Button type="submit" disabled={upsert.isPending}>
-              {upsert.isPending ? <Spinner aria-label="Đang lưu đánh giá" /> : <SendIcon />}
-              {myReview ? "Cập nhật" : "Gửi đánh giá"}
-            </Button>
+            <div
+              className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+              role="group"
+              aria-label="Chọn mức đánh giá"
+            >
+              {TIER_ORDER.map((item) => {
+                const meta = REVIEW_TIER_META[item]
+                const Icon = meta.icon
+                const active = tier === item
+                return (
+                  <Button
+                    key={item}
+                    type="button"
+                    variant={active ? "default" : "outline"}
+                    aria-pressed={active}
+                    onClick={() => setTier(item)}
+                    className={cn(
+                      "min-h-12 justify-start gap-2.5 px-3 py-2 text-left transition-transform active:scale-[0.98]",
+                      active && "ring-2 ring-primary/30",
+                    )}
+                  >
+                    <Icon className="size-4 shrink-0" aria-hidden="true" />
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-sm font-semibold">{meta.label}</span>
+                      <span className="text-[11px] font-normal opacity-80">{meta.hint}</span>
+                    </div>
+                  </Button>
+                )
+              })}
+            </div>
           </div>
         </div>
-      </form>
 
+        {/* Progressive disclosure: chỉ mở phần món nên gọi & ghi chú khi đã chọn 1 mức */}
+        {tier ? (
+          <div className="flex flex-col gap-3 rounded-surface border border-border/60 bg-muted/30 p-3">
+            <div className="flex flex-col gap-2">
+              <FieldLabel className="text-xs font-medium text-muted-foreground">
+                Món nên gọi (tối đa 3 món, tùy chọn)
+              </FieldLabel>
+              {suggestedDishes.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {suggestedDishes.map((dish) => {
+                    const picked = dishes.some((d) => d.toLowerCase() === dish.toLowerCase())
+                    return (
+                      <Button
+                        key={dish}
+                        type="button"
+                        size="sm"
+                        variant={picked ? "default" : "outline"}
+                        aria-pressed={picked}
+                        onClick={() => toggleDish(dish)}
+                        className="h-8 rounded-full text-xs"
+                      >
+                        {dish}
+                      </Button>
+                    )
+                  })}
+                </div>
+              ) : null}
+
+              {dishes.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {dishes.map((dish) => (
+                    <Badge key={dish} variant="secondary" className="gap-1 py-0.5 pr-1 pl-2.5">
+                      <span>{dish}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => toggleDish(dish)}
+                        aria-label={`Bỏ món ${dish}`}
+                        className="size-5 rounded-full"
+                      >
+                        <XIcon className="size-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
+
+              <div className="flex gap-2">
+                <Input
+                  value={dishDraft}
+                  onChange={(e) => setDishDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      addCustomDish()
+                    }
+                  }}
+                  placeholder="Thêm món bạn thích (vd: Mì quảng ếch)..."
+                  maxLength={40}
+                  disabled={dishes.length >= 3}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addCustomDish}
+                  disabled={!dishDraft.trim() || dishes.length >= 3}
+                >
+                  <PlusIcon className="size-4" />
+                  Thêm
+                </Button>
+              </div>
+            </div>
+
+            <Field>
+              <FieldLabel htmlFor="review-content" className="sr-only">
+                Nhận xét thêm (tùy chọn)
+              </FieldLabel>
+              <Textarea
+                id="review-content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Nhận xét thêm về món ăn, không gian, phục vụ (không bắt buộc)..."
+                className="min-h-20 bg-background"
+                maxLength={MAX_REVIEW_CONTENT_LENGTH}
+              />
+              <FieldDescription>
+                {formatNumber(content.length)}/{formatNumber(MAX_REVIEW_CONTENT_LENGTH)}
+              </FieldDescription>
+            </Field>
+          </div>
+        ) : null}
+
+        <div className="flex items-center justify-end gap-2">
+          {myReview ? (
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={upsert.isPending}
+            >
+              <Trash2Icon />
+              Xoá đánh giá
+            </Button>
+          ) : null}
+          <Button type="submit" disabled={!tier || upsert.isPending} className="min-h-11">
+            {upsert.isPending ? <Spinner /> : <SendIcon />}
+            {myReview ? "Cập nhật" : "Gửi đánh giá"}
+          </Button>
+        </div>
+      </form>
       {myReview ? (
         <ReviewDeleteDialog
           placeId={placeId}

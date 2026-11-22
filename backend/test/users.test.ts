@@ -199,10 +199,10 @@ describe("GET /users/suggestions", () => {
     })
     const placeId = place!.id
     await prisma.review.create({
-      data: { placeId, authorId: viewer.id, rating: 5, content: "Rất ngon" },
+      data: { placeId, authorId: viewer.id, tier: "must_try", content: "Rất ngon" },
     })
     await prisma.review.create({
-      data: { placeId, authorId: shared.id, rating: 4, content: "Ổn" },
+      data: { placeId, authorId: shared.id, tier: "good", content: "Ổn" },
     })
 
     // Tín hiệu RIÊNG TƯ: cả hai cùng lưu một bài — không được tính vào quán chung.
@@ -232,7 +232,7 @@ describe("GET /users/suggestions", () => {
 
     // `removed` có tín hiệu mạnh nhưng đã xoá mềm → phải bị loại.
     await prisma.review.create({
-      data: { placeId, authorId: removed.id, rating: 3, content: "Tạm" },
+      data: { placeId, authorId: removed.id, tier: "ok", content: "Tạm" },
     })
     await prisma.user.update({ where: { id: removed.id }, data: { deletedAt: new Date() } })
   })

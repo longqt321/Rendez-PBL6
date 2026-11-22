@@ -1,6 +1,6 @@
 import { toApiCategory } from "../enums"
 import type { PlaceSort } from "../cursor"
-import type { PlaceCategory } from "@rendez/schema"
+import type { PlaceCategory, RecommendedDishCount, ReviewTierSummary } from "@rendez/schema"
 
 export interface PlaceFilters {
   q?: string
@@ -33,7 +33,8 @@ export interface PlaceRow {
   description: string | null
   opening_hours: string | null
   published_at: Date | null
-  rating: number
+  positive_ratio: number
+  must_try_count?: number
   review_count: number
   image_url: string | null
   image_height: number | null
@@ -50,7 +51,8 @@ export function toPlaceDto(row: PlaceRow) {
     ...(row.district ? { district: row.district } : {}),
     category: toApiCategory(row.category),
     tags: row.tags,
-    rating: Number(row.rating),
+    positiveRatio: Number(row.positive_ratio),
+    mustTryCount: Number(row.must_try_count ?? 0),
     reviewCount: Number(row.review_count),
     priceLevel: row.price_level,
     ...(row.image_url ? { imageUrl: row.image_url } : {}),
@@ -61,6 +63,8 @@ export function toPlaceDto(row: PlaceRow) {
     ...(row.description ? { description: row.description } : {}),
     ...(row.opening_hours ? { openingHours: row.opening_hours } : {}),
     publishedAt: row.published_at ? row.published_at.toISOString() : null,
+    tierSummary: undefined as ReviewTierSummary | undefined,
+    topRecommendedDishes: undefined as RecommendedDishCount[] | undefined,
   }
 }
 

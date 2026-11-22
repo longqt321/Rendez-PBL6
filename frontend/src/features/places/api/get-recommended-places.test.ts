@@ -12,7 +12,7 @@ function makePlace(id: string): Place {
     city: "Đà Nẵng",
     category: "cafe",
     tags: [],
-    rating: 4.5,
+    positiveRatio: 90,
     reviewCount: 10,
     priceLevel: 2,
     imageHeight: 400,

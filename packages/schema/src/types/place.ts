@@ -1,6 +1,20 @@
+import type { RecommendedDishCount, ReviewTierSummary } from "./review"
+
 export type PlaceCategory = "cafe" | "restaurant" | "street-food" | "bakery" | "dessert" | "bar"
 
 export type PlaceStatus = "open" | "closed" | "unknown"
+
+export type PlaceMediaKind = "venue" | "dish_real" | "menu_price"
+
+export interface PlaceMediaItem {
+  id: string
+  url: string
+  kind: PlaceMediaKind
+  capturedAt: string
+  sourceType: "place" | "post"
+  authorName?: string
+  postId?: string
+}
 
 export interface Place {
   id: string
@@ -11,8 +25,11 @@ export interface Place {
   district?: string
   category: PlaceCategory
   tags: string[]
-  rating: number
+  positiveRatio: number
+  mustTryCount?: number
   reviewCount: number
+  tierSummary?: ReviewTierSummary
+  topRecommendedDishes?: RecommendedDishCount[]
   priceLevel: 1 | 2 | 3
 
   imageUrl?: string

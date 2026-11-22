@@ -2,8 +2,10 @@ import { Hono } from "hono"
 import { z } from "zod"
 import {
   MAX_REPORT_DETAIL_LENGTH,
-  MAX_REVIEW_CONTENT_LENGTH,
   PLACE_REPORT_REASONS,
+  reviewTierSchema,
+  upsertReviewInputSchema,
+  type ReviewTier,
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { Prisma } from "../../generated/prisma/client"
@@ -14,11 +16,7 @@ import { toApiReportReason, toPrismaReportReason } from "../lib/enums"
 import { formatInitials } from "../lib/profile"
 import { getViewer, requireAuth } from "../lib/session"
 import { recordEvent } from "../lib/interaction-events"
-
-const reviewInputSchema = z.object({
-  rating: z.number().int().min(1).max(5),
-  content: z.string().trim().min(1, "Nội dung đánh giá trống").max(MAX_REVIEW_CONTENT_LENGTH),
-})
+import { invalidatePlacesReadCaches } from "./places"
 
 const reportInputSchema = z.object({
   reason: z.enum(PLACE_REPORT_REASONS),
@@ -31,22 +29,30 @@ const MAX_REVIEW_LIMIT = 100
 interface ReviewRow {
   id: string
   place_id: string
-  rating: number
+  tier: ReviewTier
   content: string
+  recommended_dishes: string[]
+  quick_tags: string[]
   created_at: Date
   author_id: string
   author_name: string
   author_handle: string
+  author_review_count: number
 }
 
 const SELECT_REVIEWS = Prisma.sql`
-  SELECT r.id, r.place_id, r.rating, r.content, r.created_at,
-         u.id AS author_id, u.name AS author_name, u.handle AS author_handle
+  SELECT r.id, r.place_id, r.tier::text AS tier, r.content, r.recommended_dishes, r.quick_tags, r.created_at,
+         u.id AS author_id, u.name AS author_name, u.handle AS author_handle,
+         (SELECT COUNT(*)::int FROM reviews r2 WHERE r2.author_id = u.id AND r2.deleted_at IS NULL) AS author_review_count
   FROM reviews r
   JOIN users u ON u.id = r.author_id
 `
 
-function toReviewDto(row: ReviewRow, viewerId: string | null) {
+function toReviewDto(
+  row: ReviewRow,
+  viewerId: string | null,
+  followedAuthorIds: ReadonlySet<string> = new Set(),
+) {
   return {
     id: row.id,
     placeId: row.place_id,
@@ -56,11 +62,28 @@ function toReviewDto(row: ReviewRow, viewerId: string | null) {
       handle: row.author_handle,
       initials: formatInitials(row.author_name),
     },
-    rating: row.rating,
+    tier: row.tier,
     content: row.content,
+    recommendedDishes: row.recommended_dishes ?? [],
+    quickTags: row.quick_tags ?? [],
+    authorReviewCount: row.author_review_count,
+    isFollowingAuthor: followedAuthorIds.has(row.author_id),
     createdAt: row.created_at.toISOString(),
     isMine: viewerId !== null && viewerId === row.author_id,
   }
+}
+
+function dedupeDishes(dishes: string[]): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const raw of dishes) {
+    const clean = raw.trim()
+    const key = clean.toLowerCase()
+    if (!clean || seen.has(key)) continue
+    seen.add(key)
+    out.push(clean)
+  }
+  return out
 }
 
 async function requirePublicPlace(placeId: string): Promise<void> {
@@ -78,55 +101,82 @@ export function createReviewsRouter() {
     const placeId = c.req.param("id")
     await requirePublicPlace(placeId)
 
-    // Parse `limit` giống routes/places.ts — giá trị rác về mặc định, cap 100.
     const rawLimit = Number(c.req.query("limit") ?? DEFAULT_REVIEW_LIMIT)
     const limit = Number.isFinite(rawLimit)
       ? Math.min(MAX_REVIEW_LIMIT, Math.max(1, Math.trunc(rawLimit)))
       : DEFAULT_REVIEW_LIMIT
 
+    const rawTier = c.req.query("tier")
+    const parsedTier = rawTier ? reviewTierSchema.safeParse(rawTier) : null
+    if (parsedTier && !parsedTier.success) {
+      throw new ApiError(400, "Mức đánh giá không hợp lệ")
+    }
+    const tierFilter = parsedTier?.success
+      ? Prisma.sql`AND r.tier = ${parsedTier.data}::review_tier`
+      : Prisma.empty
+
     const rows = await prisma.$queryRaw<ReviewRow[]>(Prisma.sql`
       ${SELECT_REVIEWS}
-      WHERE r.place_id = ${placeId} AND r.deleted_at IS NULL
+      WHERE r.place_id = ${placeId} AND r.deleted_at IS NULL ${tierFilter}
       ORDER BY r.created_at DESC, r.id DESC
       LIMIT ${limit}
     `)
 
-    // Route công khai — phải tự đọc phiên để tính `isMine` (không có requireAuth).
     const viewer = await getViewer(c)
     const viewerId = viewer?.id ?? null
-    // Khớp mock: `Page<Review>` — `{ items, next }` (mock không phân trang reviews).
-    return c.json({ items: rows.map((row) => toReviewDto(row, viewerId)), next: null })
+    const followedAuthorIds = new Set<string>()
+    if (viewerId && rows.length > 0) {
+      const authorIds = [...new Set(rows.map((r) => r.author_id))]
+      const follows = await prisma.follow.findMany({
+        where: { followerId: viewerId, followingId: { in: authorIds } },
+        select: { followingId: true },
+      })
+      for (const f of follows) followedAuthorIds.add(f.followingId)
+    }
+    return c.json({
+      items: rows.map((row) => toReviewDto(row, viewerId, followedAuthorIds)),
+      next: null,
+    })
   })
 
-  /** Tạo hoặc ghi đè đánh giá của chính mình (A7.4). */
+  /** Tạo hoặc ghi đè đánh giá 3 mức của chính mình (F-002). */
   router.post("/places/:id/reviews", requireAuth, idempotency(), async (c) => {
     const placeId = c.req.param("id")
     await requirePublicPlace(placeId)
 
     const raw = await c.req.json().catch(() => null)
-    const parsed = reviewInputSchema.safeParse(raw)
+    const parsed = upsertReviewInputSchema.safeParse(raw)
     if (!parsed.success) {
       throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
     }
 
     const userId = c.get("userId")
+    const data = {
+      tier: parsed.data.tier,
+      content: parsed.data.content,
+      recommendedDishes: dedupeDishes(parsed.data.recommendedDishes),
+      quickTags: [...new Set(parsed.data.quickTags.map((t) => t.trim()).filter(Boolean))],
+      deletedAt: null,
+    }
+
     const review = await prisma.$transaction(async (tx) => {
       const existing = await tx.review.findFirst({
-        where: { placeId, authorId: userId, deletedAt: null },
+        where: { placeId, authorId: userId },
+        orderBy: { createdAt: "desc" },
         select: { id: true },
       })
-      if (existing) {
-        return tx.review.update({
-          where: { id: existing.id },
-          data: { ...parsed.data },
-          select: { id: true },
-        })
-      }
-      return tx.review.create({
-        data: { placeId, authorId: userId, ...parsed.data },
-        select: { id: true },
-      })
+      return existing
+        ? tx.review.update({
+            where: { id: existing.id },
+            data,
+            select: { id: true },
+          })
+        : tx.review.create({
+            data: { placeId, authorId: userId, ...data },
+            select: { id: true },
+          })
     })
+    invalidatePlacesReadCaches()
 
     const rows = await prisma.$queryRaw<ReviewRow[]>(Prisma.sql`
       ${SELECT_REVIEWS}
@@ -135,8 +185,6 @@ export function createReviewsRouter() {
     `)
     const row = rows[0]
     if (!row) throw new ApiError(500, "Không lưu được đánh giá")
-    // Tín hiệu review cho recommendation — KHÔNG đưa rating vào context (D-049:
-    // không dùng rating sao làm tín hiệu rec).
     await recordEvent({ eventType: "review_created", userId, placeId })
     return c.json(toReviewDto(row, userId), 201)
   })
@@ -166,6 +214,7 @@ export function createReviewsRouter() {
       where: { id: existing.id },
       data: { deletedAt: new Date() },
     })
+    invalidatePlacesReadCaches()
 
     return c.body(null, 204)
   })

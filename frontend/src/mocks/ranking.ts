@@ -136,7 +136,7 @@ export function rankPlaceSuggestions(
     }
 
     // 5. Điểm đánh giá chỉ dùng để phá hoà, không lấn át tín hiệu nội dung.
-    score += place.rating * 0.6
+    score += (place.positiveRatio / 20) * 0.6
     score += Math.min(place.reviewCount, 5000) / 5000
 
     return {

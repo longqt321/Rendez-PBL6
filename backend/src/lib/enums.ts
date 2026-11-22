@@ -61,6 +61,8 @@ const REPORT_REASON_TO_PRISMA: Record<PlaceReportReason, ReportReason> = {
   closed: "closed",
   "wrong-info": "wrong_info",
   duplicate: "duplicate",
+  outdated_menu: "outdated_menu",
+  wrong_image: "wrong_image",
   other: "other",
 }
 
