@@ -1,4 +1,3 @@
-import { useMediaQuery } from "@base-ui/react/unstable-use-media-query"
 import { SparklesIcon } from "lucide-react"
 import { BentoCell, BentoGrid } from "@/components/layout/page-primitives"
 import { SectionHeading } from "@/components/shared/section-heading"
@@ -9,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { useIsDesktop } from "@/hooks/use-breakpoint"
 import { formatWeekdayDate } from "@/lib/format"
 import { useDailyPicks } from "../hooks/use-daily-picks"
 import { PlaceCard } from "./place-card"
@@ -20,7 +20,7 @@ import { PlaceCardSkeleton } from "./place-card-skeleton"
  */
 export function DailyPicksSection() {
   const { data, isPending, isError } = useDailyPicks()
-  const isDesktop = useMediaQuery("(min-width: 1024px)", { noSsr: true })
+  const isDesktop = useIsDesktop()
 
   if (isError) return null
   if (isPending) {

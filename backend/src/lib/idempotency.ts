@@ -5,6 +5,7 @@ import type { ContentfulStatusCode } from "hono/utils/http-status"
 import type { AppEnv } from "../app"
 import { ApiError } from "./errors"
 import { db } from "./kysely"
+import { logger } from "./logger"
 import { prisma } from "./prisma"
 
 const TTL_HOURS = 24
@@ -86,7 +87,9 @@ export function idempotency() {
       // khoá tới hết TTL và client không retry được.
       await prisma.idempotencyKey
         .delete({ where: { key_userId: { key, userId } } })
-        .catch(() => undefined)
+        .catch((cleanupErr: unknown) => {
+          logger.debug({ err: cleanupErr, key }, "Không dọn được pending idempotency key sau lỗi")
+        })
       throw error
     }
 
@@ -95,7 +98,9 @@ export function idempotency() {
     if (response.status >= 500 || response.status === 401 || response.status === 429) {
       await prisma.idempotencyKey
         .delete({ where: { key_userId: { key, userId } } })
-        .catch(() => undefined)
+        .catch((cleanupErr: unknown) => {
+          logger.debug({ err: cleanupErr, key }, "Không dọn được idempotency key sau phản hồi lỗi")
+        })
       return
     }
 

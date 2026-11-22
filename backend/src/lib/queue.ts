@@ -165,6 +165,31 @@ export async function enqueuePlaceDetect(postId: string): Promise<void> {
   }
 }
 
+export interface QueueStatsSnapshot {
+  active: boolean
+  queued: number
+  failed: number
+}
+
+export async function getQueueStats(): Promise<QueueStatsSnapshot> {
+  if (!boss) return { active: false, queued: 0, failed: 0 }
+  try {
+    const queues = await boss.getQueues()
+    let queued = 0
+    let failed = 0
+    for (const q of queues) {
+      queued += Number(q.queuedCount ?? 0) + Number(q.activeCount ?? 0)
+      if (q.name.endsWith("-dlq")) {
+        failed += Number(q.totalCount ?? q.queuedCount ?? 0)
+      }
+    }
+    return { active: true, queued, failed }
+  } catch (error) {
+    logger.warn({ err: error }, "Không đọc được thống kê hàng đợi pg-boss")
+    return { active: true, queued: 0, failed: 0 }
+  }
+}
+
 export async function stopQueue(): Promise<void> {
   const instance = boss
   boss = null

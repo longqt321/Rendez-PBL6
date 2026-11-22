@@ -5,6 +5,7 @@ import type { AppEnv } from "../app"
 import { EVENT_TO_KIND } from "../lib/interaction-weights"
 import { recordEventsBatch, type RecordEventInput } from "../lib/interaction-events"
 import { createTtlCache } from "../lib/http-cache"
+import { logger } from "../lib/logger"
 import { prisma } from "../lib/prisma"
 import { rateLimit } from "../lib/rate-limit"
 import { getRedis } from "../lib/redis"
@@ -69,8 +70,8 @@ async function claimDedupeKeys(keys: string[]): Promise<boolean[]> {
         ),
       )
       return results.map((res) => res === "OK")
-    } catch {
-      // Fallback sang in-memory LRUCache bên dưới khi Redis lỗi
+    } catch (err) {
+      logger.debug({ err }, "Redis dedupe events lỗi — fallback LRUCache")
     } finally {
       recordRedisTiming(performance.now() - startedAt)
     }

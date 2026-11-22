@@ -11,17 +11,18 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { LRUCache } from "lru-cache"
 import { logger } from "./logger"
+import { registerCircuitBreaker } from "./metrics"
 import { recordEmbedTiming } from "./request-context"
 
 const MODEL_ID = "Xenova/multilingual-e5-small"
 
-const encodePolicy = wrap(
-  circuitBreaker(handleAll, {
-    halfOpenAfter: 30_000,
-    breaker: new ConsecutiveBreaker(3),
-  }),
-  timeout(3_000, TimeoutStrategy.Aggressive),
-)
+const encodeBreaker = circuitBreaker(handleAll, {
+  halfOpenAfter: 30_000,
+  breaker: new ConsecutiveBreaker(3),
+})
+registerCircuitBreaker("embeddings", encodeBreaker)
+
+const encodePolicy = wrap(encodeBreaker, timeout(3_000, TimeoutStrategy.Aggressive))
 
 env.cacheDir = process.env.TRANSFORMERS_CACHE_DIR ?? join(tmpdir(), "rendez-transformers-cache")
 

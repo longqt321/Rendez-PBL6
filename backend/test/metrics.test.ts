@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { metricsSnapshot, recordRequest, resetMetrics } from "../src/lib/metrics"
+import { metricsSnapshot, recordAuthFailure, recordRequest, resetMetrics } from "../src/lib/metrics"
 
 /**
  * Test thuần cho bộ đếm metrics — không DB, không HTTP. Mỗi test reset trước
@@ -66,6 +66,7 @@ describe("metrics", () => {
     recordRequest("POST /auth", 10, false, 401)
     recordRequest("GET /admin/users", 8, false, 403)
     recordRequest("POST /posts", 5, false, 429)
+    recordAuthFailure()
 
     const snapshot = metricsSnapshot()
     expect(snapshot.errors5xx).toBe(1)
@@ -75,7 +76,10 @@ describe("metrics", () => {
       unauthorized401: 1,
       forbidden403: 1,
       rateLimited429: 1,
+      authFailed: 1,
     })
+    expect(snapshot.eventLoopLagMs).toBeGreaterThanOrEqual(0)
+    expect(Array.isArray(snapshot.circuitBreakers)).toBe(true)
     const places = snapshot.byEndpoint.find((entry) => entry.route === "GET /places")
     expect(places?.errorCount5xx).toBe(1)
     expect(places?.errorRate5xx).toBe(0.5)

@@ -24,11 +24,15 @@ export const RESPONSE_DELAY_MS = 320
  */
 export const scenario = resolveScenario(env.mockScenario)
 
+declare global {
+  interface Window {
+    __setMockScenario?: (name: string) => void
+  }
+}
+
 // Cho phép E2E / dev test ghi đè kịch bản động trên window mà không cần restart server
 if (typeof window !== "undefined") {
-  ;(window as unknown as { __setMockScenario?: (name: string) => void }).__setMockScenario = (
-    name: string,
-  ) => {
+  window.__setMockScenario = (name: string) => {
     Object.assign(scenario, resolveScenario(name))
   }
 }

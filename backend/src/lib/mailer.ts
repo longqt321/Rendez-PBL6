@@ -9,16 +9,17 @@ import {
 import escapeHtml from "escape-html"
 import nodemailer, { type Transporter } from "nodemailer"
 import { env } from "../env"
+import { registerCircuitBreaker } from "./metrics"
 
 let transporter: Transporter | null = null
 
-const mailerPolicy = wrap(
-  circuitBreaker(handleAll, {
-    halfOpenAfter: 60_000,
-    breaker: new ConsecutiveBreaker(2),
-  }),
-  timeout(4_000, TimeoutStrategy.Aggressive),
-)
+const mailerBreaker = circuitBreaker(handleAll, {
+  halfOpenAfter: 60_000,
+  breaker: new ConsecutiveBreaker(2),
+})
+registerCircuitBreaker("mailer", mailerBreaker)
+
+const mailerPolicy = wrap(mailerBreaker, timeout(4_000, TimeoutStrategy.Aggressive))
 
 function getTransporter(): Transporter {
   if (!transporter) {

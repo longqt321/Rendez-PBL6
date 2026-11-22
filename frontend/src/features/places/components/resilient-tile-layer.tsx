@@ -13,9 +13,7 @@ import { OSM_TILE_LAYER_PROPS, OSM_TILE_URL } from "../lib/map-tiles"
 export function ResilientTileLayer() {
   const map = useMap()
   const isRealLeafletMap =
-    typeof (map as unknown as { addLayer?: unknown }).addLayer === "function" &&
-    typeof (L as unknown as { tileLayer?: { fallback?: unknown } }).tileLayer?.fallback ===
-      "function"
+    typeof map?.addLayer === "function" && typeof L.tileLayer?.fallback === "function"
 
   useEffect(() => {
     if (!isRealLeafletMap) return

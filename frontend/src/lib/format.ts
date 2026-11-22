@@ -59,6 +59,10 @@ export function formatCoordinate(value: number): string {
   return value.toFixed(4)
 }
 
+export function formatCoordinateKey(lat: number, lng: number): string {
+  return `${lat.toFixed(5)},${lng.toFixed(5)}`
+}
+
 const kmFormat = new Intl.NumberFormat("vi", { maximumFractionDigits: 1 })
 
 export function formatDistance(distanceKm: number): string {

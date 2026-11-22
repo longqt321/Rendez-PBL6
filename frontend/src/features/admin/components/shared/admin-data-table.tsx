@@ -73,8 +73,6 @@ interface AdminDataTableProps<TData extends RowData> {
   readonly ariaLabel?: string
 }
 
-const EMPTY_DATA: readonly never[] = []
-
 export function AdminDataTable<TData extends RowData>({
   columns,
   data,
@@ -99,11 +97,9 @@ export function AdminDataTable<TData extends RowData>({
   const [columnVisibility, setColumnVisibility] =
     useState<Record<string, boolean>>(initialColumnVisibility)
 
+  const emptyData = useMemo<TData[]>(() => [], [])
   const stableColumns = useMemo(() => [...columns], [columns])
-  const stableData = useMemo(
-    () => (data.length === 0 ? (EMPTY_DATA as unknown as TData[]) : [...data]),
-    [data],
-  )
+  const stableData = useMemo(() => (data.length === 0 ? emptyData : [...data]), [data, emptyData])
 
   const tableInstance = useTable<AdminTableFeatures, TData>({
     features: ADMIN_TABLE_FEATURES,

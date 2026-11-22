@@ -5,9 +5,11 @@ import { quantile } from "simple-statistics"
 import { Prisma } from "../../../generated/prisma/client"
 import type { AppEnv } from "../../app"
 import { sanitizeObservabilityMessage, shouldMaskAdminPii } from "../../lib/admin-privacy"
+import { logger } from "../../lib/logger"
 import { metricsSnapshot } from "../../lib/metrics"
 import { listObservabilityEvents } from "../../lib/observability-store"
 import { getDbPoolStats, prisma } from "../../lib/prisma"
+import { getQueueStats } from "../../lib/queue"
 import { getRedis } from "../../lib/redis"
 import { requireRole } from "../../lib/session"
 import { ADMIN_CONSTANTS } from "./shared"
@@ -22,7 +24,12 @@ const SEARCH_SAMPLE_LIMIT = 500
 function isZeroResultSearch(context: unknown): boolean {
   if (!context || typeof context !== "object") return false
   const record = context as Record<string, unknown>
-  return record.resultCount === 0 || record.total === 0 || record.zeroResult === true
+  return (
+    record.resultsCount === 0 ||
+    record.resultCount === 0 ||
+    record.total === 0 ||
+    record.zeroResult === true
+  )
 }
 
 export function registerAdminObservabilityRoutes(router: Hono<AppEnv>): void {
@@ -31,43 +38,48 @@ export function registerAdminObservabilityRoutes(router: Hono<AppEnv>): void {
     const searchQ = c.req.query("q")?.trim().toLowerCase() ?? ""
     const since24h = subHours(new Date(), 24)
 
-    const [snapshot, allEvents, behaviorGroups, searchEvents, slowSqlRows] = await Promise.all([
-      Promise.resolve(metricsSnapshot()),
-      listObservabilityEvents(ADMIN_CONSTANTS.OBSERVABILITY_RING_LIMIT),
-      prisma.interactionEvent.groupBy({
-        by: ["eventType"],
-        where: { createdAt: { gte: since24h } },
-        _count: { eventType: true },
-        orderBy: { _count: { eventType: "desc" } },
-        take: ADMIN_CONSTANTS.OBSERVABILITY_BEHAVIOR_LIMIT,
-      }),
-      prisma.interactionEvent.findMany({
-        where: {
-          createdAt: { gte: since24h },
-          eventType: { in: ["search", "search_query", "search_zero_result"] },
-        },
-        select: { eventType: true, query: true, context: true },
-        orderBy: { createdAt: "desc" },
-        take: SEARCH_SAMPLE_LIMIT,
-      }),
-      prisma
-        .$queryRaw<
-          { query: string; calls: number; mean_ms: number; total_ms: number; rows: number }[]
-        >(
-          Prisma.sql`
-            SELECT LEFT(query, 240) AS query,
-                   calls::int AS calls,
-                   ROUND(mean_exec_time::numeric, 1)::float AS mean_ms,
-                   ROUND(total_exec_time::numeric, 1)::float AS total_ms,
-                   rows::int AS rows
-            FROM pg_stat_statements
-            WHERE query NOT ILIKE '%pg_stat_statements%'
-            ORDER BY mean_exec_time DESC
-            LIMIT ${ADMIN_CONSTANTS.OBSERVABILITY_SLOW_SQL_LIMIT}
-          `,
-        )
-        .catch(() => []),
-    ])
+    const [snapshot, allEvents, behaviorGroups, searchEvents, slowSqlRows, queueStats] =
+      await Promise.all([
+        Promise.resolve(metricsSnapshot()),
+        listObservabilityEvents(ADMIN_CONSTANTS.OBSERVABILITY_RING_LIMIT),
+        prisma.interactionEvent.groupBy({
+          by: ["eventType"],
+          where: { createdAt: { gte: since24h } },
+          _count: { eventType: true },
+          orderBy: { _count: { eventType: "desc" } },
+          take: ADMIN_CONSTANTS.OBSERVABILITY_BEHAVIOR_LIMIT,
+        }),
+        prisma.interactionEvent.findMany({
+          where: {
+            createdAt: { gte: since24h },
+            eventType: { in: ["search", "search_query", "search_zero_result"] },
+          },
+          select: { eventType: true, query: true, context: true },
+          orderBy: { createdAt: "desc" },
+          take: SEARCH_SAMPLE_LIMIT,
+        }),
+        prisma
+          .$queryRaw<
+            { query: string; calls: number; mean_ms: number; total_ms: number; rows: number }[]
+          >(
+            Prisma.sql`
+              SELECT LEFT(query, 240) AS query,
+                     calls::int AS calls,
+                     ROUND(mean_exec_time::numeric, 1)::float AS mean_ms,
+                     ROUND(total_exec_time::numeric, 1)::float AS total_ms,
+                     rows::int AS rows
+              FROM pg_stat_statements
+              WHERE query NOT ILIKE '%pg_stat_statements%'
+              ORDER BY mean_exec_time DESC
+              LIMIT ${ADMIN_CONSTANTS.OBSERVABILITY_SLOW_SQL_LIMIT}
+            `,
+          )
+          .catch((error: unknown) => {
+            logger.debug({ err: error }, "pg_stat_statements không khả dụng")
+            return []
+          }),
+        getQueueStats(),
+      ])
 
     let errorCount = 0
     let slowCount = 0
@@ -163,6 +175,9 @@ export function registerAdminObservabilityRoutes(router: Hono<AppEnv>): void {
       security: snapshot.security,
       infrastructure: {
         dbPool: getDbPoolStats(),
+        queue: queueStats,
+        circuitBreakers: snapshot.circuitBreakers,
+        eventLoopLagMs: snapshot.eventLoopLagMs,
         memoryRssMb: Math.round(mem.rss / BYTES_PER_MB),
         heapUsedMb: Math.round(mem.heapUsed / BYTES_PER_MB),
         heapTotalMb: Math.round(mem.heapTotal / BYTES_PER_MB),

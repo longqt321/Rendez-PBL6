@@ -3,11 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "scripts": {
+    "test": "bun test"
+  },
   "exports": {
     ".": "./src/index.ts"
   },
   "dependencies": {
     "opening_hours": "^3.16.0",
     "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "fast-check": "^4.11.0"
   }
 }

@@ -1,3 +1,4 @@
+import { useCopyToClipboard } from "@uidotdev/usehooks"
 import { CopyIcon, FilterIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -46,6 +47,7 @@ export function EventInspectorSheet({
   onClose: () => void
   onFilterTrace: (traceId: string) => void
 }>) {
+  const [, copyToClipboard] = useCopyToClipboard()
   const dominant = event?.timing ? findDominantTimingStage(event.timing) : null
 
   return (
@@ -170,7 +172,7 @@ export function EventInspectorSheet({
                       size="sm"
                       className="flex-1 gap-1.5"
                       onClick={() => {
-                        void navigator.clipboard?.writeText(event.traceId ?? "")
+                        void copyToClipboard(event.traceId ?? "")
                         toast.success("Đã sao chép mã truy vết")
                       }}
                     >

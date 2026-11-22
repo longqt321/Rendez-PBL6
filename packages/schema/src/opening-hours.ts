@@ -6,16 +6,34 @@ const DANANG_NOMINATIM = {
   address: { country_code: "vn", state: "Da Nang" },
 }
 
+const VN_WALL_CLOCK_FORMAT = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Ho_Chi_Minh",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+})
+
 /**
- * Việt Nam (Asia/Ho_Chi_Minh) cố định UTC+7 (không có DST).
- * Thư viện `opening_hours` đọc các field local (`getHours`, `getDay`, ...) của đối tượng `Date`,
- * nên cần quy đổi mốc thời gian về tường giờ VN để server UTC và client ở mọi múi giờ
- * cho ra kết quả nhất quán 100%.
+ * Thư viện `opening_hours` đọc các field local (`getHours`, `getDay`, ...) của đối tượng `Date`.
+ * Quy đổi tường giờ theo múi giờ chuẩn `Asia/Ho_Chi_Minh` bằng `Intl.DateTimeFormat`
+ * để server UTC và client ở mọi múi giờ/DST cho ra kết quả nhất quán 100%.
  */
 function toVietnamWallClockDate(date: Date): Date {
-  const vnOffsetMs = 7 * 60 * 60 * 1000
-  const localOffsetMs = -date.getTimezoneOffset() * 60 * 1000
-  return new Date(date.getTime() + (vnOffsetMs - localOffsetMs))
+  const parts = VN_WALL_CLOCK_FORMAT.formatToParts(date)
+  const pick = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((p) => p.type === type)?.value ?? 0)
+  return new Date(
+    pick("year"),
+    pick("month") - 1,
+    pick("day"),
+    pick("hour"),
+    pick("minute"),
+    pick("second"),
+  )
 }
 
 export function isOpenNow(openingHours: string | null, now: Date = new Date()): boolean | null {

@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link, useParams } from "react-router"
+import { useCopyToClipboard } from "@uidotdev/usehooks"
 import { CheckIcon, CopyIcon, LogOutIcon, RotateCcwIcon, UsersIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import {
@@ -30,6 +31,14 @@ export function RoomPage() {
   const { code = "" } = useParams<{ code: string }>()
   const [joinName, setJoinName] = useState("")
   const [copiedCode, setCopiedCode] = useState(false)
+  const [, copyToClipboard] = useCopyToClipboard()
+  const copyTimerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current)
+    }
+  }, [])
   const {
     getRoom,
     getRoomStatus,
@@ -68,11 +77,11 @@ export function RoomPage() {
   }
 
   function handleCopyCode(roomCode: string) {
-    if (!navigator.clipboard) return
-    void navigator.clipboard.writeText(roomCode).then(() => {
+    void copyToClipboard(roomCode).then(() => {
       setCopiedCode(true)
       toast.success(`Đã sao chép mã phòng ${roomCode}`)
-      setTimeout(() => setCopiedCode(false), 2000)
+      if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current)
+      copyTimerRef.current = window.setTimeout(() => setCopiedCode(false), 2000)
     })
   }
 

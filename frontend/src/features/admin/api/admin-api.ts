@@ -186,6 +186,7 @@ export interface AdminObservability {
     unauthorized401: number
     forbidden403: number
     rateLimited429: number
+    authFailed?: number
   }
   infrastructure?: {
     dbPool: {
@@ -194,6 +195,17 @@ export interface AdminObservability {
       waiting: number
       max: number
     }
+    queue?: {
+      active: boolean
+      queued: number
+      failed: number
+    }
+    circuitBreakers?: {
+      name: string
+      state: "closed" | "half-open" | "open"
+      openCount: number
+    }[]
+    eventLoopLagMs?: number
     memoryRssMb: number
     heapUsedMb: number
     heapTotalMb: number

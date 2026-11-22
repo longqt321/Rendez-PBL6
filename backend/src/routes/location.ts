@@ -125,8 +125,8 @@ async function writeSyncedLocation(userId: string, location: SyncedLocation): Pr
     try {
       await redis.set(key, sealed, "EX", SYNCED_LOCATION_TTL_SECONDS)
       return
-    } catch {
-      // Fallback sang memory nếu Redis lỗi tạm thời
+    } catch (err) {
+      logger.warn({ err }, "Lỗi ghi vị trí đồng bộ vào Redis — fallback memory")
     }
   }
   memoryLocations.set(key, sealed)
@@ -139,8 +139,8 @@ async function deleteSyncedLocation(userId: string): Promise<void> {
   if (redis) {
     try {
       await redis.del(key)
-    } catch {
-      // Bỏ qua lỗi xóa Redis tạm thời
+    } catch (err) {
+      logger.debug({ err }, "Bỏ qua lỗi xoá khoá vị trí trên Redis")
     }
   }
 }

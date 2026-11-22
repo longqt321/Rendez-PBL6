@@ -16,6 +16,7 @@ import { createStorage } from "unstorage"
 import fsLiteDriver from "unstorage/drivers/fs-lite"
 import type { AppEnv } from "../app"
 import { logger } from "../lib/logger"
+import { registerCircuitBreaker } from "../lib/metrics"
 import { recordExternalTiming } from "../lib/request-context"
 
 const TILE_CACHE_DIR = join(import.meta.dir, "../../data/tile-cache")
@@ -33,25 +34,28 @@ const tileDiskCache = createStorage({
 })
 
 // Hai circuit breaker độc lập cho OSM Primary và CartoDB Secondary
+const osmBreaker = circuitBreaker(handleAll, {
+  halfOpenAfter: 30_000,
+  breaker: new ConsecutiveBreaker(3),
+})
+registerCircuitBreaker("tiles-osm", osmBreaker)
+
 const osmPolicy = wrap(
   retry(handleAll, {
     maxAttempts: 2,
     backoff: new ExponentialBackoff({ initialDelay: 150, maxDelay: 600 }),
   }),
-  circuitBreaker(handleAll, {
-    halfOpenAfter: 30_000,
-    breaker: new ConsecutiveBreaker(3),
-  }),
+  osmBreaker,
   timeout(3_500, TimeoutStrategy.Aggressive),
 )
 
-const cartoPolicy = wrap(
-  circuitBreaker(handleAll, {
-    halfOpenAfter: 30_000,
-    breaker: new ConsecutiveBreaker(3),
-  }),
-  timeout(3_500, TimeoutStrategy.Aggressive),
-)
+const cartoBreaker = circuitBreaker(handleAll, {
+  halfOpenAfter: 30_000,
+  breaker: new ConsecutiveBreaker(3),
+})
+registerCircuitBreaker("tiles-carto", cartoBreaker)
+
+const cartoPolicy = wrap(cartoBreaker, timeout(3_500, TimeoutStrategy.Aggressive))
 
 let offlineFallbackPngPromise: Promise<Uint8Array> | null = null
 

@@ -67,20 +67,33 @@ export async function addRoomCandidate(code: string, memberId: string, placeId: 
   })
   if (existing) return findRoomByCode(code)
 
-  const count = await prisma.roomCandidate.count({ where: { roomId: room.id } })
-  if (count >= MAX_ROOM_CANDIDATES) {
-    throw new ApiError(400, `Mỗi phòng chỉ chọn tối đa ${MAX_ROOM_CANDIDATES} quán ứng viên`)
-  }
+  await prisma.$transaction(async (tx) => {
+    // Khóa hàng phòng để tránh race condition khi 2 thành viên cùng thêm ứng viên thứ 15.
+    const locked = await tx.$queryRaw<{ phase: string }[]>`
+      SELECT phase FROM rooms WHERE id = ${room.id}::uuid FOR UPDATE
+    `
+    if (!locked[0] || locked[0].phase !== "filtering") {
+      throw new ApiError(409, "Phòng đã chuyển sang bình chọn hoặc đã chốt quán")
+    }
+    const alreadyAdded = await tx.roomCandidate.findUnique({
+      where: { roomId_placeId: { roomId: room.id, placeId } },
+      select: { id: true },
+    })
+    if (alreadyAdded) return
 
-  await prisma.$transaction([
-    prisma.roomCandidate.create({
+    const count = await tx.roomCandidate.count({ where: { roomId: room.id } })
+    if (count >= MAX_ROOM_CANDIDATES) {
+      throw new ApiError(400, `Mỗi phòng chỉ chọn tối đa ${MAX_ROOM_CANDIDATES} quán ứng viên`)
+    }
+
+    await tx.roomCandidate.create({
       data: { roomId: room.id, placeId, addedByMemberId: memberId },
-    }),
-    prisma.room.update({
+    })
+    await tx.room.update({
       where: { id: room.id },
       data: { version: { increment: 1 } },
-    }),
-  ])
+    })
+  })
 
   const updated = await findRoomByCode(code)
   if (updated) publishRoom(code)
@@ -98,24 +111,32 @@ export async function removeRoomCandidate(
     throw new ApiError(409, "Chỉ có thể sửa danh sách ứng viên ở pha lọc")
   }
 
-  const candidate = await prisma.roomCandidate.findFirst({
-    where: { id: candidateId, roomId: room.id },
-    select: { id: true, addedByMemberId: true },
-  })
-  if (!candidate) throw new ApiError(404, "Không tìm thấy ứng viên")
-  if (actor && candidate.addedByMemberId !== actor.memberId && !actor.isOwner) {
-    throw new ApiError(403, "Chỉ người đề cử hoặc chủ phòng mới được xóa ứng viên này")
-  }
+  await prisma.$transaction(async (tx) => {
+    const locked = await tx.$queryRaw<{ phase: string }[]>`
+      SELECT phase FROM rooms WHERE id = ${room.id}::uuid FOR UPDATE
+    `
+    if (!locked[0] || locked[0].phase !== "filtering") {
+      throw new ApiError(409, "Chỉ có thể sửa danh sách ứng viên ở pha lọc")
+    }
+    const candidate = await tx.roomCandidate.findFirst({
+      where: { id: candidateId, roomId: room.id },
+      select: { id: true, addedByMemberId: true },
+    })
+    if (!candidate) throw new ApiError(404, "Không tìm thấy ứng viên")
+    if (actor && candidate.addedByMemberId !== actor.memberId && !actor.isOwner) {
+      throw new ApiError(403, "Chỉ người đề cử hoặc chủ phòng mới được xóa ứng viên này")
+    }
 
-  const deleted = await prisma.roomCandidate.deleteMany({
-    where: { id: candidateId, roomId: room.id },
-  })
-  if (deleted.count === 0) throw new ApiError(404, "Không tìm thấy ứng viên")
+    const deleted = await tx.roomCandidate.deleteMany({
+      where: { id: candidateId, roomId: room.id },
+    })
+    if (deleted.count === 0) throw new ApiError(404, "Không tìm thấy ứng viên")
 
-  await prisma.room.update({
-    where: { id: room.id },
-    data: { version: { increment: 1 } },
-    select: { version: true },
+    await tx.room.update({
+      where: { id: room.id },
+      data: { version: { increment: 1 } },
+      select: { version: true },
+    })
   })
   publishRoom(code)
   return findRoomByCode(code)

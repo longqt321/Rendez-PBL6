@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto"
 import type { Context } from "hono"
 import { LRUCache } from "lru-cache"
+import { logger } from "./logger"
 import { getRedis } from "./redis"
 import { recordRedisTiming, setRequestCacheHit } from "./request-context"
 
@@ -90,8 +91,8 @@ export function createTtlCache<T>(options: {
           setRequestCacheHit(true)
           return { value: parsed, hit: true }
         }
-      } catch {
-        // Fallback sang loader nếu Redis lỗi
+      } catch (err) {
+        logger.debug({ err, key }, "Redis cache read lỗi — fallback loader")
       } finally {
         recordRedisTiming(performance.now() - startedAt)
       }
@@ -106,8 +107,8 @@ export function createTtlCache<T>(options: {
         if (redis) {
           try {
             await redis.set(`${prefix}${key}`, JSON.stringify(value), "EX", ttlSeconds)
-          } catch {
-            // Không làm hỏng luồng chính khi cache write lỗi
+          } catch (err) {
+            logger.debug({ err, key }, "Redis cache write lỗi — bỏ qua để giữ luồng chính")
           }
         }
         return value

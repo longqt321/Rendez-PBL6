@@ -9,7 +9,7 @@ import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { formatDistance } from "@/lib/format"
+import { formatCoordinateKey, formatDistance } from "@/lib/format"
 import { CATEGORY_META } from "../../lib/category-meta"
 import { calculateDistanceKm } from "../../lib/danang-districts"
 import { priceLevelLabel } from "../../lib/price-level"
@@ -108,7 +108,7 @@ export function ClusteredPlaceMarkers({
       if (isClusterProperties(feature.properties)) continue
       const [lng, lat] = feature.geometry.coordinates
       if (lat === undefined || lng === undefined) continue
-      const key = `${lat.toFixed(5)},${lng.toFixed(5)}`
+      const key = formatCoordinateKey(lat, lng)
       const list = groups.get(key) ?? []
       list.push({ place: feature.properties.place, lat, lng })
       groups.set(key, list)

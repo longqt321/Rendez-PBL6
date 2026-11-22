@@ -2,7 +2,7 @@ import { Hono } from "hono"
 import { createMiddleware } from "hono/factory"
 import type { AppEnv } from "../app"
 import { auth } from "../lib/auth"
-import { recordRequest } from "../lib/metrics"
+import { recordAuthFailure, recordRequest } from "../lib/metrics"
 import { createAuthRouter } from "./auth"
 import { createPlacesRouter } from "./places"
 import { createUsersRouter } from "./users"
@@ -61,6 +61,9 @@ export function createApiRouter() {
             c.get("cacheHit") ?? false,
             c.res.status,
           )
+          if (c.req.path.includes("/auth/sign-in") && c.res.status >= 400 && c.res.status < 500) {
+            recordAuthFailure()
+          }
         }
       }
     }),

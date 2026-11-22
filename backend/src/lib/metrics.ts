@@ -1,4 +1,15 @@
+import { monitorEventLoopDelay } from "node:perf_hooks"
+import type { CircuitBreakerPolicy } from "cockatiel"
+import { CircuitState } from "cockatiel"
 import * as hdr from "hdr-histogram-js"
+
+export type BreakerStatus = "closed" | "half-open" | "open"
+
+export interface CircuitBreakerSnapshot {
+  name: string
+  state: BreakerStatus
+  openCount: number
+}
 
 export interface MetricsSnapshot {
   uptimeMs: number
@@ -12,11 +23,14 @@ export interface MetricsSnapshot {
   errors5xx: number
   errorRate4xx: number
   errorRate5xx: number
+  eventLoopLagMs: number
   security: {
     unauthorized401: number
     forbidden403: number
     rateLimited429: number
+    authFailed: number
   }
+  circuitBreakers: CircuitBreakerSnapshot[]
   byEndpoint: {
     route: string
     count: number
@@ -58,6 +72,50 @@ let globalHistogram = createHistogram()
 let unauthorized401 = 0
 let forbidden403 = 0
 let rateLimited429 = 0
+let authFailed = 0
+
+interface BreakerTracker {
+  policy: CircuitBreakerPolicy
+  openCount: number
+}
+
+const circuitBreakers = new Map<string, BreakerTracker>()
+
+function mapCircuitState(state: CircuitState): BreakerStatus {
+  if (state === CircuitState.Open || state === CircuitState.Isolated) return "open"
+  if (state === CircuitState.HalfOpen) return "half-open"
+  return "closed"
+}
+
+export function registerCircuitBreaker(name: string, policy: CircuitBreakerPolicy): void {
+  if (circuitBreakers.has(name)) return
+  const tracker: BreakerTracker = { policy, openCount: 0 }
+  policy.onBreak(() => {
+    tracker.openCount += 1
+  })
+  circuitBreakers.set(name, tracker)
+}
+
+export function recordAuthFailure(): void {
+  authFailed += 1
+}
+
+const eventLoopMonitor = (() => {
+  try {
+    const monitor = monitorEventLoopDelay({ resolution: 20 })
+    monitor.enable()
+    return monitor
+  } catch {
+    return null
+  }
+})()
+
+function readEventLoopLagMs(): number {
+  if (!eventLoopMonitor) return 0
+  const ns = eventLoopMonitor.percentile(95)
+  if (!Number.isFinite(ns) || ns <= 0) return 0
+  return Math.round((ns / 1_000_000) * 10) / 10
+}
 
 function roundRatio(numerator: number, denominator: number): number {
   if (denominator === 0) return 0
@@ -135,11 +193,18 @@ export function metricsSnapshot(): MetricsSnapshot {
     errors5xx,
     errorRate4xx: roundRatio(errors4xx, totalQueries),
     errorRate5xx: roundRatio(errors5xx, totalQueries),
+    eventLoopLagMs: readEventLoopLagMs(),
     security: {
       unauthorized401,
       forbidden403,
       rateLimited429,
+      authFailed,
     },
+    circuitBreakers: [...circuitBreakers.entries()].map(([name, tracker]) => ({
+      name,
+      state: mapCircuitState(tracker.policy.state),
+      openCount: tracker.openCount,
+    })),
     byEndpoint,
   }
 }
@@ -150,4 +215,9 @@ export function resetMetrics(): void {
   unauthorized401 = 0
   forbidden403 = 0
   rateLimited429 = 0
+  authFailed = 0
+  for (const tracker of circuitBreakers.values()) {
+    tracker.openCount = 0
+  }
+  eventLoopMonitor?.reset()
 }

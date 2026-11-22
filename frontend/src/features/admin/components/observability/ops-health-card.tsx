@@ -44,12 +44,44 @@ export function OpsHealthCard({ data }: Readonly<{ data: AdminObservability }>) 
             </div>
           ) : null}
           {infrastructure ? (
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span>Bộ nhớ máy chủ đang dùng</span>
-              <span className="font-mono tabular-nums">
-                {infrastructure.heapUsedMb} MB / {infrastructure.memoryRssMb} MB RSS
-              </span>
-            </div>
+            <>
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>Bộ nhớ máy chủ đang dùng</span>
+                <span className="font-mono tabular-nums">
+                  {infrastructure.heapUsedMb} MB / {infrastructure.memoryRssMb} MB RSS
+                </span>
+              </div>
+              {infrastructure.queue ? (
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Hàng đợi xử lý nền</span>
+                  <Badge variant={infrastructure.queue.failed > 0 ? "destructive" : "secondary"}>
+                    {infrastructure.queue.queued} chờ · {infrastructure.queue.failed} lỗi
+                  </Badge>
+                </div>
+              ) : null}
+              {infrastructure.eventLoopLagMs !== undefined ? (
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Độ trễ vòng lặp máy chủ</span>
+                  <span className="font-mono tabular-nums">{infrastructure.eventLoopLagMs} ms</span>
+                </div>
+              ) : null}
+              {infrastructure.circuitBreakers && infrastructure.circuitBreakers.length > 0 ? (
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Cầu chì dịch vụ ngoài</span>
+                  <Badge
+                    variant={
+                      infrastructure.circuitBreakers.some((b) => b.state !== "closed")
+                        ? "destructive"
+                        : "secondary"
+                    }
+                  >
+                    {infrastructure.circuitBreakers.filter((b) => b.state !== "closed").length > 0
+                      ? `${infrastructure.circuitBreakers.filter((b) => b.state !== "closed").length} đang ngắt`
+                      : "Tất cả bình thường"}
+                  </Badge>
+                </div>
+              ) : null}
+            </>
           ) : null}
         </CardContent>
       </Card>
@@ -74,6 +106,12 @@ export function OpsHealthCard({ data }: Readonly<{ data: AdminObservability }>) 
             <span className="font-medium tabular-nums">
               {formatNumber(security?.forbidden403 ?? 0)}
             </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Đăng nhập thất bại</span>
+            <Badge variant={(security?.authFailed ?? 0) >= 10 ? "destructive" : "secondary"}>
+              {formatNumber(security?.authFailed ?? 0)} lượt
+            </Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Bị chặn do gọi quá nhanh (429)</span>

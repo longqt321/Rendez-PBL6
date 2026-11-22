@@ -31,9 +31,14 @@ export async function maintainInteractionPartitions(): Promise<{
     // bảng đã có không phải là "đã tạo".
     const exists = await prisma.$queryRaw<{ ok: boolean }[]>`
       SELECT true AS ok FROM pg_class WHERE relname = ${name}`
-    if (exists.length === 0) {
+    if (
+      exists.length === 0 &&
+      /^interaction_events_\d{4}_\d{2}$/u.test(name) &&
+      /^\d{4}-\d{2}-\d{2}$/u.test(start) &&
+      /^\d{4}-\d{2}-\d{2}$/u.test(end)
+    ) {
       await prisma.$executeRawUnsafe(
-        `CREATE TABLE ${name} PARTITION OF interaction_events FOR VALUES FROM ('${start}') TO ('${end}')`,
+        `CREATE TABLE "${name}" PARTITION OF interaction_events FOR VALUES FROM ('${start}') TO ('${end}')`,
       )
       created = name
     }

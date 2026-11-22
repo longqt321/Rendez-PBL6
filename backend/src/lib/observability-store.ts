@@ -1,3 +1,4 @@
+import { logger } from "./logger"
 import { getRedis } from "./redis"
 
 export type ObservabilityEventKind = "slow_request" | "server_error" | "client_error" | "web_vital"
@@ -52,7 +53,9 @@ export function pushObservabilityEvent(input: Omit<ObservabilityEvent, "id" | "t
     void redis
       .lpush(REDIS_KEY, JSON.stringify(event))
       .then(() => redis.ltrim(REDIS_KEY, 0, MAX_EVENTS - 1))
-      .catch(() => {})
+      .catch((err: unknown) => {
+        logger.debug({ err }, "Không ghi được observability event lên Redis")
+      })
   }
 }
 
@@ -73,8 +76,8 @@ export async function listObservabilityEvents(limit = 200): Promise<Observabilit
         }
         return parsed
       }
-    } catch {
-      // Fallback sang in-memory
+    } catch (err) {
+      logger.debug({ err }, "Không đọc được observability events từ Redis — fallback bộ nhớ")
     }
   }
   return memoryRing.slice(0, safeLimit)
