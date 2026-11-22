@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import type { AdminUser } from "@rendez/schema"
 import { useDebounce } from "@uidotdev/usehooks"
-import { CheckCircle2Icon, SearchIcon, UserCogIcon, UsersIcon } from "lucide-react"
+import { CheckCircle2Icon, RotateCcwIcon, SearchIcon, UserCogIcon, UsersIcon } from "lucide-react"
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -56,6 +56,13 @@ export function UsersTab({ currentUserId }: Readonly<{ currentUserId: string }>)
     () => usersQuery.data?.pages.flatMap((page) => page.items) ?? [],
     [usersQuery.data],
   )
+  const hasFilters = searchText.trim().length > 0 || role !== "all" || status !== "all"
+
+  function resetFilters() {
+    void setSearchText(null)
+    void setRole(null)
+    void setStatus(null)
+  }
 
   const columns = useMemo<AdminColumnDef<AdminUser>[]>(
     () => [
@@ -190,7 +197,8 @@ export function UsersTab({ currentUserId }: Readonly<{ currentUserId: string }>)
         columns={columns}
         data={users}
         getRowId={(row) => row.id}
-        isPending={usersQuery.isPending}
+        isPending={usersQuery.isPending && users.length === 0}
+        isFetching={usersQuery.isFetching && usersQuery.isPlaceholderData}
         isError={usersQuery.isError}
         errorTitle="Không tải được người dùng"
         onRetry={() => void usersQuery.refetch()}
@@ -257,6 +265,19 @@ export function UsersTab({ currentUserId }: Readonly<{ currentUserId: string }>)
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
+
+            {hasFilters ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1 text-xs"
+                onClick={resetFilters}
+              >
+                <RotateCcwIcon className="size-3.5" aria-hidden="true" />
+                Đặt lại
+              </Button>
+            ) : null}
           </div>
         }
         emptyState={
@@ -266,8 +287,18 @@ export function UsersTab({ currentUserId }: Readonly<{ currentUserId: string }>)
                 <UsersIcon />
               </EmptyMedia>
               <EmptyTitle>Không tìm thấy người dùng</EmptyTitle>
-              <EmptyDescription>Thử đổi từ khoá hoặc bộ lọc.</EmptyDescription>
+              <EmptyDescription>
+                {hasFilters
+                  ? "Không có tài khoản nào khớp bộ lọc đang chọn."
+                  : "Chưa có tài khoản nào trong hệ thống."}
+              </EmptyDescription>
             </EmptyHeader>
+            {hasFilters ? (
+              <Button type="button" variant="outline" size="sm" onClick={resetFilters}>
+                <RotateCcwIcon className="size-3.5" aria-hidden="true" />
+                Xoá bộ lọc
+              </Button>
+            ) : null}
           </Empty>
         }
         pagination={{

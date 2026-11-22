@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import type { AuditLogEntry } from "@rendez/schema"
 import { useDebounce } from "@uidotdev/usehooks"
-import { ChevronDownIcon, ScrollTextIcon, SearchIcon } from "lucide-react"
+import { ChevronDownIcon, RotateCcwIcon, ScrollTextIcon, SearchIcon } from "lucide-react"
 import { parseAsString, useQueryState } from "nuqs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -81,6 +81,13 @@ export function AuditLogsTab() {
     () => logsQuery.data?.pages.flatMap((page) => page.items) ?? [],
     [logsQuery.data],
   )
+  const hasFilters = searchText.trim().length > 0 || entity !== "all" || action !== "all"
+
+  function resetFilters() {
+    void setSearchText(null)
+    void setEntity(null)
+    void setAction(null)
+  }
 
   const columns = useMemo<AdminColumnDef<AuditLogEntry>[]>(
     () => [
@@ -166,7 +173,8 @@ export function AuditLogsTab() {
         columns={columns}
         data={logs}
         getRowId={(row) => row.id}
-        isPending={logsQuery.isPending}
+        isPending={logsQuery.isPending && logs.length === 0}
+        isFetching={logsQuery.isFetching && logsQuery.isPlaceholderData}
         isError={logsQuery.isError}
         errorTitle="Không tải được nhật ký"
         onRetry={() => void logsQuery.refetch()}
@@ -233,6 +241,19 @@ export function AuditLogsTab() {
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {hasFilters ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1 text-xs"
+                onClick={resetFilters}
+              >
+                <RotateCcwIcon className="size-3.5" aria-hidden="true" />
+                Đặt lại
+              </Button>
+            ) : null}
           </div>
         }
         emptyState={
@@ -242,8 +263,18 @@ export function AuditLogsTab() {
                 <ScrollTextIcon />
               </EmptyMedia>
               <EmptyTitle>Chưa có nhật ký phù hợp</EmptyTitle>
-              <EmptyDescription>Thử đổi đối tượng hoặc từ khoá.</EmptyDescription>
+              <EmptyDescription>
+                {hasFilters
+                  ? "Không có nhật ký nào khớp đối tượng hoặc từ khoá đang chọn."
+                  : "Chưa có thao tác quản trị nào được ghi nhận."}
+              </EmptyDescription>
             </EmptyHeader>
+            {hasFilters ? (
+              <Button type="button" variant="outline" size="sm" onClick={resetFilters}>
+                <RotateCcwIcon className="size-3.5" aria-hidden="true" />
+                Xoá bộ lọc
+              </Button>
+            ) : null}
           </Empty>
         }
         pagination={{

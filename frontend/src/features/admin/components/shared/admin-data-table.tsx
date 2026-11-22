@@ -19,6 +19,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -52,6 +53,7 @@ interface AdminDataTableProps<TData extends RowData> {
   readonly initialSorting?: SortingState
   readonly initialColumnVisibility?: Record<string, boolean>
   readonly isPending?: boolean
+  readonly isFetching?: boolean
   readonly isError?: boolean
   readonly errorTitle?: string
   readonly onRetry?: () => void
@@ -80,6 +82,7 @@ export function AdminDataTable<TData extends RowData>({
   initialSorting = [],
   initialColumnVisibility = {},
   isPending = false,
+  isFetching = false,
   isError = false,
   errorTitle = "Không tải được dữ liệu bảng",
   onRetry,
@@ -115,38 +118,126 @@ export function AdminDataTable<TData extends RowData>({
     onColumnVisibilityChange: setColumnVisibility,
   })
 
-  if (isPending) {
-    return (
-      <div className="space-y-2 rounded-xl border border-border/80 bg-card p-3">
-        <Skeleton className="h-9 w-full rounded-md" />
-        {Array.from({ length: skeletonRows }).map((_, idx) => (
-          <Skeleton key={`tbl-skel-${idx}`} className="h-12 w-full rounded-md" />
-        ))}
-      </div>
-    )
-  }
+  const hideableColumns = tableInstance.getAllLeafColumns().filter((column) => column.getCanHide())
+  const showToolbar = Boolean(toolbarExtra) || (enableColumnToggle && hideableColumns.length > 0)
 
-  if (isError) {
-    return <ErrorState variant="plain" title={errorTitle} onRetry={onRetry} />
-  }
+  const renderBody = () => {
+    if (isPending && data.length === 0) {
+      return (
+        <div className="space-y-2 rounded-xl border border-border/80 bg-card p-3">
+          <Skeleton className="h-9 w-full rounded-md" />
+          {Array.from({ length: skeletonRows }).map((_, idx) => (
+            <Skeleton key={`tbl-skel-${idx}`} className="h-12 w-full rounded-md" />
+          ))}
+        </div>
+      )
+    }
 
-  if (data.length === 0) {
+    if (isError && data.length === 0) {
+      return <ErrorState variant="plain" title={errorTitle} onRetry={onRetry} />
+    }
+
+    if (data.length === 0) {
+      return (
+        <div className={cn("transition-opacity", isFetching && "opacity-60")}>
+          {emptyState ?? (
+            <p className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
+              Chưa có dữ liệu phù hợp.
+            </p>
+          )}
+        </div>
+      )
+    }
+
     return (
       <>
-        {emptyState ?? (
-          <p className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
-            Chưa có dữ liệu phù hợp.
-          </p>
-        )}
+        <div
+          className={cn(
+            "relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-(--shadow-soft) transition-opacity duration-150",
+            isFetching && "opacity-65",
+          )}
+          aria-busy={isFetching || undefined}
+        >
+          {isFetching ? (
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 z-10 h-0.5 animate-pulse bg-primary/70"
+              aria-hidden="true"
+            />
+          ) : null}
+          <Table aria-label={ariaLabel}>
+            <TableHeader className="bg-muted/45">
+              {tableInstance.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                  {headerGroup.headers.map((header) => {
+                    const canSort = header.column.getCanSort()
+                    const sorted = header.column.getIsSorted()
+                    return (
+                      <TableHead key={header.id} className="whitespace-nowrap">
+                        {header.isPlaceholder ? null : canSort ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={header.column.getToggleSortingHandler()}
+                            className="-ml-2 h-8 gap-1 px-2 text-xs font-semibold text-foreground hover:bg-muted"
+                          >
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {sorted === "asc" ? (
+                              <ArrowUpIcon className="size-3 text-primary" aria-hidden="true" />
+                            ) : sorted === "desc" ? (
+                              <ArrowDownIcon className="size-3 text-primary" aria-hidden="true" />
+                            ) : (
+                              <ArrowUpDownIcon
+                                className="size-3 text-muted-foreground/60"
+                                aria-hidden="true"
+                              />
+                            )}
+                          </Button>
+                        ) : (
+                          <span className="text-xs font-semibold text-foreground">
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                          </span>
+                        )}
+                      </TableHead>
+                    )
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {tableInstance.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                  className={cn(onRowClick && "cursor-pointer", rowClassName?.(row.original))}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="align-middle">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {pagination ? (
+          <LoadMore
+            hasNextPage={pagination.hasNextPage}
+            isFetchingNextPage={pagination.isFetchingNextPage}
+            onLoadMore={pagination.onLoadMore}
+            loadingLabel={pagination.loadingLabel}
+            endMessage={pagination.endMessage}
+          />
+        ) : null}
       </>
     )
   }
 
-  const hideableColumns = tableInstance.getAllLeafColumns().filter((column) => column.getCanHide())
-
   return (
     <div className="flex flex-col gap-3">
-      {toolbarExtra || (enableColumnToggle && hideableColumns.length > 0) ? (
+      {showToolbar ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">{toolbarExtra}</div>
           {enableColumnToggle && hideableColumns.length > 0 ? (
@@ -160,97 +251,32 @@ export function AdminDataTable<TData extends RowData>({
                 Cột hiển thị
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuLabel>Chọn cột hiển thị</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {hideableColumns.map((column) => {
-                  const label =
-                    typeof column.columnDef.header === "string"
-                      ? column.columnDef.header
-                      : column.id
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(checked) => column.toggleVisibility(Boolean(checked))}
-                    >
-                      {label}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Chọn cột hiển thị</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {hideableColumns.map((column) => {
+                    const label =
+                      typeof column.columnDef.header === "string"
+                        ? column.columnDef.header
+                        : column.id
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(checked) => column.toggleVisibility(Boolean(checked))}
+                      >
+                        {label}
+                      </DropdownMenuCheckboxItem>
+                    )
+                  })}
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : null}
         </div>
       ) : null}
 
-      <div className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-(--shadow-soft)">
-        <Table aria-label={ariaLabel}>
-          <TableHeader className="bg-muted/45">
-            {tableInstance.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                {headerGroup.headers.map((header) => {
-                  const canSort = header.column.getCanSort()
-                  const sorted = header.column.getIsSorted()
-                  return (
-                    <TableHead key={header.id} className="whitespace-nowrap">
-                      {header.isPlaceholder ? null : canSort ? (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={header.column.getToggleSortingHandler()}
-                          className="-ml-2 h-8 gap-1 px-2 text-xs font-semibold text-foreground hover:bg-muted"
-                        >
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                          {sorted === "asc" ? (
-                            <ArrowUpIcon className="size-3 text-primary" aria-hidden="true" />
-                          ) : sorted === "desc" ? (
-                            <ArrowDownIcon className="size-3 text-primary" aria-hidden="true" />
-                          ) : (
-                            <ArrowUpDownIcon
-                              className="size-3 text-muted-foreground/60"
-                              aria-hidden="true"
-                            />
-                          )}
-                        </Button>
-                      ) : (
-                        <span className="text-xs font-semibold text-foreground">
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                        </span>
-                      )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {tableInstance.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                className={cn(onRowClick && "cursor-pointer", rowClassName?.(row.original))}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="align-middle">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {pagination ? (
-        <LoadMore
-          hasNextPage={pagination.hasNextPage}
-          isFetchingNextPage={pagination.isFetchingNextPage}
-          onLoadMore={pagination.onLoadMore}
-          loadingLabel={pagination.loadingLabel}
-          endMessage={pagination.endMessage}
-        />
-      ) : null}
+      {renderBody()}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
 import { getPlaces, type DiscoverFilters } from "../api/get-places"
 
 const roundCoord = (value: number | undefined): string | null =>
@@ -32,6 +32,7 @@ export function useDiscoverPlaces(filters: DiscoverFilters, options?: { enabled?
     queryFn: ({ pageParam, signal }) => getPlaces(filters, pageParam, signal),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    placeholderData: keepPreviousData,
     enabled: options?.enabled ?? true,
   })
 }

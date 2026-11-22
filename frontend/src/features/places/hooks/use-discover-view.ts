@@ -33,6 +33,7 @@ export interface DiscoverView {
   clearLocation: () => void
   requestLocation: () => void
   isPending: boolean
+  isUpdating: boolean
   isError: boolean
   refetch: () => void
   hasNextPage: boolean
@@ -181,6 +182,7 @@ export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView
     locationError,
     locationGate,
     isPending: fetchList ? query.isPending : false,
+    isUpdating: fetchList ? query.isFetching && query.isPlaceholderData : false,
     isError: fetchList ? query.isError : false,
     refetch: () => void query.refetch(),
     hasNextPage: query.hasNextPage ?? false,

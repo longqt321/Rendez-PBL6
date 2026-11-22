@@ -156,7 +156,7 @@ export function AppShell({ children }: Readonly<AppShellProps>) {
         </main>
       </div>
       <BottomNav />
-      <ScrollRestoration />
+      <ScrollRestoration getKey={(location) => location.pathname} />
     </div>
   )
 }

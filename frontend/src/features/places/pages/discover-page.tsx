@@ -9,6 +9,7 @@ import { Alert, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
+import { cn } from "@/lib/utils"
 import { DailyPicksSection } from "../components/daily-picks-section"
 import { DidYouMean } from "../components/did-you-mean"
 import { DiscoverToolbar } from "../components/discover-toolbar"
@@ -91,7 +92,11 @@ function DiscoverContent({ view, sentinelRef }: DiscoverContentProps) {
   }
 
   return (
-    <section className="mt-8" aria-labelledby="discover-grid-heading">
+    <section
+      className={cn("mt-8 transition-opacity duration-150", view.isUpdating && "opacity-65")}
+      aria-labelledby="discover-grid-heading"
+      aria-busy={view.isUpdating || undefined}
+    >
       <SectionHeading id="discover-grid-heading">Tất cả địa điểm</SectionHeading>
 
       <StaggerList className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

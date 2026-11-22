@@ -1351,3 +1351,41 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
 - Bố cục lại theo **Kim tự tháp ngược 4 vùng**: Thanh trạng thái tổng thể 3 giây (`SystemHealthBanner`) → 4 KPI diễn giải bằng ngôn ngữ đời thường → Chẩn đoán điểm nghẽn (Chức năng/API chậm nhất + Bước xử lý chậm nhất) → Trải nghiệm trên thiết bị người dùng & Hoạt động 24h → Bảng tra cứu & Ngăn kéo chi tiết.
 - Ánh xạ toàn bộ route API (`describeApiRoute`), bước xử lý (`TIMING_STAGE_LABELS`), chỉ số Web Vitals (`WEB_VITAL_META`) và sự kiện hành vi (`describeBehaviorEvent`) sang tiếng Việt dễ hiểu; tự động tính và nổi bật **khâu chậm nhất** (`findDominantTimingStage`).
 - Loại bỏ bảng SQL thô và gói `sql-formatter` (vừa gọn thông tin cho người không chuyên, vừa giảm ~280KB kích thước chunk `admin-page`). Mã đối chiếu kỹ thuật (`Request ID`, `Trace ID`) ẩn gọn ở cuối ngăn kéo chi tiết (Progressive Disclosure).
+
+
+## L-062 — 2026-11-22: Thanh tìm kiếm và bộ lọc biến mất hoàn toàn khi lọc ra 0 kết quả
+
+**Lỗi người dùng chỉ ra:** Trên tab Địa điểm (`/admin?tab=places&pCat=bar&pVis=unpublished`) và các tab bảng khác, khi lọc không có kết quả phù hợp thì toàn bộ thanh tìm kiếm, nút trạng thái, dropdown quận/danh mục biến mất cùng bảng, khiến người dùng bị kẹt không thể đổi hay xóa bộ lọc.
+
+**Nguyên nhân gốc:** `AdminDataTable` kiểm tra `if (isPending)`, `if (isError)`, `if (data.length === 0)` và `return` sớm **trước khi render `toolbarExtra`**. Mọi tab truyền bộ lọc vào `toolbarExtra` đều bị unmount sạch thanh lọc khi dữ liệu rỗng hoặc đang tải.
+
+**Cách khắc phục & phòng tránh:**
+- Thanh công cụ (`toolbarExtra` + nút `Cột hiển thị`) luôn là phần khung bất biến (persistent chrome) nằm ngoài điều kiện render thân bảng (`isPending` / `isError` / `emptyState` / `<Table />`).
+- Luôn hiển thị nút `Xoá bộ lọc` ngay trong `EmptyState` khi có bộ lọc đang kích hoạt.
+- Bổ sung unit test hồi quy trong `admin-data-table.test.tsx` kiểm tra toolbar vẫn tồn tại ở trạng thái rỗng và đang tải.
+
+
+## L-063 — 2026-11-22: Nhấn bộ lọc làm "refresh cả trang", đẩy scroll lên đầu trang và rò rỉ query params giữa các tab
+
+**Lỗi người dùng chỉ ra:** Trên tab Hiệu suất & Quan sát và một số trang danh sách khác, khi người dùng cuộn xuống và bấm lọc thì toàn trang nhấp nháy tải lại và đẩy người dùng về đầu trang; đồng thời đổi tab trên `/admin` để lọt query params của tab cũ (`obsKind=web_vital` dính trên `tab=places`).
+
+**Nguyên nhân gốc:**
+1. `ObservabilityTab` unmount toàn bộ 2.000px trang thành `<Skeleton />` mỗi khi `query.isPending`, trong khi các hook TanStack Query có bộ lọc (6 hook Admin + `useDiscoverPlaces`, `usePosts`, `useUsersSearch`, `useNotifications`, `useProfilePosts`, `useSavedPlaces`) đều thiếu `placeholderData: keepPreviousData`.
+2. `<ScrollRestoration />` trong `app-shell.tsx` không cấu hình `getKey={(location) => location.pathname}`, nên React Router xem mỗi lần đổi query param là một điều hướng mới và kéo `scrollY` về `0`.
+3. `AdminPage` dùng lẫn `nuqs` với `useSearchParams` và khi đổi tab không dọn các tham số lọc của tab trước.
+
+**Cách khắc phục & phòng tránh:**
+- Bật `placeholderData: keepPreviousData` cho mọi hook query/infiniteQuery có bộ lọc; chỉ render skeleton toàn phần ở lần tải đầu (`isPending && !data`), còn khi lọc lại chỉ làm mờ nhẹ vùng bảng (`opacity-65`) mà không làm sụp chiều cao trang.
+- Cấu hình `<ScrollRestoration getKey={(location) => location.pathname} />` trong layout gốc.
+- Quản lý toàn bộ URL state Admin qua 1 schema `ADMIN_URL_PARSERS` (`nuqs`) duy nhất và xóa sạch filter params của tab cũ mỗi khi đổi tab.
+
+
+## L-064 — 2026-11-22: Crash runtime `Base UI: MenuGroupContext is missing` khi mở menu cột bảng Admin
+
+**Lỗi người dùng chỉ ra:** Nhật ký lỗi trình duyệt trên `/admin` ghi nhận lỗi `Base UI: MenuGroupContext is missing. Menu group parts must be placed within <Menu.Group>`.
+
+**Nguyên nhân gốc:** `AdminDataTable` đặt `<DropdownMenuLabel>` trực tiếp trong `<DropdownMenuContent>` mà thiếu bọc `<DropdownMenuGroup>` theo quy tắc bắt buộc của `@base-ui/react/menu`.
+
+**Cách khắc phục & phòng tránh:**
+- Luôn bọc `<DropdownMenuLabel>` bên trong `<DropdownMenuGroup>`.
+- Bổ sung test mở menu `Cột hiển thị` và toggle cột trong `admin-data-table.test.tsx`.

@@ -1,4 +1,10 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import type {
   UpdateAdminPlaceInput,
   UpdateAdminReportInput,
@@ -47,6 +53,7 @@ export function useAdminObservability(
   return useQuery({
     queryKey: ADMIN_KEYS.observability(query),
     queryFn: () => getAdminObservability(query),
+    placeholderData: keepPreviousData,
     enabled: options?.enabled ?? true,
   })
 }
@@ -60,6 +67,7 @@ export function useAdminReports(
     queryFn: ({ pageParam }) => getAdminReports({ ...query, cursor: pageParam }),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    placeholderData: keepPreviousData,
     enabled: options?.enabled ?? true,
   })
 }
@@ -92,6 +100,7 @@ export function useAdminPlaces(
     queryFn: ({ pageParam }) => getAdminPlaces({ ...query, cursor: pageParam }),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    placeholderData: keepPreviousData,
     enabled: options?.enabled ?? true,
   })
 }
@@ -123,6 +132,7 @@ export function useAdminUsers(
     queryFn: ({ pageParam }) => getAdminUsers({ ...query, cursor: pageParam }),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    placeholderData: keepPreviousData,
     enabled: options?.enabled ?? true,
   })
 }
@@ -153,6 +163,7 @@ export function useAuditLogs(
     queryFn: ({ pageParam }) => getAuditLogs({ ...query, cursor: pageParam }),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    placeholderData: keepPreviousData,
     enabled: options?.enabled ?? true,
   })
 }

@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
 import { getSavedPlaces } from "../api/get-saved-places"
 
 export const savedPlacesQueryKey = ["places", "saved"] as const
@@ -9,6 +9,7 @@ export function useSavedPlacesQuery() {
     queryFn: ({ pageParam, signal }) => getSavedPlaces(pageParam, signal),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    placeholderData: keepPreviousData,
   })
 }
 

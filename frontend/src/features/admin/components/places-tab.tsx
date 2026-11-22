@@ -236,7 +236,8 @@ export function PlacesTab() {
         columns={columns}
         data={places}
         getRowId={(row) => row.id}
-        isPending={placesQuery.isPending}
+        isPending={placesQuery.isPending && places.length === 0}
+        isFetching={placesQuery.isFetching && placesQuery.isPlaceholderData}
         isError={placesQuery.isError}
         errorTitle="Không tải được địa điểm"
         onRetry={() => void placesQuery.refetch()}
@@ -352,8 +353,18 @@ export function PlacesTab() {
                 <MapPinIcon />
               </EmptyMedia>
               <EmptyTitle>Không có địa điểm phù hợp</EmptyTitle>
-              <EmptyDescription>Thử đổi từ khoá hoặc bộ lọc.</EmptyDescription>
+              <EmptyDescription>
+                {hasFilters
+                  ? "Không có quán nào khớp đồng thời với bộ lọc hiện tại."
+                  : "Chưa có địa điểm nào trong hệ thống."}
+              </EmptyDescription>
             </EmptyHeader>
+            {hasFilters ? (
+              <Button type="button" variant="outline" size="sm" onClick={resetFilters}>
+                <RotateCcwIcon className="size-3.5" aria-hidden="true" />
+                Xoá bộ lọc
+              </Button>
+            ) : null}
           </Empty>
         }
         pagination={{

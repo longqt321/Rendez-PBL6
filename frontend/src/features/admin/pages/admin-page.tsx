@@ -8,8 +8,7 @@ import {
   ScrollTextIcon,
   UsersIcon,
 } from "lucide-react"
-import { parseAsStringLiteral, useQueryState } from "nuqs"
-import { useSearchParams } from "react-router"
+import { useQueryStates } from "nuqs"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { AuditLogsTab } from "../components/audit-logs-tab"
 import { ObservabilityTab } from "../components/observability-tab"
@@ -20,8 +19,7 @@ import { AdminEnvProvider } from "../components/shared/admin-env-context"
 import { AdminShell, type AdminNavItem } from "../components/shared/admin-shell"
 import { UsersTab } from "../components/users-tab"
 import { ADMIN_KEYS, useAdminOverview } from "../hooks/use-admin"
-
-const TAB_KEYS = ["overview", "reports", "places", "users", "observability", "logs"] as const
+import { ADMIN_URL_PARSERS, CLEAR_ALL_ADMIN_FILTERS } from "../lib/admin-url-params"
 
 const BASE_NAV_ITEMS: Omit<AdminNavItem<AdminTabKey>, "badgeCount">[] = [
   { key: "overview", label: "Tổng quan", group: "ops", icon: LayoutDashboardIcon },
@@ -43,12 +41,9 @@ export function AdminPage() {
   const { data: me } = useMe()
   const overviewQuery = useAdminOverview()
   const isAdmin = me?.role === "admin"
-  const [, setSearchParams] = useSearchParams()
 
-  const [tabParam, setTabParam] = useQueryState(
-    "tab",
-    parseAsStringLiteral(TAB_KEYS).withDefault("overview").withOptions({ history: "replace" }),
-  )
+  const [urlState, setUrlState] = useQueryStates(ADMIN_URL_PARSERS, { history: "replace" })
+  const tabParam = urlState.tab
 
   const pendingReportsCount = overviewQuery.data?.reports.pending ?? 0
 
@@ -70,7 +65,10 @@ export function AdminPage() {
 
   function handleSelectTab(next: AdminTabKey) {
     if (!visibleNavItems.some((item) => item.key === next)) return
-    void setTabParam(next === "overview" ? null : next)
+    void setUrlState({
+      ...CLEAR_ALL_ADMIN_FILTERS,
+      tab: next === "overview" ? null : next,
+    })
   }
 
   function handleNavigateToPlaces(filters?: {
@@ -78,12 +76,13 @@ export function AdminPage() {
     district?: string
     visibility?: "published" | "unpublished" | "closed"
   }) {
-    const next = new URLSearchParams()
-    next.set("tab", "places")
-    if (filters?.category) next.set("pCat", filters.category)
-    if (filters?.district) next.set("pDistrict", filters.district)
-    if (filters?.visibility) next.set("pVis", filters.visibility)
-    setSearchParams(next, { replace: true })
+    void setUrlState({
+      ...CLEAR_ALL_ADMIN_FILTERS,
+      tab: "places",
+      pCat: filters?.category ?? null,
+      pDistrict: filters?.district ?? null,
+      pVis: filters?.visibility ?? null,
+    })
   }
 
   function handleRefresh() {

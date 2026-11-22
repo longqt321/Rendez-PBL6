@@ -73,7 +73,7 @@ export function ObservabilityTab() {
     [data?.latency.byEndpoint],
   )
 
-  if (query.isPending) {
+  if (query.isPending && !data) {
     return (
       <div className="flex flex-col gap-5">
         <Skeleton className="h-16 w-full rounded-xl" />
@@ -259,6 +259,7 @@ export function ObservabilityTab() {
             columns={EVENT_COLUMNS}
             data={events}
             getRowId={(row) => row.id}
+            isFetching={query.isFetching && query.isPlaceholderData}
             onRowClick={setSelectedEvent}
             ariaLabel="Bảng nhật ký sự cố và phản hồi chậm"
             emptyState={
@@ -267,11 +268,30 @@ export function ObservabilityTab() {
                   <EmptyMedia variant="icon">
                     <ActivityIcon />
                   </EmptyMedia>
-                  <EmptyTitle>Chưa có sự cố hay phản hồi chậm</EmptyTitle>
+                  <EmptyTitle>
+                    {kind !== "all" || searchText.trim().length > 0
+                      ? "Không có sự kiện khớp bộ lọc"
+                      : "Chưa có sự cố hay phản hồi chậm"}
+                  </EmptyTitle>
                   <EmptyDescription>
-                    Hệ thống đang vận hành trơn tru trong khoảng thời gian gần đây.
+                    {kind !== "all" || searchText.trim().length > 0
+                      ? "Thử đổi loại sự kiện hoặc từ khoá tìm kiếm."
+                      : "Hệ thống đang vận hành trơn tru trong khoảng thời gian gần đây."}
                   </EmptyDescription>
                 </EmptyHeader>
+                {kind !== "all" || searchText.trim().length > 0 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      void setKind("all")
+                      void setSearchText(null)
+                    }}
+                  >
+                    Xoá bộ lọc
+                  </Button>
+                ) : null}
               </Empty>
             }
           />

@@ -181,7 +181,8 @@ export function ReportsTab() {
         columns={columns}
         data={reports}
         getRowId={(row) => row.id}
-        isPending={reportsQuery.isPending}
+        isPending={reportsQuery.isPending && reports.length === 0}
+        isFetching={reportsQuery.isFetching && reportsQuery.isPlaceholderData}
         isError={reportsQuery.isError}
         errorTitle="Không tải được báo cáo"
         onRetry={() => void reportsQuery.refetch()}
@@ -234,6 +235,16 @@ export function ReportsTab() {
               <EmptyTitle>Không có báo cáo</EmptyTitle>
               <EmptyDescription>Chưa có phản ánh thuộc trạng thái đang chọn.</EmptyDescription>
             </EmptyHeader>
+            {status !== "all" ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void setStatus("all")}
+              >
+                Xem tất cả báo cáo
+              </Button>
+            ) : null}
           </Empty>
         }
         pagination={{

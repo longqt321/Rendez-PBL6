@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
 import { getProfilePosts } from "../api/get-profile-posts"
 import type { ProfileTab } from "../types/profile"
 
@@ -12,5 +12,6 @@ export function useProfilePosts(handle: string, tab: ProfileTab) {
     queryFn: ({ pageParam, signal }) => getProfilePosts(handle, tab, pageParam, signal),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    placeholderData: keepPreviousData,
   })
 }
