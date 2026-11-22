@@ -7,13 +7,15 @@ import Supercluster from "supercluster"
 import type { Feature, Point } from "geojson"
 import { ExternalLinkIcon, LayersIcon, NavigationIcon, StarIcon, XIcon } from "lucide-react"
 import { useTheme } from "next-themes"
+import { useIsDesktop } from "@/hooks/use-breakpoint"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { CATEGORY_META, categoryIconSvg } from "../lib/category-meta"
+import { formatPlaceTrustLabel } from "../lib/review-tier-meta"
 import { ResilientTileLayer } from "./resilient-tile-layer"
-import { formatDistance, formatRating } from "@/lib/format"
+import { formatDistance } from "@/lib/format"
 import { calculateDistanceKm, DANANG_DISTRICT_CENTERS } from "../lib/danang-districts"
 import { priceLevelLabel } from "../lib/price-level"
 import { cn } from "@/lib/utils"
@@ -36,6 +38,8 @@ interface PlacesMapProps {
   readonly onViewportChange?: (bounds: MapBounds) => void
 
   readonly fitKey?: string
+
+  readonly isNearbyActive?: boolean
 
   readonly isPlacesLoading?: boolean
 
@@ -92,6 +96,7 @@ function MapBoundsUpdater({
   places,
   userCoordinates,
   fitKey,
+  isNearbyActive = false,
   isPlacesLoading,
   isPlaceholderData,
   selectedDistrict,
@@ -100,6 +105,7 @@ function MapBoundsUpdater({
   places: Place[]
   userCoordinates?: { lat: number; lng: number } | null
   fitKey?: string
+  isNearbyActive?: boolean
   isPlacesLoading?: boolean
   isPlaceholderData?: boolean
   selectedDistrict?: string
@@ -118,6 +124,22 @@ function MapBoundsUpdater({
 
     // Đã căn cho khoá này rồi thì thôi.
     if (fittedKeyRef.current === fitKey) return
+
+    const hasValidUserCoords =
+      userCoordinates &&
+      userCoordinates.lat >= 15.95 &&
+      userCoordinates.lat <= 16.2 &&
+      userCoordinates.lng >= 108.05 &&
+      userCoordinates.lng <= 108.35
+
+    // Khi lọc "Gần tôi" (không khoá quận), chỉ căn 1 lần về quanh vị trí người dùng
+    // để người dùng tự do zoom/kéo sau đó mà không bị nhảy lại toàn thành phố.
+    if (isNearbyActive && !selectedDistrict && hasValidUserCoords) {
+      map.flyTo([userCoordinates.lat, userCoordinates.lng], 15, { duration: 0.6 })
+      fittedKeyRef.current = fitKey ?? null
+      onFitAppliedRef.current?.()
+      return
+    }
 
     const validPlaces = places.filter((p) => p.lat !== undefined && p.lng !== undefined)
     const points: [number, number][] = validPlaces.map((p) => [p.lat!, p.lng!])
@@ -153,7 +175,16 @@ function MapBoundsUpdater({
     }
     fittedKeyRef.current = fitKey ?? null
     onFitAppliedRef.current?.()
-  }, [fitKey, userCoordinates, places, isPlacesLoading, isPlaceholderData, selectedDistrict, map])
+  }, [
+    fitKey,
+    isNearbyActive,
+    userCoordinates,
+    places,
+    isPlacesLoading,
+    isPlaceholderData,
+    selectedDistrict,
+    map,
+  ])
 
   return null
 }
@@ -261,16 +292,19 @@ function createClusterIcon(count: number) {
 function createUserLocationIcon() {
   const html = `
     <div class="relative flex items-center justify-center">
-      <div class="size-6 rounded-full bg-primary/20 ring-4 ring-primary/30 flex items-center justify-center animate-pulse">
-        <div class="size-3.5 rounded-full bg-primary border-2 border-background shadow-md"></div>
+      <div class="relative flex size-9 items-center justify-center">
+        <span class="absolute inline-flex size-9 rounded-full bg-blue-500/30 animate-ping"></span>
+        <span class="relative flex size-9 items-center justify-center rounded-full bg-blue-500/20 ring-2 ring-blue-500/40">
+          <span class="size-4.5 rounded-full bg-blue-600 border-[3px] border-white shadow-[0_2px_8px_rgba(37,99,235,0.75)]"></span>
+        </span>
       </div>
     </div>
   `
   return L.divIcon({
     html,
     className: "user-location-marker",
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
   })
 }
 
@@ -397,7 +431,7 @@ function ClusteredPlaceMarkers({
           Number(b.place.id === selectedPlaceId) - Number(a.place.id === selectedPlaceId)
         return (
           selectedDelta ||
-          b.place.rating - a.place.rating ||
+          b.place.positiveRatio - a.place.positiveRatio ||
           b.place.reviewCount - a.place.reviewCount
         )
       })
@@ -549,7 +583,7 @@ function ClusteredPlaceMarkers({
                   <div className="flex items-center justify-between pt-1">
                     <span className="flex items-center gap-1 text-xs font-semibold text-star">
                       <StarIcon className="size-3.5 fill-current" />
-                      {formatRating(place.rating)}
+                      {formatPlaceTrustLabel(place.mustTryCount, place.reviewCount)}
                       <span className="text-xs font-normal text-muted-foreground">
                         ({place.reviewCount})
                       </span>
@@ -630,13 +664,15 @@ function MapCategoryLegend({
 
           if (onCategorySelect) {
             return (
-              <button
+              <Button
                 key={category}
                 type="button"
+                variant="ghost"
+                size="sm"
                 aria-pressed={isSelected}
                 onClick={() => onCategorySelect(isSelected ? "all" : cat)}
                 className={cn(
-                  "flex items-center gap-2 rounded-control px-2 py-1 text-left transition-colors hover:bg-muted",
+                  "h-auto justify-start gap-2 rounded-control px-2 py-1 text-left text-xs font-normal transition-colors hover:bg-muted",
                   isSelected && "bg-primary/12 font-semibold text-primary",
                   isDimmed && "opacity-55",
                 )}
@@ -646,7 +682,7 @@ function MapCategoryLegend({
                   style={{ backgroundColor: meta.color }}
                 />
                 {meta.label}
-              </button>
+              </Button>
             )
           }
 
@@ -677,6 +713,7 @@ export function PlacesMap({
   height = "h-[650px]",
   onViewportChange,
   fitKey,
+  isNearbyActive = false,
   isPlacesLoading = false,
   isPlaceholderData = false,
   isEmptyViewport = false,
@@ -685,6 +722,7 @@ export function PlacesMap({
   totalPlaces,
 }: PlacesMapProps) {
   const { resolvedTheme } = useTheme()
+  const isDesktop = useIsDesktop()
   const isDark = resolvedTheme === "dark"
 
   const validPlaces = useMemo(
@@ -699,7 +737,7 @@ export function PlacesMap({
 
   const topPlaceIds = useMemo(() => {
     const ranked = validPlaces.toSorted(
-      (a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount,
+      (a, b) => b.positiveRatio - a.positiveRatio || b.reviewCount - a.reviewCount,
     )
     return new Set(ranked.slice(0, TOP_LABEL_COUNT).map((p) => p.id))
   }, [validPlaces])
@@ -720,7 +758,7 @@ export function PlacesMap({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden rounded-surface border bg-muted shadow-inner",
+        "relative isolate w-full overflow-hidden rounded-surface border bg-muted shadow-inner",
         height,
         className,
       )}
@@ -729,6 +767,7 @@ export function PlacesMap({
         center={DANANG_CENTER_TUPLE}
         zoom={DANANG_DEFAULT_ZOOM}
         scrollWheelZoom={true}
+        zoomControl={isDesktop}
         className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
       >
         <ResilientTileLayer />
@@ -736,6 +775,7 @@ export function PlacesMap({
           places={validPlaces}
           userCoordinates={userCoordinates}
           fitKey={fitKey}
+          isNearbyActive={isNearbyActive}
           isPlacesLoading={isPlacesLoading}
           isPlaceholderData={isPlaceholderData}
           selectedDistrict={selectedDistrict}
@@ -747,6 +787,7 @@ export function PlacesMap({
           <Marker
             position={[userCoordinates.lat, userCoordinates.lng]}
             icon={createUserLocationIcon()}
+            zIndexOffset={1000}
           >
             <Popup closeButton={false}>
               <div className="flex items-center gap-1 p-1 text-xs font-semibold text-foreground">
@@ -803,7 +844,7 @@ export function PlacesMap({
               <div className="mt-1.5 flex items-center justify-between text-xs">
                 <span className="flex items-center gap-1 font-semibold text-star tabular-nums">
                   <StarIcon className="size-3.5 fill-current" aria-hidden="true" />
-                  {formatRating(selectedPlace.rating)}
+                  {formatPlaceTrustLabel(selectedPlace.mustTryCount, selectedPlace.reviewCount)}
                 </span>
                 {selectedDistanceKm !== undefined ? (
                   <span className="font-semibold text-primary">
@@ -825,15 +866,16 @@ export function PlacesMap({
         </div>
       ) : null}
 
-      <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-control border border-border/80 bg-background/92 px-3 py-1.5 text-xs font-medium shadow-(--shadow-soft) backdrop-blur-md">
+      <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-control border border-border/80 bg-background/92 px-2.5 py-1 text-[11px] font-medium shadow-(--shadow-soft) backdrop-blur-md md:px-3 md:py-1.5 md:text-xs">
         <PlacesSummaryText
           isLoading={isPlacesLoading}
           validCount={validPlaces.length}
           totalCount={totalPlaces}
+          compact={!isDesktop}
         />
         {userCoordinates ? (
           <span className="flex items-center gap-0.5 text-primary">
-            <NavigationIcon className="size-3" /> Đã bật vị trí
+            <NavigationIcon className="size-3" /> {isDesktop ? "Đã bật vị trí" : "GPS"}
           </span>
         ) : null}
       </div>
@@ -845,16 +887,23 @@ function PlacesSummaryText({
   isLoading,
   validCount,
   totalCount,
-}: Readonly<{ isLoading?: boolean; validCount: number; totalCount?: number }>) {
+  compact,
+}: Readonly<{ isLoading?: boolean; validCount: number; totalCount?: number; compact?: boolean }>) {
   if (isLoading && validCount === 0) {
-    return <span>Đang tải địa điểm trong vùng xem…</span>
+    return <span>{compact ? "Đang tải…" : "Đang tải địa điểm trong vùng xem…"}</span>
   }
   if (totalCount !== undefined && totalCount > validCount) {
     return (
       <span>
-        Đang hiển thị {validCount}/{totalCount} địa điểm trong vùng xem, zoom sát hơn để xem hết
+        {compact
+          ? `${validCount}/${totalCount} · Zoom để xem hết`
+          : `Đang hiển thị ${validCount}/${totalCount} địa điểm trong vùng xem, zoom sát hơn để xem hết`}
       </span>
     )
   }
-  return <span>Đang hiển thị {validCount} địa điểm trong vùng xem</span>
+  return (
+    <span>
+      {compact ? `${validCount} địa điểm` : `Đang hiển thị ${validCount} địa điểm trong vùng xem`}
+    </span>
+  )
 }

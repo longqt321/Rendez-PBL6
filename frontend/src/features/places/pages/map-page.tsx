@@ -6,6 +6,7 @@ import { ErrorState } from "@/components/shared/error-state"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import type { Room } from "@/features/rooms/types/room"
+import { useIsDesktop } from "@/hooks/use-breakpoint"
 import type { MapBounds } from "../api/get-map-places"
 import { DiscoverToolbar } from "../components/discover-toolbar"
 import { PlacesMap } from "../components/places-map"
@@ -22,6 +23,7 @@ interface MapContentProps {
   readonly onClearSelection: () => void
   readonly setRawBounds: (bounds: MapBounds | null) => void
   readonly fitKey: string
+  readonly isNearbyActive: boolean
   readonly needsRefit: boolean
   readonly isEmptyViewport: boolean
   readonly selectedDistrict?: string
@@ -38,6 +40,7 @@ function MapContent({
   onClearSelection,
   setRawBounds,
   fitKey,
+  isNearbyActive,
   needsRefit,
   isEmptyViewport,
   selectedDistrict,
@@ -112,11 +115,13 @@ function MapContent({
       onFitApplied={onFitApplied}
       totalPlaces={mapQuery.data?.total}
       fitKey={fitKey}
+      isNearbyActive={isNearbyActive}
     />
   )
 }
 
 export function MapPage() {
+  const isDesktop = useIsDesktop()
   const view = useDiscoverView({ fetchList: false })
   const { room } = view
   const [rawBounds, setRawBounds] = useState<MapBounds | null>(null)
@@ -130,11 +135,13 @@ export function MapPage() {
     view.serverFilters.priceMax ?? "all",
     JSON.stringify(view.serverFilters.room ?? null),
   ].join("|")
-  const coordKey = view.coordinates ? `${view.coordinates.lat},${view.coordinates.lng}` : ""
-  const fitKey = `${filterKey}|${coordKey}`
+  const isNearbyActive = view.filters.isNearbyActive
+  const sourceKey = view.selectedSourceKey ?? "auto"
+  const hasCoordsKey = view.coordinates ? "1" : "0"
+  const fitKey = `${filterKey}|${isNearbyActive ? "nearby" : "all"}|${sourceKey}|${isNearbyActive ? hasCoordsKey : "0"}`
 
-  const [fittedFilterKey, setFittedFilterKey] = useState<string | null>(null)
-  const needsRefit = fittedFilterKey !== filterKey
+  const [fittedKey, setFittedKey] = useState<string | null>(null)
+  const needsRefit = fittedKey !== fitKey
   const effectiveBounds = needsRefit ? null : bounds
 
   const mapQuery = useMapPlaces(view.serverFilters, effectiveBounds, {
@@ -147,38 +154,53 @@ export function MapPage() {
     bounds !== null && !needsRefit && !mapQuery.isFetching && mapPlaces.length === 0
 
   return (
-    <div className="relative h-[calc(100dvh-4.05rem-5rem)] w-full overflow-hidden lg:h-[calc(100dvh-4.05rem)]">
+    <div className="-mb-20 flex h-[calc(100dvh-3.5625rem-3.8125rem-env(safe-area-inset-bottom))] w-full flex-col overflow-hidden md:h-[calc(100dvh-4.05rem-3.8125rem-env(safe-area-inset-bottom))] lg:relative lg:mb-0 lg:block lg:h-[calc(100dvh-4.05rem)]">
       <h1 className="sr-only">Bản đồ địa điểm Đà Nẵng</h1>
 
-      {/* Thanh lọc nổi bằng kính mờ phía trên bản đồ */}
-      <div className="pointer-events-none absolute inset-x-3 top-3 z-1000 mx-auto max-w-6xl">
-        <div className="pointer-events-auto">
-          <DiscoverToolbar
-            view={view}
-            mode="map"
-            floating
-            totalOverride={mapQuery.data?.total}
-            placesOverride={mapPlaces}
-            isLoadingOverride={mapQuery.isFetching}
-          />
+      {isDesktop ? (
+        /* Desktop: thanh lọc nổi bằng kính mờ phía trên bản đồ */
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-10 mx-auto max-w-6xl">
+          <div className="pointer-events-auto">
+            <DiscoverToolbar
+              view={view}
+              mode="map"
+              floating
+              totalOverride={mapQuery.data?.total}
+              placesOverride={mapPlaces}
+              isLoadingOverride={mapQuery.isFetching}
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Mobile: thanh lọc gắn liền dưới TopBar, không che khuất bản đồ */
+        <DiscoverToolbar
+          view={view}
+          mode="map"
+          className="static mx-0 shrink-0 lg:mx-0"
+          totalOverride={mapQuery.data?.total}
+          placesOverride={mapPlaces}
+          isLoadingOverride={mapQuery.isFetching}
+        />
+      )}
 
-      <MapContent
-        view={view}
-        mapQuery={mapQuery}
-        mapPlaces={mapPlaces}
-        selectedPlaceId={selectedPlaceId}
-        onSelectPlace={(place) => setSelectedPlaceId(place.id)}
-        onClearSelection={() => setSelectedPlaceId(null)}
-        setRawBounds={setRawBounds}
-        fitKey={fitKey}
-        needsRefit={needsRefit}
-        isEmptyViewport={isEmptyViewport}
-        selectedDistrict={selectedDistrict}
-        onFitApplied={() => setFittedFilterKey(filterKey)}
-        room={room}
-      />
+      <div className="min-h-0 flex-1 lg:h-full">
+        <MapContent
+          view={view}
+          mapQuery={mapQuery}
+          mapPlaces={mapPlaces}
+          selectedPlaceId={selectedPlaceId}
+          onSelectPlace={(place) => setSelectedPlaceId(place.id)}
+          onClearSelection={() => setSelectedPlaceId(null)}
+          setRawBounds={setRawBounds}
+          fitKey={fitKey}
+          isNearbyActive={isNearbyActive}
+          needsRefit={needsRefit}
+          isEmptyViewport={isEmptyViewport}
+          selectedDistrict={selectedDistrict}
+          onFitApplied={() => setFittedKey(fitKey)}
+          room={room}
+        />
+      </div>
     </div>
   )
 }

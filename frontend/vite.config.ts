@@ -117,6 +117,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      host: true,
+      allowedHosts: true,
       // Dev: trình duyệt gọi "/api/..." → Vite chuyển tiếp sang backend thật.
       proxy: {
         "/api": {

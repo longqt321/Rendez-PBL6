@@ -283,6 +283,7 @@ body {
 }
 
 /* Dark mode cho OpenStreetMap tiles: chuyển màu tối tự nhiên không cần API key ngoài */
+.dark .leaflet-tile,
 .map-tiles-dark .leaflet-tile {
   filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
 }

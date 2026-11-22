@@ -15,12 +15,16 @@ export function useSearchQuerySync() {
   const [draft, setDraft] = useState(urlQuery)
   const debouncedDraft = useDebouncedValue(draft, 280)
   const lastWritten = useRef(urlQuery)
+  const urlQueryRef = useRef(urlQuery)
 
   useEffect(() => {
+    urlQueryRef.current = urlQuery
     if (urlQuery === lastWritten.current) return
+    // Không ghi đè nếu người dùng đang gõ dở (draft chưa debounce xong)
+    if (draft.trim() !== lastWritten.current) return
     lastWritten.current = urlQuery
     setDraft(urlQuery)
-  }, [urlQuery])
+  }, [urlQuery, draft])
 
   const patchFilterQuery = useCallback(
     (trimmed: string) => {
@@ -41,8 +45,11 @@ export function useSearchQuerySync() {
     if (!isSearchPage && !isFilterPage) return
     if (debouncedDraft !== draft) return
 
-    const trimmed = draft.trim()
-    if (trimmed === urlQuery) return
+    const trimmed = debouncedDraft.trim()
+    if (trimmed === urlQueryRef.current) {
+      lastWritten.current = trimmed
+      return
+    }
 
     lastWritten.current = trimmed
     if (isFilterPage) {
@@ -56,16 +63,7 @@ export function useSearchQuerySync() {
     }
 
     void setParams({ q: trimmed }, { replace: true })
-  }, [
-    debouncedDraft,
-    draft,
-    isSearchPage,
-    isFilterPage,
-    urlQuery,
-    navigate,
-    setParams,
-    patchFilterQuery,
-  ])
+  }, [debouncedDraft, draft, isSearchPage, isFilterPage, navigate, setParams, patchFilterQuery])
 
   const submit = useCallback(() => {
     const trimmed = draft.trim()
