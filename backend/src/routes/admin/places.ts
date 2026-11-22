@@ -3,13 +3,14 @@ import type { Hono } from "hono"
 import type {
   PlaceCategory as PrismaPlaceCategory,
   PlaceStatus as PrismaPlaceStatus,
+  Prisma,
 } from "../../../generated/prisma/client"
-import { Prisma } from "../../../generated/prisma/client"
 import type { AppEnv } from "../../app"
 import { recordAuditLog } from "../../lib/audit-log"
 import { SLUG_ID_RE, encodeCursor } from "../../lib/cursor"
 import { toPrismaCategory } from "../../lib/enums"
 import { ApiError } from "../../lib/errors"
+import { db, sql } from "../../lib/kysely"
 import { prisma } from "../../lib/prisma"
 import { requireRole } from "../../lib/session"
 import { invalidateSuggestionCache } from "../../lib/suggestions"
@@ -37,51 +38,62 @@ export function registerAdminPlaceRoutes(router: Hono<AppEnv>): void {
     const rawQ = c.req.query("q")?.trim()
     const cursor = parseAdminCursor(c.req.query("cursor"), SLUG_ID_RE)
 
-    const conditions: Prisma.Sql[] = [Prisma.sql`p.deleted_at IS NULL`]
+    let query = db
+      .selectFrom("places as p")
+      .select([
+        "p.id",
+        "p.name",
+        "p.address",
+        "p.district",
+        sql<string>`p.category::text`.as("category"),
+        "p.price_level",
+        sql<string>`p.status::text`.as("status"),
+        "p.lat",
+        "p.lng",
+        "p.published_at",
+        "p.moderation_status",
+        "p.moderation_note",
+        "p.moderated_at",
+        "p.created_at",
+        sql<number>`(SELECT COUNT(*)::int FROM reviews r WHERE r.place_id = p.id AND r.deleted_at IS NULL)`.as(
+          "review_count",
+        ),
+        sql<number>`(SELECT COUNT(*)::int FROM place_reports pr WHERE pr.place_id = p.id)`.as(
+          "report_count",
+        ),
+      ])
+      .where("p.deleted_at", "is", null)
+
     if (visibility === "published") {
-      conditions.push(Prisma.sql`p.published_at IS NOT NULL AND p.status <> 'closed'`)
+      query = query.where("p.published_at", "is not", null).where("p.status", "!=", "closed")
     } else if (visibility === "unpublished") {
-      conditions.push(Prisma.sql`p.published_at IS NULL`)
+      query = query.where("p.published_at", "is", null)
     } else if (visibility === "closed") {
-      conditions.push(Prisma.sql`p.status = 'closed'`)
+      query = query.where("p.status", "=", "closed")
     }
     if (district && district !== "all") {
-      conditions.push(Prisma.sql`p.district = ${district}`)
+      query = query.where("p.district", "=", district)
     }
     if (category) {
-      const prismaCategory = toPrismaCategory(category)
-      conditions.push(Prisma.sql`p.category = ${prismaCategory}::place_category`)
+      query = query.where("p.category", "=", category)
     }
     if (rawQ && rawQ.length > 0) {
       const q = rawQ.slice(0, ADMIN_CONSTANTS.SEARCH_QUERY_MAX_LEN)
-      conditions.push(
-        Prisma.sql`immutable_search_normalize(p.name || ' ' || p.address || ' ' || coalesce(p.district, '')) LIKE '%' || immutable_search_normalize(${q}) || '%'`,
+      query = query.where(
+        sql<boolean>`immutable_search_normalize(p.name || ' ' || p.address || ' ' || coalesce(p.district, '')) LIKE '%' || immutable_search_normalize(${q}) || '%'`,
       )
     }
     if (cursor) {
-      conditions.push(
-        Prisma.sql`(p.created_at, p.id) < (${cursor.createdAt}::timestamptz, ${cursor.id})`,
+      query = query.where(
+        sql<boolean>`(p.created_at, p.id) < (${cursor.createdAt}::timestamptz, ${cursor.id})`,
       )
     }
 
-    const rows = await prisma.$queryRaw<PlaceAdminRow[]>(Prisma.sql`
-      SELECT p.id, p.name, p.address, p.district, p.category::text AS category,
-             p.price_level, p.status::text AS status, p.lat, p.lng,
-             p.published_at, p.moderation_status, p.moderation_note, p.moderated_at,
-             p.created_at,
-             COALESCE(rv.review_count, 0)::int AS review_count,
-             COALESCE(rp.report_count, 0)::int AS report_count
-      FROM places p
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*) AS review_count FROM reviews r WHERE r.place_id = p.id AND r.deleted_at IS NULL
-      ) rv ON true
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*) AS report_count FROM place_reports pr WHERE pr.place_id = p.id
-      ) rp ON true
-      WHERE ${Prisma.join(conditions, " AND ")}
-      ORDER BY p.created_at DESC, p.id DESC
-      LIMIT ${ADMIN_CONSTANTS.PAGE_SIZE + 1}
-    `)
+    const rows: PlaceAdminRow[] = await query
+      .orderBy("p.created_at", "desc")
+      .orderBy("p.id", "desc")
+      .limit(ADMIN_CONSTANTS.PAGE_SIZE + 1)
+      .execute()
 
     const page = rows.slice(0, ADMIN_CONSTANTS.PAGE_SIZE)
     const last = page.at(-1)

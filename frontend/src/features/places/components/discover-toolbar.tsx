@@ -1,3 +1,4 @@
+import { FilterPill, NearbyButtonIcon } from "./discover/toolbar-primitives"
 import { useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import {
@@ -7,15 +8,12 @@ import {
   CroissantIcon,
   IceCreamBowlIcon,
   LayoutGridIcon,
-  LocateFixedIcon,
   MapIcon,
   MapPinIcon,
-  NavigationIcon,
   SlidersHorizontalIcon,
   SparklesIcon,
   UtensilsIcon,
   WineIcon,
-  XIcon,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Alert, AlertTitle } from "@/components/ui/alert"
@@ -684,51 +682,4 @@ export function DiscoverToolbar({
       />
     </div>
   )
-}
-
-function FilterPill({
-  label,
-  variant = "include",
-  onRemove,
-}: Readonly<{
-  label: string
-  variant?: "include" | "exclude"
-  onRemove: () => void
-}>) {
-  return (
-    <Badge
-      variant="outline"
-      className={cn(
-        "h-6 gap-1 rounded-full pr-1 pl-2.5 text-xs",
-        variant === "exclude"
-          ? "border-destructive/40 bg-destructive/10 text-destructive"
-          : "border-primary/40 bg-primary/10 text-primary",
-      )}
-    >
-      <span>{label}</span>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-xs"
-        onClick={onRemove}
-        aria-label={`Gỡ ${label}`}
-        className="size-4 rounded-full"
-      >
-        <XIcon className="size-3" aria-hidden="true" />
-      </Button>
-    </Badge>
-  )
-}
-
-function NearbyButtonIcon({
-  isLocating,
-  isNearbyActive,
-}: Readonly<{ isLocating: boolean; isNearbyActive: boolean }>) {
-  if (isLocating) {
-    return <Spinner className="size-4" aria-label="Đang xác định vị trí" />
-  }
-  if (isNearbyActive) {
-    return <LocateFixedIcon className="size-4" />
-  }
-  return <NavigationIcon className="size-4 text-primary" />
 }

@@ -8,9 +8,9 @@ import {
   type ReviewTier,
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
-import { Prisma } from "../../generated/prisma/client"
 import { ApiError, isUniqueViolation } from "../lib/errors"
 import { idempotency } from "../lib/idempotency"
+import { db, sql } from "../lib/kysely"
 import { prisma } from "../lib/prisma"
 import { toApiReportReason, toPrismaReportReason } from "../lib/enums"
 import { formatInitials } from "../lib/profile"
@@ -40,13 +40,26 @@ interface ReviewRow {
   author_review_count: number
 }
 
-const SELECT_REVIEWS = Prisma.sql`
-  SELECT r.id, r.place_id, r.tier::text AS tier, r.content, r.recommended_dishes, r.quick_tags, r.created_at,
-         u.id AS author_id, u.name AS author_name, u.handle AS author_handle,
-         (SELECT COUNT(*)::int FROM reviews r2 WHERE r2.author_id = u.id AND r2.deleted_at IS NULL) AS author_review_count
-  FROM reviews r
-  JOIN users u ON u.id = r.author_id
-`
+function baseReviewsQuery() {
+  return db
+    .selectFrom("reviews as r")
+    .innerJoin("users as u", "u.id", "r.author_id")
+    .select([
+      "r.id",
+      "r.place_id",
+      sql<ReviewTier>`r.tier::text`.as("tier"),
+      "r.content",
+      "r.recommended_dishes",
+      "r.quick_tags",
+      "r.created_at",
+      "u.id as author_id",
+      "u.name as author_name",
+      "u.handle as author_handle",
+      sql<number>`(SELECT COUNT(*)::int FROM reviews r2 WHERE r2.author_id = u.id AND r2.deleted_at IS NULL)`.as(
+        "author_review_count",
+      ),
+    ])
+}
 
 function toReviewDto(
   row: ReviewRow,
@@ -111,16 +124,17 @@ export function createReviewsRouter() {
     if (parsedTier && !parsedTier.success) {
       throw new ApiError(400, "Mức đánh giá không hợp lệ")
     }
-    const tierFilter = parsedTier?.success
-      ? Prisma.sql`AND r.tier = ${parsedTier.data}::review_tier`
-      : Prisma.empty
-
-    const rows = await prisma.$queryRaw<ReviewRow[]>(Prisma.sql`
-      ${SELECT_REVIEWS}
-      WHERE r.place_id = ${placeId} AND r.deleted_at IS NULL ${tierFilter}
-      ORDER BY r.created_at DESC, r.id DESC
-      LIMIT ${limit}
-    `)
+    let reviewQuery = baseReviewsQuery()
+      .where("r.place_id", "=", placeId)
+      .where("r.deleted_at", "is", null)
+    if (parsedTier?.success) {
+      reviewQuery = reviewQuery.where("r.tier", "=", parsedTier.data)
+    }
+    const rows: ReviewRow[] = await reviewQuery
+      .orderBy("r.created_at", "desc")
+      .orderBy("r.id", "desc")
+      .limit(limit)
+      .execute()
 
     const viewer = await getViewer(c)
     const viewerId = viewer?.id ?? null
@@ -178,12 +192,7 @@ export function createReviewsRouter() {
     })
     invalidatePlacesReadCaches()
 
-    const rows = await prisma.$queryRaw<ReviewRow[]>(Prisma.sql`
-      ${SELECT_REVIEWS}
-      WHERE r.id = ${review.id}::uuid
-      LIMIT 1
-    `)
-    const row = rows[0]
+    const row = await baseReviewsQuery().where("r.id", "=", review.id).executeTakeFirst()
     if (!row) throw new ApiError(500, "Không lưu được đánh giá")
     await recordEvent({ eventType: "review_created", userId, placeId })
     return c.json(toReviewDto(row, userId), 201)

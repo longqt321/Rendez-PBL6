@@ -1,11 +1,13 @@
+import { addHours } from "date-fns"
 import { createHash } from "node:crypto"
 import { createMiddleware } from "hono/factory"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import type { AppEnv } from "../app"
 import { ApiError } from "./errors"
+import { db } from "./kysely"
 import { prisma } from "./prisma"
 
-const TTL_MS = 24 * 60 * 60 * 1000
+const TTL_HOURS = 24
 
 const MAX_KEY_LENGTH = 64
 
@@ -31,17 +33,23 @@ export function idempotency() {
     const body = await c.req.raw.clone().text()
     const requestHash = hashBody(body)
     const now = new Date()
-    const expiresAt = new Date(now.getTime() + TTL_MS)
+    const expiresAt = addHours(now, TTL_HOURS)
 
     // Dọn hàng hết hạn — bảng nhỏ, xoá theo index mỗi lần ghi là đủ.
     await prisma.idempotencyKey.deleteMany({ where: { expiresAt: { lt: now } } })
 
-    const claimed = await prisma.$queryRaw<{ key: string }[]>`
-      INSERT INTO idempotency_keys ("key", "user_id", "request_hash", "status", "expires_at")
-      VALUES (${key}, ${userId}::uuid, ${requestHash}, 'pending', ${expiresAt})
-      ON CONFLICT ("key", "user_id") DO NOTHING
-      RETURNING "key"
-    `
+    const claimed = await db
+      .insertInto("idempotency_keys")
+      .values({
+        key,
+        user_id: userId,
+        request_hash: requestHash,
+        status: "pending",
+        expires_at: expiresAt,
+      })
+      .onConflict((oc) => oc.columns(["key", "user_id"]).doNothing())
+      .returning("key")
+      .execute()
 
     if (claimed.length === 0) {
       const existing = await prisma.idempotencyKey.findUnique({
@@ -98,7 +106,7 @@ export function idempotency() {
         status: "completed",
         responseStatus: response.status,
         responseBody,
-        expiresAt: new Date(Date.now() + TTL_MS),
+        expiresAt: addHours(new Date(), TTL_HOURS),
       },
     })
   })

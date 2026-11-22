@@ -6,21 +6,12 @@ import type { AppEnv } from "../../app"
 import { env } from "../../env"
 import { resolveAdminRuntimeEnv, shouldMaskAdminPii } from "../../lib/admin-privacy"
 import { toApiCategory, toApiReportReason } from "../../lib/enums"
+import { db, sql } from "../../lib/kysely"
 import { metricsSnapshot } from "../../lib/metrics"
 import { prisma } from "../../lib/prisma"
 import { getRedis } from "../../lib/redis"
 import { requireRole } from "../../lib/session"
 import { ADMIN_CONSTANTS } from "./shared"
-
-interface VenueStatsRow {
-  total: number
-  published: number
-  unpublished: number
-  closed: number
-  with_images: number
-  with_tags: number
-  with_hours: number
-}
 
 interface DailyTrendRow {
   date: string
@@ -28,13 +19,6 @@ interface DailyTrendRow {
   reviews: number
   reports: number
   audit_logs: number
-}
-
-interface DistrictBreakdownRow {
-  district: string
-  published: number
-  unpublished: number
-  closed: number
 }
 
 export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
@@ -62,21 +46,23 @@ export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
       reasonTotalGroups,
       reasonPendingGroups,
     ] = await Promise.all([
-      prisma.$queryRaw<VenueStatsRow[]>(Prisma.sql`
-        SELECT COUNT(*)::int AS total,
-               COUNT(*) FILTER (WHERE p.published_at IS NOT NULL)::int AS published,
-               COUNT(*) FILTER (WHERE p.published_at IS NULL)::int AS unpublished,
-               COUNT(*) FILTER (WHERE p.status = 'closed')::int AS closed,
-               COUNT(*) FILTER (
-                 WHERE EXISTS (SELECT 1 FROM place_images pi WHERE pi.place_id = p.id)
-               )::int AS with_images,
-               COUNT(*) FILTER (
-                 WHERE EXISTS (SELECT 1 FROM place_tags pt WHERE pt.place_id = p.id)
-               )::int AS with_tags,
-               COUNT(*) FILTER (WHERE p.opening_hours IS NOT NULL)::int AS with_hours
-        FROM places p
-        WHERE p.deleted_at IS NULL
-      `),
+      db
+        .selectFrom("places as p")
+        .where("p.deleted_at", "is", null)
+        .select([
+          sql<number>`COUNT(*)::int`.as("total"),
+          sql<number>`COUNT(*) FILTER (WHERE p.published_at IS NOT NULL)::int`.as("published"),
+          sql<number>`COUNT(*) FILTER (WHERE p.published_at IS NULL)::int`.as("unpublished"),
+          sql<number>`COUNT(*) FILTER (WHERE p.status = 'closed')::int`.as("closed"),
+          sql<number>`COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM place_images pi WHERE pi.place_id = p.id))::int`.as(
+            "with_images",
+          ),
+          sql<number>`COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM place_tags pt WHERE pt.place_id = p.id))::int`.as(
+            "with_tags",
+          ),
+          sql<number>`COUNT(*) FILTER (WHERE p.opening_hours IS NOT NULL)::int`.as("with_hours"),
+        ])
+        .execute(),
       prisma.placeReport.groupBy({
         by: ["status"],
         _count: { status: true },
@@ -145,16 +131,21 @@ export function registerAdminOverviewRoutes(router: Hono<AppEnv>): void {
         where: { deletedAt: null, publishedAt: { not: null } },
         _count: { category: true },
       }),
-      prisma.$queryRaw<DistrictBreakdownRow[]>(Prisma.sql`
-        SELECT COALESCE(NULLIF(TRIM(p.district), ''), 'Chưa rõ') AS district,
-               COUNT(*) FILTER (WHERE p.published_at IS NOT NULL AND p.status <> 'closed')::int AS published,
-               COUNT(*) FILTER (WHERE p.published_at IS NULL)::int AS unpublished,
-               COUNT(*) FILTER (WHERE p.status = 'closed')::int AS closed
-        FROM places p
-        WHERE p.deleted_at IS NULL
-        GROUP BY 1
-        ORDER BY COUNT(*) DESC, 1 ASC
-      `),
+      db
+        .selectFrom("places as p")
+        .where("p.deleted_at", "is", null)
+        .select([
+          sql<string>`COALESCE(NULLIF(TRIM(p.district), ''), 'Chưa rõ')`.as("district"),
+          sql<number>`COUNT(*) FILTER (WHERE p.published_at IS NOT NULL AND p.status <> 'closed')::int`.as(
+            "published",
+          ),
+          sql<number>`COUNT(*) FILTER (WHERE p.published_at IS NULL)::int`.as("unpublished"),
+          sql<number>`COUNT(*) FILTER (WHERE p.status = 'closed')::int`.as("closed"),
+        ])
+        .groupBy(sql`COALESCE(NULLIF(TRIM(p.district), ''), 'Chưa rõ')`)
+        .orderBy(sql`COUNT(*)`, "desc")
+        .orderBy(sql`COALESCE(NULLIF(TRIM(p.district), ''), 'Chưa rõ')`, "asc")
+        .execute(),
       prisma.placeReport.groupBy({
         by: ["reason"],
         _count: { reason: true },

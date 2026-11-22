@@ -1,28 +1,34 @@
 import type { UserRole } from "@rendez/schema"
-import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { toUserProfile } from "./profile"
 
-interface ProfileRow {
+const PROFILE_SELECT = {
+  id: true,
+  name: true,
+  handle: true,
+  bio: true,
+  location: true,
+  avatarUrl: true,
+  coverUrl: true,
+  privateProfile: true,
+  role: true,
+  createdAt: true,
+} as const
+
+type ProfileRecord = {
   id: string
   name: string
   handle: string
   bio: string
   location: string
-  avatar_url: string | null
-  cover_url: string | null
-  private_profile: boolean
+  avatarUrl: string | null
+  coverUrl: string | null
+  privateProfile: boolean
   role: string
-  created_at: Date
+  createdAt: Date
 }
 
-const SELECT_PROFILE = Prisma.sql`
-  SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url, u.private_profile, u.role::text AS role, u.created_at
-  FROM users u
-  WHERE u.deleted_at IS NULL
-`
-
-async function countProfile(userId: string, viewerId: string | null, row: ProfileRow) {
+async function countProfile(userId: string, viewerId: string | null, row: ProfileRecord) {
   const [postCount, followerCount, followingCount, followedByMe] = await Promise.all([
     prisma.post.count({ where: { authorId: userId, deletedAt: null } }),
     prisma.follow.count({ where: { followingId: userId } }),
@@ -41,11 +47,11 @@ async function countProfile(userId: string, viewerId: string | null, row: Profil
       handle: row.handle,
       bio: row.bio,
       location: row.location,
-      avatarUrl: row.avatar_url,
-      coverUrl: row.cover_url,
-      privateProfile: row.private_profile,
+      avatarUrl: row.avatarUrl,
+      coverUrl: row.coverUrl,
+      privateProfile: row.privateProfile,
       role: row.role as UserRole,
-      createdAt: row.created_at,
+      createdAt: row.createdAt,
     },
     viewerId,
     { postCount, followerCount, followingCount, followedByMe },
@@ -64,11 +70,10 @@ export async function findProfileByHandle(
   handle: string,
   viewerId: string | null,
 ): Promise<ReturnType<typeof toUserProfile> | null> {
-  const rows = await prisma.$queryRaw<ProfileRow[]>(Prisma.sql`
-    ${SELECT_PROFILE} AND u.handle = ${handle}
-    LIMIT 1
-  `)
-  const row = rows[0]
+  const row = await prisma.user.findFirst({
+    where: { handle, deletedAt: null },
+    select: PROFILE_SELECT,
+  })
   return row ? countProfile(row.id, viewerId, row) : null
 }
 
@@ -77,23 +82,13 @@ export async function findProfileById(
   userId: string,
   viewerId: string | null,
 ): Promise<ReturnType<typeof toUserProfile> | null> {
-  const rows = await prisma.$queryRaw<ProfileRow[]>(Prisma.sql`
-    ${SELECT_PROFILE} AND u.id = ${userId}::uuid
-    LIMIT 1
-  `)
-  const row = rows[0]
+  const row = await prisma.user.findFirst({
+    where: { id: userId, deletedAt: null },
+    select: PROFILE_SELECT,
+  })
   return row ? countProfile(row.id, viewerId, row) : null
 }
 
-/**
- * Theo dõi / bỏ theo dõi — idempotent; trả `true` khi THỰC SỰ tạo mới quan hệ
- * (route chỉ thông báo cho người được theo dõi ở lần đầu, tránh spam mỗi lần
- * client gọi lại).
- *
- * `createMany({ skipDuplicates: true })` là một câu lệnh nguyên tử: hai request
- * song song không thể cùng tạo (khác với findUnique-rồi-create, nơi request thứ
- * hai sẽ ném P2002 → 500).
- */
 export async function setFollow(
   followerId: string,
   followingId: string,

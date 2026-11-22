@@ -10,6 +10,12 @@ generator client {
   output   = "../generated/prisma"
 }
 
+generator kysely {
+  provider = "prisma-kysely"
+  output   = "../generated/kysely"
+  fileName = "types.ts"
+}
+
 datasource db {
   provider = "postgresql"
 }

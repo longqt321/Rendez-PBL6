@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import { Prisma } from "../../generated/prisma/client"
 import type { AppEnv } from "../app"
 import { UUID_ID_RE, decodeCursor, encodeCursor } from "../lib/cursor"
 import { ApiError } from "../lib/errors"
+import { db, sql } from "../lib/kysely"
 import { prisma } from "../lib/prisma"
 import { toUserProfile } from "../lib/profile"
 import { listCollectionsOfOwner, toCollectionSummary } from "../lib/collections"
@@ -25,18 +25,6 @@ const PROFILE_POSTS_PAGE_SIZE = 5
 // 20 follow/unfollow mỗi phút/user — chặn spam theo dõi (V8-04).
 const FOLLOW_RATE_LIMIT = rateLimit({ scope: "follow", limit: 20, windowSeconds: 60, byUser: true })
 
-interface UserRow {
-  id: string
-  name: string
-  handle: string
-  bio: string
-  location: string
-  avatar_url: string | null
-  cover_url: string | null
-  private_profile: boolean
-  created_at: Date
-}
-
 export function createUsersRouter() {
   const router = new Hono<AppEnv>()
 
@@ -46,41 +34,42 @@ export function createUsersRouter() {
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
     const q = c.req.query("q")?.trim() ?? ""
-    const baseConditions: Prisma.Sql[] = [Prisma.sql`u.deleted_at IS NULL`]
-
+    let baseQuery = db.selectFrom("users as u").where("u.deleted_at", "is", null)
     if (q.length > 0) {
-      // Chuẩn hoá 2 phía (bỏ dấu, dấu câu → space) như `normalizeText` của mock —
-      // nếu chỉ bỏ dấu ở cột thì `?q=ngọc` không khớp.
-      const needle = Prisma.sql`'%' || immutable_search_normalize(${q}) || '%'`
-      baseConditions.push(
-        Prisma.sql`(immutable_search_normalize(u.name) LIKE ${needle} OR immutable_search_normalize(u.handle) LIKE ${needle})`,
+      const needle = sql<string>`'%' || immutable_search_normalize(${q}) || '%'`
+      baseQuery = baseQuery.where(
+        sql<boolean>`(immutable_search_normalize(u.name) LIKE ${needle} OR immutable_search_normalize(u.handle) LIKE ${needle})`,
       )
     }
-    // COUNT dùng điều kiện gốc (không cursor) — `totalResults` là tổng số khớp
-    // bộ lọc, không phải số item của trang.
-    const conditions = [...baseConditions]
+
+    let listQuery = baseQuery.select([
+      "u.id",
+      "u.name",
+      "u.handle",
+      "u.bio",
+      "u.location",
+      "u.avatar_url",
+      "u.cover_url",
+      "u.private_profile",
+      "u.created_at",
+    ])
     if (cursor) {
-      conditions.push(
-        Prisma.sql`(u.created_at, u.id) < (${cursor.createdAt}::timestamptz, ${cursor.id}::uuid)`,
+      listQuery = listQuery.where(
+        sql<boolean>`(u.created_at, u.id) < (${cursor.createdAt}::timestamptz, ${cursor.id}::uuid)`,
       )
     }
 
     const startedAt = performance.now()
-    const [rows, countRows] = await Promise.all([
-      prisma.$queryRaw<UserRow[]>(Prisma.sql`
-        SELECT u.id, u.name, u.handle, u.bio, u.location, u.avatar_url, u.cover_url, u.private_profile, u.created_at
-        FROM users u
-        WHERE ${Prisma.join(conditions, " AND ")}
-        ORDER BY u.created_at DESC, u.id DESC
-        LIMIT ${USERS_PAGE_SIZE + 1}
-      `),
-      prisma.$queryRaw<{ count: number }[]>(Prisma.sql`
-        SELECT COUNT(*)::int AS count
-        FROM users u
-        WHERE ${Prisma.join(baseConditions, " AND ")}
-      `),
+    const [rows, countRow] = await Promise.all([
+      listQuery
+        .orderBy("u.created_at", "desc")
+        .orderBy("u.id", "desc")
+        .limit(USERS_PAGE_SIZE + 1)
+        .execute(),
+      baseQuery.select(sql<number>`COUNT(*)::int`.as("count")).executeTakeFirst(),
     ])
     const tookMs = Math.round(performance.now() - startedAt)
+    const countRows = countRow ? [countRow] : []
 
     const page = rows.slice(0, USERS_PAGE_SIZE)
     const last = page.at(-1)
