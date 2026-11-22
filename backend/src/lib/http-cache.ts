@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto"
 import type { Context } from "hono"
+import { LRUCache } from "lru-cache"
 import { getRedis } from "./redis"
 import { recordRedisTiming, setRequestCacheHit } from "./request-context"
 
@@ -50,32 +51,30 @@ export function noStore(c: Context, data: unknown): Response {
 }
 
 /**
- * Cache TTL trong bộ nhớ tiến trình.
+ * Cache TTL chuẩn dùng `LRUCache` (`lru-cache`) kết hợp L2 Redis.
  *
- * `maxEntries` chặn rò rỉ bộ nhớ; `Map` giữ thứ tự chèn nên xoá phần tử cũ
- * nhất là O(1). Single-flight: request thứ hai cùng key trong lúc loader đang
- * chạy sẽ chờ đúng promise đó thay vì bắn thêm query.
+ * Dùng `LRUCache` chuẩn thay vì tự quản lý `Map` FIFO thủ công; hỗ trợ
+ * single-flight (`inflight`) để tránh cache stampede khi nhiều request cùng miss.
  */
 export function createTtlCache<T>(options: {
   ttlMs: number
   maxEntries: number
   namespace?: string
 }) {
-  const entries = new Map<string, { value: T; expiresAt: number }>()
+  const entries = new LRUCache<string, { value: T }>({
+    max: Math.max(1, options.maxEntries),
+    ttl: Math.max(1, options.ttlMs),
+  })
   const inflight = new Map<string, Promise<T>>()
   const ttlSeconds = Math.max(1, Math.ceil(options.ttlMs / 1000))
   const prefix = options.namespace ? `cache:${options.namespace}:` : "cache:"
 
-  /**
-   * Như `get` nhưng báo thêm `hit` — route dùng để gắn `meta.cacheHit`/metrics
-   * mà không đổi hành vi của `get` (các caller cũ không phải sửa gì).
-   */
   async function getWithStatus(
     key: string,
     load: () => Promise<T>,
   ): Promise<{ value: T; hit: boolean }> {
     const hit = entries.get(key)
-    if (hit && hit.expiresAt > Date.now()) {
+    if (hit !== undefined) {
       setRequestCacheHit(true)
       return { value: hit.value, hit: true }
     }
@@ -87,7 +86,7 @@ export function createTtlCache<T>(options: {
         const raw = await redis.get(`${prefix}${key}`)
         if (raw !== null) {
           const parsed = JSON.parse(raw) as T
-          entries.set(key, { value: parsed, expiresAt: Date.now() + options.ttlMs })
+          entries.set(key, { value: parsed })
           setRequestCacheHit(true)
           return { value: parsed, hit: true }
         }
@@ -103,11 +102,7 @@ export function createTtlCache<T>(options: {
 
     const promise = load()
       .then(async (value) => {
-        entries.set(key, { value, expiresAt: Date.now() + options.ttlMs })
-        if (entries.size > options.maxEntries) {
-          const oldest = entries.keys().next().value
-          if (oldest !== undefined) entries.delete(oldest)
-        }
+        entries.set(key, { value })
         if (redis) {
           try {
             await redis.set(`${prefix}${key}`, JSON.stringify(value), "EX", ttlSeconds)

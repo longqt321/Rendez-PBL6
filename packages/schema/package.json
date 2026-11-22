@@ -7,6 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "opening_hours": "^3.16.0",
     "zod": "4.6.7"
   }
 }

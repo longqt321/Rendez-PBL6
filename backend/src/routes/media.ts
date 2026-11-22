@@ -14,7 +14,7 @@ import {
   verifyLocalUploadSignature,
 } from "../lib/media-storage"
 import { rateLimit } from "../lib/rate-limit"
-import { buildObjectKey, extensionForContentType, presignPut } from "../lib/r2"
+import { buildObjectKey, extensionForContentType, presignPutAsync } from "../lib/r2"
 import { requireAuth } from "../lib/session"
 
 const FOLDERS = ["posts", "places", "avatars", "covers"] as const
@@ -80,7 +80,7 @@ export function createMediaRouter() {
       })
 
       if (env.r2Configured) {
-        const presigned = presignPut(
+        const presigned = await presignPutAsync(
           {
             accountId: env.R2_ACCOUNT_ID,
             accessKeyId: env.R2_ACCESS_KEY_ID,

@@ -1,10 +1,4 @@
-export interface EndpointStat {
-  route: string
-  count: number
-  totalMs: number
-  cacheHits: number
-  samples: number[]
-}
+import * as hdr from "hdr-histogram-js"
 
 export interface MetricsSnapshot {
   uptimeMs: number
@@ -26,53 +20,55 @@ export interface MetricsSnapshot {
 
 const startedAt = Date.now()
 
+const MAX_ROUTES = 200
+const MAX_TRACKABLE_MS = 3_600_000 // 1 giờ
+
+function createHistogram() {
+  return hdr.build({
+    lowestDiscernibleValue: 1,
+    highestTrackableValue: MAX_TRACKABLE_MS,
+    numberOfSignificantValueDigits: 3,
+  })
+}
+
+type RouteHistogram = ReturnType<typeof createHistogram>
+
 const endpoints = new Map<
   string,
-  { count: number; totalMs: number; cacheHits: number; samples: number[] }
+  { count: number; totalMs: number; cacheHits: number; histogram: RouteHistogram }
 >()
 
-const MAX_ROUTES = 200
-const MAX_SAMPLES_PER_ROUTE = 512
-
-function percentile(sorted: number[], p: number): number {
-  if (sorted.length === 0) return 0
-  const idx = Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1))
-  return sorted[idx] ?? 0
-}
+let globalHistogram = createHistogram()
 
 export function recordRequest(route: string, durationMs: number, cacheHit: boolean): void {
   const key = endpoints.has(route) || endpoints.size < MAX_ROUTES ? route : "OTHER"
-  const stat = endpoints.get(key) ?? { count: 0, totalMs: 0, cacheHits: 0, samples: [] }
-  const clamped = Math.max(0, Math.round(durationMs))
+  const stat = endpoints.get(key) ?? {
+    count: 0,
+    totalMs: 0,
+    cacheHits: 0,
+    histogram: createHistogram(),
+  }
+  const clamped = Math.min(MAX_TRACKABLE_MS, Math.max(0, Math.round(durationMs)))
   stat.count += 1
   stat.totalMs += clamped
   if (cacheHit) stat.cacheHits += 1
-  if (stat.samples.length >= MAX_SAMPLES_PER_ROUTE) {
-    stat.samples.shift()
-  }
-  stat.samples.push(clamped)
+  stat.histogram.recordValue(clamped)
+  globalHistogram.recordValue(clamped)
   endpoints.set(key, stat)
 }
 
 export function metricsSnapshot(): MetricsSnapshot {
-  const allSamples: number[] = []
   const byEndpoint: MetricsSnapshot["byEndpoint"] = [...endpoints.entries()]
-    .map(([route, stat]) => {
-      const sorted = [...stat.samples].sort((a, b) => a - b)
-      allSamples.push(...sorted)
-      return {
-        route,
-        count: stat.count,
-        avgMs: stat.count === 0 ? 0 : Math.round(stat.totalMs / stat.count),
-        p95Ms: percentile(sorted, 95),
-        p99Ms: percentile(sorted, 99),
-        cacheHits: stat.cacheHits,
-      }
-    })
-    // Nhiều request nhất lên đầu; hoà thì theo tên route để thứ tự ổn định.
+    .map(([route, stat]) => ({
+      route,
+      count: stat.count,
+      avgMs: stat.count === 0 ? 0 : Math.round(stat.totalMs / stat.count),
+      p95Ms: stat.count === 0 ? 0 : Math.round(stat.histogram.getValueAtPercentile(95)),
+      p99Ms: stat.count === 0 ? 0 : Math.round(stat.histogram.getValueAtPercentile(99)),
+      cacheHits: stat.cacheHits,
+    }))
     .sort((a, b) => b.count - a.count || a.route.localeCompare(b.route))
 
-  allSamples.sort((a, b) => a - b)
   const totalQueries = byEndpoint.reduce((sum, entry) => sum + entry.count, 0)
   const totalMs = [...endpoints.values()].reduce((sum, stat) => sum + stat.totalMs, 0)
   const cacheHits = [...endpoints.values()].reduce((sum, stat) => sum + stat.cacheHits, 0)
@@ -81,10 +77,9 @@ export function metricsSnapshot(): MetricsSnapshot {
     uptimeMs: Date.now() - startedAt,
     totalQueries,
     avgLatencyMs: totalQueries === 0 ? 0 : Math.round(totalMs / totalQueries),
-    p50LatencyMs: percentile(allSamples, 50),
-    p95LatencyMs: percentile(allSamples, 95),
-    p99LatencyMs: percentile(allSamples, 99),
-    // 3 chữ số thập phân là đủ để thấy cache có tác dụng, không giả vờ chính xác hơn.
+    p50LatencyMs: totalQueries === 0 ? 0 : Math.round(globalHistogram.getValueAtPercentile(50)),
+    p95LatencyMs: totalQueries === 0 ? 0 : Math.round(globalHistogram.getValueAtPercentile(95)),
+    p99LatencyMs: totalQueries === 0 ? 0 : Math.round(globalHistogram.getValueAtPercentile(99)),
     cacheHitRatio: totalQueries === 0 ? 0 : Math.round((cacheHits / totalQueries) * 1000) / 1000,
     byEndpoint,
   }
@@ -92,4 +87,5 @@ export function metricsSnapshot(): MetricsSnapshot {
 
 export function resetMetrics(): void {
   endpoints.clear()
+  globalHistogram = createHistogram()
 }

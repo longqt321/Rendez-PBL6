@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import { LRUCache } from "lru-cache"
 import { z } from "zod"
 import type { AppEnv } from "../app"
 import { EVENT_TO_KIND } from "../lib/interaction-weights"
@@ -18,7 +19,7 @@ import { getViewer } from "../lib/session"
  * làm hỏng trải nghiệm người dùng vì telemetry. Response luôn 202 kèm số
  * event đã nhận/đã ghi.
  *
- * Dedupe 5 phút qua Redis `SET NX EX 300` (fallback in-memory Map khi không có
+ * Dedupe 5 phút qua Redis `SET NX EX 300` (fallback LRUCache khi không có
  * Redis) và bulk INSERT 1 query duy nhất xuống `interaction_events`.
  */
 
@@ -40,7 +41,10 @@ const batchSchema = z.object({
 
 const DEDUPE_TTL_SECONDS = 5 * 60
 const DEDUPE_TTL_MS = DEDUPE_TTL_SECONDS * 1000
-const seen = new Map<string, number>()
+const seen = new LRUCache<string, true>({
+  max: 10_000,
+  ttl: DEDUPE_TTL_MS,
+})
 
 const validPlaceCache = createTtlCache<boolean>({
   ttlMs: 300_000,
@@ -51,13 +55,6 @@ const validPlaceCache = createTtlCache<boolean>({
 function dedupeKey(actor: string, e: z.infer<typeof eventSchema>): string {
   if (e.eventId) return `id:${actor}:${e.eventId}`
   return `${actor}|${e.eventType}|${e.placeId ?? ""}|${e.postId ?? ""}`
-}
-
-function pruneSeen(now: number): void {
-  if (seen.size < 5000) return
-  for (const [key, at] of seen) {
-    if (now - at > DEDUPE_TTL_MS) seen.delete(key)
-  }
 }
 
 async function claimDedupeKeys(keys: string[]): Promise<boolean[]> {
@@ -73,18 +70,15 @@ async function claimDedupeKeys(keys: string[]): Promise<boolean[]> {
       )
       return results.map((res) => res === "OK")
     } catch {
-      // Fallback sang in-memory bên dưới khi Redis lỗi
+      // Fallback sang in-memory LRUCache bên dưới khi Redis lỗi
     } finally {
       recordRedisTiming(performance.now() - startedAt)
     }
   }
 
-  const now = Date.now()
-  pruneSeen(now)
   return keys.map((key) => {
-    const last = seen.get(key)
-    if (last !== undefined && now - last < DEDUPE_TTL_MS) return false
-    seen.set(key, now)
+    if (seen.has(key)) return false
+    seen.set(key, true)
     return true
   })
 }

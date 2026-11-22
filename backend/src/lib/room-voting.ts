@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto"
+import { InstantRunoff } from "votes"
 import { prisma } from "./prisma"
 import { ApiError } from "./errors"
 import { findRoomByCode } from "./rooms"
@@ -14,10 +15,7 @@ export interface RankedBallot {
 }
 
 /**
- * Instant-Runoff Voting (IRV):
- * Mỗi vòng đếm phiếu hạng 1 của các ứng viên còn lại.
- * Nếu có ứng viên > 50% tổng phiếu hợp lệ -> thắng.
- * Nếu không -> loại ứng viên ít phiếu nhất (tie-break theo thứ tự xuất hiện) và chuyển phiếu sang lựa chọn tiếp theo.
+ * Instant-Runoff Voting (IRV) sử dụng thư viện chuẩn `votes`.
  */
 export function computeInstantRunoffWinner(
   candidateIds: string[],
@@ -26,40 +24,28 @@ export function computeInstantRunoffWinner(
   if (candidateIds.length === 0) return null
   if (ballots.length === 0) return candidateIds[0] ?? null
 
-  const active = new Set(candidateIds)
-  while (active.size > 1) {
-    const counts = new Map<string, number>()
-    for (const id of active) counts.set(id, 0)
+  const candidateSet = new Set(candidateIds)
+  const validBallots = ballots
+    .map((ballot) => ballot.choices.filter((cid) => candidateSet.has(cid)))
+    .filter((choices) => choices.length > 0)
+    .map((choices) => ({
+      ranking: choices.map((cid) => [cid]),
+      weight: 1,
+    }))
 
-    let totalValid = 0
-    for (const ballot of ballots) {
-      const top = ballot.choices.find((cid) => active.has(cid))
-      if (top) {
-        counts.set(top, (counts.get(top) ?? 0) + 1)
-        totalValid++
-      }
-    }
+  if (validBallots.length === 0) return candidateIds[0] ?? null
 
-    if (totalValid === 0) break
+  const election = new InstantRunoff({
+    candidates: candidateIds,
+    ballots: validBallots,
+  })
+  const ranking = election.ranking()
+  const topTier = ranking[0]
+  if (!topTier || topTier.length === 0) return candidateIds[0] ?? null
 
-    for (const [cid, count] of counts.entries()) {
-      if (count * 2 > totalValid) return cid
-    }
-
-    let minCount = Infinity
-    let lowestId: string | null = null
-    for (const cid of active) {
-      const c = counts.get(cid) ?? 0
-      if (c < minCount) {
-        minCount = c
-        lowestId = cid
-      }
-    }
-    if (!lowestId) break
-    active.delete(lowestId)
-  }
-
-  return [...active][0] ?? candidateIds[0] ?? null
+  // Nếu hòa ở hạng 1, ưu tiên theo thứ tự xuất hiện ban đầu trong candidateIds để giữ tính tất định.
+  const topSet = new Set(topTier)
+  return candidateIds.find((id) => topSet.has(id)) ?? topTier[0] ?? null
 }
 
 export async function addRoomCandidate(code: string, memberId: string, placeId: string) {
@@ -101,11 +87,24 @@ export async function addRoomCandidate(code: string, memberId: string, placeId: 
   return updated
 }
 
-export async function removeRoomCandidate(code: string, candidateId: string) {
+export async function removeRoomCandidate(
+  code: string,
+  candidateId: string,
+  actor?: { memberId: string; isOwner: boolean },
+) {
   const room = await findRoomByCode(code)
   if (!room) throw new ApiError(404, "Không tìm thấy phòng")
   if (room.phase !== "filtering") {
     throw new ApiError(409, "Chỉ có thể sửa danh sách ứng viên ở pha lọc")
+  }
+
+  const candidate = await prisma.roomCandidate.findFirst({
+    where: { id: candidateId, roomId: room.id },
+    select: { id: true, addedByMemberId: true },
+  })
+  if (!candidate) throw new ApiError(404, "Không tìm thấy ứng viên")
+  if (actor && candidate.addedByMemberId !== actor.memberId && !actor.isOwner) {
+    throw new ApiError(403, "Chỉ người đề cử hoặc chủ phòng mới được xóa ứng viên này")
   }
 
   const deleted = await prisma.roomCandidate.deleteMany({

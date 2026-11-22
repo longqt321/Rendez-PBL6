@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import { LRUCache } from "lru-cache"
 import {
   createAnchorInputSchema,
   syncedLocationSchema,
@@ -32,7 +33,11 @@ export interface GeocodeSuggestion {
   lng: number
 }
 
-const geocodeCache = new Map<string, { items: GeocodeSuggestion[]; expiresAt: number }>()
+// Dùng LRUCache chuẩn của cộng đồng để giới hạn số lượng entry và tự động thu hồi TTL
+const geocodeCache = new LRUCache<string, GeocodeSuggestion[]>({
+  max: 500,
+  ttl: GEOCODE_CACHE_TTL_MS,
+})
 
 const GEOCODE_RATE_LIMIT = rateLimit({
   scope: "geocode",
@@ -41,8 +46,11 @@ const GEOCODE_RATE_LIMIT = rateLimit({
   byUser: true,
 })
 
-// Fallback in-memory khi môi trường test/dev chưa kết nối Redis (giá trị vẫn được mã hóa AES-256-GCM).
-const memoryLocations = new Map<string, { value: string; expiresAt: number }>()
+// Fallback in-memory có giới hạn kích thước (LRUCache) khi chưa kết nối Redis (giá trị vẫn được mã hóa AES-256-GCM).
+const memoryLocations = new LRUCache<string, string>({
+  max: 5_000,
+  ttl: SYNCED_LOCATION_TTL_SECONDS * 1000,
+})
 
 const LOCATION_PUT_RATE_LIMIT = rateLimit({
   scope: "me-location",
@@ -99,13 +107,8 @@ async function readSyncedLocation(userId: string): Promise<SyncedLocation | null
     }
   }
   if (!sealed) {
-    const cached = memoryLocations.get(key)
-    if (!cached) return null
-    if (cached.expiresAt <= Date.now()) {
-      memoryLocations.delete(key)
-      return null
-    }
-    sealed = cached.value
+    sealed = memoryLocations.get(key) ?? null
+    if (!sealed) return null
   }
 
   const decrypted = decryptJsonForUser<unknown>(userId, sealed)
@@ -126,10 +129,7 @@ async function writeSyncedLocation(userId: string, location: SyncedLocation): Pr
       // Fallback sang memory nếu Redis lỗi tạm thời
     }
   }
-  memoryLocations.set(key, {
-    value: sealed,
-    expiresAt: Date.now() + SYNCED_LOCATION_TTL_SECONDS * 1000,
-  })
+  memoryLocations.set(key, sealed)
 }
 
 async function deleteSyncedLocation(userId: string): Promise<void> {
@@ -157,8 +157,8 @@ export function createLocationRouter() {
 
     const cacheKey = q.toLowerCase()
     const cached = geocodeCache.get(cacheKey)
-    if (cached && cached.expiresAt > Date.now()) {
-      return jsonWithCache(c, { items: cached.items }, { maxAge: 300, scope: "private" })
+    if (cached) {
+      return jsonWithCache(c, { items: cached }, { maxAge: 300, scope: "private" })
     }
 
     const url = new URL("https://nominatim.openstreetmap.org/search")
@@ -202,7 +202,7 @@ export function createLocationRouter() {
         })
         .filter((x): x is GeocodeSuggestion => x !== null)
 
-      geocodeCache.set(cacheKey, { items, expiresAt: Date.now() + GEOCODE_CACHE_TTL_MS })
+      geocodeCache.set(cacheKey, items)
       return jsonWithCache(c, { items }, { maxAge: 300, scope: "private" })
     } catch (err) {
       logger.warn({ err }, "Không thể gọi Nominatim geocode")

@@ -60,6 +60,7 @@ export {
   type ParsedFilterChip,
   type ParsedNaturalQuery,
 } from "./natural-query"
+export { isOpenNow } from "./opening-hours"
 export * from "./constants"
 export {
   placeMediaKindSchema,

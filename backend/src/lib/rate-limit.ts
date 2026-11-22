@@ -1,4 +1,6 @@
+import { BlockList, isIP } from "node:net"
 import { createMiddleware } from "hono/factory"
+import { LRUCache } from "lru-cache"
 import type { AppEnv } from "../app"
 import { env } from "../env"
 import { logger } from "./logger"
@@ -15,52 +17,70 @@ export interface RateLimitOptions {
   byUser?: boolean
 }
 
-function ipv4ToInt(ip: string): number | null {
-  const parts = ip.split(".")
-  if (parts.length !== 4) return null
-  let value = 0
-  for (const part of parts) {
-    if (!/^\d{1,3}$/u.test(part)) return null
-    const octet = Number(part)
-    if (octet > 255) return null
-    value = value * 256 + octet
-  }
-  return value >>> 0
-}
-
 function normalizeIp(ip: string): string {
   const trimmed = ip.trim()
   return trimmed.startsWith("::ffff:") ? trimmed.slice(7) : trimmed
 }
 
-function matchesProxy(address: string, pattern: string): boolean {
-  const normalizedAddress = normalizeIp(address)
-  const [network, bitsRaw] = pattern.split("/")
-  if (bitsRaw === undefined) return normalizedAddress === normalizeIp(pattern)
+function buildProxyBlockList(patterns: readonly string[]): BlockList {
+  const list = new BlockList()
+  for (const raw of patterns) {
+    const pattern = raw.trim()
+    if (!pattern) continue
+    const [networkRaw, prefixRaw] = pattern.split("/")
+    const network = normalizeIp(networkRaw ?? "")
+    const family = isIP(network)
+    if (family === 0) continue
+    const type = family === 6 ? "ipv6" : "ipv4"
 
-  const bits = Number(bitsRaw)
-  const addressInt = ipv4ToInt(normalizedAddress)
-  const networkInt = ipv4ToInt(normalizeIp(network ?? ""))
-  if (addressInt === null || networkInt === null) return false
-  if (!Number.isInteger(bits) || bits < 0 || bits > 32) return false
+    if (prefixRaw === undefined) {
+      list.addAddress(network, type)
+      continue
+    }
+    const prefix = Number(prefixRaw)
+    const maxPrefix = family === 6 ? 128 : 32
+    if (Number.isInteger(prefix) && prefix >= 0 && prefix <= maxPrefix) {
+      list.addSubnet(network, prefix, type)
+    }
+  }
+  return list
+}
 
-  const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0
-  return (addressInt & mask) === (networkInt & mask)
+const trustedProxyList = buildProxyBlockList(env.trustedProxies)
+
+function isTrustedProxyAddress(address: string): boolean {
+  if (env.trustedProxies.length === 0) return false
+  const normalized = normalizeIp(address)
+  const family = isIP(normalized)
+  if (family === 0) return false
+  return trustedProxyList.check(normalized, family === 6 ? "ipv6" : "ipv4")
 }
 
 export function clientIp(headers: Headers, remoteAddress: string | undefined): string {
-  const normalizedRemote = remoteAddress ? normalizeIp(remoteAddress) : undefined
-  const forwarded = headers.get("x-forwarded-for")
-  const fromTrustedProxy =
-    normalizedRemote !== undefined &&
-    env.trustedProxies.some((pattern) => matchesProxy(normalizedRemote, pattern))
+  const normalizedRemote =
+    remoteAddress && remoteAddress.trim().length > 0 ? normalizeIp(remoteAddress) : undefined
+  const fromTrustedProxy = normalizedRemote !== undefined && isTrustedProxyAddress(normalizedRemote)
 
-  if (forwarded && (fromTrustedProxy || normalizedRemote === undefined)) {
-    const first = forwarded.split(",")[0]?.trim()
-    if (first) return normalizeIp(first)
+  // Chỉ đọc X-Forwarded-For / X-Real-IP khi kết nối đến từ trusted proxy (hoặc trong test in-process không có socket IP)
+  if (fromTrustedProxy || normalizedRemote === undefined) {
+    const forwarded = headers.get("x-forwarded-for")
+    if (forwarded) {
+      const hops = forwarded
+        .split(",")
+        .map((part) => normalizeIp(part))
+        .filter((part) => part.length > 0)
+      // Duyệt từ phải sang trái để lấy hop đầu tiên không phải trusted proxy (chống spoof X-Forwarded-For ở đầu chuỗi)
+      for (let i = hops.length - 1; i >= 0; i--) {
+        const hop = hops[i]!
+        if (!isTrustedProxyAddress(hop)) return hop
+      }
+      if (hops[0]) return hops[0]
+    }
+    const realIp = headers.get("x-real-ip")?.trim()
+    if (realIp) return normalizeIp(realIp)
   }
 
-  return normalizedRemote || headers.get("x-real-ip") || "unknown"
+  return normalizedRemote ?? "unknown"
 }
 
 interface BucketEntry {
@@ -68,37 +88,39 @@ interface BucketEntry {
   resetAt: number
 }
 
-// In-Memory sliding window map để bảo vệ DB khỏi cạn kiệt connection/IO khi bị tấn công DDoS/Flood
-const memoryBuckets = new Map<string, BucketEntry>()
-
-// Dọn dẹp định kỳ các bucket đã hết hạn để tránh leak memory
-const CLEANUP_INTERVAL_MS = 60_000
-let lastCleanup = Date.now()
-
-function sweepExpiredBuckets(now: number) {
-  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return
-  lastCleanup = now
-  for (const [key, entry] of memoryBuckets.entries()) {
-    if (entry.resetAt <= now) {
-      memoryBuckets.delete(key)
-    }
-  }
-}
+// Dùng LRUCache chuẩn của cộng đồng để quản lý giới hạn bộ nhớ và TTL tự động
+const memoryBuckets = new LRUCache<string, BucketEntry>({
+  max: 20_000,
+  ttl: 3600 * 1000,
+})
 
 export function hitRateLimit(key: string, windowSeconds: number): { count: number; resetAt: Date } {
   const now = Date.now()
-  sweepExpiredBuckets(now)
-
   const entry = memoryBuckets.get(key)
   if (!entry || entry.resetAt <= now) {
     const resetAtTime = now + windowSeconds * 1000
-    memoryBuckets.set(key, { count: 1, resetAt: resetAtTime })
+    memoryBuckets.set(
+      key,
+      { count: 1, resetAt: resetAtTime },
+      { ttl: Math.max(1000, windowSeconds * 1000) },
+    )
     return { count: 1, resetAt: new Date(resetAtTime) }
   }
 
   entry.count += 1
   return { count: entry.count, resetAt: new Date(entry.resetAt) }
 }
+
+// Script Lua nguyên tử cho Redis Rate Limiter: INCR + EXPIRE chỉ trong 1 round-trip, chống kẹt key TTL = -1
+const REDIS_RATE_LIMIT_LUA = `
+local current = redis.call("INCR", KEYS[1])
+local ttl = redis.call("TTL", KEYS[1])
+if current == 1 or ttl < 0 then
+  redis.call("EXPIRE", KEYS[1], tonumber(ARGV[1]))
+  ttl = tonumber(ARGV[1])
+end
+return { current, ttl }
+`
 
 export async function hitRateLimitAsync(
   key: string,
@@ -109,11 +131,14 @@ export async function hitRateLimitAsync(
     const startedAt = performance.now()
     try {
       const redisKey = `rl:${key}`
-      const count = await redis.incr(redisKey)
-      if (count === 1) {
-        await redis.expire(redisKey, windowSeconds)
-      }
-      const ttl = await redis.ttl(redisKey)
+      const raw = (await redis.send("EVAL", [
+        REDIS_RATE_LIMIT_LUA,
+        "1",
+        redisKey,
+        String(windowSeconds),
+      ])) as [number | string, number | string]
+      const count = Number(raw?.[0] ?? 1)
+      const ttl = Number(raw?.[1] ?? windowSeconds)
       const resetMs = Date.now() + Math.max(1, ttl > 0 ? ttl : windowSeconds) * 1000
       return { count, resetAt: new Date(resetMs) }
     } catch (err) {

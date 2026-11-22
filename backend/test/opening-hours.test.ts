@@ -63,4 +63,18 @@ describe("isOpenNow", () => {
     // Thứ 5 không thuộc Sa-Su.
     expect(isOpenNow("Sa-Su 08:00-20:00", THU_10AM)).toBe(false)
   })
+
+  test("ca qua nửa đêm theo ngày cụ thể (Thu 18:00-02:00) vẫn mở lúc 00:30 sáng Thứ 6 và đóng lúc 00:30 sáng Thứ 5", () => {
+    const hours = "Th 18:00-02:00"
+    expect(isOpenNow(hours, THU_1130PM)).toBe(true)
+    expect(isOpenNow(hours, FRI_0030AM)).toBe(true)
+    // 00:30 sáng Thứ 5 (tức rạng sáng Thứ 5, nối từ Thứ 4) -> phải đóng
+    const THU_0030AM = new Date("2026-11-11T17:30:00Z")
+    expect(isOpenNow(hours, THU_0030AM)).toBe(false)
+  })
+
+  test("quy tắc off ghi đè ngày nghỉ trong tuần (Mo-Su 08:00-22:00; Th off)", () => {
+    const hours = "Mo-Su 08:00-22:00; Th off"
+    expect(isOpenNow(hours, THU_10AM)).toBe(false)
+  })
 })

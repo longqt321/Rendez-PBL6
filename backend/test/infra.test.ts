@@ -137,8 +137,8 @@ describe("rate limit + hạ tầng", () => {
       publicBaseUrl: "https://cdn.rendez.example",
     }
     const now = new Date("2026-11-11T00:00:00Z")
-    const a = presignPut(config, { key: "posts/user-1/abc.jpg", expiresInSeconds: 600, now })
-    const b = presignPut(config, { key: "posts/user-1/abc.jpg", expiresInSeconds: 600, now })
+    const a = await presignPut(config, { key: "posts/user-1/abc.jpg", expiresInSeconds: 600, now })
+    const b = await presignPut(config, { key: "posts/user-1/abc.jpg", expiresInSeconds: 600, now })
     expect(a.url).toBe(b.url) // tất định với cùng thời điểm
 
     const url = new URL(a.url)
@@ -155,7 +155,7 @@ describe("rate limit + hạ tầng", () => {
     expect(a.publicUrl).toBe("https://cdn.rendez.example/posts/user-1/abc.jpg")
 
     // Key có ký tự đặc biệt phải được mã hoá từng đoạn, giữ `/`.
-    const weird = presignPut(config, { key: "posts/u 1/a+b.jpg", expiresInSeconds: 600, now })
+    const weird = await presignPut(config, { key: "posts/u 1/a+b.jpg", expiresInSeconds: 600, now })
     expect(new URL(weird.url).pathname).toBe("/rendez-media/posts/u%201/a%2Bb.jpg")
   })
 })
