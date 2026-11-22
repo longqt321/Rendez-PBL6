@@ -3,10 +3,14 @@ import {
   addPlaceImagesInputSchema,
   parseNaturalFilterQuery,
   placeMediaKindSchema,
+  validateProfileImageUrl,
   type PlaceMediaItem,
+  type ProfileMediaFolder,
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
+import { env } from "../env"
 import { Prisma } from "../../generated/prisma/client"
+import { isLocalMediaFallbackEnabled, localMediaBaseUrl } from "../lib/media-storage"
 import { prisma } from "../lib/prisma"
 import { idempotency } from "../lib/idempotency"
 import {
@@ -370,6 +374,24 @@ export function createPlacesRouter() {
     }
 
     const userId = c.get("userId")
+    const localFallback = isLocalMediaFallbackEnabled()
+    const hasR2Public = env.r2Configured && env.R2_PUBLIC_BASE_URL.length > 0
+    if (!hasR2Public && !localFallback) {
+      throw new ApiError(400, "Tính năng ảnh chưa được cấu hình")
+    }
+    const fallbackBaseUrl = localFallback ? localMediaBaseUrl() : undefined
+    const publicBaseUrl = hasR2Public ? env.R2_PUBLIC_BASE_URL : (fallbackBaseUrl ?? "")
+    const folder: ProfileMediaFolder = "places"
+    for (const img of parsed.data.images) {
+      const check = validateProfileImageUrl(img.url, {
+        userId,
+        folder,
+        publicBaseUrl,
+        fallbackBaseUrl,
+      })
+      if (!check.ok) throw new ApiError(400, check.message)
+    }
+
     const created = await prisma.$transaction(
       parsed.data.images.map((img, idx) =>
         prisma.placeImage.create({

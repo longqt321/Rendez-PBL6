@@ -23,7 +23,9 @@ export function subscribeRoom(code: string, listener: Listener): () => void {
       .subscribe(channelName, (payload) => {
         let version = roomVersion(code) + 1
         try {
-          const parsed = JSON.parse(payload) as { version?: number }
+          const parsed = JSON.parse(payload) as { version?: number; sourcePid?: number }
+          // Bỏ qua thông báo loopback do chính tiến trình này vừa phát (vì bước 1 của publishRoom đã phát in-memory)
+          if (parsed.sourcePid === process.pid) return
           if (typeof parsed.version === "number") version = parsed.version
         } catch {
           // Payload NOTIFY không phải JSON hợp lệ (hoặc thiếu version) — bỏ qua,

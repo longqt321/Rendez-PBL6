@@ -49,7 +49,7 @@ class PostgresPubSub {
       // Đăng ký lại toàn bộ channel song song nếu vừa reconnect
       await Promise.all(
         [...this.activeChannels].map((channel) =>
-          this.listenerClient?.query(`LISTEN ${channel}`).catch(() => {}),
+          this.listenerClient?.query(`LISTEN "${channel}"`).catch(() => {}),
         ),
       )
 
@@ -57,6 +57,7 @@ class PostgresPubSub {
       logger.info("Postgres PubSub (LISTEN/NOTIFY) đã sẵn sàng")
     } catch (err) {
       this.isConnecting = false
+      await this.cleanup().catch(() => {})
       logger.error({ err }, "Không thể kết nối Postgres PubSub — sẽ thử lại sau 3s")
       this.scheduleReconnect()
     }
@@ -88,7 +89,7 @@ class PostgresPubSub {
       this.activeChannels.add(sanitized)
       if (this.listenerClient) {
         try {
-          await this.listenerClient.query(`LISTEN ${sanitized}`)
+          await this.listenerClient.query(`LISTEN "${sanitized}"`)
         } catch (err) {
           logger.error({ err, channel: sanitized }, "Lỗi khi LISTEN channel")
         }
@@ -103,7 +104,7 @@ class PostgresPubSub {
         this.listeners.delete(sanitized)
         this.activeChannels.delete(sanitized)
         if (this.listenerClient) {
-          this.listenerClient.query(`UNLISTEN ${sanitized}`).catch(() => {})
+          this.listenerClient.query(`UNLISTEN "${sanitized}"`).catch(() => {})
         }
       }
     }

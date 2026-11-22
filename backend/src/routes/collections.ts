@@ -4,7 +4,7 @@ import { z } from "zod"
 import { MAX_COLLECTION_DESCRIPTION_LENGTH, MAX_COLLECTION_NAME_LENGTH } from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { requireUuid } from "../lib/cursor"
-import { ApiError } from "../lib/errors"
+import { ApiError, isUniqueViolation } from "../lib/errors"
 import { idempotency } from "../lib/idempotency"
 import { prisma } from "../lib/prisma"
 import {
@@ -163,7 +163,7 @@ export function createCollectionsRouter() {
     }
 
     const place = await prisma.place.findFirst({
-      where: { id: parsed.data.placeId, deletedAt: null },
+      where: { id: parsed.data.placeId, publishedAt: { not: null }, deletedAt: null },
       select: { id: true },
     })
     if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
@@ -178,13 +178,18 @@ export function createCollectionsRouter() {
           where: { collectionId: id },
           _max: { position: true },
         })
-        await prisma.collectionPlace.create({
-          data: {
-            collectionId: id,
-            placeId: parsed.data.placeId,
-            position: (last._max.position ?? -1) + 1,
-          },
-        })
+        await prisma.collectionPlace
+          .create({
+            data: {
+              collectionId: id,
+              placeId: parsed.data.placeId,
+              position: (last._max.position ?? -1) + 1,
+            },
+          })
+          .catch((err: unknown) => {
+            if (isUniqueViolation(err)) return
+            throw err
+          })
       }
     } else {
       await prisma.collectionPlace.deleteMany({

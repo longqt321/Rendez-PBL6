@@ -312,7 +312,7 @@ export function createRoomsRouter() {
     const candidateId = c.req.param("candidateId")
     requireUuid(candidateId, "Ứng viên không hợp lệ", 404)
 
-    const updated = await removeRoomCandidate(code, candidateId)
+    const updated = await removeRoomCandidate(code, candidateId, actor)
     if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
     const viewer = await getViewer(c)
     return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId))

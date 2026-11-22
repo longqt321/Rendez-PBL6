@@ -106,8 +106,8 @@ export function validatePostImageUrls(
   return { ok: true, images: [...images] }
 }
 
-/** Thư mục ảnh hồ sơ — khớp whitelist `folder` của `POST /media`. */
-export type ProfileMediaFolder = "avatars" | "covers"
+/** Thư mục ảnh hồ sơ / địa điểm — khớp whitelist `folder` của `POST /media`. */
+export type ProfileMediaFolder = "avatars" | "covers" | "places"
 
 export interface ValidateProfileImageUrlOptions {
   /** Chủ hồ sơ — ảnh phải nằm dưới `<folder>/<userId>/`. */

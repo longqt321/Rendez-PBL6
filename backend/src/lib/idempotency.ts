@@ -58,11 +58,14 @@ export function idempotency() {
       }
 
       // Replay: trả đúng status + body đã lưu, đánh dấu để client biết.
-      return new Response(existing.responseBody ?? "", {
-        status: (existing.responseStatus ?? 200) as ContentfulStatusCode,
+      const replayStatus = existing.responseStatus ?? 200
+      const isNoBodyStatus = replayStatus === 204 || replayStatus === 205 || replayStatus === 304
+      return new Response(isNoBodyStatus ? null : (existing.responseBody ?? ""), {
+        status: replayStatus as ContentfulStatusCode,
         headers: {
-          "Content-Type": "application/json",
+          ...(isNoBodyStatus ? {} : { "Content-Type": "application/json" }),
           "Idempotency-Replayed": "true",
+          ...(c.get("requestId") ? { "X-Request-Id": c.get("requestId") } : {}),
         },
       })
     }
@@ -80,7 +83,8 @@ export function idempotency() {
     }
 
     const response = c.res
-    if (response.status >= 500) {
+    // Không chốt idempotency cho lỗi hệ thống (>= 500) hoặc lỗi phiên/giới hạn tốc độ tạm thời (401, 429)
+    if (response.status >= 500 || response.status === 401 || response.status === 429) {
       await prisma.idempotencyKey
         .delete({ where: { key_userId: { key, userId } } })
         .catch(() => undefined)
