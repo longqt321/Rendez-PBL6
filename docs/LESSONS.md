@@ -1389,3 +1389,17 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
 **Cách khắc phục & phòng tránh:**
 - Luôn bọc `<DropdownMenuLabel>` bên trong `<DropdownMenuGroup>`.
 - Bổ sung test mở menu `Cột hiển thị` và toggle cột trong `admin-data-table.test.tsx`.
+
+
+## L-065 — 2026-11-23: Tái phạm quy chuẩn đã học (`CONVENTIONS.md` / `Package-First`) và trì hoãn dọn Raw SQL CRUD sang BACKLOG
+
+**Lỗi người dùng chỉ ra:** Dù đã có quy chuẩn rõ ràng và từng bị nhắc nhiều lần, mã nguồn vẫn tái xuất hiện các vi phạm cũ (`text-[10px/11px]`, màu thô `amber-*`/`emerald-*`/`blue-*`, `<Button aria-pressed>` thay `<Toggle>`, `div` viền card thay `<Card>`, `<Spinner />` thiếu `aria-label`, `Map` tự evict thay `lru-cache`, `<input type="file">` thay `react-dropzone`, `navigator.clipboard` thay `useCopyToClipboard`, ép kiểu `as unknown as`, nuốt lỗi ngầm `.catch(() => {})`) và vẫn giữ nhiều câu Raw SQL đọc/join thông thường thay vì chuyển sang Kysely.
+
+**Nguyên nhân gốc:**
+1. Khi triển khai tính năng mới lớn (Admin redesign, F-002/F-079/F-040), chỉ kiểm tra nhanh bằng `tsc`/`eslint` mà bỏ qua bộ grep kiểm toán toàn repo của `CONVENTIONS.md` §10 và checklist `ts-react-node.md`.
+2. Quá sớm đẩy việc chuyển Raw SQL sang `docs/BACKLOG.md` thay vì tạo helper Kysely dùng chung (`selectPlacesQuery()`) để chuyển dứt điểm nhóm truy vấn CRUD/hydrate/join (`places/crud.ts`, `routes/places.ts`, `recommendations.ts`, `app.ts`).
+
+**Cách khắc phục & phòng tránh:**
+- Bắt buộc chạy trọn bộ cổng grep kiểm toán (`CONVENTIONS.md` §10 + Package-First + `as unknown as` + silent catch + Raw SQL) trên toàn repo trước khi báo hoàn thành bất kỳ đợt triển khai lớn nào.
+- Dùng `selectPlacesQuery()` (Kysely `leftJoinLateral` type-safe từ `generated/kysely/types.ts`) làm nguồn truy vấn chuẩn cho `places`; chỉ giữ SQL đặc thù PostgreSQL thực thụ (`FOR UPDATE` trong `tx`, `pgvector <=>`, `pg_trgm`, `generate_series`, `pg_stat_statements`, `event-retention` DDL có regex allowlist).
+

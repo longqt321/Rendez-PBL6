@@ -8,6 +8,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
+import { Toggle } from "@/components/ui/toggle"
 import { MAX_REVIEW_CONTENT_LENGTH } from "@/lib/constants"
 import { formatNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -106,14 +107,13 @@ export function ReviewForm({
                 const Icon = meta.icon
                 const active = tier === item
                 return (
-                  <Button
+                  <Toggle
                     key={item}
-                    type="button"
-                    variant={active ? "default" : "outline"}
-                    aria-pressed={active}
-                    onClick={() => setTier(item)}
+                    variant="outline"
+                    pressed={active}
+                    onPressedChange={() => setTier(item)}
                     className={cn(
-                      "min-h-12 justify-start gap-2.5 px-3 py-2 text-left transition-transform active:scale-[0.98]",
+                      "min-h-12 justify-start gap-2.5 px-3 py-2 text-left transition-transform active:scale-[0.98] aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground",
                       active && "ring-2 ring-primary/30",
                     )}
                   >
@@ -122,7 +122,7 @@ export function ReviewForm({
                       <span className="text-sm font-semibold">{meta.label}</span>
                       <span className="text-xs font-normal opacity-80">{meta.hint}</span>
                     </div>
-                  </Button>
+                  </Toggle>
                 )
               })}
             </div>
@@ -141,17 +141,16 @@ export function ReviewForm({
                   {suggestedDishes.map((dish) => {
                     const picked = dishes.some((d) => d.toLowerCase() === dish.toLowerCase())
                     return (
-                      <Button
+                      <Toggle
                         key={dish}
-                        type="button"
                         size="sm"
-                        variant={picked ? "default" : "outline"}
-                        aria-pressed={picked}
-                        onClick={() => toggleDish(dish)}
-                        className="h-8 rounded-full text-xs"
+                        variant="outline"
+                        pressed={picked}
+                        onPressedChange={() => toggleDish(dish)}
+                        className="h-8 rounded-full px-3 text-xs aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground"
                       >
                         {dish}
-                      </Button>
+                      </Toggle>
                     )
                   })}
                 </div>

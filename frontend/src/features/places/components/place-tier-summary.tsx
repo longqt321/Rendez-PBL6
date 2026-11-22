@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { Toggle } from "@/components/ui/toggle"
 import type { RecommendedDishCount, Review, ReviewTier, ReviewTierSummary } from "@rendez/schema"
 import { REVIEW_TIER_META } from "../lib/review-tier-meta"
 
@@ -78,59 +80,59 @@ export function PlaceTierSummary({
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-surface border border-border/60 bg-card p-4 shadow-(--shadow-soft)">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-sm font-semibold text-foreground">{summaryHeading}</span>
-        {selectedTier ? (
-          <Button type="button" variant="ghost" size="sm" onClick={() => onSelectTier(null)}>
-            Hiện tất cả
-          </Button>
-        ) : null}
-      </div>
-
-      {total > 0 ? (
-        <div className="flex flex-col gap-1.5">
-          {rows.map(({ tier, count }) => {
-            const meta = REVIEW_TIER_META[tier]
-            const Icon = meta.icon
-            const pct = Math.round((100 * count) / total)
-            const active = selectedTier === tier
-            return (
-              <Button
-                key={tier}
-                type="button"
-                variant={active ? "secondary" : "ghost"}
-                onClick={() => onSelectTier(active ? null : tier)}
-                className="h-9 w-full justify-start gap-2.5 px-2"
-                aria-pressed={active}
-              >
-                <Icon className="size-3.5 shrink-0" aria-hidden="true" />
-                <span className="w-20 text-left text-xs font-medium">{meta.label}</span>
-                <Progress value={pct} className="h-2 flex-1" />
-                <span className="w-10 text-right text-xs text-muted-foreground tabular-nums">
-                  {count}
-                </span>
-              </Button>
-            )
-          })}
+    <Card className="border-border/60 py-0 shadow-(--shadow-soft)">
+      <CardContent className="flex flex-col gap-4 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-sm font-semibold text-foreground">{summaryHeading}</span>
+          {selectedTier ? (
+            <Button type="button" variant="ghost" size="sm" onClick={() => onSelectTier(null)}>
+              Hiện tất cả
+            </Button>
+          ) : null}
         </div>
-      ) : null}
 
-      {effectiveDishes.length > 0 ? (
-        <div className="flex flex-col gap-1.5 border-t border-border/50 pt-3">
-          <span className="text-xs font-semibold text-muted-foreground">Món nên gọi</span>
-          <div className="flex flex-wrap gap-1.5">
-            {effectiveDishes.map((dish) => (
-              <Badge key={dish.dishName} variant="secondary" className="gap-1.5 font-normal">
-                <span>{dish.dishName}</span>
-                <span className="text-xs font-semibold text-primary tabular-nums">
-                  {dish.count}
-                </span>
-              </Badge>
-            ))}
+        {total > 0 ? (
+          <div className="flex flex-col gap-1.5">
+            {rows.map(({ tier, count }) => {
+              const meta = REVIEW_TIER_META[tier]
+              const Icon = meta.icon
+              const pct = Math.round((100 * count) / total)
+              const active = selectedTier === tier
+              return (
+                <Toggle
+                  key={tier}
+                  pressed={active}
+                  onPressedChange={(next) => onSelectTier(next ? tier : null)}
+                  className="h-9 w-full justify-start gap-2.5 px-2 aria-pressed:bg-secondary"
+                >
+                  <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+                  <span className="w-20 text-left text-xs font-medium">{meta.label}</span>
+                  <Progress value={pct} className="h-2 flex-1" />
+                  <span className="w-10 text-right text-xs text-muted-foreground tabular-nums">
+                    {count}
+                  </span>
+                </Toggle>
+              )
+            })}
           </div>
-        </div>
-      ) : null}
-    </div>
+        ) : null}
+
+        {effectiveDishes.length > 0 ? (
+          <div className="flex flex-col gap-1.5 border-t border-border/50 pt-3">
+            <span className="text-xs font-semibold text-muted-foreground">Món nên gọi</span>
+            <div className="flex flex-wrap gap-1.5">
+              {effectiveDishes.map((dish) => (
+                <Badge key={dish.dishName} variant="secondary" className="gap-1.5 font-normal">
+                  <span>{dish.dishName}</span>
+                  <span className="text-xs font-semibold text-primary tabular-nums">
+                    {dish.count}
+                  </span>
+                </Badge>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
   )
 }

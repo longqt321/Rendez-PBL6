@@ -6,9 +6,9 @@ import { bodyLimit } from "hono/body-limit"
 import { secureHeaders } from "hono/secure-headers"
 import { env } from "./env"
 import { isNulByteError } from "./lib/errors"
+import { db, sql } from "./lib/kysely"
 import { logger } from "./lib/logger"
 import { pushObservabilityEvent } from "./lib/observability-store"
-import { prisma } from "./lib/prisma"
 import {
   generateTraceId,
   parseTraceparent,
@@ -187,7 +187,7 @@ export function createApp() {
 
   app.get("/readyz", async (c) => {
     try {
-      await prisma.$queryRaw`SELECT 1`
+      await sql`SELECT 1`.execute(db)
       return c.json({ status: "ok" })
     } catch (error) {
       logger.error({ err: error }, "readyz: DB không trả lời")

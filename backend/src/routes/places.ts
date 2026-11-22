@@ -9,8 +9,8 @@ import {
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { env } from "../env"
-import { Prisma } from "../../generated/prisma/client"
 import { isLocalMediaFallbackEnabled, localMediaBaseUrl } from "../lib/media-storage"
+import { db, sql } from "../lib/kysely"
 import { prisma } from "../lib/prisma"
 import { idempotency } from "../lib/idempotency"
 import {
@@ -311,40 +311,44 @@ export function createPlacesRouter() {
     if (parsedKind && !parsedKind.success) {
       throw new ApiError(400, "Loại ảnh không hợp lệ")
     }
-    const kindFilter = parsedKind?.success
-      ? Prisma.sql`AND kind = ${parsedKind.data}::place_media_kind`
-      : Prisma.empty
+    const placeMediaQuery = db
+      .selectFrom("place_images as pi")
+      .leftJoin("users as u", "u.id", "pi.uploaded_by_id")
+      .where("pi.place_id", "=", id)
+      .select([
+        sql<string>`pi.id::text`.as("id"),
+        "pi.url",
+        sql<"venue" | "dish_real" | "menu_price">`pi.kind::text`.as("kind"),
+        "pi.captured_at",
+        sql<"place" | "post">`'place'::text`.as("source_type"),
+        "u.name as author_name",
+        sql<string | null>`NULL::text`.as("post_id"),
+      ])
 
-    const rows = await prisma.$queryRaw<
-      Array<{
-        id: string
-        url: string
-        kind: "venue" | "dish_real" | "menu_price"
-        captured_at: Date
-        source_type: "place" | "post"
-        author_name: string | null
-        post_id: string | null
-      }>
-    >(Prisma.sql`
-      SELECT id, url, kind, captured_at, source_type, author_name, post_id
-      FROM (
-        SELECT pi.id::text AS id, pi.url, pi.kind::text AS kind, pi.captured_at,
-               'place'::text AS source_type, u.name AS author_name, NULL::text AS post_id
-        FROM place_images pi
-        LEFT JOIN users u ON u.id = pi.uploaded_by_id
-        WHERE pi.place_id = ${id}
-        UNION ALL
-        SELECT psi.id::text AS id, psi.url, psi.kind::text AS kind, psi.captured_at,
-               'post'::text AS source_type, u.name AS author_name, p.id::text AS post_id
-        FROM post_images psi
-        JOIN posts p ON p.id = psi.post_id
-        JOIN users u ON u.id = p.author_id
-        WHERE p.place_id = ${id} AND p.deleted_at IS NULL
-      ) combined
-      WHERE 1=1 ${kindFilter}
-      ORDER BY captured_at DESC
-      LIMIT 60
-    `)
+    const postMediaQuery = db
+      .selectFrom("post_images as psi")
+      .innerJoin("posts as p", "p.id", "psi.post_id")
+      .innerJoin("users as u", "u.id", "p.author_id")
+      .where("p.place_id", "=", id)
+      .where("p.deleted_at", "is", null)
+      .select([
+        sql<string>`psi.id::text`.as("id"),
+        "psi.url",
+        sql<"venue" | "dish_real" | "menu_price">`psi.kind::text`.as("kind"),
+        "psi.captured_at",
+        sql<"place" | "post">`'post'::text`.as("source_type"),
+        "u.name as author_name",
+        sql<string | null>`p.id::text`.as("post_id"),
+      ])
+
+    let combined = db
+      .selectFrom(placeMediaQuery.unionAll(postMediaQuery).as("combined"))
+      .selectAll()
+    if (parsedKind?.success) {
+      combined = combined.where("combined.kind", "=", parsedKind.data)
+    }
+
+    const rows = await combined.orderBy("combined.captured_at", "desc").limit(60).execute()
 
     const items: PlaceMediaItem[] = rows.map((r) => ({
       id: r.id,

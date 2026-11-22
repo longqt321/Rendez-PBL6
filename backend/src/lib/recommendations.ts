@@ -1,7 +1,9 @@
 import { subDays } from "date-fns"
 import { Prisma } from "../../generated/prisma/client"
+import { db } from "./kysely"
 import { prisma } from "./prisma"
-import { selectPlaces, toPlaceDto, type PlaceRow } from "./places"
+import { selectPlacesQuery } from "./places/select"
+import { toPlaceDto, type PlaceRow } from "./places"
 
 /** Số place tối đa mỗi ngành hàng trong danh sách cold-start. */
 export const COLD_START_CAP_PER_CATEGORY = 3
@@ -118,23 +120,29 @@ export async function scoreAffinity(actor: RecommendationActor): Promise<Affinit
   if (totalWeight <= 0) return null
 
   const seedIds = seeds.map((seed) => seed.place_id)
+  const seenQuery = db
+    .selectFrom("interaction_events")
+    .select("place_id")
+    .distinct()
+    .where("created_at", ">=", since)
+    .where("place_id", "is not", null)
+
   const [cacheRows, seenRows] = await Promise.all([
-    prisma.$queryRaw<CacheRow[]>(Prisma.sql`
-      SELECT place_id, related
-      FROM affinity_cache
-      WHERE place_id IN (${Prisma.join(seedIds)})
-    `),
+    db
+      .selectFrom("affinity_cache")
+      .select(["place_id", "related"])
+      .where("place_id", "in", seedIds)
+      .execute() as Promise<CacheRow[]>,
     // Loại place actor đã tương tác (mọi weight — đã ẩn/hủy thì không gợi ý lại).
-    prisma.$queryRaw<{ place_id: string }[]>(Prisma.sql`
-      SELECT DISTINCT place_id
-      FROM interaction_events
-      WHERE created_at >= ${since}
-        AND place_id IS NOT NULL
-        AND ${actorCondition}
-    `),
+    (actor.userId
+      ? seenQuery.where("user_id", "=", actor.userId)
+      : seenQuery.where("anon_id", "=", actor.anonId!)
+    ).execute(),
   ])
   const cacheByPlace = new Map(cacheRows.map((entry) => [entry.place_id, entry.related]))
-  const seen = new Set(seenRows.map((row) => row.place_id))
+  const seen = new Set(
+    seenRows.map((row) => row.place_id).filter((id): id is string => id !== null),
+  )
 
   const scores = new Map<string, number>()
   for (const seed of seeds) {
@@ -339,13 +347,14 @@ async function coldStartCandidates(
 /** Lấy dòng đầy đủ cho danh sách id, giữ đúng thứ tự đã xếp. */
 async function fetchRows(ids: string[]): Promise<PlaceRow[]> {
   if (ids.length === 0) return []
-  const rows = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-    ${selectPlaces()}
-    WHERE p.id IN (${Prisma.join(ids)})
-      AND ${Prisma.join(baseConditions(), " AND ")}
-    ORDER BY array_position(ARRAY[${Prisma.join(ids)}]::text[], p.id)
-  `)
-  return rows
+  const rows = (await selectPlacesQuery()
+    .where("p.id", "in", ids)
+    .where("p.published_at", "is not", null)
+    .where("p.status", "!=", "closed")
+    .where("p.deleted_at", "is", null)
+    .execute()) as PlaceRow[]
+  const byId = new Map(rows.map((row) => [row.id, row]))
+  return ids.map((id) => byId.get(id)).filter((row): row is PlaceRow => row !== undefined)
 }
 
 /**

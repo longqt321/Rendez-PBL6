@@ -3,6 +3,7 @@ import L from "leaflet"
 import { LayersIcon, XIcon } from "lucide-react"
 import { useMap, useMapEvents } from "react-leaflet"
 import { Button } from "@/components/ui/button"
+import { Toggle } from "@/components/ui/toggle"
 import { cn } from "@/lib/utils"
 import type { MapBounds } from "../../api/get-map-places"
 import { CATEGORY_META } from "../../lib/category-meta"
@@ -178,16 +179,13 @@ export function MapCategoryLegend({
 
           if (onCategorySelect) {
             return (
-              <Button
+              <Toggle
                 key={category}
-                type="button"
-                variant="ghost"
                 size="sm"
-                aria-pressed={isSelected}
-                onClick={() => onCategorySelect(isSelected ? "all" : cat)}
+                pressed={isSelected}
+                onPressedChange={() => onCategorySelect(isSelected ? "all" : cat)}
                 className={cn(
-                  "h-auto justify-start gap-2 rounded-control px-2 py-1 text-left text-xs font-normal transition-colors hover:bg-muted",
-                  isSelected && "bg-primary/12 font-semibold text-primary",
+                  "h-auto justify-start gap-2 rounded-control px-2 py-1 text-left text-xs font-normal transition-colors hover:bg-muted aria-pressed:bg-primary/12 aria-pressed:font-semibold aria-pressed:text-primary",
                   isDimmed && "opacity-55",
                 )}
               >
@@ -196,7 +194,7 @@ export function MapCategoryLegend({
                   style={{ backgroundColor: meta.color }}
                 />
                 {meta.label}
-              </Button>
+              </Toggle>
             )
           }
 
