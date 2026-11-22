@@ -33,6 +33,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { useDeleteAccount } from "@/features/auth/hooks/use-delete-account"
+import { ManageAnchorsSection } from "@/features/location/components/manage-anchors-dialog"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { useUpdateMe } from "@/features/profile/hooks/use-update-me"
 import { ProfileImagesField } from "@/features/settings/components/profile-images-field"
@@ -213,6 +214,17 @@ export function SettingsPage() {
           </Button>
         </div>
       </form>
+
+      <SurfaceCard>
+        <FieldSet>
+          <FieldLegend>Mốc vị trí quen thuộc</FieldLegend>
+          <FieldDescription>
+            Lưu nhà riêng, công ty hoặc trường học để tính khoảng cách và gợi ý quán chính xác hơn
+            ngay cả khi laptop không có GPS.
+          </FieldDescription>
+          <ManageAnchorsSection enabled={Boolean(me)} />
+        </FieldSet>
+      </SurfaceCard>
 
       <SurfaceCard variant="danger">
         <FieldSet>

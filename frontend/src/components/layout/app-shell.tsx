@@ -62,6 +62,8 @@ import { useMe } from "@/features/profile/hooks/use-me"
 import { RoomJoinDialog } from "@/features/rooms/components/room-join-dialog"
 import { useRooms } from "@/features/rooms/hooks/use-rooms"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
+import { useIsDesktop } from "@/hooks/use-breakpoint"
+import { useMobileGpsAutoSync } from "@/hooks/use-user-location"
 import { isUnauthorizedError } from "@/lib/axios"
 import { env } from "@/lib/env"
 import { cn } from "@/lib/utils"
@@ -144,7 +146,7 @@ export function AppShell({ children }: Readonly<AppShellProps>) {
       <SideNav />
       <div className="flex min-h-dvh flex-col lg:pl-60">
         <TopBar />
-        <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 pb-24 outline-none lg:pb-0">
+        <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 pb-20 outline-none lg:pb-0">
           {children ?? (
             <Suspense fallback={<PageLoading />}>
               <Outlet />
@@ -330,6 +332,8 @@ function SkinSwitch() {
 }
 
 function TopBar() {
+  useMobileGpsAutoSync()
+  const isDesktop = useIsDesktop()
   const { draft, setDraft, submit, clear, isFilterPage } = useSearchQuerySync()
   const { activeCode, getRoom, createRoom, joinRoom } = useRooms()
   const location = useLocation()
@@ -350,13 +354,23 @@ function TopBar() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border/80 bg-background/88 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 lg:px-8">
-        <div className="lg:hidden">
-          <Brand />
-        </div>
+    <header className="sticky top-0 z-20 border-b border-border/80 bg-background/95 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 md:h-auto md:gap-3 md:px-4 md:py-3 lg:px-8">
+        {!isDesktop ? (
+          <Link
+            to="/discover"
+            aria-label="Trang chủ Rendez"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs"
+          >
+            <CompassIcon className="size-4" aria-hidden="true" />
+          </Link>
+        ) : (
+          <div className="lg:hidden">
+            <Brand />
+          </div>
+        )}
 
-        <div className="ml-auto flex w-full max-w-md items-center gap-2 lg:ml-0 lg:max-w-xl">
+        <div className="min-w-0 flex-1 lg:max-w-xl">
           <form
             role="search"
             className="flex-1"
@@ -365,7 +379,7 @@ function TopBar() {
               submit()
             }}
           >
-            <InputGroup className="h-10 rounded-full bg-card/90 shadow-xs">
+            <InputGroup className="h-9 rounded-full bg-card/90 shadow-xs md:h-10">
               <InputGroupAddon>
                 <SearchIcon />
               </InputGroupAddon>
@@ -382,9 +396,11 @@ function TopBar() {
                   }
                 }}
                 placeholder={
-                  isFilterPage
-                    ? "Tìm quán, món ăn, quận, mức giá (VD: cà phê Sơn Trà dưới 50k)…"
-                    : "Tìm riêng địa điểm, món ăn tại Đà Nẵng…"
+                  !isDesktop
+                    ? "Tìm quán…"
+                    : isFilterPage
+                      ? "Tìm quán, món ăn, quận, mức giá (VD: cà phê Sơn Trà dưới 50k)…"
+                      : "Tìm riêng địa điểm, món ăn tại Đà Nẵng…"
                 }
                 aria-label="Tìm kiếm"
               />
@@ -429,7 +445,7 @@ function TopBar() {
             <Button
               variant="outline"
               size="sm"
-              className="inline-flex min-h-11 gap-1.5 rounded-full px-3 text-xs font-medium sm:min-h-0 sm:px-2.5"
+              className="inline-flex h-9 gap-1.5 rounded-full px-3 text-xs font-medium md:h-8 md:px-2.5"
               onClick={() => setJoinOpen(true)}
             >
               <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
@@ -643,7 +659,7 @@ function BottomNav() {
   return (
     <nav
       aria-label="Điều hướng di động"
-      className="fixed inset-x-3 bottom-3 z-30 rounded-2xl border border-border/80 bg-background/90 pb-[env(safe-area-inset-bottom)] shadow-(--shadow-floating) backdrop-blur-md lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border/80 bg-background/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgb(0_0_0/0.06)] backdrop-blur-md lg:hidden"
     >
       <ul className="mx-auto flex max-w-lg items-stretch">
         {MOBILE_NAV_ITEMS.map((item) => {

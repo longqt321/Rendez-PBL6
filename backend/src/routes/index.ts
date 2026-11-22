@@ -18,6 +18,7 @@ import { createSystemRouter } from "./system"
 import { createEventsRouter } from "./events"
 import { createTelemetryRouter } from "./telemetry"
 import { createAdminRouter } from "./admin"
+import { createLocationRouter } from "./location"
 
 function normalizeRoutePath(path: string): string {
   const stripped = path.replace(/^\/api\/v1/u, "") || "/"
@@ -118,6 +119,9 @@ export function createApiRouter() {
 
   // Quản trị và nhật ký hoạt động — `/admin/*`.
   api.route("/", createAdminRouter())
+
+  // Mốc vị trí cá nhân, địa danh thành phố & đồng bộ GPS — `/landmarks`, `/me/anchors`, `/me/location`.
+  api.route("/", createLocationRouter())
 
   return api
 }

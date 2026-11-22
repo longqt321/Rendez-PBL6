@@ -318,14 +318,20 @@ async function seedDevFixtures(
 
   const sampleReviews = [
     {
-      rating: 5,
+      tier: "must_try" as const,
+      recommendedDishes: ["Món đặc sản quán", "Nước ép tươi"],
       content: "Không gian thoáng, lên món nhanh, hương vị đúng chuẩn bản địa Đà Nẵng.",
     },
     {
-      rating: 4,
+      tier: "good" as const,
+      recommendedDishes: ["Combo 2 người"],
       content: "Quán sạch sẽ, nhân viên nhiệt tình, cuối tuần hơi đông nhưng đáng thử.",
     },
-    { rating: 5, content: "Vị rất vừa miệng, giá hợp lý, nhóm mình đi 4 người ai cũng khen." },
+    {
+      tier: "must_try" as const,
+      recommendedDishes: ["Món tủ của quán"],
+      content: "Vị rất vừa miệng, giá hợp lý, nhóm mình đi 4 người ai cũng khen.",
+    },
   ]
 
   // Seed đánh giá mẫu cho top 6 quán có ảnh thật (chỉ thêm khi cặp user-place chưa có)
@@ -344,7 +350,8 @@ async function seedDevFixtures(
         create: {
           placeId: place.id,
           authorId: author.id,
-          rating: rev.rating,
+          tier: rev.tier,
+          recommendedDishes: [...rev.recommendedDishes],
           content: rev.content,
         },
         update: {},
@@ -401,6 +408,89 @@ async function seedDevFixtures(
   }
 
   console.info("[seed] Đã đồng bộ Dev Fixtures (3 user mẫu, reviews, posts, collection).")
+}
+
+const CITY_LANDMARKS = [
+  {
+    slug: "cau-rong",
+    name: "Cầu Rồng",
+    district: "Hải Châu",
+    lat: 16.0611,
+    lng: 108.2275,
+    sortOrder: 1,
+  },
+  {
+    slug: "cau-song-han",
+    name: "Cầu Sông Hàn",
+    district: "Hải Châu",
+    lat: 16.0721,
+    lng: 108.227,
+    sortOrder: 2,
+  },
+  {
+    slug: "tuong-dai-me-nhu",
+    name: "Tượng đài Mẹ Nhu",
+    district: "Thanh Khê",
+    lat: 16.0672,
+    lng: 108.1873,
+    sortOrder: 3,
+  },
+  {
+    slug: "bai-bien-my-khe",
+    name: "Bãi biển Mỹ Khê",
+    district: "Sơn Trà",
+    lat: 16.0598,
+    lng: 108.2467,
+    sortOrder: 4,
+  },
+  {
+    slug: "cho-han",
+    name: "Chợ Hàn",
+    district: "Hải Châu",
+    lat: 16.0686,
+    lng: 108.2244,
+    sortOrder: 5,
+  },
+  {
+    slug: "cau-tran-thi-ly",
+    name: "Cầu Trần Thị Lý",
+    district: "Hải Châu",
+    lat: 16.0497,
+    lng: 108.2294,
+    sortOrder: 6,
+  },
+  {
+    slug: "san-bay-da-nang",
+    name: "Sân bay Quốc tế Đà Nẵng",
+    district: "Hải Châu",
+    lat: 16.0439,
+    lng: 108.1994,
+    sortOrder: 7,
+  },
+  {
+    slug: "cong-vien-bien-dong",
+    name: "Công viên Biển Đông",
+    district: "Sơn Trà",
+    lat: 16.0695,
+    lng: 108.2454,
+    sortOrder: 8,
+  },
+] as const
+
+async function seedCityLandmarks() {
+  for (const lm of CITY_LANDMARKS) {
+    await prisma.cityLandmark.upsert({
+      where: { slug: lm.slug },
+      update: {
+        name: lm.name,
+        district: lm.district,
+        lat: lm.lat,
+        lng: lm.lng,
+        sortOrder: lm.sortOrder,
+      },
+      create: lm,
+    })
+  }
 }
 
 async function main(): Promise<void> {
@@ -524,6 +614,8 @@ async function main(): Promise<void> {
     const urls = (raw.images?.length ?? 0) > 0 ? raw.images : raw.image ? [raw.image] : []
     for (const [position, path] of urls.entries()) {
       const url = `/data/cold-start/${path}`
+      const mediaKind =
+        raw.imageKind === "dish_real" || raw.imageKind === "menu_price" ? raw.imageKind : "venue"
       const existing = await prisma.placeImage.findFirst({
         where: { placeId: raw.id, url },
         select: { id: true },
@@ -533,7 +625,7 @@ async function main(): Promise<void> {
           where: { id: existing.id },
           data: {
             position,
-            kind: raw.imageKind,
+            kind: mediaKind,
             credit: raw.imageCredit ?? null,
           },
         })
@@ -543,7 +635,7 @@ async function main(): Promise<void> {
             placeId: raw.id,
             url,
             position,
-            kind: raw.imageKind,
+            kind: mediaKind,
             credit: raw.imageCredit ?? null,
           },
         })
@@ -579,6 +671,8 @@ async function main(): Promise<void> {
       console.info(`[seed] Dọn ${stale.count} place cũ không còn trong dataset.`)
     }
   }
+
+  await seedCityLandmarks()
 
   if (mode === "dev") {
     await seedDevFixtures(places, unpublishedIds)

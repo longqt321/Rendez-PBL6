@@ -1,6 +1,8 @@
 export type {
   Place,
   PlaceCategory,
+  PlaceMediaItem,
+  PlaceMediaKind,
   PlaceStatus,
   PlaceSummary,
   PlaceSuggestion,
@@ -9,7 +11,7 @@ export type {
   DailyPicks,
 } from "./types/place"
 export { PLACE_REPORT_REASONS, type PlaceReport, type PlaceReportReason } from "./types/place-report"
-export type { Review } from "./types/review"
+export type { RecommendedDishCount, Review, ReviewTier, ReviewTierSummary } from "./types/review"
 export type { UserProfile, ProfileTab, UserSuggestion, UserRole } from "./types/profile"
 export type {
   AdminOverview,
@@ -25,10 +27,15 @@ export type { Comment, CommentSort, CreateCommentInput } from "./types/comment"
 export type { Collection, CollectionSummary } from "./types/collection"
 export type {
   Room,
+  RoomCandidate,
   RoomFilter,
   RoomMember,
+  RoomPhase,
   RoomProposal,
   RoomProposalField,
+  RoomVoteSummary,
+  RoomVotingMode,
+  RoomVotingProgress,
   AppliedProposalResult,
 } from "./types/room"
 export type {
@@ -55,6 +62,9 @@ export {
 } from "./natural-query"
 export * from "./constants"
 export {
+  placeMediaKindSchema,
+  placeMediaItemSchema,
+  addPlaceImagesInputSchema,
   placeSchema,
   placeSummarySchema,
   placeSuggestionSchema,
@@ -77,7 +87,14 @@ export {
   type ValidateProfileImageUrlOptions,
 } from "./post-images"
 export { commentSchema } from "./comment.schema"
-export { reviewSchema } from "./review.schema"
+export {
+  reviewSchema,
+  reviewTierSchema,
+  reviewTierSummarySchema,
+  recommendedDishCountSchema,
+  upsertReviewInputSchema,
+  type UpsertReviewInput,
+} from "./review.schema"
 export { placeReportSchema } from "./place-report.schema"
 export { notificationSchema } from "./notification.schema"
 export {
@@ -112,8 +129,37 @@ export {
   createRoomResponseSchema,
   joinRoomInputSchema,
   joinRoomResponseSchema,
+  roomPhaseSchema,
+  roomVotingModeSchema,
+  roomCandidateSchema,
+  roomVoteSummarySchema,
+  roomVotingProgressSchema,
   createProposalInputSchema,
   updateRoomFilterInputSchema,
+  addRoomCandidateInputSchema,
+  startRoomVotingInputSchema,
+  castRoomVoteInputSchema,
+  finalizeRoomVotingInputSchema,
   type CreateProposalInput,
   type UpdateRoomFilterInput,
+  type AddRoomCandidateInput,
+  type StartRoomVotingInput,
+  type CastRoomVoteInput,
+  type FinalizeRoomVotingInput,
 } from "./room.schema"
+export {
+  anchorKindSchema,
+  userLocationAnchorSchema,
+  createAnchorInputSchema,
+  updateAnchorInputSchema,
+  cityLandmarkSchema,
+  syncedLocationSchema,
+  upsertSyncedLocationInputSchema,
+  type AnchorKind,
+  type UserLocationAnchor,
+  type CreateAnchorInput,
+  type UpdateAnchorInput,
+  type CityLandmark,
+  type SyncedLocation,
+  type UpsertSyncedLocationInput,
+} from "./location.schema"

@@ -45,14 +45,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=P+Coffee+53-55+Nguy%E1%BB%85n+V%C4%83n+Linh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -79,14 +74,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Namto+House+Coffee+130+Nguy%E1%BB%85n+Ch%C3%AD+Thanh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -113,14 +103,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Boulevard+Gelato+%26+Coffee+77+Tr%E1%BA%A7n+Qu%E1%BB%91c+To%E1%BA%A3n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -147,14 +132,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Tr%C3%ACnh+C%C3%A0+Ph%C3%AA+25+Ph%E1%BA%A1m+H%E1%BB%93ng+Th%C3%A1i+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -184,14 +164,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Wonderlust+Coffee+and+Souvenir+96+Tr%E1%BA%A7n+Ph%C3%BA+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -210,9 +185,7 @@
       "image": "images/venues/reply-1988-cafe-gm-1.jpg",
       "imageKind": "venue",
       "imageNote": null,
-      "images": [
-        "images/venues/reply-1988-cafe-gm-1.jpg"
-      ],
+      "images": ["images/venues/reply-1988-cafe-gm-1.jpg"],
       "lat": 16.0639774,
       "lng": 108.2228375,
       "name": "Reply 1988 Café",
@@ -221,14 +194,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Reply+1988+Cafe+20+L%C3%AA+H%E1%BB%93ng+Phong+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -256,14 +224,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Jam+Space+Cafe+338%2F22+Ho%C3%A0ng+Di%E1%BB%87u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -290,14 +253,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Brio+Mart+and+Cafe+161+Tr%E1%BA%A7n+Ph%C3%BA+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -324,14 +282,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=S%C6%A1n+Tr%C3%A0+Marina+%C4%90%C6%B0%E1%BB%9Dng+H%E1%BB%93+Xanh%2C+Th%E1%BB%8D+Quang+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -349,9 +302,7 @@
       "image": "images/venues/mirko-coffee-gm-1.jpg",
       "imageKind": "venue",
       "imageNote": null,
-      "images": [
-        "images/venues/mirko-coffee-gm-1.jpg"
-      ],
+      "images": ["images/venues/mirko-coffee-gm-1.jpg"],
       "lat": 16.105676999365,
       "lng": 108.25841104065,
       "name": "MIRKO Coffee & Chill Beer",
@@ -360,14 +311,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Mirko+Coffee+%26+Chill+Beer+100+Nguy%E1%BB%85n+H%E1%BB%AFu+An%2C+Th%E1%BB%8D+Quang+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -395,14 +341,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Bounce+Beach+01+Y%E1%BA%BFt+Ki%C3%AAu%2C+Th%E1%BB%8D+Quang+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -420,9 +361,7 @@
       "image": "images/venues/ibasho-coffee-gm-1.jpg",
       "imageKind": "venue",
       "imageNote": "Dùng placeholder",
-      "images": [
-        "images/venues/ibasho-coffee-gm-1.jpg"
-      ],
+      "images": ["images/venues/ibasho-coffee-gm-1.jpg"],
       "lat": 16.0715,
       "lng": 108.1816,
       "name": "Ibasho Coffee & Apartment",
@@ -431,14 +370,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Thanh Khê"
-      ],
+      "tags": ["Cà phê & Trà", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ibasho+Coffee+%26+Hostel+124+Y%C3%AAn+Kh%C3%AA+1+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -466,14 +400,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nia+Caf%C3%A9+3%2F12+Phan+Th%C3%A0nh+T%C3%A0i+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -500,14 +429,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Cà phê & Trà", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=43+Factory+Coffee+Roaster+422+Ng%C3%B4+Th%C3%AC+S%C4%A9+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -534,14 +458,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Thanh Khê"
-      ],
+      "tags": ["Cà phê & Trà", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=2AM+Coffee+194+Nguy%E1%BB%85n+Tri+Ph%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -568,14 +487,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Cloud+Garden+Coffee+72+L%C3%AA+M%E1%BA%A1nh+Trinh%2C+Ph%C6%B0%E1%BB%9Bc+M%E1%BB%B9+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -602,14 +516,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Dreamer+Coffee+230+Nguy%E1%BB%85n+C%C3%B4ng+Tr%E1%BB%A9%2C+An+H%E1%BA%A3i+B%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -636,14 +545,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Lapin+Bakery+%26+Dessert+Cafe+A17-2+V%C3%B5+V%C4%83n+Ki%E1%BB%87t+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -670,14 +574,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Les+3000+Mondes+121%2F39+Nguy%E1%BB%85n+Ch%C3%AD+Thanh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -709,14 +608,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=D%C3%A2u+Ng%E1%BB%8Dt+Caf%C3%A9+%27n%27+Souvenir+92+D%C6%B0%C6%A1ng+%C4%90%C3%ACnh+Ngh%E1%BB%87+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -744,14 +638,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Thanh Khê"
-      ],
+      "tags": ["Cà phê & Trà", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=BonPas+Bakery+%26+Cafe+35+%C4%90i%E1%BB%87n+Bi%C3%AAn+Ph%E1%BB%A7+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -769,10 +658,7 @@
       "image": "images/venues/noi-cafe-gm-1.png",
       "imageKind": "venue",
       "imageNote": null,
-      "images": [
-        "images/venues/noi-cafe-gm-1.png",
-        "images/venues/noi-cafe-gm-2.jpg"
-      ],
+      "images": ["images/venues/noi-cafe-gm-1.png", "images/venues/noi-cafe-gm-2.jpg"],
       "lat": 16.0737653,
       "lng": 108.2216024,
       "name": "Nối Café",
@@ -781,14 +667,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=N%E1%BB%91i+Caf%C3%A9+113%2F18+Nguy%E1%BB%85n+Ch%C3%AD+Thanh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -816,14 +697,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Hải Châu"
-      ],
+      "tags": ["Cà phê & Trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Pavilion+Garden+122+Quang+Trung+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -853,14 +729,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Wind+Garden+Coffee+72+L%C3%AA+M%E1%BA%A1nh+Trinh%2C+An+H%E1%BA%A3i+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -888,14 +759,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Normad+%C4%90%C3%A0+N%E1%BA%B5ng+106+Ph%E1%BA%A1m+V%C4%83n+%C4%90%E1%BB%93ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -922,14 +788,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Cà phê & Trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Acacia+Caf%C3%A9+by+C%C3%A2y+Si+05+An+C%C6%B0+5+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -956,14 +817,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Thanh Khê"
-      ],
+      "tags": ["Cà phê & Trà", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=N%C3%B3c+Rooftop+54+L%C3%AA+Duy+%C4%90%C3%ACnh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -990,14 +846,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Thanh Khê"
-      ],
+      "tags": ["Cà phê & Trà", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=The+Third+House+Coffee+142%2F3+L%C3%AA+%C4%90%E1%BB%99+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1024,14 +875,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Thanh Khê"
-      ],
+      "tags": ["Cà phê & Trà", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ribo+Coffee+05+Th%C3%A1i+Th%E1%BB%8B+B%C3%B4i%2C+Ch%C3%ADnh+Gi%C3%A1n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1058,14 +904,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Thanh Khê"
-      ],
+      "tags": ["Cà phê & Trà", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=GRAVEL+Coffee+Pub+Ven+bi%E1%BB%83n+Xu%C3%A2n+H%C3%A0+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1092,14 +933,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Thanh Khê"
-      ],
+      "tags": ["Cà phê & Trà", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=G%C3%A9+Cafe+66+%C4%90%E1%BB%97+Quang%2C+V%C4%A9nh+Trung+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1126,14 +962,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Liên Chiểu"
-      ],
+      "tags": ["Cà phê & Trà", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ti%E1%BB%87m+C%C3%A0+Ph%C3%AA+%C3%94+C%E1%BB%ADa+S%E1%BB%95+29-31+Thanh+T%E1%BB%8Bnh%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1160,14 +991,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Liên Chiểu"
-      ],
+      "tags": ["Cà phê & Trà", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Y%C3%AAn+Garden+Coffee+04+Nguy%E1%BB%85n+Huy+T%C6%B0%E1%BB%9Fng%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1194,14 +1020,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Liên Chiểu"
-      ],
+      "tags": ["Cà phê & Trà", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=IKIGAI+Garden+Caf%C3%A9+01+Ph%E1%BA%A1m+Nh%C6%B0+X%C6%B0%C6%A1ng%2C+H%C3%B2a+Kh%C3%A1nh+Nam+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1228,14 +1049,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Liên Chiểu"
-      ],
+      "tags": ["Cà phê & Trà", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Cherish+Coffee+%26+Desserts+238+Kinh+D%C6%B0%C6%A1ng+V%C6%B0%C6%A1ng%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1262,14 +1078,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Liên Chiểu"
-      ],
+      "tags": ["Cà phê & Trà", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ki%E1%BA%BFn+G%E1%BB%97+Cafe+155+L%E1%BA%A1c+Long+Qu%C3%A2n%2C+H%C3%B2a+Kh%C3%A1nh+B%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1296,14 +1107,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Liên Chiểu"
-      ],
+      "tags": ["Cà phê & Trà", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Saigon+Brown+Coffee+1+T%C3%A2n+Tr%C3%A0o%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1330,14 +1136,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Cà phê & Trà", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ti%E1%BB%87m+c%C3%A0+ph%C3%AA+ch%C3%BA+M%E1%BA%A1nh+298%2F21+C%C3%A1ch+M%E1%BA%A1ng+Th%C3%A1ng+8+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1364,14 +1165,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Cà phê & Trà", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Selfwing+V-Garden+Coffee+50+B%C3%B9i+Thi%E1%BB%87n+Ng%E1%BB%99%2C+H%C3%B2a+Xu%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1398,14 +1194,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Cà phê & Trà", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=La%27s+Cafe+36+Nguy%E1%BB%85n+V%C4%83n+Th%C3%B4ng%2C+H%C3%B2a+Xu%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1432,14 +1223,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Cà phê & Trà", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Dream+House+Coffee+44+B%C3%B9i+Thi%E1%BB%87n+Ng%E1%BB%99%2C+H%C3%B2a+Xu%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1466,14 +1252,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Cà phê & Trà", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=De+Casty+Coffee+L%C3%B4+768+X%C3%B4+Vi%E1%BA%BFt+Ngh%E1%BB%87+T%C4%A9nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1500,14 +1281,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Cà phê & Trà", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Bay+Coffee+%26+Tea+1+M%E1%BA%A1c+%C4%90%C4%83ng+Dung%2C+H%C3%B2a+Xu%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1534,14 +1310,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Cà phê & Trà", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Millennium+Cafe+23+Nguy%E1%BB%85n+C%C3%B4ng+Hoan+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1568,14 +1339,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cà phê & Trà",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Cà phê & Trà", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Tr%C3%A0+Hoa+Qu%C3%A1n+280+V%C3%B5+Ch%C3%AD+C%C3%B4ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1602,14 +1368,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Thanh Khê"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+x%C3%A8o+N%C4%83m+Hi%E1%BB%81n+46+Phan+Thanh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1636,14 +1397,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Thanh Khê"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%BAn+ch%E1%BA%A3+c%C3%A1+B%C3%A0+L%E1%BB%AF+319+H%C3%B9ng+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1670,14 +1426,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=M%C3%AC+Qu%E1%BA%A3ng+B%C3%A0+Mua+%28Ng%C5%A9+H%C3%A0nh+S%C6%A1n%29+40+Ng%C5%A9+H%C3%A0nh+S%C6%A1n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1704,14 +1455,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=M%C3%AC+Qu%E1%BA%A3ng+B%C3%A0+Mua+%28C%E1%BA%A9m+L%E1%BB%87%29+58+%C3%94ng+%C3%8Dch+%C4%90%C6%B0%E1%BB%9Dng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1738,14 +1484,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=M%C3%AC+Qu%E1%BA%A3ng+B%C3%A0+N%C4%83m+36+Nguy%E1%BB%85n+Qu%C3%BD+%C4%90%E1%BB%A9c+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1775,14 +1516,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Sơn Trà"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=M%C3%AC+Qu%E1%BA%A3ng+%E1%BA%BFch+B%E1%BA%BFp+Trang+Khu+v%E1%BB%B1c+S%C6%A1n+Tr%C3%A0+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1810,14 +1546,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+canh+M%E1%BB%A3+T%C3%A8o+2+175+Ng%C5%A9+H%C3%A0nh+S%C6%A1n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1844,14 +1575,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%BAn+B%C3%B2+Hu%E1%BA%BF+Ch%E1%BB%8B+H%E1%BB%93ng+145+Ng%C5%A9+H%C3%A0nh+S%C6%A1n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1878,14 +1604,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+x%C3%A8o+t%C3%B4m+nh%E1%BA%A3y+Ph%C6%B0%C6%A1ng+Th%E1%BA%A3o+177+Ng%C5%A9+H%C3%A0nh+S%C6%A1n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1903,10 +1624,7 @@
       "image": "images/venues/quan-mau-gm-3.jpg",
       "imageKind": "venue",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
-      "images": [
-        "images/venues/quan-mau-gm-3.jpg",
-        "images/venues/quan-mau-gm-4.jpg"
-      ],
+      "images": ["images/venues/quan-mau-gm-3.jpg", "images/venues/quan-mau-gm-4.jpg"],
       "lat": 16.0248521,
       "lng": 108.2100572,
       "name": "Quán Mậu – Bánh tráng thịt heo",
@@ -1915,14 +1633,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+M%E1%BA%ADu+%E2%80%93+B%C3%A1nh+tr%C3%A1ng+th%E1%BB%8Bt+heo+35+%C4%90%E1%BB%97+Th%C3%BAc+T%E1%BB%8Bnh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1950,14 +1663,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Thanh Khê"
-      ],
+      "tags": ["Quán ăn & Cơm", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+g%C3%A0+Gia+V%C4%A9nh+241+H%E1%BA%A3i+Ph%C3%B2ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -1984,14 +1692,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+g%C3%A0+3+Lu+Ng%C3%B4+V%C4%83n+S%E1%BB%9F+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2018,14 +1721,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=A+P%C3%A1o+Qu%C3%A1n+%E2%80%93+Heo+quay+M%E1%BA%AFc+M%E1%BA%ADt+277+H%E1%BB%93+T%C3%B9ng+M%E1%BA%ADu%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2052,14 +1750,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%BAn+%C4%90%E1%BA%ADu+M%E1%BA%AFm+T%C3%B4m+36+36+Ng%C3%B4+V%C4%83n+S%E1%BB%9F%2C+H%C3%B2a+Kh%C3%A1nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2086,14 +1779,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Sơn Trà"
-      ],
+      "tags": ["Quán ăn & Cơm", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+ni%C3%AAu+Nh%C3%A0+%C4%90%E1%BB%8F+S%E1%BB%91+5+Ph%E1%BA%A1m+V%C4%83n+%C4%90%E1%BB%93ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2120,14 +1808,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán ăn & Cơm", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A1+Duy+Qu%C3%A1n+-+B%C3%B2+N%C3%A9+133+Ph%E1%BA%A1m+T%E1%BB%A9+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2154,14 +1837,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Sơn Trà"
-      ],
+      "tags": ["Quán ăn & Cơm", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+canh+t%C3%B4m+t%C3%ADt+C%C3%B4ng+Tri%E1%BB%81u+Ho%C3%A0ng+Sa+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2188,14 +1866,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Quán ăn & Cơm", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+h%C3%A0ng+R%E1%BB%9B+72+B%C3%B9i+T%C3%A1+H%C3%A1n%2C+Khu%C3%AA+M%E1%BB%B9+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2222,14 +1895,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Hải Châu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Thai+Market+%28B%C3%ACnh+Minh+5%29+43+B%C3%ACnh+Minh+5%2C+B%C3%ACnh+Thu%E1%BA%ADn+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2256,14 +1924,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Hải Châu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Gang+Yu+Hotpot+87+Y%C3%AAn+B%C3%A1i%2C+Ph%C6%B0%E1%BB%9Bc+Ninh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2290,14 +1953,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Hải Châu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=DOM+%E2%80%93+The+Wine+Bistro+03+Phan+B%E1%BB%99i+Ch%C3%A2u%2C+Th%E1%BA%A1ch+Thang+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2324,14 +1982,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Quán ăn & Cơm", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+Nh%C3%A0+Linh+35+An+Th%C6%B0%E1%BB%A3ng+26%2C+M%E1%BB%B9+An+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2358,14 +2011,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=L%E1%BA%A9u+N%E1%BA%A5m+Tr%E1%BA%A7n+Ph%E1%BB%91+1+Nguy%E1%BB%85n+Sinh+S%E1%BA%AFc%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2392,14 +2040,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ti%E1%BB%87m+Qu%C3%AA+Nh%C3%A0+22+H%E1%BB%93ng+Th%C3%A1i%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2426,14 +2069,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+h%C3%A0ng+3+C%C3%A2y+L%E1%BB%99c+54+Ng%C3%B4+Th%C3%AC+Nh%E1%BA%ADm%2C+H%C3%B2a+Kh%C3%A1nh+Nam+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2460,14 +2098,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%BAn+L%C3%B2ng+X%C3%A0o+Ngh%E1%BB%87+%26+S%C3%BAp+H%E1%BA%A7m+X%C6%B0%C6%A1ng+65%2F86+Ph%E1%BA%A1m+Nh%C6%B0+X%C6%B0%C6%A1ng%2C+H%C3%B2a+Kh%C3%A1nh+Nam+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2494,14 +2127,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=OQ+Qu%C3%A1n+38+Ng%C3%B4+V%C4%83n+S%E1%BB%9F%2C+H%C3%B2a+Kh%C3%A1nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2528,14 +2156,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Papa+Pizza+16+L%C3%AA+Do%C3%A3n+Nh%E1%BA%A1%2C+H%C3%B2a+Kh%C3%A1nh+Nam+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2562,14 +2185,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Uchi+Coffee+%26+%E1%BA%A8m+th%E1%BB%B1c+Nh%E1%BA%ADt+%E2%80%93+H%C3%A0n+K59%2F6+Ng%C3%B4+Th%C3%AC+Nh%E1%BA%ADm%2C+H%C3%B2a+Kh%C3%A1nh+B%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2587,9 +2205,7 @@
       "image": "images/venues/goi-ca-thanh-huong-gm-1.jpg",
       "imageKind": "venue",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
-      "images": [
-        "images/venues/goi-ca-thanh-huong-gm-1.jpg"
-      ],
+      "images": ["images/venues/goi-ca-thanh-huong-gm-1.jpg"],
       "lat": 16.115496985668,
       "lng": 108.12616899988,
       "name": "Gỏi cá Nam Ô Thanh Hương",
@@ -2598,14 +2214,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Liên Chiểu"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=G%E1%BB%8Fi+c%C3%A1+Nam+%C3%94+Thanh+H%C6%B0%C6%A1ng+1029+Nguy%E1%BB%85n+L%C6%B0%C6%A1ng+B%E1%BA%B1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2633,14 +2244,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Liên Chiểu"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+g%E1%BB%8Fi+c%C3%A1+Vinh+960+Nguy%E1%BB%85n+L%C6%B0%C6%A1ng+B%E1%BA%B1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2667,14 +2273,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Thanh Khê"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=G%E1%BB%8Fi+c%C3%A1+Nam+%C3%94+B%C3%A0+Hi%E1%BB%81n+1315+Nguy%E1%BB%85n+T%E1%BA%A5t+Th%C3%A0nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2701,14 +2302,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Thanh Khê"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=G%E1%BB%8Fi+c%C3%A1+T%E1%BA%A5n+464+%C4%90i%E1%BB%87n+Bi%C3%AAn+Ph%E1%BB%A7+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2735,14 +2331,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Đặc sản Đà Nẵng",
-        "Thanh Khê"
-      ],
+      "tags": ["Đặc sản Đà Nẵng", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=G%E1%BB%8Fi+c%C3%A1+S%C3%A1u+H%C3%A0o+232+Tr%E1%BA%A7n+Cao+V%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2769,14 +2360,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Thanh Khê"
-      ],
+      "tags": ["Quán ăn & Cơm", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+ni%C3%AAu+Nh%C3%A0+%C4%90%E1%BB%8F+%28Thanh+Kh%C3%AA%29+86+Nguy%E1%BB%85n+Tri+Ph%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2803,14 +2389,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Thanh Khê"
-      ],
+      "tags": ["Quán ăn & Cơm", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%AA+thui+C%E1%BA%A7u+M%E1%BB%91ng+7+Nga+71+Y%C3%AAn+Th%E1%BA%BF+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2837,14 +2418,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán ăn & Cơm", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%AA+thui+C%E1%BA%A7u+M%E1%BB%91ng+%E2%80%93+Qu%C3%A1n+R%C3%B4+140-142+B%C3%B9i+Hi%E1%BB%83n%2C+H%C3%B2a+An+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2871,14 +2447,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán ăn & Cơm", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+Gia+%C4%90%C3%ACnh+Vi%E1%BB%87t+260+Nguy%E1%BB%85n+H%E1%BB%AFu+Th%E1%BB%8D%2C+Khu%C3%AA+Trung+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2905,14 +2476,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán ăn & Cơm", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=T%C3%B4n+N%E1%BB%AF+Qu%C3%A1n+%28C%C6%A1m+gia+%C4%91%C3%ACnh+%26+%E1%BA%A8m+th%E1%BB%B1c+Hu%E1%BA%BF%29+07+Nguy%E1%BB%85n+V%C4%83n+Huy%C3%AAn%2C+Khu%C3%AA+Trung+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2939,14 +2505,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán ăn & Cơm", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+Nh%C3%A0+C%C3%A0+M%C3%AAn+101+Tr%E1%BA%A7n+L%C3%AA%2C+H%C3%B2a+Xu%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -2973,14 +2534,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán ăn & Cơm", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+G%C3%A0+Gia+Vi%E1%BB%87t+107+%C3%94ng+%C3%8Dch+%C4%90%C6%B0%E1%BB%9Dng%2C+Khu%C3%AA+Trung+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3007,14 +2563,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Hải Châu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+Nh%C3%A0+Ki%E1%BB%81u+Th%E1%BB%8B+68-70+%C4%90%C6%B0%E1%BB%9Dng+2+Th%C3%A1ng+9+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3041,14 +2592,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán ăn & Cơm",
-        "Hải Châu"
-      ],
+      "tags": ["Quán ăn & Cơm", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+Nh%C3%A0+Vui+86+%C4%90%C6%B0%E1%BB%9Dng+2+Th%C3%A1ng+9+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3075,14 +2621,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+B%C3%A0+Lan+%28C%C6%A1+s%E1%BB%9F+1%29+62+Tr%C6%B0ng+N%E1%BB%AF+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3109,14 +2650,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+B%C3%A0+Lan+%28C%C6%A1+s%E1%BB%9F+2%29+64+Tri%E1%BB%87u+N%E1%BB%AF+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3143,14 +2679,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+%C3%94ng+T%C3%BD+%28H%C3%B9ng+V%C6%B0%C6%A1ng%29+272+H%C3%B9ng+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3177,14 +2708,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+%C3%94ng+T%C3%BD+%28%C3%94ng+%C3%8Dch+Khi%C3%AAm%29+74+%C3%94ng+%C3%8Dch+Khi%C3%AAm+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3211,14 +2737,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Bánh mì", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+Ba+H%C6%B0ng+Bakery+%28L%C3%AA+V%C4%83n+Hi%E1%BA%BFn%29+40+L%C3%AA+V%C4%83n+Hi%E1%BA%BFn+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3245,14 +2766,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+Ba+H%C6%B0ng+Bakery+%28Phan+%C4%90%C4%83ng+L%C6%B0u%29+16+Phan+%C4%90%C4%83ng+L%C6%B0u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3279,14 +2795,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Sơn Trà"
-      ],
+      "tags": ["Bánh mì", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+Ba+H%C6%B0ng+Bakery+%28Nguy%E1%BB%85n+V%C4%83n+Tho%E1%BA%A1i%29+47+Nguy%E1%BB%85n+V%C4%83n+Tho%E1%BA%A1i+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3313,14 +2824,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+g%C3%A0+C%C3%B4+Chi+Ng%C3%A3+t%C6%B0+Phan+%C4%90%C3%ACnh+Ph%C3%B9ng+%E2%80%93+Phan+Ch%C3%A2u+Trinh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3347,14 +2853,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+g%C3%A0+T%E1%BB%91+Nga+27+Nguy%E1%BB%85n+Ch%C3%AD+Thanh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3381,14 +2882,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+heo+quay+Phan+%C4%90%C3%ACnh+Ph%C3%B9ng+119+Phan+%C4%90%C3%ACnh+Ph%C3%B9ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3415,14 +2911,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Thanh Khê"
-      ],
+      "tags": ["Bánh mì", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+que+T%E1%BB%A9+H%E1%BA%A3i+%28L%C3%AA+%C4%90%E1%BB%99%29+61+L%C3%AA+%C4%90%E1%BB%99+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3449,14 +2940,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Sơn Trà"
-      ],
+      "tags": ["Bánh mì", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+que+T%E1%BB%A9+H%E1%BA%A3i+%28Ph%E1%BA%A1m+C%E1%BB%B1+L%C6%B0%E1%BB%A3ng%29+122+Ph%E1%BA%A1m+C%E1%BB%B1+L%C6%B0%E1%BB%A3ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3483,14 +2969,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+%C3%94ng+T%C3%BD+%28Tr%C6%B0ng+N%E1%BB%AF+V%C6%B0%C6%A1ng%29+189+Tr%C6%B0ng+N%E1%BB%AF+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3517,14 +2998,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+%C3%94ng+T%C3%BD+%28Quang+Trung%29+184+Quang+Trung+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3551,14 +3027,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Hải Châu"
-      ],
+      "tags": ["Bánh mì", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+%C3%94ng+Ph%C3%BA+%C4%90%E1%BA%A1t+%28Ho%C3%A0ng+Di%E1%BB%87u%29+467+Ho%C3%A0ng+Di%E1%BB%87u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3585,14 +3056,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Bánh mì", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+%C3%94ng+Ph%C3%BA+%C4%90%E1%BA%A1t+%28Nguy%E1%BB%85n+Duy+Hi%E1%BB%87u%29+128+Nguy%E1%BB%85n+Duy+Hi%E1%BB%87u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3619,14 +3085,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+tr%C3%A1ng+k%E1%BA%B9p+D%C3%AC+Hoa+Ki%E1%BB%87t+62%2F2A+N%C3%BAi+Th%C3%A0nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3653,14 +3114,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Thanh Khê"
-      ],
+      "tags": ["Ăn vặt đường phố", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+tr%C3%A1ng+k%E1%BA%B9p+D%C3%AC+Ho%C3%A0ng+K142%2F09+L%C3%BD+Th%C3%A1i+T%E1%BB%95+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3687,14 +3143,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=%C4%82n+v%E1%BA%B7t+3colu+36+Nguy%E1%BB%85n+B%C3%A1+H%E1%BB%8Dc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3721,14 +3172,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Maru+Food+%26+Drinks+K18%2F10%2F06+Tr%E1%BA%A7n+B%C3%ACnh+Tr%E1%BB%8Dng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3755,14 +3201,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Thanh Khê"
-      ],
+      "tags": ["Ăn vặt đường phố", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=%E1%BB%90c+B%C3%A0+M%E1%BB%B9+30+-+32+Ho%C3%A0ng+Hoa+Th%C3%A1m+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3789,14 +3230,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Thanh Khê"
-      ],
+      "tags": ["Ăn vặt đường phố", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=%E1%BB%90c+C%C3%B4+Ba+383%2F28+H%E1%BA%A3i+Ph%C3%B2ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3823,14 +3259,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=%E1%BB%90c+h%C3%BAt+H%E1%BA%A1nh+277+%C4%90%E1%BB%91ng+%C4%90a+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3857,14 +3288,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Thanh Khê"
-      ],
+      "tags": ["Ăn vặt đường phố", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+D%C3%AC+Hu%C3%AA+%28B%E1%BB%99t+l%E1%BB%8Dc+chi%C3%AAn%29+09+Tr%E1%BA%A7n+Cao+V%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3891,14 +3317,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Thanh Khê"
-      ],
+      "tags": ["Ăn vặt đường phố", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Da+heo+m%C3%ADt+tr%E1%BB%99n+S%E1%BB%91+1+Nguy%E1%BB%85n+Gia+Thi%E1%BB%81u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3925,14 +3346,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ch%C3%A8+Th%C3%A1i+Li%C3%AAn+%28H%E1%BA%A3i+Ph%C3%B2ng%29+175+H%E1%BA%A3i+Ph%C3%B2ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3959,14 +3375,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ch%C3%A8+Th%C3%A1i+Li%C3%AAn+%28Ho%C3%A0ng+Di%E1%BB%87u%29+198+Ho%C3%A0ng+Di%E1%BB%87u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -3993,14 +3404,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Ăn vặt đường phố", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Kem+b%C6%A1+C%C3%B4+V%C3%A2n+Ch%E1%BB%A3+B%E1%BA%AFc+M%E1%BB%B9+An%2C+25+Nguy%E1%BB%85n+B%C3%A1+L%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4027,14 +3433,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Kem+b%C6%A1+C%C3%B4+Thu+Ch%E1%BB%A3+C%E1%BB%93n%2C+290+H%C3%B9ng+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4061,14 +3462,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Thanh Khê"
-      ],
+      "tags": ["Bánh mì", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+que+T%E1%BB%A9+H%E1%BA%A3i+%28Tr%E1%BA%A7n+Cao+V%C3%A2n%29+761+Tr%E1%BA%A7n+Cao+V%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4095,14 +3491,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Thanh Khê"
-      ],
+      "tags": ["Bánh mì", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+%C4%90%E1%BB%93ng+Ti%E1%BA%BFn+%28H%C3%A0+Huy+T%E1%BA%ADp%29+116+H%C3%A0+Huy+T%E1%BA%ADp%2C+H%C3%B2a+Kh%C3%AA+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4129,14 +3520,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Thanh Khê"
-      ],
+      "tags": ["Bánh mì", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+B%C3%A0+Lan+%28Thanh+Kh%C3%AA%29+34+Tr%E1%BA%A7n+T%E1%BB%91ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4163,14 +3549,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Thanh Khê"
-      ],
+      "tags": ["Bánh mì", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+M%C3%AC+Th%E1%BB%8Bt+N%C6%B0%E1%BB%9Bng+D%C5%A9ng+S%C4%A9+Thanh+Kh%C3%AA+240+D%C5%A9ng+S%C4%A9+Thanh+Kh%C3%AA+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4197,14 +3578,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Bánh mì", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+que+T%E1%BB%A9+H%E1%BA%A3i+%28L%C3%AA+Tr%E1%BB%8Dng+T%E1%BA%A5n%29+43+L%C3%AA+Tr%E1%BB%8Dng+T%E1%BA%A5n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4231,14 +3607,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Bánh mì", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+que+Ba+Duy+54+%C3%94ng+%C3%8Dch+%C4%90%C6%B0%E1%BB%9Dng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4265,14 +3636,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bánh mì",
-        "Liên Chiểu"
-      ],
+      "tags": ["Bánh mì", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+m%C3%AC+que+T%E1%BB%A9+H%E1%BA%A3i+%28Kinh+D%C6%B0%C6%A1ng+V%C6%B0%C6%A1ng%29+206+Kinh+D%C6%B0%C6%A1ng+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4299,14 +3665,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Thanh Khê"
-      ],
+      "tags": ["Ăn vặt đường phố", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+tr%C3%A1ng+k%E1%BA%B9p+B%C3%A0+N%C4%83m+96%2F93+%C4%90i%E1%BB%87n+Bi%C3%AAn+Ph%E1%BB%A7+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4333,14 +3694,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Thanh Khê"
-      ],
+      "tags": ["Ăn vặt đường phố", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+tr%C3%A1ng+k%E1%BA%B9p+D%C3%AC+S%C6%B0%C6%A1ng+K130%2F62+%C4%90i%E1%BB%87n+Bi%C3%AAn+Ph%E1%BB%A7+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4367,14 +3723,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Thanh Khê"
-      ],
+      "tags": ["Ăn vặt đường phố", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A0+Tuy%E1%BA%BFt+-+%E1%BB%90c+%26+B%C3%A1nh+Tr%C3%A1ng+112%2F40+Tr%E1%BA%A7n+Cao+V%C3%A2n%2C+Tam+Thu%E1%BA%ADn+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4401,14 +3752,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Ăn vặt đường phố", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+k%E1%BA%B9p+B%C3%A0+Gi%C3%A0+383%2F31+C%C3%A1ch+M%E1%BA%A1ng+Th%C3%A1ng+8+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4435,14 +3781,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Ăn vặt đường phố", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+Tr%C3%A1ng+K%E1%BA%B9p+C%C3%B4+Li%E1%BB%85u+50+Nguy%E1%BB%85n+V%C4%83n+Gi%C3%A1p%2C+H%C3%B2a+Xu%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4469,14 +3810,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Ăn vặt đường phố", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+K%E1%BA%B9p+Ch%E1%BB%8B+T%C3%ACnh+11+C%E1%BA%A9m+Nam+5%2C+H%C3%B2a+Xu%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4503,14 +3839,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Liên Chiểu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+tr%C3%A1ng+k%E1%BA%B9p+b%C3%A9+Lan+40%2F6+%C4%90%E1%BB%93ng+K%C3%A8%2C+H%C3%B2a+Kh%C3%A1nh+B%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4537,14 +3868,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Liên Chiểu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+K%E1%BA%B9p+%26+B%C3%A1nh+Tr%C3%A1ng+Li%C3%AAn+K40%2F14+Nguy%E1%BB%85n+Huy+T%C6%B0%E1%BB%9Fng%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4571,14 +3897,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Liên Chiểu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ti%E1%BB%87m+%C4%82n+V%E1%BA%B7t+B%C3%A9+M%E1%BB%A5p+K183%2F25+T%C3%B4+Hi%E1%BB%87u%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4605,14 +3926,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Liên Chiểu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%C3%A1nh+tr%C3%A1ng+k%E1%BA%B9p+D%C3%AC+Ng%E1%BB%8Dc+62A+%C4%90%C3%A0+S%C6%A1n%2C+H%C3%B2a+Kh%C3%A1nh+Nam+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4639,14 +3955,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Liên Chiểu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Tr%C3%A0+s%E1%BB%AFa+%26+%C4%82n+v%E1%BA%B7t+C%C3%B4+Ba+97+Nguy%E1%BB%85n+L%C6%B0%C6%A1ng+B%E1%BA%B1ng%2C+H%C3%B2a+Kh%C3%A1nh+B%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4673,14 +3984,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Liên Chiểu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ph%E1%BB%91+C%E1%BB%95+H%C3%A0+N%E1%BB%99i+%28Nem+chua+r%C3%A1n%29+43+Ng%C3%B4+Th%C3%AC+Nh%E1%BA%ADm%2C+H%C3%B2a+Kh%C3%A1nh+B%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4707,14 +4013,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Liên Chiểu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=%C4%82n+V%E1%BA%B7t+X%E1%BA%A5u+X%C3%AD+Qu%C3%A1n+455+%C3%82u+C%C6%A1%2C+H%C3%B2a+Kh%C3%A1nh+B%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4741,14 +4042,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Tr%C3%A0+s%E1%BB%AFa+Money+17+Nguy%E1%BB%85n+Du+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4775,14 +4071,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Thanh Khê"
-      ],
+      "tags": ["Ăn vặt đường phố", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Z%C3%A9+House+112%2F71+Tr%E1%BA%A7n+Cao+V%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4809,14 +4100,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Sơn Trà"
-      ],
+      "tags": ["Ăn vặt đường phố", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=%C4%82n+v%E1%BA%B7t+T%E1%BB%9D+Rinh+84+Tr%C6%B0%C6%A1ng+%C4%90%E1%BB%8Bnh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4843,14 +4129,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Ăn vặt đường phố", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Tokbokkily+64+An+Th%C6%B0%E1%BB%A3ng+20+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4877,14 +4158,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Gong+Cha+%28Nguy%E1%BB%85n+V%C4%83n+Linh%29+25-29+Nguy%E1%BB%85n+V%C4%83n+Linh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4911,14 +4187,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=KOI+Th%C3%A9+87+Nguy%E1%BB%85n+V%C4%83n+Linh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4945,14 +4216,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ăn vặt đường phố",
-        "Hải Châu"
-      ],
+      "tags": ["Ăn vặt đường phố", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=XingCha+262+Ho%C3%A0ng+Di%E1%BB%87u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -4979,14 +4245,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+N%C4%83m+%C4%90%E1%BA%A3nh+K139%2FH59%2F38+Tr%E1%BA%A7n+Quang+Kh%E1%BA%A3i%2C+Th%E1%BB%8D+Quang+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5013,14 +4274,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+B%C3%A9+M%E1%BA%B7n+L%C3%B4+8+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p%2C+M%C3%A2n+Th%C3%A1i+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5047,14 +4303,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+B%C3%A9+Nh%E1%BB%8F+32+H%C3%A0+B%E1%BB%95ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5081,14 +4332,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+B%C3%A9+Ni+2+228+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5115,14 +4361,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ng%E1%BB%8Dc+H%C6%B0%C6%A1ng+Seafood+Restaurant+L%C3%B4+8-9+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5152,14 +4393,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+M%E1%BB%99c+Qu%C3%A1n+26+T%C3%B4+Hi%E1%BA%BFn+Th%C3%A0nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5187,14 +4423,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Hải sản tươi sống", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+Th%E1%BB%9Di+C%E1%BB%95+354%2F1+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p%2C+B%E1%BA%AFc+M%E1%BB%B9+An+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5221,14 +4452,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+L%C3%A3o+%C4%90%E1%BA%A1i+L%C3%B4+A2-1+V%C3%B5+V%C4%83n+Ki%E1%BB%87t+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5255,14 +4481,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+Cua+Bi%E1%BB%83n+112+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5280,9 +4501,7 @@
       "image": "images/venues/my-hanh-seafood-gm-2.jpg",
       "imageKind": "venue",
       "imageNote": null,
-      "images": [
-        "images/venues/my-hanh-seafood-gm-2.jpg"
-      ],
+      "images": ["images/venues/my-hanh-seafood-gm-2.jpg"],
       "lat": 16.0653174,
       "lng": 108.2460409,
       "name": "Nhà hàng hải sản Mỹ Hạnh",
@@ -5291,14 +4510,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+h%C3%A0ng+H%E1%BA%A3i+S%E1%BA%A3n+M%E1%BB%B9+H%E1%BA%A1nh+18+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5326,14 +4540,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+S%E1%BA%A3n+Ph%E1%BB%91+%C4%90%C3%A0+N%E1%BA%B5ng+L%C3%B4+7-8+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5351,9 +4560,7 @@
       "image": "images/venues/hai-san-ba-ro-gm-1.jpg",
       "imageKind": "venue",
       "imageNote": null,
-      "images": [
-        "images/venues/hai-san-ba-ro-gm-1.jpg"
-      ],
+      "images": ["images/venues/hai-san-ba-ro-gm-1.jpg"],
       "lat": 16.1066174,
       "lng": 108.2576592,
       "name": "Hải sản Bà Rô",
@@ -5362,14 +4569,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Hải Châu"
-      ],
+      "tags": ["Hải sản tươi sống", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+B%C3%A0+R%C3%B4+115+L%C3%BD+T%E1%BB%B1+Tr%E1%BB%8Dng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5397,14 +4599,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Hải sản tươi sống", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+%C3%94ng+T%E1%BA%BBi+Khu+%C4%91%C3%B4+th%E1%BB%8B+FPT+City+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5431,14 +4628,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Hải Châu"
-      ],
+      "tags": ["Hải sản tươi sống", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+h%C3%A0ng+H%E1%BA%A3i+S%E1%BA%A3n+%C6%A0+K%C3%ACa+07+Tr%E1%BA%A7n+Ph%C3%BA+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5465,14 +4657,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+B%C3%A0+Th%C3%B4i+L%C3%B4+7-8+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5499,14 +4686,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Sơn Trà"
-      ],
+      "tags": ["Hải sản tươi sống", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+B%C3%A9+Anh+H%E1%BB%93+Nghinh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5533,14 +4715,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Thanh Khê"
-      ],
+      "tags": ["Hải sản tươi sống", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+h%C3%A0ng+Ph%E1%BB%91+Bi%E1%BB%83n+231+Nguy%E1%BB%85n+T%E1%BA%A5t+Th%C3%A0nh%2C+Thanh+B%C3%ACnh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5567,14 +4744,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Thanh Khê"
-      ],
+      "tags": ["Hải sản tươi sống", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+Ph%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng+L%C3%B4+15-16+B23+Nguy%E1%BB%85n+T%E1%BA%A5t+Th%C3%A0nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5601,14 +4773,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Thanh Khê"
-      ],
+      "tags": ["Hải sản tươi sống", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+L%C3%A0nh+1109+Nguy%E1%BB%85n+T%E1%BA%A5t+Th%C3%A0nh%2C+Xu%C3%A2n+H%C3%A0+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5635,14 +4802,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Liên Chiểu"
-      ],
+      "tags": ["Hải sản tươi sống", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BA%A3i+s%E1%BA%A3n+Ph%C6%B0%C6%A1ng+2+Nguy%E1%BB%85n+T%E1%BA%A5t+Th%C3%A0nh%2C+H%C3%B2a+Minh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5669,14 +4831,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Liên Chiểu"
-      ],
+      "tags": ["Hải sản tươi sống", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=L%E1%BA%A9u+h%E1%BA%A3i+s%E1%BA%A3n+Phong+Ph%C3%BA+2+Khu+v%E1%BB%B1c+Li%C3%AAn+Chi%E1%BB%83u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5703,14 +4860,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Hải sản tươi sống",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Hải sản tươi sống", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=T%C3%A2n+Ng%E1%BB%8Dc+N%E1%BB%AF+L%C3%B4+28+Th%C4%83ng+Long%2C+Khu%C3%AA+Trung+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5737,14 +4889,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+C%C3%A2y+Ng%C3%B4+%C4%90%E1%BB%93ng+223+L%C3%AA+V%C4%83n+Hi%E1%BA%BFn+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5771,14 +4918,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+Gi%C3%B3+%C4%90%E1%BB%93ng+%C4%90%C6%B0%E1%BB%9Dng+Song+H%C3%A0o+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5805,14 +4947,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=D%C3%AA+Ngh%C4%A9a+%28C%E1%BA%A9m+L%E1%BB%87%29+C%C3%A1ch+M%E1%BA%A1ng+Th%C3%A1ng+T%C3%A1m+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5839,14 +4976,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Hải Châu"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=D%C3%AA+Ngh%C4%A9a+%28H%E1%BA%A3i+Ch%C3%A2u%29+%C4%90%E1%BB%91ng+%C4%90a+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5873,14 +5005,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+h%C3%A0ng+Th%E1%BB%91ng+Gia+Khu%C3%AA+Trung+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5907,14 +5034,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Deli+Garden+Food+%26+Beer+%C4%90%C6%B0%E1%BB%9Dng+Thanh+H%C3%B3a%2C+H%C3%B2a+Xu%C3%A2n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5941,14 +5063,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Thanh Khê"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=L%E1%BA%A9u+N%C6%B0%E1%BB%9Bng+1889+65%2F1+H%C3%A0m+Nghi+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -5975,14 +5092,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Hải Châu"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=L%E1%BA%A9u+N%C6%B0%E1%BB%9Bng+Nh%C3%B3p+Nh%C3%A9p+45+H%E1%BA%A3i+Ph%C3%B2ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6009,14 +5121,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Hải Châu"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+M%E1%BB%8Di+-+L%E1%BA%A9u+v%C3%A0+N%C6%B0%E1%BB%9Bng+114+N%C3%BAi+Th%C3%A0nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6043,14 +5150,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=B%E1%BB%AFa+M%C3%B4+Nh%E1%BA%ADu+%C4%90%C3%A0+N%E1%BA%B5ng+60+Ho%C3%A0ng+K%E1%BA%BF+Vi%C3%AAm+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6077,14 +5179,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+nh%E1%BA%ADu+Hai+C%C3%B2i+58+Nguy%E1%BB%85n+V%C4%83n+Tho%E1%BA%A1i+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6111,14 +5208,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=TOKKI+BBQ+08+L%C3%AA+Do%C3%A3n+Nh%E1%BA%A1+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6145,14 +5237,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Sơn Trà"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=%C4%90%E1%BB%87+Nh%E1%BA%A5t+D%C3%AA+237+Tr%E1%BA%A7n+H%C6%B0ng+%C4%90%E1%BA%A1o%2C+An+H%E1%BA%A3i+B%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6179,14 +5266,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Thanh Khê"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=GoGi+House+%28AEON+Mall%29+T%E1%BA%A7ng+3%2C+46+%C4%90i%E1%BB%87n+Bi%C3%AAn+Ph%E1%BB%A7+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6213,14 +5295,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Thanh Khê"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+Nh%E1%BA%ADu+Minh+Ph%C6%B0%E1%BB%A3ng+279+Y%C3%AAn+Kh%C3%AA+2%2C+Thanh+Kh%C3%AA+T%C3%A2y+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6247,14 +5324,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Thanh Khê"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+Nh%E1%BA%ADu+Ph%C6%B0%C6%A1ng+D%E1%BB%99i+1267+Nguy%E1%BB%85n+T%E1%BA%A5t+Th%C3%A0nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6281,14 +5353,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Thanh Khê"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Alibaba+Buffet+N%C6%B0%E1%BB%9Bng+130+Nguy%E1%BB%85n+Tri+Ph%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6315,14 +5382,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Thanh Khê"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=V%C6%B0%E1%BB%9Dn+n%C6%B0%E1%BB%9Bng+tr%C3%AAn+m%C3%A2y+955+Nguy%E1%BB%85n+T%E1%BA%A5t+Th%C3%A0nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6349,14 +5411,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=D%C3%AA+Ngh%C4%A9a+%28C%E1%BA%A9m+L%E1%BB%87+-+Th%C4%83ng+Long%29+430-432+Th%C4%83ng+Long+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6383,14 +5440,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+nh%E1%BA%ADu+B%C3%A9+M%C3%B9i+H%C3%B2a+Th%E1%BB%8D+%C4%90%C3%B4ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6417,14 +5469,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ti%E1%BB%87m+n%C6%B0%E1%BB%9Bng+An+17+Ph%E1%BA%A1m+Nh%C6%B0+X%C6%B0%C6%A1ng%2C+H%C3%B2a+Kh%C3%A1nh+Nam+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6451,14 +5498,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=PinPas+BBQ+Buffet+41%2F8+Ng%C3%B4+Th%C3%AC+Nh%E1%BA%ADm+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6485,14 +5527,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ti%E1%BB%87m+N%C6%B0%E1%BB%9Bng+Daegu+17+%C4%90%E1%BA%B7ng+T%E1%BA%A5t%2C+H%C3%B2a+Kh%C3%A1nh+Nam+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6519,14 +5556,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Mu%E1%BB%91i+%E1%BB%9At+Qu%C3%A1n+67+Ng%C3%B4+Th%C3%AC+Nh%E1%BA%ADm%2C+H%C3%B2a+Kh%C3%A1nh+B%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6553,14 +5585,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Quán nhậu & Lai rai",
-        "Liên Chiểu"
-      ],
+      "tags": ["Quán nhậu & Lai rai", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Warning+BBQ+3+Tr%C6%B0%C6%A1ng+V%C4%83n+%C4%90a%2C+H%C3%B2a+Kh%C3%A1nh+Nam+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6587,14 +5614,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Hải Châu"
-      ],
+      "tags": ["Ẩm thực chay", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+h%C3%A0ng+chay+ANs+Vegetarian+Cuisine+169F+Tr%C6%B0ng+N%E1%BB%AF+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6621,14 +5643,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Thanh Khê"
-      ],
+      "tags": ["Ẩm thực chay", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ph%C3%BAc+An+Vegetarian+%26+Cafe+547+Nguy%E1%BB%85n+T%E1%BA%A5t+Th%C3%A0nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6655,14 +5672,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Thanh Khê"
-      ],
+      "tags": ["Ẩm thực chay", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+h%C3%A0ng+chay+T%C3%A2m+Vi%C3%AAn+55+B%E1%BA%BF+V%C4%83n+%C4%90%C3%A0n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6689,14 +5701,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Hải Châu"
-      ],
+      "tags": ["Ẩm thực chay", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+c%C6%A1m+chay+Li%C3%AAn+Hoa+49+L%C3%AA+H%E1%BB%93ng+Phong+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6723,14 +5730,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Hải Châu"
-      ],
+      "tags": ["Ẩm thực chay", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+chay+Ng%E1%BB%8Dc+Chi+202+Ho%C3%A0ng+Di%E1%BB%87u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6757,14 +5759,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Hải Châu"
-      ],
+      "tags": ["Ẩm thực chay", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+chay+An+L%E1%BA%A1c+T%C3%A2m+117+Phan+%C4%90%C4%83ng+L%C6%B0u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6791,14 +5788,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Hải Châu"
-      ],
+      "tags": ["Ẩm thực chay", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ti%E1%BB%87m+Chay+X%C6%B0a+373+Phan+Ch%C3%A2u+Trinh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6825,14 +5817,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Hải Châu"
-      ],
+      "tags": ["Ẩm thực chay", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+chay+Thi%E1%BB%87n+Duy%C3%AAn+K308%2F8+Ho%C3%A0ng+Di%E1%BB%87u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6859,14 +5846,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Hải Châu"
-      ],
+      "tags": ["Ẩm thực chay", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%C6%A1m+chay+%C3%82u+L%E1%BA%A1c+60+Nguy%E1%BB%85n+Du+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6893,14 +5875,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Ẩm thực chay", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=iVegan+Supershop+L%C3%B4+31+An+Th%C6%B0%E1%BB%A3ng+4+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6927,14 +5904,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Hải Châu"
-      ],
+      "tags": ["Ẩm thực chay", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Qu%C3%A1n+chay+Khai+T%C3%A2m+352+Phan+Ch%C3%A2u+Trinh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6961,14 +5933,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Ẩm thực chay",
-        "Sơn Trà"
-      ],
+      "tags": ["Ẩm thực chay", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=T%E1%BB%89nh+Qu%C3%A1n+11+Tr%E1%BA%A7n+Nh%E1%BA%ADt+Du%E1%BA%ADt+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -6995,14 +5962,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Cắm trại & Glamping",
-        "Sơn Trà"
-      ],
+      "tags": ["Cắm trại & Glamping", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=An+BBQ+Glamping+90+H%E1%BB%93+H%C3%A1n+Th%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7029,14 +5991,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Workshop & Nghệ thuật",
-        "Hải Châu"
-      ],
+      "tags": ["Workshop & Nghệ thuật", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=CYA+Board+Game+%26+Caf%C3%A9+27+Ho%C3%A0ng+Di%E1%BB%87u+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7063,14 +6020,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Workshop & Nghệ thuật",
-        "Hải Châu"
-      ],
+      "tags": ["Workshop & Nghệ thuật", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+M%E1%BB%8B+%E2%80%93+C%C3%A0+Ph%C3%AA+Ngon+%28T%C3%B4+t%C6%B0%E1%BB%A3ng+%26+Tarot%29+654%2F11%2F14+Tr%C6%B0ng+N%E1%BB%AF+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7097,14 +6049,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Workshop & Nghệ thuật",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Workshop & Nghệ thuật", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=LaraChill+Milk+Tea+%26+Coffee+%28T%C3%B4+t%C6%B0%E1%BB%A3ng%29+163+-+165+Ch%C3%A2u+Th%E1%BB%8B+V%C4%A9nh+T%E1%BA%BF+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7131,14 +6078,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Workshop & Nghệ thuật",
-        "Hải Châu"
-      ],
+      "tags": ["Workshop & Nghệ thuật", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BB%99i+Cafe+%26+Board+Games+%28Nguy%E1%BB%85n+Ch%C3%AD+Thanh%29+46+Nguy%E1%BB%85n+Ch%C3%AD+Thanh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7165,14 +6107,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Workshop & Nghệ thuật",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Workshop & Nghệ thuật", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=H%E1%BB%99i+Cafe+%26+Boardgame+%28H%C3%A0+Huy+Gi%C3%A1p%29+196-198+H%C3%A0+Huy+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7199,14 +6136,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Workshop & Nghệ thuật",
-        "Hải Châu"
-      ],
+      "tags": ["Workshop & Nghệ thuật", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=CYA+Board+Games+Coffee+%28L%C3%BD+T%E1%BB%B1+Tr%E1%BB%8Dng%29+200+L%C3%BD+T%E1%BB%B1+Tr%E1%BB%8Dng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7233,14 +6165,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Sách & Cà phê sách",
-        "Hải Châu"
-      ],
+      "tags": ["Sách & Cà phê sách", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Nh%C3%A3+Nam+Book+N%27+Coffee+19+Pasteur+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7267,14 +6194,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Sách & Cà phê sách",
-        "Hải Châu"
-      ],
+      "tags": ["Sách & Cà phê sách", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=The+Books+Library+%26+Coffee+12+Cao+Th%E1%BA%AFng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7301,14 +6223,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Sách & Cà phê sách",
-        "Hải Châu"
-      ],
+      "tags": ["Sách & Cà phê sách", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ch%C3%A1i+Nh%C3%A0+Xanh+48%2F5+L%C3%BD+T%E1%BB%B1+Tr%E1%BB%8Dng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7335,14 +6252,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Sách & Cà phê sách",
-        "Liên Chiểu"
-      ],
+      "tags": ["Sách & Cà phê sách", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Velo+Book+Cafe+778+T%C3%B4n+%C4%90%E1%BB%A9c+Th%E1%BA%AFng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7369,14 +6281,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Sách & Cà phê sách",
-        "Hải Châu"
-      ],
+      "tags": ["Sách & Cà phê sách", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=M%E1%BB%8Dt+Zone+147+%C4%90%E1%BB%91ng+%C4%90a+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7403,14 +6310,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Sách & Cà phê sách",
-        "Hải Châu"
-      ],
+      "tags": ["Sách & Cà phê sách", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=T%E1%BB%95+C%C3%A0ph%C3%AA+%28T%E1%BB%95+iKaf%C3%A9%29+59+L%C3%AA+L%E1%BB%A3i+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7437,14 +6339,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Sách & Cà phê sách",
-        "Hải Châu"
-      ],
+      "tags": ["Sách & Cà phê sách", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=The+Books+Garden+Cafe+%C4%90%C6%B0%E1%BB%9Dng+B%E1%BA%A1ch+%C4%90%E1%BA%B1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7471,14 +6368,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Sách & Cà phê sách",
-        "Thanh Khê"
-      ],
+      "tags": ["Sách & Cà phê sách", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Comic+Book+Cafe+361+Y%C3%AAn+Kh%C3%AA+2+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7505,14 +6397,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=T%C3%AA+Bar+%28Speakeasy+Cocktail%29+T%E1%BA%A7ng+3%2C+39%E2%80%9341+Nguy%E1%BB%85n+Th%C3%A1i+H%E1%BB%8Dc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7539,14 +6426,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Dazzling+Cocktail+Bar+127+L%C3%AA+L%E1%BB%A3i+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7573,14 +6455,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=V%E1%BA%A5n+Cocktail+Bar+T%E1%BA%A7ng+3%2C+180%E2%80%93182+Nguy%E1%BB%85n+Ch%C3%AD+Thanh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7607,14 +6484,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=The+Craftsman+Cocktail+Bar+Khu+ph%E1%BB%91+An+Th%C6%B0%E1%BB%A3ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7641,14 +6513,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Sky36+Rooftop+Bar+T%E1%BA%A7ng+36+Novotel%2C+36+B%E1%BA%A1ch+%C4%90%E1%BA%B1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7675,14 +6542,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Sơn Trà"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Sky+21+Bar+%26+Bistro+T%E1%BA%A7ng+21+Kh%C3%A1ch+s%E1%BA%A1n+Belle+Maison%2C+216+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7709,14 +6571,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=On+The+Radio+Bar+76+Th%C3%A1i+Phi%C3%AAn+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7743,14 +6600,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=OQ+Lounge+Pub+18+%E2%80%93+20+B%E1%BA%A1ch+%C4%90%E1%BA%B1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7777,14 +6629,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=The+Black+Pearl+%28Ng%E1%BB%8Dc+%C4%90en%29+20+L%C3%AA+Du%E1%BA%A9n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7811,14 +6658,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Vive+Oc%C3%A9ane+%E2%80%93+Beach+Club+5+Tr%C6%B0%E1%BB%9Dng+Sa+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7845,14 +6687,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Sơn Trà"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Esco+Beach+Bar+L%C3%B4+12+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7879,14 +6716,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Maia+Beach+Bar+284+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7913,14 +6745,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Brewhaha+Central+%28Bia+Ng%C5%A9+H%C3%A0nh%29+16+Th%C3%A1i+Phi%C3%AAn+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7947,14 +6774,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Brewhaha+Seaside+L%C3%B4+36+Ho%C3%A0ng+K%E1%BA%BF+Vi%C3%AAm+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -7981,14 +6803,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Brewhaha+Riverside+96%E2%80%9398+Th%C4%83ng+Long+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8015,14 +6832,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Sơn Trà"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=East+West+Brewing+Co.+1A+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8049,14 +6861,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=One+More+Craft+Beer+26+Quang+Trung%2C+Th%E1%BA%A1ch+Thang+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8083,14 +6890,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Hải Châu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Toro+Craft+Beer+143A+L%C3%AA+L%E1%BB%A3i+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8117,14 +6919,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ki%E1%BA%BFn%27s+Coffee+%26+Craft+Bar+135+%E2%80%93+137+Tr%E1%BA%A7n+B%E1%BA%A1ch+%C4%90%E1%BA%B1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8151,14 +6948,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Thanh Khê"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=The+Anchor+Beer+Club+29+Quang+D%C5%A9ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8185,14 +6977,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Thanh Khê"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Windhouse+Draft+Beer+53+T%E1%BA%A3n+%C4%90%C3%A0+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8219,14 +7006,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Bia+Tr%E1%BB%8Bnh+Station+106+L%C3%AA+%C4%90%E1%BA%A1i+H%C3%A0nh+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8253,14 +7035,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Liên Chiểu"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Luxx+Beer+Garden+12-13+Nguy%E1%BB%85n+Sinh+S%E1%BA%AFc+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8287,14 +7064,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Cẩm Lệ"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Cẩm Lệ"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=V%E1%BA%A5n+Cocktail+Bar+%28Nam+C%E1%BA%A7u+C%E1%BA%A9m+L%E1%BB%87%29+01+KDC+Nam+C%E1%BA%A7u+C%E1%BA%A9m+L%E1%BB%87+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8321,14 +7093,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Bar & Pub & Bia thủ công",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Bar & Pub & Bia thủ công", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Vietgangz+Beach+Club+B%C3%A3i+bi%E1%BB%83n+M%E1%BB%B9+Kh%C3%AA%2C+V%C3%B5+Nguy%C3%AAn+Gi%C3%A1p+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8355,14 +7122,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Nhạc sống & Phòng trà",
-        "Hải Châu"
-      ],
+      "tags": ["Nhạc sống & Phòng trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ph%C3%B2ng+tr%C3%A0+Le+PARIS+S%E1%BB%91+36+Tr%E1%BA%A7n+Ph%C3%BA+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8389,14 +7151,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Nhạc sống & Phòng trà",
-        "Hải Châu"
-      ],
+      "tags": ["Nhạc sống & Phòng trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Bar+Ti%E1%BA%BFng+D%C6%B0%C6%A1ng+C%E1%BA%A7m+S%E1%BB%91+67+Ho%C3%A0ng+V%C4%83n+Th%E1%BB%A5+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8423,14 +7180,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Nhạc sống & Phòng trà",
-        "Hải Châu"
-      ],
+      "tags": ["Nhạc sống & Phòng trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Memory+Lounge+S%E1%BB%91+7+B%E1%BA%A1ch+%C4%90%E1%BA%B1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8457,14 +7209,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Nhạc sống & Phòng trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Nhạc sống & Phòng trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Sound+Cafe+S%E1%BB%91+30+An+C%C6%B0+6+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8491,14 +7238,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Nhạc sống & Phòng trà",
-        "Hải Châu"
-      ],
+      "tags": ["Nhạc sống & Phòng trà", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=The+Powerhouse+Legacy+S%E1%BB%91+153+-+157+Tri%E1%BB%87u+N%E1%BB%AF+V%C6%B0%C6%A1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8525,14 +7267,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Nhạc sống & Phòng trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Nhạc sống & Phòng trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ng%C3%B5+Acoustic+Coffee+78+L%C3%AA+H%E1%BB%AFu+Tr%C3%A1c+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8559,14 +7296,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Nhạc sống & Phòng trà",
-        "Sơn Trà"
-      ],
+      "tags": ["Nhạc sống & Phòng trà", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=C%E1%BB%91+Qu%E1%BA%ADn+127+Nguy%E1%BB%85n+C%C3%B4ng+Tr%E1%BB%A9+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8593,14 +7325,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Chợ đêm & Phố đi bộ",
-        "Hải Châu"
-      ],
+      "tags": ["Chợ đêm & Phố đi bộ", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ph%E1%BB%91+%C4%91i+b%E1%BB%99+%26+Ch%E1%BB%A3+%C4%91%C3%AAm+B%E1%BA%A1ch+%C4%90%E1%BA%B1ng+%C4%90%C6%B0%E1%BB%9Dng+B%E1%BA%A1ch+%C4%90%E1%BA%B1ng+ven+s%C3%B4ng+H%C3%A0n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8627,14 +7354,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Chợ đêm & Phố đi bộ",
-        "Sơn Trà"
-      ],
+      "tags": ["Chợ đêm & Phố đi bộ", "Sơn Trà"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ch%E1%BB%A3+%C4%91%C3%AAm+S%C6%A1n+Tr%C3%A0+G%C3%B3c+L%C3%BD+Nam+%C4%90%E1%BA%BF+%26+Mai+H%E1%BA%AFc+%C4%90%E1%BA%BF+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8661,14 +7383,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Chợ đêm & Phố đi bộ",
-        "Hải Châu"
-      ],
+      "tags": ["Chợ đêm & Phố đi bộ", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ch%E1%BB%A3+%C4%91%C3%AAm+Helio+%C4%90%C6%B0%E1%BB%9Dng+2+Th%C3%A1ng+9+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8695,14 +7412,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Chợ đêm & Phố đi bộ",
-        "Ngũ Hành Sơn"
-      ],
+      "tags": ["Chợ đêm & Phố đi bộ", "Ngũ Hành Sơn"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ph%E1%BB%91+du+l%E1%BB%8Bch+An+Th%C6%B0%E1%BB%A3ng+Khu+An+Th%C6%B0%E1%BB%A3ng%2C+M%E1%BB%B9+An+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8729,14 +7441,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Chợ đêm & Phố đi bộ",
-        "Hải Châu"
-      ],
+      "tags": ["Chợ đêm & Phố đi bộ", "Hải Châu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ch%E1%BB%A3+%C4%91%C3%AAm+L%C3%AA+Du%E1%BA%A9n+Ki%E1%BB%87t+144+L%C3%AA+Du%E1%BA%A9n+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8763,14 +7470,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Chợ đêm & Phố đi bộ",
-        "Liên Chiểu"
-      ],
+      "tags": ["Chợ đêm & Phố đi bộ", "Liên Chiểu"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ch%E1%BB%A3+%C4%91%C3%AAm+H%C3%B2a+Kh%C3%A1nh+%C3%82u+C%C6%A1+-+Nguy%E1%BB%85n+L%C6%B0%C6%A1ng+B%E1%BA%B1ng+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8797,14 +7499,9 @@
       "osmId": null,
       "phone": null,
       "quality": 85,
-      "sources": [
-        "search_web"
-      ],
+      "sources": ["search_web"],
       "status": "unknown",
-      "tags": [
-        "Chợ đêm & Phố đi bộ",
-        "Thanh Khê"
-      ],
+      "tags": ["Chợ đêm & Phố đi bộ", "Thanh Khê"],
       "tier": "curated-websearch",
       "venuePageUrl": "https://www.google.com/maps/search/?api=1&query=Ch%E1%BB%A3+%C4%91%C3%AAm+Thanh+Kh%C3%AA+T%C3%A2y+%C4%90%C6%B0%E1%BB%9Dng+Y%C3%AAn+Kh%C3%AA+1+%C4%90%C3%A0+N%E1%BA%B5ng",
       "verified": false,
@@ -8824,10 +7521,7 @@
       "phone": "05113827936",
       "openingHours": "Mo-Su 06:00-21:00",
       "description": "Mì Quảng lâu năm trên đường Hải Phòng.",
-      "sources": [
-        "hellodanang.vn",
-        "openstreetmap.org"
-      ],
+      "sources": ["hellodanang.vn", "openstreetmap.org"],
       "image": "images/venues/mi-quang-1a-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
@@ -8835,9 +7529,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/mi-quang-1a-gm-1.jpg"
-      ],
+      "images": ["images/venues/mi-quang-1a-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/M%C3%AC%20Qu%E1%BA%A3ng%201A%201A%20H%E1%BA%A3i%20Ph%C3%B2ng%20%C4%90%C3%A0%20N%E1%BA%B5ng",
       "imageCredit": "Google Maps",
       "tags": [],
@@ -8857,10 +7549,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Bánh tráng cuốn thịt heo.",
-      "sources": [
-        "canvashotel.com.vn",
-        "openstreetmap.org"
-      ],
+      "sources": ["canvashotel.com.vn", "openstreetmap.org"],
       "image": "images/venues/dac-san-tran-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
@@ -8868,9 +7557,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/dac-san-tran-gm-1.jpg"
-      ],
+      "images": ["images/venues/dac-san-tran-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/Qu%C3%A1n%20%C4%90%E1%BA%B7c%20s%E1%BA%A3n%20Tr%E1%BA%A7n%204%20L%C3%AA%20Du%E1%BA%A9n%20%C4%90%C3%A0%20N%E1%BA%B5ng",
       "imageCredit": "Google Maps",
       "tags": [],
@@ -8890,10 +7577,7 @@
       "phone": null,
       "openingHours": "Mo-Su 06:00-23:00",
       "description": "Bún mắm nêm.",
-      "sources": [
-        "canvashotel.com.vn",
-        "openstreetmap.org"
-      ],
+      "sources": ["canvashotel.com.vn", "openstreetmap.org"],
       "notes": "Nguồn báo chí ghi K142/18 Trần Nhân Tông; OSM ghi Trần Kế Xương — cần xác minh địa chỉ.",
       "image": "images/venues/bun-mam-van-gm-4.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
@@ -8902,9 +7586,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/bun-mam-van-gm-4.jpg"
-      ],
+      "images": ["images/venues/bun-mam-van-gm-4.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%BAn%20m%E1%BA%AFm%20n%C3%AAm%20V%C3%A2n%20K23%2F14%20Tr%E1%BA%A7n%20K%E1%BA%BF%20X%C6%B0%C6%A1ng%20(OSM)%20%C4%90%C3%A0%20N%E1%BA%B5ng",
       "imageCredit": "Google Maps",
       "tags": [],
@@ -8916,18 +7598,15 @@
       "category": "restaurant",
       "district": "Ngũ Hành Sơn",
       "address": "01 Chương Dương",
-      "lat": 16.0405,
-      "lng": 108.2342,
+      "lat": 16.0336,
+      "lng": 108.2382,
       "geoPrecision": "poi",
       "geoSource": "osm",
       "osmId": "node/10137315103",
       "phone": null,
       "openingHours": null,
       "description": "Hải sản giá phải chăng, không gian rộng.",
-      "sources": [
-        "hellodanang.vn",
-        "openstreetmap.org"
-      ],
+      "sources": ["hellodanang.vn", "openstreetmap.org"],
       "notes": "Nguồn ghi quận Ngũ Hành Sơn; toạ độ OSM khu Mỹ Khê — cần xác minh.",
       "image": "images/venues/hai-san-nam-ranh-gm-1.jpg",
       "imageNote": null,
@@ -8936,9 +7615,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/hai-san-nam-ranh-gm-1.jpg"
-      ],
+      "images": ["images/venues/hai-san-nam-ranh-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20N%C4%83m%20R%E1%BA%A3nh%2001%20Ch%C6%B0%C6%A1ng%20D%C6%B0%C6%A1ng%20%C4%90%C3%A0%20N%E1%BA%B5ng",
       "imageCredit": "Google Maps",
       "tags": [],
@@ -8958,9 +7635,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Cơm gà.",
-      "sources": [
-        "canvashotel.com.vn"
-      ],
+      "sources": ["canvashotel.com.vn"],
       "image": "images/venues/com-ga-a-hai-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
@@ -8968,9 +7643,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/com-ga-a-hai-gm-1.jpg"
-      ],
+      "images": ["images/venues/com-ga-a-hai-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/C%C6%A1m%20g%C3%A0%20A%20H%E1%BA%A3i%20%C4%90%C3%A0%20N%E1%BA%B5ng",
       "imageCredit": "Google Maps",
       "tags": [],
@@ -8990,9 +7663,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Chip chip hấp sả, cá đuối nướng; quán trong hẻm.",
-      "sources": [
-        "aeonmall-vietnam.com"
-      ],
+      "sources": ["aeonmall-vietnam.com"],
       "image": "images/venues/hai-san-ba-tam-gm-1.jpg",
       "imageNote": null,
       "verified": false,
@@ -9000,9 +7671,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/hai-san-ba-tam-gm-1.jpg"
-      ],
+      "images": ["images/venues/hai-san-ba-tam-gm-1.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/H%E1%BA%A3i%20s%E1%BA%A3n%20B%C3%A0%20T%C3%A1m%20596%2F14%20Ho%C3%A0ng%20Di%E1%BB%87u%20%C4%90%C3%A0%20N%E1%BA%B5ng",
       "imageCredit": "Google Maps",
       "tags": [],
@@ -9022,9 +7691,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Bún mắm nêm.",
-      "sources": [
-        "canvashotel.com.vn"
-      ],
+      "sources": ["canvashotel.com.vn"],
       "image": "images/venues/bun-mam-ba-hang-gm-5.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
       "verified": false,
@@ -9032,9 +7699,7 @@
       "tier": "curated",
       "status": "unknown",
       "imageKind": "venue",
-      "images": [
-        "images/venues/bun-mam-ba-hang-gm-5.jpg"
-      ],
+      "images": ["images/venues/bun-mam-ba-hang-gm-5.jpg"],
       "venuePageUrl": "https://www.google.com/maps/search/B%C3%BAn%20m%E1%BA%AFm%20n%C3%AAm%20B%C3%A0%20H%E1%BA%B1ng%20K227%2F57%20Tr%E1%BA%A7n%20Ph%C3%BA%20%C4%90%C3%A0%20N%E1%BA%B5ng",
       "imageCredit": "Google Maps",
       "tags": [],
@@ -9054,9 +7719,7 @@
       "phone": null,
       "openingHours": "Mo-Su 16:00-21:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -9083,10 +7746,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Mì Quảng ếch.",
-      "sources": [
-        "canvashotel.com.vn",
-        "openstreetmap.org"
-      ],
+      "sources": ["canvashotel.com.vn", "openstreetmap.org"],
       "notes": "OSM ghi tên 'Mì Quảng Ếch' tại đúng số nhà 441 Ông Ích Khiêm.",
       "image": "images/venues/mi-quang-ech-bep-trang-gm-1.jpg",
       "imageNote": "Ảnh món đại diện theo nhóm (Commons, giấy phép mở) — KHÔNG phải ảnh quán.",
@@ -9117,9 +7777,7 @@
       "phone": "0933.859.496",
       "openingHours": "8h-22h30",
       "description": null,
-      "sources": [
-        "https://www.facebook.com/namco12thangkitchen/?locale=vi_VN"
-      ],
+      "sources": ["https://www.facebook.com/namco12thangkitchen/?locale=vi_VN"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9144,9 +7802,7 @@
       "phone": "0763571996",
       "openingHours": "10:00-13:30",
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/353524149439314/posts/1576203313838052/"
-      ],
+      "sources": ["https://www.facebook.com/groups/353524149439314/posts/1576203313838052/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9198,9 +7854,7 @@
       "phone": "0817.968.247",
       "openingHours": "24/7",
       "description": null,
-      "sources": [
-        "https://www.facebook.com/tram247.lythaitong/"
-      ],
+      "sources": ["https://www.facebook.com/tram247.lythaitong/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9279,9 +7933,7 @@
       "phone": null,
       "openingHours": "12:00-01:00",
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/DaNangRevieww/posts/2323528151339050/"
-      ],
+      "sources": ["https://www.facebook.com/groups/DaNangRevieww/posts/2323528151339050/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9334,10 +7986,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Bánh xèo nổi tiếng với nước chấm gan đậu phộng đậm đà.",
-      "sources": [
-        "tourism.danang.vn",
-        "canvashotel.com.vn"
-      ],
+      "sources": ["tourism.danang.vn", "canvashotel.com.vn"],
       "image": null,
       "imageNote": "Chưa có ảnh thật của quán — ảnh món không dùng làm ảnh đại diện.",
       "verified": false,
@@ -9364,9 +8013,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Bún chả cá.",
-      "sources": [
-        "zalopay.vn"
-      ],
+      "sources": ["zalopay.vn"],
       "image": null,
       "imageNote": "Chưa có ảnh thật của quán — ảnh món không dùng làm ảnh đại diện.",
       "verified": false,
@@ -9392,9 +8039,7 @@
       "phone": "0886222357",
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/754626124592788/posts/28984906807804675/"
-      ],
+      "sources": ["https://www.facebook.com/groups/754626124592788/posts/28984906807804675/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9446,9 +8091,7 @@
       "phone": "0935688516",
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/522846599070843/posts/1480550079967152/"
-      ],
+      "sources": ["https://www.facebook.com/groups/522846599070843/posts/1480550079967152/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9473,9 +8116,7 @@
       "phone": "0364 853 893",
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/Tiemnuong.An/"
-      ],
+      "sources": ["https://www.facebook.com/Tiemnuong.An/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9500,9 +8141,7 @@
       "phone": null,
       "openingHours": "24/24",
       "description": null,
-      "sources": [
-        "https://www.danangcafes.com/cafe/cafe-2424-ml964fpaaeq"
-      ],
+      "sources": ["https://www.danangcafes.com/cafe/cafe-2424-ml964fpaaeq"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9581,18 +8220,14 @@
       "phone": null,
       "openingHours": "07:30 - 20:00",
       "description": "Phong cách trang trại Bắc Âu, sát vịnh Sơn Trà.",
-      "sources": [
-        "https://zalopay.vn/quan-cafe-dep-o-da-nang-dep-chill-4854"
-      ],
+      "sources": ["https://zalopay.vn/quan-cafe-dep-o-da-nang-dep-chill-4854"],
       "image": "images/venues/mirko-coffee-gm-1.jpg",
       "imageKind": "venue",
       "verified": false,
       "collectedAt": "2026-11-09",
       "tier": "curated-v2",
       "status": "unknown",
-      "images": [
-        "images/venues/mirko-coffee-gm-1.jpg"
-      ],
+      "images": ["images/venues/mirko-coffee-gm-1.jpg"],
       "imageNote": "Chưa có ảnh thật của quán — ảnh món không dùng làm ảnh đại diện.",
       "tags": [],
       "vibes": [],
@@ -9611,9 +8246,7 @@
       "phone": null,
       "openingHours": "24/24",
       "description": null,
-      "sources": [
-        "https://www.facebook.com/zone6milktea/"
-      ],
+      "sources": ["https://www.facebook.com/zone6milktea/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9639,9 +8272,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Bánh mì khu phố Tây An Thượng.",
-      "sources": [
-        "sunworld.vn"
-      ],
+      "sources": ["sunworld.vn"],
       "image": null,
       "imageNote": "Chưa có ảnh thật của quán — ảnh món không dùng làm ảnh đại diện.",
       "verified": false,
@@ -9668,9 +8299,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Bánh mì truyền thống hơn 30 năm; pate, chả, muối tiêu Sa Huỳnh.",
-      "sources": [
-        "mia.vn"
-      ],
+      "sources": ["mia.vn"],
       "image": null,
       "imageNote": "Chưa có ảnh thật của quán — ảnh món không dùng làm ảnh đại diện.",
       "verified": false,
@@ -9697,9 +8326,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Bánh mì thịt nướng, gan rim.",
-      "sources": [
-        "bahungbakery.com.vn"
-      ],
+      "sources": ["bahungbakery.com.vn"],
       "notes": "OSM có POI 'Cô Hường' gần toạ độ — tên quán chưa xác minh chắc chắn.",
       "image": null,
       "imageNote": "Chưa có ảnh thật của quán — ảnh món không dùng làm ảnh đại diện.",
@@ -9727,9 +8354,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Chả bò, chả heo tự làm theo công thức gia truyền.",
-      "sources": [
-        "dongtienbakery.com"
-      ],
+      "sources": ["dongtienbakery.com"],
       "image": null,
       "imageNote": "Chưa có ảnh thật của quán — ảnh món không dùng làm ảnh đại diện.",
       "verified": false,
@@ -9756,9 +8381,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Bánh xèo tôm nhảy.",
-      "sources": [
-        "canvashotel.com.vn"
-      ],
+      "sources": ["canvashotel.com.vn"],
       "image": null,
       "imageNote": "Chưa có ảnh thật của quán — ảnh món không dùng làm ảnh đại diện.",
       "verified": false,
@@ -9785,9 +8408,7 @@
       "phone": null,
       "openingHours": null,
       "description": "Cơm gà.",
-      "sources": [
-        "canvashotel.com.vn"
-      ],
+      "sources": ["canvashotel.com.vn"],
       "image": null,
       "imageNote": "Chưa có ảnh thật của quán — ảnh món không dùng làm ảnh đại diện.",
       "verified": false,
@@ -9867,9 +8488,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.tiktok.com/@reviewdanang4343/video/7558477565661351186"
-      ],
+      "sources": ["https://www.tiktok.com/@reviewdanang4343/video/7558477565661351186"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9894,9 +8513,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/cdlienchieu/posts/39938802665766375/"
-      ],
+      "sources": ["https://www.facebook.com/groups/cdlienchieu/posts/39938802665766375/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9921,9 +8538,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/cdlienchieu/posts/39938802665766375/"
-      ],
+      "sources": ["https://www.facebook.com/groups/cdlienchieu/posts/39938802665766375/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9948,9 +8563,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/305840616490740/posts/2290172108057571/"
-      ],
+      "sources": ["https://www.facebook.com/groups/305840616490740/posts/2290172108057571/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -9975,9 +8588,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.tiktok.com/@quocvietdng72/video/7567622373135027464"
-      ],
+      "sources": ["https://www.tiktok.com/@quocvietdng72/video/7567622373135027464"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10002,9 +8613,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/localfood.travel/posts/657781601648548/"
-      ],
+      "sources": ["https://www.facebook.com/groups/localfood.travel/posts/657781601648548/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10083,9 +8692,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/homestaydanangoffical/posts/2276943069712479/"
-      ],
+      "sources": ["https://www.facebook.com/groups/homestaydanangoffical/posts/2276943069712479/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10110,9 +8717,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/nguyenthi.loen/posts/2868475943486423/"
-      ],
+      "sources": ["https://www.facebook.com/nguyenthi.loen/posts/2868475943486423/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10164,9 +8769,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.youtube.com/watch?v=dMuZl8XRkQs"
-      ],
+      "sources": ["https://www.youtube.com/watch?v=dMuZl8XRkQs"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10191,9 +8794,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/1831300883808197/posts/4448037662134493/"
-      ],
+      "sources": ["https://www.facebook.com/groups/1831300883808197/posts/4448037662134493/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10245,9 +8846,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/Shipanvathoakhanh/"
-      ],
+      "sources": ["https://www.facebook.com/Shipanvathoakhanh/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10326,9 +8925,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.foody.vn/da-nang/khu-vuc-cho-cam-le"
-      ],
+      "sources": ["https://www.foody.vn/da-nang/khu-vuc-cho-cam-le"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10380,9 +8977,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://localleads.io.vn/danh-sach/cafe/da-nang/an-khe"
-      ],
+      "sources": ["https://localleads.io.vn/danh-sach/cafe/da-nang/an-khe"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10407,9 +9002,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/979182732517152/posts/2661234307645311/"
-      ],
+      "sources": ["https://www.facebook.com/groups/979182732517152/posts/2661234307645311/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10434,9 +9027,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/caphetaidanang/posts/1213338079608241/"
-      ],
+      "sources": ["https://www.facebook.com/groups/caphetaidanang/posts/1213338079608241/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10461,9 +9052,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/groups/356567999022887/posts/1499216164758059/"
-      ],
+      "sources": ["https://www.facebook.com/groups/356567999022887/posts/1499216164758059/"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10569,9 +9158,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://www.facebook.com/shugardencoffe/?locale=vi_VN"
-      ],
+      "sources": ["https://www.facebook.com/shugardencoffe/?locale=vi_VN"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10623,9 +9210,7 @@
       "phone": null,
       "openingHours": null,
       "description": null,
-      "sources": [
-        "https://danangfantasticity.com/trinh-ca-phe-111-nguyen-huu-tho"
-      ],
+      "sources": ["https://danangfantasticity.com/trinh-ca-phe-111-nguyen-huu-tho"],
       "image": null,
       "imageKind": null,
       "verified": false,
@@ -10678,9 +9263,7 @@
       "phone": "+84 90 6268209",
       "openingHours": "Mo-Su 07:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10707,9 +9290,7 @@
       "phone": "0905868627",
       "openingHours": "Mo-Su 14:00-23:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10736,9 +9317,7 @@
       "phone": "0917106879",
       "openingHours": "Mo-Su 06:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10765,9 +9344,7 @@
       "phone": "+84 236 3873 168",
       "openingHours": "Mo-Su 09:30-21:30",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10794,9 +9371,7 @@
       "phone": "0789 686 856",
       "openingHours": "Mo-Su 10:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10823,9 +9398,7 @@
       "phone": "+84905072638",
       "openingHours": "Mo-Su 05:30+",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10852,9 +9425,7 @@
       "phone": "+84902957256",
       "openingHours": "Mo-Sa 06:30-20:30; Su 06:30-15:30",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10881,9 +9452,7 @@
       "phone": "0866353739",
       "openingHours": "Mo-Su 10:00-21:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10910,9 +9479,7 @@
       "phone": "+84905895411",
       "openingHours": "Tu-Sa 11:30-20:00; Su 11:30-17:30",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10939,9 +9506,7 @@
       "phone": "0935394256",
       "openingHours": "Mo-Su 06:00-11:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10968,9 +9533,7 @@
       "phone": "+84 90 1140049",
       "openingHours": "Mo-Su 09:00-17:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -10997,9 +9560,7 @@
       "phone": "0905 993 874",
       "openingHours": "Mo-Su 08:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11026,9 +9587,7 @@
       "phone": "+842363652323",
       "openingHours": "Mo-Su 13:00+",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11055,9 +9614,7 @@
       "phone": "0905160246",
       "openingHours": "24/7",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11084,9 +9641,7 @@
       "phone": "0906058087",
       "openingHours": "Mo-Su 09:00-20:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11113,9 +9668,7 @@
       "phone": "+84 92 745 67 89",
       "openingHours": "Mo-Su 20:00-03:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11142,9 +9695,7 @@
       "phone": "02586567799",
       "openingHours": "24/7",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11171,9 +9722,7 @@
       "phone": "0829394868",
       "openingHours": "Mo-Su 08:30-20:30",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11200,9 +9749,7 @@
       "phone": "05113825384",
       "openingHours": "24/7",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11229,9 +9776,7 @@
       "phone": "0905002304",
       "openingHours": "Mo-Su 09:00-23:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11258,9 +9803,7 @@
       "phone": "0343122339",
       "openingHours": "Mo-Su 06:30-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11287,9 +9830,7 @@
       "phone": "+842363650955",
       "openingHours": "Mo-Su 10:00-23:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11316,9 +9857,7 @@
       "phone": "+84 988536931",
       "openingHours": "Mo-Su 07:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11345,9 +9884,7 @@
       "phone": "02363662877",
       "openingHours": "Mo-Su 10:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11374,9 +9911,7 @@
       "phone": "0905 338 441",
       "openingHours": "Mo-Su 10:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11403,9 +9938,7 @@
       "phone": "0569844088",
       "openingHours": "Mo-Su 08:00-21:30",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11432,9 +9965,7 @@
       "phone": "+84934935198",
       "openingHours": "Mo-Su 16:00-23:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11461,9 +9992,7 @@
       "phone": "093 598 27 71",
       "openingHours": "Mo-Su 10:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11490,9 +10019,7 @@
       "phone": "+84 708 040 560",
       "openingHours": "Mo-Su 17:00-21:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11519,9 +10046,7 @@
       "phone": "+84 818 122 828",
       "openingHours": "Mo-Su 07:00-22:30",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11548,9 +10073,7 @@
       "phone": "+84 916 468 655",
       "openingHours": "Mo-Su 10:00-14:00,17:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11577,9 +10100,7 @@
       "phone": "84901140133",
       "openingHours": "Mo-Su 08:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11606,9 +10127,7 @@
       "phone": "+840905001744",
       "openingHours": "Mo-Su 10:00-22:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11635,9 +10154,7 @@
       "phone": "84968086529",
       "openingHours": "Mo-Su 06:30-22:30",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11664,9 +10181,7 @@
       "phone": "1,432 Google reviews",
       "openingHours": "Mo-Su 11:30-23:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11693,9 +10208,7 @@
       "phone": "+84769919273",
       "openingHours": "Th-Tu 11:00-12:00, 13:00-14:00",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",
@@ -11722,9 +10235,7 @@
       "phone": "+84 788492977",
       "openingHours": "06:00-22:30",
       "description": null,
-      "sources": [
-        "openstreetmap.org"
-      ],
+      "sources": ["openstreetmap.org"],
       "notes": null,
       "tier": "osm",
       "status": "unknown",

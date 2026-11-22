@@ -41,9 +41,43 @@ enum ReportReason {
   closed
   wrong_info @map("wrong-info")
   duplicate
+  outdated_menu
+  wrong_image
   other
 
   @@map("report_reason")
+}
+
+enum ReviewTier {
+  ok
+  good
+  must_try
+
+  @@map("review_tier")
+}
+
+enum PlaceMediaKind {
+  venue
+  dish_real
+  menu_price
+
+  @@map("place_media_kind")
+}
+
+enum RoomPhase {
+  filtering
+  voting
+  locked
+
+  @@map("room_phase")
+}
+
+enum RoomVotingMode {
+  swipe_match
+  ranked_choice
+  random_wheel
+
+  @@map("room_voting_mode")
 }
 
 enum ReportStatus {
@@ -52,6 +86,15 @@ enum ReportStatus {
   dismissed
 
   @@map("report_status")
+}
+
+enum AnchorKind {
+  home
+  work
+  school
+  custom
+
+  @@map("anchor_kind")
 }
 
 enum NotificationType {
@@ -138,6 +181,7 @@ model User {
   idempotencyKeys  IdempotencyKey[]
   interactionEvents InteractionEvent[]
   auditLogs        AuditLog[]
+  locationAnchors  UserLocationAnchor[]
 
   @@map("users")
 }
@@ -277,6 +321,8 @@ model Place {
   embeddings      PlaceEmbedding[]
   interactionEvents InteractionEvent[]
   affinityCache   AffinityCache?
+  roomCandidates  RoomCandidate[]
+  wonRooms        Room[]             @relation("RoomWinner")
 
   @@index([publishedAt, status])
   @@index([lat, lng])
@@ -342,17 +388,20 @@ model PlaceSource {
 // ---------------------------------------------------------------------------
 
 model PlaceImage {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  placeId   String   @map("place_id")
-  url       String
-  height    Int      @default(320)
-  credit    String?
-  kind      String?
-  position  Int      @default(0)
-  createdAt DateTime @default(now()) @map("created_at")
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  placeId      String         @map("place_id")
+  url          String
+  height       Int            @default(320)
+  credit       String?
+  kind         PlaceMediaKind @default(venue)
+  uploadedById String?        @map("uploaded_by_id") @db.Uuid
+  capturedAt   DateTime       @default(now()) @map("captured_at")
+  position     Int            @default(0)
+  createdAt    DateTime       @default(now()) @map("created_at")
 
   place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
 
+  @@index([placeId, kind, capturedAt])
   @@index([placeId, position])
   @@map("place_images")
 }
@@ -362,14 +411,16 @@ model PlaceImage {
 // ---------------------------------------------------------------------------
 
 model Review {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  placeId   String    @map("place_id")
-  authorId  String    @map("author_id") @db.Uuid
-  rating    Int
-  content   String
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  placeId           String     @map("place_id")
+  authorId          String     @map("author_id") @db.Uuid
+  tier              ReviewTier
+  content           String     @default("")
+  recommendedDishes String[]   @default([]) @map("recommended_dishes")
+  quickTags         String[]   @default([]) @map("quick_tags")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  deletedAt         DateTime?  @map("deleted_at")
 
   place  Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
   author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -436,11 +487,13 @@ model Post {
 // ---------------------------------------------------------------------------
 
 model PostImage {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  postId    String   @map("post_id") @db.Uuid
-  url       String
-  position  Int      @default(0)
-  createdAt DateTime @default(now()) @map("created_at")
+  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId     String         @map("post_id") @db.Uuid
+  url        String
+  kind       PlaceMediaKind @default(dish_real)
+  capturedAt DateTime       @default(now()) @map("captured_at")
+  position   Int            @default(0)
+  createdAt  DateTime       @default(now()) @map("created_at")
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
@@ -586,18 +639,26 @@ model CollectionLike {
 // ---------------------------------------------------------------------------
 
 model Room {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code      String   @unique
-  name      String
-  ownerId   String   @map("owner_id") @db.Uuid
-  filter    Json     @default("{}")
-  version   Int      @default(1)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code             String         @unique
+  name             String
+  ownerId          String         @map("owner_id") @db.Uuid
+  phase            RoomPhase      @default(filtering)
+  votingMode       RoomVotingMode @default(swipe_match) @map("voting_mode")
+  votingDeadlineAt DateTime?      @map("voting_deadline_at")
+  winnerPlaceId    String?        @map("winner_place_id")
+  lockedAt         DateTime?      @map("locked_at")
+  filter           Json           @default("{}")
+  version          Int            @default(1)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
 
-  owner     User           @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members   RoomMember[]
-  proposals RoomProposal[]
+  owner       User            @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  winnerPlace Place?          @relation("RoomWinner", fields: [winnerPlaceId], references: [id], onDelete: SetNull)
+  members     RoomMember[]
+  proposals   RoomProposal[]
+  candidates  RoomCandidate[]
+  votes       RoomVote[]
 
   @@map("rooms")
 }
@@ -619,9 +680,11 @@ model RoomMember {
   lastSeenAt  DateTime @default(now()) @map("last_seen_at")
   joinedAt    DateTime @default(now()) @map("joined_at")
 
-  room      Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  proposals RoomProposal[]
+  room       Room            @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  proposals  RoomProposal[]
+  candidates RoomCandidate[]
+  votes      RoomVote[]
 
   @@index([roomId])
   @@map("room_members")
@@ -650,6 +713,42 @@ model RoomProposal {
 
   @@index([roomId, status])
   @@map("room_proposals")
+}
+
+model RoomCandidate {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId          String   @map("room_id") @db.Uuid
+  placeId         String   @map("place_id")
+  addedByMemberId String   @map("added_by_member_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  room          Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  place         Place      @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  addedByMember RoomMember @relation(fields: [addedByMemberId], references: [id], onDelete: Cascade)
+  votes         RoomVote[]
+
+  @@unique([roomId, placeId])
+  @@index([roomId])
+  @@map("room_candidates")
+}
+
+model RoomVote {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId      String   @map("room_id") @db.Uuid
+  candidateId String   @map("candidate_id") @db.Uuid
+  memberId    String   @map("member_id") @db.Uuid
+  decision    String?
+  rank        Int?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  room      Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  candidate RoomCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  member    RoomMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, candidateId, memberId])
+  @@index([roomId, memberId])
+  @@map("room_votes")
 }
 
 // ---------------------------------------------------------------------------
@@ -821,4 +920,42 @@ model AuditLog {
   @@index([entity, createdAt(sort: Desc)])
   @@index([actorId, createdAt(sort: Desc)])
   @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// 26. user_location_anchors — mốc vị trí cá nhân (nhà riêng, công ty, trường học)
+// ---------------------------------------------------------------------------
+
+model UserLocationAnchor {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String     @map("user_id") @db.Uuid
+  label           String     @db.VarChar(60)
+  kind            AnchorKind @default(custom)
+  encryptedCoords String     @map("encrypted_coords")
+  isDefault       Boolean    @default(false) @map("is_default")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_location_anchors")
+}
+
+// ---------------------------------------------------------------------------
+// 27. city_landmarks — mốc địa danh nổi tiếng của thành phố (công khai)
+// ---------------------------------------------------------------------------
+
+model CityLandmark {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String   @unique
+  name      String   @db.VarChar(80)
+  district  String?  @db.VarChar(60)
+  lat       Float
+  lng       Float
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([sortOrder])
+  @@map("city_landmarks")
 }

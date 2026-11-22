@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { toast } from "sonner"
-import { useUserLocation } from "@/hooks/use-user-location"
+import { useUserLocation, type ResolvedLocationSource } from "@/hooks/use-user-location"
 import { useRooms, type JoinRoomStatus } from "@/features/rooms/hooks/use-rooms"
 import type { RoomFilterChip } from "@/features/rooms/lib/room"
 import type { Room } from "@/features/rooms/types/room"
@@ -23,6 +23,9 @@ export interface DiscoverView {
   removeRoomChip: (chip: RoomFilterChip) => void
   resetRoomFilter: () => void
   coordinates: { lat: number; lng: number } | null
+  locationSource: ResolvedLocationSource | null
+  selectedSourceKey: string | null
+  selectLocationSource: (key: string | null) => void
   isLocating: boolean
   locationError: string | null
   locationGate: React.ReactNode
@@ -49,8 +52,17 @@ export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView
   const filters = useDiscoverFilters()
   const { activeCode, getRoom, createRoom, joinRoom, updateRoomFilter, leaveRoom } = useRooms()
   const room = activeCode ? getRoom(activeCode) : undefined
-  const { coordinates, isLocating, locationError, requestLocation, clearLocation, locationGate } =
-    useUserLocation()
+  const {
+    coordinates,
+    locationSource,
+    selectedSourceKey,
+    selectLocationSource,
+    isLocating,
+    locationError,
+    requestLocation,
+    clearLocation,
+    locationGate,
+  } = useUserLocation()
   // `/discover` và `/map` luôn dùng bộ lọc cá nhân của người dùng để họ có thể
   // tự tìm kiếm và khám phá riêng ngay cả khi đang tham gia một phòng nhóm
   // (bộ lọc chung của phòng hoạt động độc lập bên trong `/rooms/:code`).
@@ -63,7 +75,11 @@ export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView
       sort: filters.sort,
       coords:
         filters.sort === "distance" && coordinates
-          ? { lat: coordinates.lat, lng: coordinates.lng }
+          ? {
+              // Làm tròn 3 chữ số thập phân (~111m) để không lộ tọa độ chính xác trong URL/access log
+              lat: Math.round(coordinates.lat * 1000) / 1000,
+              lng: Math.round(coordinates.lng * 1000) / 1000,
+            }
           : undefined,
     }),
     [
@@ -158,6 +174,9 @@ export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView
     clearLocation,
     requestLocation,
     coordinates,
+    locationSource,
+    selectedSourceKey,
+    selectLocationSource,
     isLocating,
     locationError,
     locationGate,
