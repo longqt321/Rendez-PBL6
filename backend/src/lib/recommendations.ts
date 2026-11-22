@@ -1,3 +1,4 @@
+import { subDays } from "date-fns"
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { selectPlaces, toPlaceDto, type PlaceRow } from "./places"
@@ -76,7 +77,7 @@ export interface ColdStartScore {
  * Trả null khi actor chưa có tương tác dương nào.
  */
 export async function scoreAffinity(actor: RecommendationActor): Promise<AffinityScoreSet | null> {
-  const since = new Date(Date.now() - HISTORY_WINDOW_DAYS * 24 * 60 * 60 * 1000)
+  const since = subDays(new Date(), HISTORY_WINDOW_DAYS)
   const actorCondition = actor.userId
     ? Prisma.sql`user_id = ${actor.userId}::uuid`
     : Prisma.sql`anon_id = ${actor.anonId}`

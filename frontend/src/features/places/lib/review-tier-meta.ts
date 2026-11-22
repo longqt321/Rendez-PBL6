@@ -14,13 +14,13 @@ export const REVIEW_TIER_META: Record<
     label: "Phải thử",
     hint: "Xuất sắc, rất đáng đi",
     icon: FlameIcon,
-    badgeClass: "border-amber-500/40 bg-amber-500/15 text-amber-800 dark:text-amber-300",
+    badgeClass: "border-star/45 bg-star/15 text-foreground",
   },
   good: {
     label: "Rất ngon",
     hint: "Hài lòng, sẽ quay lại",
     icon: ThumbsUpIcon,
-    badgeClass: "border-emerald-500/40 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300",
+    badgeClass: "border-open/40 bg-open/15 text-open",
   },
   ok: {
     label: "Ổn",

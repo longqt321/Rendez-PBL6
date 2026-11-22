@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { CameraIcon, ImagePlusIcon, MapPinIcon, XIcon } from "lucide-react"
+import { useDropzone } from "react-dropzone"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { ResponsiveModal } from "@/components/shared/responsive-modal"
@@ -28,6 +29,10 @@ interface PendingImage {
   previewUrl: string
 }
 
+const ACCEPTED_IMAGE_TYPES = Object.fromEntries(
+  IMAGE_CONTENT_TYPES.map((type) => [type, [] as string[]]),
+)
+
 export function CheckInDialog({ place, children }: CheckInDialogProps) {
   const [open, setOpen] = useState(false)
   const [caption, setCaption] = useState("")
@@ -35,7 +40,6 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
   const [uploading, setUploading] = useState(false)
   const [mediaUnavailable, setMediaUnavailable] = useState(false)
   const fileInputId = useId()
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const imageSeq = useRef(0)
   const imagesRef = useRef(images)
   const createPost = useCreatePost()
@@ -72,19 +76,15 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
     }
   }
 
-  function handleFilesSelected(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []).filter((file) =>
-      (IMAGE_CONTENT_TYPES as readonly string[]).includes(file.type),
-    )
-    event.target.value = ""
-    if (files.length === 0) return
+  function handleFilesDropped(acceptedFiles: File[]) {
+    if (acceptedFiles.length === 0) return
 
-    const accepted = files.slice(0, MAX_POST_IMAGES - imagesRef.current.length)
+    const accepted = acceptedFiles.slice(0, MAX_POST_IMAGES - imagesRef.current.length)
     if (accepted.length === 0) {
       toast.error(`Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
       return
     }
-    if (accepted.length < files.length) {
+    if (accepted.length < acceptedFiles.length) {
       toast.error(`Tối đa ${MAX_POST_IMAGES} ảnh mỗi bài đăng`)
     }
 
@@ -98,6 +98,15 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
     })
     setImages((current) => [...current, ...added])
   }
+
+  const { getInputProps, open: openFilePicker } = useDropzone({
+    accept: ACCEPTED_IMAGE_TYPES,
+    multiple: true,
+    noClick: true,
+    noDrag: true,
+    disabled: images.length >= MAX_POST_IMAGES || uploading || mediaUnavailable,
+    onDropAccepted: handleFilesDropped,
+  })
 
   async function uploadImages(): Promise<string[] | null> {
     if (imagesRef.current.length === 0) return []
@@ -214,21 +223,13 @@ export function CheckInDialog({ place, children }: CheckInDialogProps) {
 
         {!mediaUnavailable ? (
           <div className="flex items-center justify-between gap-2">
-            <input
-              ref={fileInputRef}
-              id={fileInputId}
-              type="file"
-              accept={IMAGE_CONTENT_TYPES.join(",")}
-              multiple
-              className="sr-only"
-              onChange={handleFilesSelected}
-            />
+            <input {...getInputProps({ id: fileInputId, className: "sr-only" })} />
             <Button
               type="button"
               variant="outline"
               size="sm"
               disabled={images.length >= MAX_POST_IMAGES || uploading}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={openFilePicker}
             >
               {uploading ? <Spinner aria-label="Đang tải ảnh lên" /> : <ImagePlusIcon />}
               Thêm ảnh món ăn

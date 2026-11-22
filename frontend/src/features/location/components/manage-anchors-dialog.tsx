@@ -182,12 +182,12 @@ export function ManageAnchorsSection({ enabled, onSelectAnchor }: ManageAnchorsS
                     <ItemTitle className="flex items-center gap-1.5">
                       <span className="truncate">{anchor.label}</span>
                       {anchor.isDefault ? (
-                        <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
+                        <Badge variant="secondary" className="h-4 px-1.5 text-xs">
                           Mặc định
                         </Badge>
                       ) : null}
                     </ItemTitle>
-                    <ItemDescription className="truncate text-[11px]">
+                    <ItemDescription className="truncate text-xs">
                       {anchor.address || "Đã ghim tọa độ"}
                     </ItemDescription>
                   </ItemContent>
@@ -285,7 +285,10 @@ export function ManageAnchorsSection({ enabled, onSelectAnchor }: ManageAnchorsS
                 className="pr-8 pl-8"
               />
               {searching ? (
-                <Spinner className="absolute top-1/2 right-3 size-3.5 -translate-y-1/2" />
+                <Spinner
+                  className="absolute top-1/2 right-3 size-3.5 -translate-y-1/2"
+                  aria-label="Đang tìm địa chỉ"
+                />
               ) : null}
             </div>
             <Button
@@ -298,7 +301,7 @@ export function ManageAnchorsSection({ enabled, onSelectAnchor }: ManageAnchorsS
               title="Lấy vị trí GPS hiện tại"
             >
               {locating ? (
-                <Spinner className="size-3.5" />
+                <Spinner className="size-3.5" aria-label="Đang lấy vị trí GPS" />
               ) : (
                 <LocateFixedIcon className="size-3.5" />
               )}
@@ -319,16 +322,14 @@ export function ManageAnchorsSection({ enabled, onSelectAnchor }: ManageAnchorsS
                   <span className="line-clamp-1 text-xs font-medium text-foreground">
                     {item.name}
                   </span>
-                  <span className="line-clamp-1 text-[11px] text-muted-foreground">
-                    {item.address}
-                  </span>
+                  <span className="line-clamp-1 text-xs text-muted-foreground">{item.address}</span>
                 </Button>
               ))}
             </div>
           ) : null}
 
           {pickedCoords ? (
-            <p className="flex items-center gap-1 text-[11px] text-primary">
+            <p className="flex items-center gap-1 text-xs text-primary">
               <CheckIcon className="size-3 shrink-0" />
               <span className="truncate">Đã ghim vị trí: {pickedCoords.address}</span>
             </p>

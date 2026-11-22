@@ -41,9 +41,11 @@ Không sửa tay nội dung component sinh ra.
 | `<Loader2 className="animate-spin">`          | `Spinner`                                             |
 | `<hr>` / `div` có viền chia cách              | `Separator`                                           |
 | `document.getElementById` / `querySelector`   | `useRef`                                              |
-| `useState` + `setTimeout` để debounce         | `useDebouncedValue` (`@/hooks/use-debounced-value`)   |
+| `useState` + `setTimeout` để debounce         | `useDebounce` (`@uidotdev/usehooks`)                  |
 | `addEventListener("scroll")` để tải thêm      | `useInfiniteScroll` (`@/hooks/use-infinite-scroll`)   |
 | `navigator.geolocation` tự gọi                | `useUserLocation` (`@/hooks/use-user-location`)       |
+| `<input type="file">` + `ref` + `onChange`    | `useDropzone` (`react-dropzone`)                      |
+| `useSearchParams` rời rạc                     | `nuqs` (`useQueryState` / `useQueryStates`)           |
 
 ## 2. Bo góc — chỉ 3 token ngữ nghĩa
 

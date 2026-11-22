@@ -1,5 +1,5 @@
 import { Fragment } from "react"
-import { useAutoAnimate } from "@formkit/auto-animate/react"
+import { StaggerItem, StaggerList } from "@/components/shared/motion-primitives"
 import {
   BellIcon,
   CheckCheckIcon,
@@ -302,8 +302,6 @@ function SuggestionSection({
 }: Readonly<{
   suggestions: Extract<AppNotification, { kind: "place-suggestion" }>[]
 }>) {
-  const [listRef] = useAutoAnimate<HTMLUListElement>()
-
   if (suggestions.length === 0) {
     return (
       <Empty className="border border-dashed border-border">
@@ -324,20 +322,18 @@ function SuggestionSection({
   return (
     <section>
       <SectionHeading className="mb-2.5">Đề xuất thêm địa điểm</SectionHeading>
-      <ul ref={listRef} className="flex flex-col gap-3">
+      <StaggerList className="flex flex-col gap-3">
         {suggestions.map((notification) => (
-          <li key={notification.id}>
+          <StaggerItem key={notification.id}>
             <PlaceSuggestionCard notification={notification} />
-          </li>
+          </StaggerItem>
         ))}
-      </ul>
+      </StaggerList>
     </section>
   )
 }
 
 function OtherActivitySection({ notifications }: Readonly<{ notifications: OtherNotification[] }>) {
-  const [listRef] = useAutoAnimate<HTMLDivElement>()
-
   if (notifications.length === 0) {
     return (
       <Empty className="border border-dashed border-border">
@@ -357,7 +353,7 @@ function OtherActivitySection({ notifications }: Readonly<{ notifications: Other
   return (
     <section>
       <SectionHeading className="mb-2.5">Hoạt động khác</SectionHeading>
-      <div ref={listRef}>
+      <div>
         <ItemGroup className="gap-2">
           {notifications.map((notification, index) => (
             <Fragment key={notification.id}>

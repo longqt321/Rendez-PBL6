@@ -77,7 +77,7 @@ export function UsersTab({ currentUserId }: Readonly<{ currentUserId: string }>)
               <div className="flex items-center gap-1.5">
                 <span className="font-medium text-foreground">{u.name}</span>
                 {isSelf ? (
-                  <Badge variant="outline" className="text-[11px]">
+                  <Badge variant="outline" className="text-xs">
                     Bạn
                   </Badge>
                 ) : null}
@@ -99,7 +99,7 @@ export function UsersTab({ currentUserId }: Readonly<{ currentUserId: string }>)
                 aria-label="Đã xác thực email"
               />
             ) : (
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-xs">
                 Chưa xác thực
               </Badge>
             )}
@@ -124,7 +124,7 @@ export function UsersTab({ currentUserId }: Readonly<{ currentUserId: string }>)
             <div className="space-y-0.5">
               <Badge variant="destructive">Đã khoá</Badge>
               {row.original.banReason ? (
-                <span className="block max-w-44 truncate text-[11px] text-destructive">
+                <span className="block max-w-44 truncate text-xs text-destructive">
                   {row.original.banReason}
                 </span>
               ) : null}

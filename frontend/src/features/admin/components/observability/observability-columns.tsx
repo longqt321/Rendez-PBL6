@@ -38,9 +38,7 @@ export const ENDPOINT_COLUMNS: readonly AdminColumnDef<EndpointMetricRow>[] = [
     cell: ({ row }) => (
       <div className="space-y-0.5">
         <span className="block font-medium text-foreground">{row.original.featureLabel}</span>
-        <span className="block font-mono text-[11px] text-muted-foreground">
-          {row.original.route}
-        </span>
+        <span className="block font-mono text-xs text-muted-foreground">{row.original.route}</span>
       </div>
     ),
   },
@@ -124,7 +122,7 @@ export const EVENT_COLUMNS: readonly AdminColumnDef<ObservabilityEventItem>[] = 
         <div className="max-w-xs space-y-0.5">
           <span className="block truncate text-xs font-medium text-foreground">{title}</span>
           {ev.route ? (
-            <span className="block truncate font-mono text-[11px] text-muted-foreground">
+            <span className="block truncate font-mono text-xs text-muted-foreground">
               {ev.method ? `${ev.method} ` : ""}
               {ev.route}
             </span>
@@ -147,7 +145,7 @@ export const EVENT_COLUMNS: readonly AdminColumnDef<ObservabilityEventItem>[] = 
       const dominant = findDominantTimingStage(row.original.timing)
       if (!dominant) return <span className="text-xs text-muted-foreground">-</span>
       return (
-        <Badge variant="outline" className="text-[11px] tabular-nums">
+        <Badge variant="outline" className="text-xs tabular-nums">
           {dominant.label} ({dominant.percent}%)
         </Badge>
       )
@@ -160,7 +158,7 @@ export const EVENT_COLUMNS: readonly AdminColumnDef<ObservabilityEventItem>[] = 
     cell: ({ row }) => (
       <div className="flex items-center gap-1.5 font-mono text-xs tabular-nums">
         {row.original.status !== undefined ? (
-          <Badge variant="outline" className="font-mono text-[11px]">
+          <Badge variant="outline" className="font-mono text-xs">
             HTTP {row.original.status}
           </Badge>
         ) : null}

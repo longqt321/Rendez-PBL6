@@ -175,7 +175,7 @@ export function PlacesTab() {
           <div className="flex items-center gap-2 text-xs whitespace-nowrap tabular-nums">
             <span>{formatNumber(row.original.reviewCount)} đánh giá</span>
             {row.original.reportCount > 0 ? (
-              <Badge variant="destructive" className="px-1.5 py-0 text-[11px]">
+              <Badge variant="destructive" className="px-1.5 py-0 text-xs">
                 {formatNumber(row.original.reportCount)} báo cáo
               </Badge>
             ) : (
@@ -190,11 +190,11 @@ export function PlacesTab() {
         header: "Tọa độ",
         cell: ({ row }) =>
           row.original.lat !== null && row.original.lng !== null ? (
-            <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+            <span className="font-mono text-xs text-muted-foreground tabular-nums">
               {formatCoordinate(row.original.lat)}, {formatCoordinate(row.original.lng)}
             </span>
           ) : (
-            <Badge variant="outline" className="border-star/50 text-[11px] text-star">
+            <Badge variant="outline" className="border-star/50 text-xs text-star">
               Thiếu GPS
             </Badge>
           ),

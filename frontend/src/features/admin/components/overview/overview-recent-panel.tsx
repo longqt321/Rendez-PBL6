@@ -77,7 +77,7 @@ export function OverviewRecentPanel({
                           {report.placeName}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="text-[11px]">
+                          <Badge variant="outline" className="text-xs">
                             {REPORT_REASON_META[report.reason].label}
                           </Badge>
                         </TableCell>
@@ -133,7 +133,7 @@ export function OverviewRecentPanel({
                           {entry.action}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className="text-[11px]">
+                          <Badge variant="secondary" className="text-xs">
                             {entry.entity}
                           </Badge>
                         </TableCell>

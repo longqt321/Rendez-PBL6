@@ -1,3 +1,4 @@
+import { addDays, parseISO } from "date-fns"
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { toPlaceDto } from "./places"
@@ -19,8 +20,9 @@ export function getPickDate(now: Date = new Date()): string {
 }
 
 function shiftDate(pickDate: string, days: number): string {
-  const time = Date.parse(`${pickDate}T00:00:00Z`) + days * 86_400_000
-  return new Date(time).toISOString().slice(0, 10)
+  return addDays(parseISO(`${pickDate}T00:00:00Z`), days)
+    .toISOString()
+    .slice(0, 10)
 }
 
 /** FNV-1a 32 bit — băm chuỗi thành seed cho mulberry32 (định nghĩa ở `eval-metrics`). */

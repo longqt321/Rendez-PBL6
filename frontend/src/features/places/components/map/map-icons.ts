@@ -91,9 +91,9 @@ export function createUserLocationIcon() {
   const html = `
     <div class="relative flex items-center justify-center">
       <div class="relative flex size-9 items-center justify-center">
-        <span class="absolute inline-flex size-9 rounded-full bg-blue-500/30 animate-ping"></span>
-        <span class="relative flex size-9 items-center justify-center rounded-full bg-blue-500/20 ring-2 ring-blue-500/40">
-          <span class="size-4.5 rounded-full bg-blue-600 border-[3px] border-white shadow-[0_2px_8px_rgba(37,99,235,0.75)]"></span>
+        <span class="absolute inline-flex size-9 animate-ping rounded-full bg-user-location/30"></span>
+        <span class="relative flex size-9 items-center justify-center rounded-full bg-user-location/20 ring-2 ring-user-location/40">
+          <span class="size-4.5 rounded-full border-[3px] border-background bg-user-location shadow-(--shadow-raised)"></span>
         </span>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { Prisma } from "../../../generated/prisma/client"
+import { db, sql } from "../kysely"
 import { prisma } from "../prisma"
 import { selectPlaces } from "./select"
 import { toPlaceDto, type PlaceDto, type PlaceRow } from "./types"
@@ -11,17 +12,17 @@ export async function findPublicPlace(id: string): Promise<PlaceDto | null> {
       WHERE p.id = ${id} AND p.published_at IS NOT NULL AND p.deleted_at IS NULL
       LIMIT 1
     `),
-    prisma.$queryRaw<
-      Array<{ must_try_count: number; good_count: number; ok_count: number; total_reviews: number }>
-    >(Prisma.sql`
-      SELECT
-        COUNT(*) FILTER (WHERE tier = 'must_try')::int AS must_try_count,
-        COUNT(*) FILTER (WHERE tier = 'good')::int AS good_count,
-        COUNT(*) FILTER (WHERE tier = 'ok')::int AS ok_count,
-        COUNT(*)::int AS total_reviews
-      FROM reviews
-      WHERE place_id = ${id} AND deleted_at IS NULL
-    `),
+    db
+      .selectFrom("reviews")
+      .where("place_id", "=", id)
+      .where("deleted_at", "is", null)
+      .select([
+        sql<number>`COUNT(*) FILTER (WHERE tier = 'must_try')::int`.as("must_try_count"),
+        sql<number>`COUNT(*) FILTER (WHERE tier = 'good')::int`.as("good_count"),
+        sql<number>`COUNT(*) FILTER (WHERE tier = 'ok')::int`.as("ok_count"),
+        sql<number>`COUNT(*)::int`.as("total_reviews"),
+      ])
+      .execute(),
     prisma.$queryRaw<Array<{ dish_name: string; count: number }>>(Prisma.sql`
       SELECT TRIM(dish) AS dish_name, COUNT(*)::int AS count
       FROM reviews r, LATERAL unnest(r.recommended_dishes) AS dish

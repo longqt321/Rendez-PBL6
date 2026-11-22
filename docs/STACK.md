@@ -141,7 +141,7 @@ src/
 | Mọi dữ liệu từ API (địa điểm, bài, thông báo) | TanStack Query — server state                     |
 | Sáng/tối                                      | `next-themes`                                     |
 | Skin (mặc định/retro)                         | `SkinProvider` + `data-skin`                      |
-| Bộ lọc, URL tab                               | URL (`useSearchParams`)                           |
+| Bộ lọc, URL tab                               | URL (`nuqs`)                                      |
 | Form, dialog, UI cục bộ                       | React `useState` / `react-hook-form`              |
 | Optimistic update (like/save/follow)          | `queryClient.setQueriesData` + rollback `onError` |
 
@@ -236,8 +236,8 @@ không méo). Không dùng `WONK 1` cho văn bản (L-006).
 | Thành phần / Gói | Phiên bản / Cấu hình | Vai trò |
 |---|---|---|
 | Bun | `1.3.14` | Runtime JS/TS, bundler (`bun build`), Redis client (`Bun.RedisClient`), test runner |
-| `hono` + `@hono/zod-openapi` | `4.13.17` / `1.6.3` | HTTP router, middleware, OpenAPI Zod validation |
-| `prisma` + `@prisma/client` + `@prisma/adapter-pg` | `7.10.1` | ORM + Driver Adapter (`pg` pool `max: 20`, `statement_timeout=15000`) |
+| `hono` | `4.13.17` | HTTP router, middleware, Zod validation |
+| `prisma` + `@prisma/client` + `@prisma/adapter-pg` + `kysely` | `7.10.1` / `0.29.9` | ORM + Driver Adapter (`pg` pool `max: 20`, `statement_timeout=15000`) + Type-safe SQL builder (`prisma-kysely`) |
 | PostgreSQL + `pgvector` + `pg_stat_statements` | `pgvector:0.8.7-pg17` | CSDL chính (33 model, 3NF, HNSW vector index, partition `interaction_events`) |
 | Redis (`redis:7-alpine`) | `0.5` CPU / `192MB` RAM (`--maxmemory 128mb`) | Rate limit, cache, dedupe `/events`, ring buffer `obs:events` (kèm fallback in-memory) |
 | `better-auth` | `1.7.19` | Xác thực email/session (cookie HttpOnly) |

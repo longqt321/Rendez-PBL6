@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
 import { getPlacePosts } from "../api/get-place-detail"
 
 export function placePostsQueryKey(id: string) {
@@ -11,5 +11,6 @@ export function usePlacePosts(id: string) {
     queryFn: ({ pageParam, signal }) => getPlacePosts(id, pageParam, signal),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
+    placeholderData: keepPreviousData,
   })
 }

@@ -1,4 +1,4 @@
-import { OpenAPIHono } from "@hono/zod-openapi"
+import { Hono } from "hono"
 import { createMiddleware } from "hono/factory"
 import type { AppEnv } from "../app"
 import { auth } from "../lib/auth"
@@ -36,7 +36,7 @@ function normalizeRoutePath(path: string): string {
 }
 
 export function createApiRouter() {
-  const api = new OpenAPIHono<AppEnv>()
+  const api = new Hono<AppEnv>()
 
   api.use(
     "*",

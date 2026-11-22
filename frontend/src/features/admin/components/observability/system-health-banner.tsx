@@ -85,7 +85,7 @@ export function SystemHealthBanner({ data }: Readonly<{ data: AdminObservability
                 ? "outline"
                 : "secondary"
           }
-          className="text-[11px]"
+          className="text-xs"
         >
           {statusTone === "danger"
             ? "Cần kiểm tra ngay"

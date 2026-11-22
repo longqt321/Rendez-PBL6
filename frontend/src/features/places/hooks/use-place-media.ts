@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@/lib/axios"
 import { idempotencyHeaders } from "@/lib/idempotency"
 import type { PlaceMediaItem, PlaceMediaKind } from "@rendez/schema"
@@ -19,6 +19,7 @@ export function usePlaceMedia(placeId: string, kind?: PlaceMediaKind) {
       )
       return data.items
     },
+    placeholderData: keepPreviousData,
     enabled: Boolean(placeId),
   })
 }

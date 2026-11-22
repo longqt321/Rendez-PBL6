@@ -21,7 +21,6 @@
     "test:watch": "bun test --watch"
   },
   "dependencies": {
-    "@hono/zod-openapi": "1.6.3",
     "@huggingface/transformers": "4.3.2",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",

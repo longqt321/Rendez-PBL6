@@ -1,4 +1,4 @@
-import { OpenAPIHono } from "@hono/zod-openapi"
+import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { routePath } from "hono/route"
 import { HTTPException } from "hono/http-exception"
@@ -39,14 +39,7 @@ export type AppEnv = {
 }
 
 export function createApp() {
-  const app = new OpenAPIHono<AppEnv>({
-    defaultHook: (result, c) => {
-      if (!result.success) {
-        const message = result.error.issues[0]?.message ?? "Dữ liệu không hợp lệ"
-        return c.json({ message }, 400)
-      }
-    },
-  })
+  const app = new Hono<AppEnv>()
 
   // Request context + Canonical Log Line: sinh/kế thừa trace_id sớm để mọi log/lỗi đều có mã đối chiếu.
   app.use("*", async (c, next) => {

@@ -59,7 +59,7 @@ export function AdminKpiCard({
           </CardDescription>
           <div className="flex items-center gap-1">
             {badge ? (
-              <Badge variant={badge.variant ?? "secondary"} className="text-[11px] tabular-nums">
+              <Badge variant={badge.variant ?? "secondary"} className="text-xs tabular-nums">
                 {badge.label}
               </Badge>
             ) : null}

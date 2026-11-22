@@ -223,7 +223,7 @@ export function PlacesMap({
         </div>
       ) : null}
 
-      <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-control border border-border/80 bg-background/92 px-2.5 py-1 text-[11px] font-medium shadow-(--shadow-soft) backdrop-blur-md md:px-3 md:py-1.5 md:text-xs">
+      <div className="absolute bottom-3 left-3 z-1000 flex items-center gap-2 rounded-control border border-border/80 bg-background/92 px-2.5 py-1 text-xs font-medium shadow-(--shadow-soft) backdrop-blur-md md:px-3 md:py-1.5">
         <PlacesSummaryText
           isLoading={isPlacesLoading}
           validCount={validPlaces.length}

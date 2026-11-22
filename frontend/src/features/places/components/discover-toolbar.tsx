@@ -1,4 +1,3 @@
-import { FilterPill, NearbyButtonIcon } from "./discover/toolbar-primitives"
 import { useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import {
@@ -17,15 +16,7 @@ import {
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Alert, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +38,9 @@ import { DANANG_DISTRICTS } from "../lib/danang-districts"
 import { priceLevelLabel } from "../lib/price-level"
 import type { Place, PlaceCategory } from "../types/place"
 import type { DiscoverView } from "../hooks/use-discover-view"
+import { ActiveFilterPills } from "./discover/active-filter-pills"
+import { MobileFilterDrawer } from "./discover/mobile-filter-drawer"
+import { NearbyButtonIcon } from "./discover/toolbar-primitives"
 
 const CATEGORY_ICON_MAP: Record<PlaceCategory | "all", LucideIcon> = {
   all: SparklesIcon,
@@ -193,7 +187,7 @@ export function DiscoverToolbar({
                           : tab.value,
                     )
                   }
-                  className="h-7 shrink-0 gap-1 rounded-full px-2.5 text-[11px] aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+                  className="h-7 shrink-0 gap-1 rounded-full px-2.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
                 >
                   <Icon className="size-3 shrink-0" aria-hidden="true" />
                   <span>{tab.label}</span>
@@ -202,129 +196,14 @@ export function DiscoverToolbar({
             })}
           </div>
 
-          <Drawer open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
-            <DrawerTrigger
-              render={
-                <Button
-                  type="button"
-                  variant={activeFilterCount > 0 ? "secondary" : "outline"}
-                  size="sm"
-                  className="h-7 shrink-0 gap-1 rounded-full px-2.5 text-[11px]"
-                  aria-label="Mở bộ lọc"
-                />
-              }
-            >
-              <SlidersHorizontalIcon className="size-3.5" aria-hidden="true" />
-              <span>Lọc</span>
-              {activeFilterCount > 0 ? (
-                <Badge variant="default" className="h-4 min-w-4 px-1 text-[10px]">
-                  {activeFilterCount}
-                </Badge>
-              ) : null}
-            </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader>
-                <DrawerTitle>Bộ lọc & Vị trí</DrawerTitle>
-              </DrawerHeader>
-              <div className="space-y-4 px-4 pb-6">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <LocationSwitcher
-                    locationSource={view.locationSource}
-                    selectedSourceKey={view.selectedSourceKey}
-                    onSelectSource={(key) => {
-                      view.selectLocationSource(key)
-                      if (key !== null && filters.sort !== "distance") {
-                        filters.setSort("distance")
-                      }
-                    }}
-                  />
-                  <Toggle
-                    size="sm"
-                    variant="outline"
-                    pressed={filters.isNearbyActive}
-                    onPressedChange={handleToggleNearby}
-                    disabled={view.isLocating}
-                    className="h-8 gap-1.5 rounded-full px-3 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
-                  >
-                    <NearbyButtonIcon
-                      isLocating={view.isLocating}
-                      isNearbyActive={filters.isNearbyActive}
-                    />
-                    <span>Gần tôi</span>
-                  </Toggle>
-                </div>
-
-                <div className="space-y-1.5">
-                  <p className="text-xs font-medium text-muted-foreground">Khu vực</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={filters.district === "all" ? "default" : "outline"}
-                      className="h-7 rounded-full px-2.5 text-xs"
-                      onClick={() => filters.setDistrict("all")}
-                    >
-                      Tất cả
-                    </Button>
-                    {DANANG_DISTRICTS.map((district) => (
-                      <Button
-                        key={district}
-                        type="button"
-                        size="sm"
-                        variant={filters.district === district ? "default" : "outline"}
-                        className="h-7 rounded-full px-2.5 text-xs"
-                        onClick={() => filters.setDistrict(district)}
-                      >
-                        {district}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <p className="text-xs font-medium text-muted-foreground">Mức giá</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(["all", 1, 2, 3] as const).map((lvl) => (
-                      <Button
-                        key={String(lvl)}
-                        type="button"
-                        size="sm"
-                        variant={filters.priceMax === lvl ? "default" : "outline"}
-                        className="h-7 rounded-full px-2.5 text-xs"
-                        onClick={() => filters.setPriceMax(lvl)}
-                      >
-                        {lvl === "all" ? "Mọi mức giá" : `${priceLevelLabel(lvl)} trở xuống`}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <p className="text-xs font-medium text-muted-foreground">Sắp xếp</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={filters.sort === "newest" ? "default" : "outline"}
-                      className="h-7 rounded-full px-2.5 text-xs"
-                      onClick={() => handleSortChange("newest")}
-                    >
-                      Phù hợp / Mới nhất
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={filters.sort === "rating" ? "default" : "outline"}
-                      className="h-7 rounded-full px-2.5 text-xs"
-                      onClick={() => handleSortChange("rating")}
-                    >
-                      Đánh giá cao
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </DrawerContent>
-          </Drawer>
+          <MobileFilterDrawer
+            open={mobileFilterOpen}
+            onOpenChange={setMobileFilterOpen}
+            activeFilterCount={activeFilterCount}
+            view={view}
+            onToggleNearby={handleToggleNearby}
+            onSortChange={handleSortChange}
+          />
 
           <Button
             type="button"
@@ -592,72 +471,7 @@ export function DiscoverToolbar({
 
       {/* Hàng phụ: chỉ hiện khi có bộ lọc đang bật */}
       {hasAnyActivePill ? (
-        <div className="flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-1.5">
-          <span className="text-xs font-semibold text-muted-foreground">Đang lọc:</span>
-
-          {filters.category !== "all" ? (
-            <FilterPill
-              label={CATEGORY_META[filters.category].label}
-              onRemove={() => filters.setCategory("all")}
-            />
-          ) : null}
-
-          {filters.district !== "all" ? (
-            <FilterPill label={filters.district} onRemove={() => filters.setDistrict("all")} />
-          ) : null}
-
-          {filters.priceMax !== "all" ? (
-            <FilterPill
-              label={`Tối đa ${priceLevelLabel(filters.priceMax)}`}
-              onRemove={() => filters.setPriceMax("all")}
-            />
-          ) : null}
-
-          {filters.isNearbyActive ? (
-            <FilterPill
-              label="Gần tôi"
-              onRemove={() => {
-                filters.setIsNearbyActive(false)
-                view.clearLocation()
-              }}
-            />
-          ) : null}
-
-          {parsedChips.map((chip) => (
-            <FilterPill
-              key={chip.id}
-              label={chip.label}
-              variant={chip.kind}
-              onRemove={() => filters.removeParsedChip(chip)}
-            />
-          ))}
-
-          {filters.parsedQuery.residualQuery ? (
-            <Badge variant="outline" className="h-6 rounded-full px-2.5 text-xs text-foreground">
-              “{filters.parsedQuery.residualQuery}”
-            </Badge>
-          ) : null}
-
-          <Badge
-            variant="secondary"
-            className="ml-auto h-6 rounded-full px-2.5 text-xs font-normal tabular-nums"
-          >
-            {totalCount} địa điểm
-          </Badge>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="xs"
-            className="h-6 rounded-full px-2 text-xs text-muted-foreground"
-            onClick={() => {
-              filters.resetAll()
-              view.clearLocation()
-            }}
-          >
-            Xoá tất cả
-          </Button>
-        </div>
+        <ActiveFilterPills view={view} parsedChips={parsedChips} totalCount={totalCount} />
       ) : null}
 
       {view.locationError && filters.isNearbyActive ? (

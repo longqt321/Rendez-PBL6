@@ -9,22 +9,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { formatWeekdayDate } from "@/lib/format"
 import { useDailyPicks } from "../hooks/use-daily-picks"
 import { PlaceCard } from "./place-card"
 import { PlaceCardSkeleton } from "./place-card-skeleton"
-
-const PICK_DATE_FORMAT = new Intl.DateTimeFormat("vi-VN", {
-  weekday: "long",
-  day: "2-digit",
-  month: "2-digit",
-  timeZone: "UTC",
-})
-
-function formatPickDate(date: string): string {
-  const time = Date.parse(`${date}T00:00:00Z`)
-  if (Number.isNaN(time)) return ""
-  return PICK_DATE_FORMAT.format(time)
-}
 
 /**
  * Dải "Gợi ý hôm nay" trên /discover — trình bày kiểu Editorial Bento 1+2 trên desktop
@@ -55,7 +43,7 @@ export function DailyPicksSection() {
   }
   if (!data || data.items.length === 0) return null
 
-  const dateLabel = formatPickDate(data.date)
+  const dateLabel = formatWeekdayDate(data.date)
   const [featuredPick, ...secondaryPicks] = data.items
 
   return (

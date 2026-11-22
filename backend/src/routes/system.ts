@@ -1,22 +1,13 @@
 import { Hono } from "hono"
-import { Prisma } from "../../generated/prisma/client"
 import type { AppEnv } from "../app"
-import { prisma } from "../lib/prisma"
+import { recordAuditLogSafe } from "../lib/audit-log"
+import { ApiError } from "../lib/errors"
+import { db, sql } from "../lib/kysely"
 import { metricsSnapshot, resetMetrics } from "../lib/metrics"
 import { clientIp, rateLimit } from "../lib/rate-limit"
-import { ApiError } from "../lib/errors"
 import { getViewer } from "../lib/session"
-import { recordAuditLogSafe } from "../lib/audit-log"
 
 const RESET_RATE_LIMIT = rateLimit({ scope: "system-reset", limit: 10, windowSeconds: 60 })
-
-interface VenueCountRow {
-  total: number
-  published: number
-  with_images: number
-  with_tags: number
-  with_hours: number
-}
 
 async function countVenues(): Promise<{
   total: number
@@ -25,20 +16,22 @@ async function countVenues(): Promise<{
   withTags: number
   withHours: number
 }> {
-  const rows = await prisma.$queryRaw<VenueCountRow[]>(Prisma.sql`
-    SELECT COUNT(*)::int AS total,
-           COUNT(*) FILTER (WHERE p.published_at IS NOT NULL)::int AS published,
-           COUNT(*) FILTER (
-             WHERE EXISTS (SELECT 1 FROM place_images pi WHERE pi.place_id = p.id)
-           )::int AS with_images,
-           COUNT(*) FILTER (
-             WHERE EXISTS (SELECT 1 FROM place_tags pt WHERE pt.place_id = p.id)
-           )::int AS with_tags,
-           COUNT(*) FILTER (WHERE p.opening_hours IS NOT NULL)::int AS with_hours
-    FROM places p
-    WHERE p.deleted_at IS NULL
-  `)
-  const row = rows[0]
+  const row = await db
+    .selectFrom("places as p")
+    .where("p.deleted_at", "is", null)
+    .select([
+      sql<number>`COUNT(*)::int`.as("total"),
+      sql<number>`COUNT(*) FILTER (WHERE p.published_at IS NOT NULL)::int`.as("published"),
+      sql<number>`COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM place_images pi WHERE pi.place_id = p.id))::int`.as(
+        "with_images",
+      ),
+      sql<number>`COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM place_tags pt WHERE pt.place_id = p.id))::int`.as(
+        "with_tags",
+      ),
+      sql<number>`COUNT(*) FILTER (WHERE p.opening_hours IS NOT NULL)::int`.as("with_hours"),
+    ])
+    .executeTakeFirst()
+
   return {
     total: Number(row?.total ?? 0),
     published: Number(row?.published ?? 0),
@@ -67,9 +60,6 @@ export function createSystemRouter() {
   })
 
   router.post("/system/reset", RESET_RATE_LIMIT, async (c) => {
-    // Thao tác GHI công khai chỉ chấp nhận được ở môi trường demo/dev; ở
-    // production ai cũng gọi được là lỗ hổng quan sát (ai cũng xoá số liệu
-    // được) → chặn hẳn.
     if (process.env.NODE_ENV === "production") {
       throw new ApiError(403, "Reset metrics chỉ khả dụng ở môi trường demo/dev")
     }

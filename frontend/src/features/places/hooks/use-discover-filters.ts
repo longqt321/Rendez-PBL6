@@ -7,6 +7,7 @@ import {
   type ParsedNaturalQuery,
 } from "@rendez/schema"
 import { useDebounce } from "@uidotdev/usehooks"
+import { formatCoordinate } from "@/lib/format"
 import type { DiscoverSort } from "../api/get-places"
 import type { PlaceCategory } from "../types/place"
 
@@ -124,8 +125,8 @@ export function useDiscoverFilters(): DiscoverFiltersState {
 
   const setCoords = useCallback(
     (coords: { lat: number; lng: number } | null) => {
-      const lat = coords ? coords.lat.toFixed(4) : null
-      const lng = coords ? coords.lng.toFixed(4) : null
+      const lat = coords ? formatCoordinate(coords.lat) : null
+      const lng = coords ? formatCoordinate(coords.lng) : null
       if ((urlState.lat ?? null) === lat && (urlState.lng ?? null) === lng) return
       void setUrlState({ lat, lng })
     },

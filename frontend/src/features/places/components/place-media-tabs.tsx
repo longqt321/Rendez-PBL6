@@ -1,5 +1,8 @@
-import { useRef, useState } from "react"
+import { useCallback, useState } from "react"
+import type { PlaceMediaKind } from "@rendez/schema"
+import { countBy } from "es-toolkit"
 import { CameraIcon, ImageIcon, ReceiptTextIcon, UtensilsIcon } from "lucide-react"
+import { useDropzone } from "react-dropzone"
 import { toast } from "sonner"
 import { ImageLightbox } from "@/components/shared/image-lightbox"
 import { SafeImage } from "@/components/shared/safe-image"
@@ -10,7 +13,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatRelativeTime } from "@/lib/format"
 import { requestMediaUpload, uploadMediaFile } from "@/lib/media-upload"
-import type { PlaceMediaKind } from "@rendez/schema"
 import { useAddPlaceImages, usePlaceMedia } from "../hooks/use-place-media"
 
 interface PlaceMediaTabsProps {
@@ -19,6 +21,8 @@ interface PlaceMediaTabsProps {
   canUpload: boolean
 }
 
+const MAX_UPLOAD_BATCH = 3
+
 const TAB_DEFS: Array<{ kind: PlaceMediaKind; label: string; icon: typeof ImageIcon }> = [
   { kind: "dish_real", label: "Món thật", icon: UtensilsIcon },
   { kind: "menu_price", label: "Bảng giá", icon: ReceiptTextIcon },
@@ -26,68 +30,85 @@ const TAB_DEFS: Array<{ kind: PlaceMediaKind; label: string; icon: typeof ImageI
 ]
 
 export function PlaceMediaTabs({ placeId, placeName, canUpload }: PlaceMediaTabsProps) {
-  const { data: items = [], isLoading } = usePlaceMedia(placeId)
+  const { data: items = [], isPending } = usePlaceMedia(placeId)
   const addImages = useAddPlaceImages(placeId)
   const [activeKind, setActiveKind] = useState<PlaceMediaKind>("dish_real")
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [uploading, setUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const filtered = items.filter((item) => item.kind === activeKind)
+  const rawCounts = countBy(items, (item) => item.kind)
   const counts: Record<PlaceMediaKind, number> = {
-    dish_real: items.filter((i) => i.kind === "dish_real").length,
-    menu_price: items.filter((i) => i.kind === "menu_price").length,
-    venue: items.filter((i) => i.kind === "venue").length,
+    dish_real: rawCounts.dish_real ?? 0,
+    menu_price: rawCounts.menu_price ?? 0,
+    venue: rawCounts.venue ?? 0,
   }
 
-  async function handleFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []).slice(0, 3)
-    e.target.value = ""
-    if (files.length === 0) return
+  const handleDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const files = acceptedFiles.slice(0, MAX_UPLOAD_BATCH)
+      if (files.length === 0) return
 
-    setUploading(true)
-    try {
-      const uploaded: Array<{ url: string; kind: PlaceMediaKind }> = []
-      for (const file of files) {
-        const ticket = await requestMediaUpload("places", file.type || "image/jpeg")
-        const url = await uploadMediaFile(file, ticket)
-        uploaded.push({ url, kind: activeKind })
+      setUploading(true)
+      try {
+        const uploaded: Array<{ url: string; kind: PlaceMediaKind }> = []
+        for (const file of files) {
+          const ticket = await requestMediaUpload("places", file.type || "image/jpeg")
+          const url = await uploadMediaFile(file, ticket)
+          uploaded.push({ url, kind: activeKind })
+        }
+        await addImages.mutateAsync(uploaded)
+        toast.success("Đã thêm ảnh đóng góp, cảm ơn bạn!")
+      } catch {
+        toast.error("Không tải ảnh lên được, thử lại nhé")
+      } finally {
+        setUploading(false)
       }
-      await addImages.mutateAsync(uploaded)
-      toast.success("Đã thêm ảnh đóng góp, cảm ơn bạn!")
-    } catch {
-      toast.error("Không tải ảnh lên được, thử lại nhé")
-    } finally {
-      setUploading(false)
-    }
-  }
+    },
+    [activeKind, addImages],
+  )
+
+  const {
+    getRootProps,
+    getInputProps,
+    open: openFilePicker,
+  } = useDropzone({
+    accept: { "image/*": [] },
+    multiple: true,
+    maxFiles: MAX_UPLOAD_BATCH,
+    noClick: true,
+    noKeyboard: true,
+    disabled: !canUpload || uploading,
+    onDrop: (files) => {
+      void handleDrop(files)
+    },
+  })
 
   return (
-    <section aria-label="Thư viện ảnh và bảng giá" className="flex flex-col gap-3">
+    <section
+      {...getRootProps()}
+      aria-label="Thư viện ảnh và bảng giá"
+      className="flex flex-col gap-3"
+    >
+      {canUpload ? <input {...getInputProps()} /> : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-display text-lg font-bold tracking-tight">Ảnh thật & Bảng giá</h2>
+        <h2 className="font-display text-lg font-bold tracking-tight">Ảnh thật &amp; Bảng giá</h2>
         {canUpload ? (
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => void handleFilesSelected(e)}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={uploading}
-              onClick={() => fileInputRef.current?.click()}
-              className="min-h-10"
-            >
-              {uploading ? <Spinner /> : <CameraIcon className="size-4" />}
-              {activeKind === "menu_price" ? "Chụp bảng giá" : "Thêm ảnh thật"}
-            </Button>
-          </>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={uploading}
+            onClick={openFilePicker}
+            className="min-h-10"
+          >
+            {uploading ? (
+              <Spinner aria-label="Đang tải ảnh lên" />
+            ) : (
+              <CameraIcon className="size-4" />
+            )}
+            {activeKind === "menu_price" ? "Chụp bảng giá" : "Thêm ảnh thật"}
+          </Button>
         ) : null}
       </div>
 
@@ -103,7 +124,7 @@ export function PlaceMediaTabs({ placeId, placeName, canUpload }: PlaceMediaTabs
               <TabsTrigger
                 key={tab.kind}
                 value={tab.kind}
-                className="min-h-9 gap-1 px-1.5 py-1.5 text-[11px] sm:gap-1.5 sm:px-2.5 sm:text-sm"
+                className="min-h-9 gap-1 px-1.5 py-1.5 text-xs sm:gap-1.5 sm:px-2.5 sm:text-sm"
               >
                 <Icon className="size-3.5 shrink-0" aria-hidden="true" />
                 <span className="truncate">
@@ -116,9 +137,9 @@ export function PlaceMediaTabs({ placeId, placeName, canUpload }: PlaceMediaTabs
 
         {TAB_DEFS.map((tab) => (
           <TabsContent key={tab.kind} value={tab.kind} className="mt-3">
-            {isLoading ? (
+            {isPending && items.length === 0 ? (
               <div className="flex h-32 items-center justify-center">
-                <Spinner />
+                <Spinner aria-label="Đang tải thư viện ảnh" />
               </div>
             ) : filtered.length === 0 ? (
               <Empty className="border border-dashed border-border/80 bg-muted/20 py-8">
@@ -141,7 +162,7 @@ export function PlaceMediaTabs({ placeId, placeName, canUpload }: PlaceMediaTabs
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={openFilePicker}
                     disabled={uploading}
                   >
                     <CameraIcon className="size-4" />
@@ -171,9 +192,9 @@ export function PlaceMediaTabs({ placeId, placeName, canUpload }: PlaceMediaTabs
                         className="size-full object-cover transition-transform duration-200 group-hover:scale-105"
                       />
                     </Button>
-                    <div className="flex items-center justify-between gap-1 px-2.5 py-1.5 text-[11px] text-muted-foreground">
+                    <div className="flex items-center justify-between gap-1 px-2.5 py-1.5 text-xs text-muted-foreground">
                       <span className="truncate">{item.authorName ?? "Cộng đồng"}</span>
-                      <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-normal">
+                      <Badge variant="secondary" className="px-1.5 py-0 text-xs font-normal">
                         {formatRelativeTime(item.capturedAt)}
                       </Badge>
                     </div>

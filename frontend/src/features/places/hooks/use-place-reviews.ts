@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { getPlaceReviews } from "../api/get-place-reviews"
 
 export function placeReviewsQueryKey(id: string) {
@@ -9,6 +9,6 @@ export function usePlaceReviews(id: string) {
   return useQuery({
     queryKey: placeReviewsQueryKey(id),
     queryFn: ({ signal }) => getPlaceReviews(id, signal),
-    placeholderData: (previous) => previous,
+    placeholderData: keepPreviousData,
   })
 }

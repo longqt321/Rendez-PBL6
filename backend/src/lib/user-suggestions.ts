@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto"
+import { addDays, parseISO, subDays } from "date-fns"
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
 import { toUserProfile } from "./profile"
@@ -11,8 +12,6 @@ const NEW_USER_WEIGHT = 0.5
 export const MAX_SUGGESTIONS = 5
 
 const RECENT_WINDOW_DAYS = 30
-
-const DAY_MS = 86_400_000
 
 export interface SuggestionCandidate {
   id: string
@@ -37,9 +36,9 @@ export function getSuggestionDate(now: Date = new Date()): string {
 }
 
 function isNewUser(createdAt: Date, today: string): boolean {
-  const endOfToday = Date.parse(`${today}T00:00:00Z`) + DAY_MS
-  const age = endOfToday - createdAt.getTime()
-  return age >= 0 && age <= RECENT_WINDOW_DAYS * DAY_MS
+  const endOfToday = addDays(parseISO(`${today}T00:00:00Z`), 1)
+  const windowStart = subDays(endOfToday, RECENT_WINDOW_DAYS)
+  return createdAt >= windowStart && createdAt <= endOfToday
 }
 
 /**

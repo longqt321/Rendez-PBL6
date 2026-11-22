@@ -1,3 +1,4 @@
+import { subDays } from "date-fns"
 import { prisma } from "./prisma"
 import { logger } from "./logger"
 
@@ -49,7 +50,7 @@ export async function maintainInteractionPartitions(): Promise<{
       JOIN pg_class c ON c.oid = i.inhrelid
       WHERE i.inhparent = 'interaction_events'::regclass
     `
-    const cutoff = new Date(now.getTime() - RETENTION_DAYS * 24 * 60 * 60 * 1000)
+    const cutoff = subDays(now, RETENTION_DAYS)
     for (const row of rows) {
       // bound dạng: FOR VALUES FROM ('2026-11-01 00:00:00+07') TO ('2026-12-01 ...')
       const match = /TO \('([^']+)'\)/.exec(row.bound)

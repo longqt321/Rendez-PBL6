@@ -28,7 +28,6 @@
     "@base-ui/react": "^1.9.0",
     "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource-variable/geist": "^5.3.0",
-    "@formkit/auto-animate": "^0.10.2",
     "@hookform/resolvers": "^7.0.3",
     "@rendez/schema": "workspace:*",
     "@tailwindcss/vite": "^4.3.5",

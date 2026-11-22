@@ -108,7 +108,7 @@ export function AuditLogsTab() {
           row.original.actor ? (
             <div className="flex items-center gap-1.5 text-xs">
               <span className="font-medium">@{row.original.actor.handle}</span>
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-xs">
                 {row.original.actor.role}
               </Badge>
             </div>
@@ -120,10 +120,7 @@ export function AuditLogsTab() {
         accessorKey: "action",
         header: "Hành động",
         cell: ({ row }) => (
-          <Badge
-            variant={auditActionVariant(row.original.action)}
-            className="font-mono text-[11px]"
-          >
+          <Badge variant={auditActionVariant(row.original.action)} className="font-mono text-xs">
             {row.original.action}
           </Badge>
         ),
@@ -133,7 +130,7 @@ export function AuditLogsTab() {
         header: "Đối tượng",
         cell: ({ row }) => (
           <div className="flex items-center gap-1.5 text-xs">
-            <Badge variant="secondary" className="text-[11px]">
+            <Badge variant="secondary" className="text-xs">
               {row.original.entity}
             </Badge>
             {row.original.entityId ? (

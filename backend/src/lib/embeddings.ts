@@ -9,6 +9,7 @@ import {
 } from "cockatiel"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { LRUCache } from "lru-cache"
 import { logger } from "./logger"
 import { recordEmbedTiming } from "./request-context"
 
@@ -84,7 +85,7 @@ async function encode(texts: string[]): Promise<Float32Array[] | null> {
   }
 }
 
-const queryCache = new Map<string, Float32Array>()
+const queryCache = new LRUCache<string, Float32Array>({ max: QUERY_CACHE_MAX })
 
 export async function embedQuery(text: string): Promise<Float32Array | null> {
   const cached = queryCache.get(text)
@@ -94,11 +95,6 @@ export async function embedQuery(text: string): Promise<Float32Array | null> {
   try {
     const vec = (await encode([`query: ${text}`]))?.[0]
     if (vec) {
-      if (queryCache.size >= QUERY_CACHE_MAX) {
-        // Phần tử đầu tiên là phần cũ nhất (Map giữ thứ tự chèn).
-        const oldest = queryCache.keys().next().value
-        if (oldest !== undefined) queryCache.delete(oldest)
-      }
       queryCache.set(text, vec)
     }
     return vec ?? null

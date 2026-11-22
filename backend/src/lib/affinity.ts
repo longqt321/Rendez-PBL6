@@ -1,5 +1,6 @@
-import { Prisma } from "../../generated/prisma/client"
-import { prisma } from "./prisma"
+import { subDays } from "date-fns"
+import { chunk } from "es-toolkit"
+import { db, sql } from "./kysely"
 
 export interface AffinityEvent {
   userId: string | null
@@ -119,13 +120,6 @@ export function computeItemItem(
   return result
 }
 
-interface AffinityEventRow {
-  user_id: string | null
-  anon_id: string | null
-  place_id: string
-  weight: number
-}
-
 /**
  * Tính lại toàn bộ `affinity_cache` từ event 90 ngày gần nhất.
  *
@@ -136,39 +130,41 @@ interface AffinityEventRow {
  * Trả về số place đã ghi (place có ít nhất 1 place liên quan).
  */
 export async function refreshAffinityCache(): Promise<number> {
-  const since = new Date(Date.now() - CACHE_WINDOW_DAYS * 24 * 60 * 60 * 1000)
+  const since = subDays(new Date(), CACHE_WINDOW_DAYS)
 
-  // Đọc bằng raw SQL: `interaction_events` là bảng partitioned, và chỉ cần 4 cột
-  // (không kéo `context`/`query` về bộ nhớ).
-  const rows = await prisma.$queryRaw<AffinityEventRow[]>`
-    SELECT user_id::text AS user_id, anon_id, place_id, weight
-    FROM interaction_events
-    WHERE created_at >= ${since}
-      AND place_id IS NOT NULL
-      AND weight <> 0
-  `
+  const rows = await db
+    .selectFrom("interaction_events")
+    .select([sql<string | null>`user_id::text`.as("user_id"), "anon_id", "place_id", "weight"])
+    .where("created_at", ">=", since)
+    .where("place_id", "is not", null)
+    .where("weight", "!=", 0)
+    .execute()
 
   const related = computeItemItem(
-    rows.map((row) => ({
-      userId: row.user_id,
-      anonId: row.anon_id,
-      placeId: row.place_id,
-      weight: row.weight,
-    })),
+    rows
+      .filter((row): row is typeof row & { place_id: string } => row.place_id !== null)
+      .map((row) => ({
+        userId: row.user_id,
+        anonId: row.anon_id,
+        placeId: row.place_id,
+        weight: Number(row.weight),
+      })),
   )
 
   const entries = [...related]
-  await prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`DELETE FROM affinity_cache`
-    for (let offset = 0; offset < entries.length; offset += INSERT_CHUNK_SIZE) {
-      const chunk = entries.slice(offset, offset + INSERT_CHUNK_SIZE)
-      const values = chunk.map(
-        ([placeId, items]) => Prisma.sql`(${placeId}, ${JSON.stringify(items)}::jsonb, now())`,
-      )
-      await tx.$executeRaw`
-        INSERT INTO affinity_cache (place_id, related, computed_at)
-        VALUES ${Prisma.join(values)}
-      `
+  await db.transaction().execute(async (trx) => {
+    await trx.deleteFrom("affinity_cache").execute()
+    for (const batch of chunk(entries, INSERT_CHUNK_SIZE)) {
+      await trx
+        .insertInto("affinity_cache")
+        .values(
+          batch.map(([placeId, items]) => ({
+            place_id: placeId,
+            related: JSON.stringify(items),
+            computed_at: new Date(),
+          })),
+        )
+        .execute()
     }
   })
 

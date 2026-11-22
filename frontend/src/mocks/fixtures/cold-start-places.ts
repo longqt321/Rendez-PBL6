@@ -1,3 +1,4 @@
+import { parseISO, subDays } from "date-fns"
 import type { Place, PlaceCategory } from "@/features/places/types/place"
 import coldStartDataset from "../../../data/cold-start/places.json"
 
@@ -78,7 +79,7 @@ export const COLD_START_PLACES: MockPlace[] = places.map((raw, index) => {
   const daysAgo = (index % 6) * 4
   const publishedAt = UNPUBLISHED_IDS.has(raw.id)
     ? null
-    : new Date(Date.parse(PUBLISHED_AT) - daysAgo * 24 * 60 * 60 * 1000).toISOString()
+    : subDays(parseISO(PUBLISHED_AT), daysAgo).toISOString()
 
   return { ...place, publishedAt }
 })

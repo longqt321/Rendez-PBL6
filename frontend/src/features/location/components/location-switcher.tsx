@@ -124,7 +124,7 @@ export function LocationSwitcher({
             }}
           >
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="text-[11px] tracking-wide text-muted-foreground uppercase">
+              <DropdownMenuLabel className="text-xs tracking-wide text-muted-foreground uppercase">
                 Vị trí của bạn
               </DropdownMenuLabel>
               <DropdownMenuRadioItem value="auto">
@@ -146,7 +146,7 @@ export function LocationSwitcher({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel className="text-[11px] tracking-wide text-muted-foreground uppercase">
+                  <DropdownMenuLabel className="text-xs tracking-wide text-muted-foreground uppercase">
                     Địa danh nổi tiếng
                   </DropdownMenuLabel>
                   {landmarks.map((lm) => (

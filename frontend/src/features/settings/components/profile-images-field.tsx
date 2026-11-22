@@ -1,5 +1,6 @@
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { ImagePlusIcon, Trash2Icon } from "lucide-react"
+import { useDropzone } from "react-dropzone"
 import { toast } from "sonner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -26,12 +27,14 @@ const LABEL_BY_KIND: Record<ImageKind, string> = {
   cover: "ảnh bìa",
 }
 
+const ACCEPTED_IMAGE_TYPES = Object.fromEntries(
+  IMAGE_CONTENT_TYPES.map((type) => [type, [] as string[]]),
+)
+
 export function ProfileImagesField({ profile }: Readonly<{ profile: UserProfile }>) {
   const updateMe = useUpdateMe()
   const [mediaUnavailable, setMediaUnavailable] = useState(false)
   const [uploadingKind, setUploadingKind] = useState<ImageKind | null>(null)
-  const avatarInputRef = useRef<HTMLInputElement>(null)
-  const coverInputRef = useRef<HTMLInputElement>(null)
 
   async function handleFile(kind: ImageKind, file: File | undefined) {
     if (!file) return
@@ -83,6 +86,26 @@ export function ProfileImagesField({ profile }: Readonly<{ profile: UserProfile 
   const avatarUrl = profile.avatarUrl ?? undefined
   const coverUrl = profile.coverUrl ?? undefined
 
+  const avatarDropzone = useDropzone({
+    accept: ACCEPTED_IMAGE_TYPES,
+    multiple: false,
+    noClick: true,
+    noDrag: true,
+    disabled,
+    onDropAccepted: (files) => void handleFile("avatar", files[0]),
+    onDropRejected: () => toast.error("Chỉ nhận ảnh JPEG, PNG, WebP hoặc AVIF"),
+  })
+
+  const coverDropzone = useDropzone({
+    accept: ACCEPTED_IMAGE_TYPES,
+    multiple: false,
+    noClick: true,
+    noDrag: true,
+    disabled,
+    onDropAccepted: (files) => void handleFile("cover", files[0]),
+    onDropRejected: () => toast.error("Chỉ nhận ảnh JPEG, PNG, WebP hoặc AVIF"),
+  })
+
   return (
     <FieldSet>
       <FieldLegend>Ảnh hồ sơ</FieldLegend>
@@ -103,23 +126,22 @@ export function ProfileImagesField({ profile }: Readonly<{ profile: UserProfile 
           </FieldContent>
           <div className="flex items-center gap-2">
             <input
-              ref={avatarInputRef}
-              type="file"
-              accept={IMAGE_CONTENT_TYPES.join(",")}
-              className="sr-only"
-              aria-label="Chọn ảnh đại diện"
-              onChange={(event) => {
-                void handleFile("avatar", event.target.files?.[0])
-                event.target.value = "" // chọn lại cùng file vẫn kích hoạt onChange
-              }}
+              {...avatarDropzone.getInputProps({
+                className: "sr-only",
+                "aria-label": "Chọn ảnh đại diện",
+              })}
             />
             <Button
               type="button"
               variant="outline"
               disabled={disabled}
-              onClick={() => avatarInputRef.current?.click()}
+              onClick={avatarDropzone.open}
             >
-              {uploadingKind === "avatar" ? <Spinner className="size-4" /> : <ImagePlusIcon />}
+              {uploadingKind === "avatar" ? (
+                <Spinner className="size-4" aria-label="Đang tải ảnh đại diện" />
+              ) : (
+                <ImagePlusIcon />
+              )}
               Đổi ảnh
             </Button>
             {avatarUrl && (
@@ -145,23 +167,22 @@ export function ProfileImagesField({ profile }: Readonly<{ profile: UserProfile 
           />
           <div className="flex items-center gap-2">
             <input
-              ref={coverInputRef}
-              type="file"
-              accept={IMAGE_CONTENT_TYPES.join(",")}
-              className="sr-only"
-              aria-label="Chọn ảnh bìa"
-              onChange={(event) => {
-                void handleFile("cover", event.target.files?.[0])
-                event.target.value = "" // chọn lại cùng file vẫn kích hoạt onChange
-              }}
+              {...coverDropzone.getInputProps({
+                className: "sr-only",
+                "aria-label": "Chọn ảnh bìa",
+              })}
             />
             <Button
               type="button"
               variant="outline"
               disabled={disabled}
-              onClick={() => coverInputRef.current?.click()}
+              onClick={coverDropzone.open}
             >
-              {uploadingKind === "cover" ? <Spinner className="size-4" /> : <ImagePlusIcon />}
+              {uploadingKind === "cover" ? (
+                <Spinner className="size-4" aria-label="Đang tải ảnh bìa" />
+              ) : (
+                <ImagePlusIcon />
+              )}
               Đổi ảnh bìa
             </Button>
             {coverUrl && (

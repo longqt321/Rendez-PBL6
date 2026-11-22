@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { getCollection, getCollections, getUserCollections } from "../api/collections"
 import { collectionsQueryKey, userCollectionsQueryKey } from "./use-collections"
 
@@ -6,6 +6,7 @@ export function useCollections(params?: { placeId?: string; enabled?: boolean })
   return useQuery({
     queryKey: collectionsQueryKey(params?.placeId),
     queryFn: () => getCollections(params?.placeId ? { placeId: params.placeId } : undefined),
+    placeholderData: keepPreviousData,
     enabled: params?.enabled ?? true,
   })
 }
@@ -14,6 +15,7 @@ export function useUserCollections(handle: string) {
   return useQuery({
     queryKey: userCollectionsQueryKey(handle),
     queryFn: () => getUserCollections(handle),
+    placeholderData: keepPreviousData,
     enabled: handle.length > 0,
   })
 }
@@ -23,6 +25,6 @@ export function useCollection(id: string) {
     queryKey: ["collections", id],
     queryFn: () => getCollection(id),
     enabled: id.length > 0,
-    placeholderData: (previous) => previous,
+    placeholderData: keepPreviousData,
   })
 }

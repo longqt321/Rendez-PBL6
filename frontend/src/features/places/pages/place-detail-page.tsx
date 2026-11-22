@@ -1,3 +1,4 @@
+import type { Review } from "../types/review"
 import { useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
 import {
@@ -7,7 +8,6 @@ import {
   FolderPlusIcon,
   MapPinIcon,
   SparklesIcon,
-  StarIcon,
 } from "lucide-react"
 import {
   PageContainer,
@@ -32,7 +32,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
@@ -40,27 +39,26 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import { Item, ItemActions, ItemContent, ItemGroup } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
 import { useMe } from "@/features/profile/hooks/use-me"
-import { PostCard } from "@/features/social/components/post-card"
-import type { Post } from "@/features/social/types/post"
 import { isNotFoundError } from "@/lib/axios"
 import { formatCount } from "@/lib/format"
 import { CheckInDialog } from "../components/check-in-dialog"
 import { PlaceCard } from "../components/place-card"
 import { PlaceMiniMap } from "../components/place-mini-map"
+import {
+  OpenStatusBadge,
+  PostsTabContent,
+  ReviewTrigger,
+  ReviewsListContent,
+} from "../components/place-detail-sections"
 import { ReportPlaceDialog } from "../components/report-place-dialog"
 import { ReviewDeleteDialog } from "../components/review-delete-dialog"
 import { PlaceMediaTabs } from "../components/place-media-tabs"
 import { PlaceTierSummary } from "../components/place-tier-summary"
-import { REVIEW_TIER_META } from "../lib/review-tier-meta"
-import { ReviewForm } from "../components/review-form"
 import type { ReviewTier } from "@rendez/schema"
-import { ReviewItem } from "../components/review-item"
 import { useDiscoverPlaces } from "../hooks/use-discover-places"
 import { usePlace } from "../hooks/use-place"
 import { usePlacePosts } from "../hooks/use-place-posts"
@@ -70,7 +68,6 @@ import { formatLocation } from "../lib/format-location"
 import { isOpenNow } from "../lib/opening-hours"
 import { priceLevelAriaLabel, priceLevelLabel } from "../lib/price-level"
 import { GUEST_SCOPE, recordPlaceView } from "../lib/recently-viewed"
-import type { Review } from "../types/review"
 
 export function PlaceDetailPage() {
   const { id } = useParams()
@@ -446,161 +443,5 @@ export function PlaceDetailPage() {
         />
       ) : null}
     </PageContainer>
-  )
-}
-
-function OpenStatusBadge({ openState }: Readonly<{ openState: boolean | null }>) {
-  if (openState === true) {
-    return <Badge className="bg-open text-open-foreground">Đang mở cửa</Badge>
-  }
-  if (openState === false) {
-    return (
-      <Badge variant="outline" className="text-muted-foreground">
-        Đang đóng cửa
-      </Badge>
-    )
-  }
-  return null
-}
-
-function ReviewTrigger({
-  reviewFormVisible,
-  myReview,
-  editingReview,
-  placeId,
-  authorInitials,
-  suggestedDishes,
-  closeReviewForm,
-  setEditingReview,
-  setShowReviewForm,
-}: Readonly<{
-  reviewFormVisible: boolean
-  myReview?: Review | null
-  editingReview: Review | null
-  placeId: string
-  authorInitials: string
-  suggestedDishes: string[]
-  closeReviewForm: () => void
-  setEditingReview: (review: Review | null) => void
-  setShowReviewForm: (show: boolean) => void
-}>) {
-  if (reviewFormVisible) {
-    return (
-      <Card className="p-4" role="region" aria-label="Form đánh giá">
-        <ReviewForm
-          key={editingReview?.id ?? "new"}
-          placeId={placeId}
-          myReview={editingReview}
-          authorInitials={authorInitials}
-          suggestedDishes={suggestedDishes}
-          onDone={closeReviewForm}
-        />
-      </Card>
-    )
-  }
-  if (myReview) {
-    return (
-      <Item variant="outline" className="justify-between gap-3 p-4">
-        <ItemContent>
-          <p className="text-sm text-muted-foreground">
-            Bạn đã đánh giá "{REVIEW_TIER_META[myReview.tier].label}" cho địa điểm này.
-          </p>
-        </ItemContent>
-        <ItemActions>
-          <Button variant="outline" size="sm" onClick={() => setEditingReview(myReview)}>
-            Sửa đánh giá
-          </Button>
-        </ItemActions>
-      </Item>
-    )
-  }
-  return (
-    <Button className="self-start" onClick={() => setShowReviewForm(true)}>
-      <StarIcon />
-      Viết đánh giá
-    </Button>
-  )
-}
-
-function ReviewsListContent({
-  reviewsPending,
-  reviewsError,
-  reviews,
-  refetchReviews,
-  setEditingReview,
-  setDeletingReview,
-}: Readonly<{
-  reviewsPending: boolean
-  reviewsError: boolean
-  reviews?: Review[]
-  refetchReviews: () => unknown
-  setEditingReview: (review: Review | null) => void
-  setDeletingReview: (review: Review | null) => void
-}>) {
-  if (reviewsPending) {
-    return <p className="py-8 text-center text-sm text-muted-foreground">Đang tải đánh giá…</p>
-  }
-  if (reviewsError) {
-    return <ErrorState variant="plain" title="Không tải được đánh giá" onRetry={refetchReviews} />
-  }
-  if (reviews && reviews.length > 0) {
-    return (
-      <ItemGroup className="gap-3">
-        {reviews.map((review) => (
-          <ReviewItem
-            key={review.id}
-            review={review}
-            onEdit={review.isMine ? setEditingReview : undefined}
-            onDelete={review.isMine ? setDeletingReview : undefined}
-          />
-        ))}
-      </ItemGroup>
-    )
-  }
-  return (
-    <Empty className="mt-2">
-      <EmptyHeader>
-        <EmptyTitle>Chưa có đánh giá nào</EmptyTitle>
-        <EmptyDescription>Hãy là người đầu tiên chia sẻ trải nghiệm tại đây.</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
-  )
-}
-
-function PostsTabContent({
-  postsPending,
-  postsError,
-  posts,
-  refetchPosts,
-}: Readonly<{
-  postsPending: boolean
-  postsError: boolean
-  posts: Post[]
-  refetchPosts: () => unknown
-}>) {
-  if (postsPending) {
-    return <p className="py-8 text-center text-sm text-muted-foreground">Đang tải bài đăng…</p>
-  }
-  if (postsError) {
-    return <ErrorState variant="plain" title="Không tải được bài đăng" onRetry={refetchPosts} />
-  }
-  if (posts.length === 0) {
-    return (
-      <Empty className="mt-2">
-        <EmptyHeader>
-          <EmptyTitle>Chưa có bài đăng nào</EmptyTitle>
-          <EmptyDescription>Các bài gắn địa điểm này sẽ xuất hiện ở đây.</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    )
-  }
-  return (
-    <ul className="flex flex-col gap-4">
-      {posts.map((post) => (
-        <li key={post.id}>
-          <PostCard post={post} />
-        </li>
-      ))}
-    </ul>
   )
 }

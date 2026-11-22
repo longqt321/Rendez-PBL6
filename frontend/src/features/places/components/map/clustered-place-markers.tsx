@@ -292,11 +292,11 @@ export function ClusteredPlaceMarkers({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1">
-                  <Badge variant="secondary" className="text-[11px]">
+                  <Badge variant="secondary" className="text-xs">
                     {CATEGORY_META[place.category]?.label}
                   </Badge>
                   {place.district ? (
-                    <Badge variant="outline" className="text-[11px]">
+                    <Badge variant="outline" className="text-xs">
                       {place.district}
                     </Badge>
                   ) : null}

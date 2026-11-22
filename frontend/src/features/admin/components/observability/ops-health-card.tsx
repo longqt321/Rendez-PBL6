@@ -103,7 +103,7 @@ export function OpsHealthCard({ data }: Readonly<{ data: AdminObservability }>) 
           {searchQuality24h && searchQuality24h.topZeroQueries.length > 0 ? (
             <div className="flex flex-wrap gap-1.5 pt-1">
               {searchQuality24h.topZeroQueries.map((item) => (
-                <Badge key={item.query} variant="outline" className="text-[11px] font-normal">
+                <Badge key={item.query} variant="outline" className="text-xs font-normal">
                   {item.query} ({item.count})
                 </Badge>
               ))}

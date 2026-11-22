@@ -43,7 +43,7 @@ export function ReviewItem({ review, onEdit, onDelete }: ReviewItemProps) {
               <span>· {review.authorReviewCount} đánh giá</span>
             ) : null}
             {review.isFollowingAuthor ? (
-              <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-medium">
+              <Badge variant="secondary" className="px-1.5 py-0 text-xs font-medium">
                 Đang theo dõi
               </Badge>
             ) : null}

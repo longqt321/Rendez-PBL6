@@ -1,3 +1,4 @@
+import { isAfter, isValid, parseISO, subDays } from "date-fns"
 import { MapPinIcon, NavigationIcon, SparklesIcon } from "lucide-react"
 import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
@@ -17,9 +18,9 @@ const NEW_PLACE_DAYS = 14
 
 function isRecentlyPublished(publishedAt: string | null): boolean {
   if (publishedAt === null) return false
-  const time = Date.parse(publishedAt)
-  if (Number.isNaN(time)) return false
-  return Date.now() - time < NEW_PLACE_DAYS * 24 * 60 * 60 * 1000
+  const date = parseISO(publishedAt)
+  if (!isValid(date)) return false
+  return isAfter(date, subDays(new Date(), NEW_PLACE_DAYS))
 }
 
 interface PlaceCardProps {

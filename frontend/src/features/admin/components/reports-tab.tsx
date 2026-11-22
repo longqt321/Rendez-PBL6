@@ -77,7 +77,7 @@ export function ReportsTab() {
                 </Button>
               </div>
               {!item.placePublished || item.placeStatus === "closed" ? (
-                <span className="block text-[11px] text-muted-foreground">
+                <span className="block text-xs text-muted-foreground">
                   {!item.placePublished ? "Đang ẩn" : ""}
                   {!item.placePublished && item.placeStatus === "closed" ? " · " : ""}
                   {item.placeStatus === "closed" ? "Đóng cửa" : ""}
@@ -217,7 +217,7 @@ export function ReportsTab() {
                 >
                   {item.label}
                   {count !== undefined ? (
-                    <span className="font-mono text-[11px] tabular-nums opacity-80">
+                    <span className="font-mono text-xs tabular-nums opacity-80">
                       ({formatNumber(count)})
                     </span>
                   ) : null}

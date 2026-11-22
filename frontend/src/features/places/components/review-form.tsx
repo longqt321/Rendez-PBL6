@@ -120,7 +120,7 @@ export function ReviewForm({
                     <Icon className="size-4 shrink-0" aria-hidden="true" />
                     <div className="flex flex-col leading-tight">
                       <span className="text-sm font-semibold">{meta.label}</span>
-                      <span className="text-[11px] font-normal opacity-80">{meta.hint}</span>
+                      <span className="text-xs font-normal opacity-80">{meta.hint}</span>
                     </div>
                   </Button>
                 )
@@ -236,7 +236,7 @@ export function ReviewForm({
             </Button>
           ) : null}
           <Button type="submit" disabled={!tier || upsert.isPending} className="min-h-11">
-            {upsert.isPending ? <Spinner /> : <SendIcon />}
+            {upsert.isPending ? <Spinner aria-label="Đang gửi đánh giá" /> : <SendIcon />}
             {myReview ? "Cập nhật" : "Gửi đánh giá"}
           </Button>
         </div>

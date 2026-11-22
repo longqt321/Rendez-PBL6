@@ -191,7 +191,7 @@ export function AdminShell<TTab extends string>({
                   <strong>PRODUCTION</strong> · Dữ liệu người dùng thật · Đã bật xác nhận kép và che
                   PII.
                 </span>
-                <Badge variant="destructive" className="font-mono text-[10px]">
+                <Badge variant="destructive" className="font-mono text-xs">
                   PROD
                 </Badge>
               </AlertDescription>
@@ -224,7 +224,7 @@ export function AdminShell<TTab extends string>({
               <Badge
                 variant={isProd ? "destructive" : "outline"}
                 className={cn(
-                  "hidden gap-1 font-mono text-[11px] uppercase sm:inline-flex",
+                  "hidden gap-1 font-mono text-xs uppercase sm:inline-flex",
                   !isProd && !isStaging && "border-star/50 bg-star/12 text-foreground",
                   isStaging && "border-primary/50 bg-primary/10 text-primary",
                 )}
@@ -279,9 +279,7 @@ export function AdminShell<TTab extends string>({
                   >
                     <Avatar className="size-6">
                       <AvatarImage src={me.avatarUrl ?? undefined} alt={me.name} />
-                      <AvatarFallback className="text-[10px]">
-                        {formatInitials(me.name)}
-                      </AvatarFallback>
+                      <AvatarFallback className="text-xs">{formatInitials(me.name)}</AvatarFallback>
                     </Avatar>
                     <span className="hidden max-w-28 truncate text-xs font-medium lg:inline">
                       {me.name}
@@ -295,7 +293,7 @@ export function AdminShell<TTab extends string>({
                           <span className="text-xs text-muted-foreground">
                             @{me.handle} · {isAdmin ? "Quản trị viên" : "Kiểm duyệt viên"}
                           </span>
-                          <span className="font-mono text-[11px] text-muted-foreground uppercase">
+                          <span className="font-mono text-xs text-muted-foreground uppercase">
                             Môi trường: {env}
                           </span>
                         </div>

@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { useAutoAnimate } from "@formkit/auto-animate/react"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react"
+import { StaggerItem, StaggerList } from "@/components/shared/motion-primitives"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,7 +36,6 @@ function memberName(room: Room, memberId: string): string {
 }
 
 export function ProposalList({ room, onApply, onDismiss }: ProposalListProps) {
-  const [openListRef] = useAutoAnimate<HTMLDivElement>()
   const [showHistory, setShowHistory] = useState(false)
   const open = room.proposals.filter((proposal) => proposal.status === "open")
   const resolved = room.proposals.filter((proposal) => proposal.status !== "open")
@@ -56,53 +55,54 @@ export function ProposalList({ room, onApply, onDismiss }: ProposalListProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div ref={openListRef}>
+      <div>
         {open.length > 0 ? (
-          <ItemGroup className="gap-2">
+          <StaggerList className="flex flex-col gap-2">
             {open.map((proposal) => {
               const name = memberName(room, proposal.memberId)
               return (
-                <Item
-                  key={proposal.id}
-                  variant="outline"
-                  className={cn(
-                    "rounded-surface bg-card p-3 shadow-(--shadow-soft)",
-                    proposal.kind === "exclude"
-                      ? "border-l-4 border-l-destructive"
-                      : "border-l-4 border-l-primary",
-                  )}
-                >
-                  <ItemMedia>
-                    <Avatar size="sm">
-                      <AvatarFallback className="bg-secondary text-[11px] font-bold">
-                        {formatInitials(name)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </ItemMedia>
-                  <ItemContent>
-                    <ItemTitle className="text-sm font-semibold">
-                      {describeProposal(proposal)}
-                    </ItemTitle>
-                    <ItemDescription className="text-xs">{name}</ItemDescription>
-                  </ItemContent>
-                  <ItemActions>
-                    <Button size="xs" onClick={() => onApply(proposal.id)}>
-                      <CheckIcon aria-hidden="true" />
-                      Chốt
-                    </Button>
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      aria-label="Bỏ qua đề xuất"
-                      onClick={() => onDismiss(proposal.id)}
-                    >
-                      <XIcon aria-hidden="true" />
-                    </Button>
-                  </ItemActions>
-                </Item>
+                <StaggerItem key={proposal.id}>
+                  <Item
+                    variant="outline"
+                    className={cn(
+                      "rounded-surface bg-card p-3 shadow-(--shadow-soft)",
+                      proposal.kind === "exclude"
+                        ? "border-l-4 border-l-destructive"
+                        : "border-l-4 border-l-primary",
+                    )}
+                  >
+                    <ItemMedia>
+                      <Avatar size="sm">
+                        <AvatarFallback className="bg-secondary text-xs font-bold">
+                          {formatInitials(name)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle className="text-sm font-semibold">
+                        {describeProposal(proposal)}
+                      </ItemTitle>
+                      <ItemDescription className="text-xs">{name}</ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      <Button size="xs" onClick={() => onApply(proposal.id)}>
+                        <CheckIcon aria-hidden="true" />
+                        Chốt
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        aria-label="Bỏ qua đề xuất"
+                        onClick={() => onDismiss(proposal.id)}
+                      >
+                        <XIcon aria-hidden="true" />
+                      </Button>
+                    </ItemActions>
+                  </Item>
+                </StaggerItem>
               )
             })}
-          </ItemGroup>
+          </StaggerList>
         ) : (
           <p className="rounded-control border border-dashed border-border px-3 py-2.5 text-xs text-muted-foreground">
             Không còn đề xuất nào đang chờ duyệt.
@@ -134,14 +134,14 @@ export function ProposalList({ room, onApply, onDismiss }: ProposalListProps) {
                     <ItemTitle className="text-xs font-medium">
                       {describeProposal(proposal)}
                     </ItemTitle>
-                    <ItemDescription className="text-[11px]">
+                    <ItemDescription className="text-xs">
                       {memberName(room, proposal.memberId)} · {STATUS_LABEL[proposal.status]}
                     </ItemDescription>
                   </ItemContent>
                   <ItemActions>
                     <Badge
                       variant={proposal.status === "applied" ? "secondary" : "outline"}
-                      className="text-[11px]"
+                      className="text-xs"
                     >
                       {STATUS_LABEL[proposal.status]}
                     </Badge>

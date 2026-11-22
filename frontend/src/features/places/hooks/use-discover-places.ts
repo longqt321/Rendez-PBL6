@@ -1,8 +1,9 @@
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
+import { formatCoordinate } from "@/lib/format"
 import { getPlaces, type DiscoverFilters } from "../api/get-places"
 
 const roundCoord = (value: number | undefined): string | null =>
-  value === undefined ? null : value.toFixed(4)
+  value === undefined ? null : formatCoordinate(value)
 
 export function discoverQueryKey(filters: DiscoverFilters) {
   // `room` phải nằm trong key: đổi ràng buộc phòng phải fetch lại, không dùng

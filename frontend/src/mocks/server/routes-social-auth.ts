@@ -1,3 +1,4 @@
+import { subDays } from "date-fns"
 import type { CollectionSummary } from "@/features/collections/types/collection"
 import type { Post } from "@/features/social/types/post"
 import type { Page } from "@/types/api"
@@ -455,7 +456,7 @@ export const socialAuthMockRoutes: Route[] = [
               id: `pm-${placeId}-1`,
               url: place.imageUrl,
               kind: "dish_real" as const,
-              capturedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+              capturedAt: subDays(new Date(), 3).toISOString(),
               sourceType: "post" as const,
               authorName: "Lan Anh",
             },
@@ -463,7 +464,7 @@ export const socialAuthMockRoutes: Route[] = [
               id: `pm-${placeId}-2`,
               url: place.imageUrl,
               kind: "venue" as const,
-              capturedAt: new Date(Date.now() - 86400000 * 10).toISOString(),
+              capturedAt: subDays(new Date(), 10).toISOString(),
               sourceType: "place" as const,
               authorName: "Rendez",
             },

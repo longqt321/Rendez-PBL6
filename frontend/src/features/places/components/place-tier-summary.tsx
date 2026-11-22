@@ -123,7 +123,7 @@ export function PlaceTierSummary({
             {effectiveDishes.map((dish) => (
               <Badge key={dish.dishName} variant="secondary" className="gap-1.5 font-normal">
                 <span>{dish.dishName}</span>
-                <span className="text-[11px] font-semibold text-primary tabular-nums">
+                <span className="text-xs font-semibold text-primary tabular-nums">
                   {dish.count}
                 </span>
               </Badge>

@@ -80,7 +80,7 @@ export function WebVitalsCard({
                 <ItemContent className="gap-0.5">
                   <ItemTitle className="flex flex-wrap items-center gap-2 text-xs font-semibold">
                     {meta.label}
-                    <Badge variant={badge.variant} className="text-[11px]">
+                    <Badge variant={badge.variant} className="text-xs">
                       {badge.label}
                     </Badge>
                   </ItemTitle>

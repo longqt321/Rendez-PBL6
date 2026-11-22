@@ -40,6 +40,12 @@ export function formatDateTime(iso: string): string {
   return format(date, "dd/MM/yyyy HH:mm", { locale: vi })
 }
 
+export function formatWeekdayDate(isoDate: string): string {
+  const date = parseDateSafe(isoDate)
+  if (!date) return ""
+  return format(date, "EEEE, dd/MM", { locale: vi })
+}
+
 const ratingFormat = new Intl.NumberFormat("vi", {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
