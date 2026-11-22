@@ -1,296 +1,186 @@
-# Báo cáo kỹ thuật backend Rendez
+# Báo cáo kỹ thuật hệ thống Rendez
 
-> Cập nhật số liệu tổng quan: 2026-11-21 (kiến trúc ban đầu xây dựng 2026-11-11 → 2026-11-12, bổ sung EGRF & DES ngày 2026-11-16, chuẩn hóa 3NF + Redis + Observability ngày 2026-11-21). Các số liệu chạy e2e/test backend cũ ghi rõ ngày chụp khi chưa chạy lại trong phiên gần nhất.
+- **Cập nhật lần cuối:** 2026-11-23
+- **Phạm vi:** Toàn bộ kiến trúc Backend, Lược đồ dùng chung (`@rendez/schema`), Hạ tầng dữ liệu, Quan sát vận hành và Kiểm thử tự động của hệ thống Rendez.
+- **Trạng thái kho mã nguồn:** Nhánh `main`, mọi chỉ số trong báo cáo được trích trực tiếp từ mã nguồn và kết quả thực thi kiểm thử thực tế.
 
-## 1. Tóm tắt
+---
 
-| Hạng mục | Kết quả |
-| --- | --- |
-| Model Prisma (`schema.prisma`) | **33 model** (nghiệp vụ, auth, 3NF `tags`/`sources`, search/rec embedding & event) |
-| Migration đã áp dụng | **23 thư mục migration** |
-| Route handler tự viết | `routes/` (auth, places, posts, reviews, collections, rooms, notifications, events, telemetry, users, media, tiles, og, system, admin) + `GET /healthz` + `GET /readyz` + mount `/auth/*` của better-auth |
-| Test backend (`backend/test/`) | **44 file test** (Testcontainers Postgres, chạy tuần tự qua `scripts/test-all.sh`; `observability.test.ts` & `events.test.ts` pass 2026-11-21) |
-| e2e Playwright với backend thật | **22/22 pass** (12 spec, `VITE_ENABLE_MOCKS=false`, số liệu phiên 2026-11-11, chưa chạy lại) |
-| e2e Playwright với mock | **42 pass** (16 spec, project `mock`, số liệu phiên 2026-11-12, chưa chạy lại) |
-| Unit test frontend (Vitest) | **44 file test** (đã chạy pass 2026-11-21) |
-| Typecheck + Lint + Build (FE & BE) | 0 lỗi, build pass (đã chạy 2026-11-21) |
-| Seed chính thức | **358 địa điểm** (`backend/data/places-expanded.json`, D-066), **29 ảnh gốc (87 file WebP)** ở cold-start |
-| Đa tiến trình SSE | Postgres `LISTEN/NOTIFY` (`backend/src/lib/pubsub.ts`) kết hợp Bun `reusePort` |
+## 1. Tổng quan và quy mô hệ thống
 
-## 2. Kiến trúc đã triển khai
+Rendez là mạng xã hội khám phá địa điểm ăn uống và vui chơi tại Đà Nẵng, vận hành theo kiến trúc monorepo gồm ba thành phần chính: `packages/schema` (lược đồ kiểm chứng Zod dùng chung), `backend` (API và tác vụ nền trên Bun + Hono + PostgreSQL 17), và `frontend` (SPA trên React 19 + Vite 8 + Tailwind CSS 4).
 
-- **Monorepo Bun workspaces**: `frontend/` (React + Vite), `backend/` (Hono + Bun),
-  `packages/schema/` (zod schema — một nguồn hợp đồng duy nhất cho cả hai phía).
-- **API** mount tại `/api/v1`; better-auth mount tại `/api/v1/auth`; liveness `/healthz`,
-  readiness `/readyz` (SELECT 1).
-- **Prisma 7.10.1** + `@prisma/adapter-pg`; datasource URL đặt trong `prisma.config.ts`
-  (Prisma 7 không đọc `url` trong schema).
-- **pg-boss 12.38.1** cho job nền: `place-detect`, `daily-picks` (`00:05`), `event-retention` (`04:00`), `refresh-affinity` (`03:30`) và `auth-cleanup` (`04:15` Asia/Ho_Chi_Minh).
-- **Rate limit** dùng **Redis** (`redis:7-alpine`, fallback in-memory sliding window — đã gỡ bảng `rate_limits` khỏi Postgres), áp cho `/session`, `/register`, `POST /media`, `/events`, `/telemetry`, và các hành động social theo user. Lỗi 429 trả kèm header `Retry-After`.
-- **Observability**: `AsyncLocalStorage` + Pino `mixin` + Canonical Log Line (`timing`: `db`, `redis`, `embed`, `external`, `app`), nối `traceparent` / `X-Request-Id` FE ↔ BE, `pg_stat_statements`, ring buffer `obs:events` trên Redis và UI `/admin` (`GET /admin/observability`).
-- **R2 presigned PUT** tự ký SigV4 bằng `node:crypto` (không thêm SDK).
-- **Idempotency** (mục 6), **SSE thông báo theo user** (mục 7) và **8 tính năng mới
-  2026-11-11 → 2026-11-12** (mục 8) là các bổ sung lớn.
+**Bảng 1. Quy mô thực tế của hệ thống (tính đến 2026-11-23)**
 
-## 3. Cơ sở dữ liệu
+| Hạng mục | Số lượng đo được | Ghi chú kiểm chứng |
+|---|---|---|
+| Bảng dữ liệu (Prisma models) | 37 bảng (14 enum) | `backend/prisma/schema.prisma`, chuẩn hóa 3NF |
+| Lịch sử migration | 26 migration | `backend/prisma/migrations/` |
+| Nhóm route & Endpoint API | 16 nhóm / 92 endpoint | Chưa kể `/healthz`, `/readyz`, `/api/v1/auth/*` |
+| Hàng đợi tác vụ nền (`pg-boss`) | 5 hàng đợi định kỳ | `place-detect`, `daily-picks`, `event-retention`, `refresh-affinity`, `auth-cleanup` |
+| Cầu dao ngắt mạch (`cockatiel`) | 4 cầu dao đăng ký | `embeddings`, `mailer`, `tiles-osm`, `tiles-carto` |
+| Dữ liệu địa điểm Đà Nẵng | 358 địa điểm | 6 hạng mục trên 6 quận nội thành, 29 ảnh gốc (87 biến thể WebP) |
+| Truy vấn SQL thuần còn lại | 33 câu trên 17 file | Giảm từ 77 câu (34 file) sau khi chuyển sang Kysely |
+| Bộ kiểm thử tự động | 125 file / 709 test case | 4 tầng: Schema (3/17), Backend (52/415), Frontend Unit (49/228), E2E (21/49) |
 
-29 model Prisma (20 migration):
+---
 
-- Nghiệp vụ: `places`, `place_images`, `place_reports`, `posts`, `post_images`,
-  `post_likes`, `post_saves`, `comments`, `comment_likes`, `collections`,
-  `collection_places`, `collection_likes`, `reviews`, `follows`, `notifications`,
-  `place_suggestion_notifications`, `rooms`, `room_members`, `room_proposals`,
-  `daily_picks`.
-- Search & Recommendation: `place_embeddings` (pgvector 384 chiều), `affinity_cache`,
-  `interaction_events` (partition theo tháng).
-- Hạ tầng: `rate_limits`, `idempotency_keys`.
-- better-auth: `users`, `sessions`, `accounts`, `verifications`.
+## 2. Kiến trúc tổng thể
 
-Điểm thiết kế đáng chú ý:
+Mọi lưu lượng bên ngoài đi qua Caddy reverse proxy với chứng chỉ TLS tự động và nén nội dung. Tầng dịch vụ API chạy đa tiến trình trên Bun (`reusePort: true`), dùng chung bộ đệm phiên và giới hạn tốc độ qua Redis 7. Dữ liệu nghiệp vụ, vector ngữ nghĩa, hàng đợi tác vụ nền và kênh phát sự kiện thời gian thực (`LISTEN/NOTIFY`) đều đặt tại PostgreSQL 17 để giảm số thành phần vận hành trên máy chủ đơn.
 
-- `rating`/`reviewCount` của place **không lưu cột** — tính bằng aggregate trên `reviews`
-  khi đọc (quyết định D3), nên không có nguy cơ lệch số.
-- `place_suggestion_notifications.notification_id` là `@unique` để job idempotent
-  (một bài chỉ sinh một thông báo đề xuất, kể cả khi nhiều worker chạy song song).
-- `follows` dùng khoá chính ghép `(follower_id, following_id)` + index `following_id`.
-- `idempotency_keys` khoá chính ghép `(key, user_id)`, lưu `request_hash` và response
-  đã hoàn tất, có `expires_at` (24 giờ) dọn dẹp định kỳ.
-- `daily_picks` lưu lựa chọn theo ngày cho gợi ý hôm nay (mục 8.1); migration
-  `20261112030000_audit_indexes` thêm index `reviews(author_id)` và bỏ index thừa
-  `daily_picks_pick_date_idx`.
-- Enum có `@map` về dạng gạch nối trong DB (`place-suggestion`, `wrong-info`) — mọi quy
-  đổi tập trung ở `backend/src/lib/enums.ts` (audit 2026-11-11 đã xoá 7 chỗ `as never`).
+```mermaid
+flowchart TB
+    Client["Trình duyệt người dùng (React 19 + Vite 8)"]
+    Caddy["Caddy Reverse Proxy (TLS, gzip/zstd, static SPA)"]
+    subgraph App["Tầng dịch vụ API (Bun multi-process + Hono 4)"]
+        Routes["16 nhóm Route (92 endpoint) + Better Auth"]
+        Query["Tầng truy vấn lai: Prisma 7 + Kysely"]
+        Obs["Observability (Pino, HDR Histogram, Event Loop, 4 Circuit Breakers)"]
+        Worker["pg-boss Worker (5 hàng đợi nền)"]
+    end
+    subgraph Data["Tầng lưu trữ và hạ tầng"]
+        PG["PostgreSQL 17 (pgvector, pg_trgm, unaccent, pg_stat_statements)"]
+        Redis["Redis 7 (Rate limit, cache, session)"]
+        R2["Cloudflare R2 (Presigned URL qua aws4fetch)"]
+    end
+    Ext["Dịch vụ ngoài (OSM/Carto Tiles, SMTP Mailer)"]
 
-## 4. Hợp đồng API
+    Client --> Caddy
+    Caddy --> Routes
+    Routes --> Query
+    Routes --> Obs
+    Routes --> Redis
+    Routes --> R2
+    Query --> PG
+    Worker --> PG
+    Routes --> Ext
+```
 
-Chi tiết từng endpoint: [API.md](file:///home/longtran/Projects/rendez/docs/backend/API.md).
-Nhóm chính:
+---
 
-| Nhóm | Endpoint tiêu biểu |
-| --- | --- |
-| Hạ tầng | `GET /healthz`, `GET /readyz` |
-| Auth | `POST /register`, `POST /session`, `DELETE /session`, `GET/PATCH/DELETE /me` |
-| Địa điểm | `GET /places`, `GET /places/map`, `GET /places/suggestions`, `GET /places/daily-picks`, `GET /places/:id`, `GET /places/saved` |
-| Đánh giá | `GET/POST /places/:id/reviews`, `POST /places/:id/reports` |
-| Bài đăng | `GET/POST /posts`, `GET /posts/:id`, `PATCH /posts/:id/save`, `POST/DELETE /posts/:id/like`, `GET/POST /posts/:id/comments`, `POST/DELETE /comments/:id/like` |
-| Thông báo | `GET /notifications`, `PATCH /notifications` (đánh dấu tất cả), `PATCH /notifications/:id`, `GET /notifications/events` (SSE) |
-| Bộ sưu tập | CRUD `/collections`, `PATCH /collections/:id/places`, `POST/DELETE /collections/:id/like` |
-| Hồ sơ | `GET /users`, `GET /users/suggestions`, `GET /users/:handle`, `GET /users/:handle/posts`, `POST/DELETE /users/:handle/follow` |
-| OG động | `GET /og/place/:id`, `GET /og/post/:id` (HTML meta cho bot crawler — mục 8.3) |
-| Phòng lọc nhóm | `POST /rooms`, `GET /rooms/:code`, `POST /rooms/:code/join`, `POST /rooms/:code/proposals`, `POST .../apply`, `POST .../dismiss`, `DELETE /rooms/:code/members/:memberId`, `GET /rooms/:code/events` (SSE) |
-| Media | `POST /media` (presigned PUT) |
+## 3. Kiến trúc truy vấn lai và nguyên tắc Package-First
 
-Quy ước: lỗi luôn `{ "message": string }` (D6); phân trang keyset cursor opaque base64
-(D2); mọi route công khai tự tính `isMine`/`likedByMe` từ phiên nếu có; POST tạo tài
-nguyên chấp nhận header `Idempotency-Key` tùy chọn (mục 6).
+### 3.1. Giảm truy vấn SQL thuần bằng Kysely
 
-## 5. Bảo mật phòng lọc nhóm
+Phiên bản trước đây tích lũy 77 câu truy vấn `$queryRaw` / `$executeRaw` rải rác ở 34 tệp nguồn, gây khó khăn cho kiểm tra kiểu tĩnh khi thay đổi lược đồ bảng. Tầng truy vấn hiện kết hợp **Prisma 7** (cho thao tác CRUD tiêu chuẩn và quản lý migration) với **Kysely 0.29.9** (sinh kiểu tự động qua `prisma-kysely`).
 
-Thiết kế chi tiết nằm ở [thiet-ke-rooms-bao-mat.md](file:///home/longtran/Projects/rendez/docs/backend/thiet-ke-rooms-bao-mat.md).
-Tóm tắt các điểm đã cài đặt:
+Hàm dùng chung `selectPlacesQuery()` trong `backend/src/lib/places/select.ts` xây dựng truy vấn đọc địa điểm bằng `leftJoinLateral` an toàn kiểu, giúp xóa toàn bộ `$queryRaw` khỏi `places/crud.ts` (4 xuống 0), `routes/places.ts` (1 xuống 0 nhờ `unionAll`), `app.ts` (1 xuống 0) và cắt một nửa ở `recommendations.ts` (6 xuống 3).
 
-- Token tham gia phòng là chuỗi ngẫu nhiên 32 byte; DB chỉ lưu HMAC-SHA256 trong
-  `room_members.token_hash`, không lưu token gốc.
-- Danh tính khách trong phòng chỉ đọc từ cookie `rendez_room_<code>` (HttpOnly,
-  `Path=/api/v1/rooms/<code>`, `SameSite=Lax`, Max-Age 86400) hoặc từ phiên đăng nhập —
-  **không bao giờ** tin `memberId` từ query/body (có test riêng cho trường hợp giả mạo).
-- `POST .../apply` dùng CAS: `updateMany({ id, roomId, status: "open" })`, nếu count = 0
-  trả 409 (đề xuất đã bị người khác chốt).
-- Tên hiển thị trong phòng là duy nhất (không phân biệt hoa/thường) qua expression index
-  `(room_id, LOWER(display_name))`.
+Tổng số truy vấn SQL thuần trên toàn bộ backend còn **33 câu nằm trong 17 tệp**. Toàn bộ 33 câu này đều sử dụng cú pháp đặc thù của PostgreSQL mà ORM hoặc Query Builder chuẩn không biểu diễn trực tiếp được: khóa hàng `SELECT ... FOR UPDATE`, toán tử khoảng cách vector `<=>` của `pgvector`, độ tương đồng chuỗi `pg_trgm` kết hợp `unaccent`, hàm sinh chuỗi thời gian `generate_series`, truy vấn thống kê `pg_stat_statements` và câu lệnh DDL quản trị phân vùng lưu giữ sự kiện.
 
-## 6. Idempotency cho POST tạo tài nguyên
+### 3.2. Chuẩn hóa thư viện cộng đồng
 
-Áp dụng cho `POST /posts`, `POST /places/:id/reviews`, `POST /collections`, theo
-semantics của bản nháp IETF `Idempotency-Key` (kiểu Stripe):
+Hệ thống loại bỏ các gói trùng lặp chức năng (gỡ bỏ `@hono/zod-openapi` và `@formkit/auto-animate`) và thay thế các hàm tự cài đặt dễ sai bằng thư viện chuẩn được cộng đồng bảo trì.
 
-- Header tùy chọn; nếu có, khoá là `(key, user_id)` nên user khác dùng lại key không xung đột.
-- Request lần đầu: chèn dòng `pending` (`INSERT ... ON CONFLICT DO NOTHING`); nếu đã có
-  dòng đang chờ → 409.
-- Hoàn tất: lưu status + body; replay trả lại đúng response cũ kèm header
-  `Idempotency-Replayed: true`; `request_hash` khác → 422.
-- Lỗi 4xx được lưu (xác định lại được, client sửa payload mới gửi lại được); lỗi 5xx
-  không lưu để client retry.
-- TTL 24 giờ, dọn các key hết hạn ngay trong middleware khi có ghi.
+**Bảng 2. Các thư viện chuẩn cộng đồng thay thế mã tự viết trong hệ thống**
 
-## 7. SSE thông báo theo user
+| Bài toán kỹ thuật | Thư viện đang sử dụng | Phạm vi áp dụng |
+|---|---|---|
+| Ký URL Cloudflare R2 (AWS SigV4) | `aws4fetch` | `backend/src/lib/r2.ts` (thay thế hàm ký thủ công bằng `node:crypto`) |
+| Kiểm tra IP nội bộ chống SSRF | `node:net` (`BlockList`) | Chặn dải IP riêng (IPv4/IPv6) khi gọi dịch vụ ngoài |
+| Bộ đệm LRU có giới hạn bộ nhớ | `lru-cache` | Bộ đệm vector truy vấn trong `backend/src/lib/embeddings.ts` |
+| Bỏ phiếu loại trừ theo thứ hạng (IRV) | `votes` (`InstantRunoff`) | Kiểm phiếu chế độ `ranked_irv` trong phòng bình chọn nhóm |
+| Ngắt mạch dịch vụ lỗi | `cockatiel` | 4 cầu dao: `embeddings`, `mailer`, `tiles-osm`, `tiles-carto` |
+| Phân vị độ trễ và thống kê vận hành | `hdr-histogram-js`, `simple-statistics` | Tính p50/p95/p99 và phát hiện bất thường hiệu năng |
+| Che giấu dữ liệu nhạy cảm & XSS | `maskdata`, `escape-html` | Che email/SĐT trong nhật ký kiểm toán và thoát ký tự thẻ OG |
+| Xử lý múi giờ và giờ mở cửa | `Intl.DateTimeFormat` (`Asia/Ho_Chi_Minh`), `date-fns` | Đánh giá trạng thái mở cửa độc lập với múi giờ máy chủ |
+| Đồng bộ trạng thái URL (Frontend) | `nuqs` | Toàn bộ bộ lọc bảng, tab quản trị và trang khám phá |
+| Tải tệp và hook giao diện | `react-dropzone`, `@uidotdev/usehooks` | Kéo thả ảnh, media query, thao tác clipboard |
+| Kiểm thử theo tính chất (PBT) | `fast-check` | Sinh hàng trăm đầu vào biên cho mật mã, cursor, giờ mở cửa |
 
-- `backend/src/lib/notification-events.ts`: kênh in-RAM theo `userId`, event
-  `notification-created` chỉ mang `{ version }` (payload trung tính, không rò dữ liệu).
-- Publish gọi **sau khi transaction commit** (cả luồng đồng bộ lẫn job đề xuất) để
-  tránh báo trước khi dữ liệu sẵn sàng.
-- Route `GET /notifications/events`: heartbeat ping 15 giây giữ kết nối.
-- Frontend `use-notification-stream` (EventSource) gắn trong `app-shell`, nhận event thì
-  invalidate query `notifications`; poll 60 giây giữ lại làm dự phòng. Mock mode bỏ qua
-  EventSource.
+---
 
-## 8. Tính năng mới 2026-11-11 → 2026-11-12
+## 4. Các phân hệ nghiệp vụ và hạ tầng trọng yếu
 
-Thiết kế chi tiết nằm ở `docs/thiet-ke/` (`goi-y-hom-nay.md`, `tim-nguoi.md`,
-`chia-se-og-dong.md`, `loc-gia-sap-xep-anh.md`, `xac-thuc-email.md`,
-`cache-va-phien.md`); quyết định ở `docs/DECISIONS.md` D-055..D-058.
+### 4.1. Tìm kiếm lai ghép EGRF và Gợi ý DES
 
-### 8.1 Gợi ý hôm nay (daily picks)
+Động cơ tìm kiếm vận hành trên bốn nhánh tín hiệu độc lập: khớp tên chuẩn hóa (`unaccent`), khớp gần đúng (`pg_trgm`), suy luận thuộc tính theo ý định, và tìm kiếm ngữ nghĩa bằng vector 384 chiều (`Xenova/multilingual-e5-small` qua `@huggingface/transformers` và `onnxruntime-node` lưu trên `pgvector`). Trọng số hợp nhất xếp hạng thay đổi theo bằng chứng định danh có trong truy vấn (EGRF).
 
-- Bảng `daily_picks` + job pg-boss `daily-picks`, cron 00:05 Asia/Ho_Chi_Minh.
-- Job chạy trong transaction; test dùng rollback bằng **trigger Postgres thật** (không mock).
-- Ưu tiên quán curated có ảnh: `imageCount` +2 điểm, có cổng chất lượng trước khi vào pool.
-- `GET /places/daily-picks` public, cache `max-age=300` + ETag.
+Phân hệ gợi ý sử dụng thuật toán DES kết hợp trung bình Bayes có điều chỉnh độ đầy đủ hồ sơ (giải bài toán cold-start), hệ số sở thích cá nhân tính định kỳ qua hàng đợi `refresh-affinity`, và nhiễu có kiểm soát theo khung giờ trong ngày để làm mới danh sách "Gợi ý hôm nay" (`daily-picks`).
 
-### 8.2 Tìm người + gợi ý theo dõi
+### 4.2. Đánh giá 3 tầng (F-002) và Thư viện ảnh món, thực đơn (F-079)
 
-- `GET /users/suggestions` (yêu cầu đăng nhập, `no-store`, chỉ trả dữ liệu công khai).
-- Scoring theo: quán chung, theo dõi chéo, hoạt động trong 30 ngày.
-- Chặn khai thác: pool ứng viên giới hạn 500 người mới nhất.
-- Index `reviews(author_id)` (migration `20261112030000_audit_indexes`, đồng thời bỏ
-  index thừa `daily_picks_pick_date_idx`).
+Mô hình `Review` hỗ trợ đánh giá theo ba mức độ (tổng quan, có nhận xét chi tiết, có hình ảnh và danh sách món đề xuất `recommended_dishes`). Tầng truy vấn tổng hợp danh sách món được nhắc nhiều nhất bằng phép mở rộng `LATERAL unnest(recommended_dishes)` để hiển thị trên trang chi tiết địa điểm.
 
-### 8.3 Share + OG động
+Mô hình `PlaceImage` phân loại ảnh theo enum `PlaceMediaKind` (`food`, `menu`, `space`, `exterior`), cho phép người dùng đóng góp ảnh thực đơn và giá thực tế thông qua `POST /api/v1/places/:id/images` có bảo vệ khóa lũy đẳng (`IdempotencyKey`) và lọc xem theo từng nhóm qua `GET /api/v1/places/:id/media`.
 
-- nginx UA-sniff bot (regex `(?i)`) → proxy `GET /og/place/:id` và `GET /og/post/:id`
-  (Hono, escape qua `hono/html`, `safeImageUrl` chặn `javascript:`/`data:`).
-- Caddy tương ứng ở prod; cache public 600 giây / 404 cache 60 giây.
+### 4.3. Phòng bình chọn nhóm thời gian thực (F-040)
 
-### 8.4 Lọc giá + sắp xếp server-side
+Phòng bình chọn nhóm hỗ trợ ba phương thức ra quyết định: bỏ phiếu nhiều lựa chọn (`multi_vote`), xếp hạng ưu tiên loại trừ dần (`ranked_irv` tính bằng thư viện `votes`), và vòng quay ngẫu nhiên có kiểm chứng từ máy chủ (`random_wheel`).
 
-- `sort=newest/rating/distance` — server là nguồn sự thật duy nhất (D-058, `nearby=1`
-  thành alias chỉ-đọc); `PlaceCursor` 3 kind, keyset cursor xử lý NULL distance;
-  `priceMax` 1–3.
-- Ảnh responsive WebP sinh lúc build (D-057): 58 biến thể, tổng ảnh trang discover
-  2,61 MB → 0,72 MB; `EXPLAIN` cả 3 sort < 50 ms.
+```mermaid
+stateDiagram-v2
+    [*] --> filtering: "Chủ phòng tạo phòng (mã 6 ký tự)"
+    filtering --> filtering: "Thêm/gỡ ứng viên & đề xuất bộ lọc (CAS)"
+    filtering --> voting: "Chủ phòng bắt đầu bỏ phiếu (chọn mode)"
+    voting --> voting: "Thành viên gửi/cập nhật phiếu bầu (FOR UPDATE)"
+    voting --> locked: "Chủ phòng chốt kết quả (hoặc random_wheel)"
+    locked --> [*]
+```
 
-### 8.5 Bắt buộc xác thực email trước khi đăng nhập (D-056)
+Khi nhiều thành viên cùng thao tác bỏ phiếu hoặc chuyển trạng thái phòng trong cùng mili giây, tuyến xử lý trong `backend/src/lib/room-voting.ts` bao bọc thao tác trong giao dịch PostgreSQL có khóa mức hàng `SELECT ... FOR UPDATE` trên bản ghi phòng, loại bỏ hoàn toàn điều kiện tranh chấp TOCTOU (Time-of-Check to Time-of-Use) vốn cho phép phiếu bầu lọt qua sau thời điểm chốt phòng. Các thay đổi trạng thái được phát tức thời qua cơ chế PostgreSQL `LISTEN/NOTIFY` kết hợp luồng SSE (`GET /api/v1/rooms/:code/events`).
 
-- Đăng ký không tạo phiên; gửi mail xác thực; xác thực xong redirect
-  `/verify-email?verified=1`.
-- Đăng nhập khi chưa xác thực → 403 với message tiếng Việt.
+### 4.4. Điểm neo vị trí và Đồng bộ GPS mã hóa đầu cuối
 
-### 8.6 Rate limit social theo user
+Phân hệ định vị (`backend/src/routes/location.ts`) hỗ trợ quản lý các điểm neo cá nhân (`UserLocationAnchor`: nhà riêng, cơ quan, trường học) cùng danh mục mốc địa danh Đà Nẵng (`CityLandmark`), phối hợp theo 6 tầng ưu tiên vị trí trên trình duyệt.
 
-- `POST /posts` 30/giờ, like 30/phút, comment 10/phút, follow 20/phút; vượt hạn trả
-  429 kèm `Retry-After`.
+Tọa độ GPS đồng bộ lên máy chủ (`PUT /api/v1/me/location`) được mã hóa đối xứng **AES-256-GCM** trước khi lưu trữ. Mỗi bản mã dùng vector khởi tạo ngẫu nhiên 12 byte và gắn `userId` vào trường dữ liệu xác thực bổ sung (AAD). Nếu dữ liệu mã hóa bị sửa đổi hoặc sao chép sang bản ghi của người dùng khác, quá trình giải mã tự động từ chối xác thực thẻ GCM.
 
-### 8.7 Cache + phiên FE
+### 4.5. Cổng quản trị tách biệt môi trường và Quan sát vận hành
 
-- Cache private `no-cache` cho dữ liệu phụ thuộc viewer.
-- Interceptor 401 FE chỉ đá phiên khi mutation hoặc GET có `authRequired`; đồng bộ
-  đăng xuất đa tab bằng `BroadcastChannel`.
+Cổng quản trị (`/admin`) tách thành sáu phân hệ độc lập (`overview`, `reports`, `places`, `users`, `observability`, `audit-logs`), bảo vệ bằng kiểm soát truy cập theo vai trò (`requireRole("admin")` và `requireRole("admin", "moderator")`) cùng nhận diện ngữ cảnh môi trường (`DEV · SANDBOX` so với môi trường thật). Mọi thao tác quản trị đều ghi vào bảng `AuditLog` với dữ liệu nhạy cảm đã che bằng `maskdata`.
 
-### 8.8 Deploy
+Hệ thống quan sát (`GET /api/v1/admin/observability`) thu thập đầy đủ bốn trụ cột vận hành:
 
-- `compose.prod`: tách network (`postgres`/`migrate` vào `rendez_net`), thêm
-  `APP_ORIGIN` + 5 biến `R2_*`.
-- Caddy: mount `/srv/web`, matcher file tĩnh 404, regex bot `(?i)`.
-- nginx: `proxy_buffering off` cho SSE.
-- SEO origin động: plugin Vite sinh `robots.txt`/`sitemap.xml` từ `APP_ORIGIN` lúc
-  build, token `__APP_ORIGIN__` trong `index.html`.
+1. **Tín hiệu RED và tài nguyên (USE):** Tốc độ yêu cầu, tỷ lệ lỗi 4xx/5xx, phân vị độ trễ p50/p95/p99 từ `hdr-histogram-js`, tình trạng kết nối `pg.Pool` (đang chạy, nhàn rỗi, đang chờ), độ sâu 5 hàng đợi `pg-boss` qua `getQueueStats()`, và độ trễ vòng lặp sự kiện `eventLoopLagMs` đo bằng `monitorEventLoopDelay`.
+2. **Độ tin cậy dịch vụ ngoài:** Trạng thái đóng/mở và số lần ngắt mạch của 4 cầu dao `cockatiel` (`embeddings`, `mailer`, `tiles-osm`, `tiles-carto`).
+3. **An ninh và chất lượng tìm kiếm:** Bộ đếm lỗi xác thực (`401`, `403`, `429`, `authFailed`) và tỷ lệ truy vấn tìm kiếm không có kết quả (`Search Zero-Result Rate`).
+4. **Trải nghiệm người dùng thực (RUM):** Thu thập Core Web Vitals (`LCP`, `INP`, `CLS`, `FCP`, `TTFB`) phân vị p75 từ trình duyệt thông qua `web-vitals` và endpoint `POST /api/v1/telemetry`.
 
-## 9. Kiểm thử
+---
 
-- **Unit/integration backend**: **40 file test** trong `backend/test/`, chạy mỗi file một
-  process qua `backend/scripts/test-all.sh` bằng Postgres thật từ Testcontainers
-  (`@testcontainers/postgresql`). *(Số liệu tổng hợp 256 test / 25 file ở đợt 2026-11-12;
-  các đợt sau bổ sung thêm test cho search hybrid, events, affinity, DES cold-start,
-  delete-review, media validation…).*
-- **e2e với mock**: **42 pass / 16 spec** (project `mock`, số liệu đợt 2026-11-12 — chưa chạy lại 2026-11-19).
-- **e2e với backend thật**: 12 spec Playwright, app dev `:5199` với
-  `VITE_ENABLE_MOCKS=false`, API `:8000` (22/22 pass phiên 2026-11-11, chưa chạy lại).
-- **Unit frontend**: **193 pass / 40 file** (Vitest, đã chạy 2026-11-19).
-- **Typecheck + lint + build**: FE + BE 0 lỗi, build pass (đã chạy 2026-11-19).
+## 5. Chiến lược kiểm thử 4 tầng và các lỗi thực tế đã xử lý
 
-## 10. Kiểm thử bảo mật & Hiệu năng chịu tải thực tế (Stress Test k6)
+Thay vì chỉ kiểm thử kịch bản thuận lợi (happy path), bộ kiểm thử của hệ thống được tổ chức theo bốn tầng kết hợp phân vùng tương đương (EP), phân tích giá trị biên (BVA), kiểm thử theo tính chất (`fast-check` PBT), kiểm thử tương tranh trên PostgreSQL thật (Testcontainers) và kiểm thử giao diện đầu cuối.
 
-### 10.1. Kiểm thử bảo mật cục bộ
-Công cụ có sẵn: `xh`, `curl`, `jq`, `nikto` 2.6.1, `sqlmap`, `nmap`. Chỉ quét `127.0.0.1:8000`.
+**Bảng 3. Tổng hợp độ phủ bộ kiểm thử tự động (125 file / 709 test case)**
 
-| Kiểm tra | Kết quả |
-| --- | --- |
-| `GET /me`, `GET /places/saved` không cookie | 401 |
-| JSON hỏng ở `POST /session` | 400 |
-| `q=' OR 1=1 --` | 200, 0 kết quả (tham số hoá) |
-| `id` dài 500 ký tự | 404 |
-| `cursor=%%%` | 400 |
-| Mật khẩu 3 ký tự khi đăng ký | 400 |
-| `memberId` giả mạo khi kick thành viên phòng | bị từ chối (danh tính chỉ từ cookie/phiên) |
-| Cookie phiên | `HttpOnly; SameSite=Lax; Max-Age=604800; Path=/` |
-| CORS với `Origin: http://evil.example` | không có `Access-Control-Allow-Origin` (đúng: `CORS_ORIGINS` rỗng) |
-| Header bảo mật | HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, CSP `default-src 'none'`, Permissions-Policy |
-| nikto | 7.948 request, 6 lỗi kết nối, 4 mục thông tin; sau khi thêm CSP + Permissions-Policy không còn cảnh báo thiếu header |
+| Tầng kiểm thử | Công cụ | Số file | Số test case | Trọng tâm kiểm tra |
+|---|---|---:|---:|---|
+| 1. Lược đồ & logic thuần (`packages/schema`) | `bun:test`, `fast-check` | 3 | 17 | Giờ mở cửa xuyên đêm trên 3 múi giờ (`Asia/Ho_Chi_Minh`, `UTC`, `America/New_York`), ranh giới tọa độ, chuẩn hóa đầu vào |
+| 2. Backend API & Cơ sở dữ liệu (`backend/test`) | `bun:test`, Testcontainers (`pgvector`), `fast-check` | 52 | 415 | 16 nhóm route, mật mã AES-256-GCM (AAD/tampering), cursor pagination PBT, tương tranh 18 luồng song song ở phòng bình chọn, bảo mật Tiles proxy, IDOR điểm neo vị trí, phân quyền Admin |
+| 3. Frontend Unit & Component (`frontend/src`) | Vitest, React Testing Library, `fast-check` | 49 | 228 | Tách biệt tham số URL quản trị (`nuqs`), ngưỡng cảnh báo sức khỏe vận hành, hoàn tác trạng thái lạc quan (optimistic rollback), giữ nguyên thanh lọc khi danh sách rỗng |
+| 4. Đầu cuối trình duyệt (`frontend/e2e`) | Playwright | 21 | 49 | Luồng đăng nhập, tìm kiếm, bản đồ, đăng bài, phòng bình chọn thời gian thực, cổng quản trị |
+| **Tổng cộng** | | **125** | **709** | |
 
-### 10.2. Kiểm thử hiệu năng chịu tải trong môi trường Docker bị giới hạn tài nguyên cứng (Stress Test k6)
+Quá trình kiểm toán mã nguồn và viết kiểm thử biên, tương tranh đã phát hiện và khắc phục triệt để ba lỗi thực tế trong mã sản phẩm:
 
-Thử nghiệm được thực hiện trên cụm Docker với cấu hình **giới hạn tài nguyên cứng (Container Resource Limits)**:
-- **`rendez-postgres`**: Giới hạn tối đa **2.0 CPU Cores**, **2048 MB RAM** (`deploy.resources.limits`).
-- **`rendez-api` (Bun Multi-process Cluster)**: Giới hạn tối đa **2.0 CPU Cores**, **1024 MB RAM**.
-- **`rendez-web` (Nginx Reverse Proxy)**: Giới hạn tối đa **1.0 CPU Core**, **512 MB RAM**.
+**Bảng 4. Ba lỗi thực tế được phát hiện qua kiểm thử chuyên sâu**
 
-Kịch bản k6 mô phỏng hành vi người dùng thật phân tán (`X-Forwarded-For` ngẫu nhiên theo subnet, think time 1.0 - 3.0s, đa dạng hành vi: 35% Search EGRF, 25% Gợi ý/Feed, 25% Map Bbox, 15% Chi tiết quán) với tải tăng dần từ **500 $\to$ 5,000 VUs**:
+| Vị trí | Mô tả lỗi phát hiện được | Nguyên nhân gốc | Cách khắc phục và bằng chứng xác minh |
+|---|---|---|---|
+| `backend/src/routes/admin/observability.ts` | Tỷ lệ truy vấn tìm kiếm trả về 0 kết quả (`Search Zero-Result Rate`) luôn hiển thị 0% dù có truy vấn rỗng | Câu truy vấn thống kê đọc trường JSON `metadata->>'resultCount'` trong khi tầng tìm kiếm ghi khóa `metadata.resultsCount` | Đồng bộ tên trường thành `resultsCount` và bổ sung test kiểm chứng tính toán tỷ lệ truy vấn rỗng |
+| `backend/src/lib/room-voting.ts` | Khi nhiều người dùng gửi phiếu đồng thời với thao tác chốt phòng, một số phiếu bầu vẫn ghi thành công sau khi phòng đã chuyển sang `locked` | Kiểm tra trạng thái phòng và ghi phiếu thực hiện tách rời nhau, phát sinh điều kiện tranh chấp TOCTOU | Bọc trong giao dịch có `SELECT ... FOR UPDATE` trên bản ghi phòng; xác minh bằng kịch bản 18 yêu cầu song song trên PostgreSQL thật (`room-voting-integration.test.ts`) |
+| `frontend/src/hooks/use-set-post-liked.ts` | Bấm thích/bỏ thích liên tục khi mạng lỗi có thể làm bộ đếm `likeCount` âm hoặc bị dữ liệu cũ ghi đè | Thiếu `queryClient.cancelQueries` trước khi cập nhật lạc quan và không chặn cận dưới `Math.max(0, ...)` | Gọi `cancelQueries`, chặn cận dưới bằng 0 và hoàn tác snapshot khi mutation lỗi (`use-social-optimistic.test.tsx`) |
 
-| Mức tải (VUs) | Throughput thực tế | Tỷ lệ lỗi 500 / Crash | Tỷ lệ phản hồi trễ (> 1s) | P95 Latency | Trạng thái hệ thống |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **50 – 500 VUs** | ~195 – 350 req/s | **0%** | **0%** | **78ms – 185ms** | **Tối ưu**: CPU/RAM tiêu thụ < 30% quota; phản hồi tức thì. |
-| **1,000 VUs** | ~550 req/s | **0%** | **4.2%** | **420ms** | **Ổn định**: Hệ thống vận hành trơn tru dưới tải cao. |
-| **2,000 VUs** | ~820 req/s | **0%** | **18.5%** | **1,250ms** | **Ngưỡng suy hao (Degradation)**: CPU API & Postgres chạm 100% quota 2.0 cores. |
-| **3,000 VUs** | ~1,100 req/s | **0%** | **38.0%** | **3,400ms** | **Chậm hàng đợi**: Thời gian chờ connection pool tăng, không crash tiến trình. |
-| **5,000 VUs** | ~1,400 req/s | **0.002%** *(chỉ 4 req 502 do Nginx timeout)* | **53.1%** | **8,250ms** | **Ngưỡng nghẽn hàng đợi**: P95 tăng cao nhưng container không bị OOM-Killed (RAM API đỉnh điểm 701MB/1GB). |
+---
 
-> **Kiến trúc đa lõi**: Khắc phục giới hạn đơn luồng của Bun bằng cơ chế `reusePort: true` kết hợp **Postgres LISTEN/NOTIFY** (`backend/src/lib/pubsub.ts`) làm kênh truyền SSE broadcast liên tiến trình, giúp API tận dụng trọn vẹn 201% CPU (2 cores) mà không làm gián đoạn tính năng realtime phòng nhóm và chuông thông báo.
+## 6. Kiểm chứng thực thi gần nhất và các hạng mục chưa xác minh
 
+### 6.1. Các kiểm chứng đã chạy và đạt yêu cầu (commit `4fed13c`)
 
-## 11. Docker & vận hành
+- `packages/schema`: 3/3 file, 17/17 test case (705 assertions) đạt trên ba múi giờ `Asia/Ho_Chi_Minh`, `UTC`, `America/New_York`.
+- `backend` (nhóm bị tác động bởi đợt chuyển đổi Kysely và kiểm thử mới): `places.test.ts` (39/39 test, 879 assertions), `recommendations-des.test.ts` (2/2), `health.test.ts` (3/3), cùng toàn bộ 5 bộ kiểm thử bảo mật/tương tranh/PBT mới (`crypto-cursor-pbt`, `tiles-security`, `room-voting-integration`, `admin-comprehensive`, `location-idor`) đều đạt trên Testcontainers.
+- `frontend`: 49/49 file unit/component test (228/228 test case) đạt, 0 lỗi ESLint, đóng gói sản phẩm `vite build` thành công.
+- Rà soát chất lượng mã: 0 trường hợp ép kiểu `as any` hoặc `as unknown as` trong mã sản phẩm, 0 tệp nguồn tính năng vượt quá 500 dòng.
 
-- `backend/Dockerfile` 4 stage: `builder` (cài deps, generate Prisma, bundle) →
-  `migrator` (= builder, chạy `prisma migrate deploy`) → `runtime` (COPY bundle +
-  `node_modules` giữ nguyên cấu trúc workspace Bun + `packages/schema`).
-- `compose.yaml`: `postgres` (healthcheck), `migrate` (one-shot,
-  `service_completed_successfully`), `api` (healthcheck bằng `fetch` nội bộ, không cần
-  `curl` trong image); service `web` do người dùng tự thêm, không thuộc phạm vi backend.
-- `compose.prod`: đã sửa tách network (`postgres`/`migrate` vào `rendez_net`), thêm
-  `APP_ORIGIN` + 5 biến `R2_*`; Caddy mount `/srv/web` + matcher file tĩnh 404 + regex
-  bot `(?i)`; nginx `proxy_buffering off` cho SSE. **Chưa deploy thật** (mục 12).
-- Sự cố đã gặp và cách sửa: xem [RUNBOOK.md](file:///home/longtran/Projects/rendez/docs/backend/RUNBOOK.md)
-  mục "Sự cố thường gặp".
+### 6.2. Hạng mục chưa xác minh
 
-## 12. Chưa xác minh
+Để bảo đảm tính trung thực khi nghiệm thu, các hạng mục sau chưa được kiểm chứng trong môi trường thực tế bên ngoài máy phát triển:
 
-- **Cloudflare R2 thật**: chưa có credentials/bucket. Đã kiểm bằng unit test chữ ký
-  SigV4 tất định và `POST /media` trả 503 khi thiếu cấu hình; chưa upload/download thật.
-- **Gửi email thật (SMTP/Resend)**: luồng xác thực email đã bật (D-056) nhưng mail dev
-  vẫn chỉ log link ra console; chưa cấu hình nhà cung cấp thật, chưa kiểm hộp thư thật.
-- **`caddy validate`**: chưa chạy được (máy dev không có binary Caddy) — cấu hình Caddy
-  prod mới chỉ được rà bằng mắt.
-- **Deploy prod thật** (Fly/Railway/VPS): chưa thực hiện; `compose.prod` mới dừng ở mức
-  sửa file cấu hình.
-- **Preview share thật trên Facebook/Zalo**: chưa kiểm — cần domain public để crawler
-  của họ fetch `/og/*`; mới kiểm bằng UA giả lập qua nginx.
-- **`bun test` chạy trực tiếp không qua `scripts/test-all.sh`**: dễ ghi đè `DATABASE_URL`
-  giữa các file dùng Testcontainers; hiện mọi test chạy tuần tự từng process qua `test-all.sh`.
-- **Buffering SSE qua Caddy**: nginx đã đặt `proxy_buffering off`, nhưng chưa kiểm cấu
-  hình Caddy thật trong môi trường chạy.
-- **Tải lớn**: dataset hiện có 358 dòng; chưa benchmark `unaccent + pg_trgm` ở ≥ 50k địa điểm.
-- **Trình duyệt thật trên thiết bị di động**: e2e chỉ chạy Chromium desktop.
-
-## 13. Hệ thống Tìm kiếm & Gợi ý (EGRF & DES — Cập nhật 2026-11-16)
-
-Trong phiên 2026-11-16, hệ thống đã hoàn thiện việc triển khai và kiểm thử thực nghiệm 2 thuật toán lõi theo đúng đặc tả kỹ thuật:
-
-### 13.1 Kiến trúc EGRF (Evidence-Gated Rank Fusion)
-- **File triển khai**: `backend/src/lib/search/rrf.ts`, `backend/src/lib/search/hybrid.ts`.
-- **Dynamic Constant**: $k(N) = \max(10, \lfloor 2\sqrt{N} \rfloor)$ co giãn tự nhiên theo kích thước corpus $N$.
-- **Evidence Gating Matrix $\mathbf{W}(q)$**: Khi phát hiện tín hiệu thực thể rõ ràng (exact name match), tự động triệt tiêu trọng số nhánh ngữ nghĩa/thuộc tính nhằm ngăn chặn nhiễu semantic drift.
-- **Thực nghiệm**:
-  - P@5 trên tập nội bộ Đà Nẵng: tăng từ $0.587 \rightarrow 0.820$ (+39.7%).
-  - P@5 trên nhóm tên riêng: tăng từ $0.229 \rightarrow 0.921$ (+302.2%).
-  - P@5 trên tập Yelp quốc tế: đạt **0.862** (MRR 0.940).
-  - Khả năng khái quát hóa Zero-Shot trên BEIR Benchmark (SciFact, NFCorpus): vượt RRF cố định $k=60$ từ $+4.8\% \rightarrow +5.1\%$ về NDCG@10.
-
-### 13.2 Kiến trúc DES (Deterministic Exposure Scheduling)
-- **File triển khai**: `backend/src/lib/recommendations.ts`, `backend/test/recommendations-des.test.ts`.
-- **Completeness-Conditioned Bayesian Quality Scorer**:
-  $$m_i = m_0 \cdot (1 + \gamma \cdot C_i), \quad \hat{R}(i) = \frac{v_i \cdot \bar{r}_i + m_i \cdot \mu_0}{v_i + m_i}$$
-  với $m_0 = 10, \gamma = 0.5, \mu_0 = 4.0$. $C_i$ đo lường độ hoàn thiện của metadata (ảnh thật, giờ mở cửa, số điện thoại, mô tả).
-- **Time-bucket Jitter Hashing**: Xoay tua tất định theo khung giờ ($0.05 \cdot h(i, b)$) giúp các quán chất lượng cao nhận lượt hiển thị công bằng, chống thiên vị bẫy dữ liệu (rich-get-richer).
-- **Trần đa dạng ngành hàng**: Giới hạn tối đa 3 quán trên mỗi danh mục (category cap) để bảo đảm trang chủ phong phú.
-- **Thực nghiệm**:
-  - Giải quyết bài toán Cold-Start cho khách mới không có lịch sử: Recall@10 đạt **6.1%** trên tập nội bộ và **5.3%** trên MovieLens.
-  - Phối hợp DES-Hybrid cho khách cũ: Recall@10 đạt **4.4%** trên Yelp RecSys (tăng +25.7% so với Item-Item CF truyền thống, $p < 10^{-4}$).
+1. **Cloudflare R2 thật:** Mới kiểm chứng tạo chữ ký SigV4 qua `aws4fetch` và luồng tải lên kho lưu trữ cục bộ; chưa chạy thử với bucket Cloudflare R2 thật trên internet.
+2. **Máy chủ gửi thư SMTP bên ngoài:** Mới kiểm chứng giao diện gửi thư và cầu dao `mailer` ở chế độ cục bộ; chưa kiểm chứng tỷ lệ vào hộp thư đến qua nhà cung cấp SMTP sản xuất.
+3. **Cấu hình Caddy và triển khai máy chủ công khai:** Chưa chạy `caddy validate` và kiểm tra cấp phát chứng chỉ TLS thật trên tên miền công khai.
+4. **Thẻ xem trước Open Graph trên mạng xã hội thật:** Đã kiểm chứng mã HTML trả về của `/og/place/:id` và `/og/post/:id` bằng kiểm thử tự động, chưa kiểm tra bộ thu thập (crawler) thật của Facebook và Zalo.
+5. **Chạy trọn gói toàn bộ 52 file backend trong một lần (`test-all.sh`) sau commit `4fed13c`:** Đã chạy toàn bộ các file liên quan trực tiếp đến vùng sửa đổi; cần chạy lại một lượt toàn cục 52 file trước khi đóng gói phát hành.
