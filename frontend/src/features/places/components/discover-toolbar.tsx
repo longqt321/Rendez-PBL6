@@ -29,7 +29,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { Toggle } from "@/components/ui/toggle"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { RoomJoinDialog } from "@/features/rooms/components/room-join-dialog"
 import { LocationSwitcher } from "@/features/location/components/location-switcher"
 import { useIsDesktop } from "@/hooks/use-breakpoint"
 import { cn } from "@/lib/utils"
@@ -87,7 +86,6 @@ export function DiscoverToolbar({
 }: DiscoverToolbarProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const [joinOpen, setJoinOpen] = useState(false)
   const [sortOpen, setSortOpen] = useState(false)
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
   const isDesktop = useIsDesktop()
@@ -487,13 +485,6 @@ export function DiscoverToolbar({
           </Button>
         </Alert>
       ) : null}
-
-      <RoomJoinDialog
-        open={joinOpen}
-        onOpenChange={setJoinOpen}
-        onCreate={view.createRoom}
-        onJoin={view.joinRoom}
-      />
     </div>
   )
 }
