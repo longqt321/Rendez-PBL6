@@ -1,18 +1,10 @@
 import { useMemo, useState } from "react"
-import { PlusIcon, RefreshCwIcon, SparklesIcon, ZapIcon } from "lucide-react"
+import { PlusIcon, SparklesIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-  FieldTitle,
-} from "@/components/ui/field"
+import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldTitle } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Toggle } from "@/components/ui/toggle"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { CATEGORY_META } from "@/features/places/lib/category-meta"
 import { DANANG_DISTRICTS } from "@/features/places/lib/danang-districts"
 import { priceLevelLabel } from "@/features/places/lib/price-level"
@@ -21,7 +13,6 @@ import { cn } from "@/lib/utils"
 import {
   describeProposal,
   naturalQueryToProposalInputs,
-  roomFilterChips,
   type ParsedRoomProposalInput,
 } from "../lib/room"
 import type { Room, RoomProposalField } from "../types/room"
@@ -47,18 +38,15 @@ export function ProposalForm({
   onQuickToggle,
 }: ProposalFormProps) {
   const [text, setText] = useState("")
-  const [enterMode, setEnterMode] = useState<"append" | "replace">("append")
   const [submitting, setSubmitting] = useState(false)
 
   const parsedItems = useMemo(() => naturalQueryToProposalInputs(text), [text])
-  const activeChips = useMemo(() => roomFilterChips(room), [room])
-  const hasActiveFilters = activeChips.length > 0
 
-  async function handleSubmit(mode: "append" | "replace") {
+  async function handleSubmit() {
     if (parsedItems.length === 0 || submitting || disabled) return
     setSubmitting(true)
     try {
-      await onSubmitProposals(parsedItems, { autoApply: true, mode })
+      await onSubmitProposals(parsedItems, { autoApply: true, mode: "append" })
       setText("")
     } finally {
       setSubmitting(false)
@@ -66,70 +54,45 @@ export function ProposalForm({
   }
 
   return (
-    <FieldGroup className="gap-3.5">
+    <FieldGroup className="gap-3">
       <Field>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <FieldLabel htmlFor="room-natural-input">Nhập tiêu chí lọc cho cả nhóm</FieldLabel>
-          {hasActiveFilters ? (
-            <ToggleGroup
-              value={[enterMode]}
-              onValueChange={(next) => {
-                const selected = next[0] as "append" | "replace" | undefined
-                if (selected) setEnterMode(selected)
+        <FieldLabel htmlFor="room-natural-input">Nhập nhanh tiêu chí</FieldLabel>
+        <div className="flex items-center gap-2">
+          <InputGroup className="h-9 flex-1 bg-card">
+            <InputGroupAddon>
+              <SparklesIcon className="size-3.5 text-primary" aria-hidden="true" />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="room-natural-input"
+              placeholder="VD: cà phê Sơn Trà dưới 50k, không hải sản…"
+              autoComplete="off"
+              value={text}
+              disabled={disabled || submitting}
+              onChange={(event) => setText(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.nativeEvent.isComposing || event.keyCode === 229) return
+                if (event.key === "Enter" && parsedItems.length > 0) {
+                  event.preventDefault()
+                  void handleSubmit()
+                }
               }}
-              variant="outline"
-              size="sm"
-              spacing={0}
-              aria-label="Hành vi khi nhấn Enter"
-            >
-              <ToggleGroupItem
-                value="append"
-                className="h-6 px-2 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
-              >
-                ＋ Nối tiếp
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="replace"
-                className="h-6 px-2 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
-              >
-                ↻ Ghi đè
-              </ToggleGroupItem>
-            </ToggleGroup>
-          ) : null}
+            />
+          </InputGroup>
+          <Button
+            type="button"
+            size="sm"
+            disabled={disabled || submitting || parsedItems.length === 0}
+            onClick={() => void handleSubmit()}
+            aria-label="Thêm tiêu chí"
+          >
+            <PlusIcon className="size-4" aria-hidden="true" />
+            Thêm
+          </Button>
         </div>
 
-        <InputGroup className="h-9 bg-card">
-          <InputGroupAddon>
-            <SparklesIcon className="size-3.5 text-primary" aria-hidden="true" />
-          </InputGroupAddon>
-          <InputGroupInput
-            id="room-natural-input"
-            placeholder={
-              hasActiveFilters
-                ? enterMode === "append"
-                  ? "Nhập tiêu chí để cộng nối tiếp vào bộ lọc hiện tại…"
-                  : "Nhập tiêu chí mới để ghi đè toàn bộ bộ lọc cũ…"
-                : "VD: cà phê Sơn Trà dưới 50k, không hải sản…"
-            }
-            autoComplete="off"
-            value={text}
-            disabled={disabled || submitting}
-            onChange={(event) => setText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.nativeEvent.isComposing || event.keyCode === 229) return
-              if (event.key === "Enter" && parsedItems.length > 0) {
-                event.preventDefault()
-                void handleSubmit(hasActiveFilters ? enterMode : "append")
-              }
-            }}
-          />
-        </InputGroup>
-
         {parsedItems.length > 0 ? (
-          <div className="flex flex-wrap items-center gap-1.5 rounded-control border border-border/70 bg-muted/40 p-2">
-            <FieldTitle className="text-xs text-muted-foreground">
-              Sẽ {hasActiveFilters && enterMode === "replace" ? "thay mới bằng" : "cộng thêm"}:
-            </FieldTitle>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 rounded-control border border-border/70 bg-muted/40 p-2">
+            <span className="text-xs text-muted-foreground">Sẽ thêm:</span>
             {parsedItems.map((item) => (
               <Badge
                 key={`${item.kind}-${item.field}-${item.value}`}
@@ -145,53 +108,7 @@ export function ProposalForm({
               </Badge>
             ))}
           </div>
-        ) : (
-          <FieldDescription className="text-xs">
-            {hasActiveFilters
-              ? `Đang có ${activeChips.length} tiêu chí. Nhấn Enter sẽ ${enterMode === "append" ? "cộng nối tiếp vào bộ lọc hiện có" : "xoá điều kiện cũ và lọc mới hoàn toàn"}.`
-              : "Gõ tự nhiên loại hình, quận, mức giá (dưới 50k / tầm trung) hoặc từ phủ định (không, né, trừ)."}
-          </FieldDescription>
-        )}
-
-        <div className="flex flex-wrap items-center gap-2 pt-0.5">
-          {!hasActiveFilters ? (
-            <Button
-              type="button"
-              size="sm"
-              className="w-full"
-              disabled={disabled || submitting || parsedItems.length === 0}
-              onClick={() => void handleSubmit("append")}
-            >
-              <ZapIcon className="size-3.5" aria-hidden="true" />
-              Áp dụng bộ lọc (Enter)
-            </Button>
-          ) : (
-            <>
-              <Button
-                type="button"
-                size="sm"
-                variant={enterMode === "append" ? "default" : "outline"}
-                className="flex-1 text-xs"
-                disabled={disabled || submitting || parsedItems.length === 0}
-                onClick={() => void handleSubmit("append")}
-              >
-                <PlusIcon className="size-3.5" aria-hidden="true" />
-                Cộng nối tiếp {enterMode === "append" ? "(Enter)" : ""}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={enterMode === "replace" ? "default" : "outline"}
-                className="flex-1 text-xs"
-                disabled={disabled || submitting || parsedItems.length === 0}
-                onClick={() => void handleSubmit("replace")}
-              >
-                <RefreshCwIcon className="size-3.5" aria-hidden="true" />
-                Ghi đè mới {enterMode === "replace" ? "(Enter)" : ""}
-              </Button>
-            </>
-          )}
-        </div>
+        ) : null}
       </Field>
 
       <FieldSeparator />
@@ -257,8 +174,7 @@ export function ProposalForm({
               }
               className="h-7 rounded-full px-2.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
             >
-              {priceLevelLabel(level)}
-              {level < 3 ? " trở xuống" : ""}
+              {level < 3 ? `${priceLevelLabel(level)} trở xuống` : priceLevelLabel(level)}
             </Toggle>
           ))}
         </div>

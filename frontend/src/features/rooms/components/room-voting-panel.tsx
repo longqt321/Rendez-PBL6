@@ -1,14 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import {
-  CheckCircle2Icon,
-  CrownIcon,
-  DicesIcon,
-  HeartIcon,
-  RotateCcwIcon,
-  SparklesIcon,
-  TrophyIcon,
-  XIcon,
-} from "lucide-react"
+import { CheckCircle2Icon, HeartIcon, RotateCcwIcon, SparklesIcon, XIcon } from "lucide-react"
 import { Link } from "react-router"
 import { toast } from "sonner"
 import { SafeImage } from "@/components/shared/safe-image"
@@ -28,7 +19,9 @@ interface RoomVotingPanelProps {
 
 export function RoomVotingPanel({ room, isOwner, onRoomUpdated }: RoomVotingPanelProps) {
   const voting = useRoomVoting(room.code, onRoomUpdated)
-  const [selectedMode, setSelectedMode] = useState<RoomVotingMode>(room.votingMode)
+  const [selectedMode, setSelectedMode] = useState<RoomVotingMode>(
+    room.votingMode === "random_wheel" ? "swipe_match" : room.votingMode,
+  )
   const [undoHistory, setUndoHistory] = useState<string[]>([])
   const [ranks, setRanks] = useState<Record<string, 1 | 2 | 3>>({})
 
@@ -111,59 +104,13 @@ export function RoomVotingPanel({ room, isOwner, onRoomUpdated }: RoomVotingPane
     }
   }
 
-  async function handleFinalize(winnerPlaceId?: string) {
-    try {
-      await voting.finalizeVoting(winnerPlaceId)
-      toast.success("Đã chốt quán cho cả nhóm!")
-    } catch {
-      toast.error("Không chốt được quán")
-    }
-  }
-
-  // Pha 3: Đã chốt quán
-  if (room.phase === "locked" && room.winnerPlaceId) {
-    const winner = candidates.find((c) => c.placeId === room.winnerPlaceId)
-    if (!winner) return null
-    return (
-      <Card className="border-primary/40 bg-primary/5 p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          {winner.place.imageUrl ? (
-            <SafeImage
-              src={winner.place.imageUrl}
-              alt={winner.place.name}
-              className="h-32 w-full rounded-surface object-cover sm:w-44"
-            />
-          ) : null}
-          <div className="flex flex-1 flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <Badge className="gap-1">
-                <CrownIcon className="size-3.5" />
-                Đã chốt kèo
-              </Badge>
-              {winner.place.district ? (
-                <Badge variant="outline">{winner.place.district}</Badge>
-              ) : null}
-            </div>
-            <h3 className="font-display text-xl font-bold">{winner.place.name}</h3>
-            <p className="text-sm text-muted-foreground">{winner.place.address}</p>
-            <div className="mt-1 flex flex-wrap gap-2">
-              <Button render={<Link to={`/discover/${winner.place.id}`} />}>
-                Xem chi tiết & Chỉ đường
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
-    )
-  }
-
   // Pha 1: Lọc & Shortlist ứng viên (gọn 1 dòng khi chưa có ứng viên)
   if (room.phase === "filtering") {
     if (candidates.length === 0) {
       return (
         <div className="flex items-center justify-between rounded-control border border-dashed border-border/70 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
           <span>
-            Chọn ít nhất 2 quán bên dưới để mở bình chọn nhóm (Quẹt chọn / Top 3 / Quay ngẫu nhiên).
+            Chọn ít nhất 2 quán bên dưới để mở bình chọn nhóm (Quẹt chọn / Xếp hạng Top 3).
           </span>
         </div>
       )
@@ -176,41 +123,29 @@ export function RoomVotingPanel({ room, isOwner, onRoomUpdated }: RoomVotingPane
               Danh sách ứng viên ({candidates.length}/15)
             </h3>
             <p className="text-xs text-muted-foreground">
-              Thêm ít nhất 2 quán từ danh sách bên dưới để mở bình chọn nhóm.
+              Thêm ít nhất 2 quán từ danh sách bên dưới để cả nhóm cùng bình chọn tham khảo.
             </p>
           </div>
           {isOwner ? (
             <div className="flex flex-wrap items-center gap-2">
-              {(["swipe_match", "ranked_choice", "random_wheel"] as RoomVotingMode[]).map(
-                (mode) => (
-                  <Button
-                    key={mode}
-                    type="button"
-                    size="sm"
-                    variant={selectedMode === mode ? "default" : "outline"}
-                    onClick={() => setSelectedMode(mode)}
-                  >
-                    {mode === "swipe_match"
-                      ? "Quẹt chọn"
-                      : mode === "ranked_choice"
-                        ? "Xếp hạng Top 3"
-                        : "Quay ngẫu nhiên"}
-                  </Button>
-                ),
-              )}
+              {(["swipe_match", "ranked_choice"] as RoomVotingMode[]).map((mode) => (
+                <Button
+                  key={mode}
+                  type="button"
+                  size="sm"
+                  variant={selectedMode === mode ? "default" : "outline"}
+                  onClick={() => setSelectedMode(mode)}
+                >
+                  {mode === "swipe_match" ? "Quẹt chọn" : "Xếp hạng Top 3"}
+                </Button>
+              ))}
               <Button
                 type="button"
-                disabled={
-                  voting.pending || candidates.length < (selectedMode === "random_wheel" ? 1 : 2)
-                }
+                disabled={voting.pending || candidates.length < 2}
                 onClick={() => void handleStartVoting(selectedMode)}
               >
-                {selectedMode === "random_wheel" ? (
-                  <DicesIcon className="size-4" />
-                ) : (
-                  <SparklesIcon className="size-4" />
-                )}
-                {selectedMode === "random_wheel" ? "Quay chốt ngay" : "Bắt đầu bình chọn"}
+                <SparklesIcon className="size-4" aria-hidden="true" />
+                Mở bình chọn
               </Button>
             </div>
           ) : null}
@@ -268,12 +203,6 @@ export function RoomVotingPanel({ room, isOwner, onRoomUpdated }: RoomVotingPane
             người đã chọn
           </span>
         </div>
-        {isOwner ? (
-          <Button type="button" size="sm" onClick={() => void handleFinalize()}>
-            <TrophyIcon className="size-4" />
-            Chốt kết quả ngay
-          </Button>
-        ) : null}
       </div>
 
       <Progress value={progressPct} className="h-2" />
@@ -362,16 +291,15 @@ export function RoomVotingPanel({ room, isOwner, onRoomUpdated }: RoomVotingPane
                     <span className="font-medium">{cand.place.name}</span>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">{likes} lượt thích</Badge>
-                      {isOwner ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => void handleFinalize(cand.placeId)}
-                        >
-                          Chốt quán này
-                        </Button>
-                      ) : null}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        nativeButton={false}
+                        render={<Link to={`/discover/${cand.placeId}`} />}
+                      >
+                        Xem quán
+                      </Button>
                     </div>
                   </div>
                 )

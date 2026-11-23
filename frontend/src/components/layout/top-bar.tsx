@@ -12,7 +12,6 @@ import {
   SparklesIcon,
   UserIcon,
   UserPlusIcon,
-  UsersIcon,
   XIcon,
 } from "lucide-react"
 import { Link, useLocation, useNavigate } from "react-router"
@@ -52,8 +51,6 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { useLogout } from "@/features/auth/hooks/use-logout"
 import { useMe } from "@/features/profile/hooks/use-me"
-import { RoomJoinDialog } from "@/features/rooms/components/room-join-dialog"
-import { useRooms } from "@/features/rooms/hooks/use-rooms"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
 import { useIsDesktop } from "@/hooks/use-breakpoint"
 import { useMobileGpsAutoSync } from "@/hooks/use-user-location"
@@ -73,12 +70,9 @@ export function TopBar() {
   useMobileGpsAutoSync()
   const isDesktop = useIsDesktop()
   const { draft, setDraft, submit, clear, isFilterPage } = useSearchQuerySync()
-  const { activeCode, getRoom, createRoom, joinRoom } = useRooms()
   const location = useLocation()
   const navigate = useNavigate()
   const [commandOpen, setCommandOpen] = useState(false)
-  const [joinOpen, setJoinOpen] = useState(false)
-  const room = activeCode ? getRoom(activeCode) : undefined
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -169,28 +163,6 @@ export function TopBar() {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          {room ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="inline-flex gap-1.5 rounded-full border-primary/40 bg-primary/5 text-xs font-medium"
-              render={<Link to={`/rooms/${room.code}`} />}
-            >
-              <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
-              <span className="max-w-28 truncate">{room.name}</span>
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="inline-flex h-9 gap-1.5 rounded-full px-3 text-xs font-medium md:h-8 md:px-2.5"
-              onClick={() => setJoinOpen(true)}
-            >
-              <UsersIcon className="size-3.5 text-primary" aria-hidden="true" />
-              <span className="hidden sm:inline">Đi cùng nhóm</span>
-              <span className="sm:hidden">Nhóm</span>
-            </Button>
-          )}
           <UserMenu />
         </div>
       </div>
@@ -242,13 +214,6 @@ export function TopBar() {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
-
-      <RoomJoinDialog
-        open={joinOpen}
-        onOpenChange={setJoinOpen}
-        onCreate={createRoom}
-        onJoin={(code, displayName) => joinRoom(code, displayName || "Khách")}
-      />
     </header>
   )
 }

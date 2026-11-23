@@ -50,6 +50,9 @@ const CollectionDetailPage = lazy(() =>
     default: m.CollectionDetailPage,
   })),
 )
+const RoomsLobbyPage = lazy(() =>
+  import("@/features/rooms/pages/rooms-lobby-page").then((m) => ({ default: m.RoomsLobbyPage })),
+)
 const RoomPage = lazy(() =>
   import("@/features/rooms/pages/room-page").then((m) => ({ default: m.RoomPage })),
 )
@@ -172,6 +175,7 @@ export const routes: RouteObject[] = [
         ),
       },
       { path: "/collections/:id", element: <CollectionDetailPage /> },
+      { path: "/rooms", element: <RoomsLobbyPage /> },
       { path: "/rooms/:code", element: <RoomPage /> },
       {
         path: "/profile",

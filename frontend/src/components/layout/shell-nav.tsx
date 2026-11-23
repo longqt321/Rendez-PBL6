@@ -117,7 +117,7 @@ export function SideNav() {
           <div className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-1.5 text-xs font-semibold text-primary">
               <UsersIcon className="size-3.5" aria-hidden="true" />
-              Phòng đang lọc
+              Phòng nhóm đang mở
             </span>
             <Badge variant="secondary" className="font-mono text-xs">
               {activeRoom.code}
@@ -131,7 +131,7 @@ export function SideNav() {
             className="mt-2.5 w-full justify-between text-xs"
             render={<Link to={`/rooms/${activeRoom.code}`} />}
           >
-            Vào bàn chốt quán
+            Mở phòng nhóm
             <ArrowRightIcon className="size-3.5" aria-hidden="true" />
           </Button>
         </div>
