@@ -15,7 +15,7 @@ Danh sách các việc thật sự còn mở (cập nhật 2026-11-21 sau đợt
 
 - [x] **Triển khai `F-002`, `F-079`, `F-040` (Clean Break)**: thay thang 1–5 sao bằng 3 mức (`Ổn` / `Rất ngon` / `Phải thử`) + món nên gọi, tách tab `Ảnh món thật` & `Bảng giá / Menu` (kèm zoom lightbox), và thêm bình chọn nhóm (`Swipe & Match`, `Ranked-Choice IRV`, `Random Wheel`) trong `/rooms/:code`.
 - [x] **Mốc vị trí quen thuộc & Đồng bộ GPS từ điện thoại (`20261122172000_location_anchors_and_landmarks`)**: tách 2 bảng `UserLocationAnchor` (mốc cá nhân tối đa 10/user) & `CityLandmark` (địa danh nổi tiếng công khai), đồng bộ GPS chính xác (`<= 150m`) qua Redis (`PUT/GET/DELETE /me/location`), `LocationSwitcher` + `ManageAnchorsDialog` trên UI và thứ tự ưu tiên 6 tầng trong `useUserLocation`.
-- [ ] **Nâng cấp `F-040` mở rộng**: còn `F-034` (Thiệp mời chốt kèo & RSVP) ở đợt tiếp theo. *(Đã xong `F-039` gợi ý theo dịp đi & đối tượng với 5 preset `solo`, `date`, `friends`, `family`, `late-night` trên `/discover` và `GET /places?occasion=...`.)*
+- [ ] **Nâng cấp `F-040` mở rộng**: còn `F-034` (Thiệp mời chốt kèo & RSVP) ở đợt tiếp theo.
 - [x] **Chỉnh sửa & ghim bài viết**: đã bổ sung `Post.pinnedAt`, API `PATCH /posts/:id` (sửa nội dung & ghim/bỏ ghim), tách riêng query `tab=pinned` khỏi `saved`, `EditPostDialog` và menu trên `PostCard`.
 - [x] **Kéo thả sắp xếp địa điểm trong bộ sưu tập**: đã cài `@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities`, tạo `PATCH /collections/:id/reorder` và `SortableCollectionPlaces` trên `CollectionDetailPage`.
 - [x] **Tạo bộ sưu tập trực tiếp trên `/saved`**: đã thêm `CreateCollectionDialog` và nút "Tạo bộ sưu tập" ngay trong tab Bộ sưu tập trên `/saved`.

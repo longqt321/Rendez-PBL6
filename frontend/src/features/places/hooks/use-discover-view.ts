@@ -70,7 +70,6 @@ export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView
   const serverFilters = useMemo(
     () => ({
       category: filters.category,
-      occasion: filters.occasion,
       district: filters.district,
       query: filters.query,
       priceMax: filters.priceMax === "all" ? undefined : filters.priceMax,
@@ -86,7 +85,6 @@ export function useDiscoverView(options?: { fetchList?: boolean }): DiscoverView
     }),
     [
       filters.category,
-      filters.occasion,
       filters.district,
       filters.query,
       filters.priceMax,

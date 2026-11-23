@@ -1,6 +1,6 @@
 import { parseApiCategory } from "../enums"
 import type { PlaceFilters } from "./types"
-import { getOccasionPreset, occasionSchema, type PlaceCategory } from "@rendez/schema"
+import type { PlaceCategory } from "@rendez/schema"
 import type { PlaceSort } from "../cursor"
 
 export function splitList(raw: string | undefined): string[] {
@@ -63,15 +63,9 @@ export function parsePlaceFilters(query: Record<string, string | undefined>): Pl
   const rawQ = query.q?.trim()
   const q = rawQ && rawQ.length > 0 ? rawQ.slice(0, 100) : undefined
 
-  const parsedOccasion = query.occasion ? occasionSchema.safeParse(query.occasion) : null
-  const occasionCategories =
-    parsedOccasion?.success && category.categories.length === 0 && !category.unmatchedOnly
-      ? [...getOccasionPreset(parsedOccasion.data).categories]
-      : category.categories
-
   return {
     q,
-    categories: occasionCategories,
+    categories: category.categories,
     categoriesMatchNothing: category.unmatchedOnly,
     districts: splitList(query.district),
     priceMax,

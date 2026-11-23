@@ -131,14 +131,6 @@ export {
   reorderCollectionPlacesSchema,
 } from "./collection.schema"
 export {
-  OCCASION_KEYS,
-  OCCASION_PRESETS,
-  occasionSchema,
-  getOccasionPreset,
-  type OccasionKey,
-  type OccasionPreset,
-} from "./occasion"
-export {
   directMessagePeerSchema,
   directMessageSchema,
   conversationSummarySchema,

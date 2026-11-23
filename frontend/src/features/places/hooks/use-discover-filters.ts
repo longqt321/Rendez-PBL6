@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs"
 import {
-  OCCASION_KEYS,
   parseNaturalFilterQuery,
   removeChipFromQuery,
-  type OccasionKey,
   type ParsedFilterChip,
   type ParsedNaturalQuery,
 } from "@rendez/schema"
@@ -30,7 +28,6 @@ const PRICE_LEVELS = ["1", "2", "3"] as const
 
 const discoverSearchParsers = {
   category: parseAsStringLiteral(PLACE_CATEGORIES),
-  occasion: parseAsStringLiteral(OCCASION_KEYS),
   district: parseAsString.withDefault("all"),
   q: parseAsString.withDefault(""),
   sort: parseAsStringLiteral(DISCOVER_SORTS).withDefault("newest"),
@@ -41,7 +38,6 @@ const discoverSearchParsers = {
 
 export interface DiscoverFiltersState {
   category: PlaceCategory | "all"
-  occasion: OccasionKey | "all"
   district: string
   query: string
   draftQuery: string
@@ -56,7 +52,6 @@ export interface DiscoverFiltersState {
   setCoords: (coords: { lat: number; lng: number } | null) => void
   isNearbyActive: boolean
   setCategory: (value: PlaceCategory | "all") => void
-  setOccasion: (value: OccasionKey | "all") => void
   setDistrict: (value: string) => void
   setIsNearbyActive: (value: boolean) => void
   resetAll: () => void
@@ -70,7 +65,6 @@ export function useDiscoverFilters(): DiscoverFiltersState {
   })
 
   const category: PlaceCategory | "all" = urlState.category ?? "all"
-  const occasion: OccasionKey | "all" = urlState.occasion ?? "all"
   const district = urlState.district || "all"
   const query = urlState.q
   const sort: DiscoverSort = urlState.sort
@@ -142,17 +136,15 @@ export function useDiscoverFilters(): DiscoverFiltersState {
   const activeFilterCount = useMemo(
     () =>
       (category === "all" ? 0 : 1) +
-      (occasion === "all" ? 0 : 1) +
       (district === "all" ? 0 : 1) +
       (query.trim() ? 1 : 0) +
       (priceMax === "all" ? 0 : 1) +
       (isNearbyActive ? 1 : 0),
-    [category, occasion, district, query, priceMax, isNearbyActive],
+    [category, district, query, priceMax, isNearbyActive],
   )
 
   return {
     category,
-    occasion,
     district,
     query,
     draftQuery,
@@ -168,7 +160,6 @@ export function useDiscoverFilters(): DiscoverFiltersState {
     setCoords,
     isNearbyActive,
     setCategory: (value) => void setUrlState({ category: value === "all" ? null : value }),
-    setOccasion: (value) => void setUrlState({ occasion: value === "all" ? null : value }),
     setDistrict: (value) => void setUrlState({ district: value === "all" ? null : value }),
     setIsNearbyActive: (value) => setSort(value ? "distance" : "newest"),
     resetAll: () => {
@@ -176,7 +167,6 @@ export function useDiscoverFilters(): DiscoverFiltersState {
       setDraftQuery("")
       void setUrlState({
         category: null,
-        occasion: null,
         district: null,
         q: null,
         priceMax: null,

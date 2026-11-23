@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useLocation, useNavigate } from "react-router"
-import { OCCASION_PRESETS } from "@rendez/schema"
 import {
   ArrowUpDownIcon,
   CoffeeIcon,
@@ -165,7 +164,7 @@ export function DiscoverToolbar({
       {view.locationGate}
 
       {!isDesktop ? (
-        /* Mobile (< md): 1 dòng cực gọn — danh mục cuộn ngang + nút Bộ lọc (Drawer) + chuyển chế độ */
+        /* Mobile (< md): 1 dòng cực gọn: danh mục cuộn ngang + nút Bộ lọc (Drawer) + chuyển chế độ */
         <div className="flex items-center gap-1.5">
           <div className="flex min-w-0 flex-1 scrollbar-none items-center gap-1 overflow-x-auto">
             {CATEGORY_TABS.map((tab) => {
@@ -469,32 +468,6 @@ export function DiscoverToolbar({
           </div>
         </div>
       )}
-
-      {/* Hàng dịp đi (F-039): gợi ý nhanh theo bối cảnh */}
-      <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto pb-0.5">
-        <span className="shrink-0 text-xs font-medium text-muted-foreground">Dịp đi:</span>
-        {OCCASION_PRESETS.map((preset) => {
-          const active = filters.occasion === preset.key
-          return (
-            <Tooltip key={preset.key}>
-              <TooltipTrigger
-                render={
-                  <Toggle
-                    size="sm"
-                    variant="outline"
-                    pressed={active}
-                    onPressedChange={() => filters.setOccasion(active ? "all" : preset.key)}
-                    className="h-7 shrink-0 rounded-full px-2.5 text-xs aria-pressed:bg-secondary aria-pressed:text-secondary-foreground"
-                  />
-                }
-              >
-                {preset.shortLabel}
-              </TooltipTrigger>
-              <TooltipContent>{preset.description}</TooltipContent>
-            </Tooltip>
-          )
-        })}
-      </div>
 
       {/* Hàng phụ: chỉ hiện khi có bộ lọc đang bật */}
       {hasAnyActivePill ? (
