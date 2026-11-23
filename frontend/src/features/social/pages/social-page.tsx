@@ -91,7 +91,7 @@ function SocialFeedContent({
       className={`mt-4 flex flex-col gap-4 transition-opacity duration-150 ${isUpdating ? "opacity-65" : ""}`}
     >
       {posts.map((post) => (
-        <StaggerItem key={post.id}>
+        <StaggerItem key={post.id} className="cv-card">
           <PostCard post={post} />
         </StaggerItem>
       ))}

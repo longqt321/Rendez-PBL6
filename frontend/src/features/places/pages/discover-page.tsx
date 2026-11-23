@@ -101,7 +101,7 @@ function DiscoverContent({ view, sentinelRef }: DiscoverContentProps) {
 
       <StaggerList className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {view.placesWithDistance.map(({ place, distanceKm }) => (
-          <StaggerItem key={place.id} className="h-full">
+          <StaggerItem key={place.id} className="cv-card h-full">
             <PlaceCard place={place} distanceKm={distanceKm} />
           </StaggerItem>
         ))}

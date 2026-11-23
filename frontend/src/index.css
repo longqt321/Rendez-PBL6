@@ -341,3 +341,8 @@ body {
     animation: none;
   }
 }
+
+.cv-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 340px;
+}

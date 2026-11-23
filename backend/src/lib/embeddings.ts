@@ -7,9 +7,11 @@ import {
   timeout,
   wrap,
 } from "cockatiel"
+import { createHash } from "node:crypto"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { LRUCache } from "lru-cache"
+import { getRedis } from "./redis"
 import { logger } from "./logger"
 import { registerCircuitBreaker } from "./metrics"
 import { recordEmbedTiming } from "./request-context"
@@ -87,16 +89,46 @@ async function encode(texts: string[]): Promise<Float32Array[] | null> {
 }
 
 const queryCache = new LRUCache<string, Float32Array>({ max: QUERY_CACHE_MAX })
+const REDIS_QUERY_EMBED_TTL_SECONDS = 24 * 60 * 60
+
+function redisEmbedKey(text: string): string {
+  const hash = createHash("sha256").update(text).digest("hex").slice(0, 24)
+  return `rendez:emb:q:v1:${hash}`
+}
 
 export async function embedQuery(text: string): Promise<Float32Array | null> {
   const cached = queryCache.get(text)
   if (cached) return cached
+
+  const redis = getRedis()
+  const rKey = redisEmbedKey(text)
+  if (redis) {
+    try {
+      const raw = await redis.get(rKey)
+      if (raw) {
+        const parsed: unknown = JSON.parse(raw)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const vec = new Float32Array(parsed as number[])
+          queryCache.set(text, vec)
+          return vec
+        }
+      }
+    } catch {
+      // Redis cache miss/error không chặn đường tìm kiếm chính
+    }
+  }
+
   const pipe = await getExtractor()
   if (!pipe) return null
   try {
     const vec = (await encode([`query: ${text}`]))?.[0]
     if (vec) {
       queryCache.set(text, vec)
+      if (redis) {
+        void redis
+          .set(rKey, JSON.stringify(Array.from(vec)), "EX", REDIS_QUERY_EMBED_TTL_SECONDS)
+          .catch(() => {})
+      }
     }
     return vec ?? null
   } catch (err) {

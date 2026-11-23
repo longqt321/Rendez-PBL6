@@ -3,6 +3,7 @@ import path from "node:path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig, loadEnv, type Plugin } from "vite"
+import { compression } from "vite-plugin-compression2"
 import { VitePWA } from "vite-plugin-pwa"
 
 /** Route tĩnh của SPA — route động sinh theo dữ liệu nên không liệt kê. */
@@ -69,6 +70,11 @@ export default defineConfig(({ mode }) => {
       ...(isTest
         ? []
         : [
+            compression({
+              algorithms: ["gzip"],
+              include: /\.(js|css|html|svg|json|woff2)$/i,
+              threshold: 1024,
+            }),
             VitePWA({
               registerType: "autoUpdate",
               manifest: false,
@@ -135,6 +141,16 @@ export default defineConfig(({ mode }) => {
         output: {
           codeSplitting: {
             groups: [
+              {
+                name: "vendor-charts",
+                test: /node_modules\/(recharts|d3-[^/]+|victory-vendor)\//,
+                priority: 25,
+              },
+              {
+                name: "vendor-table",
+                test: /node_modules\/@tanstack\/react-table\//,
+                priority: 24,
+              },
               {
                 name: "vendor-react",
                 test: /node_modules\/(react|react-dom|react-router|scheduler)\//,
