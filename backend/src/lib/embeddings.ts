@@ -1,4 +1,4 @@
-import { pipeline, type FeatureExtractionPipeline, env } from "@huggingface/transformers"
+import type { FeatureExtractionPipeline } from "@huggingface/transformers"
 import {
   ConsecutiveBreaker,
   TimeoutStrategy,
@@ -17,6 +17,7 @@ import { registerCircuitBreaker } from "./metrics"
 import { recordEmbedTiming } from "./request-context"
 
 const MODEL_ID = "Xenova/multilingual-e5-small"
+const EMBEDDING_SERVICE_URL = process.env.EMBEDDING_SERVICE_URL?.trim() || ""
 
 const encodeBreaker = circuitBreaker(handleAll, {
   halfOpenAfter: 30_000,
@@ -26,16 +27,20 @@ registerCircuitBreaker("embeddings", encodeBreaker)
 
 const encodePolicy = wrap(encodeBreaker, timeout(3_000, TimeoutStrategy.Aggressive))
 
-env.cacheDir = process.env.TRANSFORMERS_CACHE_DIR ?? join(tmpdir(), "rendez-transformers-cache")
-
 const QUERY_CACHE_MAX = 100
 
 let extractor: FeatureExtractionPipeline | null = null
 let initPromise: Promise<FeatureExtractionPipeline | null> | null = null
 
 async function getExtractor(): Promise<FeatureExtractionPipeline | null> {
+  if (EMBEDDING_SERVICE_URL) return null
   if (extractor) return extractor
-  initPromise ??= pipeline("feature-extraction", MODEL_ID, { dtype: "q8" })
+  initPromise ??= import("@huggingface/transformers")
+    .then(({ pipeline, env }) => {
+      env.cacheDir =
+        process.env.TRANSFORMERS_CACHE_DIR ?? join(tmpdir(), "rendez-transformers-cache")
+      return pipeline("feature-extraction", MODEL_ID, { dtype: "q8" })
+    })
     .then((pipe) => {
       extractor = pipe as FeatureExtractionPipeline
       return extractor
@@ -48,18 +53,48 @@ async function getExtractor(): Promise<FeatureExtractionPipeline | null> {
   return initPromise
 }
 
-// Warm-up lúc import — encode 1 câu ngắn để ONNX tải sẵn vào bộ nhớ.
-void (async () => {
-  const pipe = await getExtractor()
-  if (!pipe) return
-  try {
-    await embedQuery("warmup")
-  } catch {
-    /* đã bắt trong embedQuery */
-  }
-})()
+// Chỉ warm-up ONNX ở tiến trình giữ model; worker HTTP dùng EMBEDDING_SERVICE_URL không nạp ONNX.
+if (!EMBEDDING_SERVICE_URL) {
+  void (async () => {
+    const pipe = await getExtractor()
+    if (!pipe) return
+    try {
+      await embedQuery("warmup")
+    } catch {
+      /* đã bắt trong embedQuery */
+    }
+  })()
+}
 
-async function encode(texts: string[]): Promise<Float32Array[] | null> {
+async function encodeRemote(texts: string[]): Promise<Float32Array[] | null> {
+  const startedAt = performance.now()
+  try {
+    const vectors = await encodePolicy.execute(async () => {
+      const response = await fetch(`${EMBEDDING_SERVICE_URL}/embed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texts }),
+      })
+      if (!response.ok) {
+        throw new Error(`Embedding service HTTP ${response.status}`)
+      }
+      const payload = (await response.json()) as { vectors?: number[][] }
+      if (!Array.isArray(payload.vectors)) return null
+      return payload.vectors.map((row) => new Float32Array(row))
+    })
+    return vectors
+  } catch (err) {
+    logger.warn({ err }, "embeddings: gọi embedding service nội bộ thất bại")
+    return null
+  } finally {
+    recordEmbedTiming(performance.now() - startedAt)
+  }
+}
+
+export async function encode(texts: string[]): Promise<Float32Array[] | null> {
+  if (EMBEDDING_SERVICE_URL) {
+    return encodeRemote(texts)
+  }
   const pipe = await getExtractor()
   if (!pipe) return null
   const startedAt = performance.now()
@@ -118,10 +153,10 @@ export async function embedQuery(text: string): Promise<Float32Array | null> {
     }
   }
 
-  const pipe = await getExtractor()
-  if (!pipe) return null
+  const vecs = await encode([`query: ${text}`])
+  if (!vecs) return null
   try {
-    const vec = (await encode([`query: ${text}`]))?.[0]
+    const vec = vecs[0]
     if (vec) {
       queryCache.set(text, vec)
       if (redis) {

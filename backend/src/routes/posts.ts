@@ -12,6 +12,7 @@ import {
 import type { AppEnv } from "../app"
 import { env } from "../env"
 import { UUID_ID_RE, decodeCursor, encodeCursor, requireUuid } from "../lib/cursor"
+import { createTtlCache } from "../lib/http-cache"
 import { isLocalMediaFallbackEnabled, localMediaBaseUrl } from "../lib/media-storage"
 import { ApiError } from "../lib/errors"
 import { idempotency } from "../lib/idempotency"
@@ -27,6 +28,12 @@ import { getViewer, requireAuth } from "../lib/session"
 import { recordEvent } from "../lib/interaction-events"
 
 const POSTS_PAGE_SIZE = 5
+
+const publicPostsCache = createTtlCache<Awaited<ReturnType<typeof listPosts>>>({
+  ttlMs: 10_000,
+  maxEntries: 200,
+  namespace: "posts-public",
+})
 
 const DEFAULT_COMMENTS_LIMIT = 50
 const MAX_COMMENTS_LIMIT = 100
@@ -115,13 +122,31 @@ export function createPostsRouter() {
     const cursor = rawCursor ? decodeCursor(rawCursor, UUID_ID_RE) : null
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
-    const page = await listPosts({
-      filter,
-      q: c.req.query("q")?.trim() || undefined,
-      viewerId: viewer?.id ?? null,
-      cursor,
-      pageSize: POSTS_PAGE_SIZE,
-    })
+    const q = c.req.query("q")?.trim() || undefined
+    const isPublicFeed = !viewer && (filter === "all" || filter === "unplaced")
+    const page = isPublicFeed
+      ? await (async () => {
+          const { value, hit } = await publicPostsCache.getWithStatus(
+            `${filter}:${q ?? ""}:${cursor ?? ""}`,
+            () =>
+              listPosts({
+                filter,
+                q,
+                viewerId: null,
+                cursor,
+                pageSize: POSTS_PAGE_SIZE,
+              }),
+          )
+          c.set("cacheHit", hit)
+          return value
+        })()
+      : await listPosts({
+          filter,
+          q,
+          viewerId: viewer?.id ?? null,
+          cursor,
+          pageSize: POSTS_PAGE_SIZE,
+        })
 
     return c.json({
       items: page.items,

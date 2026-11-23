@@ -11,6 +11,18 @@ services:
       - shared_preload_libraries=pg_stat_statements
       - -c
       - pg_stat_statements.track=all
+      - -c
+      - shared_buffers=384MB
+      - -c
+      - effective_cache_size=1024MB
+      - -c
+      - work_mem=8MB
+      - -c
+      - maintenance_work_mem=128MB
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - max_connections=100
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-rendez}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rendez_dev}
@@ -22,11 +34,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4.0'
-          memory: 2048M
+          cpus: '3.5'
+          memory: 1536M
         reservations:
           cpus: '0.5'
-          memory: 512M
+          memory: 384M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rendez} -d ${POSTGRES_DB:-rendez}"]
       interval: 5s
@@ -39,7 +51,7 @@ services:
     command:
       - redis-server
       - --maxmemory
-      - 256mb
+      - 192mb
       - --maxmemory-policy
       - allkeys-lru
       - --save
@@ -52,7 +64,7 @@ services:
       resources:
         limits:
           cpus: '1.0'
-          memory: 384M
+          memory: 256M
         reservations:
           cpus: '0.1'
           memory: 64M
@@ -116,8 +128,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4.0'
-          memory: 2048M
+          cpus: '5.0'
+          memory: 2944M
         reservations:
           cpus: '0.5'
           memory: 512M
@@ -147,8 +159,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '0.5'
+          memory: 256M
     depends_on:
       api:
         condition: service_healthy

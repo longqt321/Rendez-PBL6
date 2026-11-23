@@ -81,11 +81,18 @@ const placeDetailCache = createTtlCache<NonNullable<Awaited<ReturnType<typeof fi
   namespace: "place-detail",
 })
 
+const recommendedPlacesCache = createTtlCache<Awaited<ReturnType<typeof getRecommendedPlaces>>>({
+  ttlMs: 20_000,
+  maxEntries: 256,
+  namespace: "places-recommended",
+})
+
 export function invalidatePlacesReadCaches(): void {
   placesListCache.clear()
   dailyPicksCache.clear()
   mapPlacesCache.clear()
   placeDetailCache.clear()
+  recommendedPlacesCache.clear()
 }
 
 export function createPlacesRouter() {
@@ -217,12 +224,22 @@ export function createPlacesRouter() {
     const viewer = await getViewer(c)
     const rawLimit = Number(c.req.query("limit") ?? 6)
     const limit = Number.isFinite(rawLimit) ? Math.min(20, Math.max(1, Math.trunc(rawLimit))) : 6
+    const anonId = viewer ? null : (c.req.query("anonId") ?? null)
 
     const startedAt = performance.now()
-    const result = await getRecommendedPlaces(
-      { userId: viewer?.id ?? null, anonId: viewer ? null : (c.req.query("anonId") ?? null) },
-      limit,
-    )
+    let result: Awaited<ReturnType<typeof getRecommendedPlaces>>
+    let cacheHit = false
+    if (!viewer) {
+      const cached = await recommendedPlacesCache.getWithStatus(
+        `${anonId ?? "guest"}:${limit}`,
+        () => getRecommendedPlaces({ userId: null, anonId }, limit),
+      )
+      result = cached.value
+      cacheHit = cached.hit
+      c.set("cacheHit", cacheHit)
+    } else {
+      result = await getRecommendedPlaces({ userId: viewer.id, anonId: null }, limit)
+    }
     const tookMs = Math.round(performance.now() - startedAt)
 
     return c.json({
@@ -230,7 +247,7 @@ export function createPlacesRouter() {
       next: null,
       meta: {
         tookMs,
-        cacheHit: false,
+        cacheHit,
         totalResults: result.items.length,
         strategy: result.strategy,
         seedCount: result.seedCount,
