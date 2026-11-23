@@ -11,14 +11,25 @@ export function verifyEmailCallbackUrl(): string {
   return new URL(VERIFY_EMAIL_CALLBACK_PATH, env.APP_ORIGIN).toString()
 }
 
-const trustedOrigins = [...new Set([...env.corsOrigins, env.APP_ORIGIN])]
+const staticTrustedOrigins = [...new Set([...env.corsOrigins, env.APP_ORIGIN])]
+
+function resolveTrustedOrigins(request?: Request): string[] {
+  if (env.NODE_ENV === "production" || !request) return staticTrustedOrigins
+  const forwardedHost = request.headers.get("x-forwarded-host")
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https"
+  if (!forwardedHost) return staticTrustedOrigins
+  const dynamicOrigin = `${forwardedProto}://${forwardedHost}`
+  return staticTrustedOrigins.includes(dynamicOrigin)
+    ? staticTrustedOrigins
+    : [...staticTrustedOrigins, dynamicOrigin]
+}
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
 
   basePath: "/api/v1/auth",
   secret: env.BETTER_AUTH_SECRET,
-  trustedOrigins,
+  trustedOrigins: resolveTrustedOrigins,
 
   database: prismaAdapter(prisma, { provider: "postgresql" }),
 
@@ -127,6 +138,7 @@ export const auth = betterAuth({
   },
 
   advanced: {
+    trustedProxyHeaders: true,
     database: {
       generateId: false,
     },

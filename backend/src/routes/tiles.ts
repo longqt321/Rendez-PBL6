@@ -19,7 +19,10 @@ import { logger } from "../lib/logger"
 import { registerCircuitBreaker } from "../lib/metrics"
 import { recordExternalTiming } from "../lib/request-context"
 
-const TILE_CACHE_DIR = join(import.meta.dir, "../../data/tile-cache")
+const TILE_CACHE_DIR = join(
+  process.cwd(),
+  process.cwd().endsWith("/backend") ? "data/tile-cache" : "backend/data/tile-cache",
+)
 const TILE_FILE_RE = /^(\d+)\.png$/u
 const MIN_ZOOM = 10
 const MAX_ZOOM = 19
