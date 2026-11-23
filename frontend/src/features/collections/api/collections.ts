@@ -77,3 +77,9 @@ export async function unlikeCollection(id: string): Promise<Collection> {
   const { data } = await api.delete<Collection>(`/collections/${id}/like`)
   return data
 }
+
+/** `PATCH /collections/:id/reorder` — cập nhật thứ tự địa điểm trong bộ sưu tập. */
+export async function reorderCollectionPlaces(id: string, placeIds: string[]): Promise<Collection> {
+  const { data } = await api.patch<Collection>(`/collections/${id}/reorder`, { placeIds })
+  return data
+}

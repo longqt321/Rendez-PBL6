@@ -1,3 +1,4 @@
+import type { OccasionKey } from "@rendez/schema"
 import { api } from "@/lib/axios"
 import type { Page } from "@/types/api"
 import type { Place, PlaceCategory } from "../types/place"
@@ -6,6 +7,7 @@ export type DiscoverSort = "newest" | "rating" | "distance"
 
 export interface DiscoverFilters {
   category: PlaceCategory | "all"
+  occasion?: OccasionKey | "all"
 
   district?: string
   query: string
@@ -46,6 +48,8 @@ export function placesQueryParams(filters: DiscoverFilters) {
     // Khi có phòng: category/district lấy từ danh sách của phòng (nhiều phần
     // tử phân tách dấu phẩy), bỏ qua filter cá nhân trên URL.
     category: resolveCategory(room, filters.category),
+    occasion:
+      room || !filters.occasion || filters.occasion === "all" ? undefined : filters.occasion,
     district: resolveDistrict(room, filters.district),
     q: room ? undefined : filters.query.trim() || undefined,
     // Phòng có priceMax thì thắng filter giá cá nhân (thứ tự ưu tiên hiện có).

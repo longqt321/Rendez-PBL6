@@ -6,6 +6,7 @@ import {
   MAX_POST_IMAGE_URL_LENGTH,
   MAX_POST_IMAGES,
   MAX_REVIEW_CONTENT_LENGTH,
+  updatePostInputSchema,
   validatePostImageUrls,
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
@@ -211,6 +212,30 @@ export function createPostsRouter() {
     ])
 
     return c.body(null, 204)
+  })
+
+  /** Sửa nội dung bài đăng và/hoặc ghim/bỏ ghim lên trang cá nhân của chính chủ. */
+  router.patch("/posts/:id", requireAuth, async (c) => {
+    const postId = requireUuid(c.req.param("id"), "Không tìm thấy bài đăng")
+    const parsed = updatePostInputSchema.safeParse(await readJson(c))
+    if (!parsed.success) throw new ApiError(400, "Dữ liệu cập nhật bài đăng không hợp lệ")
+    const userId = c.get("userId")
+
+    const post = await prisma.post.findFirst({
+      where: { id: postId, deletedAt: null },
+      select: { id: true, authorId: true },
+    })
+    if (!post) throw new ApiError(404, "Không tìm thấy bài đăng")
+    if (post.authorId !== userId) throw new ApiError(403, "Không phải bài đăng của bạn")
+
+    const data: { caption?: string; pinnedAt?: Date | null } = {}
+    if (parsed.data.caption !== undefined) data.caption = parsed.data.caption
+    if (parsed.data.pinned !== undefined) data.pinnedAt = parsed.data.pinned ? new Date() : null
+
+    await prisma.post.update({ where: { id: postId }, data })
+    const updated = await findPost(postId, userId)
+    if (!updated) throw new ApiError(404, "Không tìm thấy bài đăng")
+    return c.json(updated)
   })
 
   /**

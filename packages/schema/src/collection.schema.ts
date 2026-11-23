@@ -31,3 +31,7 @@ export const collectionSchema = z.object({
   likeCount: z.number(),
   likedByMe: z.boolean(),
 }) satisfies z.ZodType<Collection>
+
+export const reorderCollectionPlacesSchema = z.object({
+  placeIds: z.array(z.string().trim().min(1)).min(1).max(200),
+})

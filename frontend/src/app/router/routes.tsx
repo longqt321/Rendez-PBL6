@@ -42,6 +42,9 @@ const SearchPage = lazy(() =>
 const SavedPage = lazy(() =>
   import("@/features/saved/pages/saved-page").then((m) => ({ default: m.SavedPage })),
 )
+const MessagesPage = lazy(() =>
+  import("@/features/messages/pages/messages-page").then((m) => ({ default: m.MessagesPage })),
+)
 const CollectionDetailPage = lazy(() =>
   import("@/features/collections/pages/collection-detail-page").then((m) => ({
     default: m.CollectionDetailPage,
@@ -149,6 +152,22 @@ export const routes: RouteObject[] = [
         element: (
           <RequireAuth>
             <SavedPage />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "/messages",
+        element: (
+          <RequireAuth>
+            <MessagesPage />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "/messages/:handle",
+        element: (
+          <RequireAuth>
+            <MessagesPage />
           </RequireAuth>
         ),
       },

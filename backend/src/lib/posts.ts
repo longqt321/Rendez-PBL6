@@ -8,6 +8,7 @@ export type PostFilter = "all" | "unplaced" | "mine" | "saved" | "following"
 export interface PostRow {
   id: string
   caption: string
+  pinned_at: Date | null
   created_at: Date
   place_id: string | null
   author_id: string
@@ -38,6 +39,7 @@ export function toPostDto(row: PostRow) {
       initials: formatInitials(row.author_name),
     },
     caption: row.caption,
+    pinnedAt: row.pinned_at ? row.pinned_at.toISOString() : null,
     createdAt: row.created_at.toISOString(),
     placeId: row.place_id,
     place:
@@ -89,6 +91,7 @@ function basePostsQuery(viewerId: string | null) {
     .select([
       "p.id",
       "p.caption",
+      "p.pinned_at",
       "p.created_at",
       "p.place_id",
       "p.author_id",
@@ -130,6 +133,7 @@ export interface ListPostsParams {
   viewerId: string | null
   authorId?: string
   savedOf?: string
+  pinnedOf?: string
   placeId?: string
   cursor: Cursor | null
   pageSize: number
@@ -161,6 +165,9 @@ export async function listPosts(
     query = query.where(
       sql<boolean>`EXISTS (SELECT 1 FROM post_saves s WHERE s.post_id = p.id AND s.user_id = ${params.savedOf}::uuid)`,
     )
+  }
+  if (params.pinnedOf) {
+    query = query.where("p.author_id", "=", params.pinnedOf).where("p.pinned_at", "is not", null)
   }
   if (params.q) {
     query = query.where(

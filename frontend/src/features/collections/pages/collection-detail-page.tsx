@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import { Item, ItemGroup } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { PlaceCard } from "@/features/places/components/place-card"
@@ -36,6 +35,7 @@ import { useMe } from "@/features/profile/hooks/use-me"
 import { isNotFoundError, isUnauthorizedError } from "@/lib/axios"
 import { CollectionLikeButton } from "../components/collection-like-button"
 import { EditCollectionDialog } from "../components/edit-collection-dialog"
+import { SortableCollectionPlaces } from "../components/sortable-collection-places"
 import { useCollection } from "../hooks/use-collection"
 import { useDeleteCollection, useSetCollectionPlace } from "../hooks/use-collections"
 import type { Collection } from "../types/collection"
@@ -196,17 +196,18 @@ function CollectionPlacesList({ collection }: Readonly<{ collection: Collection 
     )
   }
   return (
-    <ItemGroup className="mt-6 grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {collection.placeIds.map((placeId) => (
-        <Item key={placeId} role="listitem" className="h-full border-0 p-0 [&>*]:w-full">
-          <CollectionPlaceItem
-            placeId={placeId}
-            canRemove={collection.isMine}
-            collectionId={collection.id}
-          />
-        </Item>
-      ))}
-    </ItemGroup>
+    <SortableCollectionPlaces
+      collectionId={collection.id}
+      placeIds={collection.placeIds}
+      canReorder={collection.isMine}
+      renderItem={(placeId) => (
+        <CollectionPlaceItem
+          placeId={placeId}
+          canRemove={collection.isMine}
+          collectionId={collection.id}
+        />
+      )}
+    />
   )
 }
 

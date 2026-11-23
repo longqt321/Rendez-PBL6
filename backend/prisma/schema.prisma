@@ -188,6 +188,8 @@ model User {
   interactionEvents InteractionEvent[]
   auditLogs        AuditLog[]
   locationAnchors  UserLocationAnchor[]
+  sentMessages     DirectMessage[] @relation("MessageSender")
+  receivedMessages DirectMessage[] @relation("MessageRecipient")
 
   @@map("users")
 }
@@ -469,6 +471,7 @@ model Post {
   authorId  String    @map("author_id") @db.Uuid
   placeId   String?   @map("place_id")
   caption   String
+  pinnedAt  DateTime? @map("pinned_at")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -484,6 +487,7 @@ model Post {
 
   @@index([createdAt(sort: Desc), id(sort: Desc)])
   @@index([authorId, createdAt(sort: Desc)])
+  @@index([authorId, pinnedAt(sort: Desc), createdAt(sort: Desc)])
   @@index([placeId])
   @@map("posts")
 }
@@ -964,4 +968,24 @@ model CityLandmark {
 
   @@index([sortOrder])
   @@map("city_landmarks")
+}
+
+// ---------------------------------------------------------------------------
+// 28. direct_messages — tin nhắn trực tiếp giữa hai người dùng
+// ---------------------------------------------------------------------------
+
+model DirectMessage {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  senderId    String    @map("sender_id") @db.Uuid
+  recipientId String    @map("recipient_id") @db.Uuid
+  body        String    @db.VarChar(1000)
+  readAt      DateTime? @map("read_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  sender    User @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient User @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, recipientId, createdAt(sort: Desc)])
+  @@index([recipientId, readAt, createdAt(sort: Desc)])
+  @@map("direct_messages")
 }

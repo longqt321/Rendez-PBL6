@@ -7,9 +7,13 @@ import {
   MapPinIcon,
   MessageCircleIcon,
   MoreHorizontalIcon,
+  PencilIcon,
+  PinIcon,
+  PinOffIcon,
   SparklesIcon,
   Trash2Icon,
 } from "lucide-react"
+import { toast } from "sonner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -31,9 +35,11 @@ import { formatCount, formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useSetPostLiked } from "../hooks/use-set-post-liked"
 import { useSetPostSaved } from "../hooks/use-set-post-saved"
+import { useUpdatePost } from "../hooks/use-update-post"
 import type { Post } from "../types/post"
 import { CommentThread } from "./comment-thread"
 import { AttachPostPlaceDialog } from "./attach-post-place-dialog"
+import { EditPostDialog } from "./edit-post-dialog"
 import { PostCommentsInline } from "./post-comments-inline"
 import { PostDeleteDialog } from "./post-delete-dialog"
 
@@ -44,8 +50,10 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const setLiked = useSetPostLiked()
   const setSaved = useSetPostSaved()
+  const updatePost = useUpdatePost()
   const [commentsOpen, setCommentsOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   const [attachPlaceOpen, setAttachPlaceOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const { data: me } = useMe()
@@ -102,6 +110,15 @@ export function PostCard({ post }: PostCardProps) {
             <Link to={`/post/${post.id}`} className="hover:underline">
               {formatRelativeTime(post.createdAt)}
             </Link>
+            {post.pinnedAt ? (
+              <Badge
+                variant="secondary"
+                className="ml-2 inline-flex items-center gap-1 py-0 text-xs"
+              >
+                <PinIcon className="size-3" aria-hidden="true" />
+                Đã ghim
+              </Badge>
+            ) : null}
           </p>
         </div>
         {isMine ? (
@@ -114,6 +131,27 @@ export function PostCard({ post }: PostCardProps) {
               }
             />
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                <PencilIcon />
+                Chỉnh sửa bài
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={updatePost.isPending}
+                onClick={() => {
+                  const nextPinned = !post.pinnedAt
+                  updatePost.mutate(
+                    { postId: post.id, input: { pinned: nextPinned } },
+                    {
+                      onSuccess: () =>
+                        toast.success(nextPinned ? "Đã ghim lên hồ sơ" : "Đã bỏ ghim bài viết"),
+                      onError: () => toast.error("Không cập nhật được trạng thái ghim"),
+                    },
+                  )
+                }}
+              >
+                {post.pinnedAt ? <PinOffIcon /> : <PinIcon />}
+                {post.pinnedAt ? "Bỏ ghim khỏi hồ sơ" : "Ghim lên hồ sơ"}
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setAttachPlaceOpen(true)}>
                 <MapPinIcon />
                 {place ? "Đổi địa điểm" : "Gắn địa điểm"}
@@ -245,12 +283,15 @@ export function PostCard({ post }: PostCardProps) {
       <PostDeleteDialog postId={post.id} open={deleteOpen} onClose={() => setDeleteOpen(false)} />
 
       {isMine ? (
-        <AttachPostPlaceDialog
-          postId={post.id}
-          currentPlaceId={place?.id ?? null}
-          open={attachPlaceOpen}
-          onOpenChange={setAttachPlaceOpen}
-        />
+        <>
+          <EditPostDialog post={post} open={editOpen} onOpenChange={setEditOpen} />
+          <AttachPostPlaceDialog
+            postId={post.id}
+            currentPlaceId={place?.id ?? null}
+            open={attachPlaceOpen}
+            onOpenChange={setAttachPlaceOpen}
+          />
+        </>
       ) : null}
 
       <ImageLightbox

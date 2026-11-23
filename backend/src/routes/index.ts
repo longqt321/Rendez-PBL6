@@ -19,6 +19,7 @@ import { createEventsRouter } from "./events"
 import { createTelemetryRouter } from "./telemetry"
 import { createAdminRouter } from "./admin"
 import { createLocationRouter } from "./location"
+import { createMessagesRouter } from "./messages"
 
 function normalizeRoutePath(path: string): string {
   const stripped = path.replace(/^\/api\/v1/u, "") || "/"
@@ -126,6 +127,9 @@ export function createApiRouter() {
 
   // Mốc vị trí cá nhân, địa danh thành phố & đồng bộ GPS — `/landmarks`, `/me/anchors`, `/me/location`.
   api.route("/", createLocationRouter())
+
+  // Tin nhắn trực tiếp — `/messages/conversations`, `/messages/with/:handle`.
+  api.route("/", createMessagesRouter())
 
   return api
 }

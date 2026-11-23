@@ -28,6 +28,7 @@ function makePost(overrides: Partial<Post> = {}): Post {
       initials: "M",
     },
     caption: "Quán ngon",
+    pinnedAt: null,
     images: [],
     createdAt: "2026-11-22T10:00:00.000Z",
     placeId: null,

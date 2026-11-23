@@ -61,6 +61,7 @@ export function createPost(config: InternalAxiosRequestConfig) {
     id: `post-new-${nextPostSeq()}`,
     author: CURRENT_USER,
     caption,
+    pinnedAt: null,
     createdAt: new Date().toISOString(),
     placeId: body.placeId ?? null,
     likeCount: 0,

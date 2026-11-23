@@ -13,6 +13,7 @@ export const postSchema = z.object({
   id: z.string(),
   author: authorSchema,
   caption: z.string(),
+  pinnedAt: z.string().nullable(),
   createdAt: z.string(),
   placeId: z.string().nullable(),
   place: placeSummarySchema.nullable(),
@@ -22,3 +23,12 @@ export const postSchema = z.object({
   savedByMe: z.boolean(),
   images: z.array(z.string()),
 }) satisfies z.ZodType<Post>
+
+export const updatePostInputSchema = z
+  .object({
+    caption: z.string().trim().min(1).max(2000).optional(),
+    pinned: z.boolean().optional(),
+  })
+  .refine((v) => v.caption !== undefined || v.pinned !== undefined, {
+    message: "Cần cung cấp nội dung hoặc trạng thái ghim",
+  })

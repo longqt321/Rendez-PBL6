@@ -1,12 +1,22 @@
+import { useState } from "react"
 import { Link } from "react-router"
-import { BookmarkIcon, FolderPlusIcon, MapPinIcon } from "lucide-react"
+import { BookmarkIcon, FolderPlusIcon, MapPinIcon, PlusIcon } from "lucide-react"
 import { PageContainer } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
 import { LoadMore } from "@/components/shared/load-more"
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Button } from "@/components/ui/button"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CollectionCard } from "@/features/collections/components/collection-card"
+import { CreateCollectionDialog } from "@/features/collections/components/create-collection-dialog"
 import { useCollections } from "@/features/collections/hooks/use-collection"
 import type { CollectionSummary } from "@/features/collections/types/collection"
 import { PlaceCard } from "@/features/places/components/place-card"
@@ -139,6 +149,7 @@ interface SavedCollectionsContentProps {
   readonly collectionsError: boolean
   readonly collections?: CollectionSummary[]
   readonly onRetry: () => void
+  readonly onCreateClick: () => void
 }
 
 function SavedCollectionsContent({
@@ -146,6 +157,7 @@ function SavedCollectionsContent({
   collectionsError,
   collections,
   onRetry,
+  onCreateClick,
 }: SavedCollectionsContentProps) {
   if (collectionsPending) {
     return (
@@ -168,24 +180,39 @@ function SavedCollectionsContent({
           </EmptyMedia>
           <EmptyTitle>Chưa có bộ sưu tập nào</EmptyTitle>
           <EmptyDescription>
-            Mở một địa điểm và nhấn “Lưu vào bộ sưu tập” để tạo bộ sưu tập đầu tiên.
+            Tạo bộ sưu tập mới ngay tại đây hoặc nhấn “Lưu vào bộ sưu tập” trên trang địa điểm.
           </EmptyDescription>
         </EmptyHeader>
+        <EmptyContent>
+          <Button onClick={onCreateClick}>
+            <PlusIcon aria-hidden="true" />
+            Tạo bộ sưu tập
+          </Button>
+        </EmptyContent>
       </Empty>
     )
   }
   return (
-    <ul className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {collections.map((collection) => (
-        <li key={collection.id}>
-          <CollectionCard collection={collection} />
-        </li>
-      ))}
-    </ul>
+    <>
+      <div className="mb-4 flex justify-end">
+        <Button size="sm" onClick={onCreateClick}>
+          <PlusIcon aria-hidden="true" />
+          Tạo bộ sưu tập
+        </Button>
+      </div>
+      <ul className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {collections.map((collection) => (
+          <li key={collection.id}>
+            <CollectionCard collection={collection} />
+          </li>
+        ))}
+      </ul>
+    </>
   )
 }
 
 export function SavedPage() {
+  const [createOpen, setCreateOpen] = useState(false)
   const {
     posts: savedPosts,
     isPending,
@@ -247,6 +274,7 @@ export function SavedPage() {
             onRetry={() => {
               refetchCollections().catch(() => {})
             }}
+            onCreateClick={() => setCreateOpen(true)}
           />
         </TabsContent>
 
@@ -261,6 +289,7 @@ export function SavedPage() {
           />
         </TabsContent>
       </Tabs>
+      <CreateCollectionDialog open={createOpen} onOpenChange={setCreateOpen} />
     </PageContainer>
   )
 }

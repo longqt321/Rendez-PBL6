@@ -1,7 +1,11 @@
 import { Hono } from "hono"
 import type { Context } from "hono"
 import { z } from "zod"
-import { MAX_COLLECTION_DESCRIPTION_LENGTH, MAX_COLLECTION_NAME_LENGTH } from "@rendez/schema"
+import {
+  MAX_COLLECTION_DESCRIPTION_LENGTH,
+  MAX_COLLECTION_NAME_LENGTH,
+  reorderCollectionPlacesSchema,
+} from "@rendez/schema"
 import type { AppEnv } from "../app"
 import { requireUuid } from "../lib/cursor"
 import { ApiError, isUniqueViolation } from "../lib/errors"
@@ -208,6 +212,34 @@ export function createCollectionsRouter() {
         context: { collectionId: id },
       })
     }
+    return c.json(toCollectionDto(row, userId))
+  })
+
+  router.patch("/collections/:id/reorder", requireAuth, async (c) => {
+    const id = c.req.param("id")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
+
+    const userId = c.get("userId")
+    await requireOwnedCollection(id, userId)
+
+    const raw = await c.req.json().catch(() => null)
+    const parsed = reorderCollectionPlacesSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Danh sách thứ tự không hợp lệ")
+    }
+
+    const uniqueIds = Array.from(new Set(parsed.data.placeIds))
+    await prisma.$transaction(
+      uniqueIds.map((placeId, index) =>
+        prisma.collectionPlace.updateMany({
+          where: { collectionId: id, placeId },
+          data: { position: index },
+        }),
+      ),
+    )
+
+    const row = await findCollectionById(id, userId)
+    if (!row) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
     return c.json(toCollectionDto(row, userId))
   })
 

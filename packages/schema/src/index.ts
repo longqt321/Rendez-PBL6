@@ -28,7 +28,7 @@ export type {
   AuditLogActor,
   AuditLogEntry,
 } from "./types/admin"
-export type { Author, Post, CreatePostInput, PostFeedFilter } from "./types/post"
+export type { Author, Post, CreatePostInput, UpdatePostInput, PostFeedFilter } from "./types/post"
 export type { Comment, CommentSort, CreateCommentInput } from "./types/comment"
 export type { Collection, CollectionSummary } from "./types/collection"
 export type {
@@ -78,7 +78,7 @@ export {
   dailyPickSchema,
   dailyPicksSchema,
 } from "./place.schema"
-export { postSchema, authorSchema } from "./post.schema"
+export { postSchema, authorSchema, updatePostInputSchema } from "./post.schema"
 export {
   MAX_POST_IMAGE_URL_LENGTH,
   POST_IMAGE_DUPLICATE_MESSAGE,
@@ -125,7 +125,29 @@ export {
   type UpdateAdminPlaceInput,
   type UpdateAdminUserInput,
 } from "./admin.schema"
-export { collectionSchema, collectionSummarySchema } from "./collection.schema"
+export {
+  collectionSchema,
+  collectionSummarySchema,
+  reorderCollectionPlacesSchema,
+} from "./collection.schema"
+export {
+  OCCASION_KEYS,
+  OCCASION_PRESETS,
+  occasionSchema,
+  getOccasionPreset,
+  type OccasionKey,
+  type OccasionPreset,
+} from "./occasion"
+export {
+  directMessagePeerSchema,
+  directMessageSchema,
+  conversationSummarySchema,
+  sendDirectMessageInputSchema,
+  type DirectMessagePeer,
+  type DirectMessage,
+  type ConversationSummary,
+  type SendDirectMessageInput,
+} from "./message.schema"
 export {
   roomSchema,
   roomMemberSchema,

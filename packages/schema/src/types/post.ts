@@ -12,6 +12,7 @@ export interface Post {
   id: string
   author: Author
   caption: string
+  pinnedAt: string | null
   createdAt: string
 
   placeId: string | null
@@ -23,6 +24,11 @@ export interface Post {
   savedByMe: boolean
 
   images: string[]
+}
+
+export interface UpdatePostInput {
+  caption?: string
+  pinned?: boolean
 }
 
 export interface CreatePostInput {

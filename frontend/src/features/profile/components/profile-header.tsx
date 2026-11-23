@@ -5,7 +5,6 @@ import { CoverImage } from "@/components/shared/cover-image"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Toggle } from "@/components/ui/toggle"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatCount, formatDate } from "@/lib/format"
 import { useSetFollow } from "../hooks/use-set-follow"
 import type { UserProfile } from "../types/profile"
@@ -61,23 +60,13 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
                 >
                   {profile.followedByMe ? "Đang theo dõi" : "Theo dõi"}
                 </Toggle>
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <span
-                        role="button"
-                        className="inline-flex"
-                        tabIndex={0}
-                        aria-disabled="true"
-                      />
-                    }
-                  >
-                    <Button variant="outline" disabled tabIndex={-1}>
-                      Nhắn tin
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Tính năng nhắn tin sẽ mở khi backend hoàn thiện</TooltipContent>
-                </Tooltip>
+                <Button
+                  variant="outline"
+                  nativeButton={false}
+                  render={<Link to={`/messages/${profile.handle}`} />}
+                >
+                  Nhắn tin
+                </Button>
               </div>
             )}
           </div>

@@ -3,6 +3,7 @@ import {
   createCollection,
   deleteCollection,
   likeCollection,
+  reorderCollectionPlaces,
   setCollectionPlace,
   unlikeCollection,
   updateCollection,
@@ -110,6 +111,34 @@ export function useSetCollectionLike(id: string) {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ["collections", id] })
+    },
+  })
+}
+
+export function useReorderCollectionPlaces(id: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (placeIds: string[]) => reorderCollectionPlaces(id, placeIds),
+    onMutate: async (placeIds) => {
+      await queryClient.cancelQueries({ queryKey: ["collections", id] })
+      const previous = queryClient.getQueryData<Collection>(["collections", id])
+      if (previous) {
+        queryClient.setQueryData<Collection>(["collections", id], {
+          ...previous,
+          placeIds,
+        })
+      }
+      return { previous }
+    },
+    onError: (_error, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["collections", id], context.previous)
+      }
+    },
+    onSuccess: (collection) => {
+      queryClient.setQueryData<Collection>(["collections", collection.id], collection)
+      void queryClient.invalidateQueries({ queryKey: collectionsQueryKey() })
     },
   })
 }

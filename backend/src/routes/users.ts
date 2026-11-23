@@ -205,7 +205,7 @@ export function createUsersRouter() {
       const page = await listPosts({
         filter: "all",
         viewerId,
-        savedOf: profile.id,
+        ...(tab === "saved" ? { savedOf: profile.id } : { pinnedOf: profile.id }),
         cursor,
         pageSize: PROFILE_POSTS_PAGE_SIZE,
       })

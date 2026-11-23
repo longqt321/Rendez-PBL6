@@ -313,7 +313,7 @@ export function AdminShell<TTab extends string>({
                       disabled={isLoggingOut}
                       onClick={() =>
                         logout(undefined, {
-                          onSuccess: () => navigate("/login", { replace: true }),
+                          onSuccess: () => void navigate("/login", { replace: true }),
                         })
                       }
                     >

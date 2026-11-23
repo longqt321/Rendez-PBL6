@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useLocation, useNavigate } from "react-router"
+import { OCCASION_PRESETS } from "@rendez/schema"
 import {
   ArrowUpDownIcon,
   CoffeeIcon,
@@ -468,6 +469,32 @@ export function DiscoverToolbar({
           </div>
         </div>
       )}
+
+      {/* Hàng dịp đi (F-039): gợi ý nhanh theo bối cảnh */}
+      <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto pb-0.5">
+        <span className="shrink-0 text-xs font-medium text-muted-foreground">Dịp đi:</span>
+        {OCCASION_PRESETS.map((preset) => {
+          const active = filters.occasion === preset.key
+          return (
+            <Tooltip key={preset.key}>
+              <TooltipTrigger
+                render={
+                  <Toggle
+                    size="sm"
+                    variant="outline"
+                    pressed={active}
+                    onPressedChange={() => filters.setOccasion(active ? "all" : preset.key)}
+                    className="h-7 shrink-0 rounded-full px-2.5 text-xs aria-pressed:bg-secondary aria-pressed:text-secondary-foreground"
+                  />
+                }
+              >
+                {preset.shortLabel}
+              </TooltipTrigger>
+              <TooltipContent>{preset.description}</TooltipContent>
+            </Tooltip>
+          )
+        })}
+      </div>
 
       {/* Hàng phụ: chỉ hiện khi có bộ lọc đang bật */}
       {hasAnyActivePill ? (

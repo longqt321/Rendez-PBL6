@@ -15,13 +15,12 @@ Danh sách các việc thật sự còn mở (cập nhật 2026-11-21 sau đợt
 
 - [x] **Triển khai `F-002`, `F-079`, `F-040` (Clean Break)**: thay thang 1–5 sao bằng 3 mức (`Ổn` / `Rất ngon` / `Phải thử`) + món nên gọi, tách tab `Ảnh món thật` & `Bảng giá / Menu` (kèm zoom lightbox), và thêm bình chọn nhóm (`Swipe & Match`, `Ranked-Choice IRV`, `Random Wheel`) trong `/rooms/:code`.
 - [x] **Mốc vị trí quen thuộc & Đồng bộ GPS từ điện thoại (`20261122172000_location_anchors_and_landmarks`)**: tách 2 bảng `UserLocationAnchor` (mốc cá nhân tối đa 10/user) & `CityLandmark` (địa danh nổi tiếng công khai), đồng bộ GPS chính xác (`<= 150m`) qua Redis (`PUT/GET/DELETE /me/location`), `LocationSwitcher` + `ManageAnchorsDialog` trên UI và thứ tự ưu tiên 6 tầng trong `useUserLocation`.
-- [ ] **Nâng cấp `F-040` mở rộng**: thêm `F-034` (Thiệp mời chốt kèo & RSVP) và `F-039` (Gợi ý theo dịp đi & đối tượng) ở đợt tiếp theo.
-- [ ] **Chỉnh sửa & ghim bài viết**: `DELETE /posts/:id` và gắn/đổi/gỡ địa điểm cho bài đã đăng (`PATCH /posts/:id/place` hỗ trợ cả `placeId: null` qua `AttachPostPlaceDialog`) đã có, còn thiếu API/UI sửa nội dung bài (`PATCH /posts/:id`) và ghim bài cho tab "Đã ghim" ở hồ sơ.
-- [ ] **Kéo thả sắp xếp địa điểm trong bộ sưu tập**: hiện có thêm/xoá từng địa điểm; chưa có sắp xếp thứ tự (gợi ý `@dnd-kit/core` + `@dnd-kit/sortable`).
-- [ ] **Tạo bộ sưu tập trực tiếp trên `/saved`**: hiện chỉ tạo được bên trong dialog "Lưu vào bộ sưu tập" ở trang quán.
-- [ ] **Nút "Nhắn tin" trên `/u/:handle`**: đang tắt kèm tooltip, chờ tính năng hội thoại realtime (WebSocket + lưu tin nhắn).
-- [ ] **A11y & Form (`V1-08`, `V7-05`)**: rà soát toàn bộ form lỗi dùng `aria-invalid`/`aria-describedby`, và kiểm tra focus trap ở dialog Bình luận. *(Vùng chạm mobile >= 44px cho các nút chính, chip lọc và composer đã xử lý.)*
-- [ ] **Giữ vị trí cuộn khi Back từ `/discover/:id` (`V8-05`)** và **một số đường dẫn `/u/:handle` khi hồ sơ riêng tư**.
+- [ ] **Nâng cấp `F-040` mở rộng**: còn `F-034` (Thiệp mời chốt kèo & RSVP) ở đợt tiếp theo. *(Đã xong `F-039` gợi ý theo dịp đi & đối tượng với 5 preset `solo`, `date`, `friends`, `family`, `late-night` trên `/discover` và `GET /places?occasion=...`.)*
+- [x] **Chỉnh sửa & ghim bài viết**: đã bổ sung `Post.pinnedAt`, API `PATCH /posts/:id` (sửa nội dung & ghim/bỏ ghim), tách riêng query `tab=pinned` khỏi `saved`, `EditPostDialog` và menu trên `PostCard`.
+- [x] **Kéo thả sắp xếp địa điểm trong bộ sưu tập**: đã cài `@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities`, tạo `PATCH /collections/:id/reorder` và `SortableCollectionPlaces` trên `CollectionDetailPage`.
+- [x] **Tạo bộ sưu tập trực tiếp trên `/saved`**: đã thêm `CreateCollectionDialog` và nút "Tạo bộ sưu tập" ngay trong tab Bộ sưu tập trên `/saved`.
+- [x] **Nhắn tin trực tiếp từ `/u/:handle`**: đã tạo bảng `DirectMessage`, API `/messages/conversations` & `/messages/with/:handle`, trang `/messages` & `/messages/:handle` và mở khóa nút "Nhắn tin" trên `ProfileHeader`.
+- [ ] **A11y & Form (`V1-08`, `V7-05`)**: đa số form đã có `aria-invalid`/`aria-describedby`; kiểm tra focus trap ở dialog Bình luận khi test thực tế. *(Giữ vị trí cuộn khi Back từ `/discover/:id` `V8-05` đã hoạt động qua `<ScrollRestoration getKey={(location) => location.pathname} />`.)*
 - [ ] **Vòng đời tài khoản nâng cao**: đổi email (kèm xác thực lại), cho phép đăng ký lại email đã xoá tài khoản, xuất dữ liệu cá nhân, xác nhận xoá tài khoản bằng cách nhập handle.
 - [ ] **Quản lý thành viên phòng lọc phía server**: đã liên kết `userId` và khoá `SELECT ... FOR UPDATE` khi apply đề xuất song song; kiểm tra thêm tách biệt cookie khách theo phiên trình duyệt nếu cần.
 
