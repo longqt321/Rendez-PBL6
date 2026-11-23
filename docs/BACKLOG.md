@@ -4,6 +4,7 @@ Danh sách các việc thật sự còn mở (cập nhật 2026-11-21 sau đợt
 
 ## 1. Dữ liệu & Bản đồ
 
+- [x] **Tự động điều hướng `/admin` về `/login` khi chưa đăng nhập hoặc sau khi đăng xuất**: cập nhật `RequireRole` (redirect khi `!me`) và `AdminShell` (`navigate("/login", { replace: true })` trong `onSuccess` của `logout`).
 - [ ] **Ảnh quán thật**: phần lớn trong 360 địa điểm chưa có ảnh venue thật, đang hiển thị `PlacePlaceholder`; cần nguồn ảnh hợp pháp trước khi phát hành công khai. *(Đã có tab `Ảnh món thật` & `Bảng giá / Menu` qua `F-079` cho cộng đồng tự đóng góp.)*
 - [x] **Áp dụng migration & seed mới (`20261122142200_f002_f079_f040`)**: đã chạy `bun run db:migrate`, `bun run db:seed` (đồng bộ `ReviewTier`, `PlaceMediaKind`, `RoomCandidate`/`RoomVote`, sửa SQL `rv.rating` còn sót trong `daily-picks.ts`/`suggestions.ts`/`recommendations.ts` và `og.ts`), và cấu hình `dev:all`/`db:up`/`dev:api` tự bật Postgres + Redis cục bộ.
 - [ ] **Backfill embedding cho corpus 360 địa điểm**: chạy `cd backend && bun run scripts/embed-places.ts` khi Postgres bật để kích hoạt nhánh dense search và đo lại benchmark v3–v7.

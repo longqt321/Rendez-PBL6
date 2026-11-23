@@ -38,7 +38,10 @@ export function RequireRole({ roles, children }: RequireRoleProps) {
     )
   }
 
-  if (!me) return <PageLoading />
+  if (!me) {
+    const next = `${location.pathname}${location.search}`
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />
+  }
 
   if (!me.role || !roles.includes(me.role)) {
     return (

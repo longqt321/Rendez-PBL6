@@ -8,7 +8,7 @@ import {
   ShieldAlertIcon,
   ShieldCheckIcon,
 } from "lucide-react"
-import { Link } from "react-router"
+import { Link, useNavigate } from "react-router"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -89,6 +89,7 @@ export function AdminShell<TTab extends string>({
   children,
 }: AdminShellProps<TTab>) {
   const { data: me } = useMe()
+  const navigate = useNavigate()
   const { mutate: logout, isPending: isLoggingOut } = useLogout()
   const { env, isProd, isStaging } = useAdminRuntime()
   const isAdmin = me?.role === "admin"
@@ -310,7 +311,11 @@ export function AdminShell<TTab extends string>({
                     <DropdownMenuItem
                       variant="destructive"
                       disabled={isLoggingOut}
-                      onClick={() => logout()}
+                      onClick={() =>
+                        logout(undefined, {
+                          onSuccess: () => navigate("/login", { replace: true }),
+                        })
+                      }
                     >
                       <LogOutIcon className="size-4" aria-hidden="true" />
                       Đăng xuất
