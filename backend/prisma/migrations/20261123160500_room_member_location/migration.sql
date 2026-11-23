@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "room_members" ADD COLUMN "lat" DOUBLE PRECISION,
+ADD COLUMN "lng" DOUBLE PRECISION,
+ADD COLUMN "location_label" VARCHAR(80);

@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Link, useParams } from "react-router"
 import { useCopyToClipboard } from "@uidotdev/usehooks"
-import { SlidersHorizontalIcon, SparklesIcon, UsersIcon } from "lucide-react"
+import { MapPinIcon, SlidersHorizontalIcon } from "lucide-react"
 import { toast } from "sonner"
 import {
   PageContainer,
@@ -10,25 +10,33 @@ import {
   StickyAside,
   SurfaceCard,
 } from "@/components/layout/page-primitives"
-import { SectionHeading } from "@/components/shared/section-heading"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useIsDesktop } from "@/hooks/use-breakpoint"
-import { formatInitials } from "@/lib/format"
-import { ProposalForm } from "../components/proposal-form"
+import { useUserLocation } from "@/hooks/use-user-location"
+import { RoomCandidatesPanel } from "../components/room-candidates-panel"
+import { RoomGroupMap } from "../components/room-group-map"
 import { RoomHeader } from "../components/room-header"
-import { RoomMatchingPlaces } from "../components/room-matching-places"
+import { RoomPreferencesPanel } from "../components/room-preferences-panel"
+import { useRoomVoting } from "../hooks/use-room-voting"
 import { useRooms, type RoomStatus } from "../hooks/use-rooms"
-import { roomFilterChips, type ParsedRoomProposalInput, type RoomFilterChip } from "../lib/room"
-import type { RoomProposalField } from "../types/room"
+import type { ParsedRoomProposalInput } from "../lib/room"
+import { scoreAndRankRoomCandidates } from "../lib/room-scoring"
 
 export function RoomPage() {
   const { code = "" } = useParams<{ code: string }>()
   const isDesktop = useIsDesktop()
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null)
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
   const [, copyToClipboard] = useCopyToClipboard()
   const copyTimerRef = useRef<number | null>(null)
@@ -47,11 +55,31 @@ export function RoomPage() {
     activeCode,
     joinRoom,
     addMyProposals,
-    updateRoomFilter,
+    deleteProposal,
+    updateMyLocation,
     leaveRoom,
   } = useRooms()
   const room = getRoom(code)
   const status: RoomStatus = room ? "ready" : getRoomStatus(code)
+  const voting = useRoomVoting(code, storeRoom)
+
+  const { coordinates, locationSource, isLocating, requestLocation, locationGate } =
+    useUserLocation()
+  const pendingDeviceLocationRef = useRef(false)
+
+  useEffect(() => {
+    if (!pendingDeviceLocationRef.current || !coordinates || !room) return
+    pendingDeviceLocationRef.current = false
+    void updateMyLocation(room.code, {
+      lat: coordinates.lat,
+      lng: coordinates.lng,
+      locationLabel: locationSource?.label ?? "Vị trí hiện tại",
+    })
+      .then(() => toast.success("Đã cập nhật vị trí của bạn trên bản đồ nhóm"))
+      .catch(() => toast.error("Không cập nhật được vị trí"))
+  }, [coordinates, locationSource, room, updateMyLocation])
+
+  const scoredCandidates = useMemo(() => (room ? scoreAndRankRoomCandidates(room) : []), [room])
 
   async function handleJoin(rawName: string) {
     const name = rawName.trim()
@@ -70,7 +98,7 @@ export function RoomPage() {
         toast.success("Bạn đã ở trong phòng này")
         return
       }
-      toast.success("Đã vào phòng, bộ lọc sẽ đồng bộ trực tiếp cho cả nhóm")
+      toast.success("Đã vào phòng nhóm")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không vào được phòng")
     }
@@ -88,7 +116,7 @@ export function RoomPage() {
   if (status === "loading") {
     return (
       <PageContainer size="wide">
-        <h1 className="sr-only">Đang tải phòng lọc nhóm</h1>
+        <h1 className="sr-only">Đang tải phòng nhóm</h1>
         <output className="mt-8 block text-sm text-muted-foreground">Đang tải phòng…</output>
       </PageContainer>
     )
@@ -97,7 +125,7 @@ export function RoomPage() {
   if (status === "error") {
     return (
       <PageContainer size="narrow">
-        <h1 className="sr-only">Không tải được phòng lọc nhóm</h1>
+        <h1 className="sr-only">Không tải được phòng nhóm</h1>
         <Empty className="mt-8">
           <EmptyHeader>
             <EmptyTitle>Không tải được phòng</EmptyTitle>
@@ -116,7 +144,7 @@ export function RoomPage() {
   if (!room) {
     return (
       <PageContainer size="narrow">
-        <h1 className="sr-only">Không tìm thấy phòng lọc nhóm</h1>
+        <h1 className="sr-only">Không tìm thấy phòng nhóm</h1>
         <Empty className="mt-8">
           <EmptyHeader>
             <EmptyTitle>Không tìm thấy phòng</EmptyTitle>
@@ -133,128 +161,113 @@ export function RoomPage() {
   }
 
   const isMember = activeCode === room.code || room.members.some((m) => m.isMe)
-  const activeChips = roomFilterChips(room)
+  const activeProposalsCount = room.proposals.filter((p) => p.status !== "dismissed").length
 
-  async function handleSubmitProposals(
-    items: ParsedRoomProposalInput[],
-    options: { autoApply: boolean; mode: "append" | "replace" },
-  ) {
+  async function handleAddProposals(items: ParsedRoomProposalInput[]) {
     if (!room) return
     try {
-      await addMyProposals(room.code, items, options)
-      toast.success(
-        options.mode === "replace"
-          ? "Đã ghi đè bộ lọc nhóm bằng tiêu chí mới"
-          : "Đã cộng nối tiếp tiêu chí vào bộ lọc nhóm",
-      )
+      await addMyProposals(room.code, items, { autoApply: false })
+      toast.success("Đã thêm tiêu chí của bạn")
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Không gửi được tiêu chí")
+      toast.error(error instanceof Error ? error.message : "Không thêm được tiêu chí")
     }
   }
 
-  async function handleQuickToggle(target: {
-    kind: "include" | "exclude"
-    field: RoomProposalField
-    value: string
-  }) {
+  async function handleDeleteProposal(proposalId: string) {
     if (!room) return
     try {
-      await updateRoomFilter(room.code, { action: "toggle", ...target })
+      await deleteProposal(room.code, proposalId)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Không cập nhật được bộ lọc")
+      toast.error(error instanceof Error ? error.message : "Không xóa được tiêu chí")
     }
   }
 
-  async function handleRemoveChip(chip: RoomFilterChip) {
+  async function handlePickMyLocation(coords: { lat: number; lng: number }) {
     if (!room) return
     try {
-      await updateRoomFilter(room.code, {
-        action: "remove",
-        kind: chip.kind,
-        field: chip.field,
-        value: chip.value,
+      await updateMyLocation(room.code, {
+        lat: coords.lat,
+        lng: coords.lng,
+        locationLabel: "Vị trí đã ghim trên bản đồ",
       })
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Không gỡ được điều kiện")
+      toast.success("Đã ghim vị trí của bạn trên bản đồ nhóm")
+    } catch {
+      toast.error("Không ghim được vị trí")
     }
   }
 
-  async function handleResetFilters() {
+  function handleUseDeviceLocation() {
     if (!room) return
-    try {
-      await updateRoomFilter(room.code, { action: "reset" })
-      toast.success("Đã đặt lại toàn bộ bộ lọc phòng")
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Không đặt lại được bộ lọc")
+    if (coordinates) {
+      void updateMyLocation(room.code, {
+        lat: coordinates.lat,
+        lng: coordinates.lng,
+        locationLabel: locationSource?.label ?? "Vị trí hiện tại",
+      })
+        .then(() => toast.success("Đã cập nhật vị trí của bạn trên bản đồ nhóm"))
+        .catch(() => toast.error("Không cập nhật được vị trí"))
+      return
     }
+    pendingDeviceLocationRef.current = true
+    requestLocation()
   }
 
-  const criteriaCard = (
-    <div className="space-y-4">
-      <SurfaceCard padding="md">
-        <SectionHeading className="mb-2.5">Thêm tiêu chí cho nhóm</SectionHeading>
-        {!isMember ? (
-          <Alert className="mb-3 border-dashed border-primary/40 bg-primary/5 py-2">
-            <AlertDescription className="text-xs text-foreground">
-              Nhập tên ở góc trên để tham gia phòng trước khi thêm hoặc chỉnh sửa bộ lọc nhóm.
-            </AlertDescription>
-          </Alert>
-        ) : null}
-        <ProposalForm
+  const panelTabs = (
+    <Tabs defaultValue="candidates" className="w-full">
+      <TabsList className="mb-3 grid w-full grid-cols-2">
+        <TabsTrigger value="candidates" className="gap-1.5">
+          <MapPinIcon className="size-3.5" aria-hidden="true" />
+          Địa điểm ({scoredCandidates.length})
+        </TabsTrigger>
+        <TabsTrigger value="preferences" className="gap-1.5">
+          <SlidersHorizontalIcon className="size-3.5" aria-hidden="true" />
+          Tiêu chí ({activeProposalsCount})
+        </TabsTrigger>
+      </TabsList>
+
+      {!isMember ? (
+        <Alert className="mb-3 border-dashed border-primary/40 bg-primary/5 py-2">
+          <AlertDescription className="text-xs text-foreground">
+            Nhập tên ở góc trên để tham gia phòng trước khi đề xuất quán, thêm tiêu chí hoặc chia sẻ
+            vị trí.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      <TabsContent value="candidates">
+        <RoomCandidatesPanel
           room={room}
-          disabled={!isMember}
-          onSubmitProposals={handleSubmitProposals}
-          onQuickToggle={handleQuickToggle}
+          scoredCandidates={scoredCandidates}
+          selectedPlaceId={selectedPlaceId}
+          isMember={isMember}
+          pending={voting.pending}
+          onSelectPlace={(id) => {
+            setSelectedPlaceId(id)
+            if (!isDesktop) setMobileSheetOpen(false)
+          }}
+          onAddCandidate={voting.addCandidate}
+          onRemoveCandidate={voting.removeCandidate}
         />
-      </SurfaceCard>
+      </TabsContent>
 
-      <SurfaceCard padding="md">
-        <div className="mb-2.5 flex items-center justify-between gap-2">
-          <SectionHeading className="flex items-center gap-1.5">
-            <UsersIcon className="size-4 text-primary" aria-hidden="true" />
-            Thành viên ({room.members.length})
-          </SectionHeading>
-        </div>
-        <ul className="flex flex-wrap gap-2">
-          {room.members.map((member) => (
-            <li
-              key={member.id}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 py-1 pr-2.5 pl-1.5 text-xs"
-            >
-              <Avatar size="sm" className="size-5">
-                <AvatarFallback className="bg-secondary text-xs font-bold">
-                  {formatInitials(member.displayName)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="font-medium">{member.displayName}</span>
-              {member.isMe ? (
-                <Badge variant="secondary" className="px-1.5 py-0 text-xs">
-                  Bạn
-                </Badge>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      </SurfaceCard>
-    </div>
-  )
-
-  const placesNode = (
-    <RoomMatchingPlaces
-      room={room}
-      canReset={isMember && activeChips.length > 0}
-      onResetFilters={handleResetFilters}
-      onRoomUpdated={storeRoom}
-    />
+      <TabsContent value="preferences">
+        <RoomPreferencesPanel
+          room={room}
+          isMember={isMember}
+          onAddProposals={handleAddProposals}
+          onDeleteProposal={handleDeleteProposal}
+        />
+      </TabsContent>
+    </Tabs>
   )
 
   return (
     <PageContainer size="wide" padded="compact">
+      {locationGate}
       <RoomHeader
         room={room}
         isMember={isMember}
         copiedCode={copiedCode}
-        activeChips={activeChips}
         onCopyCode={handleCopyCode}
         onJoin={handleJoin}
         onLeave={() => {
@@ -264,30 +277,66 @@ export function RoomPage() {
               toast.error(error instanceof Error ? error.message : "Không rời được phòng"),
             )
         }}
-        onRemoveChip={(chip) => void handleRemoveChip(chip)}
-        onResetFilters={() => void handleResetFilters()}
       />
 
       {isDesktop ? (
         <SplitLayout ratio="5-7" gap="lg">
-          <StickyAside span={5}>{criteriaCard}</StickyAside>
-          <SplitMain span={7}>{placesNode}</SplitMain>
+          <StickyAside span={5}>
+            <SurfaceCard padding="md">{panelTabs}</SurfaceCard>
+          </StickyAside>
+          <SplitMain span={7}>
+            <RoomGroupMap
+              members={room.members}
+              scoredCandidates={scoredCandidates}
+              selectedPlaceId={selectedPlaceId}
+              isMember={isMember}
+              onSelectPlace={setSelectedPlaceId}
+              onPickMyLocation={handlePickMyLocation}
+              onUseDeviceLocation={handleUseDeviceLocation}
+              isLocating={isLocating}
+              className="h-[calc(100dvh-13rem)] min-h-[520px] w-full"
+            />
+          </SplitMain>
         </SplitLayout>
       ) : (
-        <Tabs defaultValue="places">
-          <TabsList className="mb-4 grid w-full grid-cols-2">
-            <TabsTrigger value="places" className="gap-1.5">
-              <SparklesIcon className="size-3.5" aria-hidden="true" />
-              Quán & Bình chọn
-            </TabsTrigger>
-            <TabsTrigger value="criteria" className="gap-1.5">
-              <SlidersHorizontalIcon className="size-3.5" aria-hidden="true" />
-              Tiêu chí ({activeChips.length})
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="places">{placesNode}</TabsContent>
-          <TabsContent value="criteria">{criteriaCard}</TabsContent>
-        </Tabs>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="flex-1 gap-2"
+              onClick={() => setMobileSheetOpen(true)}
+            >
+              <SlidersHorizontalIcon className="size-4" aria-hidden="true" />
+              Đề xuất quán & Tiêu chí ({scoredCandidates.length} quán · {activeProposalsCount} tiêu
+              chí)
+            </Button>
+          </div>
+
+          <RoomGroupMap
+            members={room.members}
+            scoredCandidates={scoredCandidates}
+            selectedPlaceId={selectedPlaceId}
+            isMember={isMember}
+            onSelectPlace={setSelectedPlaceId}
+            onPickMyLocation={handlePickMyLocation}
+            onUseDeviceLocation={handleUseDeviceLocation}
+            isLocating={isLocating}
+            className="h-[calc(100dvh-14.5rem)] min-h-[420px] w-full"
+          />
+
+          <Drawer open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
+            <DrawerContent className="max-h-[85dvh]">
+              <DrawerHeader className="pb-2">
+                <DrawerTitle>{room.name}</DrawerTitle>
+                <DrawerDescription>
+                  Đề xuất địa điểm, đặt tiêu chí cá nhân và xem xếp hạng phù hợp cho cả nhóm
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="overflow-y-auto px-4 pb-6">{panelTabs}</div>
+            </DrawerContent>
+          </Drawer>
+        </div>
       )}
     </PageContainer>
   )

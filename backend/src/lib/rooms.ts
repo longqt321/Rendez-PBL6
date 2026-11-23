@@ -94,7 +94,10 @@ export function serializeRoomFilter(filter: RoomFilter): Prisma.InputJsonValue {
 }
 
 const ROOM_INCLUDE = {
-  members: { orderBy: { joinedAt: "asc" } },
+  members: {
+    orderBy: { joinedAt: "asc" },
+    include: { user: { select: { avatarUrl: true } } },
+  },
   proposals: { orderBy: { createdAt: "desc" } },
   candidates: {
     orderBy: { createdAt: "asc" },
@@ -121,6 +124,10 @@ export function toRoomDto(
   const members: RoomMember[] = room.members.map((member) => ({
     id: member.id,
     displayName: member.displayName,
+    avatarUrl: member.user?.avatarUrl ?? null,
+    lat: member.lat ?? null,
+    lng: member.lng ?? null,
+    locationLabel: member.locationLabel ?? null,
     isMe:
       (viewerId !== null && member.userId === viewerId) ||
       (viewerMemberId !== null && member.id === viewerMemberId),

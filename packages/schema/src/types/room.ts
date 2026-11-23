@@ -7,6 +7,10 @@ export type RoomVotingMode = "swipe_match" | "ranked_choice" | "random_wheel"
 export interface RoomMember {
   id: string
   displayName: string
+  avatarUrl?: string | null
+  lat?: number | null
+  lng?: number | null
+  locationLabel?: string | null
 
   isMe: boolean
   joinedAt: string

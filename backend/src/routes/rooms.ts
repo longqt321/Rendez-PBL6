@@ -10,6 +10,7 @@ import {
   joinRoomInputSchema,
   startRoomVotingInputSchema,
   updateRoomFilterInputSchema,
+  updateRoomMemberLocationInputSchema,
   type Room,
 } from "@rendez/schema"
 import type { AppEnv } from "../app"
@@ -285,6 +286,57 @@ export function createRoomsRouter() {
     publishRoom(code)
     const viewer = await getViewer(c)
     return c.json(toRoomDto(updated, viewer?.id ?? null, null))
+  })
+
+  router.patch("/rooms/:code/me/location", async (c) => {
+    const code = requireCode(c.req.param("code"))
+    const room = await loadRoom(code)
+    const actor = await resolveRoomActor(c, room)
+
+    const raw = await c.req.json().catch(() => null)
+    const parsed = updateRoomMemberLocationInputSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Tọa độ vị trí không hợp lệ")
+    }
+
+    await prisma.roomMember.update({
+      where: { id: actor.memberId },
+      data: {
+        lat: parsed.data.lat,
+        lng: parsed.data.lng,
+        locationLabel: parsed.data.locationLabel ?? null,
+      },
+    })
+
+    const updated = await findRoomByCode(code)
+    if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
+    publishRoom(code)
+    const viewer = await getViewer(c)
+    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId))
+  })
+
+  router.delete("/rooms/:code/proposals/:proposalId", async (c) => {
+    const code = requireCode(c.req.param("code"))
+    const room = await loadRoom(code)
+    const actor = await resolveRoomActor(c, room)
+    const proposalId = c.req.param("proposalId")
+    requireUuid(proposalId, "Tiêu chí không hợp lệ", 404)
+
+    const proposal = await prisma.roomProposal.findFirst({
+      where: { id: proposalId, roomId: room.id },
+      select: { id: true, memberId: true },
+    })
+    if (!proposal) throw new ApiError(404, "Không tìm thấy tiêu chí")
+    const viewer = await getViewer(c)
+    if (proposal.memberId !== actor.memberId && room.ownerId !== (viewer?.id ?? null)) {
+      throw new ApiError(403, "Chỉ người tạo hoặc chủ phòng mới được xóa tiêu chí này")
+    }
+
+    await prisma.roomProposal.delete({ where: { id: proposal.id } })
+    const updated = await findRoomByCode(code)
+    if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
+    publishRoom(code)
+    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId))
   })
 
   router.post("/rooms/:code/candidates", async (c) => {

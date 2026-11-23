@@ -678,11 +678,14 @@ model Room {
 // ---------------------------------------------------------------------------
 
 model RoomMember {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId      String   @map("room_id") @db.Uuid
-  userId      String?  @map("user_id") @db.Uuid
-  displayName String   @map("display_name")
-  isGuest     Boolean  @default(true) @map("is_guest")
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId        String   @map("room_id") @db.Uuid
+  userId        String?  @map("user_id") @db.Uuid
+  displayName   String   @map("display_name")
+  isGuest       Boolean  @default(true) @map("is_guest")
+  lat           Float?
+  lng           Float?
+  locationLabel String?  @map("location_label") @db.VarChar(80)
   /// HMAC-SHA256(token, BETTER_AUTH_SECRET) — token gốc chỉ nằm trong cookie
   /// HttpOnly theo phòng, trả về đúng một lần khi join (D-056).
   tokenHash   String?  @unique @map("token_hash")

@@ -38,6 +38,11 @@ export interface UseRoomsResult {
   applyProposal: (code: string, proposalId: string) => Promise<string>
   dismissProposal: (code: string, proposalId: string) => Promise<void>
   updateRoomFilter: (code: string, input: UpdateRoomFilterInput) => Promise<void>
+  updateMyLocation: (
+    code: string,
+    input: { lat: number | null; lng: number | null; locationLabel?: string | null },
+  ) => Promise<Room>
+  deleteProposal: (code: string, proposalId: string) => Promise<Room>
   leaveRoom: (code: string) => Promise<void>
 }
 
@@ -263,6 +268,27 @@ export function useRooms(): UseRoomsResult {
     [rooms, setActiveCode],
   )
 
+  const updateMyLocation = useCallback(
+    async (
+      code: string,
+      input: { lat: number | null; lng: number | null; locationLabel?: string | null },
+    ) => {
+      const { data } = await api.patch<Room>(`/rooms/${code}/me/location`, input)
+      storeRoom(data)
+      return data
+    },
+    [storeRoom],
+  )
+
+  const deleteProposal = useCallback(
+    async (code: string, proposalId: string) => {
+      const { data } = await api.delete<Room>(`/rooms/${code}/proposals/${proposalId}`)
+      storeRoom(data)
+      return data
+    },
+    [storeRoom],
+  )
+
   useEffect(() => {
     if (!activeCode) return
 
@@ -318,6 +344,8 @@ export function useRooms(): UseRoomsResult {
     applyProposal,
     dismissProposal,
     updateRoomFilter,
+    updateMyLocation,
+    deleteProposal,
     leaveRoom,
   }
 }

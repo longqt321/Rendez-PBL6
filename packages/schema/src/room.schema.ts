@@ -36,6 +36,10 @@ export const roomVotingModeSchema = z.enum([
 export const roomMemberSchema = z.object({
   id: z.string(),
   displayName: z.string(),
+  avatarUrl: z.string().nullable().optional(),
+  lat: z.number().nullable().optional(),
+  lng: z.number().nullable().optional(),
+  locationLabel: z.string().nullable().optional(),
   isMe: z.boolean(),
   joinedAt: z.string(),
 }) satisfies z.ZodType<RoomMember>
@@ -186,9 +190,16 @@ export const finalizeRoomVotingInputSchema = z.object({
   winnerPlaceId: z.string().trim().min(1).optional(),
 })
 
+export const updateRoomMemberLocationInputSchema = z.object({
+  lat: z.number().finite().min(-90).max(90).nullable(),
+  lng: z.number().finite().min(-180).max(180).nullable(),
+  locationLabel: z.string().trim().max(80).nullable().optional(),
+})
+
 export type CreateProposalInput = z.infer<typeof createProposalInputSchema>
 export type UpdateRoomFilterInput = z.infer<typeof updateRoomFilterInputSchema>
 export type AddRoomCandidateInput = z.infer<typeof addRoomCandidateInputSchema>
 export type StartRoomVotingInput = z.infer<typeof startRoomVotingInputSchema>
 export type CastRoomVoteInput = z.infer<typeof castRoomVoteInputSchema>
 export type FinalizeRoomVotingInput = z.infer<typeof finalizeRoomVotingInputSchema>
+export type UpdateRoomMemberLocationInput = z.infer<typeof updateRoomMemberLocationInputSchema>

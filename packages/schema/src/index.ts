@@ -161,12 +161,14 @@ export {
   startRoomVotingInputSchema,
   castRoomVoteInputSchema,
   finalizeRoomVotingInputSchema,
+  updateRoomMemberLocationInputSchema,
   type CreateProposalInput,
   type UpdateRoomFilterInput,
   type AddRoomCandidateInput,
   type StartRoomVotingInput,
   type CastRoomVoteInput,
   type FinalizeRoomVotingInput,
+  type UpdateRoomMemberLocationInput,
 } from "./room.schema"
 export {
   anchorKindSchema,
