@@ -1,6 +1,7 @@
 import { randomInt } from "node:crypto"
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "./prisma"
+import { getRoomMemberLocations, type EphemeralMemberLocation } from "./room-location"
 import {
   applyProposalToFilter,
   normalizeProposalValue,
@@ -120,19 +121,23 @@ export function toRoomDto(
   room: RoomWithRelations,
   viewerId: string | null,
   viewerMemberId: string | null,
+  locations?: ReadonlyMap<string, EphemeralMemberLocation>,
 ): Room {
-  const members: RoomMember[] = room.members.map((member) => ({
-    id: member.id,
-    displayName: member.displayName,
-    avatarUrl: member.user?.avatarUrl ?? null,
-    lat: member.lat ?? null,
-    lng: member.lng ?? null,
-    locationLabel: member.locationLabel ?? null,
-    isMe:
-      (viewerId !== null && member.userId === viewerId) ||
-      (viewerMemberId !== null && member.id === viewerMemberId),
-    joinedAt: member.joinedAt.toISOString(),
-  }))
+  const members: RoomMember[] = room.members.map((member) => {
+    const loc = locations?.get(member.id)
+    return {
+      id: member.id,
+      displayName: member.displayName,
+      avatarUrl: member.user?.avatarUrl ?? null,
+      lat: loc?.lat ?? null,
+      lng: loc?.lng ?? null,
+      locationLabel: loc?.locationLabel ?? null,
+      isMe:
+        (viewerId !== null && member.userId === viewerId) ||
+        (viewerMemberId !== null && member.id === viewerMemberId),
+      joinedAt: member.joinedAt.toISOString(),
+    }
+  })
 
   const myMemberId = members.find((m) => m.isMe)?.id ?? null
 
@@ -460,3 +465,15 @@ export {
   toggleFilterConstraint,
 } from "./rooms/filter-ops"
 export type { RoomWithRelations }
+
+export async function toRoomDtoAsync(
+  room: RoomWithRelations,
+  viewerId: string | null,
+  viewerMemberId: string | null,
+): Promise<Room> {
+  const locations = await getRoomMemberLocations(
+    room.code,
+    room.members.map((m) => m.id),
+  )
+  return toRoomDto(room, viewerId, viewerMemberId, locations)
+}

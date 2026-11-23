@@ -71,8 +71,8 @@ export function RoomCandidatesPanel({
       setSearchDraft("")
       onSelectPlace(placeId)
       toast.success(`Đã đề xuất “${placeName}” vào phòng`)
-    } catch {
-      toast.error("Không đề xuất được địa điểm này")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không đề xuất được địa điểm này")
     }
   }
 

@@ -39,9 +39,11 @@ import {
   parseRoomFilter,
   serializeRoomFilter,
   toRoomDto,
+  toRoomDtoAsync,
   updateRoomFilter,
   type RoomWithRelations,
 } from "../lib/rooms"
+import { clearRoomMemberLocation, setRoomMemberLocation } from "../lib/room-location"
 import { getViewer, requireAuth } from "../lib/session"
 import { requireUuid } from "../lib/cursor"
 
@@ -68,7 +70,7 @@ async function loadRoom(code: string): Promise<RoomWithRelations> {
 async function roomDtoFor(c: Context<AppEnv>, room: RoomWithRelations): Promise<Room> {
   const viewer = await getViewer(c)
   const actor = tryResolveRoomActor(c, room, viewer)
-  return toRoomDto(room, viewer?.id ?? null, actor?.memberId ?? null)
+  return toRoomDtoAsync(room, viewer?.id ?? null, actor?.memberId ?? null)
 }
 
 async function streamRoomEvents(stream: SSEStreamingApi, code: string): Promise<void> {
@@ -281,11 +283,12 @@ export function createRoomsRouter() {
     // `deleteMany` idempotent — không ném P2025 nếu hàng vừa bị xoá.
     await prisma.roomMember.deleteMany({ where: { id: target.id, roomId: room.id } })
     if (actor.memberId === target.id) clearRoomTokenCookie(c, code)
+    await clearRoomMemberLocation(code, target.id)
 
     const updated = await loadRoom(code)
     publishRoom(code)
     const viewer = await getViewer(c)
-    return c.json(toRoomDto(updated, viewer?.id ?? null, null))
+    return c.json(await toRoomDtoAsync(updated, viewer?.id ?? null, null))
   })
 
   router.patch("/rooms/:code/me/location", async (c) => {
@@ -299,20 +302,21 @@ export function createRoomsRouter() {
       throw new ApiError(400, parsed.error.issues[0]?.message ?? "Tọa độ vị trí không hợp lệ")
     }
 
-    await prisma.roomMember.update({
-      where: { id: actor.memberId },
-      data: {
+    if (parsed.data.lat === null || parsed.data.lng === null) {
+      await clearRoomMemberLocation(code, actor.memberId)
+    } else {
+      await setRoomMemberLocation(code, actor.memberId, {
         lat: parsed.data.lat,
         lng: parsed.data.lng,
         locationLabel: parsed.data.locationLabel ?? null,
-      },
-    })
+      })
+    }
 
     const updated = await findRoomByCode(code)
     if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
     publishRoom(code)
     const viewer = await getViewer(c)
-    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId))
+    return c.json(await toRoomDtoAsync(updated, viewer?.id ?? null, actor.memberId))
   })
 
   router.delete("/rooms/:code/proposals/:proposalId", async (c) => {
@@ -336,7 +340,7 @@ export function createRoomsRouter() {
     const updated = await findRoomByCode(code)
     if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
     publishRoom(code)
-    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId))
+    return c.json(await toRoomDtoAsync(updated, viewer?.id ?? null, actor.memberId))
   })
 
   router.post("/rooms/:code/candidates", async (c) => {

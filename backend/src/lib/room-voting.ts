@@ -51,8 +51,8 @@ export function computeInstantRunoffWinner(
 export async function addRoomCandidate(code: string, memberId: string, placeId: string) {
   const room = await findRoomByCode(code)
   if (!room) throw new ApiError(404, "Không tìm thấy phòng")
-  if (room.phase !== "filtering") {
-    throw new ApiError(409, "Phòng đã chuyển sang bình chọn hoặc đã chốt quán")
+  if (room.phase === "voting") {
+    throw new ApiError(409, "Phòng đang trong phiên bình chọn")
   }
 
   const place = await prisma.place.findFirst({
@@ -72,8 +72,14 @@ export async function addRoomCandidate(code: string, memberId: string, placeId: 
     const locked = await tx.$queryRaw<{ phase: string }[]>`
       SELECT phase FROM rooms WHERE id = ${room.id}::uuid FOR UPDATE
     `
-    if (!locked[0] || locked[0].phase !== "filtering") {
-      throw new ApiError(409, "Phòng đã chuyển sang bình chọn hoặc đã chốt quán")
+    if (!locked[0] || locked[0].phase === "voting") {
+      throw new ApiError(409, "Phòng đang trong phiên bình chọn")
+    }
+    if (locked[0].phase === "locked") {
+      await tx.room.update({
+        where: { id: room.id },
+        data: { phase: "filtering", winnerPlaceId: null, lockedAt: null },
+      })
     }
     const alreadyAdded = await tx.roomCandidate.findUnique({
       where: { roomId_placeId: { roomId: room.id, placeId } },
