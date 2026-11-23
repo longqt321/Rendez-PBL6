@@ -37,12 +37,15 @@ RUN VITE_APP_ORIGIN="$VITE_APP_ORIGIN" bun scripts/copy-cold-start-images.mjs \
 
 FROM nginx:1.27.5-alpine AS runtime
 
+RUN apk add --no-cache openssl \
+  && mkdir -p /etc/nginx/certs
+
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 443
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1
+  CMD wget --no-check-certificate -qO- https://127.0.0.1/ >/dev/null 2>&1 || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["sh", "-c", "if [ ! -f /etc/nginx/certs/cert.pem ]; then openssl req -x509 -nodes -newkey rsa:2048 -days 365 -keyout /etc/nginx/certs/key.pem -out /etc/nginx/certs/cert.pem -subj '/CN=localhost'; fi && exec nginx -g 'daemon off;'"]

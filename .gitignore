@@ -65,3 +65,4 @@ backend/data/eval/rec-scores-user-place.csv
 backend/data/eval/rec-scores-user-place.json
 backend/data/uploads/
 backend/data/tile-cache/
+deploy/certs/
