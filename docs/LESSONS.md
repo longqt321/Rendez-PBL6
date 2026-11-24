@@ -1403,3 +1403,17 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
 - Bắt buộc chạy trọn bộ cổng grep kiểm toán (`CONVENTIONS.md` §10 + Package-First + `as unknown as` + silent catch + Raw SQL) trên toàn repo trước khi báo hoàn thành bất kỳ đợt triển khai lớn nào.
 - Dùng `selectPlacesQuery()` (Kysely `leftJoinLateral` type-safe từ `generated/kysely/types.ts`) làm nguồn truy vấn chuẩn cho `places`; chỉ giữ SQL đặc thù PostgreSQL thực thụ (`FOR UPDATE` trong `tx`, `pgvector <=>`, `pg_trgm`, `generate_series`, `pg_stat_statements`, `event-retention` DDL có regex allowlist).
 
+
+## L-066 — 2026-11-24: Lạm dụng gọi nhiều `subagent` song song để đọc mã nguồn gây tốn token nặng
+
+**Lỗi người dùng chỉ ra:** Khi thực hiện kiểm toán mã nguồn toàn dự án, agent đã tách và gọi nhiều `research` subagent chạy song song ("đừng gọi subagent vì sẽ rất tốn token").
+
+**Nguyên nhân gốc:**
+1. Mỗi subagent khởi tạo một phiên hội thoại riêng mang toàn bộ system prompt lớn, đồng thời subagent read-only đụng trần giới hạn tra cứu (`lookup_streak = 16`) và giới hạn cắt stdout 10KB nên tự lặp hàng chục bước cắt nhỏ file, làm nhân bội lượng token tiêu thụ.
+2. Đánh giá sai chi phí điều phối so với việc đọc trực tiếp có chọn lọc / gom cụm ngay trên phiên chính bằng `read_file` toàn file (tối đa 800 dòng / 46KB mỗi lần) và `rd --related -n`.
+
+**Cách khắc phục & phòng tránh:**
+- Không tự ý spawn hàng loạt subagent cho tác vụ đọc/kiểm toán mã nguồn khi chưa được người dùng yêu cầu rõ ràng.
+- Ưu tiên đọc trực tiếp ngay trên agent chính bằng `read_file` trọn file (không cắt mảnh) kết hợp `rd --related -n` / `rg` / `jq` có kiểm soát kích thước đầu ra để tiết kiệm tối đa token và giữ nguyên KV Cache.
+
+
