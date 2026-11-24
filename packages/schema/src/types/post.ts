@@ -4,8 +4,8 @@ export interface Author {
   id: string
   name: string
   handle: string
-
   initials: string
+  avatarUrl?: string | null
 }
 
 export interface Post {

@@ -16,6 +16,9 @@ export interface PlaceFilters {
   sort: PlaceSort
   lat?: number
   lng?: number
+  tags?: string[]
+  alwaysOpen?: boolean
+  landmarkQuery?: string
 }
 
 export interface PlaceRow {
@@ -26,12 +29,13 @@ export interface PlaceRow {
   district: string | null
   category: string
   tags: string[]
-  price_level: number
+  price_level: number | null
   lat: number | null
   lng: number | null
   status: string
   description: string | null
   opening_hours: string | null
+  phone?: string | null
   published_at: Date | null
   positive_ratio: number
   must_try_count?: number
@@ -62,6 +66,7 @@ export function toPlaceDto(row: PlaceRow) {
     status: row.status,
     ...(row.description ? { description: row.description } : {}),
     ...(row.opening_hours ? { openingHours: row.opening_hours } : {}),
+    ...(row.phone ? { phone: row.phone } : {}),
     publishedAt: row.published_at ? row.published_at.toISOString() : null,
     tierSummary: undefined as ReviewTierSummary | undefined,
     topRecommendedDishes: undefined as RecommendedDishCount[] | undefined,

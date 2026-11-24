@@ -70,6 +70,7 @@ describe("auth + hồ sơ", () => {
         email: EMAIL,
         password: "password123",
         handle: HANDLE,
+        acceptTerms: true,
       }),
     })
 
@@ -275,6 +276,7 @@ describe("auth + hồ sơ", () => {
         email: EMAIL,
         password: "password123",
         handle: `${HANDLE}_2`,
+        acceptTerms: true,
       }),
     })
     // better-auth "generic duplicate": cùng response với đăng ký mới để người
@@ -295,6 +297,7 @@ describe("auth + hồ sơ", () => {
         email: `khac-${suffix}@rendez.test`,
         password: "password123",
         handle: HANDLE,
+        acceptTerms: true,
       }),
     })
     expect(res.status).toBe(409)
@@ -409,6 +412,7 @@ describe("đăng ký trùng email — gửi mail hướng dẫn (V1-02)", () => 
         email,
         password: "password123",
         handle: `trung_cv_${suffix}`,
+        acceptTerms: true,
       }),
     })
     expect(res.status).toBe(201)

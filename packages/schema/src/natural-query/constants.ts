@@ -29,7 +29,7 @@ export const PLACE_CATEGORY_LABELS: Record<PlaceCategory, string> = {
 export interface ParsedFilterChip {
   id: string
   kind: "include" | "exclude"
-  field: "category" | "district" | "priceMax" | "tag" | "nearMe" | "alwaysOpen" | "keyword"
+  field: "category" | "district" | "priceMax" | "tag" | "nearMe" | "alwaysOpen" | "keyword" | "landmark"
   value: string
   label: string
   rawPhrase: string
@@ -45,6 +45,7 @@ export interface ParsedNaturalQuery {
   excludeKeywords: string[]
   alwaysOpen: boolean
   nearMe: boolean
+  landmarkQuery?: string
   residualQuery: string
   matchedPhrases: string[]
   chips: ParsedFilterChip[]

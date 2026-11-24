@@ -1,3 +1,4 @@
+import type { Place } from "./place"
 import type { Author } from "./post"
 
 export interface Collection {
@@ -8,6 +9,7 @@ export interface Collection {
   owner: Author
 
   placeIds: string[]
+  places?: Place[]
   createdAt: string
   isMine: boolean
 

@@ -48,11 +48,19 @@ export function computeInstantRunoffWinner(
   return candidateIds.find((id) => topSet.has(id)) ?? topTier[0] ?? null
 }
 
-export async function addRoomCandidate(code: string, memberId: string, placeId: string) {
+export async function addRoomCandidate(
+  code: string,
+  memberId: string,
+  placeId: string,
+  isOwner = false,
+) {
   const room = await findRoomByCode(code)
   if (!room) throw new ApiError(404, "Không tìm thấy phòng")
   if (room.phase === "voting") {
     throw new ApiError(409, "Phòng đang trong phiên bình chọn")
+  }
+  if (room.phase === "locked" && !isOwner) {
+    throw new ApiError(409, "Phòng đã chốt địa điểm, chỉ chủ phòng mới có thể mở lại")
   }
 
   const place = await prisma.place.findFirst({
@@ -76,6 +84,9 @@ export async function addRoomCandidate(code: string, memberId: string, placeId: 
       throw new ApiError(409, "Phòng đang trong phiên bình chọn")
     }
     if (locked[0].phase === "locked") {
+      if (!isOwner) {
+        throw new ApiError(409, "Phòng đã chốt địa điểm, chỉ chủ phòng mới có thể mở lại")
+      }
       await tx.room.update({
         where: { id: room.id },
         data: { phase: "filtering", winnerPlaceId: null, lockedAt: null },

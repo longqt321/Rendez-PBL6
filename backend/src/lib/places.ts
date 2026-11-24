@@ -8,8 +8,13 @@ import { keywordCondition, searchCondition } from "./search"
 export type { PlaceFilters, PlaceRow, PlaceDto } from "./places/types"
 export { toPlaceDto } from "./places/types"
 export { parsePlaceFilters } from "./places/filters"
-export { selectPlaces } from "./places/select"
-export { findPublicPlace, findPublicPlaceWithVersion, listSavedPlaces } from "./places/crud"
+export { selectPlaces, selectPlacesQuery } from "./places/select"
+export {
+  findPublicPlace,
+  findPublicPlaceWithVersion,
+  listPublicPlacesByIds,
+  listSavedPlaces,
+} from "./places/crud"
 export { denseCandidates, fuseRrf, findDidYouMean } from "./search"
 
 function buildConditions(filters: PlaceFilters): Prisma.Sql[] {
@@ -51,6 +56,38 @@ function buildConditions(filters: PlaceFilters): Prisma.Sql[] {
   if (filters.excludeKeywords.length > 0) {
     conditions.push(
       Prisma.sql`NOT (${Prisma.join(filters.excludeKeywords.map(keywordCondition), " OR ")})`,
+    )
+  }
+  if (filters.alwaysOpen) {
+    conditions.push(
+      Prisma.sql`(p.opening_hours ILIKE '%24/7%' OR p.opening_hours ILIKE '%24h%' OR p.opening_hours ILIKE '%24/24%')`,
+    )
+  }
+  if (filters.tags && filters.tags.length > 0) {
+    for (const tag of filters.tags) {
+      conditions.push(
+        Prisma.sql`EXISTS (
+          SELECT 1 FROM place_tags pt
+          JOIN tags t ON t.id = pt.tag_id
+          WHERE pt.place_id = p.id AND t.name ILIKE ${"%" + tag + "%"}
+        )`,
+      )
+    }
+  }
+  if (filters.landmarkQuery) {
+    conditions.push(
+      Prisma.sql`EXISTS (
+        SELECT 1 FROM city_landmarks cl
+        WHERE (cl.name ILIKE ${"%" + filters.landmarkQuery + "%"} OR cl.slug ILIKE ${"%" + filters.landmarkQuery + "%"})
+          AND p.lat IS NOT NULL AND p.lng IS NOT NULL
+          AND (6371 * acos(
+            least(1.0, greatest(-1.0,
+              cos(radians(cl.lat)) * cos(radians(p.lat)) *
+              cos(radians(p.lng) - radians(cl.lng)) +
+              sin(radians(cl.lat)) * sin(radians(p.lat))
+            ))
+          )) <= 3.0
+      )`,
     )
   }
   if (filters.q) {

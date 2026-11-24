@@ -135,6 +135,7 @@ export function toRoomDto(
       isMe:
         (viewerId !== null && member.userId === viewerId) ||
         (viewerMemberId !== null && member.id === viewerMemberId),
+      isOwner: member.userId !== null && member.userId === room.ownerId,
       joinedAt: member.joinedAt.toISOString(),
     }
   })
@@ -308,8 +309,18 @@ export async function joinRoom(
   room: RoomWithRelations,
   displayName: string,
   presentedToken?: string,
+  viewerId?: string | null,
 ): Promise<{ room: RoomWithRelations; memberId: string; joined: boolean; guestToken?: string }> {
   const name = displayName.trim()
+
+  // Người dùng đã đăng nhập đã ở trong phòng → nhận diện lại ngay kể cả trên thiết bị khác (không báo 409 trùng tên).
+  if (viewerId) {
+    const existingByUser = room.members.find((member) => member.userId === viewerId)
+    if (existingByUser) {
+      await touchMemberSeen(existingByUser.id)
+      return { room, memberId: existingByUser.id, joined: false }
+    }
+  }
 
   // Token cũ khớp thành viên nào đó → chính là người đó quay lại (reload/join
   // lại): idempotent thật, không tạo thành viên trùng và không thể mạo danh.
@@ -329,8 +340,9 @@ export async function joinRoom(
     const member = await prisma.roomMember.create({
       data: {
         roomId: room.id,
+        ...(viewerId ? { userId: viewerId } : {}),
         displayName: name,
-        isGuest: true,
+        isGuest: !viewerId,
         tokenHash: hashRoomToken(guestToken),
       },
       select: { id: true },
@@ -352,6 +364,40 @@ export async function joinRoom(
   }
 }
 
+export async function listRoomsForUser(userId: string) {
+  const rows = await prisma.room.findMany({
+    where: {
+      OR: [{ ownerId: userId }, { members: { some: { userId } } }],
+    },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    select: {
+      id: true,
+      code: true,
+      name: true,
+      phase: true,
+      winnerPlaceId: true,
+      createdAt: true,
+      _count: {
+        select: {
+          members: true,
+          candidates: true,
+        },
+      },
+    },
+  })
+  return rows.map((r) => ({
+    id: r.id,
+    code: r.code,
+    name: r.name,
+    phase: r.phase,
+    memberCount: r._count.members,
+    candidateCount: r._count.candidates,
+    winnerPlaceId: r.winnerPlaceId ?? null,
+    createdAt: r.createdAt.toISOString(),
+  }))
+}
+
 export async function addProposal(
   room: RoomWithRelations,
   input: {
@@ -362,6 +408,17 @@ export async function addProposal(
     autoApply?: boolean
   },
 ): Promise<RoomWithRelations> {
+  // Giới hạn mỗi thành viên tối đa 1 mức ngân sách trần `priceMax`: chọn mức mới tự động thay mức cũ.
+  if (input.field === "priceMax" && input.kind === "include") {
+    await prisma.roomProposal.deleteMany({
+      where: {
+        roomId: room.id,
+        memberId: input.memberId,
+        field: "price_max",
+        kind: "include",
+      },
+    })
+  }
   if (input.autoApply) {
     await prisma.$transaction(async (tx) => {
       await tx.roomProposal.create({

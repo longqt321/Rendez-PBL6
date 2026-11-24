@@ -13,6 +13,7 @@ export interface RoomMember {
   locationLabel?: string | null
 
   isMe: boolean
+  isOwner?: boolean
   joinedAt: string
 }
 
@@ -83,4 +84,15 @@ export interface Room {
 export interface AppliedProposalResult {
   room: Room
   summary: string
+}
+
+export interface RoomSummary {
+  id: string
+  code: string
+  name: string
+  phase: RoomPhase
+  memberCount: number
+  candidateCount: number
+  winnerPlaceId?: string | null
+  createdAt: string
 }

@@ -33,6 +33,9 @@ describe("opening-hours — BVA múi giờ VN, xuyên nửa đêm & Fuzzing", ()
     // 2026-11-23 là thứ Hai (Mo); 2026-11-22 là Chủ nhật (Su)
     expect(isOpenNow("Mo-Sa 08:00-20:00; Su off", vnTime("2026-11-22T12:00:00"))).toBe(false)
     expect(isOpenNow("Mo-Sa 08:00-20:00; Su off", vnTime("2026-11-23T12:00:00"))).toBe(true)
+    // Hỗ trợ cú pháp giờ mở tiếp "18:00+"
+    expect(isOpenNow("Mo-Su 18:00+", vnTime("2026-11-23T19:00:00"))).toBe(true)
+    expect(isOpenNow("Mo-Su 18:00+", vnTime("2026-11-23T15:00:00"))).toBe(false)
   })
 
   test("chuỗi thiếu khung giờ, rỗng hoặc null luôn trả null (không suy diễn)", () => {

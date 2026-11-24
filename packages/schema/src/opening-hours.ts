@@ -42,8 +42,10 @@ export function isOpenNow(openingHours: string | null, now: Date = new Date()): 
   if (!normalized) return null
   if (normalized === "24/7") return true
 
-  // Chuẩn hóa HH:MM:SS -> HH:MM (OSM opening_hours chuẩn dùng HH:MM)
-  const sanitized = normalized.replace(/(\d{1,2}:\d{2}):\d{2}/gu, "$1")
+  // Chuẩn hóa HH:MM:SS -> HH:MM và cú pháp mở tiếp HH:MM+ -> HH:MM-24:00 (OSM opening_hours)
+  const sanitized = normalized
+    .replace(/(\d{1,2}:\d{2}):\d{2}/gu, "$1")
+    .replace(/(\d{1,2}:\d{2})\s*\+/gu, "$1-24:00")
 
   // Các chuỗi thiếu khung giờ cụ thể (ví dụ chỉ có "mo-tu" hoặc "08:00" không có khoảng) -> trả null thay vì suy diễn
   if (!/\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}/u.test(sanitized)) {
@@ -55,5 +57,142 @@ export function isOpenNow(openingHours: string | null, now: Date = new Date()): 
     return oh.getState(toVietnamWallClockDate(now))
   } catch {
     return null
+  }
+}
+
+export interface OpeningHoursDetail {
+  isOpen: boolean | null
+  closingSoon: boolean
+  statusLabel: string
+  nextChange: string | null
+  weeklySchedule: { dayLabel: string; hours: string; isToday: boolean }[]
+}
+
+const DAY_LABELS = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
+
+function formatTime(date: Date): string {
+  const h = String(date.getHours()).padStart(2, "0")
+  const m = String(date.getMinutes()).padStart(2, "0")
+  return `${h}:${m}`
+}
+
+export function getOpeningHoursDetail(
+  openingHours: string | null,
+  now: Date = new Date(),
+): OpeningHoursDetail {
+  if (!openingHours || !openingHours.trim()) {
+    return {
+      isOpen: null,
+      closingSoon: false,
+      statusLabel: "Chưa có giờ mở cửa",
+      nextChange: null,
+      weeklySchedule: [],
+    }
+  }
+
+  const normalized = openingHours.trim()
+  if (normalized === "24/7") {
+    const weeklySchedule = DAY_LABELS.map((dayLabel, idx) => ({
+      dayLabel,
+      hours: "Mở cả ngày (24/7)",
+      isToday: idx === now.getDay(),
+    }))
+    return {
+      isOpen: true,
+      closingSoon: false,
+      statusLabel: "Mở 24/7",
+      nextChange: null,
+      weeklySchedule,
+    }
+  }
+
+  const sanitized = normalized
+    .replace(/(\d{1,2}:\d{2}):\d{2}/gu, "$1")
+    .replace(/(\d{1,2}:\d{2})\s*\+/gu, "$1-24:00")
+
+  if (!/\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}/u.test(sanitized)) {
+    return {
+      isOpen: null,
+      closingSoon: false,
+      statusLabel: normalized,
+      nextChange: null,
+      weeklySchedule: [],
+    }
+  }
+
+  try {
+    const oh = new opening_hours(sanitized, DANANG_NOMINATIM)
+    const wallNow = toVietnamWallClockDate(now)
+    const isOpen = oh.getState(wallNow)
+    const nextChangeDate = oh.getNextChange(wallNow)
+    let closingSoon = false
+    let statusLabel = isOpen ? "Đang mở cửa" : "Đã đóng cửa"
+    let nextChange: string | null = null
+
+    if (nextChangeDate) {
+      nextChange = formatTime(nextChangeDate)
+      const diffMs = nextChangeDate.getTime() - wallNow.getTime()
+      const diffMins = Math.round(diffMs / 60_000)
+
+      if (isOpen) {
+        if (diffMins > 0 && diffMins <= 45) {
+          closingSoon = true
+          statusLabel = `Sắp đóng trong ${diffMins} phút`
+        } else {
+          statusLabel = `Đang mở · Đóng lúc ${nextChange}`
+        }
+      } else {
+        const isSameDay = nextChangeDate.getDate() === wallNow.getDate()
+        if (isSameDay) {
+          statusLabel = `Đã đóng · Mở lại ${nextChange}`
+        } else {
+          statusLabel = `Đã đóng · Mở lại ${nextChange} mai`
+        }
+      }
+    }
+
+    const weeklySchedule: { dayLabel: string; hours: string; isToday: boolean }[] = []
+    const currentDay = wallNow.getDay()
+    for (let dayOffset = 0; dayOffset < 7; dayOffset += 1) {
+      const testDate = new Date(wallNow)
+      testDate.setDate(wallNow.getDate() - currentDay + dayOffset)
+      testDate.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(testDate)
+      endOfDay.setHours(23, 59, 59, 999)
+
+      let hoursText = "Nghỉ"
+      try {
+        const intervals = oh.getOpenIntervals(testDate, endOfDay)
+        if (intervals.length > 0) {
+          hoursText = intervals
+            .map(([from, to]) => `${formatTime(from)} - ${formatTime(to)}`)
+            .join(", ")
+        }
+      } catch {
+        hoursText = sanitized
+      }
+
+      weeklySchedule.push({
+        dayLabel: DAY_LABELS[dayOffset]!,
+        hours: hoursText,
+        isToday: dayOffset === currentDay,
+      })
+    }
+
+    return {
+      isOpen,
+      closingSoon,
+      statusLabel,
+      nextChange,
+      weeklySchedule,
+    }
+  } catch {
+    return {
+      isOpen: null,
+      closingSoon: false,
+      statusLabel: normalized,
+      nextChange: null,
+      weeklySchedule: [],
+    }
   }
 }

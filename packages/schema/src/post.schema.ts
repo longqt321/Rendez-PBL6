@@ -7,6 +7,7 @@ export const authorSchema = z.object({
   name: z.string(),
   handle: z.string(),
   initials: z.string(),
+  avatarUrl: z.string().nullable().optional(),
 }) satisfies z.ZodType<Author>
 
 export const postSchema = z.object({

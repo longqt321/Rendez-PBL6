@@ -28,6 +28,7 @@ import {
 import { resolveRoomActor, tryResolveRoomActor } from "../lib/room-actor"
 import { clearRoomTokenCookie, readRoomToken, setRoomTokenCookie } from "../lib/room-token"
 import { rateLimit } from "../lib/rate-limit"
+import { createRoomEventNotification } from "../lib/notifications"
 import {
   addProposal,
   applyProposalToFilter,
@@ -35,10 +36,10 @@ import {
   describeProposal,
   findRoomByCode,
   joinRoom,
+  listRoomsForUser,
   normalizeProposalValue,
   parseRoomFilter,
   serializeRoomFilter,
-  toRoomDto,
   toRoomDtoAsync,
   updateRoomFilter,
   type RoomWithRelations,
@@ -51,9 +52,19 @@ const CODE_RE = /^[0-9A-HJKMNP-TV-Z]{6}$/
 
 const SSE_HEARTBEAT_MS = 15_000
 
-const READ_RATE_LIMIT = { scope: "rooms-read", limit: 60, windowSeconds: 60 } as const
+const READ_RATE_LIMIT = {
+  scope: "rooms-read",
+  limit: 120,
+  windowSeconds: 60,
+  byUser: true,
+} as const
 const JOIN_RATE_LIMIT = { scope: "rooms-join", limit: 20, windowSeconds: 60 } as const
-const EVENTS_RATE_LIMIT = { scope: "rooms-events", limit: 30, windowSeconds: 60 } as const
+const EVENTS_RATE_LIMIT = {
+  scope: "rooms-events",
+  limit: 30,
+  windowSeconds: 60,
+  byUser: true,
+} as const
 
 function requireCode(raw: string | undefined): string {
   const code = (raw ?? "").toUpperCase()
@@ -102,6 +113,11 @@ async function streamRoomEvents(stream: SSEStreamingApi, code: string): Promise<
 export function createRoomsRouter() {
   const router = new Hono<AppEnv>()
 
+  router.get("/rooms/mine", requireAuth, async (c) => {
+    const items = await listRoomsForUser(c.get("userId"))
+    return c.json({ items })
+  })
+
   router.post("/rooms", requireAuth, async (c) => {
     const raw = await c.req.json().catch(() => ({}))
     const parsed = createRoomInputSchema.safeParse(raw ?? {})
@@ -115,7 +131,7 @@ export function createRoomsRouter() {
     const { room, guestToken } = await createRoom(c.get("userId"), parsed.data.name, viewer.name)
     // Chủ phòng cũng nhận token (dùng được khi phiên hết hạn) — trả đúng một lần.
     setRoomTokenCookie(c, room.code, guestToken)
-    const dto = toRoomDto(room, viewer.id, null)
+    const dto = await toRoomDtoAsync(room, viewer.id, null)
     return c.json({ ...dto, guestToken }, 201)
   })
 
@@ -135,11 +151,16 @@ export function createRoomsRouter() {
       throw new ApiError(400, parsed.error.issues[0]?.message ?? "Tên hiển thị không hợp lệ")
     }
 
-    const result = await joinRoom(room, parsed.data.displayName, readRoomToken(c, code))
+    const viewer = await getViewer(c)
+    const result = await joinRoom(
+      room,
+      parsed.data.displayName,
+      readRoomToken(c, code),
+      viewer?.id ?? null,
+    )
     if (result.guestToken) setRoomTokenCookie(c, code, result.guestToken)
 
-    const viewer = await getViewer(c)
-    const dto = toRoomDto(result.room, viewer?.id ?? null, result.memberId)
+    const dto = await toRoomDtoAsync(result.room, viewer?.id ?? null, result.memberId)
     if (result.joined) publishRoom(code)
     return c.json({
       room: dto,
@@ -354,10 +375,10 @@ export function createRoomsRouter() {
       throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu ứng viên không hợp lệ")
     }
 
-    const updated = await addRoomCandidate(code, actor.memberId, parsed.data.placeId)
+    const updated = await addRoomCandidate(code, actor.memberId, parsed.data.placeId, actor.isOwner)
     if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
     const viewer = await getViewer(c)
-    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId), 201)
+    return c.json(await toRoomDtoAsync(updated, viewer?.id ?? null, actor.memberId), 201)
   })
 
   router.delete("/rooms/:code/candidates/:candidateId", async (c) => {
@@ -371,7 +392,7 @@ export function createRoomsRouter() {
     const updated = await removeRoomCandidate(code, candidateId, actor)
     if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
     const viewer = await getViewer(c)
-    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId))
+    return c.json(await toRoomDtoAsync(updated, viewer?.id ?? null, actor.memberId))
   })
 
   router.post("/rooms/:code/voting/start", requireAuth, async (c) => {
@@ -390,9 +411,20 @@ export function createRoomsRouter() {
       parsed.data.votingDeadlineAt,
     )
     if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
+    const memberUserIds = updated.members
+      .map((m) => m.userId)
+      .filter((id): id is string => id !== null && id !== userId)
+    for (const memberUserId of memberUserIds) {
+      void createRoomEventNotification({
+        userId: memberUserId,
+        roomCode: updated.code,
+        roomName: updated.name,
+        eventType: "voting_started",
+      }).catch(() => {})
+    }
     const viewer = await getViewer(c)
     const actor = await tryResolveRoomActor(c, updated, viewer)
-    return c.json(toRoomDto(updated, userId, actor?.memberId ?? null))
+    return c.json(await toRoomDtoAsync(updated, userId, actor?.memberId ?? null))
   })
 
   router.post("/rooms/:code/votes", async (c) => {
@@ -409,7 +441,7 @@ export function createRoomsRouter() {
     const updated = await castRoomVote(code, actor.memberId, parsed.data)
     if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
     const viewer = await getViewer(c)
-    return c.json(toRoomDto(updated, viewer?.id ?? null, actor.memberId))
+    return c.json(await toRoomDtoAsync(updated, viewer?.id ?? null, actor.memberId))
   })
 
   router.post("/rooms/:code/voting/finalize", requireAuth, async (c) => {
@@ -423,9 +455,20 @@ export function createRoomsRouter() {
     const userId = c.get("userId")
     const updated = await finalizeRoomVoting(code, userId, parsed.data.winnerPlaceId)
     if (!updated) throw new ApiError(404, "Không tìm thấy phòng")
+    const memberUserIds = updated.members
+      .map((m) => m.userId)
+      .filter((id): id is string => id !== null && id !== userId)
+    for (const memberUserId of memberUserIds) {
+      void createRoomEventNotification({
+        userId: memberUserId,
+        roomCode: updated.code,
+        roomName: updated.name,
+        eventType: "voting_started",
+      }).catch(() => {})
+    }
     const viewer = await getViewer(c)
     const actor = await tryResolveRoomActor(c, updated, viewer)
-    return c.json(toRoomDto(updated, userId, actor?.memberId ?? null))
+    return c.json(await toRoomDtoAsync(updated, userId, actor?.memberId ?? null))
   })
 
   router.get("/rooms/:code/events", rateLimit(EVENTS_RATE_LIMIT), async (c) => {

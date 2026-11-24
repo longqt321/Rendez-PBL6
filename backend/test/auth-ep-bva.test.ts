@@ -49,6 +49,7 @@ describe("Auth Input Validation — BVA & EP", () => {
           email: `pw7_${suffix}@rendez.test`,
           password: "1234567", // 7 chars
           handle: `pw7_${suffix}`,
+          acceptTerms: true,
         }),
       })
       expect(res.status).toBe(400)
@@ -62,6 +63,7 @@ describe("Auth Input Validation — BVA & EP", () => {
           email: `pw8_${suffix}@rendez.test`,
           password: "12345678", // 8 chars
           handle: `pw8_${suffix}`,
+          acceptTerms: true,
         }),
       })
       expect(res.status).toBe(201)
@@ -75,6 +77,7 @@ describe("Auth Input Validation — BVA & EP", () => {
           email: `pw128_${suffix}@rendez.test`,
           password: "a".repeat(128),
           handle: `pw128_${suffix}`,
+          acceptTerms: true,
         }),
       })
       expect(res.status).toBe(201)
@@ -88,6 +91,7 @@ describe("Auth Input Validation — BVA & EP", () => {
           email: `pw129_${suffix}@rendez.test`,
           password: "a".repeat(129),
           handle: `pw129_${suffix}`,
+          acceptTerms: true,
         }),
       })
       expect(res.status).toBe(400)
@@ -103,6 +107,7 @@ describe("Auth Input Validation — BVA & EP", () => {
           email: `h2_${suffix}@rendez.test`,
           password: "password123",
           handle: "ab",
+          acceptTerms: true,
         }),
       })
       expect(res.status).toBe(400)
@@ -116,6 +121,7 @@ describe("Auth Input Validation — BVA & EP", () => {
           email: `h3_${suffix}@rendez.test`,
           password: "password123",
           handle: `h3_${suffix.slice(0, 2)}`,
+          acceptTerms: true,
         }),
       })
       expect(res.status).toBe(201)
@@ -129,6 +135,7 @@ describe("Auth Input Validation — BVA & EP", () => {
           email: `h31_${suffix}@rendez.test`,
           password: "password123",
           handle: "a".repeat(31),
+          acceptTerms: true,
         }),
       })
       expect(res.status).toBe(400)
@@ -144,6 +151,7 @@ describe("Auth Input Validation — BVA & EP", () => {
             email: `inv_${Math.random().toString(36).slice(2, 6)}@rendez.test`,
             password: "password123",
             handle,
+            acceptTerms: true,
           }),
         })
         expect(res.status).toBe(400)
@@ -151,7 +159,7 @@ describe("Auth Input Validation — BVA & EP", () => {
     })
   })
 
-  describe("Name BVA: [2, 40] ký tự", () => {
+  describe("Name BVA: [2, 40] ký tự & Điều khoản sử dụng", () => {
     test("BVA-N1: Tên 1 ký tự hoặc rỗng sau khi trim → 400", async () => {
       const res = await call("/api/v1/register", {
         method: "POST",
@@ -160,6 +168,7 @@ describe("Auth Input Validation — BVA & EP", () => {
           email: `n1_${suffix}@rendez.test`,
           password: "password123",
           handle: `n1_${suffix}`,
+          acceptTerms: true,
         }),
       })
       expect(res.status).toBe(400)
@@ -173,6 +182,21 @@ describe("Auth Input Validation — BVA & EP", () => {
           email: `n41_${suffix}@rendez.test`,
           password: "password123",
           handle: `n41_${suffix}`,
+          acceptTerms: true,
+        }),
+      })
+      expect(res.status).toBe(400)
+    })
+
+    test("EP-TERMS1: Chưa đồng ý Điều khoản sử dụng → 400 Bad Request", async () => {
+      const res = await call("/api/v1/register", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Test User",
+          email: `terms_${suffix}@rendez.test`,
+          password: "password123",
+          handle: `terms_${suffix}`,
+          acceptTerms: false,
         }),
       })
       expect(res.status).toBe(400)

@@ -59,6 +59,7 @@ export function selectPlacesQuery() {
       sql<string>`p.status::text`.as("status"),
       "p.description",
       "p.opening_hours",
+      "p.phone",
       "p.created_at",
       "p.published_at",
       sql<number>`COALESCE(r.positive_ratio, 0)::int`.as("positive_ratio"),
@@ -73,7 +74,7 @@ export function selectPlaces(extra: Prisma.Sql = Prisma.empty): Prisma.Sql {
   return Prisma.sql`
   SELECT p.id, p.name, p.address, p.city, p.district, p.category::text AS category,
          COALESCE(tg.tags, ARRAY[]::text[]) AS tags,
-         p.price_level, p.lat, p.lng, p.status::text AS status, p.description, p.opening_hours, p.created_at, p.published_at,
+         p.price_level, p.lat, p.lng, p.status::text AS status, p.description, p.opening_hours, p.phone, p.created_at, p.published_at,
          COALESCE(r.positive_ratio, 0)::int AS positive_ratio,
          COALESCE(r.must_try_count, 0)::int AS must_try_count,
          COALESCE(r.review_count, 0)::int AS review_count,

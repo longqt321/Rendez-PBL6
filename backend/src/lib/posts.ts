@@ -14,6 +14,7 @@ export interface PostRow {
   author_id: string
   author_name: string
   author_handle: string
+  author_avatar_url: string | null
   place_name: string | null
   place_address: string | null
   place_district: string | null
@@ -37,6 +38,7 @@ export function toPostDto(row: PostRow) {
       name: row.author_name,
       handle: row.author_handle,
       initials: formatInitials(row.author_name),
+      avatarUrl: row.author_avatar_url ?? null,
     },
     caption: row.caption,
     pinnedAt: row.pinned_at ? row.pinned_at.toISOString() : null,
@@ -97,6 +99,7 @@ function basePostsQuery(viewerId: string | null) {
       "p.author_id",
       "u.name as author_name",
       "u.handle as author_handle",
+      "u.avatar_url as author_avatar_url",
       "pl.name as place_name",
       "pl.address as place_address",
       "pl.district as place_district",

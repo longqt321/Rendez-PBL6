@@ -89,14 +89,16 @@ export const placeSchema = z.object({
   reviewCount: z.number(),
   tierSummary: reviewTierSummarySchema.optional(),
   topRecommendedDishes: z.array(recommendedDishCountSchema).optional(),
-  priceLevel: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  priceLevel: z.union([z.literal(1), z.literal(2), z.literal(3)]).nullable(),
   imageUrl: z.string().optional(),
   imageHeight: z.number(),
   lat: z.number().optional(),
   lng: z.number().optional(),
   status: placeStatusSchema.optional(),
   openingHours: z.string().optional(),
+  phone: z.string().optional(),
   publishedAt: z.string().nullable(),
+  note: z.string().nullable().optional(),
 }) satisfies z.ZodType<Place>
 
 export const placeSuggestionSchema = z.object({

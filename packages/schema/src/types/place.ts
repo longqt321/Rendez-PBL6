@@ -30,7 +30,7 @@ export interface Place {
   reviewCount: number
   tierSummary?: ReviewTierSummary
   topRecommendedDishes?: RecommendedDishCount[]
-  priceLevel: 1 | 2 | 3
+  priceLevel: (1 | 2 | 3) | null
 
   imageUrl?: string
 
@@ -46,7 +46,11 @@ export interface Place {
 
   openingHours?: string
 
+  phone?: string
+
   publishedAt: string | null
+
+  note?: string | null
 }
 
 export interface PlaceSummary {

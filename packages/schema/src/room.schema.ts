@@ -41,6 +41,7 @@ export const roomMemberSchema = z.object({
   lng: z.number().nullable().optional(),
   locationLabel: z.string().nullable().optional(),
   isMe: z.boolean(),
+  isOwner: z.boolean().optional(),
   joinedAt: z.string(),
 }) satisfies z.ZodType<RoomMember>
 
@@ -194,6 +195,17 @@ export const updateRoomMemberLocationInputSchema = z.object({
   lat: z.number().finite().min(-90).max(90).nullable(),
   lng: z.number().finite().min(-180).max(180).nullable(),
   locationLabel: z.string().trim().max(80).nullable().optional(),
+})
+
+export const roomSummarySchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  phase: roomPhaseSchema,
+  memberCount: z.number().int().min(0),
+  candidateCount: z.number().int().min(0),
+  winnerPlaceId: z.string().nullable().optional(),
+  createdAt: z.string(),
 })
 
 export type CreateProposalInput = z.infer<typeof createProposalInputSchema>

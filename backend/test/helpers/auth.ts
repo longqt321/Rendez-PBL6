@@ -42,7 +42,13 @@ export async function registerVerifiedUser(
   const register = await app.request("/api/v1/register", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...input.headers },
-    body: JSON.stringify({ name: input.name, email, password, handle: input.handle }),
+    body: JSON.stringify({
+      name: input.name,
+      email,
+      password,
+      handle: input.handle,
+      acceptTerms: true,
+    }),
   })
   if (register.status !== 201) {
     throw new Error(`Đăng ký test thất bại: ${register.status} ${await register.text()}`)

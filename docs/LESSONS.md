@@ -1417,3 +1417,38 @@ rằng chính điều đó khiến mọi query đều có một thuộc tính "c
 - Ưu tiên đọc trực tiếp ngay trên agent chính bằng `read_file` trọn file (không cắt mảnh) kết hợp `rd --related -n` / `rg` / `jq` có kiểm soát kích thước đầu ra để tiết kiệm tối đa token và giữ nguyên KV Cache.
 
 
+## L-067 — 2026-11-24: Tái phạm viết HTML/CSS/TypeScript/Prisma thuần thay vì dùng thư viện & component chuẩn đã cài đặt sẵn
+
+**Lỗi người dùng chỉ ra:** Sau đợt triển khai sửa lỗi Cụm 1–4, mã nguồn vẫn chứa nhiều đoạn tự chế thay vì dùng bộ công cụ đã cài sẵn trong dự án: viết `prisma.$queryRaw` thay vì Kysely (`db.with(...).distinctOn(...)`), viết `<span>` + `text-[10px]` thay vì `<Badge>`, tự chế nhóm nút chuyển chế độ bằng `<div>` + `<Button>` thay vì `<ToggleGroup>`/`<ToggleGroupItem>`, tự viết `ResizeObserver` thay vì `useMeasure` (`@uidotdev/usehooks`), tự so sánh `JSON.stringify` thay vì `isEqual` (`es-toolkit`), tự viết `useState` + `async` trong component thay vì `useMutation` (`@tanstack/react-query`), tự viết `${km} km` thay vì `formatDistance()`, khai báo lại `DANANG_CENTER` thay vì import `@/lib/constants`, tự viết `<div>` banner/row thay vì `<Item>`/`<SectionHeading>`, và quên `useTheme` (`map-tiles-dark`) + `aria-label` tiếng Việt trên `<Spinner />`.
+
+**Nguyên nhân gốc:**
+1. Ưu tiên tốc độ triển khai qua 4 cụm lớn mà không đọc lại `docs/CONVENTIONS.md`, `frontend/package.json`, `backend/package.json` và danh sách `frontend/src/components/ui/` trước khi viết code mới.
+2. Chỉ chạy `typecheck`/`lint`/unit test mà bỏ qua cổng grep kiểm toán `docs/CONVENTIONS.md` §10 và bước tự rà soát `code-integrity-audit` trên toàn bộ `git diff` trước khi báo hoàn thành.
+
+**Cách khắc phục & phòng tránh:**
+- Bắt buộc đối chiếu trước với `docs/CONVENTIONS.md` + `frontend/src/components/ui/` + `package.json` khi viết bất kỳ UI, state/mutation, tiện ích hay truy vấn DB nào:
+  - Backend: dùng **Kysely** (`db` từ `src/lib/kysely.ts`) cho CTE/DISTINCT ON/join thay vì `prisma.$queryRaw`.
+  - Frontend UI: dùng `<Badge>`, `<ToggleGroup>`, `<Item>`/`<ItemGroup>`, `<SectionHeading>`, `<Spinner aria-label="..." />`, `formatDistance()`, `DANANG_CENTER`, `text-xs` tối thiểu (0 `text-[10px/11px]`).
+  - Frontend logic: dùng `useMutation` (`@tanstack/react-query`), `useMeasure` (`@uidotdev/usehooks`), `isEqual` (`es-toolkit`), `useTheme` (`next-themes`).
+- Bắt buộc chạy cổng grep `CONVENTIONS.md` §10 trên toàn bộ file đã sửa trước khi kết thúc mọi lượt triển khai.
+
+
+## L-068 — 2026-11-25: Vi phạm quy tắc Package-First và tiêu chuẩn kiến trúc do viết code chắp vá thay vì dùng bộ công cụ chuẩn
+
+**Lỗi người dùng chỉ ra:** Trong các lượt triển khai tính năng và cải tiến hệ thống, mã nguồn xuất hiện code chắp vá: tự chế regex slugify trùng lặp ở nhiều route, viết tay `useState` rải rác và `async try/catch` trực tiếp trong component thay vì dùng `react-hook-form` + `zod` và `@tanstack/react-query` `useMutation`, tự gom mảng lọc bằng `.filter()` trong JS thay vì truy vấn Postgres bằng Prisma/Kysely, và tự ghép các nút `<Button>` thô thay vì dùng primitive component `<ToggleGroup>`.
+
+**Nguyên nhân gốc:**
+1. Lười tạo abstraction chuẩn (file `api/*.ts` và `hooks/use-*.ts`), tự tiện gọi `api.post/patch` ngay trong component dialog/tab với `useState(isLoading)`.
+2. Không tuân thủ nguyên tắc Package-First và kiến trúc phân lớp của dự án: các form nhập liệu phức tạp bị quản lý bằng hàng loạt `useState` rời rạc thay vì form engine chuẩn `react-hook-form` với resolver Zod schema.
+3. Không kiểm tra khả năng của cơ sở dữ liệu (Prisma relation queries `where: { likes: { some: ... } }`), dẫn đến việc fetch toàn bộ dữ liệu ra bộ nhớ rồi dùng JavaScript in-memory filter.
+
+**Cách khắc phục & phòng tránh:**
+- **Form Standard**: Mọi form từ 2 trường nhập liệu trở lên bắt buộc dùng `react-hook-form` + `zodResolver(schema)` + `Controller` từ `@/components/ui/field`. Tuyệt đối cấm viết chuỗi `useState` thủ công cho từng input.
+- **Mutation Standard**: Toàn bộ thao tác ghi/sửa/xóa qua API bắt buộc định nghĩa hàm trong `features/<feature>/api/` và bọc qua `useMutation` trong `features/<feature>/hooks/`. Tuyệt đối cấm gọi `api.post/patch/delete` trực tiếp bên trong component hoặc dialog.
+- **UI Primitives**: Dùng đúng component chuẩn của hệ thống (`<ToggleGroup>`, `<Badge>`, `<Item>`, `<Dialog>`, `<Field>`). Tuyệt đối cấm tự chế các tổ hợp button/tag thô.
+- **Database-Level Operations**: Tận dụng tối đa khả năng lọc và phân trang của Postgres qua Prisma/Kysely. Không nạp bản ghi dư thừa về Node.js để lọc bằng JS `.filter()`.
+- **Shared Helpers**: Khi cần hàm tiện ích chuẩn (như slugify), đặt tại `src/lib/` dùng chung giữa các route, không sao chép inline regex.
+
+
+
+

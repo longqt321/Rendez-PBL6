@@ -13,6 +13,7 @@ import { prisma } from "../../lib/prisma"
 import { requireRole } from "../../lib/session"
 import { invalidateSuggestionCache } from "../../lib/suggestions"
 import { invalidatePlacesReadCaches } from "../places"
+import { createSystemNotification } from "../../lib/notifications"
 import {
   ADMIN_CONSTANTS,
   REPORT_STATUS_FILTERS,
@@ -151,26 +152,39 @@ export function registerAdminReportRoutes(router: Hono<AppEnv>): void {
         tx,
       )
 
-      return toAdminReportDto({
-        id: updated.id,
-        place_id: updated.placeId,
-        place_name: existing.place.name,
-        place_published_at: nextPublishedAt,
-        place_status: nextPlaceStatus,
-        reporter_name: existing.reporter.name,
-        reporter_handle: existing.reporter.handle,
-        reason: updated.reason,
-        detail: updated.detail,
-        status: updated.status,
-        created_at: updated.createdAt,
-        updated_at: updated.updatedAt,
-      })
+      return {
+        dto: toAdminReportDto({
+          id: updated.id,
+          place_id: updated.placeId,
+          place_name: existing.place.name,
+          place_published_at: nextPublishedAt,
+          place_status: nextPlaceStatus,
+          reporter_name: existing.reporter.name,
+          reporter_handle: existing.reporter.handle,
+          reason: updated.reason,
+          detail: updated.detail,
+          status: updated.status,
+          created_at: updated.createdAt,
+          updated_at: updated.updatedAt,
+        }),
+        reporterId: existing.reporterId,
+        placeName: existing.place.name,
+      }
     })
 
     if (placeAction !== "none") {
       invalidateSuggestionCache()
       invalidatePlacesReadCaches()
     }
-    return c.json(updatedReport)
+
+    if (status === "reviewed" && updatedReport) {
+      void createSystemNotification({
+        userId: updatedReport.reporterId,
+        title: "Báo cáo địa điểm đã được xử lý",
+        body: `Cảm ơn bạn! Báo cáo về quán “${updatedReport.placeName}” đã được ban quản trị xem xét và cập nhật thông tin.`,
+      }).catch(() => {})
+    }
+
+    return c.json(updatedReport.dto)
   })
 }

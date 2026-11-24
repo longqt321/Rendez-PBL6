@@ -1,4 +1,8 @@
-import { updateAdminPlaceInputSchema, type PlaceCategory } from "@rendez/schema"
+import {
+  createPlaceSubmissionInputSchema,
+  updateAdminPlaceInputSchema,
+  type PlaceCategory,
+} from "@rendez/schema"
 import type { Hono } from "hono"
 import type {
   PlaceCategory as PrismaPlaceCategory,
@@ -13,6 +17,7 @@ import { ApiError } from "../../lib/errors"
 import { db, sql } from "../../lib/kysely"
 import { prisma } from "../../lib/prisma"
 import { requireRole } from "../../lib/session"
+import { slugify } from "../../lib/slug"
 import { invalidateSuggestionCache } from "../../lib/suggestions"
 import { invalidatePlacesReadCaches } from "../places"
 import {
@@ -176,6 +181,27 @@ export function registerAdminPlaceRoutes(router: Hono<AppEnv>): void {
         data.moderationNote = input.moderationNote || null
         changes.moderationNote = input.moderationNote || null
       }
+      if (input.description !== undefined && input.description !== existing.description) {
+        data.description = input.description || null
+        changes.description = input.description || null
+      }
+      if (input.phone !== undefined && input.phone !== existing.phone) {
+        data.phone = input.phone || null
+        changes.phone = input.phone || null
+      }
+      if (input.openingHours !== undefined && input.openingHours !== existing.openingHours) {
+        data.openingHours = input.openingHours || null
+        changes.openingHours = input.openingHours || null
+      }
+      if (input.imageUrl !== undefined) {
+        await tx.placeImage.deleteMany({ where: { placeId: id } })
+        if (input.imageUrl) {
+          await tx.placeImage.create({
+            data: { placeId: id, url: input.imageUrl, position: 0 },
+          })
+        }
+        changes.imageUrl = input.imageUrl
+      }
 
       const updated = await tx.place.update({
         where: { id },
@@ -235,5 +261,93 @@ export function registerAdminPlaceRoutes(router: Hono<AppEnv>): void {
     invalidateSuggestionCache()
     invalidatePlacesReadCaches()
     return c.json(updatedDto)
+  })
+
+  router.post("/admin/places", requireRole("admin", "moderator"), async (c) => {
+    const raw = await c.req.json().catch(() => null)
+    const parsed = createPlaceSubmissionInputSchema.safeParse(raw)
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
+    }
+
+    const actorId = c.get("userId")!
+    const ip = reqIp(c)
+    const input = parsed.data
+
+    const baseSlug = slugify(input.name)
+    const slug = `${baseSlug}-${Date.now().toString(36).slice(-4)}`
+
+    const created = await prisma.$transaction(async (tx) => {
+      const place = await tx.place.create({
+        data: {
+          id: slug,
+          name: input.name,
+          address: input.address,
+          city: input.city,
+          district: input.district ?? null,
+          category: toPrismaCategory(input.category) as PrismaPlaceCategory,
+          priceLevel: input.priceLevel ?? null,
+          lat: input.lat ?? null,
+          lng: input.lng ?? null,
+          openingHours: input.openingHours ?? null,
+          phone: input.phone ?? null,
+          description: input.description ?? null,
+          publishedAt: new Date(),
+          status: "open",
+          moderatedBy: actorId,
+          moderatedAt: new Date(),
+          moderationStatus: "approved",
+        },
+      })
+
+      if (input.imageUrls && input.imageUrls.length > 0) {
+        await tx.placeImage.createMany({
+          data: input.imageUrls.map((url, pos) => ({
+            placeId: place.id,
+            url,
+            position: pos,
+          })),
+        })
+      }
+
+      await recordAuditLog(
+        {
+          actorId,
+          action: "place.create",
+          entity: "place",
+          entityId: place.id,
+          meta: { name: place.name },
+          ip,
+        },
+        tx,
+      )
+
+      return place
+    })
+
+    invalidateSuggestionCache()
+    invalidatePlacesReadCaches()
+
+    return c.json(
+      toAdminPlaceDto({
+        id: created.id,
+        name: created.name,
+        address: created.address,
+        district: created.district,
+        category: created.category,
+        price_level: created.priceLevel,
+        status: created.status,
+        lat: created.lat,
+        lng: created.lng,
+        published_at: created.publishedAt,
+        moderation_status: created.moderationStatus,
+        moderation_note: created.moderationNote,
+        moderated_at: created.moderatedAt,
+        review_count: 0,
+        report_count: 0,
+        created_at: created.createdAt,
+      }),
+      201,
+    )
   })
 }

@@ -101,6 +101,7 @@ describe("Admin RBAC & Operations", () => {
         password: "password123",
         handle: "elevate_adm",
         role: "admin",
+        acceptTerms: true,
       }),
     })
     expect(register.status).toBe(201)

@@ -59,6 +59,7 @@ describe("GET /users", () => {
         email: `minhanh-${suffix}@rendez.test`,
         password: "password123",
         handle: `minh_anh_${suffix}`,
+        acceptTerms: true,
       }),
     })
 
@@ -89,6 +90,7 @@ describe("GET /users", () => {
         email: `ngocanh-${suffix}@rendez.test`,
         password: "password123",
         handle: `ngoc_anh_${suffix}`,
+        acceptTerms: true,
       }),
     })
 

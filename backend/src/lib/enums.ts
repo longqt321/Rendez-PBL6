@@ -76,6 +76,10 @@ const REPORT_REASON_TO_API: Record<string, PlaceReportReason> = {
   wrong_info: "wrong-info",
   "wrong-info": "wrong-info",
   duplicate: "duplicate",
+  outdated_menu: "outdated_menu",
+  "outdated-menu": "outdated_menu",
+  wrong_image: "wrong_image",
+  "wrong-image": "wrong_image",
   other: "other",
 }
 
@@ -92,6 +96,8 @@ const NOTIFICATION_TO_PRISMA: Record<NotificationKind, NotificationType> = {
   comment: "comment",
   follow: "follow",
   system: "system",
+  "direct-message": "direct_message",
+  "room-event": "room_event",
 }
 
 export function toPrismaNotificationType(kind: NotificationKind): NotificationType {
@@ -105,6 +111,8 @@ export function toPrismaNotificationType(kind: NotificationKind): NotificationTy
 export function toApiNotificationType(value: string): NotificationKind {
   const normalized = value.replaceAll("-", "_")
   if (normalized === "place_suggestion") return "place-suggestion"
+  if (normalized === "direct_message") return "direct-message"
+  if (normalized === "room_event") return "room-event"
   if (
     normalized === "like" ||
     normalized === "comment" ||

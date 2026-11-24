@@ -31,10 +31,19 @@ describe("quy đổi enum", () => {
   })
 
   test("report reason: round-trip mọi giá trị", () => {
-    for (const api of ["closed", "wrong-info", "duplicate", "other"] as const) {
+    for (const api of [
+      "closed",
+      "wrong-info",
+      "duplicate",
+      "outdated_menu",
+      "wrong_image",
+      "other",
+    ] as const) {
       expect(toApiReportReason(toPrismaReportReason(api))).toBe(api)
     }
     expect(toPrismaReportReason("wrong-info")).toBe("wrong_info")
+    expect(toApiReportReason("outdated-menu")).toBe("outdated_menu")
+    expect(toApiReportReason("wrong-image")).toBe("wrong_image")
   })
 
   test("notification type: DB lưu gạch nối cho place-suggestion", () => {

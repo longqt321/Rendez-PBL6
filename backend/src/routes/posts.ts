@@ -127,7 +127,7 @@ export function createPostsRouter() {
     const page = isPublicFeed
       ? await (async () => {
           const { value, hit } = await publicPostsCache.getWithStatus(
-            `${filter}:${q ?? ""}:${cursor ?? ""}`,
+            `${filter}:${q ?? ""}:${rawCursor ?? ""}`,
             () =>
               listPosts({
                 filter,
@@ -191,6 +191,8 @@ export function createPostsRouter() {
       const post = await findPost(created.id, userId)
       if (!post) throw new ApiError(500, "Không tạo được bài đăng")
 
+      publicPostsCache.clear()
+
       // Bài chưa gắn địa điểm → đẩy job phát hiện ngay (cron 5 phút là lưới an toàn).
       if (!input.placeId) await enqueuePlaceDetect(created.id)
 
@@ -236,6 +238,8 @@ export function createPostsRouter() {
       prisma.post.delete({ where: { id: postId } }),
     ])
 
+    publicPostsCache.clear()
+
     return c.body(null, 204)
   })
 
@@ -258,6 +262,7 @@ export function createPostsRouter() {
     if (parsed.data.pinned !== undefined) data.pinnedAt = parsed.data.pinned ? new Date() : null
 
     await prisma.post.update({ where: { id: postId }, data })
+    publicPostsCache.clear()
     const updated = await findPost(postId, userId)
     if (!updated) throw new ApiError(404, "Không tìm thấy bài đăng")
     return c.json(updated)
@@ -316,6 +321,7 @@ export function createPostsRouter() {
       invalidateSuggestionCache()
     }
     invalidatePlacesReadCaches()
+    publicPostsCache.clear()
 
     const updated = await findPost(postId, userId)
     if (!updated) throw new ApiError(404, "Không tìm thấy bài đăng")
@@ -428,13 +434,15 @@ export function createPostsRouter() {
     })
     if (!post) throw new ApiError(404, "Không tìm thấy bài đăng")
 
+    let parentAuthorId: string | null = null
     if (input.parentId) {
       const parent = await prisma.comment.findFirst({
         where: { id: input.parentId, postId, deletedAt: null },
-        select: { id: true, parentId: true },
+        select: { id: true, parentId: true, authorId: true },
       })
       if (!parent) throw new ApiError(404, "Không tìm thấy bình luận gốc")
       if (parent.parentId !== null) throw new ApiError(400, "Chỉ hỗ trợ trả lời 1 cấp")
+      parentAuthorId = parent.authorId
     }
 
     const created = await prisma.comment.create({
@@ -442,13 +450,24 @@ export function createPostsRouter() {
       select: { id: true },
     })
 
+    const actor = await actorOf(userId)
+    const excerpt = input.body.slice(0, 120)
     await createActorNotification({
       userId: post.authorId,
       kind: "comment",
-      actor: await actorOf(userId),
+      actor,
       postId,
-      excerpt: input.body.slice(0, 120),
+      excerpt,
     })
+    if (parentAuthorId && parentAuthorId !== post.authorId) {
+      await createActorNotification({
+        userId: parentAuthorId,
+        kind: "comment",
+        actor,
+        postId,
+        excerpt,
+      })
+    }
 
     const comment = await findComment(created.id, userId)
     if (!comment) throw new ApiError(500, "Không tạo được bình luận")

@@ -212,7 +212,9 @@ export function createLocationRouter() {
 
   /** Danh sách địa danh nổi tiếng của thành phố (công khai). */
   router.get("/landmarks", async (c) => {
+    const q = c.req.query("q")?.trim()
     const items = await prisma.cityLandmark.findMany({
+      where: q ? { name: { contains: q, mode: "insensitive" } } : undefined,
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     })
     const payload: CityLandmark[] = items.map((lm) => ({

@@ -104,4 +104,42 @@ describe("natural-query parser — BVA, Unicode & Property-Based Fuzzing", () =>
     expect(performance.now() - startedAt).toBeLessThan(100)
     expect(Array.isArray(parsed.chips)).toBe(true)
   })
+
+  test("không đảo nghĩa 'không gian yên tĩnh' / 'không khí thoáng mát' thành phủ định", () => {
+    const q1 = parseNaturalFilterQuery("quán cafe không gian yên tĩnh")
+    expect(q1.categories).toContain("cafe")
+    expect(q1.excludeKeywords).toEqual([])
+    expect(q1.excludeCategories).toEqual([])
+
+    const q2 = parseNaturalFilterQuery("cf không khí thoáng mát")
+    expect(q2.categories).toContain("cafe")
+    expect(q2.excludeKeywords).toEqual([])
+  })
+
+  test("không khớp nhầm từ đồng âm có dấu ('cơm cháy' ≠ Chay, 'mắm tôm' ≠ Hải sản)", () => {
+    const comChay = parseNaturalFilterQuery("cơm cháy kho quẹt")
+    expect(comChay.tags).not.toContain("Chay")
+
+    const mamTom = parseNaturalFilterQuery("bún đậu mắm tôm")
+    expect(mamTom.tags).not.toContain("Hải sản")
+
+    const anChay = parseNaturalFilterQuery("quán chay yên tĩnh")
+    expect(anChay.tags).toContain("Chay")
+  })
+
+  test("nhận diện 'cf', mức giá số ('dưới 65k', 'tầm 55k') và giữ dấu phẩy khi xoá chip", () => {
+    const p1 = parseNaturalFilterQuery("cf dưới 65k")
+    expect(p1.categories).toContain("cafe")
+    expect(p1.priceMax).toBe(2)
+
+    const p2 = parseNaturalFilterQuery("tầm 55k ở Sơn Trà")
+    expect(p2.priceMax).toBe(1)
+    expect(p2.districts).toContain("Sơn Trà")
+
+    const raw = "cà phê ở Hải Châu, không ồn"
+    const parsed = parseNaturalFilterQuery(raw)
+    const districtChip = parsed.chips.find((c) => c.field === "district")
+    expect(districtChip).toBeDefined()
+    expect(removeChipFromQuery(raw, districtChip!)).toContain(",")
+  })
 })

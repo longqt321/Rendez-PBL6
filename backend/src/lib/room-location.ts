@@ -2,7 +2,7 @@ import { LRUCache } from "lru-cache"
 import { decryptJsonForUser, encryptJsonForUser } from "./crypto"
 import { getRedis } from "./redis"
 
-const ROOM_LOCATION_TTL_SECONDS = 30 * 60
+const ROOM_LOCATION_TTL_SECONDS = 24 * 60 * 60
 const KEY_PREFIX = "rendez:room-loc:"
 
 export interface EphemeralMemberLocation {

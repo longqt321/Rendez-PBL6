@@ -18,10 +18,10 @@ PG_DB="${POSTGRES_DB:-rendez}"
 
 mkdir -p "$BACKUP_DIR"
 STAMP="$(date +%Y%m%d-%H%M%S)"
-TARGET="$BACKUP_DIR/rendez-$STAMP.sql.gz"
+TARGET="$BACKUP_DIR/rendez-$STAMP.dump"
 
-# pg_dump custom format (-Fc) nén sẵn và cho phép restore chọn lọc bằng pg_restore.
-docker exec "$CONTAINER" pg_dump -U "$PG_USER" -d "$PG_DB" -Fc | gzip > "$TARGET"
+# pg_dump custom format (-Fc) đã nén sẵn và cho phép restore chọn lọc bằng pg_restore.
+docker exec "$CONTAINER" pg_dump -U "$PG_USER" -d "$PG_DB" -Fc > "$TARGET"
 
 # Kiểm tra file không rỗng — backup 0 byte coi như thất bại (cron sẽ thấy exit != 0).
 if [[ ! -s "$TARGET" ]]; then
@@ -33,4 +33,4 @@ fi
 echo "Đã backup: $TARGET ($(du -h "$TARGET" | cut -f1))"
 
 # Xoá bản cũ hơn RETENTION_DAYS ngày.
-find "$BACKUP_DIR" -name 'rendez-*.sql.gz' -mtime "+$RETENTION_DAYS" -delete
+find "$BACKUP_DIR" \( -name 'rendez-*.dump' -o -name 'rendez-*.sql.gz' \) -mtime "+$RETENTION_DAYS" -delete

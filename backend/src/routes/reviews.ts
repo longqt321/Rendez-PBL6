@@ -16,6 +16,7 @@ import { toApiReportReason, toPrismaReportReason } from "../lib/enums"
 import { formatInitials } from "../lib/profile"
 import { getViewer, requireAuth } from "../lib/session"
 import { recordEvent } from "../lib/interaction-events"
+import { createSystemNotification } from "../lib/notifications"
 import { invalidatePlacesReadCaches } from "./places"
 
 const reportInputSchema = z.object({
@@ -38,9 +39,12 @@ interface ReviewRow {
   author_name: string
   author_handle: string
   author_review_count: number
+  images?: string[]
+  helpful_count?: number
+  helpful_by_me?: boolean
 }
 
-function baseReviewsQuery() {
+function baseReviewsQuery(viewerId?: string | null) {
   return db
     .selectFrom("reviews as r")
     .innerJoin("users as u", "u.id", "r.author_id")
@@ -57,6 +61,17 @@ function baseReviewsQuery() {
       "u.handle as author_handle",
       sql<number>`(SELECT COUNT(*)::int FROM reviews r2 WHERE r2.author_id = u.id AND r2.deleted_at IS NULL)`.as(
         "author_review_count",
+      ),
+      sql<
+        string[]
+      >`COALESCE((SELECT ARRAY_AGG(ri.url ORDER BY ri.position) FROM review_images ri WHERE ri.review_id = r.id), ARRAY[]::text[])`.as(
+        "images",
+      ),
+      sql<number>`(SELECT COUNT(*)::int FROM review_helpful_votes rhv WHERE rhv.review_id = r.id)`.as(
+        "helpful_count",
+      ),
+      sql<boolean>`${viewerId ? sql`EXISTS (SELECT 1 FROM review_helpful_votes rhv WHERE rhv.review_id = r.id AND rhv.user_id = ${viewerId}::uuid)` : sql`false`}`.as(
+        "helpful_by_me",
       ),
     ])
 }
@@ -80,6 +95,9 @@ function toReviewDto(
     recommendedDishes: row.recommended_dishes ?? [],
     quickTags: row.quick_tags ?? [],
     authorReviewCount: row.author_review_count,
+    images: row.images ?? [],
+    helpfulCount: Number(row.helpful_count ?? 0),
+    helpfulByMe: Boolean(row.helpful_by_me),
     isFollowingAuthor: followedAuthorIds.has(row.author_id),
     createdAt: row.created_at.toISOString(),
     isMine: viewerId !== null && viewerId === row.author_id,
@@ -124,7 +142,10 @@ export function createReviewsRouter() {
     if (parsedTier && !parsedTier.success) {
       throw new ApiError(400, "Mức đánh giá không hợp lệ")
     }
-    let reviewQuery = baseReviewsQuery()
+    const viewer = await getViewer(c)
+    const viewerId = viewer?.id ?? null
+
+    let reviewQuery = baseReviewsQuery(viewerId)
       .where("r.place_id", "=", placeId)
       .where("r.deleted_at", "is", null)
     if (parsedTier?.success) {
@@ -136,8 +157,6 @@ export function createReviewsRouter() {
       .limit(limit)
       .execute()
 
-    const viewer = await getViewer(c)
-    const viewerId = viewer?.id ?? null
     const followedAuthorIds = new Set<string>()
     if (viewerId && rows.length > 0) {
       const authorIds = [...new Set(rows.map((r) => r.author_id))]
@@ -153,7 +172,7 @@ export function createReviewsRouter() {
     })
   })
 
-  /** Tạo hoặc ghi đè đánh giá 3 mức của chính mình (F-002). */
+  /** Tạo hoặc ghi đè đánh giá của chính mình tại địa điểm */
   router.post("/places/:id/reviews", requireAuth, idempotency(), async (c) => {
     const placeId = c.req.param("id")
     await requirePublicPlace(placeId)
@@ -172,6 +191,7 @@ export function createReviewsRouter() {
       quickTags: [...new Set(parsed.data.quickTags.map((t) => t.trim()).filter(Boolean))],
       deletedAt: null,
     }
+    const imageUrls = parsed.data.imageUrls ?? []
 
     const review = await prisma.$transaction(async (tx) => {
       const existing = await tx.review.findFirst({
@@ -179,23 +199,103 @@ export function createReviewsRouter() {
         orderBy: { createdAt: "desc" },
         select: { id: true },
       })
-      return existing
-        ? tx.review.update({
+      const reviewRecord = existing
+        ? await tx.review.update({
             where: { id: existing.id },
             data,
             select: { id: true },
           })
-        : tx.review.create({
+        : await tx.review.create({
             data: { placeId, authorId: userId, ...data },
             select: { id: true },
           })
+
+      await tx.reviewImage.deleteMany({ where: { reviewId: reviewRecord.id } })
+      if (imageUrls.length > 0) {
+        await tx.reviewImage.createMany({
+          data: imageUrls.map((url, pos) => ({
+            reviewId: reviewRecord.id,
+            url,
+            position: pos,
+          })),
+        })
+      }
+
+      return reviewRecord
     })
     invalidatePlacesReadCaches()
 
-    const row = await baseReviewsQuery().where("r.id", "=", review.id).executeTakeFirst()
+    const row = await baseReviewsQuery(userId).where("r.id", "=", review.id).executeTakeFirst()
     if (!row) throw new ApiError(500, "Không lưu được đánh giá")
     await recordEvent({ eventType: "review_created", userId, placeId })
     return c.json(toReviewDto(row, userId), 201)
+  })
+
+  /** Vote hữu ích / huỷ vote hữu ích cho đánh giá */
+  router.post("/reviews/:id/helpful", requireAuth, async (c) => {
+    const reviewId = c.req.param("id")
+    const userId = c.get("userId")!
+
+    const review = await prisma.review.findUnique({
+      where: { id: reviewId, deletedAt: null },
+      select: { id: true, authorId: true, placeId: true },
+    })
+    if (!review) throw new ApiError(404, "Không tìm thấy đánh giá")
+
+    const existing = await prisma.reviewHelpfulVote.findUnique({
+      where: { reviewId_userId: { reviewId, userId } },
+    })
+
+    let helpfulByMe: boolean
+    if (existing) {
+      await prisma.reviewHelpfulVote.delete({
+        where: { reviewId_userId: { reviewId, userId } },
+      })
+      helpfulByMe = false
+    } else {
+      await prisma.reviewHelpfulVote.create({
+        data: { reviewId, userId },
+      })
+      helpfulByMe = true
+
+      if (review.authorId !== userId) {
+        await createSystemNotification({
+          userId: review.authorId,
+          title: "Đánh giá hữu ích",
+          body: "Một thành viên thấy đánh giá của bạn hữu ích!",
+        })
+      }
+    }
+
+    const helpfulCount = await prisma.reviewHelpfulVote.count({
+      where: { reviewId },
+    })
+
+    return c.json({ helpfulCount, helpfulByMe })
+  })
+
+  /** Danh sách đánh giá do một người dùng viết */
+  router.get("/users/:handle/reviews", async (c) => {
+    const handle = c.req.param("handle")
+    const user = await prisma.user.findFirst({
+      where: { handle: { equals: handle, mode: "insensitive" } },
+      select: { id: true },
+    })
+    if (!user) throw new ApiError(404, "Không tìm thấy người dùng")
+
+    const viewer = await getViewer(c)
+    const viewerId = viewer?.id ?? null
+
+    const rows: ReviewRow[] = await baseReviewsQuery(viewerId)
+      .where("r.author_id", "=", user.id)
+      .where("r.deleted_at", "is", null)
+      .orderBy("r.created_at", "desc")
+      .limit(50)
+      .execute()
+
+    return c.json({
+      items: rows.map((row) => toReviewDto(row, viewerId)),
+    })
   })
 
   /**

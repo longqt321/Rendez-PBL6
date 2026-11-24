@@ -18,6 +18,8 @@ import {
   toCollectionDto,
   toCollectionSummary,
 } from "../lib/collections"
+import { listPublicPlacesByIds } from "../lib/places"
+import { formatInitials } from "../lib/profile"
 import { getViewer, requireAuth } from "../lib/session"
 import { recordEvent } from "../lib/interaction-events"
 
@@ -57,6 +59,44 @@ export function createCollectionsRouter() {
     return c.json({ items: rows.map((row) => toCollectionSummary(row, placeId)), next: null })
   })
 
+  router.get("/collections/liked", requireAuth, async (c) => {
+    const userId = c.get("userId")!
+    const collections = await prisma.collection.findMany({
+      where: {
+        deletedAt: null,
+        isPrivate: false,
+        likes: { some: { userId } },
+      },
+      include: {
+        owner: { select: { id: true, name: true, handle: true } },
+        _count: { select: { places: true, likes: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    })
+
+    const items = collections.map((col) => ({
+      id: col.id,
+      name: col.name,
+      description: col.description,
+      isPrivate: col.isPrivate,
+      owner: {
+        id: col.owner.id,
+        name: col.owner.name,
+        handle: col.owner.handle,
+        initials: formatInitials(col.owner.name),
+      },
+      placeCount: col._count.places,
+      likeCount: col._count.likes,
+      isMine: col.ownerId === userId,
+      likedByMe: true,
+      hasCurrentPlace: false,
+      createdAt: col.createdAt.toISOString(),
+      updatedAt: col.updatedAt.toISOString(),
+    }))
+
+    return c.json({ items })
+  })
+
   router.post("/collections", requireAuth, idempotency(), async (c) => {
     const raw = await c.req.json().catch(() => null)
     const parsed = createCollectionSchema.safeParse(raw)
@@ -89,7 +129,111 @@ export function createCollectionsRouter() {
     const viewerId = viewer?.id ?? null
     const row = await findCollection(id, viewerId)
     if (!row) throw new ApiError(404, "Không tìm thấy bộ sưu tập")
-    return c.json(toCollectionDto(row, viewerId))
+
+    const [places, cpRows, collaborators] = await Promise.all([
+      listPublicPlacesByIds(row.place_ids),
+      prisma.collectionPlace.findMany({
+        where: { collectionId: id },
+        select: { placeId: true, note: true },
+      }),
+      prisma.collectionCollaborator.findMany({
+        where: { collectionId: id },
+        include: { user: { select: { id: true, name: true, handle: true } } },
+      }),
+    ])
+
+    const noteMap = new Map(cpRows.map((cp) => [cp.placeId, cp.note]))
+    const placesWithNotes = places.map((p) => ({
+      ...p,
+      note: noteMap.get(p.id) ?? null,
+    }))
+
+    const collaboratorDtos = collaborators.map((cl) => ({
+      userId: cl.userId,
+      name: cl.user.name,
+      handle: cl.user.handle,
+      initials: formatInitials(cl.user.name),
+    }))
+
+    return c.json({
+      ...toCollectionDto(row, viewerId),
+      places: placesWithNotes,
+      collaborators: collaboratorDtos,
+    })
+  })
+
+  router.patch("/collections/:id/places/:placeId", requireAuth, async (c) => {
+    const id = c.req.param("id")
+    const placeId = c.req.param("placeId")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
+
+    const userId = c.get("userId")!
+    await requireOwnedCollection(id, userId)
+
+    const raw = await c.req.json().catch(() => null)
+    const note = typeof raw?.note === "string" ? raw.note.trim().slice(0, 500) : null
+
+    await prisma.collectionPlace.updateMany({
+      where: { collectionId: id, placeId },
+      data: { note },
+    })
+
+    return c.json({ ok: true, note })
+  })
+
+  router.get("/collections/:id/collaborators", async (c) => {
+    const id = c.req.param("id")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
+
+    const rows = await prisma.collectionCollaborator.findMany({
+      where: { collectionId: id },
+      include: {
+        user: { select: { id: true, name: true, handle: true } },
+      },
+    })
+
+    const items = rows.map((r) => ({
+      userId: r.userId,
+      name: r.user.name,
+      handle: r.user.handle,
+      initials: formatInitials(r.user.name),
+      createdAt: r.createdAt.toISOString(),
+    }))
+
+    return c.json({ items })
+  })
+
+  router.post("/collections/:id/collaborators", requireAuth, async (c) => {
+    const id = c.req.param("id")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
+    const userId = c.get("userId")!
+    await requireOwnedCollection(id, userId)
+
+    const raw = await c.req.json().catch(() => null)
+    const targetUserId = raw?.userId
+    if (!targetUserId) throw new ApiError(400, "Thiếu userId cộng tác viên")
+
+    await prisma.collectionCollaborator.upsert({
+      where: { collectionId_userId: { collectionId: id, userId: targetUserId } },
+      create: { collectionId: id, userId: targetUserId },
+      update: {},
+    })
+
+    return c.json({ ok: true }, 201)
+  })
+
+  router.delete("/collections/:id/collaborators/:targetUserId", requireAuth, async (c) => {
+    const id = c.req.param("id")
+    const targetUserId = c.req.param("targetUserId")
+    requireUuid(id, "Không tìm thấy bộ sưu tập")
+    const userId = c.get("userId")!
+    await requireOwnedCollection(id, userId)
+
+    await prisma.collectionCollaborator.deleteMany({
+      where: { collectionId: id, userId: targetUserId },
+    })
+
+    return c.json({ ok: true })
   })
 
   router.patch("/collections/:id", requireAuth, async (c) => {

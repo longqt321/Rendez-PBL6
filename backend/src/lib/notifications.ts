@@ -5,13 +5,33 @@ import { publishNotification } from "./notification-events"
 import { prisma } from "./prisma"
 import { formatInitials } from "./profile"
 
-export type NotificationKind = "place-suggestion" | "like" | "comment" | "follow" | "system"
+export type NotificationKind =
+  "place-suggestion" | "like" | "comment" | "follow" | "system" | "direct-message" | "room-event"
 
 interface ActorPayload {
+  actorId?: string
   actorName: string
   actorInitials: string
+  actorHandle?: string
+  actorAvatarUrl?: string | null
   postId?: string
   excerpt?: string
+}
+
+interface DirectMessagePayload {
+  actorId?: string
+  actorName: string
+  actorInitials: string
+  actorHandle?: string
+  actorAvatarUrl?: string | null
+  messageExcerpt?: string
+}
+
+interface RoomEventPayload {
+  roomCode: string
+  roomName: string
+  eventType: "voting_started" | "room_finalized"
+  winnerPlaceName?: string
 }
 
 interface SuggestionPayload {
@@ -75,15 +95,31 @@ async function attachPostPlaceIds(
 export async function createActorNotification(params: {
   userId: string
   kind: "like" | "comment" | "follow"
-  actor: { id: string; name: string }
+  actor: { id: string; name: string; handle?: string; avatarUrl?: string | null }
   postId?: string
   excerpt?: string
 }): Promise<void> {
   if (params.actor.id === params.userId) return
 
+  let actorHandle = params.actor.handle
+  let actorAvatarUrl = params.actor.avatarUrl
+  if (actorHandle === undefined || actorAvatarUrl === undefined) {
+    const u = await prisma.user.findUnique({
+      where: { id: params.actor.id },
+      select: { handle: true, avatarUrl: true },
+    })
+    if (u) {
+      actorHandle ??= u.handle
+      if (actorAvatarUrl === undefined) actorAvatarUrl = u.avatarUrl
+    }
+  }
+
   const payload: Prisma.InputJsonObject = {
+    actorId: params.actor.id,
     actorName: params.actor.name,
     actorInitials: formatInitials(params.actor.name),
+    ...(actorHandle ? { actorHandle } : {}),
+    ...(actorAvatarUrl !== undefined ? { actorAvatarUrl } : {}),
     ...(params.postId ? { postId: params.postId } : {}),
     ...(params.excerpt ? { excerpt: params.excerpt } : {}),
   }
@@ -123,6 +159,95 @@ export async function createSuggestionNotification(params: {
   return created.id
 }
 
+export async function isNotificationEnabled(
+  userId: string,
+  kind: NotificationKind,
+): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { notificationPrefs: true },
+  })
+  if (!user?.notificationPrefs || typeof user.notificationPrefs !== "object") return true
+  const prefs = user.notificationPrefs as Record<string, boolean>
+  if (prefs[kind] === false) return false
+  return true
+}
+
+export async function createDirectMessageNotification(params: {
+  userId: string
+  actor: { id: string; name: string; handle?: string; avatarUrl?: string | null }
+  messageExcerpt?: string
+}): Promise<void> {
+  if (params.actor.id === params.userId) return
+  if (!(await isNotificationEnabled(params.userId, "direct-message"))) return
+
+  const payload: Prisma.InputJsonObject = {
+    actorId: params.actor.id,
+    actorName: params.actor.name,
+    actorInitials: formatInitials(params.actor.name),
+    ...(params.actor.handle ? { actorHandle: params.actor.handle } : {}),
+    ...(params.actor.avatarUrl !== undefined ? { actorAvatarUrl: params.actor.avatarUrl } : {}),
+    ...(params.messageExcerpt ? { messageExcerpt: params.messageExcerpt } : {}),
+  }
+
+  await prisma.notification.create({
+    data: {
+      userId: params.userId,
+      type: toPrismaNotificationType("direct-message"),
+      payload,
+    },
+  })
+  publishNotification(params.userId)
+}
+
+export async function createRoomEventNotification(params: {
+  userId: string
+  roomCode: string
+  roomName: string
+  eventType: "voting_started" | "room_finalized"
+  winnerPlaceName?: string
+}): Promise<void> {
+  if (!(await isNotificationEnabled(params.userId, "room-event"))) return
+
+  const payload: Prisma.InputJsonObject = {
+    roomCode: params.roomCode,
+    roomName: params.roomName,
+    eventType: params.eventType,
+    ...(params.winnerPlaceName ? { winnerPlaceName: params.winnerPlaceName } : {}),
+  }
+
+  await prisma.notification.create({
+    data: {
+      userId: params.userId,
+      type: toPrismaNotificationType("room-event"),
+      payload,
+    },
+  })
+  publishNotification(params.userId)
+}
+
+export async function createSystemNotification(params: {
+  userId: string
+  title: string
+  body: string
+}): Promise<void> {
+  if (!(await isNotificationEnabled(params.userId, "system"))) return
+
+  const payload: Prisma.InputJsonObject = {
+    title: params.title,
+    body: params.body,
+  }
+
+  await prisma.notification.create({
+    data: {
+      userId: params.userId,
+      type: toPrismaNotificationType("system"),
+      payload,
+    },
+  })
+  publishNotification(params.userId)
+}
+
 export function toNotificationDto(row: NotificationRow) {
   const base = {
     id: row.id,
@@ -147,6 +272,29 @@ export function toNotificationDto(row: NotificationRow) {
       const payload = row.payload as SystemPayload
       return { ...base, kind: "system" as const, title: payload.title, body: payload.body }
     }
+    case "direct-message": {
+      const payload = row.payload as DirectMessagePayload
+      return {
+        ...base,
+        kind: "direct-message" as const,
+        actorName: payload.actorName,
+        actorInitials: payload.actorInitials,
+        ...(payload.actorHandle ? { actorHandle: payload.actorHandle } : {}),
+        ...(payload.actorAvatarUrl !== undefined ? { actorAvatarUrl: payload.actorAvatarUrl } : {}),
+        ...(payload.messageExcerpt ? { messageExcerpt: payload.messageExcerpt } : {}),
+      }
+    }
+    case "room-event": {
+      const payload = row.payload as RoomEventPayload
+      return {
+        ...base,
+        kind: "room-event" as const,
+        roomCode: payload.roomCode,
+        roomName: payload.roomName,
+        eventType: payload.eventType,
+        ...(payload.winnerPlaceName ? { winnerPlaceName: payload.winnerPlaceName } : {}),
+      }
+    }
     default: {
       const payload = row.payload as ActorPayload
       return {
@@ -154,6 +302,8 @@ export function toNotificationDto(row: NotificationRow) {
         kind,
         actorName: payload.actorName,
         actorInitials: payload.actorInitials,
+        ...(payload.actorHandle ? { actorHandle: payload.actorHandle } : {}),
+        ...(payload.actorAvatarUrl !== undefined ? { actorAvatarUrl: payload.actorAvatarUrl } : {}),
         ...(payload.postId ? { postId: payload.postId } : {}),
         ...(payload.excerpt ? { excerpt: payload.excerpt } : {}),
       }

@@ -4,8 +4,8 @@ import { startTestDb, stopTestDb } from "./helpers/pg"
 
 /**
  * Integration test cho lớp demo kỹ thuật: meta của endpoint danh sách, tìm kiếm
- * nâng cao (token AND / dính chữ / đồng nghĩa / didYouMean), `why` của
- * daily-picks và `/system/*`. Postgres thật + dataset seed, không mock.
+ * nâng cao (token AND / dính chữ / đồng nghĩa / didYouMean) và `why` của
+ * daily-picks. Postgres thật + dataset seed, không mock.
  */
 let app: Awaited<ReturnType<typeof import("../src/app").createApp>>
 let prisma: typeof import("../src/lib/prisma").prisma
@@ -298,70 +298,5 @@ describe("why của daily-picks", () => {
       )
       expect(item.why.matchPercent).toBe(expected)
     }
-  })
-})
-
-describe("/system/*", () => {
-  test("GET /system/stats trả số liệu vận hành + venue đếm thật từ DB", async () => {
-    // Tạo ít nhất một request nghiệp vụ để bộ đếm có dữ liệu.
-    await app.request("/api/v1/places")
-
-    const body = await getJson<{
-      uptimeMs: number
-      totalQueries: number
-      avgLatencyMs: number
-      cacheHitRatio: number
-      byEndpoint: { route: string; count: number; avgMs: number; cacheHits: number }[]
-      venues: {
-        total: number
-        published: number
-        withImages: number
-        withTags: number
-        withHours: number
-      }
-    }>("/api/v1/system/stats")
-
-    expect(body.uptimeMs).toBeGreaterThanOrEqual(0)
-    expect(body.totalQueries).toBeGreaterThan(0)
-    expect(body.avgLatencyMs).toBeGreaterThanOrEqual(0)
-    expect(body.cacheHitRatio).toBeGreaterThanOrEqual(0)
-    expect(body.cacheHitRatio).toBeLessThanOrEqual(1)
-    expect(body.byEndpoint.length).toBeGreaterThan(0)
-    for (const entry of body.byEndpoint) {
-      expect(entry.route.length).toBeGreaterThan(0)
-      expect(entry.count).toBeGreaterThan(0)
-      expect(entry.avgMs).toBeGreaterThanOrEqual(0)
-    }
-    // Không tự đếm chính route quan sát.
-    expect(body.byEndpoint.some((entry) => entry.route.includes("/system"))).toBe(false)
-
-    // Venue: đối chiếu COUNT thật.
-    const total = await prisma.place.count({ where: { deletedAt: null } })
-    const published = await prisma.place.count({
-      where: { deletedAt: null, publishedAt: { not: null } },
-    })
-    expect(body.venues.total).toBe(total)
-    expect(body.venues.published).toBe(published)
-    expect(body.venues.withImages).toBeLessThanOrEqual(total)
-    expect(body.venues.withTags).toBeLessThanOrEqual(total)
-    expect(body.venues.withHours).toBeLessThanOrEqual(total)
-  })
-
-  test("POST /system/reset xoá bộ đếm nhưng KHÔNG xoá dữ liệu DB", async () => {
-    await app.request("/api/v1/places")
-    const before = await getJson<{ totalQueries: number }>("/api/v1/system/stats")
-    expect(before.totalQueries).toBeGreaterThan(0)
-
-    const placesBefore = await prisma.place.count()
-
-    const res = await app.request("/api/v1/system/reset", { method: "POST" })
-    expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ reset: true })
-
-    const after = await getJson<{ totalQueries: number; venues: { total: number } }>(
-      "/api/v1/system/stats",
-    )
-    expect(after.totalQueries).toBe(0)
-    expect(await prisma.place.count()).toBe(placesBefore)
   })
 })

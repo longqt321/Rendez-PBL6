@@ -32,6 +32,12 @@ services:
     networks:
       - rendez_net
 
+  redis:
+    ports: !override [] # không lộ Redis ra ngoài
+    restart: unless-stopped
+    networks:
+      - rendez_net
+
   migrate:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-rendez}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD phải được đặt}@postgres:5432/${POSTGRES_DB:-rendez}
@@ -70,6 +76,8 @@ services:
       R2_BUCKET: ${R2_BUCKET:-}
       R2_PUBLIC_BASE_URL: ${R2_PUBLIC_BASE_URL:-}
     ports: !override [] # không lộ API trực tiếp; Caddy proxy vào
+    volumes:
+      - api_data:/app/backend/data
     deploy:
       resources:
         limits:
@@ -132,5 +140,6 @@ networks:
         - subnet: 172.30.0.0/24
 
 volumes:
+  api_data:
   caddy_data:
   caddy_config:

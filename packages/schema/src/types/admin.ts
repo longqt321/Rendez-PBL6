@@ -102,7 +102,7 @@ export interface AdminPlace {
   address: string;
   district: string | null;
   category: PlaceCategory;
-  priceLevel: 1 | 2 | 3;
+  priceLevel: (1 | 2 | 3) | null;
   status: PlaceStatus;
   lat: number | null;
   lng: number | null;

@@ -4,13 +4,16 @@ import type { DanangDistrictName, RawToken } from "./constants"
 export interface PhraseSpec {
   phrase: string
   tokens: string[]
-  kind: "category" | "district" | "priceMax" | "nearMe" | "alwaysOpen" | "tag"
+  kind: "category" | "district" | "priceMax" | "nearMe" | "alwaysOpen" | "tag" | "landmark"
   category?: PlaceCategory
   district?: DanangDistrictName
   priceMax?: 1 | 2 | 3
   tags?: string[]
-  /** Chỉ mask khỏi residualQuery nếu đây là thuộc tính SQL cứng (category/district/price/nearMe/alwaysOpen). */
+  landmark?: string
+  /** Chỉ mask khỏi residualQuery nếu đây là thuộc tính SQL cứng (category/district/price/nearMe/alwaysOpen/landmark). */
   maskFromResidual: boolean
+  /** Điều kiện bổ sung trên token gốc có dấu / ngữ cảnh lân cận để tránh khớp nhầm từ đồng âm không dấu. */
+  guard?: (tokens: RawToken[], startIdx: number) => boolean
 }
 
 function spec(
@@ -29,6 +32,7 @@ const PHRASE_SPECS: PhraseSpec[] = [
   ...spec(
     [
       "quan ca phe",
+      "quan cafe",
       "tiem ca phe",
       "ca phe",
       "caphe",
@@ -36,12 +40,13 @@ const PHRASE_SPECS: PhraseSpec[] = [
       "coffeehouse",
       "coffee",
       "cafe",
+      "cf",
       "tra sua",
       "quan nuoc",
     ],
     { kind: "category", category: "cafe", maskFromResidual: true },
   ),
-  ...spec(["nha hang", "quan an", "an toi", "an trua"], {
+  ...spec(["nha hang", "quan an"], {
     kind: "category",
     category: "restaurant",
     maskFromResidual: true,
@@ -123,10 +128,72 @@ const PHRASE_SPECS: PhraseSpec[] = [
     { kind: "alwaysOpen", maskFromResidual: true },
   ),
 
-  // --- Tags tiện ích, không gian & món ăn (giữ trong residualQuery khi dương để vector/trigram bám sát, chỉ mask khi bị phủ định) ---
-  ...spec(["lam viec nhom", "lam viec", "hoc bai", "hoc tap", "study", "laptop", "yen tinh"], {
+  // --- Địa danh Đà Nẵng (Landmarks) ---
+  ...spec(["gan cau rong", "quanh cau rong", "cau rong"], {
+    kind: "landmark",
+    landmark: "Cầu Rồng",
+    maskFromResidual: true,
+  }),
+  ...spec(["gan cau song han", "quanh cau song han", "cau song han"], {
+    kind: "landmark",
+    landmark: "Cầu Sông Hàn",
+    maskFromResidual: true,
+  }),
+  ...spec(["gan bien my khe", "bai bien my khe", "bien my khe", "my khe"], {
+    kind: "landmark",
+    landmark: "Bãi biển Mỹ Khê",
+    maskFromResidual: true,
+  }),
+  ...spec(["gan cho han", "cho han"], {
+    kind: "landmark",
+    landmark: "Chợ Hàn",
+    maskFromResidual: true,
+  }),
+  ...spec(["gan cho con", "cho con"], {
+    kind: "landmark",
+    landmark: "Chợ Cồn",
+    maskFromResidual: true,
+  }),
+  ...spec(["gan san bay da nang", "gan san bay", "san bay da nang", "san bay"], {
+    kind: "landmark",
+    landmark: "Sân bay Đà Nẵng",
+    maskFromResidual: true,
+  }),
+  ...spec(["gan me nhu", "tuong dai me nhu", "me nhu"], {
+    kind: "landmark",
+    landmark: "Tượng đài Mẹ Nhu",
+    maskFromResidual: true,
+  }),
+
+  // --- Tags tiện ích, không gian & món ăn ---
+  ...spec(["o cam", "o dien", "cam dien", "sac laptop", "nhieu o cam"], {
     kind: "tag",
-    tags: ["Làm việc"],
+    tags: ["Ổ cắm"],
+    maskFromResidual: false,
+  }),
+  ...spec(["may lanh", "dieu hoa", "phong lanh"], {
+    kind: "tag",
+    tags: ["Máy lạnh"],
+    maskFromResidual: false,
+  }),
+  ...spec(["cho dau oto", "do oto", "dau oto", "dau xe oto", "bai do xe oto", "bai do xe"], {
+    kind: "tag",
+    tags: ["Chỗ đậu ô tô"],
+    maskFromResidual: false,
+  }),
+  ...spec(["hen ho", "date", "lang man"], {
+    kind: "tag",
+    tags: ["Hẹn hò"],
+    maskFromResidual: false,
+  }),
+  ...spec(["thu cung", "pet", "cho meo", "pet friendly"], {
+    kind: "tag",
+    tags: ["Thú cưng"],
+    maskFromResidual: false,
+  }),
+  ...spec(["lam viec nhom", "lam viec", "hoc bai", "hoc tap", "study", "laptop", "yen tinh", "khong gian yen tinh"], {
+    kind: "tag",
+    tags: ["Làm việc", "Yên tĩnh"],
     maskFromResidual: false,
   }),
   ...spec(["mang internet", "mang wifi", "wifi", "internet"], {
@@ -144,10 +211,17 @@ const PHRASE_SPECS: PhraseSpec[] = [
     tags: ["Mang đi"],
     maskFromResidual: false,
   }),
-  ...spec(["an chay", "chay", "vegan", "vegetarian"], {
+  ...spec(["an chay", "vegan", "vegetarian"], {
     kind: "tag",
     tags: ["Chay"],
     maskFromResidual: false,
+  }),
+  ...spec(["chay"], {
+    kind: "tag",
+    tags: ["Chay"],
+    maskFromResidual: false,
+    // Tránh khớp nhầm "cơm cháy", "chạy bộ", "chảy" khi bỏ dấu thành "chay"
+    guard: (tokens, startIdx) => tokens[startIdx]!.original.toLowerCase() === "chay",
   }),
   ...spec(["nhau nhet", "nhau", "bia"], {
     kind: "tag",
@@ -159,10 +233,31 @@ const PHRASE_SPECS: PhraseSpec[] = [
     tags: ["Giải trí"],
     maskFromResidual: false,
   }),
-  ...spec(["hai san tuoi", "hai san", "tom hum", "cua ghe", "tom", "oc", "seafood"], {
+  ...spec(["hai san tuoi", "hai san", "tom hum", "cua ghe", "seafood"], {
     kind: "tag",
     tags: ["Hải sản"],
     maskFromResidual: false,
+  }),
+  ...spec(["tom"], {
+    kind: "tag",
+    tags: ["Hải sản"],
+    maskFromResidual: false,
+    // Tránh khớp nhầm "mắm tôm", "tóm", "tởm"
+    guard: (tokens, startIdx) => {
+      const orig = tokens[startIdx]!.original.toLowerCase()
+      if (orig !== "tôm" && orig !== "tom") return false
+      const prevFolded = startIdx > 0 ? tokens[startIdx - 1]?.folded : undefined
+      return prevFolded !== "mam"
+    },
+  }),
+  ...spec(["oc"], {
+    kind: "tag",
+    tags: ["Hải sản"],
+    maskFromResidual: false,
+    guard: (tokens, startIdx) => {
+      const orig = tokens[startIdx]!.original.toLowerCase()
+      return orig === "ốc" || orig === "oc"
+    },
   }),
   ...spec(["pizza"], { kind: "tag", tags: ["Pizza"], maskFromResidual: false }),
   ...spec(["bit tet", "steak", "bo ne"], { kind: "tag", tags: ["Bít tết"], maskFromResidual: false }),
@@ -316,10 +411,12 @@ export function matchPhraseAt(tokens: RawToken[], startIdx: number): PhraseSpec 
         break
       }
     }
-    if (ok) return entry
+    if (ok && (!entry.guard || entry.guard(tokens, startIdx))) return entry
   }
   return null
 }
+
+const NON_NEGATION_AFTER_KHONG = new Set(["gian", "khi"])
 
 export function matchNegationAt(tokens: RawToken[], startIdx: number): number {
   for (const neg of NEGATION_TRIGGERS) {
@@ -332,7 +429,15 @@ export function matchNegationAt(tokens: RawToken[], startIdx: number): number {
         break
       }
     }
-    if (ok) return neg.length
+    if (!ok) continue
+    // Ngoại lệ: "không gian", "không khí" không phải phủ định loại trừ
+    if (neg.length === 1 && neg[0] === "khong") {
+      const next = tokens[startIdx + 1]
+      if (next && !next.isSeparator && NON_NEGATION_AFTER_KHONG.has(next.folded)) {
+        continue
+      }
+    }
+    return neg.length
   }
   const cur = tokens[startIdx]
   if (cur && !cur.isSeparator) {

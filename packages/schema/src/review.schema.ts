@@ -5,7 +5,7 @@ import type { Review, ReviewTier } from "./types/review"
 
 export { recommendedDishCountSchema, reviewTierSummarySchema }
 
-export const reviewTierSchema = z.enum(["ok", "good", "must_try"]) satisfies z.ZodType<ReviewTier>
+export const reviewTierSchema = z.enum(["not_for_me", "ok", "good", "must_try"]) satisfies z.ZodType<ReviewTier>
 
 export const reviewSchema = z.object({
   id: z.string(),
@@ -15,6 +15,9 @@ export const reviewSchema = z.object({
   content: z.string(),
   recommendedDishes: z.array(z.string()),
   quickTags: z.array(z.string()),
+  images: z.array(z.string()).optional(),
+  helpfulCount: z.number().int().min(0).optional(),
+  helpfulByMe: z.boolean().optional(),
   authorReviewCount: z.number().int().min(0).optional(),
   isFollowingAuthor: z.boolean().optional(),
   createdAt: z.string(),
@@ -26,6 +29,7 @@ export const upsertReviewInputSchema = z.object({
   content: z.string().trim().max(1000).optional().default(""),
   recommendedDishes: z.array(z.string().trim().min(1).max(40)).max(3).optional().default([]),
   quickTags: z.array(z.string().trim().min(1).max(40)).max(3).optional().default([]),
+  imageUrls: z.array(z.string().url()).max(4).optional().default([]),
 })
 
-export type UpsertReviewInput = z.infer<typeof upsertReviewInputSchema>
+export type UpsertReviewInput = z.input<typeof upsertReviewInputSchema>

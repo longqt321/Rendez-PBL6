@@ -166,21 +166,16 @@ function publishedAtFor(id: string): Date {
   return new Date(PUBLISHED_AT.getTime() - daysAgo * 24 * 60 * 60 * 1_000)
 }
 
-function priceLevelFor(id: string, category: PlaceCategory, mode: SeedMode): 1 | 2 | 3 {
+function priceLevelFor(raw: unknown, mode: SeedMode): 1 | 2 | 3 | null {
+  const price =
+    raw && typeof raw === "object" && "priceLevel" in raw
+      ? (raw as { priceLevel: unknown }).priceLevel
+      : undefined
+  if (typeof price === "number" && (price === 1 || price === 2 || price === 3)) {
+    return price
+  }
   if (mode === "test") return 1
-  const bucket = hashId(id) % 10
-  if (category === "street-food" || category === "bakery") {
-    return bucket < 8 ? 1 : 2
-  }
-  if (category === "cafe" || category === "dessert") {
-    if (bucket < 4) return 1
-    if (bucket < 9) return 2
-    return 3
-  }
-  // restaurant & bar
-  if (bucket < 2) return 1
-  if (bucket < 7) return 2
-  return 3
+  return null
 }
 
 const SEED_BASE_AT = new Date("2026-11-09T00:00:00+07:00")
@@ -536,7 +531,7 @@ async function main(): Promise<void> {
       city: "Đà Nẵng",
       district: raw.district,
       category: PRISMA_CATEGORY[mappedCategory],
-      priceLevel: priceLevelFor(raw.id, mappedCategory, mode),
+      priceLevel: priceLevelFor(raw, mode),
       lat: raw.lat,
       lng: raw.lng,
       status: toStatus(raw.status),

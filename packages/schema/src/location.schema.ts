@@ -58,6 +58,6 @@ export type SyncedLocation = z.infer<typeof syncedLocationSchema>
 export const upsertSyncedLocationInputSchema = z.object({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
-  accuracy: z.number().positive().max(1000, "Độ chính xác GPS chưa đủ tốt (<= 1000m)"),
+  accuracy: z.number().positive().max(5000, "Độ chính xác GPS chưa đủ tốt (<= 5000m)"),
 })
 export type UpsertSyncedLocationInput = z.infer<typeof upsertSyncedLocationInputSchema>

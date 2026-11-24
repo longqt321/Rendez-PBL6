@@ -55,6 +55,7 @@ enum ReportReason {
 }
 
 enum ReviewTier {
+  not_for_me
   ok
   good
   must_try
@@ -109,8 +110,18 @@ enum NotificationType {
   comment
   follow
   system
+  direct_message   @map("direct-message")
+  room_event       @map("room-event")
 
   @@map("notification_type")
+}
+
+enum SubmissionStatus {
+  pending
+  reviewed
+  dismissed
+
+  @@map("submission_status")
 }
 
 enum RoomProposalKind {
@@ -190,6 +201,14 @@ model User {
   locationAnchors  UserLocationAnchor[]
   sentMessages     DirectMessage[] @relation("MessageSender")
   receivedMessages DirectMessage[] @relation("MessageRecipient")
+  notificationPrefs Json            @default("{}") @map("notification_prefs")
+
+  helpfulReviewVotes       ReviewHelpfulVote[]
+  submissions              PlaceSubmission[]        @relation("UserSubmissions")
+  reviewedSubmissions      PlaceSubmission[]        @relation("ReviewedSubmissions")
+  collaboratingCollections CollectionCollaborator[]
+  blockedUsers             UserBlock[]              @relation("BlockedUsers")
+  blockedByUsers           UserBlock[]              @relation("BlockedByUsers")
 
   @@map("users")
 }
@@ -285,7 +304,7 @@ model Place {
   category     PlaceCategory
   // 1–3 (hợp đồng API). Ràng buộc CHECK nằm ở migration
   // 20261111110000_places_price_level_check — Prisma không mô hình hoá CHECK.
-  priceLevel   Int           @default(1) @map("price_level")
+  priceLevel   Int?          @map("price_level")
   lat          Float?
   lng          Float?
   status       PlaceStatus   @default(unknown)
@@ -331,6 +350,7 @@ model Place {
   affinityCache   AffinityCache?
   roomCandidates  RoomCandidate[]
   wonRooms        Room[]             @relation("RoomWinner")
+  submissions     PlaceSubmission[]
 
   @@index([publishedAt, status])
   @@index([lat, lng])
@@ -432,6 +452,9 @@ model Review {
 
   place  Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
   author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  images       ReviewImage[]
+  helpfulVotes ReviewHelpfulVote[]
 
   @@unique([placeId, authorId])
   @@index([placeId, createdAt])
@@ -604,6 +627,7 @@ model Collection {
   owner User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   items CollectionPlace[]
   likes CollectionLike[]
+  collaborators CollectionCollaborator[]
 
   @@index([ownerId, createdAt(sort: Desc)])
   @@map("collections")
@@ -617,6 +641,7 @@ model CollectionPlace {
   collectionId String   @map("collection_id") @db.Uuid
   placeId      String   @map("place_id")
   position     Int      @default(0)
+  note         String?
   addedAt      DateTime @default(now()) @map("added_at")
 
   collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
@@ -979,6 +1004,7 @@ model DirectMessage {
   senderId    String    @map("sender_id") @db.Uuid
   recipientId String    @map("recipient_id") @db.Uuid
   body        String    @db.VarChar(1000)
+  attachment  Json?
   readAt      DateTime? @map("read_at")
   createdAt   DateTime  @default(now()) @map("created_at")
 
@@ -988,4 +1014,104 @@ model DirectMessage {
   @@index([senderId, recipientId, createdAt(sort: Desc)])
   @@index([recipientId, readAt, createdAt(sort: Desc)])
   @@map("direct_messages")
+}
+
+// ---------------------------------------------------------------------------
+// 29. review_images & review_helpful_votes
+// ---------------------------------------------------------------------------
+
+model ReviewImage {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reviewId  String   @map("review_id") @db.Uuid
+  url       String
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId, position])
+  @@map("review_images")
+}
+
+model ReviewHelpfulVote {
+  reviewId  String   @map("review_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([reviewId, userId])
+  @@index([userId])
+  @@map("review_helpful_votes")
+}
+
+// ---------------------------------------------------------------------------
+// 30. place_submissions
+// ---------------------------------------------------------------------------
+
+model PlaceSubmission {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  submitterId    String           @map("submitter_id") @db.Uuid
+  name           String
+  address        String
+  city           String           @default("Đà Nẵng")
+  district       String?
+  category       PlaceCategory
+  priceLevel     Int?             @map("price_level")
+  lat            Float?
+  lng            Float?
+  openingHours   String?          @map("opening_hours")
+  phone          String?
+  description    String?
+  tags           String[]         @default([])
+  imageUrls      String[]         @default([]) @map("image_urls")
+  status         SubmissionStatus @default(pending)
+  reviewerId     String?          @map("reviewer_id") @db.Uuid
+  reviewNote     String?          @map("review_note")
+  createdPlaceId String?          @map("created_place_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  submitter    User   @relation("UserSubmissions", fields: [submitterId], references: [id], onDelete: Cascade)
+  reviewer     User?  @relation("ReviewedSubmissions", fields: [reviewerId], references: [id], onDelete: SetNull)
+  createdPlace Place? @relation(fields: [createdPlaceId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([submitterId])
+  @@map("place_submissions")
+}
+
+// ---------------------------------------------------------------------------
+// 31. collection_collaborators
+// ---------------------------------------------------------------------------
+
+model CollectionCollaborator {
+  collectionId String   @map("collection_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, userId])
+  @@index([userId])
+  @@map("collection_collaborators")
+}
+
+// ---------------------------------------------------------------------------
+// 32. user_blocks
+// ---------------------------------------------------------------------------
+
+model UserBlock {
+  blockerId String   @map("blocker_id") @db.Uuid
+  blockedId String   @map("blocked_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker User @relation("BlockedUsers", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlockedByUsers", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("user_blocks")
 }

@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { placeSchema } from "./place.schema"
 import type { Collection, CollectionSummary } from "./types/collection"
 
 export const collectionSummarySchema = z.object({
@@ -26,6 +27,7 @@ export const collectionSchema = z.object({
     initials: z.string(),
   }),
   placeIds: z.array(z.string()),
+  places: z.array(placeSchema).optional(),
   createdAt: z.string(),
   isMine: z.boolean(),
   likeCount: z.number(),

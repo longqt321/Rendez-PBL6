@@ -71,7 +71,7 @@ export async function listSavedPlaces(
   userId: string,
   cursor: Cursor | null,
   pageSize: number,
-): Promise<{ items: PlaceDto[]; next: Cursor | null }> {
+): Promise<{ items: PlaceDto[]; next: Cursor | null; total: number }> {
   let query = selectPlacesQuery()
     .where("p.published_at", "is not", null)
     .where("p.status", "!=", "closed")
@@ -94,15 +94,54 @@ export async function listSavedPlaces(
     )
   }
 
-  const rows = (await query
-    .orderBy("p.created_at", "desc")
-    .orderBy("p.id", "desc")
-    .limit(pageSize + 1)
-    .execute()) as PlaceRow[]
+  const [rows, countRow] = await Promise.all([
+    query
+      .orderBy("p.created_at", "desc")
+      .orderBy("p.id", "desc")
+      .limit(pageSize + 1)
+      .execute() as Promise<PlaceRow[]>,
+    db
+      .selectFrom("places as p")
+      .where("p.published_at", "is not", null)
+      .where("p.status", "!=", "closed")
+      .where("p.deleted_at", "is", null)
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom("collection_places as cp")
+            .innerJoin("collections as col", "col.id", "cp.collection_id")
+            .whereRef("cp.place_id", "=", "p.id")
+            .where("col.owner_id", "=", userId)
+            .where("col.deleted_at", "is", null)
+            .select(sql.lit(1).as("one")),
+        ),
+      )
+      .select(sql<number>`COUNT(DISTINCT p.id)::int`.as("total"))
+      .executeTakeFirst(),
+  ])
 
   const page = rows.slice(0, pageSize)
   const last = page.at(-1)
   const next = rows.length > pageSize && last ? { createdAt: last.created_at, id: last.id } : null
 
-  return { items: page.map(toPlaceDto), next }
+  return { items: page.map(toPlaceDto), next, total: Number(countRow?.total ?? 0) }
+}
+
+/** Hydrate danh sách địa điểm công khai theo mảng `ids` (giữ đúng thứ tự đầu vào, tránh N+1). */
+export async function listPublicPlacesByIds(ids: string[]): Promise<PlaceDto[]> {
+  if (ids.length === 0) return []
+  const uniqueIds = Array.from(new Set(ids))
+  const rows = (await selectPlacesQuery()
+    .where("p.id", "in", uniqueIds)
+    .where("p.published_at", "is not", null)
+    .where("p.deleted_at", "is", null)
+    .execute()) as PlaceRow[]
+
+  const byId = new Map(rows.map((row) => [row.id, toPlaceDto(row)]))
+  const ordered: PlaceDto[] = []
+  for (const id of ids) {
+    const place = byId.get(id)
+    if (place) ordered.push(place)
+  }
+  return ordered
 }

@@ -39,6 +39,7 @@ export type {
   RoomPhase,
   RoomProposal,
   RoomProposalField,
+  RoomSummary,
   RoomVoteSummary,
   RoomVotingMode,
   RoomVotingProgress,
@@ -49,7 +50,10 @@ export type {
   ActorNotification,
   PlaceSuggestionNotification,
   SystemNotification,
+  DirectMessageNotification,
+  RoomEventNotification,
 } from "./types/notification"
+export type { PlaceSubmission, SubmissionStatus } from "./types/submission"
 export type { Page, PageMeta } from "./page-types"
 export {
   pageMetaSchema,
@@ -66,7 +70,7 @@ export {
   type ParsedFilterChip,
   type ParsedNaturalQuery,
 } from "./natural-query"
-export { isOpenNow } from "./opening-hours"
+export { isOpenNow, getOpeningHoursDetail, type OpeningHoursDetail } from "./opening-hours"
 export * from "./constants"
 export {
   placeMediaKindSchema,
@@ -135,6 +139,8 @@ export {
   directMessageSchema,
   conversationSummarySchema,
   sendDirectMessageInputSchema,
+  messageAttachmentSchema,
+  type MessageAttachment,
   type DirectMessagePeer,
   type DirectMessage,
   type ConversationSummary,
@@ -142,6 +148,7 @@ export {
 } from "./message.schema"
 export {
   roomSchema,
+  roomSummarySchema,
   roomMemberSchema,
   roomProposalSchema,
   roomFilterSchema,
@@ -170,6 +177,13 @@ export {
   type FinalizeRoomVotingInput,
   type UpdateRoomMemberLocationInput,
 } from "./room.schema"
+export {
+  placeSubmissionSchema,
+  createPlaceSubmissionInputSchema,
+  reviewPlaceSubmissionInputSchema,
+  type CreatePlaceSubmissionInput,
+  type ReviewPlaceSubmissionInput,
+} from "./submission.schema"
 export {
   anchorKindSchema,
   userLocationAnchorSchema,

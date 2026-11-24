@@ -95,7 +95,7 @@ export interface PlaceAdminRow {
   address: string
   district: string | null
   category: string
-  price_level: number
+  price_level: number | null
   status: string
   lat: number | null
   lng: number | null
@@ -109,7 +109,8 @@ export interface PlaceAdminRow {
 }
 
 export function toAdminPlaceDto(row: PlaceAdminRow): AdminPlace {
-  const level = row.price_level === 2 || row.price_level === 3 ? row.price_level : 1
+  const level =
+    row.price_level === 1 || row.price_level === 2 || row.price_level === 3 ? row.price_level : null
   return {
     id: row.id,
     name: row.name,

@@ -29,6 +29,9 @@ export function promotePlaceFilters(filters: PlaceFilters): QueryPromotionResult
   ]
   const excludeDistricts = [...new Set([...filters.excludeDistricts, ...parsed.excludeDistricts])]
   const excludeKeywords = [...new Set([...filters.excludeKeywords, ...parsed.excludeKeywords])]
+  const tags = [...new Set([...(filters.tags ?? []), ...parsed.tags])]
+  const alwaysOpen = Boolean(filters.alwaysOpen || parsed.alwaysOpen)
+  const landmarkQuery = filters.landmarkQuery || parsed.landmarkQuery
 
   const hasPromotedConstraints =
     (filters.categories.length === 0 && parsed.categories.length > 0) ||
@@ -36,13 +39,12 @@ export function promotePlaceFilters(filters: PlaceFilters): QueryPromotionResult
     (filters.priceMax === undefined && parsed.priceMax !== undefined) ||
     parsed.excludeCategories.length > 0 ||
     parsed.excludeDistricts.length > 0 ||
-    parsed.excludeKeywords.length > 0
+    parsed.excludeKeywords.length > 0 ||
+    tags.length > 0 ||
+    alwaysOpen ||
+    Boolean(landmarkQuery)
 
-  const isPureSqlFastPath =
-    parsed.residualQuery.length === 0 &&
-    parsed.tags.length === 0 &&
-    !parsed.alwaysOpen &&
-    hasPromotedConstraints
+  const isPureSqlFastPath = parsed.residualQuery.length === 0 && hasPromotedConstraints
 
   const promotedFilters: PlaceFilters = {
     ...filters,
@@ -52,6 +54,9 @@ export function promotePlaceFilters(filters: PlaceFilters): QueryPromotionResult
     excludeCategories,
     excludeDistricts,
     excludeKeywords,
+    ...(tags.length > 0 ? { tags } : {}),
+    ...(alwaysOpen ? { alwaysOpen: true } : {}),
+    ...(landmarkQuery ? { landmarkQuery } : {}),
     q: parsed.residualQuery.length > 0 ? parsed.residualQuery : undefined,
   }
 

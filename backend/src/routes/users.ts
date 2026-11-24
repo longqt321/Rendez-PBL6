@@ -267,5 +267,82 @@ export function createUsersRouter() {
     toggleFollow(c, false),
   )
 
+  /** Chặn người dùng */
+  router.post("/users/:handle/block", requireAuth, async (c) => {
+    const handle = c.req.param("handle")
+    const userId = c.get("userId")!
+    const targetUser = await prisma.user.findFirst({
+      where: { handle: { equals: handle, mode: "insensitive" } },
+      select: { id: true },
+    })
+    if (!targetUser) throw new ApiError(404, "Không tìm thấy người dùng")
+    if (targetUser.id === userId) throw new ApiError(400, "Không thể tự chặn chính mình")
+
+    await prisma.$transaction(async (tx) => {
+      await tx.userBlock.upsert({
+        where: { blockerId_blockedId: { blockerId: userId, blockedId: targetUser.id } },
+        create: { blockerId: userId, blockedId: targetUser.id },
+        update: {},
+      })
+      // Huỷ follow 2 chiều khi chặn
+      await tx.follow.deleteMany({
+        where: {
+          OR: [
+            { followerId: userId, followingId: targetUser.id },
+            { followerId: targetUser.id, followingId: userId },
+          ],
+        },
+      })
+    })
+
+    return c.json({ ok: true, blocked: true })
+  })
+
+  /** Bỏ chặn người dùng */
+  router.delete("/users/:handle/block", requireAuth, async (c) => {
+    const handle = c.req.param("handle")
+    const userId = c.get("userId")!
+    const targetUser = await prisma.user.findFirst({
+      where: { handle: { equals: handle, mode: "insensitive" } },
+      select: { id: true },
+    })
+    if (!targetUser) throw new ApiError(404, "Không tìm thấy người dùng")
+
+    await prisma.userBlock.deleteMany({
+      where: { blockerId: userId, blockedId: targetUser.id },
+    })
+
+    return c.json({ ok: true, blocked: false })
+  })
+
+  /** Đọc cài đặt tuỳ chọn nhận thông báo */
+  router.get("/me/notification-prefs", requireAuth, async (c) => {
+    const userId = c.get("userId")!
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { notificationPrefs: true },
+    })
+    return c.json({ prefs: user?.notificationPrefs ?? {} })
+  })
+
+  /** Cập nhật tuỳ chọn nhận thông báo */
+  router.patch("/me/notification-prefs", requireAuth, async (c) => {
+    const userId = c.get("userId")!
+    const raw = await c.req.json().catch(() => null)
+    const current = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { notificationPrefs: true },
+    })
+    const existing = (current?.notificationPrefs as Record<string, boolean> | null) ?? {}
+    const updated = { ...existing, ...(typeof raw === "object" && raw !== null ? raw : {}) }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { notificationPrefs: updated },
+    })
+
+    return c.json({ prefs: updated })
+  })
+
   return router
 }

@@ -14,12 +14,12 @@ import { createRoomsRouter } from "./rooms"
 import { createMediaRouter } from "./media"
 import { createTilesRouter } from "./tiles"
 import { createOgRouter } from "./og"
-import { createSystemRouter } from "./system"
 import { createEventsRouter } from "./events"
 import { createTelemetryRouter } from "./telemetry"
 import { createAdminRouter } from "./admin"
 import { createLocationRouter } from "./location"
 import { createMessagesRouter } from "./messages"
+import { createSubmissionsRouter } from "./submissions"
 
 function normalizeRoutePath(path: string): string {
   const stripped = path.replace(/^\/api\/v1/u, "") || "/"
@@ -46,25 +46,20 @@ export function createApiRouter() {
       try {
         await next()
       } finally {
-        // Bỏ qua chính `/system/*` (route quan sát tự làm phình số liệu nó báo
-        // cáo). `finally` để request lỗi (4xx/5xx) vẫn được đếm — lỗi cũng là
-        // tín hiệu vận hành cần thấy.
-        if (!c.req.path.includes("/system")) {
-          // Sau `next()` Hono đã gán routePath của handler khớp; rỗng/"*" khi
-          // không route nào khớp (404) → fallback chuẩn hoá từ path thật.
-          const matched = c.req.routePath
-          const route = `${c.req.method} ${
-            matched && matched !== "*" ? matched : normalizeRoutePath(c.req.path)
-          }`
-          recordRequest(
-            route,
-            Math.round(performance.now() - startedAt),
-            c.get("cacheHit") ?? false,
-            c.res.status,
-          )
-          if (c.req.path.includes("/auth/sign-in") && c.res.status >= 400 && c.res.status < 500) {
-            recordAuthFailure()
-          }
+        // Sau `next()` Hono đã gán routePath của handler khớp; rỗng/"*" khi
+        // không route nào khớp (404) → fallback chuẩn hoá từ path thật.
+        const matched = c.req.routePath
+        const route = `${c.req.method} ${
+          matched && matched !== "*" ? matched : normalizeRoutePath(c.req.path)
+        }`
+        recordRequest(
+          route,
+          Math.round(performance.now() - startedAt),
+          c.get("cacheHit") ?? false,
+          c.res.status,
+        )
+        if (c.req.path.includes("/auth/sign-in") && c.res.status >= 400 && c.res.status < 500) {
+          recordAuthFailure()
         }
       }
     }),
@@ -113,9 +108,6 @@ export function createApiRouter() {
   // HTML meta Open Graph cho bot preview (`/og/place/:id`, `/og/post/:id`).
   api.route("/", createOgRouter())
 
-  // Số liệu vận hành cho demo (`/system/stats`, `/system/reset`).
-  api.route("/", createSystemRouter())
-
   // Thu thập sự kiện tương tác (P0 đo lường) — `/events`.
   api.route("/", createEventsRouter())
 
@@ -130,6 +122,9 @@ export function createApiRouter() {
 
   // Tin nhắn trực tiếp — `/messages/conversations`, `/messages/with/:handle`.
   api.route("/", createMessagesRouter())
+
+  // Đề xuất địa điểm cộng đồng — `/places/submissions`, `/me/submissions`, `/admin/submissions`.
+  api.route("/", createSubmissionsRouter())
 
   return api
 }

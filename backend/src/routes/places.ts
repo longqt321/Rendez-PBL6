@@ -28,6 +28,9 @@ import {
   listPlacesInMap,
   listSavedPlaces,
   parsePlaceFilters,
+  selectPlacesQuery,
+  toPlaceDto,
+  type PlaceRow,
 } from "../lib/places"
 import { getViewer, requireAuth } from "../lib/session"
 import { recordEventForRequest } from "../lib/interaction-events"
@@ -289,7 +292,11 @@ export function createPlacesRouter() {
     if (rawCursor && !cursor) throw new ApiError(400, "Cursor không hợp lệ")
 
     const page = await listSavedPlaces(c.get("userId"), cursor, PLACES_PAGE_SIZE)
-    return c.json({ items: page.items, next: page.next ? encodeCursor(page.next) : null })
+    return c.json({
+      items: page.items,
+      next: page.next ? encodeCursor(page.next) : null,
+      total: page.total,
+    })
   })
 
   router.get("/places/:id/posts", async (c) => {
@@ -441,6 +448,29 @@ export function createPlacesRouter() {
       },
       201,
     )
+  })
+
+  router.get("/places/:id/similar", async (c) => {
+    const id = c.req.param("id")
+    if (!SLUG_ID_RE.test(id)) throw new ApiError(404, "Không tìm thấy địa điểm")
+
+    const place = await findPublicPlace(id)
+    if (!place) throw new ApiError(404, "Không tìm thấy địa điểm")
+
+    const rows = await selectPlacesQuery()
+      .where("p.id", "!=", id)
+      .where("p.published_at", "is not", null)
+      .where("p.status", "!=", "closed")
+      .where("p.deleted_at", "is", null)
+      .where(sql<string>`p.category::text`, "=", place.category)
+      .orderBy(sql`CASE WHEN p.district = ${place.district ?? null} THEN 0 ELSE 1 END`, "asc")
+      .orderBy("r.positive_ratio", "desc")
+      .orderBy("r.review_count", "desc")
+      .limit(6)
+      .execute()
+
+    const items = rows.map((r) => toPlaceDto(r as PlaceRow))
+    return jsonWithCache(c, { items }, { maxAge: 60 })
   })
 
   router.get("/places/:id", async (c) => {

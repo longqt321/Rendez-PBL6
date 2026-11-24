@@ -10,6 +10,64 @@ import {
 } from "./constants"
 import { FILLER_CONNECTORS, matchNegationAt, matchPhraseAt } from "./lexicon"
 
+const PRICE_PREFIXES = new Set(["duoi", "tam", "khoang", "gia", "toi", "den"])
+
+function mapAmountKToPriceLevel(amountK: number): 1 | 2 | 3 {
+  if (amountK <= 60) return 1
+  if (amountK <= 200) return 2
+  return 3
+}
+
+/**
+ * Đọc mức giá dạng số trong câu tự nhiên: "dưới 60k", "tầm 80k", "dưới 65k", "150k", "dưới 100 nghìn", "dưới 50000đ".
+ */
+function matchNumericPriceAt(
+  tokens: RawToken[],
+  startIdx: number,
+): { priceMax: 1 | 2 | 3; length: number } | null {
+  const first = tokens[startIdx]
+  if (!first || first.isSeparator) return null
+
+  let idx = startIdx
+  let hasPrefix = false
+  if (PRICE_PREFIXES.has(first.folded)) {
+    hasPrefix = true
+    idx += 1
+  }
+  const numTok = tokens[idx]
+  if (!numTok || numTok.isSeparator) return null
+
+  const compactMatch = /^(\d{1,6})(k|d|đ|vnd)$/iu.exec(numTok.folded)
+  if (compactMatch) {
+    const rawNum = Number(compactMatch[1])
+    const unit = compactMatch[2]!.toLowerCase()
+    const amountK = unit === "k" ? rawNum : rawNum >= 1000 ? rawNum / 1000 : rawNum
+    if (amountK >= 10 && amountK <= 5000) {
+      return { priceMax: mapAmountKToPriceLevel(amountK), length: idx - startIdx + 1 }
+    }
+    return null
+  }
+
+  const plainNumMatch = /^(\d{1,6})$/u.exec(numTok.folded)
+  if (!plainNumMatch) return null
+  const rawNum = Number(plainNumMatch[1])
+  const nextTok = tokens[idx + 1]
+  if (
+    nextTok &&
+    !nextTok.isSeparator &&
+    (nextTok.folded === "k" || nextTok.folded === "nghin" || nextTok.folded === "ngan")
+  ) {
+    if (rawNum >= 10 && rawNum <= 5000) {
+      return { priceMax: mapAmountKToPriceLevel(rawNum), length: idx - startIdx + 2 }
+    }
+    return null
+  }
+  if (hasPrefix && rawNum >= 10_000 && rawNum <= 5_000_000) {
+    return { priceMax: mapAmountKToPriceLevel(rawNum / 1000), length: idx - startIdx + 1 }
+  }
+  return null
+}
+
 function priceLabel(level: 1 | 2 | 3): string {
   if (level === 1) return "Giá: ₫ (Bình dân)"
   if (level === 2) return "Giá: ₫₫ trở xuống"
@@ -48,6 +106,7 @@ export function parseNaturalFilterQuery(rawQuery: string): ParsedNaturalQuery {
   let priceMax: 1 | 2 | 3 | undefined
   let alwaysOpen = false
   let nearMe = false
+  let landmarkQuery: string | undefined
 
   const seenChipKeys = new Set<string>()
   const pushChip = (chip: ParsedFilterChip) => {
@@ -177,6 +236,34 @@ export function parseNaturalFilterQuery(rawQuery: string): ParsedNaturalQuery {
       }
     }
 
+    // 1.5. Đọc mức giá số bằng regex ("dưới 60k", "dưới 65k", "tầm 80k"...)
+    const numericPrice = matchNumericPriceAt(tokens, i)
+    if (numericPrice) {
+      const spanEnd = i + numericPrice.length
+      const rawPhrase = tokens
+        .slice(i, spanEnd)
+        .map((t) => t.original)
+        .join(" ")
+      for (let m = i; m < spanEnd; m += 1) maskedForResidual[m] = true
+      let back = i - 1
+      while (back >= 0 && !maskedForResidual[back] && FILLER_CONNECTORS.has(tokens[back]!.folded)) {
+        maskedForResidual[back] = true
+        back -= 1
+      }
+      matchedPhrases.push(rawPhrase.toLowerCase())
+      priceMax = priceMax ? (Math.min(priceMax, numericPrice.priceMax) as 1 | 2 | 3) : numericPrice.priceMax
+      pushChip({
+        id: `include-priceMax-${priceMax}`,
+        kind: "include",
+        field: "priceMax",
+        value: String(priceMax),
+        label: priceLabel(priceMax),
+        rawPhrase,
+      })
+      i = spanEnd
+      continue
+    }
+
     // 2. Khớp cụm từ điển dương
     const match = matchPhraseAt(tokens, i)
     if (match) {
@@ -247,6 +334,16 @@ export function parseNaturalFilterQuery(rawQuery: string): ParsedNaturalQuery {
           label: "Mở khuya / 24h",
           rawPhrase,
         })
+      } else if (match.kind === "landmark" && match.landmark) {
+        landmarkQuery = match.landmark
+        pushChip({
+          id: `include-landmark-${normalizeQueryText(match.landmark)}`,
+          kind: "include",
+          field: "landmark",
+          value: match.landmark,
+          label: `Gần ${match.landmark}`,
+          rawPhrase,
+        })
       } else if (match.kind === "tag" && match.tags) {
         for (const t of match.tags) tags.add(t)
       }
@@ -293,6 +390,7 @@ export function parseNaturalFilterQuery(rawQuery: string): ParsedNaturalQuery {
     excludeKeywords: [...excludeKeywords],
     alwaysOpen,
     nearMe,
+    ...(landmarkQuery ? { landmarkQuery } : {}),
     residualQuery,
     matchedPhrases,
     chips,
@@ -328,12 +426,29 @@ export function removeChipFromQuery(rawQuery: string, chip: Pick<ParsedFilterChi
     }
   }
 
-  const next = tokens
-    .filter((t, idx) => !toRemove[idx] && !t.isSeparator)
-    .map((t) => t.original)
-    .join(" ")
-    .replace(/\s+/gu, " ")
-    .trim()
+  const kept: RawToken[] = []
+  for (let idx = 0; idx < tokens.length; idx += 1) {
+    if (toRemove[idx]) continue
+    const tok = tokens[idx]!
+    // Tránh giữ dấu phân cách ở đầu hoặc 2 dấu phân cách kề nhau sau khi xoá cụm ở giữa
+    if (tok.isSeparator) {
+      if (kept.length === 0 || kept[kept.length - 1]!.isSeparator) continue
+    }
+    kept.push(tok)
+  }
+  while (kept.length > 0 && kept[kept.length - 1]!.isSeparator) {
+    kept.pop()
+  }
 
-  return next
+  let out = ""
+  for (const tok of kept) {
+    if (tok.isSeparator) {
+      out += `${tok.original}`
+    } else if (out.length === 0) {
+      out = tok.original
+    } else {
+      out += ` ${tok.original}`
+    }
+  }
+  return out.replace(/\s+/gu, " ").trim()
 }

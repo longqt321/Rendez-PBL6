@@ -29,6 +29,9 @@ const registerInputSchema = z.object({
   email: z.string().trim().toLowerCase().pipe(z.email()),
   password: z.string().min(8).max(128),
   handle: handleSchema,
+  acceptTerms: z.literal(true, {
+    message: "Bạn cần đồng ý với Điều khoản sử dụng để đăng ký tài khoản",
+  }),
 })
 
 const loginInputSchema = z.object({
@@ -186,12 +189,45 @@ export function createAuthRouter() {
     return c.json({ loggedOut: true })
   })
 
+  router.get("/auth/providers", (c) => {
+    return c.json({
+      google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+    })
+  })
+
   router.delete("/me", requireAuth, async (c) => {
     const userId = c.get("userId")
-    await prisma.$transaction([
-      prisma.user.update({ where: { id: userId }, data: { deletedAt: new Date() } }),
-      prisma.session.deleteMany({ where: { userId } }),
-    ])
+    const now = new Date()
+    const scrambledHandle = `deleted_${userId.slice(0, 8)}_${Date.now()}`
+    const scrambledEmail = `deleted_${userId.slice(0, 8)}_${Date.now()}@deleted.rendez.vn`
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          deletedAt: now,
+          handle: scrambledHandle,
+          email: scrambledEmail,
+          name: "Người dùng đã xoá",
+          bio: "",
+          avatarUrl: null,
+        },
+      })
+      await tx.post.updateMany({
+        where: { authorId: userId, deletedAt: null },
+        data: { deletedAt: now },
+      })
+      await tx.review.updateMany({
+        where: { authorId: userId, deletedAt: null },
+        data: { deletedAt: now },
+      })
+      await tx.collection.updateMany({
+        where: { ownerId: userId, deletedAt: null },
+        data: { deletedAt: now },
+      })
+      await tx.session.deleteMany({ where: { userId } })
+    })
+
     return c.json({ deleted: true })
   })
 
@@ -204,12 +240,18 @@ export function createAuthRouter() {
       if (!parsed.success) {
         throw new ApiError(400, parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ")
       }
-      await assertHandleAvailable(parsed.data.handle)
+      const signUpFields = {
+        name: parsed.data.name,
+        email: parsed.data.email,
+        password: parsed.data.password,
+        handle: parsed.data.handle,
+      }
+      await assertHandleAvailable(signUpFields.handle)
 
       try {
         const { headers, response } = await auth.api.signUpEmail({
           body: {
-            ...parsed.data,
+            ...signUpFields,
             // Link trong mail xác thực redirect về trang FE (trustedOrigins đã
             // gồm APP_ORIGIN) — mặc định của better-auth là "/" sẽ trỏ về API.
             callbackURL: verifyEmailCallbackUrl(),
