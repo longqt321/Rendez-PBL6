@@ -126,12 +126,14 @@ src/
 | `/profile`           | `features/profile`            | Hồ sơ của mình (bắt buộc đăng nhập)                                       |
 | `/u/:handle`         | `features/profile`            | Hồ sơ người khác (follow, kiểm tra riêng tư)                              |
 | `/search`            | `features/search`             | Đọc `?q=` từ URL, tab Địa điểm / Bài đăng / Người; `q` rỗng → `/discover` |
-| `/saved`             | `features/saved`              | Bài viết, địa điểm và bộ sưu tập đã lưu                                   |
-| `/collections/:id`   | `features/collections`        | Chi tiết bộ sưu tập                                                       |
-| `/rooms/:code`       | `features/rooms`              | Phòng lọc nhóm realtime (SSE)                                             |
-| `/settings`          | `features/settings`           | Cài đặt hồ sơ (RHF + zod, bắt buộc đăng nhập)                             |
-| `/system`            | `features/system`             | Trang demo metrics/reset (ẩn khỏi nav)                                    |
-| `/help`, `/about`, `/terms`, `/privacy` | `features/static` | Trang thông tin tĩnh                                                      |
+| `/saved`             | `features/saved`              | Bài viết, địa điểm và bộ sưu tập đã lưu (kèm nút Đề xuất địa điểm)     |
+| `/collections/:id`   | `features/collections`        | Chi tiết bộ sưu tập, sắp xếp thứ tự và ghi chú từng địa điểm            |
+| `/messages`          | `features/messages`           | Nhắn tin trực tiếp SSE (Hộp thư chính / Tin nhắn chờ), đính kèm thẻ      |
+| `/rooms`             | `features/rooms`              | Sảnh tạo hoặc nhập mã tham gia phòng nhóm                                 |
+| `/rooms/:code`       | `features/rooms`              | Phòng nhóm cộng tác: bản đồ pin thành viên, đề xuất quán & tiêu chí (SSE) |
+| `/settings`          | `features/settings`           | Cài đặt hồ sơ, tùy chọn thông báo và xóa tài khoản an toàn              |
+| `/admin`             | `features/admin`              | Cổng quản trị 7 phân hệ (Tổng quan, Báo cáo, Đề xuất quán, Địa điểm, Người dùng, Quan sát, Logs) |
+| `/terms`, `/privacy` | `features/static`             | Điều khoản sử dụng (bắt buộc khi đăng ký, hiển thị lần đầu đăng nhập) & Chính sách bảo mật |
 | `*`                  | 404                           | Empty + link về `/discover`, render **trong** `AppShell`                  |
 
 ### Phân chia state
@@ -238,7 +240,7 @@ không méo). Không dùng `WONK 1` cho văn bản (L-006).
 | Bun | `1.3.14` | Runtime JS/TS, bundler (`bun build`), Redis client (`Bun.RedisClient`), test runner |
 | `hono` | `4.13.17` | HTTP router, middleware, Zod validation |
 | `prisma` + `@prisma/client` + `@prisma/adapter-pg` + `kysely` | `7.10.1` / `0.29.9` | ORM + Driver Adapter (`pg` pool `max: 20`, `statement_timeout=15000`) + Type-safe SQL builder (`prisma-kysely`) |
-| PostgreSQL + `pgvector` + `pg_stat_statements` | `pgvector:0.8.7-pg17` | CSDL chính (33 model, 3NF, HNSW vector index, partition `interaction_events`) |
+| PostgreSQL + `pgvector` + `pg_stat_statements` | `pgvector:0.8.7-pg17` | CSDL chính (43 model, 15 enum, 30 migration, chuẩn 3NF, HNSW vector index, partition `interaction_events`) |
 | Redis (`redis:7-alpine`) | `0.5` CPU / `192MB` RAM (`--maxmemory 128mb`) | Rate limit, cache, dedupe `/events`, ring buffer `obs:events` (kèm fallback in-memory) |
 | `better-auth` | `1.7.19` | Xác thực email/session (cookie HttpOnly) |
 | `pg-boss` | `12.38.1` | Hàng đợi & cron nền (`daily-picks`, `place-detect`, `event-retention`, `refresh-affinity`, `auth-cleanup`) |

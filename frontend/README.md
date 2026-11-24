@@ -1,86 +1,55 @@
-# Đà Nẵng Ăn & Đi
+# Frontend — Rendez
 
-Web app khám phá quán ăn / địa điểm ở Đà Nẵng: tìm kiếm và lọc theo loại hình, quận,
-mức giá, xem trên bản đồ, lưu địa điểm vào bộ sưu tập, đọc/đăng bài cộng đồng, và
-**lọc nhóm** — nhiều người cùng đề xuất include/exclude để ra một kết quả chung.
-
-Frontend hoàn chỉnh, chạy được độc lập bằng mock server in-memory. Backend thật chỉ
-cần implement đúng hợp đồng API ở `../docs/DECISIONS.md` (D-011) rồi tắt mock.
-
-Tính năng mới gần đây:
-
-- **Gợi ý hôm nay**: 3 quán hệ thống chọn mỗi ngày (job nền backend chạy 00:05 giờ VN).
-- **Tìm người & gợi ý theo dõi**: tab Người ở `/search` + khối gợi ý ở `/discover`.
-- **Chia sẻ bài/quán** kèm preview Open Graph cho Facebook/Zalo/Messenger.
-- **Lọc mức giá + sắp xếp** (Mới nhất / Đánh giá cao / Gần tôi) chạy server-side;
-  ảnh responsive WebP.
-- **Bắt buộc xác thực email** trước khi đăng nhập; đăng nhập bằng email.
-- Rate limit hành động xã hội; đồng bộ đăng xuất đa tab.
+SPA khám phá địa điểm ăn uống tại Đà Nẵng, tương tác bản đồ, mạng xã hội, tin nhắn trực tiếp và điều phối phòng nhóm. Kết nối trực tiếp backend qua proxy `/api/v1` khi dev và production; chỉ bật mock in-memory khi chạy unit test hoặc `bun run dev:mock`.
 
 ## Stack
 
-React 19 · Vite 8 · TypeScript strict · Tailwind CSS 4 · shadcn (base-nova trên
-`@base-ui/react`) · React Router 8 · TanStack Query 5 · Leaflet · zod + react-hook-form ·
-Vitest + Testing Library. Chi tiết phiên bản: `../docs/STACK.md`.
+React 19 · Vite 8 · TypeScript strict · Tailwind CSS 4 · shadcn (`@base-ui/react`) · React Router 8 · TanStack Query 5 · TanStack Table 9 · React Hook Form + Zod · Leaflet + Supercluster · Motion · Vitest + Testing Library · Playwright. Chi tiết phiên bản xem tại [`../docs/STACK.md`](../docs/STACK.md).
 
-## Chạy dự án
+## Lệnh thường dùng
 
 ```bash
 bun install
-cp .env.example .env   # tuỳ chọn — mặc định đã chạy được với mock
-bun run dev            # http://localhost:5173
+cp .env.example .env
+bun run dev            # http://localhost:5173 (nối backend :8000)
+bun run dev:mock       # http://localhost:5173 (chạy độc lập bằng mock in-memory)
 ```
 
-| Lệnh                              | Việc                                    |
-| --------------------------------- | --------------------------------------- |
-| `bun run dev`                     | Dev server (mock bật mặc định)          |
-| `bun run build`                   | Typecheck + build production (mock tắt) |
-| `bun run preview`                 | Xem bản build                           |
-| `bun run typecheck`               | `tsc -b`                                |
-| `bun run lint`                    | ESLint (type-aware)                     |
-| `bun run format` / `format:check` | Prettier                                |
-| `bun run test` / `test:watch`     | Vitest                                  |
+| Lệnh                              | Tác vụ                                         |
+| --------------------------------- | ---------------------------------------------- |
+| `bun run dev` / `dev:mock`        | Khởi chạy dev server (thật hoặc mock)          |
+| `bun run build`                   | `tsc -b` + build production (tự động tắt mock) |
+| `bun run preview`                 | Xem bản build cục bộ                           |
+| `bun run typecheck`               | Kiểm tra kiểu TypeScript (`tsc -b --pretty`)   |
+| `bun run lint`                    | ESLint                                         |
+| `bun run format` / `format:check` | Prettier                                       |
+| `bun run test` / `test:watch`     | Vitest (50 file test, 230 ca kiểm thử)         |
+| `bun run e2e`                     | Playwright E2E (21 spec)                       |
 
 ## Biến môi trường
 
-Xem `.env.example`.
+Xem mẫu tại `.env.example`.
 
-| Biến                | Ý nghĩa                                                                                                                                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_API_BASE_URL` | Base URL API trình duyệt gọi. Mặc định `/api` (đi qua proxy dev).                                                                                                                                                          |
-| `VITE_PROXY_TARGET` | Chỉ dùng ở dev server: đích thật của proxy `/api`.                                                                                                                                                                         |
-| `VITE_ENABLE_MOCKS` | `true`/`false`. Bỏ trống: tắt (nối backend thật) ở dev & production; chỉ bật mặc định trong test (`MODE === "test"`) hoặc dùng `bun run dev:mock`.                                                                         |
-| `VITE_APP_ORIGIN`   | Origin công khai của FE (vd `https://rendez.example.com`): canonical/OG + sinh `robots.txt`/`sitemap.xml` lúc build. Dev bỏ trống (mặc định `http://localhost:5173`); build prod bắt buộc đặt đúng — xem `vite.config.ts`. |
+| Biến                | Ý nghĩa                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_BASE_URL` | Base URL API trình duyệt gọi (mặc định `/api/v1`).                                                            |
+| `VITE_PROXY_TARGET` | Đích thật của proxy `/api` ở dev server (mặc định `http://localhost:8000`).                                   |
+| `VITE_ENABLE_MOCKS` | `"true"` để bật mock adapter (`src/mocks/`); mặc định tắt ở dev/prod, bật tự động trong `MODE === "test"`.    |
+| `VITE_APP_ORIGIN`   | Origin công khai khi build production để sinh canonical/OG, `robots.txt` và `sitemap.xml` (`vite.config.ts`). |
 
-## Mock và chuyển sang backend thật
-
-- Mock nằm ở `src/mocks/` (axios adapter, db in-memory **theo từng tab**). Dữ liệu phòng
-  lọc nhóm dùng chung giữa các tab cùng trình duyệt qua `localStorage`; đa thiết bị cần backend.
-- `src/lib/axios.ts` chỉ nạp mock khi `VITE_ENABLE_MOCKS=true` (dynamic import) nên bundle
-  production không chứa mock.
-- Chuyển backend: đặt `VITE_API_BASE_URL` trỏ backend thật + `VITE_ENABLE_MOCKS=false`.
-  Không phải sửa feature/api/hook/component. Các việc còn mở xem `../docs/BACKLOG.md`.
-
-## Cấu trúc
+## Cấu trúc thư mục
 
 ```
 src/
-├── app/          # providers, router, cấu hình cấp ứng dụng
-├── components/   # layout (shell/nav), shared, ui (shadcn)
-├── features/     # places, social, collections, profile, rooms, search, saved, …
+├── app/          # Providers, router, cấu hình cấp ứng dụng
+├── components/   # layout (app-shell, shell-nav, top-bar), shared, ui (shadcn)
+├── features/     # admin, auth, collections, location, messages, notification,
+│                 # places, profile, rooms, saved, search, settings, social, static, system
 │   └── <feature>/{api,components,hooks,lib,pages,types}
-├── hooks/        # hook dùng chung
-├── lib/          # axios, env, format, constants, share, utils
-├── mocks/        # mock server + fixtures (xoá khi có backend)
-└── test/         # setup Vitest
+├── hooks/        # Hooks dùng chung (breakpoint, geolocation, infinite-scroll)
+├── lib/          # axios, env, format, constants, telemetry, share, utils
+├── mocks/        # Mock server & fixtures (chỉ nạp khi VITE_ENABLE_MOCKS=true)
+└── test/         # Setup Vitest & query test helpers
 ```
 
-Quy ước code: `../docs/CONVENTIONS.md`. Quyết định kiến trúc: `../docs/DECISIONS.md`.
-
-## Chất lượng
-
-- CI (`.github/workflows/ci.yml`): typecheck → lint → format:check → test → build.
-- Pre-commit (husky + lint-staged): prettier + eslint trên file staged.
-- Test: **193 test pass / 40 file** (unit, Vitest). e2e Playwright: project `mock` (16 spec) & `backend` (12 spec).
-- logic thuần (`lib/format`, `features/rooms/lib/room`) và component có tương tác
-  (`RatingStars`).
+Quy ước lập trình xem tại [`../docs/CONVENTIONS.md`](../docs/CONVENTIONS.md) và quyết định kiến trúc tại [`../docs/DECISIONS.md`](../docs/DECISIONS.md).

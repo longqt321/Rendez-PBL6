@@ -5,14 +5,14 @@ Lý do của từng quyết định nằm ở `DECISIONS.md` (D-025 trở đi).
 
 ## 1. Không tự chế khi đã có component
 
-Trước khi viết một khối `div` + class, kiểm tra `src/components/ui/` (31 file, sinh bằng
+Trước khi viết một khối `div` + class, kiểm tra `src/components/ui/` (38 file, sinh bằng
 `bunx shadcn@4.23.0 add <name>`). Danh sách hiện có:
 
-`alert` `alert-dialog` `avatar` `badge` `breadcrumb` `button` `card`
-`collapsible` `dialog` `drawer` `dropdown-menu` `empty` `field` `input`
-`input-group` `item` `label` `popover` `radio-group` `scroll-area` `separator`
-`skeleton` `sonner` `spinner` `switch` `tabs` `textarea` `toggle` `toggle-group`
-`tooltip`
+`alert` `alert-dialog` `aspect-ratio` `avatar` `badge` `breadcrumb` `button` `card`
+`carousel` `chart` `collapsible` `command` `dialog` `drawer` `dropdown-menu` `empty`
+`field` `hover-card` `input` `input-group` `item` `label` `popover` `progress`
+`radio-group` `scroll-area` `separator` `sheet` `sidebar` `skeleton` `sonner` `spinner`
+`switch` `table` `tabs` `textarea` `toggle` `toggle-group` `tooltip`
 
 Thiếu component nào thì **cài**, không tự viết:
 
@@ -26,26 +26,35 @@ Không sửa tay nội dung component sinh ra.
 
 ### Bảng thay thế
 
-| Đang tự viết                                  | Dùng                                                  |
-| --------------------------------------------- | ----------------------------------------------------- |
-| `div` có `rounded-* border bg-card shadow-*`  | `Card` + `CardHeader`/`CardContent`/`CardFooter`      |
-| Hàng có icon + tiêu đề + mô tả + nút bên phải | `Item` + `ItemMedia` + `ItemContent` + `ItemActions`  |
-| Danh sách các hàng trên                       | `ItemGroup` (+ `ItemSeparator`)                       |
-| `div` rỗng có icon + tiêu đề + mô tả          | `Empty` + `EmptyHeader` + `EmptyMedia` + `EmptyTitle` |
-| Banner cảnh báo/lỗi                           | `Alert` + `AlertTitle` + `AlertDescription`           |
-| `<button aria-pressed>`                       | `Toggle` (đơn) hoặc `ToggleGroup`/`ToggleGroupItem`   |
-| `<label>` + `<input>`                         | `Field` + `FieldLabel` + `FieldError`                 |
-| `<a><Button/></a>`                            | `<Button render={<Link to="…" />}>`                   |
-| `title="…"` để giải thích nút                 | `Tooltip` + `TooltipTrigger`                          |
-| `div` xám nhấp nháy khi tải                   | `Skeleton`                                            |
-| `<Loader2 className="animate-spin">`          | `Spinner`                                             |
-| `<hr>` / `div` có viền chia cách              | `Separator`                                           |
-| `document.getElementById` / `querySelector`   | `useRef`                                              |
-| `useState` + `setTimeout` để debounce         | `useDebounce` (`@uidotdev/usehooks`)                  |
-| `addEventListener("scroll")` để tải thêm      | `useInfiniteScroll` (`@/hooks/use-infinite-scroll`)   |
-| `navigator.geolocation` tự gọi                | `useUserLocation` (`@/hooks/use-user-location`)       |
-| `<input type="file">` + `ref` + `onChange`    | `useDropzone` (`react-dropzone`)                      |
-| `useSearchParams` rời rạc                     | `nuqs` (`useQueryState` / `useQueryStates`)           |
+| Đang tự viết                                         | Dùng                                                            |
+| ---------------------------------------------------- | --------------------------------------------------------------- |
+| `div` có `rounded-* border bg-card shadow-*`         | `Card` + `CardHeader`/`CardContent`/`CardFooter`                |
+| Hàng có icon + tiêu đề + mô tả + nút bên phải        | `Item` + `ItemMedia` + `ItemContent` + `ItemActions`            |
+| Danh sách các hàng trên                              | `ItemGroup` (+ `ItemSeparator`)                                 |
+| `div` rỗng có icon + tiêu đề + mô tả                 | `Empty` + `EmptyHeader` + `EmptyMedia` + `EmptyTitle`           |
+| Banner cảnh báo/lỗi                                  | `Alert` + `AlertTitle` + `AlertDescription`                     |
+| `<span>` tròn/pill hiển thị số đếm / nhãn trạng thái | `Badge` (`variant="destructive"`/`"default"`/`"secondary"`)      |
+| `<button aria-pressed>` hoặc nhóm nút chọn chế độ    | `Toggle` (đơn) hoặc `ToggleGroup`/`ToggleGroupItem`             |
+| `<label>` + `<input>`                                | `Field` + `FieldLabel` + `FieldError`                           |
+| `<a><Button/></a>`                                   | `<Button nativeButton={false} render={<Link to="…" />}>`        |
+| `title="…"` để giải thích nút                        | `Tooltip` + `TooltipTrigger`                                    |
+| `div` xám nhấp nháy khi tải                          | `Skeleton`                                                      |
+| `<Loader2 className="animate-spin">`                 | `Spinner` (bắt buộc có `aria-label` tiếng Việt)                 |
+| `<hr>` / `div` có viền chia cách                     | `Separator`                                                     |
+| `document.getElementById` / `querySelector`          | `useRef`                                                        |
+| `useState` + `setTimeout` để debounce                | `useDebounce` (`@uidotdev/usehooks`)                            |
+| `new ResizeObserver(...)` đo kích thước khung        | `useMeasure` (`@uidotdev/usehooks`)                             |
+| `navigator.clipboard.writeText(...)`                 | `useCopyToClipboard` (`@uidotdev/usehooks`)                     |
+| `window.matchMedia(...)`                             | `useIsDesktop` (`@/hooks/use-breakpoint`) / `useMediaQuery`     |
+| `localStorage` / `sessionStorage` thủ công           | `useLocalStorage` / `useSessionStorage` (`@uidotdev/usehooks`)  |
+| `JSON.stringify(a) === JSON.stringify(b)`            | `isEqual` (`es-toolkit`)                                        |
+| `useState(loading)` + `async/try/catch` gọi API      | `useMutation` / `useQuery` (`@tanstack/react-query`)            |
+| `useEffect` gọi `setState` đồng bộ từ props          | Dẫn xuất giá trị (`draft ?? defaultValue`) hoặc reset `key`     |
+| `addEventListener("scroll")` để tải thêm             | `useInfiniteScroll` (`@/hooks/use-infinite-scroll`)             |
+| `navigator.geolocation` tự gọi                       | `useUserLocation` (`@/hooks/use-user-location`)                 |
+| `<input type="file">` + `ref` + `onChange`           | `useDropzone` (`react-dropzone`)                                |
+| `useSearchParams` rời rạc                            | `nuqs` (`useQueryState` / `useQueryStates`)                     |
+| Bản đồ Leaflet thiếu dark-mode hoặc thiếu CSS        | `import "leaflet/dist/leaflet.css"` + `useTheme()` + `map-tiles-dark` |
 
 ## 2. Bo góc — chỉ 3 token ngữ nghĩa
 
@@ -151,18 +160,40 @@ Không bao giờ spread `{...form.register("x")}` vào `Switch`, `RadioGroup`, `
 
 ## 10. Cổng kiểm tra trước khi báo xong
 
-```bash
-bunx tsc -p tsconfig.app.json --noEmit
-bunx eslint <các file đã sửa>
-bunx prettier --check <các file đã sửa>
-```
-
-Sau đó các lệnh grep sau phải **không còn kết quả** trong phần mã của feature:
+Các quy tắc bên dưới đã được tự động kiểm tra tại `PreToolUse` bởi `~/.local/bin/agy-hooks`
+(chặn ngay khi `edit_file`/`write_file` vi phạm). Trước khi báo hoàn thành, vẫn chạy đủ:
 
 ```bash
-grep -rn "rounded-\[" src/features src/components/layout
-grep -rn "text-\[10px\]\|text-\[11px\]" src/features src/components/layout
-grep -rn "toFixed\|toLocaleString\|toLocaleDateString" src/features src/components/layout
-grep -rn "amber-\|emerald-\|blue-[0-9]\|bg-white\|text-white\|border-white" src/features src/components/layout
-grep -rn "document.getElementById\|document.querySelector" src/features
+bun run typecheck
+bun run lint
+cd frontend && bun run format:check
 ```
+
+Và đảm bảo các lệnh `rg` sau **không còn kết quả** trong phần mã feature/layout/backend vừa sửa:
+
+```bash
+rg -n "rounded-\[|text-\[10px\]|text-\[11px\]" frontend/src/features frontend/src/components/layout
+rg -n "toFixed\(|toLocaleString\(|toLocaleDateString\(" frontend/src/features frontend/src/components/layout
+rg -n "amber-|emerald-|blue-[0-9]|bg-white|text-white|border-white" frontend/src/features frontend/src/components/layout
+rg -n "new ResizeObserver|navigator\.clipboard\.writeText|JSON\.stringify\([^)]+\)\s*===?\s*JSON\.stringify" frontend/src
+rg -n "document\.getElementById|document\.querySelector" frontend/src/features
+rg -n "as unknown as" frontend/src backend/src
+```
+
+## 11. Backend & Package-First (`backend/src/` & `packages/schema/`)
+
+Cấm tự viết lại thuật toán, truy vấn SQL thô cho CRUD/join thông thường, hoặc helper đã có thư
+viện chuẩn cài sẵn trong dự án:
+
+| Nhu cầu                                | Dùng chuẩn đã cài sẵn                                                                 |
+| -------------------------------------- | ------------------------------------------------------------------------------------- |
+| CRUD đơn giản                          | **Prisma Client Native** (`prisma.*`)                                                 |
+| CTE, `DISTINCT ON`, `LATERAL JOIN`     | **Kysely** type-safe (`db`, `sql` từ `backend/src/lib/kysely.ts`)                     |
+| SQL đặc thù PostgreSQL bắt buộc        | Chỉ `FOR UPDATE`, `pgvector <=>`, `pg_trgm`, `generate_series`, `pg_stat_statements` (kèm comment `agy-allow-raw-sql` ghi rõ lý do) |
+| Cache bộ nhớ                           | `LRUCache` (`lru-cache`) — cấm `new Map()` tự evict                                   |
+| Khoảng cách / hình học địa lý          | `@turf/distance`, `@turf/boolean-point-in-polygon` — cấm tự viết Haversine           |
+| Giờ mở cửa / ngày giờ                  | `isOpenNow` (`@rendez/schema`, dùng `opening_hours` + `Asia/Ho_Chi_Minh`), `date-fns` |
+| So sánh sâu / tiện ích mảng-object     | `es-toolkit` (`isEqual`, `chunk`, `uniqBy`...)                                        |
+| Thống kê / bầu chọn / resilience       | `simple-statistics`, `votes` (`InstantRunoff`), `cockatiel`, `hdr-histogram-js`       |
+| Ký S3/R2, escape HTML, che PII         | `aws4fetch`, `escape-html`, `maskdata`                                                |
+| Bảo toàn kiểu & lỗi                    | Cấm `as unknown as`; cấm nuốt lỗi im lặng `.catch(() => {})` ở backend               |

@@ -311,11 +311,11 @@ docker compose --env-file /srv/rendez/.env -f compose.yaml -f deploy/compose.pro
 > Chỉ sự kiện **đăng xuất** được phát đa tab. Đăng nhập ở tab A không tự đăng
 > nhập tab B — tab B phải thao tác rồi mới thấy phiên mới (phép dò `GET /me`).
 
-### 4.12 Demo bảo vệ — search thông minh, overlay dev, `/system`, card mới
+### 4.12 Demo bảo vệ — search thông minh, overlay dev, card mới
 
 > Mục này bổ sung cho đợt demo bảo vệ (commit `25558ee`, `b81a62e`, `e6153fd`).
 > Các bước đã đối chiếu với source: `backend/src/routes/places.ts`,
-> `backend/src/routes/system.ts`, `backend/src/lib/search-synonyms.ts`,
+> `backend/src/lib/search-synonyms.ts`,
 > `frontend/src/components/dev/api-debug-overlay.tsx`,
 > `frontend/src/features/places/components/place-card.tsx`,
 > `frontend/src/features/places/lib/danang-districts.ts`.
@@ -359,26 +359,7 @@ ngay từ ngoài, nhánh dev bị tree-shake khỏi bundle production.
 > (overlay luôn ghi `MISS` cho endpoint này — đúng, không phải lỗi). Cache ứng
 > dụng thật nằm ở `GET /places/suggestions` — xem demo cold/warm ở mục D.
 
-#### C. `/system` — số liệu vận hành
-
-FE có route `/system` (`frontend/src/features/system/pages/system-page.tsx`, **ẩn khỏi
-thanh điều hướng**, chỉ mở trực tiếp khi demo) gọi `GET /system/stats` và `POST /system/reset`.
-Cũng có thể demo trực tiếp bằng curl:
-
-```bash
-# Số liệu: uptime, tổng query, latency TB, tỉ lệ cache hit, đếm venue trong DB
-curl -s http://localhost:8000/api/v1/system/stats | jq
-
-# Xoá bộ đếm trong RAM (KHÔNG xoá dữ liệu DB)
-curl -s -X POST http://localhost:8000/api/v1/system/reset
-```
-
-| # | Chức năng | Bước thao tác | Kết quả mong đợi |
-|---|---|---|---|
-| 52 | Xem số liệu vận hành | `GET /api/v1/system/stats` | JSON có `uptimeMs`, `totalQueries`, `avgLatencyMs`, `cacheHitRatio`, `byEndpoint`, `venues` (total/published/withImages/withTags/withHours) |
-| 53 | Reset chỉ ở dev | `POST /api/v1/system/reset` ở dev → `{ "reset": true }`; ở production (NODE_ENV=production) | **403** "Reset metrics chỉ khả dụng ở môi trường demo/dev" — điểm demo bảo mật |
-
-#### D. Cold vs warm cache (60 giây)
+#### C. Cold vs warm cache (60 giây)
 
 Cache ứng viên gợi ý có TTL **60 giây** (`suggestions.ts`), nên demo phải làm
 trong vòng một phút:
