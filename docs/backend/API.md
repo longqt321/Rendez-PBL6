@@ -84,8 +84,11 @@ tùy chọn, theo semantics của bản nháp IETF `Idempotency-Key`:
 | POST | `/session` | — | `{email, password}` | `200 UserProfile` + `Set-Cookie`; `403` khi email chưa xác thực |
 | DELETE | `/session` | ✔ | — | `200 {"loggedOut":true}` |
 | GET | `/me` | ✔ | — | `200 UserProfile` |
-| PATCH | `/me` | ✔ | `{name?, bio?, location?, privateProfile?, avatarUrl?, coverUrl?}` — `avatarUrl`/`coverUrl` `null` = xoá ảnh, bỏ trống = giữ nguyên | `200 UserProfile` |
-| DELETE | `/me` | ✔ | — | `200 {"deleted":true}` — xoá mềm + thu hồi mọi phiên |
+| `PATCH` | `/me` | ✔ | `{name?, bio?, location?, privateProfile?, avatarUrl?, coverUrl?}` — `avatarUrl`/`coverUrl` `null` = xoá ảnh, bỏ trống = giữ nguyên | `200 UserProfile` |
+| `DELETE` | `/me` | ✔ | — | `200 {"deleted":true}` — xoá mềm, ẩn danh hoá handle/email + thu hồi mọi phiên |
+| `GET` | `/me/notification-prefs` | ✔ | — | `200` cấu hình nhận thông báo (`dm`, `room`, `social`, `placeSuggestion`) |
+| `PATCH` | `/me/notification-prefs` | ✔ | `{dm?, room?, social?, placeSuggestion?}` | `200` cấu hình đã cập nhật |
+| `GET` | `/auth/providers` | — | — | `200 {"providers": ["google"?]}` — danh sách SSO khả dụng |
 | POST | `/auth/request-password-reset` | — | `{email, redirectTo?}` | `200 {"status":true}` (luôn thành công) |
 | POST | `/auth/reset-password` | — | `{token, newPassword}` | `200 {"status":true}` / `400` token sai |
 | POST | `/auth/send-verification-email` | — | `{email, callbackURL?}` | `200 {"status":true}` (luôn thành công) — gửi lại mail xác thực |
@@ -311,18 +314,22 @@ thông báo.
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
 | GET | `/collections?placeId=` | ✔ | `Page<CollectionSummary>` của chính mình; có `placeId` thì nhúng `containsPlace` |
+| GET | `/collections/liked` | ✔ | `Page<CollectionSummary>` bộ sưu tập công khai đã thích (lọc trực tiếp ở Postgres) |
 | POST | `/collections` | ✔ | `{name, description?, isPrivate?}` → `201 Collection` |
 | GET | `/collections/:id` | — | `Collection`; private của người khác → `404` |
 | PATCH | `/collections/:id` | ✔ | Chỉ owner (403); cập nhật một phần |
 | DELETE | `/collections/:id` | ✔ | Chỉ owner (403) → `200 true` |
 | PATCH | `/collections/:id/places` | ✔ | `{placeId, member?: boolean}` — thêm đẩy cuối, idempotent |
+| PATCH | `/collections/:id/places/:placeId` | ✔ | `{note}` — cập nhật ghi chú riêng cho địa điểm trong bộ sưu tập |
+| PATCH | `/collections/:id/reorder` | ✔ | `{placeIds}` — sắp xếp lại thứ tự địa điểm |
+| GET / POST / DELETE | `/collections/:id/collaborators` (`/:targetUserId`) | ✔ | Quản lý cộng tác viên chỉnh sửa bộ sưu tập |
 | POST | `/collections/:id/like` | ✔ | Idempotent; tự like → `400` |
 | DELETE | `/collections/:id/like` | ✔ | Idempotent |
 
 `name`: 1–80 ký tự; `description` ≤ 400. `Collection.placeIds` giữ đúng thứ tự thêm
 (`collection_places.position`).
 
-## 8. Trang cá nhân và theo dõi
+## 8. Trang cá nhân, theo dõi và chặn
 
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
@@ -331,44 +338,51 @@ thông báo.
 | GET | `/users/:handle` | — | `UserProfile`; 404 nếu không có |
 | GET | `/users/:handle/posts?tab=posts\|saved\|pinned&cursor=` | — | Tab `saved`/`pinned` của người khác → trang RỖNG (không 403) |
 | GET | `/users/:handle/collections` | — | `Page<CollectionSummary>`; ẩn private trừ chính chủ |
+| GET | `/users/:handle/reviews` | — | Danh sách đánh giá công khai của người dùng |
 | POST | `/users/:handle/follow` | ✔ | Idempotent; tự follow → `400`; trả `UserProfile` mới |
 | DELETE | `/users/:handle/follow` | ✔ | Idempotent; trả `UserProfile` mới |
+| POST / DELETE | `/users/:handle/block` | ✔ | Chặn hoặc bỏ chặn người dùng (tự chặn → `400`, xóa theo dõi hai chiều) |
 
-## 9. Phòng lọc nhóm (hợp đồng mới Phase 6, bảo mật D-056/D-057)
+## 9. Phòng nhóm cộng tác (`/rooms/*`)
 
-Trước Phase 6 phòng chỉ sống trong trình duyệt (localStorage + BroadcastChannel). Backend
-giữ nguyên shape `Room` của frontend.
-
-**Danh tính (D-056):** khách tham gia bằng tên và nhận token bí mật qua cookie HttpOnly
+**Danh tính:** khách tham gia bằng tên và nhận token bí mật qua cookie HttpOnly
 `rendez_room_<code>` (`Path=/api/v1/rooms/<code>`, `SameSite=Lax`, TTL 24h). DB chỉ lưu
-HMAC-SHA256(token, BETTER_AUTH_SECRET) — token gốc KHÔNG bao giờ nằm trong DB hay DTO.
-`memberId` xuất hiện công khai trong DTO nên không phải credential; mọi mutation xác thực
-actor từ phiên đăng nhập hoặc cookie token (`resolveRoomActor`), không đọc `memberId`/
-`actorId` từ query/body.
+HMAC-SHA256(token, BETTER_AUTH_SECRET). Mọi mutation xác thực actor từ phiên đăng nhập hoặc cookie token (`resolveRoomActor`).
 
 | Method | Path | Auth | Ghi chú |
 |---|---|---|---|
+| GET | `/rooms/mine` | ✔ | Danh sách các phòng hiện tại mà người dùng đang tham gia |
 | POST | `/rooms` | ✔ | `{name?}` → `201 Room + guestToken`; mã 6 ký tự base32 Crockford (bỏ I/L/O/U), `crypto.randomInt` |
 | GET | `/rooms/:code` | — | `Room` (`isMe` tính theo caller); mã sai → `404`; rate limit 240/phút/IP |
-| POST | `/rooms/:code/join` | — | `{displayName}` → `{room, memberId, joined, guestToken?}`; token cũ khớp → `joined:false` (idempotent); trùng tên KHÔNG có token khớp → `409`; rate limit 20/phút/IP |
-| POST | `/rooms/:code/proposals` | — | `{kind, field, value}` → `201 Room`; không phải thành viên → `403`; `value` không hợp lệ theo `field` (category lạ, priceMax ngoài 1–3) → `400` |
-| POST | `/rooms/:code/proposals/:id/apply` | — | `{room, summary}`; chỉ tác giả đề xuất hoặc chủ phòng → `403`; CAS: đề xuất đã xử lý (hoặc apply song song thua cuộc) → `409` |
-| POST | `/rooms/:code/proposals/:id/dismiss` | — | `Room`; quyền như apply; đã xử lý → `409` |
-| DELETE | `/rooms/:code/members/:memberId` | — | `Room`; xoá kèm mọi đề xuất của thành viên; tự rời mình hoặc chủ phòng xoá người khác; vi phạm → `403`; tự rời → xoá cookie token |
-| GET | `/rooms/:code/events` | — | SSE trung tính: `event: room-updated` + `{"version":n}` (KHÔNG isMe/token/memberId — client refetch `GET /rooms/:code`), `event: ping` mỗi 15s |
+| POST | `/rooms/:code/join` | — | `{displayName}` → `{room, memberId, joined, guestToken?}`; trùng tên không token → `409`; rate limit 20/phút/IP |
+| PATCH | `/rooms/:code/me/location` | — | `{lat, lng}` — cập nhật tọa độ pin thành viên trên bản đồ nhóm (xóa tọa độ nếu gửi null) |
+| POST | `/rooms/:code/candidates` | — | `{placeId}` — đề xuất quán ứng viên cho nhóm; hệ thống tính khoảng cách tới từng thành viên |
+| DELETE | `/rooms/:code/candidates/:candidateId` | — | Gỡ ứng viên khỏi phòng |
+| POST / DELETE | `/rooms/:code/proposals` (`/:proposalId`) | — | Gửi hoặc xóa đề xuất tiêu chí cá nhân (`category`, `district`, `priceMax`, `keyword`) |
+| POST | `/rooms/:code/proposals/:id/apply` | — | `{room, summary}`; CAS theo phiên bản phòng; tranh chấp → `409` |
+| POST | `/rooms/:code/proposals/:id/dismiss` | — | Đánh dấu bỏ qua tiêu chí |
+| POST | `/rooms/:code/voting/start`, `/votes`, `/voting/finalize` | ✔ / Thành viên | Khởi động bỏ phiếu, ghi phiếu bầu (`FOR UPDATE`) và chốt kết quả |
+| DELETE | `/rooms/:code/members/:memberId` | — | Rời phòng hoặc chủ phòng xóa thành viên khác (tự rời → xóa cookie token) |
+| GET | `/rooms/:code/events` | — | SSE trung tính: `event: room-updated` + `{"version":n}`, `event: ping` mỗi 15s |
 
-Quy tắc áp đề xuất (port 1:1 từ `frontend/src/features/rooms/lib/room.ts`):
+## 9b. Tin nhắn trực tiếp (`messages.ts`)
 
-| field | include | exclude |
-|---|---|---|
-| `category` | thêm vào `categories`, bỏ khỏi `excludedCategories` | ngược lại |
-| `district` | thêm vào `districts`, bỏ khỏi `excludedDistricts` | ngược lại |
-| `priceMax` | đặt `priceMax` (giá trị lạ → bỏ qua, không tự quy về 3) | bỏ qua (không có nghĩa) |
-| `keyword` | thêm vào `includeKeywords` | thêm vào `excludeKeywords` |
+| Method | Path | Auth | Ghi chú |
+|---|---|---|---|
+| GET | `/messages/events` | ✔ | Luồng SSE đẩy tin nhắn mới và trạng thái đọc theo thời gian thực |
+| GET | `/messages/conversations?folder=primary\|requests` | ✔ | Danh sách hội thoại (Kysely CTE + `distinctOn`), tách Hộp thư chính và Tin nhắn chờ |
+| GET | `/messages/with/:handle` | ✔ | Lịch sử tin nhắn với người dùng và tự động đánh dấu đã đọc |
+| POST | `/messages/with/:handle` | ✔ | `{body, attachment?}` — gửi tin nhắn kèm thẻ địa điểm/bộ sưu tập/phòng nhóm (chặn gửi khi có `UserBlock`) |
 
-Client chuyển `RoomFilter` sang tham số của `GET /places` (đã có từ Phase 2): `categories`
-→ `category`, `excludedCategories` → `excludeCategory`, `includeKeywords` →
-`includeKeyword`, `excludeKeywords` → `excludeKeyword`, `priceMax` → `priceMax`.
+## 9c. Đánh giá 4 mức & Đóng góp địa điểm (`reviews.ts`, `submissions.ts`)
+
+| Method | Path | Auth | Ghi chú |
+|---|---|---|---|
+| POST | `/places/:id/reviews` | ✔ | Đánh giá 4 mức (`must_try`, `good`, `ok`, `not_for_me`), món đề xuất và tối đa ảnh thực tế |
+| POST | `/reviews/:id/helpful` | ✔ | Bật/tắt bình chọn đánh giá hữu ích (`review_helpful_votes`) |
+| POST | `/places/submissions` | ✔ | Cộng đồng gửi đề xuất địa điểm mới (tên, địa chỉ, quận, loại hình, mức giá, tọa độ, giờ mở cửa) |
+| GET | `/me/submissions` | ✔ | Lịch sử các địa điểm đã đề xuất |
+| GET / PATCH | `/admin/submissions` (`/:id`) | `admin` / `moderator` | Danh sách chờ duyệt và phê duyệt (tự sinh bản ghi `places` mới) hoặc từ chối |
 
 ## 10. Upload ảnh (Phase 7)
 
@@ -402,35 +416,6 @@ client bỏ qua bước PUT, dùng thẳng `publicUrl`.
    `users.avatar_url`/`users.cover_url`. `null` = xoá ảnh.
 4. R2 chưa cấu hình mà gửi URL ảnh → `400 {"message":"Tính năng ảnh chưa được cấu hình"}`
    (gửi `null`/bỏ trống vẫn hợp lệ để xoá/giữ nguyên).
-
-## 10b. Vận hành (`/system/*`)
-
-| Method | Path | Auth | Response |
-|---|---|---|---|
-| GET | `/system/stats` | — | `200` số liệu vận hành (xem dưới) |
-| POST | `/system/reset` | — | `200 {"reset":true}` — xoá bộ đếm metrics trong RAM, KHÔNG chạm DB; `403` khi `NODE_ENV=production` (chỉ dùng cho demo/dev) |
-
-```json
-{
-  "uptimeMs": 123456,
-  "totalQueries": 42,
-  "avgLatencyMs": 8,
-  "cacheHitRatio": 0.25,
-  "byEndpoint": [{ "route": "GET /places", "count": 30, "avgMs": 7, "cacheHits": 0 }],
-  "venues": { "total": 358, "published": 357, "withImages": 29, "withTags": 358, "withHours": 200 }
-}
-```
-
-- Bộ đếm in-memory theo tiến trình (`backend/src/lib/metrics.ts`), ghi cho mọi
-  request `/api/v1/*` **trừ chính `/system/*`**; `venues` đếm thật từ DB
-  (`COUNT`, không hardcode). `route` lấy từ `routePath` Hono sau khi khớp route
-  (vd `GET /places/:id`); fallback chuẩn hoá segment chứa số/uuid/slug thành `:id`
-  khi không route nào khớp (404).
-- Bảo mật: response chỉ chứa số liệu vận hành (không query string, IP, userId
-  hay nội dung request), nên không lộ dữ liệu người dùng. `POST /system/reset`
-  là thao tác ghi nên gắn rate limit nhẹ 10 lần/phút/IP để chặn vòng lặp làm
-  rỗng số liệu; `GET` chỉ đọc nên không cần. Ngoài ra reset bị chặn `403` khi
-  `NODE_ENV=production` — route này chỉ dành cho demo/dev.
 
 ## 10c. Sự kiện tương tác (`/events`) & Client Telemetry (`/telemetry`)
 

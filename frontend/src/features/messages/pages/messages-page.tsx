@@ -1,21 +1,32 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { Fragment, useEffect, useMemo, useRef, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ArrowLeftIcon,
+  BanIcon,
   CheckCheckIcon,
   ExternalLinkIcon,
   MessageCircleIcon,
   SearchIcon,
   SendIcon,
-  SparklesIcon,
 } from "lucide-react"
 import { useForm } from "react-hook-form"
-import { Link, useParams } from "react-router"
+import { Link, useNavigate, useParams } from "react-router"
 import { toast } from "sonner"
 import { sendDirectMessageInputSchema, type SendDirectMessageInput } from "@rendez/schema"
 import { PageContainer, SurfaceCard } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -25,20 +36,50 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { useUserSuggestions } from "@/features/search/hooks/use-user-suggestions"
 import { formatRelativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import {
+  useBlockUser,
   useConversations,
   useConversationThread,
+  useDirectMessageEvents,
   useSendDirectMessage,
 } from "../hooks/use-messages"
+import { MessageAttachmentCard } from "../components/message-attachment-card"
+
+const INTERNAL_PATH_RE = /(\/(?:discover|rooms|post|collections|u)\/[A-Za-z0-9_-]+)/g
+
+function renderMessageBody(body: string, isMine: boolean) {
+  const parts = body.split(INTERNAL_PATH_RE)
+  if (parts.length === 1) return body
+  return parts.map((part, idx) =>
+    idx % 2 === 1 ? (
+      <Link
+        key={`${part}-${idx}`}
+        to={part}
+        className={cn(
+          "font-medium underline underline-offset-2",
+          isMine ? "text-primary-foreground" : "text-primary",
+        )}
+      >
+        {part}
+      </Link>
+    ) : (
+      <Fragment key={idx}>{part}</Fragment>
+    ),
+  )
+}
 
 function ConversationThreadPane({ handle }: { readonly handle: string }) {
+  const navigate = useNavigate()
   const { data: me } = useMe()
   const { data, isPending, isError, refetch } = useConversationThread(handle)
   const sendMessage = useSendDirectMessage(handle)
+  const blockUserMutation = useBlockUser(handle)
+  const [confirmBlock, setConfirmBlock] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const form = useForm<SendDirectMessageInput>({
@@ -86,9 +127,22 @@ function ConversationThreadPane({ handle }: { readonly handle: string }) {
   }
 
   function onSubmit(values: SendDirectMessageInput) {
-    sendMessage.mutate(values.body, {
+    sendMessage.mutate(values, {
       onSuccess: () => form.reset({ body: "" }),
       onError: () => toast.error("Không gửi được tin nhắn, thử lại nhé"),
+    })
+  }
+
+  function handleConfirmBlock() {
+    blockUserMutation.mutate(undefined, {
+      onSuccess: () => {
+        setConfirmBlock(false)
+        toast.success(`Đã chặn @${data?.peer.handle}`)
+        void navigate("/messages")
+      },
+      onError: () => {
+        toast.error("Không thể chặn người dùng lúc này")
+      },
     })
   }
 
@@ -112,6 +166,9 @@ function ConversationThreadPane({ handle }: { readonly handle: string }) {
           </Button>
           <Link to={`/u/${data.peer.handle}`} className="group flex min-w-0 items-center gap-2.5">
             <Avatar size="default">
+              {data.peer.avatarUrl ? (
+                <AvatarImage src={data.peer.avatarUrl} alt={data.peer.name} />
+              ) : null}
               <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
                 {data.peer.initials}
               </AvatarFallback>
@@ -125,15 +182,51 @@ function ConversationThreadPane({ handle }: { readonly handle: string }) {
           </Link>
         </div>
 
-        <Button
-          variant="outline"
-          size="xs"
-          nativeButton={false}
-          render={<Link to={`/u/${data.peer.handle}`} />}
-        >
-          <span>Hồ sơ</span>
-          <ExternalLinkIcon className="size-3" aria-hidden="true" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="xs"
+            nativeButton={false}
+            render={<Link to={`/u/${data.peer.handle}`} />}
+          >
+            <span>Hồ sơ</span>
+            <ExternalLinkIcon className="size-3" aria-hidden="true" />
+          </Button>
+
+          <AlertDialog open={confirmBlock} onOpenChange={setConfirmBlock}>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  className="text-muted-foreground hover:text-destructive"
+                />
+              }
+            >
+              <BanIcon className="size-3.5" aria-hidden="true" />
+              <span>Chặn</span>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Chặn @{data.peer.handle}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Sau khi chặn, hai bên sẽ không thể nhắn tin hay thấy nhau trong danh sách trò
+                  chuyện.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Huỷ</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  disabled={blockUserMutation.isPending}
+                  onClick={handleConfirmBlock}
+                >
+                  Xác nhận chặn
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </header>
 
       <ScrollArea className="min-h-0 flex-1">
@@ -142,11 +235,11 @@ function ConversationThreadPane({ handle }: { readonly handle: string }) {
             <Empty className="border-0 py-12">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <SparklesIcon />
+                  <MessageCircleIcon />
                 </EmptyMedia>
-                <EmptyTitle>Bắt đầu trò chuyện với {data.peer.name}</EmptyTitle>
+                <EmptyTitle>Chưa có tin nhắn</EmptyTitle>
                 <EmptyDescription>
-                  Hỏi thăm quán ruột hoặc rủ nhau lập phòng chọn điểm hẹn cuối tuần.
+                  Gửi tin nhắn để bắt đầu trao đổi với {data.peer.name}.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -180,7 +273,12 @@ function ConversationThreadPane({ handle }: { readonly handle: string }) {
                       !isMine && prevSameSender && "rounded-tl-md",
                     )}
                   >
-                    <p className="whitespace-pre-wrap">{msg.body}</p>
+                    {msg.body ? (
+                      <p className="whitespace-pre-wrap">{renderMessageBody(msg.body, isMine)}</p>
+                    ) : null}
+                    {msg.attachment ? (
+                      <MessageAttachmentCard attachment={msg.attachment} isMine={isMine} />
+                    ) : null}
                   </div>
                   {showTime ? (
                     <div className="mt-1 flex items-center gap-1 px-1 text-xs text-muted-foreground">
@@ -243,8 +341,10 @@ function ConversationThreadPane({ handle }: { readonly handle: string }) {
 export function MessagesPage() {
   const { handle } = useParams<{ handle?: string }>()
   const [search, setSearch] = useState("")
+  const [activeFolder, setActiveFolder] = useState<"primary" | "requests">("primary")
   const { data: me } = useMe()
-  const { data: conversations, isPending, isError, refetch } = useConversations()
+  useDirectMessageEvents()
+  const { data: conversations, isPending, isError, refetch } = useConversations(activeFolder)
   const { data: userSuggestions } = useUserSuggestions()
 
   const filteredConversations = useMemo(() => {
@@ -258,11 +358,26 @@ export function MessagesPage() {
 
   const quickStartPeers = useMemo(() => {
     const existingIds = new Set((conversations ?? []).map((c) => c.peer.id))
+    const q = search.trim().toLowerCase().replace(/^@/, "")
     return (userSuggestions ?? [])
       .map((s) => s.user)
-      .filter((u) => u.id !== me?.id && !existingIds.has(u.id))
-      .slice(0, 5)
-  }, [userSuggestions, conversations, me?.id])
+      .filter((u) => {
+        if (u.id === me?.id || existingIds.has(u.id)) return false
+        if (!q) return true
+        return u.name.toLowerCase().includes(q) || u.handle.toLowerCase().includes(q)
+      })
+      .slice(0, 6)
+  }, [userSuggestions, conversations, me?.id, search])
+
+  const directHandleQuery = useMemo(() => {
+    const clean = search.trim().replace(/^@/, "")
+    if (!clean || !/^[a-zA-Z0-9._-]{2,32}$/.test(clean)) return null
+    if (clean.toLowerCase() === me?.handle.toLowerCase()) return null
+    const alreadyInFiltered =
+      filteredConversations.some((c) => c.peer.handle.toLowerCase() === clean.toLowerCase()) ||
+      quickStartPeers.some((u) => u.handle.toLowerCase() === clean.toLowerCase())
+    return alreadyInFiltered ? null : clean
+  }, [search, me?.handle, filteredConversations, quickStartPeers])
 
   const totalUnread = useMemo(
     () => (conversations ?? []).reduce((sum, item) => sum + item.unreadCount, 0),
@@ -292,6 +407,17 @@ export function MessagesPage() {
                   </Badge>
                 ) : null}
               </div>
+
+              <Tabs
+                value={activeFolder}
+                onValueChange={(val) => setActiveFolder(val as "primary" | "requests")}
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="primary">Hộp thư chính</TabsTrigger>
+                  <TabsTrigger value="requests">Tin nhắn chờ</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
               <InputGroup>
                 <InputGroupAddon align="inline-start">
                   <SearchIcon className="size-4 text-muted-foreground" aria-hidden="true" />
@@ -330,7 +456,9 @@ export function MessagesPage() {
                 <div className="p-5 text-center text-sm text-muted-foreground">
                   {search.trim()
                     ? "Không tìm thấy cuộc trò chuyện phù hợp."
-                    : "Chưa có cuộc trò chuyện nào."}
+                    : activeFolder === "requests"
+                      ? "Không có tin nhắn chờ nào."
+                      : "Chưa có cuộc trò chuyện nào."}
                 </div>
               ) : (
                 <ul className="divide-y divide-border/60">
@@ -346,6 +474,9 @@ export function MessagesPage() {
                           )}
                         >
                           <Avatar size="default">
+                            {conv.peer.avatarUrl ? (
+                              <AvatarImage src={conv.peer.avatarUrl} alt={conv.peer.name} />
+                            ) : null}
                             <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
                               {conv.peer.initials}
                             </AvatarFallback>
@@ -367,7 +498,8 @@ export function MessagesPage() {
                                 )}
                               >
                                 {conv.lastMessage.senderId === me?.id ? "Bạn: " : ""}
-                                {conv.lastMessage.body}
+                                {conv.lastMessage.body ||
+                                  (conv.lastMessage.attachment ? "[Đính kèm]" : "")}
                               </p>
                               {conv.unreadCount > 0 ? (
                                 <Badge
@@ -386,10 +518,22 @@ export function MessagesPage() {
                 </ul>
               )}
 
+              {directHandleQuery ? (
+                <div className="border-t border-border/70 p-3">
+                  <Link
+                    to={`/messages/${directHandleQuery}`}
+                    className="flex items-center justify-between gap-2 rounded-control border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10"
+                  >
+                    <span className="truncate">Nhắn tin trực tiếp với @{directHandleQuery}</span>
+                    <MessageCircleIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                  </Link>
+                </div>
+              ) : null}
+
               {quickStartPeers.length > 0 ? (
                 <div className="border-t border-border/70 p-4">
                   <p className="mb-2.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    Gợi ý bắt đầu trò chuyện
+                    {search.trim() ? "Người dùng phù hợp" : "Gợi ý bắt đầu trò chuyện"}
                   </p>
                   <ul className="space-y-1.5">
                     {quickStartPeers.map((user) => (
@@ -399,6 +543,9 @@ export function MessagesPage() {
                           className="flex items-center gap-2.5 rounded-control px-2 py-1.5 text-sm transition-colors hover:bg-muted/60"
                         >
                           <Avatar size="sm">
+                            {user.avatarUrl ? (
+                              <AvatarImage src={user.avatarUrl} alt={user.name} />
+                            ) : null}
                             <AvatarFallback className="bg-secondary text-xs font-semibold">
                               {user.initials}
                             </AvatarFallback>

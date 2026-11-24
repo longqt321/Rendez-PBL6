@@ -126,17 +126,28 @@ export async function encode(texts: string[]): Promise<Float32Array[] | null> {
 const queryCache = new LRUCache<string, Float32Array>({ max: QUERY_CACHE_MAX })
 const REDIS_QUERY_EMBED_TTL_SECONDS = 24 * 60 * 60
 
-function redisEmbedKey(text: string): string {
-  const hash = createHash("sha256").update(text).digest("hex").slice(0, 24)
+/**
+ * Chuẩn hoá khoá truy vấn trước khi băm cache (NFC, cắt biên, gộp khoảng trắng,
+ * chuyển chữ thường) và vẫn giữ dấu tiếng Việt cho mô hình ngữ nghĩa e5.
+ */
+export function normalizeEmbeddingCacheKey(text: string): string {
+  return text.normalize("NFC").trim().replace(/\s+/gu, " ").toLowerCase()
+}
+
+function redisEmbedKey(normalizedKey: string): string {
+  const hash = createHash("sha256").update(normalizedKey).digest("hex").slice(0, 24)
   return `rendez:emb:q:v1:${hash}`
 }
 
 export async function embedQuery(text: string): Promise<Float32Array | null> {
-  const cached = queryCache.get(text)
+  const key = normalizeEmbeddingCacheKey(text)
+  if (!key) return null
+
+  const cached = queryCache.get(key)
   if (cached) return cached
 
   const redis = getRedis()
-  const rKey = redisEmbedKey(text)
+  const rKey = redisEmbedKey(key)
   if (redis) {
     try {
       const raw = await redis.get(rKey)
@@ -144,7 +155,7 @@ export async function embedQuery(text: string): Promise<Float32Array | null> {
         const parsed: unknown = JSON.parse(raw)
         if (Array.isArray(parsed) && parsed.length > 0) {
           const vec = new Float32Array(parsed as number[])
-          queryCache.set(text, vec)
+          queryCache.set(key, vec)
           return vec
         }
       }
@@ -153,12 +164,12 @@ export async function embedQuery(text: string): Promise<Float32Array | null> {
     }
   }
 
-  const vecs = await encode([`query: ${text}`])
+  const vecs = await encode([`query: ${key}`])
   if (!vecs) return null
   try {
     const vec = vecs[0]
     if (vec) {
-      queryCache.set(text, vec)
+      queryCache.set(key, vec)
       if (redis) {
         void redis
           .set(rKey, JSON.stringify(Array.from(vec)), "EX", REDIS_QUERY_EMBED_TTL_SECONDS)

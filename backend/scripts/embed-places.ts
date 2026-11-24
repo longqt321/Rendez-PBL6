@@ -1,8 +1,8 @@
 /**
  * Backfill embedding cho bảng `place_embeddings`.
  *
- * Passage text = name + category + district + tags (khớp thiết kế hybrid
- * search). content_hash = sha256(passage) — venue chưa đổi nội dung thì skip
+ * Passage text = name + nhãn hạng mục tiếng Việt + category + district + tags + description.
+ * content_hash = sha256(passage) — venue chưa đổi nội dung thì skip
  * để chạy lại script nhanh. Encode theo batch ~32, ghi bằng `INSERT ... ON
  * CONFLICT DO UPDATE` qua `$executeRaw` (Prisma không trả field Unsupported
  * `vector(384)` nên mọi thao tác embedding đều đi raw SQL).
@@ -12,30 +12,42 @@
 import { createHash } from "node:crypto"
 import { Prisma } from "../generated/prisma/client"
 import { prisma } from "../src/lib/prisma"
+import { CATEGORY_LABEL, parseApiCategory } from "../src/lib/enums"
 import { embedPassages, vectorToLiteral } from "../src/lib/embeddings"
 
 const MODEL_ID = "Xenova/multilingual-e5-small"
 const DIM = 384
 const BATCH_SIZE = 32
 
-interface PlaceRow {
+export interface PlacePassageInput {
   id: string
   name: string
   category: string
   district: string | null
+  description?: string | null
   tags: string[] | null
 }
 
 /** Passage text cho một venue — thay đổi cấu trúc này sẽ đổi content_hash toàn bộ. */
-function passageText(place: PlaceRow): string {
-  return [place.name, place.category, place.district ?? "", (place.tags ?? []).join(" ")]
+export function passageText(place: PlacePassageInput): string {
+  const apiCat = parseApiCategory(place.category)
+  const categoryLabel = apiCat ? CATEGORY_LABEL[apiCat] : ""
+  const description = place.description?.trim().replace(/\s+/gu, " ") ?? ""
+  return [
+    place.name.trim(),
+    categoryLabel && categoryLabel !== place.category ? categoryLabel : "",
+    place.category,
+    place.district ?? "",
+    (place.tags ?? []).join(" "),
+    description,
+  ]
     .filter((part) => part.length > 0)
     .join(" ")
 }
 
 async function main() {
-  const places = await prisma.$queryRaw<PlaceRow[]>(Prisma.sql`
-    SELECT p.id, p.name, p.category::text AS category, p.district,
+  const places = await prisma.$queryRaw<PlacePassageInput[]>(Prisma.sql`
+    SELECT p.id, p.name, p.category::text AS category, p.district, p.description,
            COALESCE(
              (SELECT ARRAY_AGG(t.name ORDER BY pt.position, t.name)
               FROM place_tags pt
@@ -99,9 +111,11 @@ async function main() {
   console.log(`Xong: encode ${encoded}, skip ${skipped}, lỗi ${failed}`)
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((err) => {
-    console.error(err)
-    process.exit(1)
-  })
+if (import.meta.main) {
+  main()
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error(err)
+      process.exit(1)
+    })
+}
