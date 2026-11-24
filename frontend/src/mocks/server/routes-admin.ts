@@ -26,40 +26,6 @@ import {
 } from "./context"
 
 export const adminMockRoutes: Route[] = [
-  {
-    method: "get",
-    pattern: /^\/system\/stats$/,
-    handler: () => {
-      const places = db.places
-      const byEndpoint = [...mockMetrics.routes.entries()]
-        .map(([route, count]) => ({ route, count }))
-        .sort((a, b) => b.count - a.count)
-      return {
-        uptimeMs: Date.now() - mockMetrics.startedAt,
-        totalQueries: [...mockMetrics.routes.values()].reduce((sum, count) => sum + count, 0),
-        avgLatencyMs: RESPONSE_DELAY_MS + scenario.delayMs,
-        cacheHitRatio: 0,
-        byEndpoint,
-        venues: {
-          total: places.length,
-          published: places.filter((place) => place.publishedAt !== null).length,
-          withImages: places.filter((place) => place.imageUrl !== undefined).length,
-          withTags: places.filter((place) => place.tags.length > 0).length,
-          withHours: places.filter((place) => place.openingHours !== undefined).length,
-        },
-      }
-    },
-  },
-  {
-    method: "post",
-    pattern: /^\/system\/reset$/,
-    handler: () => {
-      mockMetrics.routes.clear()
-      mockMetrics.startedAt = Date.now()
-      return { reset: true }
-    },
-  },
-
   // -------------------------------------------------------------------------
   // Quản trị `/admin/*`
   // -------------------------------------------------------------------------

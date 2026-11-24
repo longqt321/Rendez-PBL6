@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useContext, useState } from "react"
+import { QueryClientContext } from "@tanstack/react-query"
 import { CheckIcon, PlusIcon } from "lucide-react"
 import { toast } from "sonner"
 import { ResponsiveModal } from "@/components/shared/responsive-modal"
@@ -106,7 +107,15 @@ function CollectionDialogList({
   )
 }
 
-export function SaveToCollectionDialog({
+export function SaveToCollectionDialog(props: SaveToCollectionDialogProps) {
+  const hasQueryClient = Boolean(useContext(QueryClientContext))
+  if (!hasQueryClient) {
+    return props.children
+  }
+  return <SaveToCollectionDialogInner {...props} />
+}
+
+function SaveToCollectionDialogInner({
   placeId,
   placeName,
   children,

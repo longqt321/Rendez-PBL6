@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react"
+import { useLocalStorage } from "@uidotdev/usehooks"
 import {
+  BellIcon,
   BookmarkIcon,
+  ClockIcon,
   CompassIcon,
-  HelpCircleIcon,
+  FileTextIcon,
   LogInIcon,
   LogOutIcon,
+  MapPinIcon,
   PaletteIcon,
   SearchIcon,
   SettingsIcon,
-  ShieldCheckIcon,
-  SparklesIcon,
   UserIcon,
   UserPlusIcon,
   XIcon,
@@ -18,6 +20,7 @@ import { Link, useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
 import { useSkin } from "@/app/providers/skin-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   CommandDialog,
@@ -42,6 +45,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
   InputGroup,
   InputGroupAddon,
@@ -50,11 +54,18 @@ import {
 } from "@/components/ui/input-group"
 import { Spinner } from "@/components/ui/spinner"
 import { useLogout } from "@/features/auth/hooks/use-logout"
+import { useMarkAllNotificationsRead } from "@/features/notification/hooks/use-mark-all-notifications-read"
+import {
+  useNotifications,
+  useUnreadNotificationCount,
+} from "@/features/notification/hooks/use-notifications"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { useSearchQuerySync } from "@/features/search/hooks/use-search-query-sync"
 import { useIsDesktop } from "@/hooks/use-breakpoint"
 import { useMobileGpsAutoSync } from "@/hooks/use-user-location"
 import { isUnauthorizedError } from "@/lib/axios"
+import { formatRelativeTime } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import { NAV_ITEMS } from "./nav-items"
 import { Brand } from "./shell-nav"
 
@@ -70,9 +81,18 @@ export function TopBar() {
   useMobileGpsAutoSync()
   const isDesktop = useIsDesktop()
   const { draft, setDraft, submit, clear, isFilterPage } = useSearchQuerySync()
+  const [recentSearches, setRecentSearches] = useLocalStorage<string[]>("recent-searches", [])
   const location = useLocation()
   const navigate = useNavigate()
   const [commandOpen, setCommandOpen] = useState(false)
+
+  const addRecentSearch = (term: string) => {
+    const clean = term.trim()
+    if (!clean) return
+    setRecentSearches((prev = []) =>
+      [clean, ...prev.filter((x) => x.toLowerCase() !== clean.toLowerCase())].slice(0, 8),
+    )
+  }
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -108,7 +128,10 @@ export function TopBar() {
             className="flex-1"
             onSubmit={(event) => {
               event.preventDefault()
-              submit()
+              if (draft.trim()) {
+                addRecentSearch(draft)
+                submit()
+              }
             }}
           >
             <InputGroup className="h-9 rounded-full bg-card/90 shadow-xs md:h-10">
@@ -124,7 +147,10 @@ export function TopBar() {
                   if (event.nativeEvent.isComposing || event.keyCode === 229) return
                   if (event.key === "Enter") {
                     event.preventDefault()
-                    submit()
+                    if (draft.trim()) {
+                      addRecentSearch(draft)
+                      submit()
+                    }
                   }
                 }}
                 placeholder={
@@ -163,6 +189,7 @@ export function TopBar() {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          <NotificationBellButton />
           <UserMenu />
         </div>
       </div>
@@ -176,6 +203,50 @@ export function TopBar() {
         <CommandInput placeholder="Gõ tên món ăn, quán hoặc trang muốn mở…" />
         <CommandList>
           <CommandEmpty>Không tìm thấy gợi ý phù hợp.</CommandEmpty>
+          {recentSearches && recentSearches.length > 0 ? (
+            <>
+              <CommandGroup heading="Tìm kiếm gần đây">
+                {recentSearches.map((term) => (
+                  <CommandItem
+                    key={`recent-${term}`}
+                    value={`recent-${term}`}
+                    onSelect={() => {
+                      setCommandOpen(false)
+                      setDraft(term)
+                      addRecentSearch(term)
+                      const targetPath = isFilterPage ? location.pathname : "/discover"
+                      void navigate(`${targetPath}?q=${encodeURIComponent(term)}`)
+                    }}
+                  >
+                    <ClockIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+                    <span>{term}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          ) : null}
+          <CommandGroup heading="Địa danh & Khu vực nổi bật">
+            {["Cầu Rồng", "Bãi biển Mỹ Khê", "Cầu Sông Hàn", "Chợ Hàn", "Chợ Cồn", "Sơn Trà"].map(
+              (landmark) => (
+                <CommandItem
+                  key={`landmark-${landmark}`}
+                  value={`landmark-${landmark}`}
+                  onSelect={() => {
+                    setCommandOpen(false)
+                    setDraft(`Gần ${landmark}`)
+                    addRecentSearch(`Gần ${landmark}`)
+                    const targetPath = isFilterPage ? location.pathname : "/discover"
+                    void navigate(`${targetPath}?q=${encodeURIComponent(`Gần ${landmark}`)}`)
+                  }}
+                >
+                  <MapPinIcon className="size-4 text-primary" aria-hidden="true" />
+                  <span>Gần {landmark}</span>
+                </CommandItem>
+              ),
+            )}
+          </CommandGroup>
+          <CommandSeparator />
           <CommandGroup heading="Món ngon Đà Nẵng">
             {QUICK_SEARCH_SUGGESTIONS.map((term) => (
               <CommandItem
@@ -184,11 +255,12 @@ export function TopBar() {
                 onSelect={() => {
                   setCommandOpen(false)
                   setDraft(term)
+                  addRecentSearch(term)
                   const targetPath = isFilterPage ? location.pathname : "/discover"
                   void navigate(`${targetPath}?q=${encodeURIComponent(term)}`)
                 }}
               >
-                <SparklesIcon className="size-4 text-primary" aria-hidden="true" />
+                <SearchIcon className="size-4 text-primary" aria-hidden="true" />
                 <span>Tìm “{term}”</span>
               </CommandItem>
             ))}
@@ -215,6 +287,140 @@ export function TopBar() {
         </CommandList>
       </CommandDialog>
     </header>
+  )
+}
+
+function NotificationBellButton() {
+  const { data: me } = useMe()
+  const { data: unread = 0 } = useUnreadNotificationCount()
+  const { notifications, isPending } = useNotifications()
+  const markAllRead = useMarkAllNotificationsRead()
+  const [open, setOpen] = useState(false)
+
+  if (!me) return null
+
+  const recent = notifications.slice(0, 5)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label={unread > 0 ? `Thông báo (${unread} chưa đọc)` : "Thông báo"}
+            className="relative min-h-11 min-w-11 rounded-full sm:size-10 sm:min-h-0 sm:min-w-0"
+          />
+        }
+      >
+        <BellIcon className="size-4" aria-hidden="true" />
+        {unread > 0 ? (
+          <Badge
+            variant="destructive"
+            aria-hidden="true"
+            className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-xs font-bold tabular-nums ring-2 ring-background"
+          >
+            {unread > 99 ? "99+" : unread}
+          </Badge>
+        ) : null}
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 p-0 sm:w-96">
+        <div className="flex items-center justify-between border-b border-border px-3.5 py-2.5">
+          <div className="flex items-center gap-1.5">
+            <span className="font-display text-sm font-bold">Thông báo</span>
+            {unread > 0 ? (
+              <Badge variant="secondary" className="text-xs">
+                {unread} mới
+              </Badge>
+            ) : null}
+          </div>
+          {unread > 0 ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              disabled={markAllRead.isPending}
+              onClick={() => markAllRead.mutate()}
+            >
+              Đọc tất cả
+            </Button>
+          ) : null}
+        </div>
+        <div className="max-h-80 divide-y divide-border/60 overflow-y-auto p-1">
+          {isPending ? (
+            <div className="flex items-center justify-center py-8">
+              <Spinner className="size-4" aria-label="Đang tải thông báo" />
+            </div>
+          ) : recent.length === 0 ? (
+            <p className="py-8 text-center text-xs text-muted-foreground">Chưa có thông báo nào</p>
+          ) : (
+            recent.map((n) => {
+              const href =
+                n.kind === "place-suggestion"
+                  ? "/notification"
+                  : n.kind === "direct-message"
+                    ? n.actorHandle
+                      ? `/messages/${n.actorHandle}`
+                      : "/messages"
+                    : n.kind === "room-event"
+                      ? `/rooms/${n.roomCode}`
+                      : n.kind === "follow" && n.actorHandle
+                        ? `/u/${n.actorHandle}`
+                        : "postId" in n && n.postId
+                          ? `/post/${n.postId}`
+                          : "/notification"
+
+              const text =
+                n.kind === "place-suggestion"
+                  ? `Gợi ý quán cho bài đăng của bạn: ${n.suggestions[0]?.place.name ?? ""}`
+                  : n.kind === "system"
+                    ? n.title
+                    : n.kind === "direct-message"
+                      ? `${n.actorName} đã gửi tin nhắn cho bạn`
+                      : n.kind === "room-event"
+                        ? `Phòng ${n.roomName}: ${n.eventType === "room_finalized" ? "Đã chốt quán" : "Mở bình chọn"}`
+                        : `${n.actorName} ${n.kind === "like" ? "đã thích bài đăng" : n.kind === "comment" ? "đã bình luận" : "đã theo dõi bạn"}`
+
+              return (
+                <Link
+                  key={n.id}
+                  to={href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-start gap-2.5 rounded-control p-2 text-xs transition-colors hover:bg-muted/60",
+                    !n.read && "bg-primary/5 font-medium",
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-2 text-foreground">{text}</p>
+                    <p className="mt-0.5 text-muted-foreground">
+                      {formatRelativeTime(n.createdAt)}
+                    </p>
+                  </div>
+                  {!n.read ? (
+                    <span
+                      className="mt-1 size-1.5 shrink-0 rounded-full bg-primary"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                </Link>
+              )
+            })
+          )}
+        </div>
+        <div className="border-t border-border p-2">
+          <Button
+            size="xs"
+            variant="outline"
+            className="w-full justify-center"
+            nativeButton={false}
+            render={<Link to="/notification" onClick={() => setOpen(false)} />}
+          >
+            Xem tất cả thông báo
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 
@@ -266,12 +472,6 @@ function UserMenu() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        {me.role === "admin" || me.role === "moderator" ? (
-          <DropdownMenuItem render={<Link to="/admin" />}>
-            <ShieldCheckIcon />
-            Quản trị
-          </DropdownMenuItem>
-        ) : null}
         <DropdownMenuItem render={<Link to="/settings" />}>
           <SettingsIcon />
           Cài đặt
@@ -291,9 +491,9 @@ function UserMenu() {
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-        <DropdownMenuItem render={<Link to="/help" />}>
-          <HelpCircleIcon />
-          Trợ giúp
+        <DropdownMenuItem render={<Link to="/terms" />}>
+          <FileTextIcon />
+          Điều khoản sử dụng
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" disabled={isLoggingOut} onClick={handleLogout}>

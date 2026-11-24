@@ -1,4 +1,4 @@
-import { CheckIcon, FlameIcon, ThumbsUpIcon } from "lucide-react"
+import { AlertTriangleIcon, CheckIcon, FlameIcon, ThumbsUpIcon } from "lucide-react"
 import type { ReviewTier } from "@rendez/schema"
 
 export const REVIEW_TIER_META: Record<
@@ -27,6 +27,12 @@ export const REVIEW_TIER_META: Record<
     hint: "Ăn được, vừa tầm",
     icon: CheckIcon,
     badgeClass: "border-border bg-secondary text-secondary-foreground",
+  },
+  not_for_me: {
+    label: "Cần cải thiện",
+    hint: "Chưa ổn, cần cải thiện thêm",
+    icon: AlertTriangleIcon,
+    badgeClass: "border-destructive/40 bg-destructive/10 text-destructive",
   },
 }
 

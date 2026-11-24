@@ -1,7 +1,5 @@
 import { useState } from "react"
 import type { AdminPlace, PlaceCategory, PlaceStatus } from "@rendez/schema"
-import { ExternalLinkIcon } from "lucide-react"
-import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Field, FieldContent, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -159,20 +157,7 @@ export function EditPlaceSheet({
         <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
           <form onSubmit={handleSubmit} className="flex h-full flex-col">
             <SheetHeader>
-              <div className="flex items-center justify-between gap-2 pr-8">
-                <SheetTitle>Chỉnh sửa địa điểm</SheetTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1 text-xs"
-                  render={
-                    <Link to={`/discover/${place.id}`} target="_blank" rel="noopener noreferrer" />
-                  }
-                >
-                  Trang công khai
-                  <ExternalLinkIcon className="size-3" aria-hidden="true" />
-                </Button>
-              </div>
+              <SheetTitle>Chỉnh sửa địa điểm</SheetTitle>
               <SheetDescription>Thông tin, tọa độ và trạng thái hiển thị</SheetDescription>
             </SheetHeader>
 

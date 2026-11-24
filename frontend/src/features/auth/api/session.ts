@@ -11,11 +11,18 @@ export interface RegisterInput {
   email: string
   password: string
   handle: string
+  acceptTerms: boolean
 }
 
 export interface ResetPasswordInput {
   token: string
   newPassword: string
+}
+
+export interface ChangePasswordInput {
+  currentPassword: string
+  newPassword: string
+  revokeOtherSessions?: boolean
 }
 
 export interface RegisterResult {
@@ -50,6 +57,14 @@ export async function resetPassword(input: ResetPasswordInput): Promise<void> {
   await api.post("/auth/reset-password", input)
 }
 
+export async function changePassword(input: ChangePasswordInput): Promise<void> {
+  await api.post("/auth/change-password", {
+    currentPassword: input.currentPassword,
+    newPassword: input.newPassword,
+    revokeOtherSessions: input.revokeOtherSessions ?? false,
+  })
+}
+
 /** Xoá tài khoản — server xoá mềm + thu hồi phiên; client xoá cache. */
 export async function deleteAccount(): Promise<void> {
   await api.delete("/me")
@@ -58,4 +73,10 @@ export async function deleteAccount(): Promise<void> {
 /** `DELETE /session` — đăng xuất. */
 export async function logout(): Promise<void> {
   await api.delete("/session")
+}
+
+/** Lấy danh sách SSO providers được bật trên hệ thống */
+export async function getAuthProviders(): Promise<{ providers: string[] }> {
+  const { data } = await api.get<{ providers: string[] }>("/auth/providers")
+  return data
 }

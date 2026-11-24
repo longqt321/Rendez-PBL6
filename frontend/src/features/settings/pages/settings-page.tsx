@@ -32,11 +32,17 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { useChangePassword } from "@/features/auth/hooks/use-change-password"
 import { useDeleteAccount } from "@/features/auth/hooks/use-delete-account"
 import { ManageAnchorsSection } from "@/features/location/components/manage-anchors-dialog"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { useUpdateMe } from "@/features/profile/hooks/use-update-me"
 import { ProfileImagesField } from "@/features/settings/components/profile-images-field"
+import {
+  useNotificationPrefs,
+  useUpdateNotificationPrefs,
+  type NotificationPrefs,
+} from "@/features/settings/hooks/use-notification-prefs"
 import {
   MAX_PROFILE_BIO_LENGTH,
   MAX_PROFILE_LOCATION_LENGTH,
@@ -57,12 +63,193 @@ const settingsSchema = z.object({
 
 type SettingsForm = z.infer<typeof settingsSchema>
 
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
+    newPassword: z.string().min(8, "Mật khẩu mới cần ít nhất 8 ký tự").max(128),
+    confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu mới"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Mật khẩu xác nhận không khớp",
+  })
+
+type ChangePasswordForm = z.infer<typeof changePasswordSchema>
+
+function ChangePasswordCard() {
+  const changePasswordMutation = useChangePassword()
+  const form = useForm<ChangePasswordForm>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  })
+
+  function onSubmit(values: ChangePasswordForm) {
+    changePasswordMutation.mutate(
+      {
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      },
+      {
+        onSuccess: () => {
+          form.reset()
+          toast.success("Đã đổi mật khẩu thành công.")
+        },
+        onError: (error) => {
+          toast.error(error instanceof Error ? error.message : "Không đổi được mật khẩu")
+        },
+      },
+    )
+  }
+
+  return (
+    <SurfaceCard>
+      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="space-y-4">
+        <FieldSet>
+          <FieldLegend>Đổi mật khẩu</FieldLegend>
+          <FieldDescription>
+            Cập nhật mật khẩu đăng nhập định kỳ để bảo vệ tài khoản của bạn.
+          </FieldDescription>
+          <FieldGroup>
+            <Field data-invalid={Boolean(form.formState.errors.currentPassword)}>
+              <FieldLabel htmlFor="settings-current-password">Mật khẩu hiện tại</FieldLabel>
+              <Input
+                id="settings-current-password"
+                type="password"
+                autoComplete="current-password"
+                aria-invalid={Boolean(form.formState.errors.currentPassword)}
+                {...form.register("currentPassword")}
+              />
+              {form.formState.errors.currentPassword ? (
+                <FieldError>{form.formState.errors.currentPassword.message}</FieldError>
+              ) : null}
+            </Field>
+            <Field data-invalid={Boolean(form.formState.errors.newPassword)}>
+              <FieldLabel htmlFor="settings-new-password">Mật khẩu mới</FieldLabel>
+              <Input
+                id="settings-new-password"
+                type="password"
+                autoComplete="new-password"
+                aria-invalid={Boolean(form.formState.errors.newPassword)}
+                {...form.register("newPassword")}
+              />
+              {form.formState.errors.newPassword ? (
+                <FieldError>{form.formState.errors.newPassword.message}</FieldError>
+              ) : null}
+            </Field>
+            <Field data-invalid={Boolean(form.formState.errors.confirmPassword)}>
+              <FieldLabel htmlFor="settings-confirm-password">Xác nhận mật khẩu mới</FieldLabel>
+              <Input
+                id="settings-confirm-password"
+                type="password"
+                autoComplete="new-password"
+                aria-invalid={Boolean(form.formState.errors.confirmPassword)}
+                {...form.register("confirmPassword")}
+              />
+              {form.formState.errors.confirmPassword ? (
+                <FieldError>{form.formState.errors.confirmPassword.message}</FieldError>
+              ) : null}
+            </Field>
+          </FieldGroup>
+        </FieldSet>
+        <div className="flex justify-end">
+          <Button type="submit" variant="outline" disabled={changePasswordMutation.isPending}>
+            {changePasswordMutation.isPending ? <Spinner aria-label="Đang đổi mật khẩu" /> : null}
+            Đổi mật khẩu
+          </Button>
+        </div>
+      </form>
+    </SurfaceCard>
+  )
+}
+
+function NotificationPrefsCard() {
+  const { data: prefs, isLoading } = useNotificationPrefs()
+  const updateMutation = useUpdateNotificationPrefs()
+
+  const handleToggle = (key: keyof NotificationPrefs, val: boolean) => {
+    updateMutation.mutate(
+      { [key]: val },
+      {
+        onSuccess: () => toast.success("Đã lưu cài đặt thông báo"),
+        onError: () => toast.error("Không lưu được cài đặt thông báo"),
+      },
+    )
+  }
+
+  return (
+    <SurfaceCard>
+      <FieldSet>
+        <FieldLegend>Cài đặt thông báo</FieldLegend>
+        <FieldDescription>
+          Tuỳ chỉnh các kênh thông báo và hoạt động bạn muốn nhận.
+        </FieldDescription>
+
+        <FieldGroup>
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel htmlFor="pref-dm">Tin nhắn trực tiếp</FieldLabel>
+              <FieldDescription>
+                Nhận thông báo khi có tin nhắn mới từ bạn bè hoặc người liên hệ.
+              </FieldDescription>
+            </FieldContent>
+            <Switch
+              id="pref-dm"
+              disabled={isLoading || updateMutation.isPending}
+              checked={prefs?.dmNotifications !== false}
+              onCheckedChange={(val) => handleToggle("dmNotifications", val)}
+            />
+          </Field>
+
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel htmlFor="pref-room">Hoạt động phòng nhóm</FieldLabel>
+              <FieldDescription>
+                Thông báo khi có thành viên mới, địa điểm đề xuất mới hoặc phòng chốt kết quả.
+              </FieldDescription>
+            </FieldContent>
+            <Switch
+              id="pref-room"
+              disabled={isLoading || updateMutation.isPending}
+              checked={prefs?.roomActivity !== false}
+              onCheckedChange={(val) => handleToggle("roomActivity", val)}
+            />
+          </Field>
+
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel htmlFor="pref-email">Email tổng hợp tuần</FieldLabel>
+              <FieldDescription>
+                Nhận email tóm tắt các điểm hẹn nổi bật và hoạt động trong tuần mỗi sáng thứ Bảy.
+              </FieldDescription>
+            </FieldContent>
+            <Switch
+              id="pref-email"
+              disabled={isLoading || updateMutation.isPending}
+              checked={prefs?.emailDigest === true}
+              onCheckedChange={(val) => handleToggle("emailDigest", val)}
+            />
+          </Field>
+        </FieldGroup>
+      </FieldSet>
+    </SurfaceCard>
+  )
+}
+
 export function SettingsPage() {
   const { data: me, isPending, isError, refetch } = useMe()
   const updateMe = useUpdateMe()
   const deleteAccount = useDeleteAccount()
   const navigate = useNavigate()
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState("")
+
+  const isMatchHandle =
+    Boolean(me?.handle) &&
+    (deleteConfirmText.trim() === `@${me?.handle}` || deleteConfirmText.trim() === me?.handle)
 
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
@@ -226,6 +413,10 @@ export function SettingsPage() {
         </FieldSet>
       </SurfaceCard>
 
+      <NotificationPrefsCard />
+
+      <ChangePasswordCard />
+
       <SurfaceCard variant="danger">
         <FieldSet>
           <FieldLegend variant="label" className="text-destructive">
@@ -235,7 +426,13 @@ export function SettingsPage() {
             Tài khoản sẽ bị vô hiệu hoá và đăng xuất khỏi mọi thiết bị. Bài đăng và bình luận cũ vẫn
             được giữ lại nhưng hồ sơ không còn hiển thị.
           </FieldDescription>
-          <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+          <AlertDialog
+            open={confirmDelete}
+            onOpenChange={(open) => {
+              setConfirmDelete(open)
+              if (!open) setDeleteConfirmText("")
+            }}
+          >
             <AlertDialogTrigger
               render={
                 <Button type="button" variant="destructive" disabled={deleteAccount.isPending} />
@@ -247,25 +444,44 @@ export function SettingsPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Xoá tài khoản?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Hành động này không thể hoàn tác. Bạn sẽ bị đăng xuất ngay lập tức.
+                  Hành động này không thể hoàn tác. Hồ sơ của bạn sẽ bị vô hiệu hoá, đồng thời giải
+                  phóng @{me?.handle} và email để có thể sử dụng lại sau này.
                 </AlertDialogDescription>
               </AlertDialogHeader>
+
+              <div className="py-2">
+                <Field>
+                  <FieldLabel htmlFor="confirm-handle-delete" className="text-xs font-medium">
+                    Nhập chính xác <span className="font-bold text-destructive">@{me?.handle}</span>{" "}
+                    để xác nhận:
+                  </FieldLabel>
+                  <Input
+                    id="confirm-handle-delete"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder={`@${me?.handle}`}
+                    autoComplete="off"
+                  />
+                </Field>
+              </div>
+
               <AlertDialogFooter>
-                <AlertDialogCancel>Huỷ</AlertDialogCancel>
+                <AlertDialogCancel onClick={() => setDeleteConfirmText("")}>Huỷ</AlertDialogCancel>
                 <AlertDialogAction
                   variant="destructive"
+                  disabled={!isMatchHandle || deleteAccount.isPending}
                   onClick={() => {
                     deleteAccount.mutate(undefined, {
                       onSuccess: () => {
                         setConfirmDelete(false)
-                        toast.success("Đã xoá tài khoản.")
+                        toast.success("Đã xoá tài khoản thành công.")
                         void navigate("/login")
                       },
                       onError: (error) => toast.error(error.message),
                     })
                   }}
                 >
-                  Xoá tài khoản
+                  Xác nhận xoá tài khoản
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

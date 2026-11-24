@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react"
-import type { UpdateRoomFilterInput } from "@rendez/schema"
+import { useCallback, useContext, useEffect, useRef, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import type { RoomSummary, UpdateRoomFilterInput } from "@rendez/schema"
 import { useSessionStorage } from "@uidotdev/usehooks"
+import { isEqual } from "es-toolkit"
 import { ApiError, api } from "@/lib/axios"
 import { env } from "@/lib/env"
 import { ACTIVE_ROOM_KEY } from "../lib/room"
 import type { Room, RoomProposalField } from "../types/room"
+import { RoomsContext } from "./rooms-context"
 
 export type JoinRoomStatus = "joined" | "already" | "not-found" | "duplicate"
 
@@ -57,7 +60,19 @@ interface ApplyProposalResponse {
   summary: string
 }
 
-export function useRooms(): UseRoomsResult {
+export function useMyRooms(enabled: boolean) {
+  return useQuery({
+    queryKey: ["rooms", "mine"] as const,
+    queryFn: async () => {
+      const { data } = await api.get<{ items: RoomSummary[] }>("/rooms/mine")
+      return data.items
+    },
+    enabled,
+    staleTime: 30_000,
+  })
+}
+
+export function useRoomsState(): UseRoomsResult {
   const [rooms, setRooms] = useState<Record<string, Room>>({})
   const [activeCode, setActiveCode] = useSessionStorage<string>(ACTIVE_ROOM_KEY, "")
   const [missingCodes, setMissingCodes] = useState<ReadonlySet<string>>(new Set())
@@ -70,7 +85,7 @@ export function useRooms(): UseRoomsResult {
   const storeRoom = useCallback((room: Room) => {
     setRooms((prev) => {
       const existing = prev[room.code]
-      if (existing && JSON.stringify(existing) === JSON.stringify(room)) return prev
+      if (existing && isEqual(existing, room)) return prev
       return { ...prev, [room.code]: room }
     })
     setMissingCodes((prev) => {
@@ -348,4 +363,11 @@ export function useRooms(): UseRoomsResult {
     deleteProposal,
     leaveRoom,
   }
+}
+
+export function useRooms(): UseRoomsResult {
+  const shared = useContext(RoomsContext)
+  // Giữ tương thích với unit test gọi trực tiếp `useRooms()` không bọc `RoomsProvider`
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return shared ?? useRoomsState()
 }

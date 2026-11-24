@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from "react"
+import "leaflet/dist/leaflet.css"
+import { useMeasure } from "@uidotdev/usehooks"
 import escapeHtml from "escape-html"
 import L from "leaflet"
 import { CrosshairIcon, LocateFixedIcon, MapPinIcon, NavigationIcon } from "lucide-react"
+import { useTheme } from "next-themes"
 import { MapContainer, Marker, Popup, useMap, useMapEvents } from "react-leaflet"
 import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ResilientTileLayer } from "@/features/places/components/resilient-tile-layer"
-import { formatInitials } from "@/lib/format"
+import { DANANG_CENTER } from "@/lib/constants"
+import { formatDistance, formatInitials } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { ScoredCandidate } from "../lib/room-scoring"
 import type { RoomMember } from "../types/room"
-
-const DANANG_CENTER = { lat: 16.0544, lng: 108.2022 }
 
 interface RoomGroupMapProps {
   readonly members: readonly RoomMember[]
@@ -105,6 +107,24 @@ function MapViewportController({
   return null
 }
 
+function MapSizeSync({
+  width,
+  height,
+}: {
+  readonly width: number | null
+  readonly height: number | null
+}) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (width && height) {
+      map.invalidateSize()
+    }
+  }, [map, width, height])
+
+  return null
+}
+
 function MapClickPinHandler({
   enabled,
   onPick,
@@ -132,7 +152,10 @@ export function RoomGroupMap({
   isLocating = false,
   className,
 }: RoomGroupMapProps) {
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark"
   const [pinMode, setPinMode] = useState(false)
+  const [measureRef, { width, height }] = useMeasure<HTMLDivElement>()
 
   const locatedMembers = useMemo(
     () => members.filter((m) => m.lat != null && m.lng != null),
@@ -169,6 +192,7 @@ export function RoomGroupMap({
 
   return (
     <div
+      ref={measureRef}
       className={cn(
         "relative overflow-hidden rounded-surface border border-border bg-muted/30",
         pinMode && "cursor-crosshair",
@@ -179,9 +203,10 @@ export function RoomGroupMap({
         center={[DANANG_CENTER.lat, DANANG_CENTER.lng]}
         zoom={13}
         scrollWheelZoom
-        className="z-0 h-full w-full"
+        className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
       >
         <ResilientTileLayer />
+        <MapSizeSync width={width} height={height} />
         <MapViewportController points={allPoints} focusCoords={focusCoords} />
         <MapClickPinHandler
           enabled={pinMode && isMember}
@@ -247,7 +272,7 @@ export function RoomGroupMap({
                       <p className="font-semibold text-muted-foreground">Khoảng cách:</p>
                       {item.distances.map((d) => (
                         <p key={d.memberId}>
-                          {d.displayName}: <strong>{d.distanceKm} km</strong>
+                          {d.displayName}: <strong>{formatDistance(d.distanceKm)}</strong>
                         </p>
                       ))}
                     </div>
@@ -307,10 +332,13 @@ export function RoomGroupMap({
       ) : null}
 
       {pinMode ? (
-        <div className="pointer-events-none absolute bottom-3 left-1/2 z-[400] -translate-x-1/2 rounded-full bg-foreground/90 px-3.5 py-1.5 text-xs font-medium text-background shadow-md">
-          <MapPinIcon className="mr-1 inline size-3.5" aria-hidden="true" />
+        <Badge
+          variant="default"
+          className="pointer-events-none absolute bottom-3 left-1/2 z-[400] -translate-x-1/2 gap-1.5 px-3 py-1.5 text-xs shadow-md"
+        >
+          <MapPinIcon className="size-3.5" aria-hidden="true" />
           Chạm vào vị trí của bạn trên bản đồ
-        </div>
+        </Badge>
       ) : null}
     </div>
   )

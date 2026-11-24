@@ -258,6 +258,9 @@ export const socialAuthMockRoutes: Route[] = [
       if (!/^[a-z0-9_]{3,30}$/u.test(handle)) {
         badRequest(config, "Handle chỉ gồm chữ thường, số và gạch dưới (3–30 ký tự)")
       }
+      if (body.acceptTerms !== true) {
+        badRequest(config, "Bạn cần đồng ý với Điều khoản sử dụng để đăng ký tài khoản")
+      }
       // Trùng email: backend thật trả "generic" 201 như đăng ký mới (không lộ
       // email tồn tại) — mock giữ đúng hợp đồng đó.
       if (db.accounts.some((account) => account.email === email)) {

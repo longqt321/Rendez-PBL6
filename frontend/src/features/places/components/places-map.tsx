@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import "leaflet/dist/leaflet.css"
 import { NavigationIcon, StarIcon, XIcon } from "lucide-react"
 import { useTheme } from "next-themes"
-import { MapContainer, Marker, Popup } from "react-leaflet"
+import { MapContainer, Marker, Popup, ZoomControl } from "react-leaflet"
 import { Link } from "react-router"
 import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
@@ -124,9 +124,10 @@ export function PlacesMap({
         center={DANANG_CENTER_TUPLE}
         zoom={DANANG_DEFAULT_ZOOM}
         scrollWheelZoom={true}
-        zoomControl={isDesktop}
+        zoomControl={false}
         className={cn("z-0 h-full w-full", isDark && "map-tiles-dark")}
       >
+        {isDesktop ? <ZoomControl position="bottomright" /> : null}
         <ResilientTileLayer />
         <MapBoundsUpdater
           places={validPlaces}

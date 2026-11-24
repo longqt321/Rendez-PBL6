@@ -9,6 +9,10 @@ import { expect, test } from "@playwright/test"
  * tải ảnh phải dưới ngưỡng (trước khi có srcset: ~2,6 MB cho 9 card).
  */
 test("cold load /discover: ảnh card là .webp và tổng transfer ảnh < 1,5 MB", async ({ page }) => {
+  // Dev server Vite tải >250 module ESM riêng lẻ, tràn buffer 250 mặc định của ResourceTiming.
+  await page.addInitScript(() => {
+    performance.setResourceTimingBufferSize(2000)
+  })
   await page.goto("/discover")
   // Chờ lưới card có ảnh thật (bỏ qua skeleton).
   await expect(page.locator('img[alt^="Ảnh "]').first()).toBeVisible()

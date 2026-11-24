@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { Toggle } from "@/components/ui/toggle"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { MAX_REVIEW_CONTENT_LENGTH } from "@/lib/constants"
 import { formatNumber } from "@/lib/format"
-import { cn } from "@/lib/utils"
 import type { ReviewTier } from "@rendez/schema"
 import type { Review } from "../types/review"
 import { useUpsertReview } from "../hooks/use-upsert-review"
@@ -26,7 +26,15 @@ interface ReviewFormProps {
   onDone?: () => void
 }
 
-const TIER_ORDER: ReviewTier[] = ["must_try", "good", "ok"]
+const TIER_ORDER: ReviewTier[] = ["must_try", "good", "ok", "not_for_me"]
+const QUICK_TAG_OPTIONS = [
+  "Đồ ăn ngon",
+  "Giá hợp lý",
+  "Không gian đẹp",
+  "Phục vụ thân thiện",
+  "Yên tĩnh",
+  "Chỗ đậu xe rộng",
+] as const
 
 export function ReviewForm({
   placeId,
@@ -39,8 +47,36 @@ export function ReviewForm({
   const [tier, setTier] = useState<ReviewTier | null>(myReview?.tier ?? null)
   const [content, setContent] = useState(myReview?.content ?? "")
   const [dishes, setDishes] = useState<string[]>(myReview?.recommendedDishes ?? [])
+  const [quickTags, setQuickTags] = useState<string[]>(myReview?.quickTags ?? [])
   const [dishDraft, setDishDraft] = useState("")
+  const [imageUrls, setImageUrls] = useState<string[]>(myReview?.images ?? [])
+  const [imageUrlDraft, setImageUrlDraft] = useState("")
   const upsert = useUpsertReview(placeId)
+
+  function addImageUrl() {
+    const clean = imageUrlDraft.trim()
+    if (!clean) return
+    if (imageUrls.length >= 5) {
+      toast.info("Đính kèm tối đa 5 ảnh")
+      return
+    }
+    setImageUrls((prev) => [...prev, clean])
+    setImageUrlDraft("")
+  }
+
+  function removeImageUrl(index: number) {
+    setImageUrls((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function toggleQuickTag(tag: string) {
+    setQuickTags((prev) =>
+      prev.includes(tag)
+        ? prev.filter((item) => item !== tag)
+        : prev.length < 5
+          ? [...prev, tag]
+          : prev,
+    )
+  }
 
   function toggleDish(dishName: string) {
     const clean = dishName.trim()
@@ -74,7 +110,8 @@ export function ReviewForm({
         tier,
         content: content.trim(),
         recommendedDishes: dishes,
-        quickTags: [],
+        quickTags,
+        imageUrls,
       },
       {
         onSuccess: () => {
@@ -97,35 +134,33 @@ export function ReviewForm({
             <FieldLabel className="text-sm font-medium">
               {myReview ? "Đánh giá của bạn" : "Bạn thấy quán này thế nào?"}
             </FieldLabel>
-            <div
-              className="grid grid-cols-1 gap-2 sm:grid-cols-3"
-              role="group"
-              aria-label="Chọn mức đánh giá"
+            <ToggleGroup
+              value={tier ? [tier] : []}
+              onValueChange={(next) => {
+                const selected = next[0] as ReviewTier | undefined
+                if (selected) setTier(selected)
+              }}
+              variant="outline"
+              className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
             >
               {TIER_ORDER.map((item) => {
                 const meta = REVIEW_TIER_META[item]
                 const Icon = meta.icon
-                const active = tier === item
                 return (
-                  <Toggle
+                  <ToggleGroupItem
                     key={item}
-                    variant="outline"
-                    pressed={active}
-                    onPressedChange={() => setTier(item)}
-                    className={cn(
-                      "min-h-12 justify-start gap-2.5 px-3 py-2 text-left transition-transform active:scale-[0.98] aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground",
-                      active && "ring-2 ring-primary/30",
-                    )}
+                    value={item}
+                    className="h-auto min-h-12 justify-start gap-2.5 px-3 py-2 text-left aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground"
                   >
                     <Icon className="size-4 shrink-0" aria-hidden="true" />
                     <div className="flex flex-col leading-tight">
                       <span className="text-sm font-semibold">{meta.label}</span>
                       <span className="text-xs font-normal opacity-80">{meta.hint}</span>
                     </div>
-                  </Toggle>
+                  </ToggleGroupItem>
                 )
               })}
-            </div>
+            </ToggleGroup>
           </div>
         </div>
 
@@ -202,6 +237,26 @@ export function ReviewForm({
               </div>
             </div>
 
+            <div className="flex flex-col gap-1.5">
+              <FieldLabel className="text-xs font-medium text-muted-foreground">
+                Điểm nổi bật (tối đa 5 thẻ, tùy chọn)
+              </FieldLabel>
+              <div className="flex flex-wrap gap-1.5">
+                {QUICK_TAG_OPTIONS.map((tag) => (
+                  <Toggle
+                    key={tag}
+                    size="sm"
+                    variant="outline"
+                    pressed={quickTags.includes(tag)}
+                    onPressedChange={() => toggleQuickTag(tag)}
+                    className="h-7 rounded-full px-2.5 text-xs aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+                  >
+                    {tag}
+                  </Toggle>
+                ))}
+              </div>
+            </div>
+
             <Field>
               <FieldLabel htmlFor="review-content" className="sr-only">
                 Nhận xét thêm (tùy chọn)
@@ -218,6 +273,59 @@ export function ReviewForm({
                 {formatNumber(content.length)}/{formatNumber(MAX_REVIEW_CONTENT_LENGTH)}
               </FieldDescription>
             </Field>
+
+            <div className="flex flex-col gap-1.5">
+              <FieldLabel className="text-xs font-medium text-muted-foreground">
+                Ảnh chụp tại quán (tối đa 5 ảnh, tùy chọn)
+              </FieldLabel>
+              {imageUrls.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {imageUrls.map((url, idx) => (
+                    <div
+                      key={url}
+                      className="relative size-14 overflow-hidden rounded-control border border-border"
+                    >
+                      <img src={url} alt="Ảnh đánh giá" className="size-full object-cover" />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon-xs"
+                        className="absolute top-0.5 right-0.5 size-4 rounded-full p-0"
+                        onClick={() => removeImageUrl(idx)}
+                        aria-label="Xoá ảnh"
+                      >
+                        <XIcon className="size-2.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              {imageUrls.length < 5 ? (
+                <div className="flex gap-2">
+                  <Input
+                    type="url"
+                    value={imageUrlDraft}
+                    onChange={(e) => setImageUrlDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        addImageUrl()
+                      }
+                    }}
+                    placeholder="Dán link ảnh (https://...)..."
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addImageUrl}
+                    disabled={!imageUrlDraft.trim()}
+                  >
+                    <PlusIcon className="size-4" />
+                    Thêm ảnh
+                  </Button>
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : null}
 

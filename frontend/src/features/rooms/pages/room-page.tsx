@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Link, useParams } from "react-router"
 import { useCopyToClipboard } from "@uidotdev/usehooks"
-import { MapPinIcon, SlidersHorizontalIcon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  LocateFixedIcon,
+  MapIcon,
+  MapPinIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react"
 import { toast } from "sonner"
 import {
   PageContainer,
@@ -19,8 +26,20 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia } from "@/components/ui/item"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useLandmarks, useMyAnchors } from "@/features/location/hooks/use-location-data"
+import { useMe } from "@/features/profile/hooks/use-me"
 import { useIsDesktop } from "@/hooks/use-breakpoint"
 import { useUserLocation } from "@/hooks/use-user-location"
 import { RoomCandidatesPanel } from "../components/room-candidates-panel"
@@ -35,11 +54,16 @@ import { scoreAndRankRoomCandidates } from "../lib/room-scoring"
 export function RoomPage() {
   const { code = "" } = useParams<{ code: string }>()
   const isDesktop = useIsDesktop()
+  const { data: me } = useMe()
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null)
-  const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
+  const [mobileMapOpen, setMobileMapOpen] = useState(false)
+  const [desktopMapOpen, setDesktopMapOpen] = useState(true)
   const [copiedCode, setCopiedCode] = useState(false)
   const [, copyToClipboard] = useCopyToClipboard()
   const copyTimerRef = useRef<number | null>(null)
+
+  const { data: anchors = [] } = useMyAnchors(Boolean(me))
+  const { data: landmarks = [] } = useLandmarks()
 
   useEffect(() => {
     return () => {
@@ -161,7 +185,9 @@ export function RoomPage() {
   }
 
   const isMember = activeCode === room.code || room.members.some((m) => m.isMe)
+  const meMember = room.members.find((m) => m.isMe)
   const activeProposalsCount = room.proposals.filter((p) => p.status !== "dismissed").length
+  const locatedMembersCount = room.members.filter((m) => m.lat != null && m.lng != null).length
 
   async function handleAddProposals(items: ParsedRoomProposalInput[]) {
     if (!room) return
@@ -182,35 +208,121 @@ export function RoomPage() {
     }
   }
 
-  async function handlePickMyLocation(coords: { lat: number; lng: number }) {
+  async function handleSetPresetLocation(input: { lat: number; lng: number; label: string }) {
     if (!room) return
     try {
       await updateMyLocation(room.code, {
-        lat: coords.lat,
-        lng: coords.lng,
-        locationLabel: "Vị trí đã ghim trên bản đồ",
+        lat: input.lat,
+        lng: input.lng,
+        locationLabel: input.label,
       })
-      toast.success("Đã ghim vị trí của bạn trên bản đồ nhóm")
+      toast.success(`Đã đặt vị trí của bạn: ${input.label}`)
     } catch {
-      toast.error("Không ghim được vị trí")
+      toast.error("Không cập nhật được vị trí")
     }
+  }
+
+  async function handlePickMyLocation(coords: { lat: number; lng: number }) {
+    await handleSetPresetLocation({
+      lat: coords.lat,
+      lng: coords.lng,
+      label: "Vị trí đã ghim trên bản đồ",
+    })
   }
 
   function handleUseDeviceLocation() {
     if (!room) return
     if (coordinates) {
-      void updateMyLocation(room.code, {
+      void handleSetPresetLocation({
         lat: coordinates.lat,
         lng: coordinates.lng,
-        locationLabel: locationSource?.label ?? "Vị trí hiện tại",
+        label: locationSource?.label ?? "Vị trí hiện tại",
       })
-        .then(() => toast.success("Đã cập nhật vị trí của bạn trên bản đồ nhóm"))
-        .catch(() => toast.error("Không cập nhật được vị trí"))
       return
     }
     pendingDeviceLocationRef.current = true
     requestLocation()
   }
+
+  const locationQuickBar = isMember ? (
+    <Item variant="muted" size="sm" className="mb-3 flex-wrap">
+      <ItemMedia variant="icon">
+        <MapPinIcon className="text-primary" aria-hidden="true" />
+      </ItemMedia>
+      <ItemContent>
+        <ItemDescription className="truncate text-xs">
+          {meMember?.lat != null ? (
+            <>
+              Vị trí của bạn:{" "}
+              <strong className="text-foreground">
+                {meMember.locationLabel ?? "Đã chia sẻ toạ độ"}
+              </strong>
+            </>
+          ) : (
+            "Đặt vị trí để tính khoảng cách công bằng cho nhóm"
+          )}
+        </ItemDescription>
+      </ItemContent>
+      <ItemActions className="flex-wrap">
+        <Button
+          type="button"
+          size="xs"
+          variant="secondary"
+          disabled={isLocating}
+          onClick={handleUseDeviceLocation}
+        >
+          <LocateFixedIcon className="size-3.5" aria-hidden="true" />
+          GPS hiện tại
+        </Button>
+
+        {anchors.length > 0 || landmarks.length > 0 ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button type="button" size="xs" variant="outline">
+                  Chọn mốc / địa danh
+                  <ChevronDownIcon className="size-3" aria-hidden="true" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="max-h-72 w-56 overflow-y-auto">
+              {anchors.length > 0 ? (
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Mốc đã lưu của bạn</DropdownMenuLabel>
+                  {anchors.map((a) => (
+                    <DropdownMenuItem
+                      key={a.id}
+                      onClick={() =>
+                        void handleSetPresetLocation({ lat: a.lat, lng: a.lng, label: a.label })
+                      }
+                    >
+                      {a.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              ) : null}
+              {anchors.length > 0 && landmarks.length > 0 ? <DropdownMenuSeparator /> : null}
+              {landmarks.length > 0 ? (
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Địa danh Đà Nẵng</DropdownMenuLabel>
+                  {landmarks.slice(0, 12).map((lm) => (
+                    <DropdownMenuItem
+                      key={lm.id}
+                      onClick={() =>
+                        void handleSetPresetLocation({ lat: lm.lat, lng: lm.lng, label: lm.name })
+                      }
+                    >
+                      {lm.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+      </ItemActions>
+    </Item>
+  ) : null
 
   const panelTabs = (
     <Tabs defaultValue="candidates" className="w-full">
@@ -243,10 +355,12 @@ export function RoomPage() {
           pending={voting.pending}
           onSelectPlace={(id) => {
             setSelectedPlaceId(id)
-            if (!isDesktop) setMobileSheetOpen(false)
           }}
           onAddCandidate={voting.addCandidate}
           onRemoveCandidate={voting.removeCandidate}
+          onStartVoting={voting.startVoting}
+          onCastVote={voting.castVote}
+          onFinalizeVoting={voting.finalizeVoting}
         />
       </TabsContent>
 
@@ -267,6 +381,7 @@ export function RoomPage() {
       <RoomHeader
         room={room}
         isMember={isMember}
+        defaultDisplayName={me?.name ?? ""}
         copiedCode={copiedCode}
         onCopyCode={handleCopyCode}
         onJoin={handleJoin}
@@ -279,61 +394,94 @@ export function RoomPage() {
         }}
       />
 
+      {locationQuickBar}
+
       {isDesktop ? (
-        <SplitLayout ratio="5-7" gap="lg">
-          <StickyAside span={5}>
+        desktopMapOpen ? (
+          <SplitLayout ratio="5-7" gap="lg">
+            <StickyAside span={5}>
+              <SurfaceCard padding="md">{panelTabs}</SurfaceCard>
+            </StickyAside>
+            <SplitMain span={7}>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Bản đồ nhóm ({locatedMembersCount} người đã ghim · {scoredCandidates.length} quán)
+                </p>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => setDesktopMapOpen(false)}
+                >
+                  <ChevronUpIcon className="size-3.5" aria-hidden="true" />
+                  Thu gọn bản đồ
+                </Button>
+              </div>
+              <RoomGroupMap
+                members={room.members}
+                scoredCandidates={scoredCandidates}
+                selectedPlaceId={selectedPlaceId}
+                isMember={isMember}
+                onSelectPlace={setSelectedPlaceId}
+                onPickMyLocation={handlePickMyLocation}
+                onUseDeviceLocation={handleUseDeviceLocation}
+                isLocating={isLocating}
+                className="h-[calc(100dvh-15rem)] min-h-[520px] w-full"
+              />
+            </SplitMain>
+          </SplitLayout>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setDesktopMapOpen(true)}
+              >
+                <MapIcon className="size-4" aria-hidden="true" />
+                Hiện bản đồ nhóm ({locatedMembersCount} người · {scoredCandidates.length} quán)
+              </Button>
+            </div>
             <SurfaceCard padding="md">{panelTabs}</SurfaceCard>
-          </StickyAside>
-          <SplitMain span={7}>
-            <RoomGroupMap
-              members={room.members}
-              scoredCandidates={scoredCandidates}
-              selectedPlaceId={selectedPlaceId}
-              isMember={isMember}
-              onSelectPlace={setSelectedPlaceId}
-              onPickMyLocation={handlePickMyLocation}
-              onUseDeviceLocation={handleUseDeviceLocation}
-              isLocating={isLocating}
-              className="h-[calc(100dvh-13rem)] min-h-[520px] w-full"
-            />
-          </SplitMain>
-        </SplitLayout>
+          </div>
+        )
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <Button
-              type="button"
-              size="sm"
-              className="flex-1 gap-2"
-              onClick={() => setMobileSheetOpen(true)}
-            >
-              <SlidersHorizontalIcon className="size-4" aria-hidden="true" />
-              Đề xuất quán & Tiêu chí ({scoredCandidates.length} quán · {activeProposalsCount} tiêu
-              chí)
-            </Button>
-          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="w-full gap-2 border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
+            onClick={() => setMobileMapOpen(true)}
+          >
+            <MapIcon className="size-4" aria-hidden="true" />
+            Xem bản đồ nhóm ({locatedMembersCount} người · {scoredCandidates.length} quán)
+          </Button>
 
-          <RoomGroupMap
-            members={room.members}
-            scoredCandidates={scoredCandidates}
-            selectedPlaceId={selectedPlaceId}
-            isMember={isMember}
-            onSelectPlace={setSelectedPlaceId}
-            onPickMyLocation={handlePickMyLocation}
-            onUseDeviceLocation={handleUseDeviceLocation}
-            isLocating={isLocating}
-            className="h-[calc(100dvh-14.5rem)] min-h-[420px] w-full"
-          />
+          <SurfaceCard padding="md">{panelTabs}</SurfaceCard>
 
-          <Drawer open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
-            <DrawerContent className="max-h-[85dvh]">
+          <Drawer open={mobileMapOpen} onOpenChange={setMobileMapOpen}>
+            <DrawerContent className="h-[85dvh] max-h-[85dvh]">
               <DrawerHeader className="pb-2">
-                <DrawerTitle>{room.name}</DrawerTitle>
+                <DrawerTitle>Bản đồ nhóm · {room.name}</DrawerTitle>
                 <DrawerDescription>
-                  Đề xuất địa điểm, đặt tiêu chí cá nhân và xem xếp hạng phù hợp cho cả nhóm
+                  Xem vị trí các thành viên, thứ hạng quán đề xuất hoặc chạm bản đồ để đặt vị trí
                 </DrawerDescription>
               </DrawerHeader>
-              <div className="overflow-y-auto px-4 pb-6">{panelTabs}</div>
+              <div className="min-h-0 flex-1 px-4 pb-4">
+                <RoomGroupMap
+                  members={room.members}
+                  scoredCandidates={scoredCandidates}
+                  selectedPlaceId={selectedPlaceId}
+                  isMember={isMember}
+                  onSelectPlace={setSelectedPlaceId}
+                  onPickMyLocation={handlePickMyLocation}
+                  onUseDeviceLocation={handleUseDeviceLocation}
+                  isLocating={isLocating}
+                  className="h-full min-h-[380px] w-full"
+                />
+              </div>
             </DrawerContent>
           </Drawer>
         </div>

@@ -1,14 +1,22 @@
 import type { Review } from "../types/review"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useMutation } from "@tanstack/react-query"
 import { Link, useParams } from "react-router"
+import { getOpeningHoursDetail, type ReviewTier } from "@rendez/schema"
 import {
   CameraIcon,
+  ChevronDownIcon,
+  ClockIcon,
   ExpandIcon,
   FlagIcon,
   FolderPlusIcon,
   MapPinIcon,
-  SparklesIcon,
+  MessageCircleIcon,
+  NavigationIcon,
+  PhoneIcon,
+  UsersIcon,
 } from "lucide-react"
+import { toast } from "sonner"
 import {
   PageContainer,
   SplitLayout,
@@ -22,6 +30,7 @@ import { ImageLightbox } from "@/components/shared/image-lightbox"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
 import { SectionHeading } from "@/components/shared/section-heading"
 import { ShareButton } from "@/components/shared/share-button"
+import { SendToFriendDialog } from "@/features/messages/components/send-to-friend-dialog"
 import { Badge } from "@/components/ui/badge"
 import {
   Breadcrumb,
@@ -32,6 +41,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
   Carousel,
   CarouselContent,
@@ -43,7 +53,9 @@ import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
 import { useMe } from "@/features/profile/hooks/use-me"
-import { isNotFoundError } from "@/lib/axios"
+import { useRooms } from "@/features/rooms/hooks/use-rooms"
+import type { Room } from "@/features/rooms/types/room"
+import { api, isNotFoundError } from "@/lib/axios"
 import { formatCount } from "@/lib/format"
 import { CheckInDialog } from "../components/check-in-dialog"
 import { PlaceCard } from "../components/place-card"
@@ -58,8 +70,7 @@ import { ReportPlaceDialog } from "../components/report-place-dialog"
 import { ReviewDeleteDialog } from "../components/review-delete-dialog"
 import { PlaceMediaTabs } from "../components/place-media-tabs"
 import { PlaceTierSummary } from "../components/place-tier-summary"
-import type { ReviewTier } from "@rendez/schema"
-import { useDiscoverPlaces } from "../hooks/use-discover-places"
+import { useSimilarPlaces } from "../hooks/use-similar-places"
 import { usePlace } from "../hooks/use-place"
 import { usePlacePosts } from "../hooks/use-place-posts"
 import { usePlaceReviews } from "../hooks/use-place-reviews"
@@ -87,19 +98,26 @@ export function PlaceDetailPage() {
     refetch: refetchReviews,
   } = usePlaceReviews(placeId)
   const { data: me, isPending: mePending } = useMe()
-
-  const similarQuery = useDiscoverPlaces(
-    {
-      category: place?.category ?? "all",
-      district: place?.district ?? "all",
-      query: "",
-      sort: "rating",
+  const { activeCode, getRoom, storeRoom } = useRooms()
+  const activeRoom = activeCode ? getRoom(activeCode) : undefined
+  const proposeToRoomMutation = useMutation({
+    mutationFn: async (targetPlaceId: string) => {
+      const { data } = await api.post<Room>(`/rooms/${activeCode}/candidates`, {
+        placeId: targetPlaceId,
+      })
+      return data
     },
-    { enabled: place !== undefined },
-  )
-  const similarPlaces = (similarQuery.data?.pages[0]?.items ?? [])
-    .filter((item) => item.id !== placeId)
-    .slice(0, 6)
+    onSuccess: (data) => {
+      storeRoom(data)
+      toast.success(`Đã đề xuất “${place?.name ?? "địa điểm"}” vào phòng ${activeCode}`)
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Không đề xuất được vào phòng nhóm")
+    },
+  })
+
+  const similarQuery = useSimilarPlaces(placeId, { enabled: place !== undefined })
+  const similarPlaces = (similarQuery.data ?? []).filter((item) => item.id !== placeId).slice(0, 6)
 
   useEffect(() => {
     if (mePending) return
@@ -110,9 +128,16 @@ export function PlaceDetailPage() {
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [selectedTier, setSelectedTier] = useState<ReviewTier | null>(null)
   const [deletingReview, setDeletingReview] = useState<Review | null>(null)
+  const [shareFriendOpen, setShareFriendOpen] = useState(false)
   const [heroLightboxOpen, setHeroLightboxOpen] = useState(false)
   const myReview = reviews?.find((review) => review.isMine) ?? null
   const reviewFormVisible = showReviewForm || editingReview !== null
+
+  const openingHours = place?.openingHours
+  const openingDetail = useMemo(
+    () => (openingHours ? getOpeningHoursDetail(openingHours) : null),
+    [openingHours],
+  )
 
   function closeReviewForm() {
     setEditingReview(null)
@@ -212,7 +237,7 @@ export function PlaceDetailPage() {
               <Badge variant="secondary">{categoryLabel(place.category)}</Badge>
               {place.district ? <Badge variant="outline">{place.district}</Badge> : null}
               {place.status === "closed" ? <Badge variant="destructive">Đã đóng cửa</Badge> : null}
-              <OpenStatusBadge openState={openState} />
+              <OpenStatusBadge openState={openState} detail={openingDetail} />
             </div>
 
             <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
@@ -224,11 +249,99 @@ export function PlaceDetailPage() {
               <span>{formatLocation(place.address, place.city)}</span>
             </p>
 
+            {place.openingHours || place.phone ? (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                {place.openingHours ? (
+                  <Popover>
+                    <PopoverTrigger
+                      render={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
+                        >
+                          <ClockIcon
+                            className="size-3.5 shrink-0 text-primary"
+                            aria-hidden="true"
+                          />
+                          <span>{place.openingHours}</span>
+                          <ChevronDownIcon className="size-3 opacity-70" aria-hidden="true" />
+                        </Button>
+                      }
+                    />
+                    <PopoverContent className="w-64 p-3 text-xs" align="start">
+                      <p className="mb-2 font-semibold">Lịch mở cửa trong tuần</p>
+                      <div className="space-y-1">
+                        {openingDetail?.weeklySchedule.map((item) => (
+                          <div
+                            key={item.dayLabel}
+                            className={`flex justify-between py-0.5 ${item.isToday ? "font-medium text-primary" : "text-muted-foreground"}`}
+                          >
+                            <span>{item.dayLabel}</span>
+                            <span>{item.hours}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : null}
+                {place.phone ? (
+                  <a
+                    href={`tel:${place.phone.replace(/\s+/g, "")}`}
+                    className="inline-flex items-center gap-1.5 hover:text-foreground hover:underline"
+                  >
+                    <PhoneIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+                    <span>{place.phone}</span>
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
+
             {place.description ? (
               <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
                 {place.description}
               </p>
             ) : null}
+
+            {/* Mobile Quick Action Bar (lg:hidden) */}
+            <div className="flex flex-wrap items-center gap-2 pt-2 lg:hidden">
+              <CheckInDialog place={place}>
+                <Button size="sm">
+                  <CameraIcon className="size-4" />
+                  Check-in
+                </Button>
+              </CheckInDialog>
+
+              <SaveToCollectionDialog placeId={placeId} placeName={place.name}>
+                <Button size="sm" variant="outline">
+                  <FolderPlusIcon className="size-4" />
+                  Lưu
+                </Button>
+              </SaveToCollectionDialog>
+
+              {place.lat && place.lng ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  render={
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <NavigationIcon className="size-4 text-primary" />
+                      Chỉ đường
+                    </a>
+                  }
+                />
+              ) : null}
+
+              <ShareButton title={place.name} url={`/discover/${placeId}`} size="sm" />
+              <Button variant="outline" size="sm" onClick={() => setShareFriendOpen(true)}>
+                <MessageCircleIcon className="size-4" />
+                Gửi cho bạn
+              </Button>
+            </div>
 
             {place.tags.length > 0 ? (
               <ul className="flex flex-wrap gap-1.5 pt-1">
@@ -368,6 +481,28 @@ export function PlaceDetailPage() {
                 </Button>
               </SaveToCollectionDialog>
 
+              {activeCode ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full justify-center"
+                  disabled={
+                    proposeToRoomMutation.isPending ||
+                    Boolean(activeRoom?.candidates.some((c) => c.placeId === place.id))
+                  }
+                  onClick={() => proposeToRoomMutation.mutate(place.id)}
+                >
+                  {proposeToRoomMutation.isPending ? (
+                    <Spinner aria-label="Đang đề xuất vào phòng" />
+                  ) : (
+                    <UsersIcon />
+                  )}
+                  {activeRoom?.candidates.some((c) => c.placeId === place.id)
+                    ? `Đã có trong phòng ${activeCode}`
+                    : `Đề xuất vào phòng ${activeCode}`}
+                </Button>
+              ) : null}
+
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <ShareButton title={place.name} url={`/discover/${placeId}`} size="default" />
                 <ReportPlaceDialog place={place}>
@@ -377,6 +512,28 @@ export function PlaceDetailPage() {
                   </Button>
                 </ReportPlaceDialog>
               </div>
+
+              <Button
+                variant="outline"
+                size="default"
+                className="mt-2 w-full"
+                onClick={() => setShareFriendOpen(true)}
+              >
+                <MessageCircleIcon className="size-4" />
+                Gửi cho bạn bè
+              </Button>
+
+              <SendToFriendDialog
+                open={shareFriendOpen}
+                onOpenChange={setShareFriendOpen}
+                attachment={{
+                  type: "place",
+                  id: place.id,
+                  title: place.name,
+                  subtitle: place.address,
+                  imageUrl: place.imageUrl ?? undefined,
+                }}
+              />
             </div>
           </SurfaceCard>
 
@@ -398,7 +555,7 @@ export function PlaceDetailPage() {
             <div className="flex items-center justify-between gap-2">
               <SectionHeading
                 id="similar-places-heading"
-                icon={<SparklesIcon className="size-4 text-primary" aria-hidden="true" />}
+                icon={<MapPinIcon className="size-4 text-primary" aria-hidden="true" />}
               >
                 Quán tương tự tại Đà Nẵng
               </SectionHeading>

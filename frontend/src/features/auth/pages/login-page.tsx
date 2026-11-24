@@ -1,4 +1,7 @@
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useLocalStorage } from "@uidotdev/usehooks"
+import { FileTextIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { Link, Navigate, useNavigate } from "react-router"
 import { parseAsString, useQueryState } from "nuqs"
@@ -9,6 +12,7 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/com
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useLogin } from "../hooks/use-login"
+import { useAuthProviders } from "../hooks/use-auth-providers"
 import {
   defaultAuthenticatedPath,
   useAuthenticatedRedirect,
@@ -17,6 +21,7 @@ import {
 import { useSendVerificationEmail } from "../hooks/use-send-verification-email"
 import { AuthLayout } from "../components/auth-layout"
 import { PasswordInput } from "../components/password-input"
+import { TermsDialog } from "../components/terms-dialog"
 import { safeRedirectPath } from "../lib/safe-redirect"
 import { serverErrorField } from "../lib/server-field-error"
 
@@ -41,6 +46,9 @@ export function LoginPage() {
   const next = safeRedirectPath(nextParam)
   const login = useLogin()
   const resend = useSendVerificationEmail()
+  const { data: providersData } = useAuthProviders()
+  const [loginTermsSeen, setLoginTermsSeen] = useLocalStorage("rendez:login-terms-seen", false)
+  const [termsOpen, setTermsOpen] = useState(false)
   useAuthPageTitle("Đăng nhập")
 
   const form = useForm<LoginForm>({
@@ -57,6 +65,7 @@ export function LoginPage() {
   const onSubmit = (values: LoginForm) => {
     login.mutate(values, {
       onSuccess: (profile) => {
+        setLoginTermsSeen(true)
         void navigate(next ?? defaultAuthenticatedPath(profile.role))
       },
       onError: (error) => {
@@ -74,7 +83,6 @@ export function LoginPage() {
   return (
     <AuthLayout
       title="Đăng nhập"
-      description="Đăng nhập để lưu bài viết, tạo bộ sưu tập và theo dõi bạn bè."
       footer={
         <span>
           Chưa có tài khoản?{" "}
@@ -163,16 +171,87 @@ export function LoginPage() {
             )}
           </Button>
 
+          {providersData?.providers.includes("google") ? (
+            <>
+              <FieldSeparator />
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 w-full text-sm font-medium"
+                onClick={() => {
+                  window.location.href = `/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(
+                    window.location.origin + (next ?? defaultAuthenticatedPath("user")),
+                  )}`
+                }}
+              >
+                Đăng nhập bằng Google
+              </Button>
+            </>
+          ) : null}
+
+          {!loginTermsSeen ? (
+            <Alert>
+              <FileTextIcon className="size-4" aria-hidden="true" />
+              <AlertTitle>Điều khoản sử dụng cho lần đăng nhập đầu tiên</AlertTitle>
+              <AlertDescription className="space-y-1.5">
+                <p>
+                  Tài khoản đã đăng ký trên Rendez mặc định tuân thủ{" "}
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0 align-baseline font-medium"
+                    onClick={() => setTermsOpen(true)}
+                  >
+                    Điều khoản sử dụng
+                  </Button>{" "}
+                  và{" "}
+                  <Link
+                    to="/privacy"
+                    className="font-medium text-primary underline underline-offset-4"
+                  >
+                    Chính sách bảo mật
+                  </Link>
+                  .
+                </p>
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
           <FieldSeparator />
 
-          <Link
-            to="/forgot-password"
-            className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline-offset-4 hover:underline sm:min-h-0"
-          >
-            Quên mật khẩu?
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
+            <Link
+              to="/forgot-password"
+              className="inline-flex min-h-11 items-center underline-offset-4 hover:underline sm:min-h-0"
+            >
+              Quên mật khẩu?
+            </Link>
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="h-auto p-0 font-normal text-muted-foreground"
+              onClick={() => setTermsOpen(true)}
+            >
+              Điều khoản sử dụng
+            </Button>
+          </div>
         </FieldGroup>
       </form>
+
+      <TermsDialog
+        open={termsOpen}
+        onOpenChange={(nextOpen) => {
+          setTermsOpen(nextOpen)
+          if (!nextOpen) setLoginTermsSeen(true)
+        }}
+        acceptLabel="Tôi đã hiểu"
+        onAccept={() => {
+          setLoginTermsSeen(true)
+          setTermsOpen(false)
+        }}
+      />
     </AuthLayout>
   )
 }

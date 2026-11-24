@@ -276,7 +276,11 @@ export function toRoomDto(room: MockRoom): Room {
     name: room.name,
     ...(() => {
       const st = getRoomVotingState(room.code)
-      const me = room.members.find((m) => m.userId === CURRENT_USER.id)
+      const me = room.members.find(
+        (m) =>
+          (tokenMemberId !== undefined && m.id === tokenMemberId) ||
+          (db.authenticated && m.userId === CURRENT_USER.id),
+      )
       const votedIds = new Set<string>()
       const voteSummaries = st.candidates.map((c) => {
         const cv = st.votes.filter((v) => v.candidateId === c.id)

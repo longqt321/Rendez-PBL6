@@ -55,7 +55,7 @@ test("trang chi tiết bài đăng có nút Chia sẻ → sao chép liên kết"
   // Cold-start không seed bài đăng — tự đăng qua composer như `social.spec.ts`.
   const composer = page.getByRole("textbox", { name: "Nội dung bài đăng" })
   await composer.fill("Bài kiểm tra e2e nút chia sẻ")
-  await page.getByRole("button", { name: "Đăng", exact: true }).click()
+  await page.getByRole("button", { name: "Đăng bài" }).click()
   await expect(composer).toHaveValue("")
 
   await page.locator('a[href^="/post/"]').first().click()

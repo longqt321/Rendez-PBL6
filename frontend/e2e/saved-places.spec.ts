@@ -18,7 +18,7 @@ test("tab Địa điểm hiện các quán đã lưu trong bộ sưu tập", asy
   await page.keyboard.press("Escape") // đóng dialog để bấm được menu người dùng
 
   await page.getByRole("button", { name: "Mở menu người dùng" }).click()
-  await page.getByRole("menuitem", { name: "Bài đăng đã lưu" }).click()
+  await page.getByRole("menuitem", { name: "Địa điểm & Bộ sưu tập" }).click()
   await page.getByRole("tab", { name: "Địa điểm" }).click()
 
   const placeCards = page.locator('a[href^="/discover/"]')

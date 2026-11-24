@@ -23,7 +23,8 @@ test("hiển thị ErrorState khi server lỗi và phục hồi thành công khi
   })
 
   // Đổi bộ lọc quận sang "Hải Châu" để trigger API mới đang bị lỗi 500
-  await page.getByRole("button", { name: "Hải Châu", exact: true }).click()
+  await page.getByRole("button", { name: "Lọc theo khu vực" }).click()
+  await page.getByRole("menuitemradio", { name: "Hải Châu" }).click()
 
   // Kiểm tra màn hình báo lỗi ErrorState xuất hiện
   const errorHeading = page.getByText("Không tải được danh sách địa điểm")

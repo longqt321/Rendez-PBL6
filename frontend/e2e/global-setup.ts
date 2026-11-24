@@ -21,6 +21,7 @@ const DEMO_USER = {
   email: `demo-${RUN_SUFFIX}@rendez.local`,
   password: "rendez-demo-123",
   handle: `minhanh${RUN_SUFFIX}`,
+  acceptTerms: true,
 }
 
 export default async function globalSetup(): Promise<void> {

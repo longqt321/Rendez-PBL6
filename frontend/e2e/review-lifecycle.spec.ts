@@ -23,10 +23,10 @@ test("vòng đời đánh giá quán: viết mới → sửa → xoá đánh gi�
   if (await writeReviewBtn.isVisible()) {
     // 2. Viết đánh giá mới
     await writeReviewBtn.click()
-    await expect(page.getByText("Chia sẻ trải nghiệm của bạn")).toBeVisible()
+    await expect(page.getByText("Bạn thấy quán này thế nào?")).toBeVisible()
 
-    // Chọn 5 sao
-    await page.getByLabel("5 sao").click({ force: true })
+    // Chọn mức đánh giá Phải thử để mở form nhập nhận xét
+    await page.getByRole("button", { name: "Phải thử Xuất sắc, rất đáng đi" }).click()
 
     // Nhập nội dung vào textarea
     await page.locator("#review-content").fill("Bánh xèo giòn rụm, nước chấm đậm đà xuất sắc!")
@@ -43,9 +43,9 @@ test("vòng đời đánh giá quán: viết mới → sửa → xoá đánh gi�
   await expect(editBtn).toBeVisible()
   await editBtn.click()
 
-  // 4. Form sửa xuất hiện: đổi số sao sang 4 sao và sửa nội dung
+  // 4. Form sửa xuất hiện: đổi mức sang Rất ngon và sửa nội dung
   await expect(page.getByText("Đánh giá của bạn")).toBeVisible()
-  await page.getByLabel("4 sao").click({ force: true })
+  await page.getByRole("button", { name: "Rất ngon Hài lòng, sẽ quay lại" }).click()
   await page.locator("#review-content").fill("Đã quay lại lần 2, bánh xèo vẫn ngon nhưng hơi đông.")
 
   // Bấm "Cập nhật"

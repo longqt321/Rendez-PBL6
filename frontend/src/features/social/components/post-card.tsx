@@ -10,12 +10,11 @@ import {
   PencilIcon,
   PinIcon,
   PinOffIcon,
-  SparklesIcon,
   Trash2Icon,
 } from "lucide-react"
 import { toast } from "sonner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -66,6 +65,9 @@ export function PostCard({ post }: PostCardProps) {
       <header className="flex items-center gap-3 px-4 pt-4 pb-2">
         <Link to={`/u/${post.author.handle}`} className="shrink-0">
           <Avatar size="lg">
+            {post.author.avatarUrl ? (
+              <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
+            ) : null}
             <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
               {post.author.initials}
             </AvatarFallback>
@@ -84,6 +86,9 @@ export function PostCard({ post }: PostCardProps) {
               <HoverCardContent align="start" className="w-64">
                 <div className="flex items-center gap-3">
                   <Avatar size="default">
+                    {post.author.avatarUrl ? (
+                      <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
+                    ) : null}
                     <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
                       {post.author.initials}
                     </AvatarFallback>
@@ -221,7 +226,7 @@ export function PostCard({ post }: PostCardProps) {
           </Link>
         ) : (
           <Alert className="flex items-center gap-2 border-dashed">
-            <SparklesIcon className="size-4 shrink-0" aria-hidden="true" />
+            <MapPinIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <AlertDescription className="flex-1">Bài viết chưa gắn địa điểm.</AlertDescription>
             {isMine ? (
               <Button

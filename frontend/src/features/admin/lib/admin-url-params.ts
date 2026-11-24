@@ -7,6 +7,7 @@ export const ADMIN_TAB_KEYS = [
   "users",
   "observability",
   "logs",
+  "submissions",
 ] as const
 
 export const ADMIN_REPORT_STATUS_VALUES = ["pending", "reviewed", "dismissed", "all"] as const

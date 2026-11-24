@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import { useDropzone, type Accept } from "react-dropzone"
-import { CheckIcon, ImagePlusIcon, MapPinIcon, SparklesIcon, XIcon } from "lucide-react"
+import { CheckIcon, ImagePlusIcon, MapPinIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -276,7 +276,7 @@ export function PostComposer({ onCreated }: PostComposerProps) {
               {showAutoSuggestions ? (
                 <div className="mt-3 rounded-control border border-dashed border-border bg-muted/50 p-3">
                   <SectionHeading
-                    icon={<SparklesIcon className="size-3.5 text-primary" aria-hidden="true" />}
+                    icon={<MapPinIcon className="size-3.5 text-primary" aria-hidden="true" />}
                   >
                     Gợi ý địa điểm từ nội dung
                   </SectionHeading>

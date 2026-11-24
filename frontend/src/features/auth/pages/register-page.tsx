@@ -1,12 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { Link, Navigate } from "react-router"
 import { parseAsString, useQueryState } from "nuqs"
 import { z } from "zod"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
   InputGroup,
@@ -16,10 +25,16 @@ import {
 } from "@/components/ui/input-group"
 import { Spinner } from "@/components/ui/spinner"
 import { useRegister } from "../hooks/use-register"
-import { useAuthenticatedRedirect, useAuthPageTitle } from "../hooks/use-auth-page"
+import {
+  defaultAuthenticatedPath,
+  useAuthenticatedRedirect,
+  useAuthPageTitle,
+} from "../hooks/use-auth-page"
+import { useAuthProviders } from "../hooks/use-auth-providers"
 import { useSendVerificationEmail } from "../hooks/use-send-verification-email"
 import { AuthLayout } from "../components/auth-layout"
 import { PasswordInput } from "../components/password-input"
+import { TermsDialog } from "../components/terms-dialog"
 import { safeRedirectPath } from "../lib/safe-redirect"
 import { serverErrorField } from "../lib/server-field-error"
 
@@ -45,6 +60,9 @@ const registerSchema = z
       .max(30, "Handle tối đa 30 ký tự")
       .regex(/^[a-z0-9_]+$/, "Handle chỉ gồm chữ thường, số và gạch dưới"),
     confirmPassword: z.string().min(1, "Cần nhập lại mật khẩu"),
+    acceptTerms: z.boolean().refine((checked) => checked, {
+      message: "Bạn cần đồng ý Điều khoản sử dụng để đăng ký tài khoản",
+    }),
   })
   .refine((values) => values.password === values.confirmPassword, {
     message: "Mật khẩu nhập lại không khớp",
@@ -60,13 +78,22 @@ export function RegisterPage() {
   const next = safeRedirectPath(nextParam)
   const register = useRegister()
   const resend = useSendVerificationEmail()
+  const { data: providersData } = useAuthProviders()
   useAuthPageTitle("Tạo tài khoản")
 
   const [sentTo, setSentTo] = useState<string | null>(null)
+  const [termsOpen, setTermsOpen] = useState(false)
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: "", email: "", password: "", handle: "", confirmPassword: "" },
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      handle: "",
+      confirmPassword: "",
+      acceptTerms: false,
+    },
   })
 
   // Đã đăng nhập: không cần tạo tài khoản nữa (V1-09).
@@ -76,7 +103,13 @@ export function RegisterPage() {
   const onSubmit = (values: RegisterForm) => {
     // Chỉ gửi các field backend nhận — `confirmPassword` chỉ dùng để validate.
     register.mutate(
-      { name: values.name, email: values.email, password: values.password, handle: values.handle },
+      {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        handle: values.handle,
+        acceptTerms: values.acceptTerms,
+      },
       {
         onSuccess: () => {
           setSentTo(values.email)
@@ -267,6 +300,64 @@ export function RegisterPage() {
 
           {formError && <FieldError>{formError}</FieldError>}
 
+          <Field data-invalid={!!form.formState.errors.acceptTerms} orientation="horizontal">
+            <Controller
+              control={form.control}
+              name="acceptTerms"
+              render={({ field }) => (
+                <Checkbox
+                  id="register-accept-terms"
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                  aria-invalid={!!form.formState.errors.acceptTerms}
+                  aria-describedby={
+                    form.formState.errors.acceptTerms ? "register-accept-terms-error" : undefined
+                  }
+                />
+              )}
+            />
+            <FieldContent>
+              <FieldLabel
+                htmlFor="register-accept-terms"
+                className="inline leading-relaxed font-normal text-foreground"
+              >
+                Tôi đã đọc và đồng ý với{" "}
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 align-baseline font-medium"
+                  onClick={() => setTermsOpen(true)}
+                >
+                  Điều khoản sử dụng
+                </Button>{" "}
+                và{" "}
+                <Link
+                  to="/privacy"
+                  className="font-medium text-primary underline underline-offset-4"
+                >
+                  Chính sách bảo mật
+                </Link>
+                .
+              </FieldLabel>
+              {form.formState.errors.acceptTerms && (
+                <FieldError id="register-accept-terms-error">
+                  {form.formState.errors.acceptTerms.message}
+                </FieldError>
+              )}
+            </FieldContent>
+          </Field>
+
+          <TermsDialog
+            open={termsOpen}
+            onOpenChange={setTermsOpen}
+            acceptLabel="Tôi đồng ý điều khoản"
+            onAccept={() => {
+              form.setValue("acceptTerms", true, { shouldValidate: true })
+              setTermsOpen(false)
+            }}
+          />
+
           <Button
             type="submit"
             disabled={register.isPending}
@@ -280,6 +371,31 @@ export function RegisterPage() {
               "Đăng ký"
             )}
           </Button>
+
+          {providersData?.providers.includes("google") ? (
+            <>
+              <FieldSeparator />
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 w-full text-sm font-medium"
+                onClick={() => {
+                  if (!form.getValues("acceptTerms")) {
+                    form.setError("acceptTerms", {
+                      type: "manual",
+                      message: "Bạn cần đồng ý Điều khoản sử dụng để đăng ký tài khoản",
+                    })
+                    return
+                  }
+                  window.location.href = `/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(
+                    window.location.origin + (next ?? defaultAuthenticatedPath("user")),
+                  )}`
+                }}
+              >
+                Đăng ký bằng Google
+              </Button>
+            </>
+          ) : null}
         </FieldGroup>
       </form>
     </AuthLayout>

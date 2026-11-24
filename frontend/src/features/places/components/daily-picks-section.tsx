@@ -1,4 +1,4 @@
-import { SparklesIcon } from "lucide-react"
+import { CalendarIcon } from "lucide-react"
 import { BentoCell, BentoGrid } from "@/components/layout/page-primitives"
 import { SectionHeading } from "@/components/shared/section-heading"
 import {
@@ -26,7 +26,7 @@ export function DailyPicksSection() {
   if (isPending) {
     return (
       <section aria-busy="true" className="mt-6">
-        <SectionHeading icon={<SparklesIcon className="size-4 text-primary" aria-hidden="true" />}>
+        <SectionHeading icon={<CalendarIcon className="size-4 text-primary" aria-hidden="true" />}>
           Gợi ý hôm nay
         </SectionHeading>
         <BentoGrid className="mt-3">
@@ -54,14 +54,11 @@ export function DailyPicksSection() {
       <div className="flex items-baseline justify-between gap-2">
         <SectionHeading
           id="daily-picks-heading"
-          icon={<SparklesIcon className="size-4 text-primary" aria-hidden="true" />}
+          icon={<CalendarIcon className="size-4 text-primary" aria-hidden="true" />}
         >
           Gợi ý hôm nay
           {dateLabel ? <span className="text-muted-foreground"> · {dateLabel}</span> : null}
         </SectionHeading>
-        <span className="hidden text-xs font-medium text-muted-foreground sm:inline">
-          Tuyển chọn mỗi ngày
-        </span>
       </div>
 
       {isDesktop ? (

@@ -1,5 +1,5 @@
 import { Link } from "react-router"
-import { SearchXIcon, SparklesIcon, UsersIcon } from "lucide-react"
+import { SearchIcon, SearchXIcon, UsersIcon } from "lucide-react"
 import { ErrorState } from "@/components/shared/error-state"
 import { LoadMore } from "@/components/shared/load-more"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -322,7 +322,7 @@ function SearchEmptyBlock({
               className="rounded-full text-xs"
               render={<Link to={`/search?q=${encodeURIComponent(term)}`} />}
             >
-              <SparklesIcon className="size-3.5 text-primary" aria-hidden="true" />
+              <SearchIcon className="size-3.5 text-primary" aria-hidden="true" />
               {term}
             </Button>
           ))}

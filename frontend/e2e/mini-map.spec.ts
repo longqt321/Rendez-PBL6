@@ -9,12 +9,7 @@ test("mini-map chỉ mount khi cuộn tới", async ({ page }) => {
   // Viewport thấp để mini-map nằm dưới màn hình — buộc phải cuộn tới.
   await page.setViewportSize({ width: 1280, height: 420 })
   await page.goto("/discover/banh-xeo-ba-duong")
-
-  // Mini-map nằm trong tab "Tổng quan". Click tab khiến trình duyệt tự cuộn tới
-  // nội dung — kéo về đầu trang để mini-map ra khỏi tầm nhìn.
-  await page.getByRole("tab", { name: "Tổng quan" }).click()
-  await page.evaluate("window.scrollTo(0, 0)")
-  await page.waitForTimeout(300)
+  await page.waitForLoadState("networkidle")
 
   // Chưa cuộn: mini-map chưa mount (khung giữ chỗ vẫn có, đúng chiều cao).
   const miniMapFrame = page.locator(".place-mini-map-frame")

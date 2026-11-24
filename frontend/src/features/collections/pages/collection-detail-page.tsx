@@ -1,10 +1,21 @@
 import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router"
-import { ArrowLeftIcon, LockIcon, LogInIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react"
+import {
+  ArrowLeftIcon,
+  LockIcon,
+  LogInIcon,
+  MessageCircleIcon,
+  PencilIcon,
+  PlusIcon,
+  Trash2Icon,
+  UsersIcon,
+  XIcon,
+} from "lucide-react"
 import { toast } from "sonner"
 import { PageContainer, SurfaceCard } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
 import { ShareButton } from "@/components/shared/share-button"
+import { SendToFriendDialog } from "@/features/messages/components/send-to-friend-dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +37,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { PlaceCard } from "@/features/places/components/place-card"
@@ -36,21 +48,33 @@ import { isNotFoundError, isUnauthorizedError } from "@/lib/axios"
 import { CollectionLikeButton } from "../components/collection-like-button"
 import { EditCollectionDialog } from "../components/edit-collection-dialog"
 import { SortableCollectionPlaces } from "../components/sortable-collection-places"
-import { useCollection } from "../hooks/use-collection"
+import { useCollection, useUpdateCollectionPlaceNote } from "../hooks/use-collection"
 import { useDeleteCollection, useSetCollectionPlace } from "../hooks/use-collections"
+import type { Place } from "@/features/places/types/place"
 import type { Collection } from "../types/collection"
 
 interface CollectionPlaceItemProps {
   readonly placeId: string
+  readonly initialPlace?: Place
   readonly canRemove: boolean
   readonly collectionId: string
 }
 
-function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPlaceItemProps) {
-  const { data: place, isPending } = usePlace(placeId)
+function CollectionPlaceItem({
+  placeId,
+  initialPlace,
+  canRemove,
+  collectionId,
+}: CollectionPlaceItemProps) {
+  const { data: fetchedPlace, isPending } = usePlace(initialPlace ? "" : placeId)
+  const place = initialPlace ?? fetchedPlace
   const setPlace = useSetCollectionPlace()
+  const updateNoteMutation = useUpdateCollectionPlaceNote(collectionId)
 
-  if (isPending) {
+  const [editingNote, setEditingNote] = useState(false)
+  const [noteDraft, setNoteDraft] = useState(place?.note ?? "")
+
+  if (!initialPlace && isPending) {
     return <PlaceCardSkeleton imageHeight={200} />
   }
   if (!place) return null
@@ -65,27 +89,107 @@ function CollectionPlaceItem({ placeId, canRemove, collectionId }: CollectionPla
     )
   }
 
+  function handleSaveNote() {
+    updateNoteMutation.mutate(
+      { placeId, note: noteDraft.trim() || null },
+      {
+        onSuccess: () => {
+          setEditingNote(false)
+        },
+      },
+    )
+  }
+
+  const currentNote = place.note
+
   return (
-    <div className="relative h-full">
-      <PlaceCard place={place} />
-      {canRemove ? (
-        <Tooltip>
-          <TooltipTrigger
-            render={
+    <div className="relative flex h-full flex-col">
+      <div className="relative">
+        <PlaceCard place={place} />
+        {canRemove ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  className="absolute top-2.5 right-2.5 z-10 bg-background/90 backdrop-blur"
+                  aria-label={`Bỏ ${place.name} khỏi bộ sưu tập`}
+                  disabled={setPlace.isPending}
+                  onClick={handleRemove}
+                />
+              }
+            >
+              {setPlace.isPending ? <Spinner aria-label="Đang bỏ địa điểm" /> : <XIcon />}
+            </TooltipTrigger>
+            <TooltipContent>Bỏ khỏi bộ sưu tập</TooltipContent>
+          </Tooltip>
+        ) : null}
+      </div>
+
+      {currentNote ? (
+        <div className="mt-2 rounded-control border border-border/60 bg-muted/40 p-2.5 text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-semibold text-foreground">Ghi chú Food Tour:</span>
+            {canRemove ? (
               <Button
-                variant="outline"
-                size="icon-sm"
-                className="absolute top-2.5 right-2.5 z-10 bg-background/90 backdrop-blur"
-                aria-label={`Bỏ ${place.name} khỏi bộ sưu tập`}
-                disabled={setPlace.isPending}
-                onClick={handleRemove}
-              />
-            }
-          >
-            {setPlace.isPending ? <Spinner aria-label="Đang bỏ địa điểm" /> : <XIcon />}
-          </TooltipTrigger>
-          <TooltipContent>Bỏ khỏi bộ sưu tập</TooltipContent>
-        </Tooltip>
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => {
+                  setNoteDraft(currentNote)
+                  setEditingNote((prev) => !prev)
+                }}
+                aria-label="Sửa ghi chú"
+              >
+                <PencilIcon className="size-3" />
+              </Button>
+            ) : null}
+          </div>
+          <p className="mt-1 leading-relaxed whitespace-pre-line">{currentNote}</p>
+        </div>
+      ) : canRemove && !editingNote ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-1.5 h-6 justify-start px-1 text-xs text-muted-foreground hover:text-foreground"
+          onClick={() => {
+            setNoteDraft("")
+            setEditingNote(true)
+          }}
+        >
+          <PlusIcon className="mr-1 size-3" />
+          Thêm ghi chú food tour
+        </Button>
+      ) : null}
+
+      {editingNote ? (
+        <div className="mt-2 space-y-1.5 rounded-control border border-border bg-card p-2">
+          <Input
+            value={noteDraft}
+            onChange={(e) => setNoteDraft(e.target.value)}
+            placeholder="VD: Món nên thử, ghé lúc 15h, gửi xe đối diện..."
+            className="h-8 text-xs"
+          />
+          <div className="flex justify-end gap-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs"
+              onClick={() => setEditingNote(false)}
+            >
+              Huỷ
+            </Button>
+            <Button
+              size="sm"
+              className="h-6 text-xs"
+              onClick={handleSaveNote}
+              disabled={updateNoteMutation.isPending}
+            >
+              {updateNoteMutation.isPending ? <Spinner aria-label="Đang lưu" /> : null}
+              Lưu
+            </Button>
+          </div>
+        </div>
       ) : null}
     </div>
   )
@@ -111,6 +215,7 @@ interface CollectionHeaderCardProps {
 }
 
 function CollectionHeaderCard({ collection, onDeleteClick }: CollectionHeaderCardProps) {
+  const [shareFriendOpen, setShareFriendOpen] = useState(false)
   return (
     <SurfaceCard variant="accent" padding="lg" className="mt-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -148,10 +253,38 @@ function CollectionHeaderCard({ collection, onDeleteClick }: CollectionHeaderCar
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {collection.placeIds.length > 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              render={
+                <Link
+                  to={`/rooms/new?places=${encodeURIComponent(collection.placeIds.join(","))}`}
+                />
+              }
+            >
+              <UsersIcon className="size-4" />
+              Lập phòng nhóm từ bộ sưu tập
+            </Button>
+          ) : null}
           <CollectionLikeButton collection={collection} />
           <ShareButton
             title={`Bộ sưu tập “${collection.name}”`}
             url={`/collections/${collection.id}`}
+          />
+          <Button variant="outline" size="sm" onClick={() => setShareFriendOpen(true)}>
+            <MessageCircleIcon className="size-4" />
+            Gửi cho bạn bè
+          </Button>
+          <SendToFriendDialog
+            open={shareFriendOpen}
+            onOpenChange={setShareFriendOpen}
+            attachment={{
+              type: "collection",
+              id: collection.id,
+              title: collection.name,
+              subtitle: collection.description || `${collection.placeIds.length} địa điểm`,
+            }}
           />
           {collection.isMine ? (
             <>
@@ -195,6 +328,7 @@ function CollectionPlacesList({ collection }: Readonly<{ collection: Collection 
       </Empty>
     )
   }
+  const placesById = new Map((collection.places ?? []).map((p) => [p.id, p]))
   return (
     <SortableCollectionPlaces
       collectionId={collection.id}
@@ -203,6 +337,7 @@ function CollectionPlacesList({ collection }: Readonly<{ collection: Collection 
       renderItem={(placeId) => (
         <CollectionPlaceItem
           placeId={placeId}
+          initialPlace={placesById.get(placeId)}
           canRemove={collection.isMine}
           collectionId={collection.id}
         />

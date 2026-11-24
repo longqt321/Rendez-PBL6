@@ -1,4 +1,4 @@
-import { SparklesIcon } from "lucide-react"
+import { CompassIcon } from "lucide-react"
 import { SectionHeading } from "@/components/shared/section-heading"
 import {
   Carousel,
@@ -21,7 +21,7 @@ export function RecommendedSection() {
   if (isPending) {
     return (
       <section aria-busy="true" className="mt-6">
-        <SectionHeading icon={<SparklesIcon className="size-4 text-primary" aria-hidden="true" />}>
+        <SectionHeading icon={<CompassIcon className="size-4 text-primary" aria-hidden="true" />}>
           Gợi ý cho bạn
         </SectionHeading>
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -38,15 +38,12 @@ export function RecommendedSection() {
     <section aria-labelledby="recommended-heading" className="mt-6">
       <Carousel opts={{ align: "start" }} className="w-full">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-baseline gap-2">
-            <SectionHeading
-              id="recommended-heading"
-              icon={<SparklesIcon className="size-4 text-primary" aria-hidden="true" />}
-            >
-              Gợi ý cho bạn
-            </SectionHeading>
-            <span className="hidden text-xs text-muted-foreground sm:inline">Hợp gu của bạn</span>
-          </div>
+          <SectionHeading
+            id="recommended-heading"
+            icon={<CompassIcon className="size-4 text-primary" aria-hidden="true" />}
+          >
+            Gợi ý cho bạn
+          </SectionHeading>
           <div className="hidden items-center gap-1.5 sm:flex">
             <CarouselPrevious className="static size-8 translate-y-0" />
             <CarouselNext className="static size-8 translate-y-0" />

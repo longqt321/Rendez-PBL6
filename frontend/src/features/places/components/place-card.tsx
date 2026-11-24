@@ -1,10 +1,12 @@
 import { isAfter, isValid, parseISO, subDays } from "date-fns"
-import { MapPinIcon, NavigationIcon, SparklesIcon } from "lucide-react"
+import { BookmarkIcon, MapPinIcon, NavigationIcon } from "lucide-react"
 import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { CoverImage } from "@/components/shared/cover-image"
 import { placeImageAlt } from "@/components/shared/place-image-alt"
+import { SaveToCollectionDialog } from "@/features/collections/components/save-to-collection-dialog"
 import { formatCount, formatDistance } from "@/lib/format"
 import { emitPlaceClick } from "@/lib/events"
 import { cn } from "@/lib/utils"
@@ -67,21 +69,39 @@ function PlaceCardBadges({ place, isNew, openState, rankBadge }: PlaceCardBadges
         ) : null}
       </div>
 
-      {openState !== null ? (
-        <Badge
-          variant="outline"
-          className={
-            openState
-              ? "absolute top-2.5 right-2.5 h-6 gap-1.5 border-transparent bg-open px-2 text-xs font-medium text-open-foreground shadow-xs"
-              : "absolute top-2.5 right-2.5 h-6 border-border/70 bg-background/85 px-2 text-xs font-medium text-muted-foreground backdrop-blur-sm"
-          }
-        >
-          {openState ? (
-            <span className="size-1.5 rounded-full bg-open-foreground" aria-hidden="true" />
-          ) : null}
-          {openState ? "Đang mở" : "Đã đóng"}
-        </Badge>
-      ) : null}
+      <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+        {openState !== null ? (
+          <Badge
+            variant="outline"
+            className={
+              openState
+                ? "h-6 gap-1.5 border-transparent bg-open px-2 text-xs font-medium text-open-foreground shadow-xs"
+                : "h-6 border-border/70 bg-background/85 px-2 text-xs font-medium text-muted-foreground backdrop-blur-sm"
+            }
+          >
+            {openState ? (
+              <span className="size-1.5 rounded-full bg-open-foreground" aria-hidden="true" />
+            ) : null}
+            {openState ? "Đang mở" : "Đã đóng"}
+          </Badge>
+        ) : null}
+
+        <SaveToCollectionDialog placeId={place.id} placeName={place.name}>
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            aria-label={`Lưu ${place.name} vào bộ sưu tập`}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+            }}
+            className="size-6 border-border/70 bg-background/85 text-muted-foreground backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground"
+          >
+            <BookmarkIcon className="size-3.5" aria-hidden="true" />
+          </Button>
+        </SaveToCollectionDialog>
+      </div>
 
       <div className="absolute right-2.5 bottom-2.5 left-2.5 flex items-center justify-between gap-2">
         {place.district ? (
@@ -147,7 +167,6 @@ function PlaceCardWhyBlock({ why }: Readonly<{ why: DailyPickWhy }>) {
               : "h-5 px-1.5 text-xs font-normal text-muted-foreground"
           }
         >
-          {index === 0 ? <SparklesIcon className="size-3 text-primary" aria-hidden="true" /> : null}
           {signal}
         </Badge>
       ))}
@@ -168,7 +187,7 @@ export function PlaceCard({
 
   if (variant === "horizontal") {
     return (
-      <Card className="group relative flex-row items-stretch gap-0 overflow-hidden border-border/80 p-0 shadow-(--shadow-soft) transition-all duration-300 hover:-translate-y-0.5 hover:shadow-(--shadow-raised)">
+      <Card className="group relative flex-row items-stretch gap-0 overflow-hidden border-border/80 p-0 shadow-(--shadow-soft) transition-colors hover:border-foreground/20">
         <CoverImage
           src={place.imageUrl}
           placeholder={place.category}
@@ -176,7 +195,6 @@ export function PlaceCard({
           alt={placeImageAlt(place)}
           sizes="(min-width: 768px) 220px, 140px"
           className="w-32 shrink-0 sm:w-40"
-          imgClassName="transition-transform duration-500 group-hover:scale-105"
         >
           {rankBadge ? (
             <span className="absolute top-2 left-2 grid h-6 min-w-6 place-items-center rounded-control bg-primary px-1.5 font-display text-xs font-bold text-primary-foreground shadow-sm">
@@ -227,7 +245,7 @@ export function PlaceCard({
   const imageHeight = variant === "featured" ? 300 : place.imageHeight
 
   return (
-    <Card className="group relative gap-0 overflow-hidden border-border/80 p-0 shadow-(--shadow-soft) transition-all duration-300 hover:-translate-y-0.5 hover:shadow-(--shadow-raised)">
+    <Card className="group relative gap-0 overflow-hidden border-border/80 p-0 shadow-(--shadow-soft) transition-colors hover:border-foreground/20">
       <CoverImage
         src={place.imageUrl}
         placeholder={place.category}
@@ -240,7 +258,6 @@ export function PlaceCard({
             : "(min-width: 768px) 33vw, 50vw"
         }
         className="w-full shrink-0"
-        imgClassName="transition-transform duration-500 ease-out group-hover:scale-105"
       >
         <PlaceCardBadges place={place} isNew={isNew} openState={openState} rankBadge={rankBadge} />
       </CoverImage>

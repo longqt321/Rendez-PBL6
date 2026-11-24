@@ -37,7 +37,7 @@ export function CollectionCard({ collection }: Readonly<{ collection: Collection
   const emptySlotCount = Math.max(0, 3 - previewIds.length)
 
   return (
-    <Card className="group relative gap-0 overflow-hidden border-border/80 py-0 shadow-(--shadow-soft) transition-all hover:-translate-y-0.5 hover:shadow-(--shadow-raised)">
+    <Card className="group relative gap-0 overflow-hidden border-border/80 py-0 shadow-(--shadow-soft) transition-colors hover:border-foreground/20">
       <div className="grid grid-cols-3 gap-0.5 bg-border/60">
         {previewIds.map((placeId) => (
           <CollectionPreviewTile key={placeId} placeId={placeId} />

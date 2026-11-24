@@ -72,13 +72,13 @@ export function ProfilePostGrid({
         const firstImage = post.images[0]
         return (
           <li key={post.id} className="h-full">
-            <Card className="group relative flex h-full flex-col gap-0 overflow-hidden border-border/80 py-0 shadow-(--shadow-soft) transition-all hover:-translate-y-0.5 hover:shadow-(--shadow-raised)">
+            <Card className="group relative flex h-full flex-col gap-0 overflow-hidden border-border/80 py-0 shadow-(--shadow-soft) transition-colors hover:border-foreground/20">
               {firstImage ? (
                 <div className="relative h-44 w-full overflow-hidden bg-muted">
                   <SafeImage
                     src={firstImage}
                     alt={post.caption.slice(0, 80)}
-                    className="size-full transition-transform duration-500 group-hover:scale-105"
+                    className="size-full"
                   />
                   {post.images.length > 1 ? (
                     <Badge

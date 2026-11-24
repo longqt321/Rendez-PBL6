@@ -20,9 +20,7 @@ export function NotFoundPage() {
             <CompassIcon />
           </EmptyMedia>
           <EmptyTitle>Không tìm thấy trang</EmptyTitle>
-          <EmptyDescription>
-            Đường dẫn không tồn tại hoặc đã bị di chuyển. Quay lại Khám phá để tiếp tục nhé.
-          </EmptyDescription>
+          <EmptyDescription>Trang không tồn tại hoặc đường dẫn đã thay đổi.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button render={<Link to="/discover" />}>Về trang Khám phá</Button>

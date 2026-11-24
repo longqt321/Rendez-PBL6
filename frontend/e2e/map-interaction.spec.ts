@@ -34,27 +34,36 @@ test("click pin địa điểm trên bản đồ mở popup và điều hướng
   await zoomInBtn.click()
   await page.waitForTimeout(600)
 
-  // 3. Tìm pin địa điểm đơn lẻ (.custom-place-marker)
-  const placeMarker = page.locator(".custom-place-marker").first()
-  await expect(placeMarker).toBeVisible({ timeout: 10_000 })
-
-  // Click vào pin quán
-  await placeMarker.click()
+  // 3. Tìm pin địa điểm đơn lẻ (.custom-place-marker) nằm dưới thanh công cụ nổi
+  const markers = page.locator(".custom-place-marker")
+  await expect(markers.first()).toBeVisible({ timeout: 10_000 })
+  const count = await markers.count()
+  let clicked = false
+  for (let i = 0; i < count; i++) {
+    const marker = markers.nth(i)
+    const box = await marker.boundingBox()
+    if (box && box.y > 160 && box.x > 40) {
+      await marker.click()
+      clicked = true
+      break
+    }
+  }
+  expect(clicked).toBe(true)
 
   // 4. Popup Leaflet mở ra
   const popup = page.locator(".leaflet-popup-content")
   await expect(popup).toBeVisible()
 
   // Kiểm tra thông tin trong popup
-  const detailLink = popup.getByRole("link", { name: /Xem quán/i })
-  await expect(detailLink).toBeVisible()
+  const detailBtn = popup.getByRole("button", { name: /Xem quán/i })
+  await expect(detailBtn).toBeVisible()
 
   // Lấy tên quán trong popup trước khi bấm
-  const placeNameHeading = popup.locator("p.font-medium, h3, a")
+  const placeNameHeading = popup.locator("h4, p.font-medium, h3, a")
   expect(await placeNameHeading.count()).toBeGreaterThan(0)
 
   // 5. Click "Xem quán" → Điều hướng tới trang chi tiết /discover/:id
-  await detailLink.click()
+  await detailBtn.click()
   await expect(page).toHaveURL(/\/discover\/[a-z0-9-]+$/)
   await expect(page.getByRole("button", { name: /Báo cáo/i })).toBeVisible()
 })
@@ -66,9 +75,10 @@ test("bộ lọc quận trên toolbar bản đồ cập nhật số lượng và
   await expect(counter).toBeVisible({ timeout: 10_000 })
 
   // Bấm chọn quận Hải Châu trên Toolbar
-  const haiChauBtn = page.getByRole("button", { name: "Hải Châu", exact: true })
-  await expect(haiChauBtn).toBeVisible()
-  await haiChauBtn.click()
+  await page.getByRole("button", { name: "Lọc theo khu vực" }).click()
+  const haiChauItem = page.getByRole("menuitemradio", { name: "Hải Châu" })
+  await expect(haiChauItem).toBeVisible()
+  await haiChauItem.click()
 
   // URL cập nhật query district (Hải Châu encode)
   await expect(page).toHaveURL(/district=/)

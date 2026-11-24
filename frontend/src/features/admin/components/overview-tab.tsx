@@ -13,7 +13,8 @@ import { VenueQualityChart } from "./overview/venue-quality-chart"
 import { useAdminRuntime } from "./shared/admin-env-store"
 import { AdminKpiCard } from "./shared/admin-kpi-card"
 
-export type AdminTabKey = "overview" | "reports" | "places" | "users" | "observability" | "logs"
+export type AdminTabKey =
+  "overview" | "reports" | "places" | "users" | "observability" | "logs" | "submissions"
 
 interface OverviewTabProps {
   readonly onSelectTab: (tab: AdminTabKey) => void

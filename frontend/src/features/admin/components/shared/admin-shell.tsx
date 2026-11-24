@@ -1,14 +1,13 @@
 import type { ReactNode } from "react"
 import type { LucideIcon } from "lucide-react"
 import {
-  ExternalLinkIcon,
   FlaskConicalIcon,
   LogOutIcon,
   RefreshCwIcon,
   ShieldAlertIcon,
   ShieldCheckIcon,
 } from "lucide-react"
-import { Link, useNavigate } from "react-router"
+import { useNavigate } from "react-router"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -34,7 +33,6 @@ import { Separator } from "@/components/ui/separator"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -163,20 +161,6 @@ export function AdminShell<TTab extends string>({
             })}
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-sidebar-border p-2">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Mở trang công khai"
-                  render={<Link to="/discover" target="_blank" rel="noopener noreferrer" />}
-                >
-                  <ExternalLinkIcon aria-hidden="true" />
-                  <span>Trang công khai</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarFooter>
-
           <SidebarRail />
         </Sidebar>
 
@@ -253,16 +237,6 @@ export function AdminShell<TTab extends string>({
                 <span className="hidden sm:inline">Làm mới</span>
               </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden h-8 gap-1.5 md:inline-flex"
-                render={<Link to="/discover" target="_blank" rel="noopener noreferrer" />}
-              >
-                <span>Trang công khai</span>
-                <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-              </Button>
-
               <ThemeToggle />
 
               {me ? (
@@ -300,13 +274,6 @@ export function AdminShell<TTab extends string>({
                         </div>
                       </DropdownMenuLabel>
                     </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      render={<Link to="/discover" target="_blank" rel="noopener noreferrer" />}
-                    >
-                      <ExternalLinkIcon className="size-4" aria-hidden="true" />
-                      Trang công khai
-                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       variant="destructive"

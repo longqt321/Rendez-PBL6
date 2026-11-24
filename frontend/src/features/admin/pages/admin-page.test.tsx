@@ -186,6 +186,7 @@ describe("AdminPage", () => {
     expect(screen.getByText("340")).toBeInTheDocument()
     expect(screen.getByText(/DEV · Sandbox/u)).toBeInTheDocument()
     expect(screen.getByText(/Chẩn đoán Runtime/u)).toBeInTheDocument()
+    expect(screen.queryByText(/Trang công khai/u)).not.toBeInTheDocument()
     expect(document.title).toContain("[DEV]")
   })
 

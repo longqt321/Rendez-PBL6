@@ -30,10 +30,31 @@ export interface ScoredCandidate {
   readonly maxDistanceKm: number | null
 }
 
-function formatProposalLabel(proposal: RoomProposal): string {
+interface CompiledCriterion {
+  readonly memberId: string
+  readonly memberName: string
+  readonly proposalId: string
+  readonly evaluate: (place: Place) => boolean
+  readonly conflictReason: string
+}
+
+function categoryLabel(value: string): string {
+  return CATEGORY_META[value as PlaceCategory]?.label ?? value
+}
+
+function matchesPlaceKeyword(place: Place, rawKeyword: string): boolean {
+  const needle = normalizeQueryText(rawKeyword)
+  if (!needle) return true
+  const haystack = normalizeQueryText(
+    `${place.name} ${place.address} ${place.district ?? ""} ${place.tags.join(" ")}`,
+  )
+  return haystack.includes(needle)
+}
+
+function formatSingleConflict(proposal: RoomProposal): string {
   const isExclude = proposal.kind === "exclude"
   if (proposal.field === "category") {
-    const label = CATEGORY_META[proposal.value as PlaceCategory]?.label ?? proposal.value
+    const label = categoryLabel(proposal.value)
     return isExclude ? `Tránh loại hình ${label}` : `Muốn loại hình ${label}`
   }
   if (proposal.field === "district") {
@@ -46,16 +67,7 @@ function formatProposalLabel(proposal: RoomProposal): string {
   return isExclude ? `Tránh “${proposal.value}”` : `Thiếu từ khóa “${proposal.value}”`
 }
 
-function matchesPlaceKeyword(place: Place, rawKeyword: string): boolean {
-  const needle = normalizeQueryText(rawKeyword)
-  if (!needle) return true
-  const haystack = normalizeQueryText(
-    `${place.name} ${place.address} ${place.district ?? ""} ${place.tags.join(" ")}`,
-  )
-  return haystack.includes(needle)
-}
-
-function evaluateProposal(place: Place, proposal: RoomProposal): boolean {
+function evaluateSingleProposal(place: Place, proposal: RoomProposal): boolean {
   const isExclude = proposal.kind === "exclude"
   if (proposal.field === "category") {
     const match = place.category === proposal.value
@@ -69,11 +81,102 @@ function evaluateProposal(place: Place, proposal: RoomProposal): boolean {
   }
   if (proposal.field === "priceMax") {
     const maxLevel = Number(proposal.value)
-    if (!Number.isFinite(maxLevel)) return true
+    if (!Number.isFinite(maxLevel) || place.priceLevel == null) return true
     return place.priceLevel <= maxLevel
   }
   const hasKeyword = matchesPlaceKeyword(place, proposal.value)
   return isExclude ? !hasKeyword : hasKeyword
+}
+
+/**
+ * Biên dịch danh sách đề xuất thành các tiêu chí đánh giá hợp lệ:
+ * - Trong phạm vi CÙNG 1 thành viên, nhiều `include` trên `category` hoặc `district`
+ *   được gom thành phép HOẶC (OR) để tránh báo mâu thuẫn giả.
+ * - Mỗi thành viên chỉ giữ 1 mức `priceMax` (mới nhất).
+ * - Các tiêu chí `exclude` và `include` từ khoá kiểm tra độc lập.
+ */
+function compileRoomCriteria(
+  activeProposals: readonly RoomProposal[],
+  memberMap: ReadonlyMap<string, RoomMember>,
+): CompiledCriterion[] {
+  const byMember = new Map<string, RoomProposal[]>()
+  for (const proposal of activeProposals) {
+    const list = byMember.get(proposal.memberId) ?? []
+    list.push(proposal)
+    byMember.set(proposal.memberId, list)
+  }
+
+  const criteria: CompiledCriterion[] = []
+
+  for (const [memberId, list] of byMember.entries()) {
+    const memberName = memberMap.get(memberId)?.displayName ?? "Thành viên"
+
+    const includeCategories = list.filter((p) => p.kind === "include" && p.field === "category")
+    const firstIncludeCategory = includeCategories[0]
+    if (firstIncludeCategory) {
+      const allowed = new Set(includeCategories.map((p) => p.value))
+      const labels = Array.from(allowed).map(categoryLabel)
+      criteria.push({
+        memberId,
+        memberName,
+        proposalId: firstIncludeCategory.id,
+        evaluate: (place) => allowed.has(place.category),
+        conflictReason:
+          labels.length === 1
+            ? `Muốn loại hình ${labels[0]}`
+            : `Muốn loại hình ${labels.join(" hoặc ")}`,
+      })
+    }
+
+    const includeDistricts = list.filter((p) => p.kind === "include" && p.field === "district")
+    const firstIncludeDistrict = includeDistricts[0]
+    if (firstIncludeDistrict) {
+      const normalizedAllowed = new Set(includeDistricts.map((p) => normalizeQueryText(p.value)))
+      const labels = Array.from(new Set(includeDistricts.map((p) => p.value)))
+      criteria.push({
+        memberId,
+        memberName,
+        proposalId: firstIncludeDistrict.id,
+        evaluate: (place) => {
+          const d = normalizeQueryText(place.district ?? "")
+          return d.length > 0 && normalizedAllowed.has(d)
+        },
+        conflictReason:
+          labels.length === 1 ? `Muốn ở quận ${labels[0]}` : `Muốn ở quận ${labels.join(" hoặc ")}`,
+      })
+    }
+
+    const includePrices = list.filter((p) => p.kind === "include" && p.field === "priceMax")
+    const latestPrice = includePrices[0]
+    if (latestPrice) {
+      // proposals đã sắp createdAt desc từ backend -> phần tử đầu là mức mới nhất
+      criteria.push({
+        memberId,
+        memberName,
+        proposalId: latestPrice.id,
+        evaluate: (place) => evaluateSingleProposal(place, latestPrice),
+        conflictReason: formatSingleConflict(latestPrice),
+      })
+    }
+
+    for (const proposal of list) {
+      const isGroupedInclude =
+        proposal.kind === "include" &&
+        (proposal.field === "category" ||
+          proposal.field === "district" ||
+          proposal.field === "priceMax")
+      if (isGroupedInclude) continue
+      criteria.push({
+        memberId,
+        memberName,
+        proposalId: proposal.id,
+        evaluate: (place) => evaluateSingleProposal(place, proposal),
+        conflictReason: formatSingleConflict(proposal),
+      })
+    }
+  }
+
+  return criteria
 }
 
 function computeMemberDistances(place: Place, members: readonly RoomMember[]): MemberDistance[] {
@@ -94,25 +197,31 @@ function computeMemberDistances(place: Place, members: readonly RoomMember[]): M
   return results
 }
 
+function fairDistanceScore(item: ScoredCandidate): number {
+  if (item.avgDistanceKm === null || item.maxDistanceKm === null) {
+    return Number.POSITIVE_INFINITY
+  }
+  return item.avgDistanceKm * 0.6 + item.maxDistanceKm * 0.4
+}
+
 export function scoreAndRankRoomCandidates(room: Room): ScoredCandidate[] {
   const memberMap = new Map(room.members.map((m) => [m.id, m]))
   const activeProposals = room.proposals.filter((p) => p.status !== "dismissed")
+  const criteria = compileRoomCriteria(activeProposals, memberMap)
 
   const scored = room.candidates.map((candidate): ScoredCandidate => {
     const conflicts: ProposalConflict[] = []
     let satisfiedCount = 0
 
-    for (const proposal of activeProposals) {
-      const ok = evaluateProposal(candidate.place, proposal)
-      if (ok) {
+    for (const criterion of criteria) {
+      if (criterion.evaluate(candidate.place)) {
         satisfiedCount += 1
       } else {
-        const owner = memberMap.get(proposal.memberId)
         conflicts.push({
-          memberId: proposal.memberId,
-          memberName: owner?.displayName ?? "Thành viên",
-          proposalId: proposal.id,
-          reason: formatProposalLabel(proposal),
+          memberId: criterion.memberId,
+          memberName: criterion.memberName,
+          proposalId: criterion.proposalId,
+          reason: criterion.conflictReason,
         })
       }
     }
@@ -130,7 +239,7 @@ export function scoreAndRankRoomCandidates(room: Room): ScoredCandidate[] {
     return {
       candidate,
       satisfiedCount,
-      totalCriteriaCount: activeProposals.length,
+      totalCriteriaCount: criteria.length,
       conflicts,
       distances,
       avgDistanceKm,
@@ -145,8 +254,6 @@ export function scoreAndRankRoomCandidates(room: Room): ScoredCandidate[] {
     if (a.satisfiedCount !== b.satisfiedCount) {
       return b.satisfiedCount - a.satisfiedCount
     }
-    const aDist = a.avgDistanceKm ?? Number.POSITIVE_INFINITY
-    const bDist = b.avgDistanceKm ?? Number.POSITIVE_INFINITY
-    return aDist - bDist
+    return fairDistanceScore(a) - fairDistanceScore(b)
   })
 }

@@ -8,9 +8,9 @@ import { expect, test } from "@playwright/test"
  * card (query key phải đổi theo sort).
  */
 
-/** Mở menu "Sắp xếp" (nút có aria-label) rồi chọn một mục. */
+/** Mở menu "Sắp xếp" (nút có aria-label bắt đầu bằng "Sắp xếp:") rồi chọn một mục. */
 async function chooseSort(page: import("@playwright/test").Page, label: string) {
-  await page.getByRole("button", { name: "Sắp xếp kết quả" }).click()
+  await page.getByRole("button", { name: /^Sắp xếp:/u }).click()
   const item = page.getByRole("menuitemradio", { name: new RegExp(label, "u") })
   await expect(item).toBeVisible()
   await item.click()
@@ -20,50 +20,41 @@ test("chọn 'Đánh giá cao' → URL sort=rating và request có sort=rating",
   await page.goto("/discover")
   await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible()
 
-  // Option luôn chọn được: server sắp xếp trên TOÀN BỘ kết quả, không phụ
-  // thuộc 9 quán của trang hiện tại (heuristic cũ disabled oan khi quán có
-  // đánh giá nằm ở trang khác).
   await chooseSort(page, "Đánh giá cao")
   await expect(page).toHaveURL(/sort=rating/u)
 })
 
-test("chọn 'Gần tôi' → sort=distance + lat/lng, toggle 'Gần đây' bật", async ({
-  page,
-  context,
-}) => {
-  // Cấp quyền vị trí giả lập để luồng "Gần tôi" chạy hết.
+test("bật 'Tìm quán gần tôi' → sort=distance + lat/lng, toggle bật", async ({ page, context }) => {
+  // Cấp quyền vị trí giả lập để luồng "Tìm quán gần tôi" chạy hết.
   await context.grantPermissions(["geolocation"])
   await context.setGeolocation({ latitude: 16.06, longitude: 108.22 })
 
   await page.goto("/discover")
   await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible()
 
-  await chooseSort(page, "Gần tôi")
+  await page.getByRole("button", { name: "Tìm quán gần tôi" }).click()
 
   await expect(page).toHaveURL(/sort=distance/u)
   await expect(page).toHaveURL(/lat=16\.06/u)
   await expect(page).toHaveURL(/lng=108\.22/u)
-  // Toggle "Gần đây" ở trạng thái bật (aria-pressed).
-  await expect(page.getByRole("button", { name: /Gần đây/u })).toHaveAttribute(
+  await expect(page.getByRole("button", { name: "Tìm quán gần tôi" })).toHaveAttribute(
     "aria-pressed",
     "true",
   )
 })
 
-test("link cũ ?nearby=1 → danh sách vẫn sắp theo khoảng cách, URL chuẩn hoá", async ({
+test("vào thẳng URL ?sort=distance → tự định vị và bật nút Tìm quán gần tôi", async ({
   page,
   context,
 }) => {
   await context.grantPermissions(["geolocation"])
   await context.setGeolocation({ latitude: 16.06, longitude: 108.22 })
 
-  await page.goto("/discover?nearby=1")
+  await page.goto("/discover?sort=distance")
   await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible()
 
-  // Chuẩn hoá: nearby bị xoá, sort=distance được ghi.
   await expect(page).toHaveURL(/sort=distance/u)
-  await expect(page).not.toHaveURL(/nearby=1/u)
-  await expect(page.getByRole("button", { name: /Gần đây/u })).toHaveAttribute(
+  await expect(page.getByRole("button", { name: "Tìm quán gần tôi" })).toHaveAttribute(
     "aria-pressed",
     "true",
   )
@@ -78,16 +69,12 @@ test("đổi sort 2 lần không nhân đôi card", async ({ page, context }) =>
   await expect(cards.first()).toBeVisible()
   const initialCount = await cards.count()
 
-  // newest → distance → newest: mỗi lần đổi sort phải THAY trang 1, không nối
-  // thêm trang vào danh sách cũ (query key có sort + toạ độ). Lần đổi thứ hai
-  // dùng toggle "Gần đây" — cùng đường ghi `setSort` với Select, và tránh mở
-  // lại menu trong lúc watcher vị trí còn cập nhật (menu remount liên tục).
-  await chooseSort(page, "Gần tôi")
+  const nearbyToggle = page.getByRole("button", { name: "Tìm quán gần tôi" })
+  await nearbyToggle.click()
   await expect(page).toHaveURL(/sort=distance/u)
   await expect(page).toHaveURL(/lat=16\.06/u)
   await expect(cards).toHaveCount(initialCount)
 
-  const nearbyToggle = page.getByRole("button", { name: /Gần đây/u })
   await nearbyToggle.click({ force: true })
   await expect(page).not.toHaveURL(/sort=distance/u)
   await expect(cards).toHaveCount(initialCount)

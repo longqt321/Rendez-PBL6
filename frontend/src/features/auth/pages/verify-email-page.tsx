@@ -20,11 +20,16 @@ function errorMessage(code: string): string {
 export function VerifyEmailPage() {
   const [errorCode] = useQueryState("error", parseAsString)
   const [verifiedParam] = useQueryState("verified", parseAsString)
+  const [nextParam] = useQueryState("next", parseAsString)
   const navigate = useNavigate()
   const resend = useSendVerificationEmail()
   useAuthPageTitle("Xác thực email")
   const [email, setEmail] = useState("")
   const verified = verifiedParam === "1"
+  const safeNext =
+    nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/discover"
+  const loginHref =
+    safeNext !== "/discover" ? `/login?next=${encodeURIComponent(safeNext)}` : "/login"
 
   if (verified && !errorCode) {
     return (
@@ -32,7 +37,7 @@ export function VerifyEmailPage() {
         title="Email đã được xác thực"
         description="Tài khoản của bạn đã sẵn sàng. Nếu vừa bấm liên kết trong email, bạn đã được đăng nhập."
         footer={
-          <Link to="/login" className="text-primary underline-offset-4 hover:underline">
+          <Link to={loginHref} className="text-primary underline-offset-4 hover:underline">
             Sang trang đăng nhập
           </Link>
         }
@@ -41,14 +46,14 @@ export function VerifyEmailPage() {
           <Alert>
             <AlertTitle>Xác thực thành công</AlertTitle>
             <AlertDescription>
-              Cảm ơn bạn đã xác thực email. Bắt đầu khám phá quán ngon Đà Nẵng thôi.
+              Email đã xác thực. Tài khoản của bạn đã sẵn sàng sử dụng.
             </AlertDescription>
           </Alert>
           <Button
             className="h-10 w-full text-sm font-medium"
-            onClick={() => void navigate("/discover")}
+            onClick={() => void navigate(safeNext)}
           >
-            Vào Rendez
+            {safeNext === "/discover" ? "Vào Rendez" : "Tiếp tục"}
           </Button>
         </div>
       </AuthLayout>

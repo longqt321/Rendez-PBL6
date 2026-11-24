@@ -83,3 +83,22 @@ export async function reorderCollectionPlaces(id: string, placeIds: string[]): P
   const { data } = await api.patch<Collection>(`/collections/${id}/reorder`, { placeIds })
   return data
 }
+
+/** `GET /collections/liked` — danh sách bộ sưu tập đã thích. */
+export async function getLikedCollections(): Promise<CollectionSummary[]> {
+  const { data } = await api.get<{ items: CollectionSummary[] }>("/collections/liked")
+  return data.items
+}
+
+/** `PATCH /collections/:id/places/:placeId` — lưu ghi chú cho địa điểm trong bộ sưu tập. */
+export async function updateCollectionPlaceNote(
+  id: string,
+  placeId: string,
+  note: string | null,
+): Promise<{ ok: boolean; note: string | null }> {
+  const { data } = await api.patch<{ ok: boolean; note: string | null }>(
+    `/collections/${id}/places/${placeId}`,
+    { note },
+  )
+  return data
+}

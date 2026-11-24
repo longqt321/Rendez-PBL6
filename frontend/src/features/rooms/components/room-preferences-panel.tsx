@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react"
-import { PlusIcon, SparklesIcon, XIcon } from "lucide-react"
+import { PlusIcon, SlidersHorizontalIcon, XIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Toggle } from "@/components/ui/toggle"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { CATEGORY_META } from "@/features/places/lib/category-meta"
 import { DANANG_DISTRICTS } from "@/features/places/lib/danang-districts"
 import { priceLevelLabel } from "@/features/places/lib/price-level"
@@ -31,6 +32,7 @@ export function RoomPreferencesPanel({
 }: RoomPreferencesPanelProps) {
   const [text, setText] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const [chipMode, setChipMode] = useState<"include" | "exclude">("include")
 
   const meMember = room.members.find((m) => m.isMe)
   const parsedItems = useMemo(() => naturalQueryToProposalInputs(text), [text])
@@ -66,25 +68,40 @@ export function RoomPreferencesPanel({
     }
   }
 
-  async function handleToggleMyChip(field: RoomProposalField, value: string) {
+  async function handleToggleMyChip(
+    field: RoomProposalField,
+    value: string,
+    kind: "include" | "exclude" = chipMode,
+  ) {
     if (!isMember || submitting) return
     const existing = myProposals.find(
-      (p) => p.kind === "include" && p.field === field && p.value === value,
+      (p) => p.kind === kind && p.field === field && p.value === value,
     )
+    const opposite =
+      field !== "priceMax"
+        ? myProposals.find((p) => p.kind !== kind && p.field === field && p.value === value)
+        : undefined
     setSubmitting(true)
     try {
       if (existing) {
         await onDeleteProposal(existing.id)
       } else {
-        await onAddProposals([{ kind: "include", field, value }])
+        if (opposite) {
+          await onDeleteProposal(opposite.id)
+        }
+        await onAddProposals([{ kind, field, value }])
       }
     } finally {
       setSubmitting(false)
     }
   }
 
-  function hasMyChip(field: RoomProposalField, value: string): boolean {
-    return myProposals.some((p) => p.kind === "include" && p.field === field && p.value === value)
+  function hasMyChip(
+    field: RoomProposalField,
+    value: string,
+    kind: "include" | "exclude" = chipMode,
+  ): boolean {
+    return myProposals.some((p) => p.kind === kind && p.field === field && p.value === value)
   }
 
   return (
@@ -97,7 +114,7 @@ export function RoomPreferencesPanel({
       <div className="flex items-center gap-2">
         <InputGroup className="h-9 flex-1 bg-card">
           <InputGroupAddon>
-            <SparklesIcon className="size-3.5 text-primary" aria-hidden="true" />
+            <SlidersHorizontalIcon className="size-3.5 text-primary" aria-hidden="true" />
           </InputGroupAddon>
           <InputGroupInput
             placeholder="VD: cà phê Sơn Trà dưới 50k, không hải sản…"
@@ -138,8 +155,38 @@ export function RoomPreferencesPanel({
       ) : null}
 
       <div className="space-y-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-medium text-muted-foreground">Chọn nhanh tiêu chí:</span>
+          <ToggleGroup
+            variant="outline"
+            size="sm"
+            spacing={0}
+            value={[chipMode]}
+            onValueChange={(values) => {
+              const next = values[0]
+              if (next === "include" || next === "exclude") setChipMode(next)
+            }}
+            aria-label="Chế độ chọn tiêu chí"
+          >
+            <ToggleGroupItem
+              value="include"
+              className="h-7 px-2.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+            >
+              Muốn đi
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="exclude"
+              className="aria-pressed:text-destructive-foreground h-7 px-2.5 text-xs aria-pressed:bg-destructive"
+            >
+              Muốn tránh
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
         <div>
-          <p className="mb-1.5 text-xs font-medium text-muted-foreground">Loại hình bạn muốn</p>
+          <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+            {chipMode === "include" ? "Loại hình bạn muốn" : "Loại hình bạn muốn tránh"}
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(CATEGORY_META) as PlaceCategory[]).map((cat) => (
               <Toggle
@@ -147,9 +194,14 @@ export function RoomPreferencesPanel({
                 size="sm"
                 variant="outline"
                 disabled={!isMember || submitting}
-                pressed={hasMyChip("category", cat)}
-                onPressedChange={() => void handleToggleMyChip("category", cat)}
-                className="h-7 rounded-full px-2.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+                pressed={hasMyChip("category", cat, chipMode)}
+                onPressedChange={() => void handleToggleMyChip("category", cat, chipMode)}
+                className={cn(
+                  "h-7 rounded-full px-2.5 text-xs",
+                  chipMode === "exclude"
+                    ? "aria-pressed:text-destructive-foreground aria-pressed:border-destructive aria-pressed:bg-destructive"
+                    : "aria-pressed:bg-primary aria-pressed:text-primary-foreground",
+                )}
               >
                 {CATEGORY_META[cat].label}
               </Toggle>
@@ -158,7 +210,9 @@ export function RoomPreferencesPanel({
         </div>
 
         <div>
-          <p className="mb-1.5 text-xs font-medium text-muted-foreground">Quận ưu tiên</p>
+          <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+            {chipMode === "include" ? "Quận ưu tiên" : "Quận muốn tránh"}
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {DANANG_DISTRICTS.map((district) => (
               <Toggle
@@ -166,9 +220,14 @@ export function RoomPreferencesPanel({
                 size="sm"
                 variant="outline"
                 disabled={!isMember || submitting}
-                pressed={hasMyChip("district", district)}
-                onPressedChange={() => void handleToggleMyChip("district", district)}
-                className="h-7 rounded-full px-2.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+                pressed={hasMyChip("district", district, chipMode)}
+                onPressedChange={() => void handleToggleMyChip("district", district, chipMode)}
+                className={cn(
+                  "h-7 rounded-full px-2.5 text-xs",
+                  chipMode === "exclude"
+                    ? "aria-pressed:text-destructive-foreground aria-pressed:border-destructive aria-pressed:bg-destructive"
+                    : "aria-pressed:bg-primary aria-pressed:text-primary-foreground",
+                )}
               >
                 {district}
               </Toggle>
@@ -185,8 +244,10 @@ export function RoomPreferencesPanel({
                 size="sm"
                 variant="outline"
                 disabled={!isMember || submitting}
-                pressed={hasMyChip("priceMax", String(level))}
-                onPressedChange={() => void handleToggleMyChip("priceMax", String(level))}
+                pressed={hasMyChip("priceMax", String(level), "include")}
+                onPressedChange={() =>
+                  void handleToggleMyChip("priceMax", String(level), "include")
+                }
                 className="h-7 rounded-full px-2.5 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground"
               >
                 {level < 3 ? `${priceLevelLabel(level)} trở xuống` : priceLevelLabel(level)}

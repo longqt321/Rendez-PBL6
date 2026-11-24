@@ -6,13 +6,16 @@ import {
   HeartIcon,
   InfoIcon,
   MessageCircleIcon,
+  MessageSquareIcon,
   UserPlusIcon,
+  UsersIcon,
 } from "lucide-react"
 import { Link } from "react-router"
 import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
 import { ErrorState } from "@/components/shared/error-state"
 import { SectionHeading } from "@/components/shared/section-heading"
-import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import {
@@ -35,7 +38,13 @@ import { PlaceSuggestionCard } from "../components/place-suggestion-card"
 import { useMarkAllNotificationsRead } from "../hooks/use-mark-all-notifications-read"
 import { useMarkNotificationRead } from "../hooks/use-mark-notification-read"
 import { useNotifications } from "../hooks/use-notifications"
-import type { ActorNotification, AppNotification, SystemNotification } from "../types/notification"
+import type {
+  ActorNotification,
+  AppNotification,
+  DirectMessageNotification,
+  RoomEventNotification,
+  SystemNotification,
+} from "../types/notification"
 
 type OtherNotification = Exclude<AppNotification, { kind: "place-suggestion" }>
 
@@ -70,6 +79,9 @@ function NotificationRow({ notification }: Readonly<{ notification: ActorNotific
     <>
       <ItemMedia>
         <Avatar>
+          {notification.actorAvatarUrl ? (
+            <AvatarImage src={notification.actorAvatarUrl} alt={notification.actorName} />
+          ) : null}
           <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
             {notification.actorInitials}
           </AvatarFallback>
@@ -102,7 +114,14 @@ function NotificationRow({ notification }: Readonly<{ notification: ActorNotific
     notification.read ? "border-border bg-card" : "border-primary/50 bg-primary/5",
   )
 
-  if (!notification.postId) {
+  const targetHref =
+    notification.kind === "follow" && notification.actorHandle
+      ? `/u/${notification.actorHandle}`
+      : notification.postId
+        ? `/post/${notification.postId}`
+        : null
+
+  if (!targetHref) {
     return (
       <Item
         variant="outline"
@@ -119,7 +138,7 @@ function NotificationRow({ notification }: Readonly<{ notification: ActorNotific
     <Item
       variant="outline"
       size="sm"
-      render={<Link to={`/post/${notification.postId}`} onClick={handleActivate} />}
+      render={<Link to={targetHref} onClick={handleActivate} />}
       className={cn(className, "hover:bg-muted")}
     >
       {body}
@@ -149,6 +168,101 @@ function SystemRow({ notification }: Readonly<{ notification: SystemNotification
           {formatRelativeTime(notification.createdAt)}
         </ItemDescription>
       </ItemContent>
+    </Item>
+  )
+}
+
+function DirectMessageRow({ notification }: Readonly<{ notification: DirectMessageNotification }>) {
+  const markRead = useMarkNotificationRead()
+  const handleActivate = () => {
+    if (!notification.read) markRead.mutate(notification.id)
+  }
+  const targetHref = notification.actorHandle
+    ? `/messages/${notification.actorHandle}`
+    : "/messages"
+
+  return (
+    <Item
+      variant="outline"
+      size="sm"
+      render={<Link to={targetHref} onClick={handleActivate} />}
+      className={cn(
+        "items-start rounded-surface p-3.5",
+        notification.read ? "border-border bg-card" : "border-primary/50 bg-primary/5",
+      )}
+    >
+      <ItemMedia>
+        <Avatar>
+          {notification.actorAvatarUrl ? (
+            <AvatarImage src={notification.actorAvatarUrl} alt={notification.actorName} />
+          ) : null}
+          <AvatarFallback className="bg-accent text-xs font-bold text-accent-foreground">
+            {notification.actorInitials}
+          </AvatarFallback>
+          {notification.read ? null : <AvatarBadge aria-hidden="true" />}
+        </Avatar>
+      </ItemMedia>
+      <ItemContent className="gap-1">
+        <ItemTitle className="line-clamp-none block w-full text-sm leading-relaxed">
+          <span className="font-semibold">{notification.actorName}</span> đã gửi tin nhắn trực tiếp
+          cho bạn
+        </ItemTitle>
+        {notification.messageExcerpt ? (
+          <ItemDescription className="line-clamp-2 border-l-2 border-primary/40 pl-2.5 text-xs italic">
+            “{notification.messageExcerpt}”
+          </ItemDescription>
+        ) : null}
+        <ItemDescription className="text-xs">
+          {formatRelativeTime(notification.createdAt)}
+        </ItemDescription>
+      </ItemContent>
+      <ItemActions>
+        <span className="grid size-8 place-items-center rounded-full bg-primary/12 text-primary">
+          <MessageSquareIcon className="size-4 shrink-0" aria-hidden="true" />
+        </span>
+      </ItemActions>
+    </Item>
+  )
+}
+
+function RoomEventRow({ notification }: Readonly<{ notification: RoomEventNotification }>) {
+  const markRead = useMarkNotificationRead()
+  const handleActivate = () => {
+    if (!notification.read) markRead.mutate(notification.id)
+  }
+  const isFinalized = notification.eventType === "room_finalized"
+
+  return (
+    <Item
+      variant="outline"
+      size="sm"
+      render={<Link to={`/rooms/${notification.roomCode}`} onClick={handleActivate} />}
+      className={cn(
+        "items-start rounded-surface p-3.5",
+        notification.read ? "border-border bg-card" : "border-primary/50 bg-primary/5",
+      )}
+    >
+      <ItemMedia>
+        <span className="grid size-9 place-items-center rounded-full bg-primary/15 text-primary">
+          <UsersIcon className="size-4" aria-hidden="true" />
+        </span>
+      </ItemMedia>
+      <ItemContent className="gap-1">
+        <ItemTitle className="line-clamp-none block w-full text-sm leading-relaxed">
+          Phòng hẹn <span className="font-semibold">“{notification.roomName}”</span>{" "}
+          {isFinalized
+            ? `đã chốt điểm hẹn: ${notification.winnerPlaceName ?? "Xem chi tiết"}`
+            : "đã bắt đầu phiên bình chọn"}
+        </ItemTitle>
+        <ItemDescription className="text-xs">
+          {formatRelativeTime(notification.createdAt)}
+        </ItemDescription>
+      </ItemContent>
+      <ItemActions>
+        <Badge variant={isFinalized ? "default" : "secondary"} className="text-xs">
+          {isFinalized ? "Đã chốt" : "Đang vote"}
+        </Badge>
+      </ItemActions>
     </Item>
   )
 }
@@ -360,6 +474,10 @@ function OtherActivitySection({ notifications }: Readonly<{ notifications: Other
               {index > 0 ? <ItemSeparator className="hidden" /> : null}
               {notification.kind === "system" ? (
                 <SystemRow notification={notification} />
+              ) : notification.kind === "direct-message" ? (
+                <DirectMessageRow notification={notification} />
+              ) : notification.kind === "room-event" ? (
+                <RoomEventRow notification={notification} />
               ) : (
                 <NotificationRow notification={notification} />
               )}

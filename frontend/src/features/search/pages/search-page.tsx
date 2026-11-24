@@ -83,7 +83,7 @@ function SearchResults({ query }: Readonly<{ query: string }>) {
   const parsedQuery = parseNaturalFilterQuery(query)
   const places = placesData?.pages.flatMap((page) => page.items) ?? []
   const didYouMean = placesData?.pages[0]?.meta?.didYouMean
-  const posts = allPosts.filter((post) => post.placeId !== null)
+  const posts = allPosts
   const people = peopleData?.pages.flatMap((page) => page.items) ?? []
 
   return (

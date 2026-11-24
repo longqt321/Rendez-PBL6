@@ -49,12 +49,14 @@ test("theo dõi hết gợi ý → khối biến mất", async ({ page }) => {
   // Chờ dữ liệu gợi ý về (mock trễ ~320ms) — skeleton cũng "visible".
   await expect(suggestions(page).getByRole("listitem").first()).toBeVisible()
 
+  const items = suggestions(page).getByRole("listitem")
   for (let index = 0; index < 5; index += 1) {
+    const beforeCount = await items.count()
+    if (beforeCount === 0) break
     const button = suggestions(page).getByRole("button", { name: "Theo dõi", exact: true }).first()
     if ((await button.count()) === 0) break
     await button.click()
-    // Chờ invalidate `["users"]` + mock trả lời (RESPONSE_DELAY_MS 320ms).
-    await page.waitForTimeout(500)
+    await expect(items).toHaveCount(beforeCount - 1)
   }
 
   await expect(suggestions(page)).toBeHidden()
@@ -69,11 +71,12 @@ test("guest bấm theo dõi → về /login kèm next", async ({ page }) => {
   // Avatar đổi sang icon khách khi `GET /me` trả 401 — tín hiệu đã đăng xuất.
   await expect(menuButton.locator("svg.lucide-user")).toBeVisible()
 
-  // Điều hướng SPA (KHÔNG `goto` — mock reset phiên khi tải lại trang) qua ô
-  // tìm kiếm ở topbar: gõ từ khoá rồi Enter.
-  const searchBox = page.getByRole("searchbox", { name: "Tìm kiếm" })
-  await searchBox.fill("lananh")
-  await searchBox.press("Enter")
+  // Điều hướng SPA tới /search?q=lananh (KHÔNG dùng page.goto vì mock reset
+  // phiên trong bộ nhớ khi tải lại trang; thanh tìm kiếm topbar nay hướng tới /discover).
+  await page.evaluate(() => {
+    window.history.pushState(null, "", "/search?q=lananh")
+    window.dispatchEvent(new PopStateEvent("popstate"))
+  })
   await page.getByRole("tab", { name: "Người" }).click()
 
   // Guest không thấy khối gợi ý (endpoint cần đăng nhập).

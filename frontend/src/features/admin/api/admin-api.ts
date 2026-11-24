@@ -6,6 +6,7 @@ import type {
   AdminUser,
   AuditLogEntry,
   PlaceCategory,
+  PlaceSubmission,
   UpdateAdminPlaceInput,
   UpdateAdminReportInput,
   UpdateAdminUserInput,
@@ -252,5 +253,25 @@ export async function getAdminObservability(query?: {
       q: query?.q?.trim() ? query.q.trim() : undefined,
     },
   })
+  return data
+}
+
+export async function getAdminSubmissions(
+  status?: "pending" | "reviewed" | "dismissed",
+): Promise<PlaceSubmission[]> {
+  const { data } = await api.get<{ items: PlaceSubmission[] }>("/admin/submissions", {
+    params: status ? { status } : undefined,
+  })
+  return data.items
+}
+
+export async function reviewAdminSubmission(
+  id: string,
+  input: { status: "reviewed" | "dismissed"; reviewNote?: string },
+): Promise<PlaceSubmission> {
+  const { data } = await api.patch<PlaceSubmission>(
+    `/admin/submissions/${encodeURIComponent(id)}`,
+    input,
+  )
   return data
 }

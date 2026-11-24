@@ -14,7 +14,13 @@ const MOCK_REASONS = ["Gợi ý cho bạn", "Đang hoạt động gần đây", 
 
 function suggestMockUsers(): UserSuggestion[] {
   return Object.values(MOCK_USERS)
-    .filter((user) => user.id !== ME.id && !user.followedByMe)
+    .filter(
+      (user) =>
+        user.id !== ME.id &&
+        user.role !== "admin" &&
+        user.role !== "moderator" &&
+        !user.followedByMe,
+    )
     .slice(0, MAX_SUGGESTIONS)
     .map((user, index) => ({
       user,

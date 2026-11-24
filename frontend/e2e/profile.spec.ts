@@ -11,6 +11,6 @@ import { expect, test } from "@playwright/test"
 test("hồ sơ của tôi có nút Sửa hồ sơ thay cho Nhắn tin", async ({ page }) => {
   await page.goto("/profile")
 
-  await expect(page.getByRole("link", { name: "Sửa hồ sơ" })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Chỉnh sửa hồ sơ" })).toBeVisible()
   await expect(page.getByRole("button", { name: "Nhắn tin" })).toHaveCount(0)
 })

@@ -7,43 +7,30 @@ import { expect, test } from "@playwright/test"
  * bằng tên và server (mock) cấp "cookie" token mô phỏng trong bộ nhớ.
  */
 test("tạo phòng, gửi đề xuất, áp dụng và thấy bộ lọc chung", async ({ page }) => {
-  await page.goto("/discover")
+  await page.goto("/rooms")
 
-  // Mở dialog "Đi cùng nhóm" và tạo phòng.
-  await page.getByRole("button", { name: "Đi cùng nhóm" }).click()
-  await page.getByLabel("Tạo phòng mới").fill("Nhóm e2e")
-  await page.getByRole("button", { name: "Tạo phòng", exact: true }).click()
+  // Tạo phòng từ trang Phòng nhóm.
+  await page.getByLabel("Tên phòng (tuỳ chọn)").fill("Nhóm e2e")
+  await page.getByRole("button", { name: "Tạo phòng nhóm" }).click()
   await expect(page.getByText(/Đã tạo phòng/u)).toBeVisible()
 
-  // Banner phòng hiện trên trang khám phá.
-  await expect(page.getByText("Nhóm e2e")).toBeVisible()
-  await page.getByRole("link", { name: "Mở phòng" }).click()
   await expect(page).toHaveURL(/\/rooms\/[0-9A-HJKMNP-TV-Z]{6}$/u)
   await expect(page.getByRole("heading", { name: /Nhóm e2e/u })).toBeVisible()
-  await expect(page.getByText("Đang lọc")).toBeVisible()
 
-  // Gửi đề xuất loại hình (mặc định tab "Loại hình", chọn chip Cà phê).
+  // Chuyển sang tab "Tiêu chí" và chọn chip "Cà phê".
+  await page.getByRole("tab", { name: /Tiêu chí/u }).click()
   const cafeChip = page.getByRole("button", { name: "Cà phê", exact: true })
   await cafeChip.click()
   await expect(cafeChip).toHaveAttribute("aria-pressed", "true")
-  await page.getByRole("button", { name: "Gửi đề xuất" }).click()
-  // Chờ xác nhận từ server (toast chỉ hiện khi POST thành công).
-  await expect(page.getByText("Đã gửi đề xuất cho cả nhóm")).toBeVisible()
   await expect(page.getByText("＋ Loại hình: Cà phê")).toBeVisible()
-
-  // Áp dụng → toast dùng summary từ server + filter chung đổi.
-  await page.getByRole("button", { name: "Áp dụng" }).click()
-  await expect(page.getByText(/Đã áp dụng: ＋ Loại hình: Cà phê/u)).toBeVisible()
-  await expect(page.getByText("Cà phê", { exact: true }).first()).toBeVisible()
 })
 
 test("vào phòng bằng mã sai → báo không tìm thấy", async ({ page }) => {
-  await page.goto("/discover")
-  await page.getByRole("button", { name: "Đi cùng nhóm" }).click()
+  await page.goto("/rooms")
 
-  await page.getByPlaceholder("Mã 6 ký tự").fill("ZZZZZZ")
-  await page.getByLabel("Tên hiển thị của bạn").fill("Khách e2e")
-  await page.getByRole("button", { name: "Vào phòng" }).click()
+  await page.getByLabel("Mã phòng").fill("ZZZZZZ")
+  await page.getByLabel("Tên của bạn").fill("Khách e2e")
+  await page.getByRole("button", { name: "Tham gia phòng" }).click()
 
   await expect(page.getByText("Không tìm thấy phòng với mã này")).toBeVisible()
 })

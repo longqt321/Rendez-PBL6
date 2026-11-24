@@ -81,7 +81,9 @@ test("email để trống báo 'Cần nhập email'", async ({ page }) => {
   await expect(page.getByText("Cần nhập email")).toBeVisible()
 })
 
-test("đăng ký tài khoản mới → hiện màn hình kiểm tra email (không vào app)", async ({ page }) => {
+test("đăng ký tài khoản mới → yêu cầu đồng ý điều khoản và hiện màn hình kiểm tra email", async ({
+  page,
+}) => {
   const handle = `e2e_${Date.now().toString(36).slice(-6)}`
   await openRegisterAsGuest(page)
 
@@ -90,6 +92,10 @@ test("đăng ký tài khoản mới → hiện màn hình kiểm tra email (khô
   await page.getByLabel("Tên người dùng").fill(handle)
   await page.getByLabel("Mật khẩu", { exact: true }).fill("password123")
   await page.getByLabel("Nhập lại mật khẩu").fill("password123")
+  await page.getByRole("button", { name: "Đăng ký" }).click()
+  await expect(page.getByText(/Bạn cần đồng ý Điều khoản sử dụng/i)).toBeVisible()
+
+  await page.getByRole("checkbox").click()
   await page.getByRole("button", { name: "Đăng ký" }).click()
 
   // Bắt buộc xác thực email (2026-11-12): đăng ký xong KHÔNG có phiên.
@@ -116,6 +122,7 @@ test("chưa xác thực email không đăng nhập được; gửi lại mail xo
   await page.getByLabel("Tên người dùng").fill(handle)
   await page.getByLabel("Mật khẩu", { exact: true }).fill("password123")
   await page.getByLabel("Nhập lại mật khẩu").fill("password123")
+  await page.getByRole("checkbox").click()
   await page.getByRole("button", { name: "Đăng ký" }).click()
   await expect(page.getByText("Kiểm tra email của bạn")).toBeVisible()
 

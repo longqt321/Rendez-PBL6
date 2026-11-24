@@ -94,6 +94,7 @@ export const db = {
 
   accounts: [
     { userId: "u-me", email: MOCK_EMAIL, password: MOCK_PASSWORD, verified: true },
+    { userId: "u-admin", email: "admin@rendez.test", password: MOCK_PASSWORD, verified: true },
   ] as MockAccount[],
 
   deletedUserIds: new Set<string>(),
@@ -138,7 +139,7 @@ db.auditLogs.push({
   meta: { name: seedPlace?.name ?? "Địa điểm" },
   ip: "127.0.0.1",
   createdAt: new Date(Date.now() - 3600_000).toISOString(),
-  actor: { id: "u-me", name: "Minh Anh", handle: "minhanh.eats", role: "admin" },
+  actor: { id: "u-admin", name: "Quản trị Rendez", handle: "rendez_admin", role: "admin" },
 })
 
 // Tổng hợp review seed vào rating/reviewCount của place — nếu không, place
@@ -293,7 +294,7 @@ export function toMockAdminUser(userId: string): AdminUser {
     handle: user.handle,
     email: account?.email ?? `${user.handle}@rendez.test`,
     emailVerified: account?.verified ?? true,
-    role: adminMeta?.role ?? user.role ?? (user.id === "u-me" ? "admin" : "user"),
+    role: adminMeta?.role ?? user.role ?? (user.id === "u-admin" ? "admin" : "user"),
     bannedAt: adminMeta?.bannedAt ?? null,
     banReason: adminMeta?.banReason ?? null,
     postCount: db.posts.filter((p) => p.author.id === user.id).length,
@@ -476,7 +477,12 @@ export function filterMockPlacesCore(
       if (params.districts.length > 0 && !params.districts.includes(place.district ?? "")) {
         return false
       }
-      if (params.priceMax !== undefined && place.priceLevel > params.priceMax) return false
+      if (
+        params.priceMax !== undefined &&
+        place.priceLevel != null &&
+        place.priceLevel > params.priceMax
+      )
+        return false
       if (params.excludedCategories.has(place.category)) return false
       if (place.district && params.excludedDistricts.has(place.district)) return false
       const haystack = normalizeText(

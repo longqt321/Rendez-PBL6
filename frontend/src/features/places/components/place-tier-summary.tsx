@@ -21,6 +21,7 @@ function computeFromReviews(reviews: Review[]): {
   const mustTryCount = reviews.filter((r) => r.tier === "must_try").length
   const goodCount = reviews.filter((r) => r.tier === "good").length
   const okCount = reviews.filter((r) => r.tier === "ok").length
+  const notForMeCount = reviews.filter((r) => r.tier === "not_for_me").length
   const totalReviews = reviews.length
   const positiveRatio =
     totalReviews > 0 ? Math.round((100 * (mustTryCount + goodCount)) / totalReviews) : 0
@@ -41,7 +42,7 @@ function computeFromReviews(reviews: Review[]): {
     .slice(0, 5)
 
   return {
-    summary: { mustTryCount, goodCount, okCount, totalReviews, positiveRatio },
+    summary: { mustTryCount, goodCount, okCount, notForMeCount, totalReviews, positiveRatio },
     topDishes,
   }
 }
@@ -57,10 +58,12 @@ export function PlaceTierSummary({
   const effectiveSummary = summary ?? computed.summary
   const effectiveDishes = topDishes && topDishes.length > 0 ? topDishes : computed.topDishes
   const total = effectiveSummary.totalReviews
+  const notForMeCount = reviews.filter((r) => r.tier === "not_for_me").length
   const rows: Array<{ tier: ReviewTier; count: number }> = [
     { tier: "must_try", count: effectiveSummary.mustTryCount },
     { tier: "good", count: effectiveSummary.goodCount },
     { tier: "ok", count: effectiveSummary.okCount },
+    { tier: "not_for_me", count: effectiveSummary.notForMeCount ?? notForMeCount },
   ]
 
   const followedNames = [

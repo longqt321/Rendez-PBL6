@@ -2,7 +2,7 @@ import { useState } from "react"
 import { CheckIcon, CopyIcon, LogOutIcon, UsersIcon } from "lucide-react"
 import { SurfaceCard } from "@/components/layout/page-primitives"
 import { ShareButton } from "@/components/shared/share-button"
-import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,7 @@ import type { Room } from "../types/room"
 interface RoomHeaderProps {
   readonly room: Room
   readonly isMember: boolean
+  readonly defaultDisplayName?: string
   readonly copiedCode: boolean
   readonly onCopyCode: (code: string) => void
   readonly onJoin: (name: string) => Promise<void>
@@ -23,12 +24,14 @@ interface RoomHeaderProps {
 export function RoomHeader({
   room,
   isMember,
+  defaultDisplayName = "",
   copiedCode,
   onCopyCode,
   onJoin,
   onLeave,
 }: RoomHeaderProps) {
-  const [joinName, setJoinName] = useState("")
+  const [joinNameDraft, setJoinNameDraft] = useState<string | null>(null)
+  const joinName = joinNameDraft ?? defaultDisplayName
 
   return (
     <SurfaceCard variant="accent" padding="sm" className="mb-4">
@@ -76,6 +79,9 @@ export function RoomHeader({
                   <TooltipTrigger
                     render={
                       <Avatar size="sm" className="ring-2 ring-background">
+                        {member.avatarUrl ? (
+                          <AvatarImage src={member.avatarUrl} alt={member.displayName} />
+                        ) : null}
                         <AvatarFallback className="bg-secondary text-xs font-bold">
                           {formatInitials(member.displayName)}
                         </AvatarFallback>
@@ -114,7 +120,7 @@ export function RoomHeader({
                 autoComplete="off"
                 className="h-7 w-32 bg-card text-xs"
                 value={joinName}
-                onChange={(event) => setJoinName(event.target.value)}
+                onChange={(event) => setJoinNameDraft(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.nativeEvent.isComposing || event.keyCode === 229) return
                   if (event.key === "Enter" && joinName.trim()) {

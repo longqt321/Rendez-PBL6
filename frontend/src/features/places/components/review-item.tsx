@@ -1,5 +1,6 @@
-import { PencilIcon, Trash2Icon } from "lucide-react"
+import { PencilIcon, ThumbsUpIcon, Trash2Icon } from "lucide-react"
 import { Link } from "react-router"
+import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -7,6 +8,7 @@ import { Item } from "@/components/ui/item"
 import { formatRelativeTime } from "@/lib/format"
 import type { Review } from "../types/review"
 import { ReviewTierBadge } from "./review-tier-badge"
+import { useVoteReviewHelpful } from "../hooks/use-vote-review-helpful"
 
 interface ReviewItemProps {
   review: Review
@@ -15,6 +17,10 @@ interface ReviewItemProps {
 }
 
 export function ReviewItem({ review, onEdit, onDelete }: ReviewItemProps) {
+  const voteMutation = useVoteReviewHelpful(review.placeId, review.id)
+  const helpfulCount = review.helpfulCount ?? 0
+  const helpfulByMe = review.helpfulByMe ?? false
+
   return (
     <Item
       variant="outline"
@@ -93,6 +99,31 @@ export function ReviewItem({ review, onEdit, onDelete }: ReviewItemProps) {
           {review.content}
         </p>
       ) : null}
+      {review.images && review.images.length > 0 ? (
+        <div className="flex flex-wrap gap-2 pt-1">
+          {review.images.map((url) => (
+            <img
+              key={url}
+              src={url}
+              alt="Ảnh đính kèm đánh giá"
+              className="size-20 rounded-control border border-border object-cover"
+            />
+          ))}
+        </div>
+      ) : null}
+      <div className="flex items-center justify-between border-t border-border/40 pt-2 text-xs">
+        <Button
+          type="button"
+          variant={helpfulByMe ? "secondary" : "ghost"}
+          size="sm"
+          className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+          onClick={() => voteMutation.mutate()}
+          disabled={voteMutation.isPending}
+        >
+          <ThumbsUpIcon className={cn("size-3.5", helpfulByMe && "fill-current text-primary")} />
+          <span>Hữu ích ({helpfulCount})</span>
+        </Button>
+      </div>
     </Item>
   )
 }

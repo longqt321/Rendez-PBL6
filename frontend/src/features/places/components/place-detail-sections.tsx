@@ -12,7 +12,32 @@ import type { Review } from "../types/review"
 import { ReviewForm } from "./review-form"
 import { ReviewItem } from "./review-item"
 
-export function OpenStatusBadge({ openState }: Readonly<{ openState: boolean | null }>) {
+import type { OpeningHoursDetail } from "@rendez/schema"
+
+export function OpenStatusBadge({
+  openState,
+  detail,
+}: Readonly<{
+  openState?: boolean | null
+  detail?: OpeningHoursDetail | null
+}>) {
+  if (detail) {
+    if (detail.isOpen) {
+      if (detail.closingSoon) {
+        return (
+          <Badge variant="outline" className="border-star/40 bg-star/10 font-medium text-star">
+            {detail.statusLabel}
+          </Badge>
+        )
+      }
+      return <Badge className="bg-open text-open-foreground">{detail.statusLabel}</Badge>
+    }
+    return (
+      <Badge variant="outline" className="text-muted-foreground">
+        {detail.statusLabel}
+      </Badge>
+    )
+  }
   if (openState === true) {
     return <Badge className="bg-open text-open-foreground">Đang mở cửa</Badge>
   }
@@ -124,7 +149,7 @@ export function ReviewsListContent({
     <Empty className="mt-2">
       <EmptyHeader>
         <EmptyTitle>Chưa có đánh giá nào</EmptyTitle>
-        <EmptyDescription>Hãy là người đầu tiên chia sẻ trải nghiệm tại đây.</EmptyDescription>
+        <EmptyDescription>Chưa có đánh giá nào cho địa điểm này.</EmptyDescription>
       </EmptyHeader>
     </Empty>
   )

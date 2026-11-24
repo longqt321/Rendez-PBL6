@@ -1,10 +1,11 @@
-import { ArrowRightIcon, CompassIcon, PaletteIcon, ShieldCheckIcon, UsersIcon } from "lucide-react"
+import { ArrowRightIcon, CompassIcon, PaletteIcon, UsersIcon } from "lucide-react"
 import { Link, NavLink, useLocation } from "react-router"
 import { useSkin } from "@/app/providers/skin-context"
 import { MotionPill } from "@/components/shared/motion-primitives"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useUnreadMessagesCount } from "@/features/messages/hooks/use-messages"
 import { useUnreadNotificationCount } from "@/features/notification/hooks/use-notifications"
 import { useMe } from "@/features/profile/hooks/use-me"
 import { useRooms } from "@/features/rooms/hooks/use-rooms"
@@ -18,7 +19,7 @@ export function Brand() {
     <Link to="/discover" className="group flex items-center gap-2.5 outline-none">
       <span
         aria-hidden="true"
-        className="grid size-9 place-items-center rounded-control bg-primary text-primary-foreground shadow-(--shadow-soft) transition-transform group-hover:scale-105"
+        className="grid size-9 place-items-center rounded-control bg-primary text-primary-foreground shadow-(--shadow-soft)"
       >
         <CompassIcon className="size-4.5" />
       </span>
@@ -43,10 +44,10 @@ function useNavTarget() {
 export function SideNav() {
   const { data: unread = 0 } = useUnreadNotificationCount()
   const { data: me } = useMe()
+  const unreadMessages = useUnreadMessagesCount(Boolean(me))
   const { activeCode, getRoom } = useRooms()
   const activeRoom = activeCode ? getRoom(activeCode) : undefined
   const navTarget = useNavTarget()
-  const isStaff = me?.role === "admin" || me?.role === "moderator"
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border/80 bg-sidebar/95 px-4 py-5 backdrop-blur-md lg:flex">
@@ -83,33 +84,19 @@ export function SideNav() {
                       {unread}
                     </Badge>
                   ) : null}
+                  {item.to === "/messages" && unreadMessages > 0 ? (
+                    <Badge
+                      variant={isActive ? "secondary" : "default"}
+                      className="min-w-5 px-1.5 text-xs font-bold tabular-nums"
+                    >
+                      {unreadMessages}
+                    </Badge>
+                  ) : null}
                 </>
               )}
             </NavLink>
           )
         })}
-
-        {isStaff ? (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) =>
-              cn(
-                "group relative isolate mt-2 flex items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive
-                  ? "text-primary-foreground"
-                  : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {isActive ? <MotionPill layoutId="sidenav-active" /> : null}
-                <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
-                <span className="flex-1">Quản trị</span>
-              </>
-            )}
-          </NavLink>
-        ) : null}
       </nav>
 
       {activeRoom ? (
@@ -185,7 +172,8 @@ function SkinSwitch() {
 }
 
 export function BottomNav() {
-  const { data: unread = 0 } = useUnreadNotificationCount()
+  const { data: me } = useMe()
+  const unreadMessages = useUnreadMessagesCount(Boolean(me))
   const navTarget = useNavTarget()
 
   return (
@@ -211,11 +199,14 @@ export function BottomNav() {
                   <>
                     <span className="relative">
                       <Icon className="size-5" aria-hidden="true" />
-                      {item.to === "/notification" && unread > 0 ? (
-                        <span
+                      {item.to === "/messages" && unreadMessages > 0 ? (
+                        <Badge
+                          variant="destructive"
                           aria-hidden="true"
-                          className="absolute -top-1 -right-1.5 size-2 rounded-full bg-destructive ring-2 ring-background"
-                        />
+                          className="absolute -top-1.5 -right-2.5 h-4 min-w-4 px-1 text-xs font-bold tabular-nums ring-2 ring-background"
+                        >
+                          {unreadMessages > 99 ? "99+" : unreadMessages}
+                        </Badge>
                       ) : null}
                     </span>
                     <span className="max-w-full truncate">{item.label}</span>

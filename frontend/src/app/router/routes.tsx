@@ -33,9 +33,6 @@ const ProfilePage = lazy(() =>
 const UserProfilePageRoute = lazy(() =>
   import("./user-profile-route").then((m) => ({ default: m.UserProfilePageRoute })),
 )
-const SystemPage = lazy(() =>
-  import("@/features/system/pages/system-page").then((m) => ({ default: m.SystemPage })),
-)
 const SearchPage = lazy(() =>
   import("@/features/search/pages/search-page").then((m) => ({ default: m.SearchPage })),
 )
@@ -64,12 +61,6 @@ const AdminPage = lazy(() =>
 )
 const NotFoundPage = lazy(() =>
   import("@/features/not-found/pages/not-found-page").then((m) => ({ default: m.NotFoundPage })),
-)
-const HelpPage = lazy(() =>
-  import("@/features/static/pages/help-page").then((m) => ({ default: m.HelpPage })),
-)
-const AboutPage = lazy(() =>
-  import("@/features/static/pages/about-page").then((m) => ({ default: m.AboutPage })),
 )
 const TermsPage = lazy(() =>
   import("@/features/static/pages/terms-page").then((m) => ({ default: m.TermsPage })),
@@ -194,10 +185,6 @@ export const routes: RouteObject[] = [
           </RequireAuth>
         ),
       },
-      // Trang demo vận hành — không có link trong nav, chỉ mở trực tiếp khi demo.
-      { path: "/system", element: <SystemPage /> },
-      { path: "/help", element: <HelpPage /> },
-      { path: "/about", element: <AboutPage /> },
       { path: "/terms", element: <TermsPage /> },
       { path: "/privacy", element: <PrivacyPage /> },
       { path: "*", element: <NotFoundPage /> },

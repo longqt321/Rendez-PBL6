@@ -10,7 +10,6 @@ import {
   MapIcon,
   MapPinIcon,
   SlidersHorizontalIcon,
-  SparklesIcon,
   UtensilsIcon,
   WineIcon,
 } from "lucide-react"
@@ -42,7 +41,7 @@ import { MobileFilterDrawer } from "./discover/mobile-filter-drawer"
 import { NearbyButtonIcon } from "./discover/toolbar-primitives"
 
 const CATEGORY_ICON_MAP: Record<PlaceCategory | "all", LucideIcon> = {
-  all: SparklesIcon,
+  all: LayoutGridIcon,
   restaurant: UtensilsIcon,
   cafe: CoffeeIcon,
   "street-food": CookieIcon,

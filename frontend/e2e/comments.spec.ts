@@ -18,7 +18,7 @@ test("bình luận bài viết và trả lời lồng 1 cấp", async ({ page })
   const uniqueContent = `Bài thảo luận ẩm thực ${Date.now()}`
   const composer = page.getByRole("textbox", { name: "Nội dung bài đăng" })
   await composer.fill(uniqueContent)
-  await page.getByRole("button", { name: "Đăng", exact: true }).click()
+  await page.getByRole("button", { name: "Đăng bài" }).click()
   await expect(composer).toHaveValue("")
 
   // Click vào link bài đăng đầu tiên để chuyển đến trang chi tiết /post/:id
@@ -30,6 +30,7 @@ test("bình luận bài viết và trả lời lồng 1 cấp", async ({ page })
   await expect(commentInput).toBeVisible({ timeout: 10_000 })
   await commentInput.fill("Quán này phục vụ rất chu đáo và thân thiện!")
   await page.getByRole("button", { name: "Gửi bình luận" }).click()
+  await expect(commentInput).toHaveValue("")
 
   // Bình luận gốc hiển thị
   const rootComment = page.getByText("Quán này phục vụ rất chu đáo và thân thiện!")
@@ -44,6 +45,7 @@ test("bình luận bài viết và trả lời lồng 1 cấp", async ({ page })
   // 3. Gõ nội dung phản hồi
   await commentInput.fill("Đồng ý với bạn, không gian cũng rất rộng rãi.")
   await page.getByRole("button", { name: "Gửi bình luận" }).click()
+  await expect(commentInput).toHaveValue("")
 
   // Bình luận phản hồi xuất hiện
   const replyComment = page.getByText("Đồng ý với bạn, không gian cũng rất rộng rãi.")

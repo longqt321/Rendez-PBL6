@@ -6,6 +6,7 @@ import {
   LayoutDashboardIcon,
   MapPinIcon,
   ScrollTextIcon,
+  StoreIcon,
   UsersIcon,
 } from "lucide-react"
 import { useQueryStates } from "nuqs"
@@ -15,6 +16,7 @@ import { ObservabilityTab } from "../components/observability-tab"
 import { OverviewTab, type AdminTabKey } from "../components/overview-tab"
 import { PlacesTab } from "../components/places-tab"
 import { ReportsTab } from "../components/reports-tab"
+import { SubmissionsTab } from "../components/submissions-tab"
 import { AdminEnvProvider } from "../components/shared/admin-env-context"
 import { AdminShell, type AdminNavItem } from "../components/shared/admin-shell"
 import { UsersTab } from "../components/users-tab"
@@ -24,6 +26,7 @@ import { ADMIN_URL_PARSERS, CLEAR_ALL_ADMIN_FILTERS } from "../lib/admin-url-par
 const BASE_NAV_ITEMS: Omit<AdminNavItem<AdminTabKey>, "badgeCount">[] = [
   { key: "overview", label: "Tổng quan", group: "ops", icon: LayoutDashboardIcon },
   { key: "reports", label: "Báo cáo", group: "ops", icon: FlagIcon },
+  { key: "submissions", label: "Đề xuất quán", group: "ops", icon: StoreIcon },
   { key: "places", label: "Địa điểm", group: "ops", icon: MapPinIcon },
   { key: "users", label: "Người dùng", group: "ops", adminOnly: true, icon: UsersIcon },
   {
@@ -107,6 +110,7 @@ export function AdminPage() {
           />
         ) : null}
         {activeTab === "reports" ? <ReportsTab /> : null}
+        {activeTab === "submissions" ? <SubmissionsTab /> : null}
         {activeTab === "places" ? <PlacesTab /> : null}
         {activeTab === "users" && isAdmin && me ? <UsersTab currentUserId={me.id} /> : null}
         {activeTab === "observability" && isAdmin ? <ObservabilityTab /> : null}

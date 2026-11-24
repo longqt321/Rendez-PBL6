@@ -3,4 +3,6 @@ export type {
   ActorNotification,
   PlaceSuggestionNotification,
   SystemNotification,
+  DirectMessageNotification,
+  RoomEventNotification,
 } from "@rendez/schema"

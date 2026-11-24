@@ -17,9 +17,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CollectionCard } from "@/features/collections/components/collection-card"
 import { CreateCollectionDialog } from "@/features/collections/components/create-collection-dialog"
-import { useCollections } from "@/features/collections/hooks/use-collection"
+import { useCollections, useLikedCollections } from "@/features/collections/hooks/use-collection"
 import type { CollectionSummary } from "@/features/collections/types/collection"
 import { PlaceCard } from "@/features/places/components/place-card"
+import { SuggestPlaceDialog } from "@/features/places/components/suggest-place-dialog"
 import type { Place } from "@/features/places/types/place"
 import { PostCard } from "@/features/social/components/post-card"
 import { usePosts } from "@/features/social/hooks/use-posts"
@@ -32,9 +33,22 @@ interface SavedPostsContentProps {
   readonly postsError: boolean
   readonly savedPosts: Post[]
   readonly onRetry: () => void
+  readonly sentinelRef: React.Ref<HTMLDivElement>
+  readonly hasNextPage: boolean
+  readonly isFetchingNextPage: boolean
+  readonly onFetchNextPage: () => unknown
 }
 
-function SavedPostsContent({ isPending, postsError, savedPosts, onRetry }: SavedPostsContentProps) {
+function SavedPostsContent({
+  isPending,
+  postsError,
+  savedPosts,
+  onRetry,
+  sentinelRef,
+  hasNextPage,
+  isFetchingNextPage,
+  onFetchNextPage,
+}: SavedPostsContentProps) {
   if (isPending) {
     return (
       <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
@@ -61,13 +75,23 @@ function SavedPostsContent({ isPending, postsError, savedPosts, onRetry }: Saved
     )
   }
   return (
-    <ul className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-      {savedPosts.map((post) => (
-        <li key={post.id}>
-          <PostCard post={post} />
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+        {savedPosts.map((post) => (
+          <li key={post.id}>
+            <PostCard post={post} />
+          </li>
+        ))}
+      </ul>
+      <LoadMore
+        sentinelRef={sentinelRef}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={onFetchNextPage}
+        loadingLabel="Đang tải thêm bài đăng"
+        endMessage="Đã hiển thị hết bài đăng đã lưu."
+      />
+    </>
   )
 }
 
@@ -218,6 +242,9 @@ export function SavedPage() {
     isPending,
     isError: postsError,
     refetch: refetchPosts,
+    hasNextPage: savedPostsHasNextPage,
+    isFetchingNextPage: savedPostsFetchingNextPage,
+    fetchNextPage: fetchNextSavedPosts,
   } = usePosts({ filter: "saved" })
   const {
     data: collections,
@@ -225,6 +252,12 @@ export function SavedPage() {
     isError: collectionsError,
     refetch: refetchCollections,
   } = useCollections()
+  const {
+    data: likedCollections,
+    isPending: likedPending,
+    isError: likedError,
+    refetch: refetchLiked,
+  } = useLikedCollections()
   const {
     places: savedPlaces,
     isPending: savedPlacesPending,
@@ -240,16 +273,25 @@ export function SavedPage() {
     isFetchingNextPage: savedPlacesFetchingNextPage,
     fetchNextPage: fetchNextSavedPlaces,
   })
+  const savedPostsSentinelRef = useInfiniteScroll({
+    hasNextPage: savedPostsHasNextPage,
+    isFetchingNextPage: savedPostsFetchingNextPage,
+    fetchNextPage: fetchNextSavedPosts,
+  })
 
   return (
     <PageContainer size="wide">
       <h1 className="sr-only">Đã lưu & Bộ sưu tập</h1>
       <Tabs defaultValue="places">
-        <TabsList className="max-w-full scrollbar-none overflow-x-auto">
-          <TabsTrigger value="places">Địa điểm ({savedPlaces.length})</TabsTrigger>
-          <TabsTrigger value="collections">Bộ sưu tập ({collections?.length ?? 0})</TabsTrigger>
-          <TabsTrigger value="posts">Bài đăng ({savedPosts.length})</TabsTrigger>
-        </TabsList>
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
+          <TabsList className="max-w-full scrollbar-none overflow-x-auto">
+            <TabsTrigger value="places">Địa điểm ({savedPlaces.length})</TabsTrigger>
+            <TabsTrigger value="collections">Bộ sưu tập ({collections?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="liked">Đã thích ({likedCollections?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="posts">Bài đăng ({savedPosts.length})</TabsTrigger>
+          </TabsList>
+          <SuggestPlaceDialog />
+        </div>
 
         <TabsContent value="places" className="mt-5">
           <SavedPlacesContent
@@ -278,6 +320,18 @@ export function SavedPage() {
           />
         </TabsContent>
 
+        <TabsContent value="liked" className="mt-5">
+          <SavedCollectionsContent
+            collectionsPending={likedPending}
+            collectionsError={likedError}
+            collections={likedCollections}
+            onRetry={() => {
+              refetchLiked().catch(() => {})
+            }}
+            onCreateClick={() => setCreateOpen(true)}
+          />
+        </TabsContent>
+
         <TabsContent value="posts" className="mt-5">
           <SavedPostsContent
             isPending={isPending}
@@ -286,6 +340,10 @@ export function SavedPage() {
             onRetry={() => {
               refetchPosts().catch(() => {})
             }}
+            sentinelRef={savedPostsSentinelRef}
+            hasNextPage={savedPostsHasNextPage}
+            isFetchingNextPage={savedPostsFetchingNextPage}
+            onFetchNextPage={fetchNextSavedPosts}
           />
         </TabsContent>
       </Tabs>

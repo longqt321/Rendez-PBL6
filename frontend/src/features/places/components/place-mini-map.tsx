@@ -73,9 +73,7 @@ export function PlaceMiniMap({ place }: PlaceMiniMapProps) {
 
   const position: [number, number] = [place.lat, place.lng]
 
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${place.name} ${place.address}`,
-  )}`
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`
 
   return (
     <div className="flex flex-col gap-3">

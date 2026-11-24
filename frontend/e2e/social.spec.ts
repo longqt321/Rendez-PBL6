@@ -14,7 +14,7 @@ const postLinks = (page: import("@playwright/test").Page) => page.locator('a[hre
 async function postViaComposer(page: import("@playwright/test").Page, caption: string) {
   const composer = page.getByRole("textbox", { name: "Nội dung bài đăng" })
   await composer.fill(caption)
-  await page.getByRole("button", { name: "Đăng", exact: true }).click()
+  await page.getByRole("button", { name: "Đăng bài" }).click()
   // Ô soạn bài được xoá rỗng khi đăng thành công.
   await expect(composer).toHaveValue("")
 }
@@ -90,7 +90,7 @@ test("đăng bài kèm ảnh qua composer", async ({ page }) => {
   // Preview hiện ngay khi chọn, trước khi bấm Đăng.
   await expect(page.locator('img[alt^="Ảnh sẽ đính kèm"]')).toHaveCount(2)
 
-  await page.getByRole("button", { name: "Đăng", exact: true }).click()
+  await page.getByRole("button", { name: "Đăng bài" }).click()
 
   if (process.env.E2E_BACKEND_URL) {
     // Backend thật chưa cấu hình R2 → `POST /media` trả 503. Hành vi đúng:

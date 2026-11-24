@@ -1,9 +1,9 @@
 import { Suspense, useEffect, useRef } from "react"
-import { Outlet, ScrollRestoration, useLocation } from "react-router"
+import { Navigate, Outlet, ScrollRestoration, useLocation } from "react-router"
 import { PageLoading } from "@/components/shared/page-loading"
 import { useNotificationStream } from "@/features/notification/hooks/use-notification-stream"
+import { useMe } from "@/features/profile/hooks/use-me"
 import { BottomNav, SideNav } from "./shell-nav"
-import { StaffContextBanner } from "./staff-context-banner"
 import { TopBar } from "./top-bar"
 
 const PAGE_TITLES: [RegExp, string][] = [
@@ -11,6 +11,8 @@ const PAGE_TITLES: [RegExp, string][] = [
   [/^\/post\/[^/]+$/, "Bài đăng"],
   [/^\/collections\/[^/]+$/, "Bộ sưu tập"],
   [/^\/rooms\/[^/]+$/, "Phòng lọc nhóm"],
+  [/^\/rooms$/, "Phòng nhóm"],
+  [/^\/messages(\/.*)?$/, "Tin nhắn"],
   [/^\/u\/[^/]+$/, "Hồ sơ"],
   [/^\/discover$/, "Khám phá"],
   [/^\/map$/, "Bản đồ"],
@@ -20,12 +22,8 @@ const PAGE_TITLES: [RegExp, string][] = [
   [/^\/saved$/, "Đã lưu"],
   [/^\/profile$/, "Trang cá nhân"],
   [/^\/settings$/, "Cài đặt"],
-  [/^\/admin$/, "Quản trị"],
-  [/^\/help$/, "Trợ giúp"],
-  [/^\/about$/, "Giới thiệu"],
   [/^\/terms$/, "Điều khoản sử dụng"],
   [/^\/privacy$/, "Chính sách bảo mật"],
-  [/^\/system$/, "Số liệu vận hành"],
   [/^.*$/, "Không tìm thấy trang"],
 ]
 
@@ -59,9 +57,14 @@ interface AppShellProps {
 export function AppShell({ children }: Readonly<AppShellProps>) {
   const location = useLocation()
   const mainRef = useRef<HTMLElement>(null)
+  const { data: me } = useMe()
   useDocumentTitle(location.pathname)
   useFocusMainOnNavigate(location.pathname, mainRef)
   useNotificationStream()
+
+  if (me && (me.role === "admin" || me.role === "moderator")) {
+    return <Navigate to="/admin" replace />
+  }
 
   return (
     <div className="min-h-dvh">
@@ -73,7 +76,6 @@ export function AppShell({ children }: Readonly<AppShellProps>) {
       </a>
       <SideNav />
       <div className="flex min-h-dvh flex-col lg:pl-60">
-        <StaffContextBanner />
         <TopBar />
         <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 pb-20 outline-none lg:pb-0">
           {children ?? (
